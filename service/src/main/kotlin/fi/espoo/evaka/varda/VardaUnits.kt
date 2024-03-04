@@ -62,77 +62,66 @@ fun getNewOrStaleUnits(
     ophMunicipalOrganizerIdUrl: String,
     sourceSystem: String
 ): List<VardaUnit> {
-    // language=SQL
-    val sql =
-        """
-        SELECT
-            daycare.id AS evakaDaycareId,
-            varda_unit.varda_unit_id AS vardaUnitId,
-            daycare.oph_unit_oid AS ophUnitOid,
-            :ophMunicipalOrganizerIdUrl AS organizer,
-            :ophMunicipalityCode AS municipalityCode,
-            daycare.name AS name,
-            daycare.street_address AS address,
-            daycare.postal_code AS postalCode,
-            daycare.post_office AS postOffice,
-            daycare.mailing_po_box AS mailingStreetAddress,
-            daycare.mailing_postal_code AS mailingPostalCode,
-            daycare.mailing_post_office AS mailingPostOffice,
-            daycare.unit_manager_phone AS phoneNumber,
-            daycare.unit_manager_email AS email,
-            daycare.capacity AS capacity,
-            daycare.provider_type AS unitProviderType,
-            daycare.type AS unitType,
-            daycare.language AS language,
-            daycare.language_emphasis_id AS languageEmphasisId,
-            daycare.opening_date AS openingDate,
-            daycare.closing_date AS closingDate,
-            :sourceSystem AS sourceSystem
-        FROM daycare
-        LEFT JOIN varda_unit ON varda_unit.evaka_daycare_id = daycare.id
-        WHERE daycare.upload_to_varda IS TRUE
-            AND (
-                daycare.updated > varda_unit.uploaded_at OR
-                daycare.id NOT IN (SELECT evaka_daycare_id from varda_unit) OR
-                daycare.oph_unit_oid IS NULL
+    return tx.createQuery {
+            sql(
+                """
+                SELECT
+                    daycare.id AS evakaDaycareId,
+                    varda_unit.varda_unit_id AS vardaUnitId,
+                    daycare.oph_unit_oid AS ophUnitOid,
+                    ${bind(ophMunicipalOrganizerIdUrl)} AS organizer,
+                    ${bind(ophMunicipalityCode)} AS municipalityCode,
+                    daycare.name AS name,
+                    daycare.street_address AS address,
+                    daycare.postal_code AS postalCode,
+                    daycare.post_office AS postOffice,
+                    daycare.mailing_po_box AS mailingStreetAddress,
+                    daycare.mailing_postal_code AS mailingPostalCode,
+                    daycare.mailing_post_office AS mailingPostOffice,
+                    daycare.unit_manager_phone AS phoneNumber,
+                    daycare.unit_manager_email AS email,
+                    daycare.capacity AS capacity,
+                    daycare.provider_type AS unitProviderType,
+                    daycare.type AS unitType,
+                    daycare.language AS language,
+                    daycare.language_emphasis_id AS languageEmphasisId,
+                    daycare.opening_date AS openingDate,
+                    daycare.closing_date AS closingDate,
+                    ${bind(sourceSystem)} AS sourceSystem
+                FROM daycare
+                LEFT JOIN varda_unit ON varda_unit.evaka_daycare_id = daycare.id
+                WHERE daycare.upload_to_varda IS TRUE
+                    AND (
+                        daycare.updated > varda_unit.uploaded_at OR
+                        daycare.id NOT IN (SELECT evaka_daycare_id from varda_unit) OR
+                        daycare.oph_unit_oid IS NULL
+                    )
+                    AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
+                """
             )
-            AND daycare.provider_type = ANY(:providerTypes)
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return tx.createQuery(sql)
-        .bind("ophMunicipalityCode", ophMunicipalityCode)
-        .bind("ophMunicipalOrganizerIdUrl", ophMunicipalOrganizerIdUrl)
-        .bind("sourceSystem", sourceSystem)
-        .bind("providerTypes", unitTypesToUpload)
+        }
         .toList<VardaUnit>()
 }
 
 fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: VardaUnit) {
-    // language=SQL
-    val sql =
-        """
-    INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
-    VALUES (:evakaDaycareId, :vardaUnitId, :now)
-    ON CONFLICT (evaka_daycare_id)
-    DO UPDATE SET varda_unit_id = :vardaUnitId, uploaded_at = :now;
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    tx.createUpdate(sql)
-        .bind("now", clock.now())
-        .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
-        .bind("vardaUnitId", vardaUnit.vardaUnitId)
+    val now = clock.now()
+    tx.createUpdate {
+            sql(
+                """
+                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
+                VALUES (${bind(vardaUnit.evakaDaycareId)}, ${bind(vardaUnit.vardaUnitId)}, ${bind(now)})
+                ON CONFLICT (evaka_daycare_id)
+                DO UPDATE SET varda_unit_id = ${bind(vardaUnit.vardaUnitId)}, uploaded_at = ${bind(now)}
+                """
+            )
+        }
         .execute()
 
-    val sql2 = "UPDATE daycare SET oph_unit_oid = :ophUnitOid WHERE daycare.id = :evakaDaycareId;"
-
-    @Suppress("DEPRECATION")
-    tx.createUpdate(sql2)
-        .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
-        .bind("ophUnitOid", vardaUnit.ophUnitOid)
+    tx.createUpdate {
+            sql(
+                "UPDATE daycare SET oph_unit_oid = ${bind(vardaUnit.ophUnitOid)} WHERE daycare.id = ${bind(vardaUnit.evakaDaycareId)}"
+            )
+        }
         .execute()
 }
 

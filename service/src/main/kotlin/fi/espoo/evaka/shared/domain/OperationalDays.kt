@@ -33,10 +33,11 @@ fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDays {
 
     // Only includes units that don't have regular monday to friday operational days
     val specialUnitOperationalDays =
-        @Suppress("DEPRECATION")
-        createQuery(
-                "SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')"
-            )
+        createQuery {
+                sql(
+                    "SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')"
+                )
+            }
             .toList {
                 column<DaycareId>("id") to
                     column<Set<Int>>("operation_days").map { DayOfWeek.of(it) }.toSet()
@@ -59,7 +60,7 @@ fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDays {
 }
 
 fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
-    @Suppress("DEPRECATION")
-    createQuery("SELECT date FROM holiday WHERE between_start_and_end(:range, date)")
-        .bind("range", range)
+    createQuery {
+            sql("SELECT date FROM holiday WHERE between_start_and_end(${bind(range)}, date)")
+        }
         .toSet<LocalDate>()

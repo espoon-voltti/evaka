@@ -131,24 +131,25 @@ data class AssistanceNeedDecisionsReportRow(
 )
 
 private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int {
-    // language=sql
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
         SELECT COUNT(*)
         FROM (
             SELECT 1 FROM assistance_need_decision
             WHERE sent_for_decision IS NOT NULL
-            AND decision_maker_employee_id = :employeeId
+            AND decision_maker_employee_id = ${bind(userId)}
             AND NOT decision_maker_has_opened
             
             UNION ALL 
             
             SELECT 1 FROM assistance_need_preschool_decision
             WHERE sent_for_decision IS NOT NULL
-            AND decision_maker_employee_id = :employeeId
+            AND decision_maker_employee_id = ${bind(userId)}
             AND NOT decision_maker_has_opened
         ) decisions
         """
-            .trimIndent()
-    @Suppress("DEPRECATION") return createQuery(sql).bind("employeeId", userId).exactlyOne<Int>()
+            )
+        }
+        .exactlyOne<Int>()
 }

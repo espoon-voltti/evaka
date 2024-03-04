@@ -53,31 +53,31 @@ private fun Database.Read.getEndedPlacementsRows(
     from: LocalDate,
     to: LocalDate
 ): List<EndedPlacementsReportRow> {
-    // language=sql
-    val sql =
-        """
-        WITH ended_placements AS (
-            SELECT 
-                p.id AS child_id, p.first_name, p.last_name, p.social_security_number, 
-                max(pl.end_date) AS placement_end
-            FROM placement pl
-            JOIN person p ON p.id = pl.child_id
-            WHERE daterange(:from, :to, '[]') @> pl.end_date AND pl.type != 'CLUB'::placement_type
-            GROUP BY p.id, p.first_name, p.last_name, p.social_security_number
-        )
-        SELECT 
-            ep.child_id, ep.first_name, ep.last_name, ep.social_security_number AS ssn,
-            ep.placement_end, min(next.start_date) AS next_placement_start
-        FROM ended_placements ep 
-        LEFT JOIN placement next
-            ON next.child_id = ep.child_id AND next.start_date > ep.placement_end AND next.type != 'CLUB'::placement_type
-        GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.social_security_number, ep.placement_end
-        HAVING min(next.start_date) IS NULL OR min(next.start_date) > :to
-        ORDER BY last_name, first_name, social_security_number
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("from", from).bind("to", to).toList<EndedPlacementsReportRow>()
+    return createQuery {
+            sql(
+                """
+WITH ended_placements AS (
+    SELECT 
+        p.id AS child_id, p.first_name, p.last_name, p.social_security_number, 
+        max(pl.end_date) AS placement_end
+    FROM placement pl
+    JOIN person p ON p.id = pl.child_id
+    WHERE daterange(${bind(from)}, ${bind(to)}, '[]') @> pl.end_date AND pl.type != 'CLUB'::placement_type
+    GROUP BY p.id, p.first_name, p.last_name, p.social_security_number
+)
+SELECT 
+    ep.child_id, ep.first_name, ep.last_name, ep.social_security_number AS ssn,
+    ep.placement_end, min(next.start_date) AS next_placement_start
+FROM ended_placements ep 
+LEFT JOIN placement next
+    ON next.child_id = ep.child_id AND next.start_date > ep.placement_end AND next.type != 'CLUB'::placement_type
+GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.social_security_number, ep.placement_end
+HAVING min(next.start_date) IS NULL OR min(next.start_date) > ${bind(to)}
+ORDER BY last_name, first_name, social_security_number
+"""
+            )
+        }
+        .toList<EndedPlacementsReportRow>()
 }
 
 data class EndedPlacementsReportRow(

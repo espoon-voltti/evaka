@@ -60,14 +60,14 @@ class RawReportController(private val accessControl: AccessControl) {
 }
 
 fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
-    // language=sql
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 WITH realtime_attendances AS (
     SELECT sar.group_id, ROUND(SUM(EXTRACT(EPOCH FROM (
             LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
         )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient), 1) AS realized_caretakers
-    FROM generate_series(:start_date, :end_date, '1 day') t
+    FROM generate_series(${bind(from)}, ${bind(to)}, '1 day') t
     JOIN (
         SELECT group_id, arrived, departed, occupancy_coefficient
         FROM staff_attendance_realtime
@@ -141,7 +141,7 @@ SELECT
     7 as staff_dimensioning,
     holiday.date IS NOT NULL as is_holiday,
     date_part('isodow', t) = ANY(ARRAY[1, 2, 3, 4, 5]) as is_weekday
-FROM generate_series(:start_date, :end_date, '1 day') t
+FROM generate_series(${bind(from)}, ${bind(to)}, '1 day') t
 JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> t::date
 JOIN daycare u on u.id = pl.unit_id
 JOIN care_area ca ON ca.id = u.care_area_id
@@ -163,11 +163,8 @@ LEFT JOIN holiday ON t = holiday.date AND NOT (u.operation_days @> ARRAY[1, 2, 3
 WHERE (date_part('isodow', t) = ANY(u.operation_days) OR date_part('isodow', t) = ANY(bcu.operation_days)) AND holiday.date IS NULL
 ORDER BY p.id, t
 """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("start_date", from)
-        .bind("end_date", to)
+            )
+        }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .toList<RawReportRow>()
 }

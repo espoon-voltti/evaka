@@ -144,10 +144,11 @@ private fun Database.Read.getPlacementInfo(
     groupIds: List<GroupId>?
 ): List<PlacementInfoRow> {
     val dates = generateSequence(start) { if (it < end) it.plusDays(1) else null }.toList()
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 WITH dates AS (
-    SELECT unnest(:dates::date[]) AS date
+    SELECT unnest(${bind(dates)}::date[]) AS date
 )
 SELECT 
     dates.date, 
@@ -161,7 +162,7 @@ JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date
 LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> dates.date
 LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
 LEFT JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
-WHERE pl.unit_id = :unitId AND (:groupIds::uuid[] IS NULL OR dg.id = ANY(:groupIds))
+WHERE pl.unit_id = ${bind(unitId)} AND (${bind(groupIds)}::uuid[] IS NULL OR dg.id = ANY(${bind(groupIds)}))
 AND NOT EXISTS(
     SELECT 1
     FROM backup_care bc
@@ -180,15 +181,10 @@ JOIN backup_care bc ON daterange(bc.start_date, bc.end_date, '[]') @> dates.date
 JOIN placement pl ON daterange(pl.start_date, pl.end_date, '[]') @> dates.date AND pl.child_id = bc.child_id
 LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
 LEFT JOIN daycare_group dg ON dg.id = bc.group_id
-WHERE bc.unit_id = :unitId AND (:groupIds::uuid[] IS NULL OR dg.id = ANY(:groupIds));
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("dates", dates.toTypedArray())
-        .bind("unitId", unitId)
-        .bind("groupIds", groupIds)
+WHERE bc.unit_id = ${bind(unitId)} AND (${bind(groupIds)}::uuid[] IS NULL OR dg.id = ANY(${bind(groupIds)}));
+"""
+            )
+        }
         .toList<PlacementInfoRow>()
 }
 
@@ -197,16 +193,16 @@ private data class ChildRow(val childId: ChildId, val dateOfBirth: LocalDate)
 private fun Database.Read.getChildInfo(
     children: List<ChildId>,
 ): List<ChildRow> {
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT p.id as child_id, p.date_of_birth
 FROM person p
-WHERE p.id = ANY(:children);
+WHERE p.id = ANY(${bind(children)})
     """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("children", children.toTypedArray()).toList<ChildRow>()
+            )
+        }
+        .toList<ChildRow>()
 }
 
 private data class ServiceNeedRow(
@@ -221,25 +217,21 @@ private fun Database.Read.getServiceNeeds(
     end: LocalDate,
     children: List<ChildId>,
 ): List<ServiceNeedRow> {
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT
     pl.child_id,
-    daterange(sn.start_date, sn.end_date, '[]') * daterange(:start, :end, '[]') as range,
+    daterange(sn.start_date, sn.end_date, '[]') * daterange(${bind(start)}, ${bind(end)}, '[]') as range,
     sno.occupancy_coefficient_under_3y AS occupancy_coefficient_under,
     sno.occupancy_coefficient AS occupancy_coefficient_over
 FROM service_need sn
 JOIN placement pl on pl.id = sn.placement_id
 LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-WHERE pl.child_id = ANY(:children) AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:start, :end, '[]');
+WHERE pl.child_id = ANY(${bind(children)}) AND daterange(sn.start_date, sn.end_date, '[]') && daterange(${bind(start)}, ${bind(end)}, '[]');
     """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("start", start)
-        .bind("end", end)
-        .bind("children", children.toTypedArray())
+            )
+        }
         .toList<ServiceNeedRow>()
 }
 
@@ -279,21 +271,17 @@ private fun Database.Read.getReservations(
     end: LocalDate,
     children: List<ChildId>,
 ): Map<ChildId, List<HelsinkiDateTimeRange>> {
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT pl.child_id, ar.date, ar.start_time, ar.end_time
 FROM attendance_reservation ar
 JOIN placement pl on ar.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
-WHERE pl.child_id = ANY(:children) AND daterange(:start, :end, '[]') @> ar.date
-AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL;
+WHERE pl.child_id = ANY(${bind(children)}) AND daterange(${bind(start)}, ${bind(end)}, '[]') @> ar.date
+AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
     """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("start", start)
-        .bind("end", end)
-        .bind("children", children.toTypedArray())
+            )
+        }
         .toList<ReservationRow>()
         .groupBy(
             keySelector = { it.childId },
@@ -313,19 +301,15 @@ private fun Database.Read.getAbsences(
     end: LocalDate,
     children: List<ChildId>,
 ): Map<ChildId, List<LocalDate>> {
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT ab.child_id, ab.date
 FROM absence ab
-WHERE ab.child_id = ANY(:children) AND daterange(:start, :end, '[]') @> ab.date;
+WHERE ab.child_id = ANY(${bind(children)}) AND daterange(${bind(start)}, ${bind(end)}, '[]') @> ab.date;
     """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("start", start)
-        .bind("end", end)
-        .bind("children", children.toTypedArray())
+            )
+        }
         .toList<AbsenceRow>()
         .groupBy(keySelector = { it.childId }, valueTransform = { it.date })
 }
@@ -473,48 +457,44 @@ private fun Database.Read.getAttendanceReservationReportByChild(
     unitId: DaycareId,
     groupIds: List<GroupId>?
 ): List<AttendanceReservationReportByChildRow> {
-    val sql =
-        """
-        WITH
-        dates AS (SELECT generate_series::date AS date FROM generate_series(:start, :end, interval '1 day')),
-        children AS (
-          SELECT
-            g.id AS group_id, g.name AS group_name,
-            date, p.id, p.last_name, p.first_name, bc.id IS NOT NULL AS is_backup_care
-          FROM dates date
-          JOIN placement pl ON date BETWEEN pl.start_date AND pl.end_date
-          JOIN person p ON p.id = pl.child_id
-          LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND date BETWEEN dgp.start_date AND dgp.end_date
-          LEFT JOIN backup_care bc ON bc.child_id = p.id AND date BETWEEN bc.start_date AND bc.end_date
-          JOIN daycare u ON u.id = coalesce(bc.unit_id, pl.unit_id)
-          LEFT JOIN daycare_group g ON g.daycare_id = u.id AND g.id = coalesce(bc.group_id, dgp.daycare_group_id)
-          WHERE u.id = :unitId
-            AND (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
-            AND extract(isodow FROM date) = ANY(u.operation_days)
-        )
-        SELECT
-          ${if (groupIds != null) "c.group_id, c.group_name" else "NULL AS group_id, NULL as group_name"},
-          c.date,
-          c.id AS child_id,
-          c.last_name AS child_last_name,
-          c.first_name AS child_first_name,
-          c.is_backup_care,
-          a.id AS absence_id,
-          a.absence_type,
-          r.id AS reservation_id,
-          COALESCE(r.start_time, (daily_service_time_for_date(c.date, c.id)).start) AS reservation_start_time,
-          COALESCE(r.end_time, (daily_service_time_for_date(c.date, c.id)).end) AS reservation_end_time
-        FROM children c
-        LEFT JOIN absence a ON a.child_id = c.id AND a.date = c.date
-        LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date AND r.start_time IS NOT NULL AND r.end_time IS NOT NULL
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("start", start)
-        .bind("end", end)
-        .bind("unitId", unitId)
-        .bind("groupIds", groupIds)
+    return createQuery {
+            sql(
+                """
+WITH
+dates AS (SELECT generate_series::date AS date FROM generate_series(${bind(start)}, ${bind(end)}, interval '1 day')),
+children AS (
+  SELECT
+    g.id AS group_id, g.name AS group_name,
+    date, p.id, p.last_name, p.first_name, bc.id IS NOT NULL AS is_backup_care
+  FROM dates date
+  JOIN placement pl ON date BETWEEN pl.start_date AND pl.end_date
+  JOIN person p ON p.id = pl.child_id
+  LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND date BETWEEN dgp.start_date AND dgp.end_date
+  LEFT JOIN backup_care bc ON bc.child_id = p.id AND date BETWEEN bc.start_date AND bc.end_date
+  JOIN daycare u ON u.id = coalesce(bc.unit_id, pl.unit_id)
+  LEFT JOIN daycare_group g ON g.daycare_id = u.id AND g.id = coalesce(bc.group_id, dgp.daycare_group_id)
+  WHERE u.id = ${bind(unitId)}
+    AND (${bind(groupIds)}::uuid[] IS NULL OR g.id = ANY(${bind(groupIds)}))
+    AND extract(isodow FROM date) = ANY(u.operation_days)
+)
+SELECT
+  ${if (groupIds != null) "c.group_id, c.group_name" else "NULL AS group_id, NULL as group_name"},
+  c.date,
+  c.id AS child_id,
+  c.last_name AS child_last_name,
+  c.first_name AS child_first_name,
+  c.is_backup_care,
+  a.id AS absence_id,
+  a.absence_type,
+  r.id AS reservation_id,
+  COALESCE(r.start_time, (daily_service_time_for_date(c.date, c.id)).start) AS reservation_start_time,
+  COALESCE(r.end_time, (daily_service_time_for_date(c.date, c.id)).end) AS reservation_end_time
+FROM children c
+LEFT JOIN absence a ON a.child_id = c.id AND a.date = c.date
+LEFT JOIN attendance_reservation r ON r.child_id = c.id AND r.date = c.date AND r.start_time IS NOT NULL AND r.end_time IS NOT NULL
+"""
+            )
+        }
         .toList<AttendanceReservationReportByChildRow>()
 }
 

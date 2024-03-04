@@ -188,11 +188,11 @@ class ScheduledJobs(
         }
 
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
+        val today = clock.today()
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate(
-                    // language=SQL
-                    """
+            it.createUpdate {
+                    sql(
+                        """
 WITH attendances_to_end AS (
     SELECT ca.id
     FROM child_attendance ca
@@ -202,20 +202,19 @@ WITH attendances_to_end AS (
         -- No placement to this unit anymore, as of today
         NOT EXISTS (
             SELECT 1 FROM placement p
-            LEFT JOIN backup_care bc ON ca.child_id = bc.child_id AND :today BETWEEN bc.start_date AND bc.end_date
+            LEFT JOIN backup_care bc ON ca.child_id = bc.child_id AND ${bind(today)} BETWEEN bc.start_date AND bc.end_date
             WHERE
                 p.child_id = ca.child_id AND
                 (p.unit_id = ca.unit_id OR bc.unit_id = ca.unit_id) AND
-                :today BETWEEN p.start_date AND p.end_date
+                ${bind(today)} BETWEEN p.start_date AND p.end_date
         )
     )
 )
 UPDATE child_attendance SET end_time = '23:59'::time
 WHERE id IN (SELECT id FROM attendances_to_end)
-                """
-                        .trimIndent()
-                )
-                .bind("today", clock.today())
+"""
+                    )
+                }
                 .execute()
         }
     }
@@ -226,19 +225,18 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun endOfDayReservationUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate(
-                    // language=SQL
-                    """
-                    DELETE FROM attendance_reservation ar
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM placement p
-                        WHERE p.child_id = ar.child_id
-                        AND ar.date BETWEEN p.start_date AND p.end_date
+            it.createUpdate {
+                    sql(
+                        """
+                        DELETE FROM attendance_reservation ar
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM placement p
+                            WHERE p.child_id = ar.child_id
+                            AND ar.date BETWEEN p.start_date AND p.end_date
+                        )
+                        """
                     )
-                """
-                        .trimIndent()
-                )
+                }
                 .execute()
         }
     }

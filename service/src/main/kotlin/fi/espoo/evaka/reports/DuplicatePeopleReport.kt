@@ -50,9 +50,9 @@ private fun Database.Read.getDuplicatePeople(
     val personReferences = getTransferablePersonReferences()
     val intentionalDuplicateFilterClause =
         if (showIntentionalDuplicates) "" else "AND p.duplicate_of IS NULL"
-    // language=sql
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
         WITH people AS (
             SELECT
                 p.id,
@@ -90,14 +90,14 @@ private fun Database.Read.getDuplicatePeople(
         
             jsonb_build_array(
                 ${personReferences.joinToString(separator = ", ") { (table, column) ->
-            """
+                    """
                     json_build_object(
                         'table', '$table',
                         'column', '$column',
                         'count', (SELECT count(*) FROM $table WHERE $column = p.id)
                     )
-            """.trimIndent()
-        }},
+                    """
+                }},
                 json_build_object(
                     'table', 'message',
                     'column', 'sender_id',
@@ -121,11 +121,11 @@ private fun Database.Read.getDuplicatePeople(
             ) AS reference_counts
         FROM duplicate_ids dups
         JOIN person p ON p.id = dups.id
-            ORDER BY key, social_security_number, p.id;
+        ORDER BY key, social_security_number, p.id
         """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") return createQuery(sql).toList<DuplicatePeopleReportRow>()
+            )
+        }
+        .toList<DuplicatePeopleReportRow>()
 }
 
 data class ReferenceCount(val table: String, val column: String, val count: Int)

@@ -50,65 +50,61 @@ private fun Database.Read.getFamilyContacts(
     today: LocalDate,
     unitId: DaycareId
 ): List<FamilyContactReportRow> {
-    // language=sql
-    val sql =
-        """
-            WITH all_placements AS (
-                SELECT pl.child_id, dgp.daycare_group_id AS group_id
-                FROM placement pl
-                LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today
-                WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> :today
-                
-                UNION DISTINCT 
-                
-                SELECT bc.child_id, bc.group_id
-                FROM backup_care bc
-                WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+    return createQuery {
+            sql(
+                """
+WITH all_placements AS (
+    SELECT pl.child_id, dgp.daycare_group_id AS group_id
+    FROM placement pl
+    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(today)}
+    WHERE pl.unit_id = ${bind(unitId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
+    
+    UNION DISTINCT 
+    
+    SELECT bc.child_id, bc.group_id
+    FROM backup_care bc
+    WHERE bc.unit_id = ${bind(unitId)} AND daterange(bc.start_date, bc.end_date, '[]') @> ${bind(today)}
+)
+SELECT
+    ch.id,
+    ch.first_name,
+    ch.last_name,
+    ch.social_security_number AS ssn,
+    ch.street_address,
+    ch.postal_code,
+    ch.post_office,
+    dg.name AS group_name,
+
+    hoc.id AS hoc_id,
+    hoc.first_name AS hoc_first_name,
+    hoc.last_name AS hoc_last_name,
+    hoc.phone AS hoc_phone,
+    hoc.email AS hoc_email,
+
+    gu1.id AS gu1_id,
+    gu1.first_name AS gu1_first_name,
+    gu1.last_name AS gu1_last_name,
+    gu1.phone AS gu1_phone,
+    gu1.email AS gu1_email,
+
+    gu2.id AS gu2_id,
+    gu2.first_name AS gu2_first_name,
+    gu2.last_name AS gu2_last_name,
+    gu2.phone AS gu2_phone,
+    gu2.email AS gu2_email
+FROM all_placements pl
+JOIN person ch ON ch.id = pl.child_id
+LEFT JOIN daycare_group dg ON dg.id = pl.group_id
+LEFT JOIN fridge_child fc ON ch.id = fc.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
+LEFT JOIN person hoc ON hoc.id = fc.head_of_child
+LEFT JOIN guardian g1 ON ch.id = g1.child_id AND g1.guardian_id = (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)
+LEFT JOIN guardian g2 ON ch.id = g2.child_id AND g2.guardian_id = (SELECT max(guardian_id::text)::uuid FROM guardian where child_id = ch.id) AND g2.guardian_id != (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)
+LEFT JOIN person gu1 ON gu1.id = g1.guardian_id
+LEFT JOIN person gu2 ON gu2.id = g2.guardian_id
+ORDER BY dg.name, ch.last_name, ch.first_name
+"""
             )
-            SELECT
-                ch.id,
-                ch.first_name,
-                ch.last_name,
-                ch.social_security_number AS ssn,
-                ch.street_address,
-                ch.postal_code,
-                ch.post_office,
-                dg.name AS group_name,
-
-                hoc.id AS hoc_id,
-                hoc.first_name AS hoc_first_name,
-                hoc.last_name AS hoc_last_name,
-                hoc.phone AS hoc_phone,
-                hoc.email AS hoc_email,
-
-                gu1.id AS gu1_id,
-                gu1.first_name AS gu1_first_name,
-                gu1.last_name AS gu1_last_name,
-                gu1.phone AS gu1_phone,
-                gu1.email AS gu1_email,
-
-                gu2.id AS gu2_id,
-                gu2.first_name AS gu2_first_name,
-                gu2.last_name AS gu2_last_name,
-                gu2.phone AS gu2_phone,
-                gu2.email AS gu2_email
-            FROM all_placements pl
-            JOIN person ch ON ch.id = pl.child_id
-            LEFT JOIN daycare_group dg ON dg.id = pl.group_id
-            LEFT JOIN fridge_child fc ON ch.id = fc.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :today
-            LEFT JOIN person hoc ON hoc.id = fc.head_of_child
-            LEFT JOIN guardian g1 ON ch.id = g1.child_id AND g1.guardian_id = (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)
-            LEFT JOIN guardian g2 ON ch.id = g2.child_id AND g2.guardian_id = (SELECT max(guardian_id::text)::uuid FROM guardian where child_id = ch.id) AND g2.guardian_id != (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)
-            LEFT JOIN person gu1 ON gu1.id = g1.guardian_id
-            LEFT JOIN person gu2 ON gu2.id = g2.guardian_id
-            ORDER BY dg.name, ch.last_name, ch.first_name
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("today", today)
-        .bind("unitId", unitId)
+        }
         .toList<FamilyContactReportRow>()
 }
 

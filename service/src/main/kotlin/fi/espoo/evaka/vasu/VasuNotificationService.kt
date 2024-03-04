@@ -54,9 +54,9 @@ class VasuNotificationService(
         tx: Database.Read,
         vasuDocumentId: VasuDocumentId
     ): List<AsyncJob.SendVasuNotificationEmail> {
-        @Suppress("DEPRECATION")
-        return tx.createQuery(
-                """
+        return tx.createQuery {
+                sql(
+                    """
 SELECT 
     doc.id AS vasu_document_id,
     child.id AS child_id,
@@ -67,12 +67,11 @@ FROM curriculum_document doc
     JOIN guardian g ON doc.child_id = g.child_id
     JOIN person parent ON g.guardian_id = parent.id
 WHERE
-    doc.id = :id
+    doc.id = ${bind(vasuDocumentId)}
     AND parent.email IS NOT NULL AND parent.email != ''
-            """
-                    .trimIndent()
-            )
-            .bind("id", vasuDocumentId)
+"""
+                )
+            }
             .toList {
                 AsyncJob.SendVasuNotificationEmail(
                     vasuDocumentId = vasuDocumentId,

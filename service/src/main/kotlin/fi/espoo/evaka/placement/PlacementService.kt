@@ -455,30 +455,29 @@ fun Database.Read.getUnitChildrenCapacities(
     unitId: DaycareId,
     date: LocalDate
 ): List<UnitChildrenCapacityFactors> {
-    @Suppress("DEPRECATION")
-    return this.createQuery(
-            """
-        SELECT
-            ch.id child_id,
-            MAX(COALESCE(an.capacity_factor, 1)) assistance_need_factor,
-            MAX(CASE
-                WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
-                WHEN extract(YEARS FROM age(:date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
-                ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient, 1)
-            END) AS service_need_factor
-        FROM realized_placement_one(:date) pl
-        JOIN daycare u ON u.id = pl.unit_id
-        JOIN person ch ON ch.id = pl.child_id
-        LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
-        LEFT JOIN service_need_option sno on sn.option_id = sno.id
-        LEFT JOIN service_need_option default_sno on pl.placement_type = default_sno.valid_placement_type AND default_sno.default_option
-        LEFT JOIN assistance_factor an ON an.child_id = ch.id AND an.valid_during @> :date
-        WHERE pl.unit_id = :unitId
-        GROUP BY ch.id
-    """
-        )
-        .bind("unitId", unitId)
-        .bind("date", date)
+    return createQuery {
+            sql(
+                """
+SELECT
+    ch.id child_id,
+    MAX(COALESCE(an.capacity_factor, 1)) assistance_need_factor,
+    MAX(CASE
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
+        WHEN extract(YEARS FROM age(${bind(date)}, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
+        ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient, 1)
+    END) AS service_need_factor
+FROM realized_placement_one(${bind(date)}) pl
+JOIN daycare u ON u.id = pl.unit_id
+JOIN person ch ON ch.id = pl.child_id
+LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+LEFT JOIN service_need_option sno on sn.option_id = sno.id
+LEFT JOIN service_need_option default_sno on pl.placement_type = default_sno.valid_placement_type AND default_sno.default_option
+LEFT JOIN assistance_factor an ON an.child_id = ch.id AND an.valid_during @> ${bind(date)}
+WHERE pl.unit_id = ${bind(unitId)}
+GROUP BY ch.id
+"""
+            )
+        }
         .toList<UnitChildrenCapacityFactors>()
 }
 
@@ -568,20 +567,20 @@ fun getMissingGroupPlacements(tx: Database.Read, unitId: DaycareId): List<Missin
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
     val missingGroupPlacements =
-        @Suppress("DEPRECATION")
-        tx.createQuery(
-                """
+        tx.createQuery {
+                sql(
+                    """
 WITH missing_group_placement AS (
     SELECT p.id, p.type, daterange(p.start_date, p.end_date, '[]') AS placement_period, p.child_id,
-        multirange(daterange(greatest(p.start_date, :evakaLaunch), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange) AS ranges
+        multirange(daterange(greatest(p.start_date, ${bind(evakaLaunch)}), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange) AS ranges
     FROM placement p
     LEFT JOIN LATERAL (
         SELECT range_agg(daterange(dgp.start_date, dgp.end_date, '[]')) AS ranges
         FROM daycare_group_placement dgp
         WHERE p.id = dgp.daycare_placement_id
     ) dgp ON true
-    WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') && daterange(:evakaLaunch, NULL)
-    AND NOT isempty(multirange(daterange(greatest(p.start_date, :evakaLaunch), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
+    WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && daterange(${bind(evakaLaunch)}, NULL)
+    AND NOT isempty(multirange(daterange(greatest(p.start_date, ${bind(evakaLaunch)}), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
 )
 SELECT
     FALSE AS backup,
@@ -608,15 +607,14 @@ JOIN LATERAL (
     WHERE p.id = sn.placement_id
 ) sn ON true
 """
-            )
-            .bind("unitId", unitId)
-            .bind("evakaLaunch", evakaLaunch)
+                )
+            }
             .toList<MissingGroupPlacement>()
 
     val missingBackupCareGroups =
-        @Suppress("DEPRECATION")
-        tx.createQuery(
-                """
+        tx.createQuery {
+                sql(
+                    """
 SELECT
     TRUE AS backup,
     bc.id AS placement_id,
@@ -638,12 +636,11 @@ JOIN LATERAL (
   WHERE p.child_id = bc.child_id
     AND daterange(p.start_date, p.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
 ) p ON TRUE
-WHERE bc.unit_id = :unitId AND bc.group_id IS NULL
-    AND daterange(bc.start_date, bc.end_date, '[]') && daterange(:evakaLaunch, NULL)
+WHERE bc.unit_id = ${bind(unitId)} AND bc.group_id IS NULL
+    AND daterange(bc.start_date, bc.end_date, '[]') && daterange(${bind(evakaLaunch)}, NULL)
 """
-            )
-            .bind("unitId", unitId)
-            .bind("evakaLaunch", evakaLaunch)
+                )
+            }
             .toList<MissingGroupPlacement>()
 
     return missingGroupPlacements + missingBackupCareGroups

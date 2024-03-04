@@ -94,7 +94,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import mu.KotlinLogging
-import org.intellij.lang.annotations.Language
 import org.jdbi.v3.json.Json
 import org.springframework.core.io.ClassPathResource
 
@@ -116,8 +115,7 @@ fun Database.Transaction.resetDatabase() {
 }
 
 fun Database.Transaction.ensureDevData() {
-    @Suppress("DEPRECATION")
-    if (createQuery("SELECT count(*) FROM care_area").exactlyOne<Int>() == 0) {
+    if (createQuery { sql("SELECT count(*) FROM care_area") }.exactlyOne<Int>() == 0) {
         listOf(
                 "dev-data.sql",
                 "service-need-options.sql",
@@ -130,25 +128,18 @@ fun Database.Transaction.ensureDevData() {
     }
 }
 
-/**
- * Insert one row of data to the database.
- * * all fields from `row` are bound separately as parameters
- * * SQL must return "id" column of type UUID
- */
-private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sql: String): UUID =
-    @Suppress("DEPRECATION")
-    createUpdate(sql).bindKotlin(row).executeAndReturnGeneratedKeys().exactlyOne<UUID>()
-
-fun Database.Transaction.insert(area: DevCareArea): AreaId =
-    insertTestDataRow(
-            area,
-            """
+fun Database.Transaction.insert(row: DevCareArea): AreaId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO care_area (id, name, short_name, area_code, sub_cost_center)
-VALUES (:id, :name, :shortName, :areaCode, :subCostCenter)
+VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.shortName)}, ${bind(row.areaCode)}, ${bind(row.subCostCenter)})
 RETURNING id
 """
-        )
-        .let(::AreaId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insert(holiday: DevHoliday) {
     createUpdate {
@@ -162,48 +153,51 @@ VALUES (${bind(holiday.date)}, ${bind(holiday.description)})
         .execute()
 }
 
-fun Database.Transaction.insert(daycare: DevDaycare): DaycareId =
-    insertTestDataRow(
-            daycare,
-            """
+fun Database.Transaction.insert(row: DevDaycare): DaycareId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO daycare (
-  id, name, opening_date, closing_date, care_area_id, type, daily_preschool_time, daily_preparatory_time, daycare_apply_period, preschool_apply_period, club_apply_period, provider_type,
-  capacity, language, ghost_unit, upload_to_varda, upload_children_to_varda, upload_to_koski, invoiced_by_municipality, cost_center, dw_cost_center,
-  additional_info, phone, email, url,
-  street_address, postal_code, post_office,
-  location, mailing_street_address, mailing_po_box, mailing_postal_code, mailing_post_office,
-  unit_manager_name, unit_manager_phone, unit_manager_email,
-  decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
-  oph_unit_oid, oph_organizer_oid, round_the_clock, operation_times, enabled_pilot_features,
-  finance_decision_handler, business_id, iban, provider_id
+    id, name, opening_date, closing_date, care_area_id, type, daily_preschool_time, daily_preparatory_time, daycare_apply_period, preschool_apply_period, club_apply_period, provider_type,
+    capacity, language, ghost_unit, upload_to_varda, upload_children_to_varda, upload_to_koski, invoiced_by_municipality, cost_center, dw_cost_center,
+    additional_info, phone, email, url,
+    street_address, postal_code, post_office,
+    location, mailing_street_address, mailing_po_box, mailing_postal_code, mailing_post_office,
+    unit_manager_name, unit_manager_phone, unit_manager_email,
+    decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
+    oph_unit_oid, oph_organizer_oid, round_the_clock, operation_times, enabled_pilot_features,
+    finance_decision_handler, business_id, iban, provider_id
 ) VALUES (
-  :id, :name, :openingDate, :closingDate, :areaId, :type::care_types[], :dailyPreschoolTime, :dailyPreparatoryTime, :daycareApplyPeriod, :preschoolApplyPeriod, :clubApplyPeriod, :providerType,
-  :capacity, :language, :ghostUnit, :uploadToVarda, :uploadChildrenToVarda, :uploadToKoski, :invoicedByMunicipality, :costCenter, :dwCostCenter,
-  :additionalInfo, :phone, :email, :url,
-  :visitingAddress.streetAddress, :visitingAddress.postalCode, :visitingAddress.postOffice,
-  :location, :mailingAddress.streetAddress, :mailingAddress.poBox, :mailingAddress.postalCode, :mailingAddress.postOffice,
-  :unitManager.name, :unitManager.phone, :unitManager.email,
-  :decisionCustomization.daycareName, :decisionCustomization.preschoolName, :decisionCustomization.handler, :decisionCustomization.handlerAddress,
-  :ophUnitOid, :ophOrganizerOid, :roundTheClock, :operationTimes, :enabledPilotFeatures::pilot_feature[], :financeDecisionHandler,
-  :businessId, :iban, :providerId
-)
+    ${bind(row.id)}, ${bind(row.name)}, ${bind(row.openingDate)}, ${bind(row.closingDate)}, ${bind(row.areaId)},
+    ${bind(row.type)}::care_types[], ${bind(row.dailyPreschoolTime)}, ${bind(row.dailyPreparatoryTime)}, ${bind(row.daycareApplyPeriod)},
+    ${bind(row.preschoolApplyPeriod)}, ${bind(row.clubApplyPeriod)}, ${bind(row.providerType)}, ${bind(row.capacity)},
+    ${bind(row.language)}, ${bind(row.ghostUnit)}, ${bind(row.uploadToVarda)}, ${bind(row.uploadChildrenToVarda)},
+    ${bind(row.uploadToKoski)}, ${bind(row.invoicedByMunicipality)}, ${bind(row.costCenter)}, ${bind(row.dwCostCenter)},
+    ${bind(row.additionalInfo)}, ${bind(row.phone)}, ${bind(row.email)}, ${bind(row.url)}, ${bind(row.visitingAddress.streetAddress)},
+    ${bind(row.visitingAddress.postalCode)}, ${bind(row.visitingAddress.postOffice)}, ${bind(row.location)},
+    ${bind(row.mailingAddress.streetAddress)}, ${bind(row.mailingAddress.poBox)}, ${bind(row.mailingAddress.postalCode)},
+    ${bind(row.mailingAddress.postOffice)}, ${bind(row.unitManager.name)}, ${bind(row.unitManager.phone)}, ${bind(row.unitManager.email)},
+    ${bind(row.decisionCustomization.daycareName)}, ${bind(row.decisionCustomization.preschoolName)}, ${bind(row.decisionCustomization.handler)},
+    ${bind(row.decisionCustomization.handlerAddress)}, ${bind(row.ophUnitOid)}, ${bind(row.ophOrganizerOid)}, ${bind(row.roundTheClock)},
+    ${bind(row.operationTimes)}, ${bind(row.enabledPilotFeatures)}::pilot_feature[], ${bind(row.financeDecisionHandler)}, ${bind(row.businessId)},
+    ${bind(row.iban)}, ${bind(row.providerId)})
 RETURNING id
 """
-        )
-        .let(::DaycareId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.updateDaycareAcl(
     daycareId: DaycareId,
     externalId: ExternalId,
     role: UserRole
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = :external_id), :daycare_id, :role)"
-        )
-        .bind("daycare_id", daycareId)
-        .bind("external_id", externalId)
-        .bind("role", role)
+    createUpdate {
+            sql(
+                "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = ${bind(externalId)}), ${bind(daycareId)}, ${bind(role)})"
+            )
+        }
         .execute()
 }
 
@@ -212,23 +206,20 @@ fun Database.Transaction.updateDaycareAclWithEmployee(
     employeeId: EmployeeId,
     role: UserRole
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (:employeeId, :daycare_id, :role)"
-        )
-        .bind("daycare_id", daycareId)
-        .bind("employeeId", employeeId)
-        .bind("role", role)
+    createUpdate {
+            sql(
+                "INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (${bind(employeeId)}, ${bind(daycareId)}, ${bind(role)})"
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, employeeId: EmployeeId) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (:employeeId, :daycare_group_id)"
-        )
-        .bind("daycare_group_id", groupId)
-        .bind("employeeId", employeeId)
+    createUpdate {
+            sql(
+                "INSERT INTO daycare_group_acl (employee_id, daycare_group_id) VALUES (${bind(employeeId)}, ${bind(groupId)})"
+            )
+        }
         .execute()
 }
 
@@ -237,45 +228,47 @@ fun Database.Transaction.createMobileDeviceToUnit(
     unitId: DaycareId,
     name: String = "Nimeämätön laite"
 ) {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, :name);
-
-        INSERT INTO evaka_user (id, type, mobile_device_id, name) VALUES (:id, 'MOBILE_DEVICE', :id, :name);
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql).bind("id", id).bind("unitId", unitId).bind("name", name).execute()
+    createUpdate {
+            sql(
+                """
+INSERT INTO mobile_device (id, unit_id, name) VALUES (${bind(id)}, ${bind(unitId)}, ${bind(name)});
+INSERT INTO evaka_user (id, type, mobile_device_id, name) VALUES (${bind(id)}, 'MOBILE_DEVICE', ${bind(id)}, ${bind(name)});
+"""
+            )
+        }
+        .execute()
 }
 
-fun Database.Transaction.insert(employee: DevEmployee) =
-    insertTestDataRow(
-            employee,
-            """
+fun Database.Transaction.insert(row: DevEmployee) =
+    createUpdate {
+            sql(
+                """
 INSERT INTO employee (id, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login, active)
-VALUES (:id, :preferredFirstName, :firstName, :lastName, :email, :externalId, :employeeNumber, :roles::user_role[], :lastLogin, :active)
+VALUES (${bind(row.id)}, ${bind(row.preferredFirstName)}, ${bind(row.firstName)}, ${bind(row.lastName)}, ${bind(row.email)}, ${bind(row.externalId)}, ${bind(row.employeeNumber)}, ${bind(row.roles)}::user_role[], ${bind(row.lastLogin)}, ${bind(row.active)})
 RETURNING id
 """
-        )
-        .let(::EmployeeId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<EmployeeId>()
         .also { upsertEmployeeUser(it) }
 
 fun Database.Transaction.insert(
-    employee: DevEmployee,
+    row: DevEmployee,
     unitRoles: Map<DaycareId, UserRole> = mapOf(),
     groupAcl: Map<DaycareId, Collection<GroupId>> = mapOf()
 ) =
-    insertTestDataRow(
-            employee,
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO employee (id, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login, active)
-VALUES (:id, :preferredFirstName, :firstName, :lastName, :email, :externalId, :employeeNumber, :roles::user_role[], :lastLogin, :active)
+VALUES (${bind(row.id)}, ${bind(row.preferredFirstName)}, ${bind(row.firstName)}, ${bind(row.lastName)}, ${bind(row.email)}, ${bind(row.externalId)}, ${bind(row.employeeNumber)}, ${bind(row.roles)}::user_role[], ${bind(row.lastLogin)}, ${bind(row.active)})
 RETURNING id
 """
-        )
-        .let(::EmployeeId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<EmployeeId>()
         .also { employeeId ->
             upsertEmployeeUser(employeeId)
             unitRoles.forEach { (daycareId, role) ->
@@ -286,27 +279,31 @@ RETURNING id
             }
         }
 
-fun Database.Transaction.insert(device: DevMobileDevice) =
-    insertTestDataRow(
-            device,
-            """
+fun Database.Transaction.insert(row: DevMobileDevice) =
+    createUpdate {
+            sql(
+                """
 INSERT INTO mobile_device (id, unit_id, name, long_term_token, push_notification_categories)
-VALUES (:id, :unitId, :name, :longTermToken, :pushNotificationCategories)
+VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.name)}, ${bind(row.longTermToken)}, ${bind(row.pushNotificationCategories)})
 RETURNING id
-    """
-        )
-        .let(::MobileDeviceId)
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<MobileDeviceId>()
 
-fun Database.Transaction.insert(device: DevPersonalMobileDevice) =
-    insertTestDataRow(
-            device,
-            """
+fun Database.Transaction.insert(row: DevPersonalMobileDevice) =
+    createUpdate {
+            sql(
+                """
 INSERT INTO mobile_device (id, employee_id, name, long_term_token)
-VALUES (:id, :employeeId, :name, :longTermToken)
+VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.name)}, ${bind(row.longTermToken)})
 RETURNING id
-    """
-        )
-        .let(::MobileDeviceId)
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<MobileDeviceId>()
 
 enum class DevPersonType {
     CHILD,
@@ -314,23 +311,28 @@ enum class DevPersonType {
     RAW_ROW,
 }
 
-fun Database.Transaction.insert(person: DevPerson, type: DevPersonType) =
-    insertTestDataRow(
-            person.copy(updatedFromVtj = if (person.ssn != null) HelsinkiDateTime.now() else null),
-            """
+fun Database.Transaction.insert(person: DevPerson, type: DevPersonType): PersonId {
+    val p = person.copy(updatedFromVtj = if (person.ssn != null) HelsinkiDateTime.now() else null)
+    return createUpdate {
+            sql(
+                """
 INSERT INTO person (
     id, date_of_birth, date_of_death, first_name, last_name, preferred_name, social_security_number, email, phone, language,
     street_address, postal_code, post_office, residence_code, nationalities, restricted_details_enabled, restricted_details_end_date,
     invoicing_street_address, invoicing_postal_code, invoicing_post_office, updated_from_vtj, oph_person_oid, duplicate_of, enabled_email_types
 ) VALUES (
-    :id, :dateOfBirth, :dateOfDeath, :firstName, :lastName, :preferredName, :ssn, :email, :phone, :language,
-    :streetAddress, :postalCode, :postOffice, :residenceCode, :nationalities, :restrictedDetailsEnabled, :restrictedDetailsEndDate,
-    :invoicingStreetAddress, :invoicingPostalCode, :invoicingPostOffice, :updatedFromVtj, :ophPersonOid, :duplicateOf, :enabledEmailTypes
+    ${bind(p.id)}, ${bind(p.dateOfBirth)}, ${bind(p.dateOfDeath)}, ${bind(p.firstName)}, ${bind(p.lastName)}, ${bind(p.preferredName)},
+    ${bind(p.ssn)}, ${bind(p.email)}, ${bind(p.phone)}, ${bind(p.language)}, ${bind(p.streetAddress)}, ${bind(p.postalCode)}, ${bind(p.postOffice)},
+    ${bind(p.residenceCode)}, ${bind(p.nationalities)}, ${bind(p.restrictedDetailsEnabled)}, ${bind(p.restrictedDetailsEndDate)},
+    ${bind(p.invoicingStreetAddress)}, ${bind(p.invoicingPostalCode)}, ${bind(p.invoicingPostOffice)}, ${bind(p.updatedFromVtj)},
+    ${bind(p.ophPersonOid)}, ${bind(p.duplicateOf)}, ${bind(p.enabledEmailTypes)}
 )
 RETURNING id
 """
-        )
-        .let(::PersonId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<PersonId>()
         .also { id ->
             when (type) {
                 DevPersonType.CHILD -> {
@@ -343,6 +345,7 @@ RETURNING id
                 DevPersonType.RAW_ROW -> {}
             }
         }
+}
 
 fun Database.Transaction.insertTestParentship(
     headOfChild: PersonId,
@@ -351,31 +354,29 @@ fun Database.Transaction.insertTestParentship(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): ParentshipId {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-            INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
-            VALUES (:id, :headOfChild, :childId, :startDate, :endDate)
-            """
-        )
-        .bind("id", id)
-        .bind("headOfChild", headOfChild)
-        .bind("childId", childId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+    createUpdate {
+            sql(
+                """
+INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
+VALUES (${bind(id)}, ${bind(headOfChild)}, ${bind(childId)}, ${bind(startDate)}, ${bind(endDate)})
+"""
+            )
+        }
         .execute()
     return id
 }
 
-fun Database.Transaction.insert(parentship: DevParentship): ParentshipId =
-    insertTestDataRow(
-            parentship,
-            """
+fun Database.Transaction.insert(row: DevParentship): ParentshipId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
-VALUES (:id, :headOfChildId, :childId, :startDate, :endDate)
-        """
-        )
-        .let(::ParentshipId)
+VALUES (${bind(row.id)}, ${bind(row.headOfChildId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insertTestPartnership(
     adult1: PersonId,
@@ -425,34 +426,23 @@ fun Database.Transaction.insertTestApplication(
     transferApplication: Boolean = false,
     allowOtherGuardianAccess: Boolean = true
 ): ApplicationId {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-            INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access)
-            VALUES (:type, :id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :additionalDaycareApplication, :transferApplication, :allowOtherGuardianAccess)
-            """
-        )
-        .bind("id", id)
-        .bind("type", type)
-        .bind("sentDate", sentDate)
-        .bind("dueDate", dueDate)
-        .bind("status", status)
-        .bind("guardianId", guardianId)
-        .bind("childId", childId)
-        .bind("otherGuardianId", otherGuardianId)
-        .bind("hideFromGuardian", hideFromGuardian)
-        .bind("additionalDaycareApplication", additionalDaycareApplication)
-        .bind("transferApplication", transferApplication)
-        .bind("allowOtherGuardianAccess", allowOtherGuardianAccess)
+    createUpdate {
+            sql(
+                """
+INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access)
+VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, ${bind(otherGuardianId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)})
+"""
+            )
+        }
         .execute()
 
     if (otherGuardianId != null) {
         createUpdate {
                 sql(
                     """
-            INSERT INTO application_other_guardian (application_id, guardian_id) 
-            VALUES (${bind(id)}, ${bind(otherGuardianId)})
-        """
+INSERT INTO application_other_guardian (application_id, guardian_id) 
+VALUES (${bind(id)}, ${bind(otherGuardianId)})
+"""
                 )
             }
             .execute()
@@ -469,15 +459,14 @@ fun Database.Transaction.insertTestApplicationForm(
         "Invalid form type for the application"
     }
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-UPDATE application SET document = :document, form_modified = now()
-WHERE id = :applicationId
+    createUpdate {
+            sql(
+                """
+UPDATE application SET document = ${bindJson(document)}, form_modified = now()
+WHERE id = ${bind(applicationId)}
 """
-        )
-        .bind("applicationId", applicationId)
-        .bindJson("document", document)
+            )
+        }
         .execute()
 }
 
@@ -489,41 +478,44 @@ fun Database.Transaction.insertTestClubApplicationForm(
         "Invalid form type for the application"
     }
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-UPDATE application SET document = :document, form_modified = now()
-WHERE id = :applicationId
+    createUpdate {
+            sql(
+                """
+UPDATE application SET document = ${bindJson(document)}, form_modified = now()
+WHERE id = ${bind(applicationId)}
 """
-        )
-        .bind("applicationId", applicationId)
-        .bindJson("document", document)
+            )
+        }
         .execute()
 }
 
-fun Database.Transaction.insert(child: DevChild) =
-    insertTestDataRow(
-            child,
-            """
+fun Database.Transaction.insert(row: DevChild): ChildId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO child (id, allergies, diet, medication, additionalinfo, language_at_home, language_at_home_details)
-VALUES (:id, :allergies, :diet, :medication, :additionalInfo, :languageAtHome, :languageAtHomeDetails)
+VALUES (${bind(row.id)}, ${bind(row.allergies)}, ${bind(row.diet)}, ${bind(row.medication)}, ${bind(row.additionalInfo)}, ${bind(row.languageAtHome)}, ${bind(row.languageAtHomeDetails)})
 ON CONFLICT(id) DO UPDATE
-SET id = :id, allergies = :allergies, diet = :diet, medication = :medication, additionalInfo = :additionalInfo, language_at_home = :languageAtHome, language_at_home_details = :languageAtHomeDetails
+SET id = ${bind(row.id)}, allergies = ${bind(row.allergies)}, diet = ${bind(row.diet)}, medication = ${bind(row.medication)}, additionalInfo = ${bind(row.additionalInfo)}, language_at_home = ${bind(row.languageAtHome)}, language_at_home_details = ${bind(row.languageAtHomeDetails)}
 RETURNING id
     """
-        )
-        .let(::ChildId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(placement: DevPlacement) =
-    insertTestDataRow(
-            placement,
-            """
+fun Database.Transaction.insert(row: DevPlacement): PlacementId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
-VALUES (:id, :type, :childId, :unitId, :startDate, :endDate, :terminationRequestedDate, :terminatedBy, :placeGuarantee)
+VALUES (${bind(row.id)}, ${bind(row.type)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.terminationRequestedDate)}, ${bind(row.terminatedBy)}, ${bind(row.placeGuarantee)})
 RETURNING id
 """
-        )
-        .let(::PlacementId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insertTestPlacement(
     id: PlacementId = PlacementId(UUID.randomUUID()),
@@ -536,36 +528,27 @@ fun Database.Transaction.insertTestPlacement(
     terminatedBy: EvakaUserId? = null,
     placeGuarantee: Boolean = false
 ): PlacementId {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-            INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
-            VALUES (:id, :childId, :unitId, :type::placement_type, :startDate, :endDate, :terminationRequestedDate, :terminatedBy, :placeGuarantee)
-            """
-        )
-        .bind("id", id)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("type", type)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("terminationRequestedDate", terminationRequestedDate)
-        .bind("terminatedBy", terminatedBy)
-        .bind("placeGuarantee", placeGuarantee)
+    createUpdate {
+            sql(
+                """
+INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
+VALUES (${bind(id)}, ${bind(childId)}, ${bind(unitId)}, ${bind(type)}::placement_type, ${bind(startDate)}, ${bind(endDate)}, ${bind(terminationRequestedDate)}, ${bind(terminatedBy)}, ${bind(placeGuarantee)})
+"""
+            )
+        }
         .execute()
     return id
 }
 
 fun Database.Transaction.insertTestHoliday(date: LocalDate, description: String = "holiday") {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-            INSERT INTO holiday (date, description)
-            VALUES (:date, :description)
-            """
-        )
-        .bind("date", date)
-        .bind("description", description)
+    createUpdate {
+            sql(
+                """
+INSERT INTO holiday (date, description)
+VALUES (${bind(date)}, ${bind(description)})
+"""
+            )
+        }
         .execute()
 }
 
@@ -578,51 +561,42 @@ fun Database.Transaction.insertTestServiceNeed(
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     id: ServiceNeedId = ServiceNeedId(UUID.randomUUID())
 ): ServiceNeedId {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at)
-VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt);
+VALUES (${bind(id)}, ${bind(placementId)}, ${bind(period.start)}, ${bind(period.end)}, ${bind(optionId)}, ${bind(shiftCare)}, ${bind(confirmedBy)}, ${bind(confirmedAt)})
 """
-        )
-        .bind("id", id)
-        .bind("placementId", placementId)
-        .bind("startDate", period.start)
-        .bind("endDate", period.end)
-        .bind("optionId", optionId)
-        .bind("shiftCare", shiftCare)
-        .bind("confirmedBy", confirmedBy)
-        .bind("confirmedAt", confirmedAt)
+            )
+        }
         .execute()
     return id
 }
 
 fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=sql
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, active, updated)
-VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :realizedOccupancyCoefficient, :realizedOccupancyCoefficientUnder3y, :daycareHoursPerWeek, :contractDaysPerMonth, :daycareHoursPerMonth, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :active, :updated)
+VALUES (${bind(option.id)}, ${bind(option.nameFi)}, ${bind(option.nameSv)}, ${bind(option.nameEn)}, ${bind(option.validPlacementType)}, ${bind(option.defaultOption)}, ${bind(option.feeCoefficient)}, ${bind(option.occupancyCoefficient)}, ${bind(option.occupancyCoefficientUnder3y)}, ${bind(option.realizedOccupancyCoefficient)}, ${bind(option.realizedOccupancyCoefficientUnder3y)}, ${bind(option.daycareHoursPerWeek)}, ${bind(option.contractDaysPerMonth)}, ${bind(option.daycareHoursPerMonth)}, ${bind(option.partDay)}, ${bind(option.partWeek)}, ${bind(option.feeDescriptionFi)}, ${bind(option.feeDescriptionSv)}, ${bind(option.voucherValueDescriptionFi)}, ${bind(option.voucherValueDescriptionSv)}, ${bind(option.active)}, ${bind(option.updated)})
 """
-        )
-        .bindKotlin(option)
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.upsertServiceNeedOption(option: ServiceNeedOption) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=sql
-            """
+    createUpdate {
+            sql(
+                """
 ALTER TABLE service_need_option DISABLE TRIGGER set_timestamp;
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, updated)
-VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :realizedOccupancyCoefficient, :realizedOccupancyCoefficientUnder3y, :daycareHoursPerWeek, :contractDaysPerMonth, :daycareHoursPerMonth, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :updated)
-ON CONFLICT (id) DO UPDATE SET updated = :updated, daycare_hours_per_week = :daycareHoursPerWeek;
+VALUES (${bind(option.id)}, ${bind(option.nameFi)}, ${bind(option.nameSv)}, ${bind(option.nameEn)}, ${bind(option.validPlacementType)}, ${bind(option.defaultOption)}, ${bind(option.feeCoefficient)}, ${bind(option.occupancyCoefficient)}, ${bind(option.occupancyCoefficientUnder3y)}, ${bind(option.realizedOccupancyCoefficient)}, ${bind(option.realizedOccupancyCoefficientUnder3y)}, ${bind(option.daycareHoursPerWeek)}, ${bind(option.contractDaysPerMonth)}, ${bind(option.daycareHoursPerMonth)}, ${bind(option.partDay)}, ${bind(option.partWeek)}, ${bind(option.feeDescriptionFi)}, ${bind(option.feeDescriptionSv)}, ${bind(option.voucherValueDescriptionFi)}, ${bind(option.voucherValueDescriptionSv)}, ${bind(option.updated)})
+ON CONFLICT (id) DO UPDATE SET updated = ${bind(option.updated)}, daycare_hours_per_week = ${bind(option.daycareHoursPerWeek)};
 ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
 """
-        )
-        .bindKotlin(option)
+            )
+        }
         .execute()
 }
 
@@ -639,15 +613,17 @@ data class DevIncome(
     val updatedBy: EvakaUserId
 )
 
-fun Database.Transaction.insert(income: DevIncome): IncomeId =
-    insertTestDataRow(
-            income,
-            """
-            INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, updated_at, updated_by)
-            VALUES (:id, :personId, :validFrom, :validTo, :data, :effect::income_effect, :isEntrepreneur, :worksAtEcha, :updatedAt, :updatedBy)
-            """
-        )
-        .let(::IncomeId)
+fun Database.Transaction.insert(row: DevIncome): IncomeId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, is_entrepreneur, works_at_echa, updated_at, updated_by)
+VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bindJson(row.data)}, ${bind(row.effect)}::income_effect, ${bind(row.isEntrepreneur)}, ${bind(row.worksAtEcha)}, ${bind(row.updatedAt)}, ${bind(row.updatedBy)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class DevIncomeStatement(
     val id: IncomeStatementId = IncomeStatementId(UUID.randomUUID()),
@@ -658,16 +634,18 @@ data class DevIncomeStatement(
     val handlerId: EmployeeId? = null
 )
 
-fun Database.Transaction.insert(incomeStatement: DevIncomeStatement) =
-    insertTestDataRow(
-            incomeStatement,
-            """
+fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO income_statement (id, person_id, start_date, type, gross_estimated_monthly_income, handler_id)
-VALUES (:id, :personId, :startDate, :type, :grossEstimatedMonthlyIncome, :handlerId)
+VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.startDate)}, ${bind(row.type)}, ${bind(row.grossEstimatedMonthlyIncome)}, ${bind(row.handlerId)})
 RETURNING id
 """
-        )
-        .let(::IncomeStatementId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class DevFeeAlteration(
     val id: FeeAlterationId = FeeAlterationId(UUID.randomUUID()),
@@ -682,47 +660,54 @@ data class DevFeeAlteration(
     val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 
-fun Database.Transaction.insert(feeAlteration: DevFeeAlteration) =
-    insertTestDataRow(
-            feeAlteration,
-            """
-            INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
-            VALUES (:id, :personId, :type::fee_alteration_type, :amount, :isAbsolute, :validFrom, :validTo, :notes, :updatedAt, :updatedBy)
-        """
-        )
-        .let(::FeeAlterationId)
-
-fun Database.Transaction.insert(feeThresholds: FeeThresholds) =
-    insertTestDataRow(
-            feeThresholds,
-            """
-INSERT INTO fee_thresholds (valid_during, min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6, income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6, max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6, income_threshold_increase_6_plus, sibling_discount_2, sibling_discount_2_plus, max_fee, min_fee, temporary_fee, temporary_fee_part_day, temporary_fee_sibling, temporary_fee_sibling_part_day)
-VALUES (:validDuring, :minIncomeThreshold2, :minIncomeThreshold3, :minIncomeThreshold4, :minIncomeThreshold5, :minIncomeThreshold6, :incomeMultiplier2, :incomeMultiplier3, :incomeMultiplier4, :incomeMultiplier5, :incomeMultiplier6, :maxIncomeThreshold2, :maxIncomeThreshold3, :maxIncomeThreshold4, :maxIncomeThreshold5, :maxIncomeThreshold6, :incomeThresholdIncrease6Plus, :siblingDiscount2, :siblingDiscount2Plus, :maxFee, :minFee, :temporaryFee, :temporaryFeePartDay, :temporaryFeeSibling, :temporaryFeeSiblingPartDay)
-RETURNING id
-    """
-                .trimIndent()
-        )
-        .let(::FeeThresholdsId)
-
-fun Database.Transaction.insert(group: DevDaycareGroup) =
-    insertTestDataRow(
-            group,
-            """
-INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date)
-VALUES (:id, :daycareId, :name, :startDate, :endDate)
+fun Database.Transaction.insert(row: DevFeeAlteration): FeeAlterationId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
+VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.type)}::fee_alteration_type, ${bind(row.amount)}, ${bind(row.isAbsolute)}, ${bind(row.validFrom)}, ${bind(row.validTo)}, ${bind(row.notes)}, ${bind(row.updatedAt)}, ${bind(row.updatedBy)})
 """
-        )
-        .let(::GroupId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(groupPlacement: DevDaycareGroupPlacement) =
-    insertTestDataRow(
-            groupPlacement,
-            """
+fun Database.Transaction.insert(row: FeeThresholds): FeeThresholdsId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO fee_thresholds (valid_during, min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6, income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6, max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6, income_threshold_increase_6_plus, sibling_discount_2, sibling_discount_2_plus, max_fee, min_fee, temporary_fee, temporary_fee_part_day, temporary_fee_sibling, temporary_fee_sibling_part_day)
+VALUES (${bind(row.validDuring)}, ${bind(row.minIncomeThreshold2)}, ${bind(row.minIncomeThreshold3)}, ${bind(row.minIncomeThreshold4)}, ${bind(row.minIncomeThreshold5)}, ${bind(row.minIncomeThreshold6)}, ${bind(row.incomeMultiplier2)}, ${bind(row.incomeMultiplier3)}, ${bind(row.incomeMultiplier4)}, ${bind(row.incomeMultiplier5)}, ${bind(row.incomeMultiplier6)}, ${bind(row.maxIncomeThreshold2)}, ${bind(row.maxIncomeThreshold3)}, ${bind(row.maxIncomeThreshold4)}, ${bind(row.maxIncomeThreshold5)}, ${bind(row.maxIncomeThreshold6)}, ${bind(row.incomeThresholdIncrease6Plus)}, ${bind(row.siblingDiscount2)}, ${bind(row.siblingDiscount2Plus)}, ${bind(row.maxFee)}, ${bind(row.minFee)}, ${bind(row.temporaryFee)}, ${bind(row.temporaryFeePartDay)}, ${bind(row.temporaryFeeSibling)}, ${bind(row.temporaryFeeSiblingPartDay)})
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(row: DevDaycareGroup): GroupId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date)
+VALUES (${bind(row.id)}, ${bind(row.daycareId)}, ${bind(row.name)}, ${bind(row.startDate)}, ${bind(row.endDate)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(row: DevDaycareGroupPlacement): GroupPlacementId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
-VALUES (:id, :daycarePlacementId, :daycareGroupId, :startDate, :endDate)
-    """
-        )
-        .let(::GroupPlacementId)
+VALUES (${bind(row.id)}, ${bind(row.daycarePlacementId)}, ${bind(row.daycareGroupId)}, ${bind(row.startDate)}, ${bind(row.endDate)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insertTestDaycareGroupPlacement(
     daycarePlacementId: PlacementId = PlacementId(UUID.randomUUID()),
@@ -731,18 +716,14 @@ fun Database.Transaction.insertTestDaycareGroupPlacement(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): GroupPlacementId {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-                INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
-                VALUES (:id, :placementId, :groupId, :startDate, :endDate)
-            """
-        )
-        .bind("id", id)
-        .bind("placementId", daycarePlacementId)
-        .bind("groupId", groupId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+    createUpdate {
+            sql(
+                """
+INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
+VALUES (${bind(id)}, ${bind(daycarePlacementId)}, ${bind(groupId)}, ${bind(startDate)}, ${bind(endDate)})
+"""
+            )
+        }
         .execute()
     return id
 }
@@ -759,23 +740,14 @@ fun Database.Transaction.insertTestPlacementPlan(
     updated: HelsinkiDateTime = HelsinkiDateTime.now(),
     deleted: Boolean? = false
 ): PlacementPlanId {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-            INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
-            VALUES (:id, :unitId, :applicationId, :type::placement_type, :startDate, :endDate, :preschoolDaycareStartDate, :preschoolDaycareEndDate, :updated, :deleted)
-            """
-        )
-        .bind("id", id)
-        .bind("applicationId", applicationId)
-        .bind("unitId", unitId)
-        .bind("type", type)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("preschoolDaycareStartDate", preschoolDaycareStartDate)
-        .bind("preschoolDaycareEndDate", preschoolDaycareEndDate)
-        .bind("updated", updated)
-        .bind("deleted", deleted)
+    createUpdate {
+            sql(
+                """
+INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
+VALUES (${bind(id)}, ${bind(unitId)}, ${bind(applicationId)}, ${bind(type)}::placement_type, ${bind(startDate)}, ${bind(endDate)}, ${bind(preschoolDaycareStartDate)}, ${bind(preschoolDaycareEndDate)}, ${bind(updated)}, ${bind(deleted)})
+"""
+            )
+        }
         .execute()
     return id
 }
@@ -800,30 +772,34 @@ data class TestDecision(
     val pendingDecisionEmailSent: HelsinkiDateTime? = null
 )
 
-fun Database.Transaction.insertTestDecision(decision: TestDecision) =
-    insertTestDataRow(
-            decision,
-            """
+fun Database.Transaction.insertTestDecision(decision: TestDecision): DecisionId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent)
-VALUES (:id, :createdBy, :sentDate, :unitId, :applicationId, :type, :startDate, :endDate, :status, :requestedStartDate, :resolved, :resolvedBy, :pendingDecisionEmailsSentCount, :pendingDecisionEmailSent)
+VALUES (${bind(decision.id)}, ${bind(decision.createdBy)}, ${bind(decision.sentDate)}, ${bind(decision.unitId)}, ${bind(decision.applicationId)}, ${bind(decision.type)}, ${bind(decision.startDate)}, ${bind(decision.endDate)}, ${bind(decision.status)}, ${bind(decision.requestedStartDate)}, ${bind(decision.resolved)}, ${bind(decision.resolvedBy)}, ${bind(decision.pendingDecisionEmailsSentCount)}, ${bind(decision.pendingDecisionEmailSent)})
 RETURNING id
 """
-        )
-        .let(::DecisionId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(assistanceAction: DevAssistanceAction): AssistanceActionId =
-    insertTestDataRow(
-            assistanceAction,
-            """
+fun Database.Transaction.insert(row: DevAssistanceAction): AssistanceActionId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, other_action)
-VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :otherAction)
+VALUES (${bind(row.id)}, ${bind(row.updatedBy)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.otherAction)})
 RETURNING id
 """
-        )
-        .let(::AssistanceActionId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<AssistanceActionId>()
         .also {
-            val counts = insertAssistanceActionOptionRefs(it, assistanceAction.actions)
-            assert(counts.size == assistanceAction.actions.size)
+            val counts = insertAssistanceActionOptionRefs(it, row.actions)
+            assert(counts.size == row.actions.size)
         }
 
 fun Database.Transaction.insertTestCaretakers(
@@ -833,79 +809,63 @@ fun Database.Transaction.insertTestCaretakers(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-            INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
-            VALUES (:id, :groupId, :amount, :startDate, :endDate)
-        """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("groupId", groupId)
-        .bind("amount", amount)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
+    createUpdate {
+            sql(
+                """
+INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
+VALUES (${bind(id)}, ${bind(groupId)}, ${bind(amount)}, ${bind(startDate)}, ${bind(endDate)})
+"""
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
     decision: DevAssistanceNeedPreschoolDecision
 ): AssistanceNeedPreschoolDecisionId {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-        INSERT INTO assistance_need_preschool_decision (
-            id, decision_number, child_id, status, annulment_reason, language, type, valid_from, 
-            extended_compulsory_education, extended_compulsory_education_info, 
-            granted_assistance_service, granted_interpretation_service, 
-            granted_assistive_devices, granted_services_basis, selected_unit, primary_group, 
-            decision_basis, basis_document_pedagogical_report, basis_document_psychologist_statement, 
-            basis_document_social_report, basis_document_doctor_statement, basis_document_other_or_missing, 
-            basis_document_other_or_missing_info, basis_documents_info, guardians_heard_on, other_representative_heard, 
-            other_representative_details, view_of_guardians, preparer_1_employee_id, preparer_1_title, preparer_1_phone_number, 
-            preparer_2_employee_id, preparer_2_title, preparer_2_phone_number, 
-            decision_maker_employee_id, decision_maker_title, 
-            sent_for_decision, decision_made, unread_guardian_ids
-        ) VALUES (
-            :id, :decisionNumber, :childId, :status, :annulmentReason, :language, :type, :validFrom, 
-            :extendedCompulsoryEducation, :extendedCompulsoryEducationInfo, 
-            :grantedAssistanceService, :grantedInterpretationService, 
-            :grantedAssistiveDevices, :grantedServicesBasis, :selectedUnit, :primaryGroup, 
-            :decisionBasis, :basisDocumentPedagogicalReport, :basisDocumentPsychologistStatement, 
-            :basisDocumentSocialReport, :basisDocumentDoctorStatement, :basisDocumentOtherOrMissing, 
-            :basisDocumentOtherOrMissingInfo, :basisDocumentsInfo, :guardiansHeardOn, :otherRepresentativeHeard, 
-            :otherRepresentativeDetails, :viewOfGuardians, :preparer1EmployeeId, :preparer1Title, :preparer1PhoneNumber, 
-            :preparer2EmployeeId, :preparer2Title, :preparer2PhoneNumber, 
-            :decisionMakerEmployeeId, :decisionMakerTitle, 
-            :sentForDecision, :decisionMade, :unreadGuardianIds
-        )
-    """
-        )
-        .bind("id", decision.id)
-        .bind("decisionNumber", decision.decisionNumber)
-        .bind("childId", decision.childId)
-        .bind("status", decision.status)
-        .bind("annulmentReason", decision.annulmentReason)
-        .bindKotlin(decision.form)
-        .bind("sentForDecision", decision.sentForDecision)
-        .bind("decisionMade", decision.decisionMade)
-        .bind("unreadGuardianIds", decision.unreadGuardianIds)
+    createUpdate {
+            sql(
+                """
+INSERT INTO assistance_need_preschool_decision (
+    id, decision_number, child_id, status, annulment_reason, language, type, valid_from, 
+    extended_compulsory_education, extended_compulsory_education_info, 
+    granted_assistance_service, granted_interpretation_service, 
+    granted_assistive_devices, granted_services_basis, selected_unit, primary_group, 
+    decision_basis, basis_document_pedagogical_report, basis_document_psychologist_statement, 
+    basis_document_social_report, basis_document_doctor_statement, basis_document_other_or_missing, 
+    basis_document_other_or_missing_info, basis_documents_info, guardians_heard_on, other_representative_heard, 
+    other_representative_details, view_of_guardians, preparer_1_employee_id, preparer_1_title, preparer_1_phone_number, 
+    preparer_2_employee_id, preparer_2_title, preparer_2_phone_number, 
+    decision_maker_employee_id, decision_maker_title, 
+    sent_for_decision, decision_made, unread_guardian_ids
+) VALUES (
+    ${bind(decision.id)}, ${bind(decision.decisionNumber)}, ${bind(decision.childId)}, ${bind(decision.status)}, ${bind(decision.annulmentReason)},
+    ${bind(decision.form.language)}, ${bind(decision.form.type)}, ${bind(decision.form.validFrom)}, ${bind(decision.form.extendedCompulsoryEducation)},
+    ${bind(decision.form.extendedCompulsoryEducationInfo)}, ${bind(decision.form.grantedAssistanceService)}, ${bind(decision.form.grantedInterpretationService)}, 
+    ${bind(decision.form.grantedAssistiveDevices)}, ${bind(decision.form.grantedServicesBasis)}, ${bind(decision.form.selectedUnit)},
+    ${bind(decision.form.primaryGroup)}, ${bind(decision.form.decisionBasis)}, ${bind(decision.form.basisDocumentPedagogicalReport)},
+    ${bind(decision.form.basisDocumentPsychologistStatement)}, ${bind(decision.form.basisDocumentSocialReport)}, ${bind(decision.form.basisDocumentDoctorStatement)},
+    ${bind(decision.form.basisDocumentOtherOrMissing)}, ${bind(decision.form.basisDocumentOtherOrMissingInfo)}, ${bind(decision.form.basisDocumentsInfo)},
+    ${bind(decision.form.guardiansHeardOn)}, ${bind(decision.form.otherRepresentativeHeard)}, ${bind(decision.form.otherRepresentativeDetails)},
+    ${bind(decision.form.viewOfGuardians)}, ${bind(decision.form.preparer1EmployeeId)}, ${bind(decision.form.preparer1Title)},
+    ${bind(decision.form.preparer1PhoneNumber)}, ${bind(decision.form.preparer2EmployeeId)}, ${bind(decision.form.preparer2Title)},
+    ${bind(decision.form.preparer2PhoneNumber)}, ${bind(decision.form.decisionMakerEmployeeId)}, ${bind(decision.form.decisionMakerTitle)}, 
+    ${bind(decision.sentForDecision)}, ${bind(decision.decisionMade)}, ${bind(decision.unreadGuardianIds)}
+)
+"""
+            )
+        }
         .execute()
 
     decision.form.guardianInfo.forEach { guardian ->
-        @Suppress("DEPRECATION")
-        createUpdate(
-                """
-            INSERT INTO assistance_need_preschool_decision_guardian (
-                id, assistance_need_decision_id, person_id, is_heard, details
-            ) VALUES (
-                :id, :decisionId, :personId, :isHeard, :details
-            )
-            """
-            )
-            .bind("decisionId", decision.id)
-            .bindKotlin(guardian)
+        createUpdate {
+                sql(
+                    """
+INSERT INTO assistance_need_preschool_decision_guardian (id, assistance_need_decision_id, person_id, is_heard, details)
+VALUES (${bind(guardian.id)}, ${bind(decision.id)}, ${bind(guardian.personId)}, ${bind(guardian.isHeard)}, ${bind(guardian.details)})
+"""
+                )
+            }
             .execute()
     }
 
@@ -916,115 +876,42 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
     childId: ChildId,
     data: DevAssistanceNeedDecision
 ): AssistanceNeedDecisionId {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO assistance_need_decision (
-          id, decision_number, child_id, validity_period, status, language, decision_made, sent_for_decision,
-          selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
-          structural_motivation_opt_special_group, structural_motivation_opt_small_group,
-          structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
-          structural_motivation_opt_additional_staff, structural_motivation_description, care_motivation,
-          service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
-          service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
-          expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_levels, motivation_for_decision, decision_maker_employee_id,
-          decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
-          preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids, annulment_reason
-        )
-        VALUES (
-            :id,
-            :decisionNumber,
-            :childId, 
-            :validityPeriod, 
-            :status,
-            :language,
-            :decisionMade,
-            :sentForDecision,
-            :selectedUnit, 
-            :pedagogicalMotivation,
-            :structuralMotivationOptSmallerGroup,
-            :structuralMotivationOptSpecialGroup,
-            :structuralMotivationOptSmallGroup,
-            :structuralMotivationOptGroupAssistant, 
-            :structuralMotivationOptChildAssistant,
-            :structuralMotivationOptAdditionalStaff,
-            :structuralMotivationDescription,
-            :careMotivation,
-            :serviceOptConsultationSpecialEd,
-            :serviceOptPartTimeSpecialEd,
-            :serviceOptFullTimeSpecialEd,
-            :serviceOptInterpretationAndAssistanceServices,
-            :serviceOptSpecialAides,
-            :servicesMotivation,
-            :expertResponsibilities,
-            :guardiansHeardOn,
-            :viewOfGuardians,
-            :otherRepresentativeHeard,
-            :otherRepresentativeDetails, 
-            :assistanceLevels,
-            :motivationForDecision,
-            :decisionMakerEmployeeId,
-            :decisionMakerTitle,
-            :preparer1EmployeeId,
-            :preparer1Title,
-            :preparer2EmployeeId,
-            :preparer2Title,
-            :preparer1PhoneNumber,
-            :preparer2PhoneNumber,
-            :unreadGuardianIds,
-            :annulmentReason
-        )
-        RETURNING id
-        """
-            .trimIndent()
-
     val id =
-        @Suppress("DEPRECATION")
-        createQuery(sql)
-            .bindKotlin(data)
-            .bind("childId", childId)
-            .bind(
-                "structuralMotivationOptSmallerGroup",
-                data.structuralMotivationOptions.smallerGroup
-            )
-            .bind(
-                "structuralMotivationOptSpecialGroup",
-                data.structuralMotivationOptions.specialGroup
-            )
-            .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)
-            .bind(
-                "structuralMotivationOptGroupAssistant",
-                data.structuralMotivationOptions.groupAssistant
-            )
-            .bind(
-                "structuralMotivationOptChildAssistant",
-                data.structuralMotivationOptions.childAssistant
-            )
-            .bind(
-                "structuralMotivationOptAdditionalStaff",
-                data.structuralMotivationOptions.additionalStaff
-            )
-            .bind("serviceOptConsultationSpecialEd", data.serviceOptions.consultationSpecialEd)
-            .bind("serviceOptPartTimeSpecialEd", data.serviceOptions.partTimeSpecialEd)
-            .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
-            .bind(
-                "serviceOptInterpretationAndAssistanceServices",
-                data.serviceOptions.interpretationAndAssistanceServices
-            )
-            .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
-            .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
-            .bind("decisionMakerTitle", data.decisionMaker?.title)
-            .bind("preparer1EmployeeId", data.preparedBy1?.employeeId)
-            .bind("preparer1Title", data.preparedBy1?.title)
-            .bind("preparer1PhoneNumber", data.preparedBy1?.phoneNumber)
-            .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
-            .bind("preparer2Title", data.preparedBy2?.title)
-            .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
-            .bind("selectedUnit", data.selectedUnit)
+        createQuery {
+                sql(
+                    """
+INSERT INTO assistance_need_decision (
+  id, decision_number, child_id, validity_period, status, language, decision_made, sent_for_decision,
+  selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
+  structural_motivation_opt_special_group, structural_motivation_opt_small_group,
+  structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
+  structural_motivation_opt_additional_staff, structural_motivation_description, care_motivation,
+  service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
+  service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
+  expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
+  assistance_levels, motivation_for_decision, decision_maker_employee_id,
+  decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
+  preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids, annulment_reason
+)
+VALUES (
+    ${bind(data.id)}, ${bind(data.decisionNumber)}, ${bind(childId)}, ${bind(data.validityPeriod)}, ${bind(data.status)},
+    ${bind(data.language)}, ${bind(data.decisionMade)}, ${bind(data.sentForDecision)}, ${bind(data.selectedUnit)}, ${bind(data.pedagogicalMotivation)},
+    ${bind(data.structuralMotivationOptions.smallerGroup)}, ${bind(data.structuralMotivationOptions.specialGroup)}, ${bind(data.structuralMotivationOptions.smallGroup)},
+    ${bind(data.structuralMotivationOptions.groupAssistant)}, ${bind(data.structuralMotivationOptions.childAssistant)}, ${bind(data.structuralMotivationOptions.additionalStaff)},
+    ${bind(data.structuralMotivationDescription)}, ${bind(data.careMotivation)}, ${bind(data.serviceOptions.consultationSpecialEd)},
+    ${bind(data.serviceOptions.partTimeSpecialEd)}, ${bind(data.serviceOptions.fullTimeSpecialEd)}, ${bind(data.serviceOptions.interpretationAndAssistanceServices)},
+    ${bind(data.serviceOptions.specialAides)}, ${bind(data.servicesMotivation)}, ${bind(data.expertResponsibilities)}, ${bind(data.guardiansHeardOn)},
+    ${bind(data.viewOfGuardians)}, ${bind(data.otherRepresentativeHeard)}, ${bind(data.otherRepresentativeDetails)}, ${bind(data.assistanceLevels)},
+    ${bind(data.motivationForDecision)}, ${bind(data.decisionMaker?.employeeId)}, ${bind(data.decisionMaker?.title)}, ${bind(data.preparedBy1?.employeeId)},
+    ${bind(data.preparedBy1?.title)}, ${bind(data.preparedBy2?.employeeId)}, ${bind(data.preparedBy2?.title)}, ${bind(data.preparedBy1?.phoneNumber)},
+    ${bind(data.preparedBy2?.phoneNumber)}, ${bind(data.unreadGuardianIds)}, ${bind(data.annulmentReason)}
+)
+RETURNING id
+"""
+                )
+            }
             .exactlyOne<AssistanceNeedDecisionId>()
 
-    // language=sql
     val guardianSql =
         """
         INSERT INTO assistance_need_decision_guardian (
@@ -1040,7 +927,6 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
         )
             
         """
-            .trimIndent()
 
     val batch = prepareBatch(guardianSql)
     data.guardianInfo.forEach { guardian ->
@@ -1057,19 +943,14 @@ fun Database.Transaction.insertTestStaffAttendance(
     date: LocalDate,
     count: Double
 ) {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO staff_attendance (id, group_id, date, count)
-        VALUES (:id, :groupId, :date, :count)
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("groupId", groupId)
-        .bind("date", date)
-        .bind("count", count)
+    createUpdate {
+            sql(
+                """
+INSERT INTO staff_attendance (id, group_id, date, count)
+VALUES (${bind(id)}, ${bind(groupId)}, ${bind(date)}, ${bind(count)})
+"""
+            )
+        }
         .execute()
 }
 
@@ -1082,15 +963,17 @@ data class DevStaffAttendancePlan(
     val description: String? = null
 )
 
-fun Database.Transaction.insert(staffAttendancePlan: DevStaffAttendancePlan) =
-    insertTestDataRow(
-            staffAttendancePlan,
-            """
-        INSERT INTO staff_attendance_plan (id, employee_id, type, start_time, end_time)
-        VALUES (:id, :employeeId, :type, :startTime, :endTime)
-        """
-        )
-        .let(::StaffAttendancePlanId)
+fun Database.Transaction.insert(row: DevStaffAttendancePlan): StaffAttendancePlanId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO staff_attendance_plan (id, employee_id, type, start_time, end_time)
+VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.type)}, ${bind(row.startTime)}, ${bind(row.endTime)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insertTestAbsence(
     id: AbsenceId = AbsenceId(UUID.randomUUID()),
@@ -1101,36 +984,29 @@ fun Database.Transaction.insertTestAbsence(
     modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     modifiedAt: HelsinkiDateTime? = null
 ) {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO absence (id, child_id, date, category, absence_type, modified_by, modified_at)
-        VALUES (:id, :childId, :date, :category, :absenceType, :modifiedBy, coalesce(:modifiedAt, now()))
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("childId", childId)
-        .bind("date", date)
-        .bind("category", category)
-        .bind("absenceType", absenceType)
-        .bind("modifiedBy", modifiedBy)
-        .bind("modifiedAt", modifiedAt)
+    createUpdate {
+            sql(
+                """
+INSERT INTO absence (id, child_id, date, category, absence_type, modified_by, modified_at)
+VALUES (${bind(id)}, ${bind(childId)}, ${bind(date)}, ${bind(category)}, ${bind(absenceType)}, ${bind(modifiedBy)}, coalesce(${bind(modifiedAt)}, now()))
+"""
+            )
+        }
         .execute()
 }
 
-fun Database.Transaction.insert(
-    staffAttendanceRealtime: DevStaffAttendance
-): StaffAttendanceRealtimeId {
-    val sql =
-        """
+fun Database.Transaction.insert(row: DevStaffAttendance): StaffAttendanceRealtimeId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically)
-VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type, :departedAutomatically)
+VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.groupId)}, ${bind(row.arrived)}, ${bind(row.departed)}, ${bind(row.occupancyCoefficient)}, ${bind(row.type)}, ${bind(row.departedAutomatically)})
 RETURNING id
-    """
-    return insertTestDataRow(staffAttendanceRealtime, sql).let(::StaffAttendanceRealtimeId)
-}
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insertTestChildAttendance(
     childId: ChildId,
@@ -1161,7 +1037,6 @@ fun Database.Transaction.insertTestChildAttendance(
         INSERT INTO child_attendance (id, child_id, unit_id, date, start_time, end_time)
         VALUES (:id, :childId, :unitId, :date, :startTime, :endTime)
         """
-                .trimIndent()
         )
         .also { batch ->
             attendances.forEach { (date, startTime, endTime) ->
@@ -1186,59 +1061,53 @@ fun Database.Transaction.insertTestBackUpCare(
     groupId: GroupId? = null,
     id: BackupCareId = BackupCareId(UUID.randomUUID())
 ) {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO backup_care (id, child_id, unit_id, start_date, end_date, group_id)
-        VALUES (:id, :childId, :unitId, :startDate, :endDate, :groupId)
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .bind("groupId", groupId)
+    createUpdate {
+            sql(
+                """
+INSERT INTO backup_care (id, child_id, unit_id, start_date, end_date, group_id)
+VALUES (${bind(id)}, ${bind(childId)}, ${bind(unitId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(groupId)})
+"""
+            )
+        }
         .execute()
 }
 
-fun Database.Transaction.insert(backupCare: DevBackupCare) =
-    insertTestDataRow(
-            backupCare,
-            """
+fun Database.Transaction.insert(row: DevBackupCare): BackupCareId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO backup_care (id, child_id, unit_id, group_id, start_date, end_date)
-VALUES (:id, :childId, :unitId, :groupId, :period.start, :period.end)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.groupId)}, ${bind(row.period.start)}, ${bind(row.period.end)})
 RETURNING id
 """
-        )
-        .let(::BackupCareId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.insertApplication(application: DevApplicationWithForm): ApplicationId {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, other_guardian_id, allow_other_guardian_access)
-        VALUES(:id, :type, :sentDate, :dueDate, :applicationStatus::application_status_type, :guardianId, :childId, :origin::application_origin_type, :checkedByAdmin, :hideFromGuardian, :transferApplication, :otherGuardianId, :allowOtherGuardianAccess)
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("id", application.id)
-        .bind("type", application.type)
-        .bind("sentDate", application.sentDate)
-        .bind("dueDate", application.dueDate)
-        .bind("applicationStatus", application.status)
-        .bind("guardianId", application.guardianId)
-        .bind("childId", application.childId)
-        .bind("origin", application.origin)
-        .bind("checkedByAdmin", application.checkedByAdmin)
-        .bind("hideFromGuardian", application.hideFromGuardian)
-        .bind("transferApplication", application.transferApplication)
-        .bind("otherGuardianId", application.otherGuardianId)
-        .bind("allowOtherGuardianAccess", application.allowOtherGuardianAccess)
+    createUpdate {
+            sql(
+                """
+INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, other_guardian_id, allow_other_guardian_access)
+VALUES (
+    ${bind(application.id)},
+    ${bind(application.type)},
+    ${bind(application.sentDate)},
+    ${bind(application.dueDate)},
+    ${bind(application.status)}::application_status_type,
+    ${bind(application.guardianId)},
+    ${bind(application.childId)},
+    ${bind(application.origin)}::application_origin_type,
+    ${bind(application.checkedByAdmin)},
+    ${bind(application.hideFromGuardian)},
+    ${bind(application.transferApplication)},
+    ${bind(application.otherGuardianId)},
+    ${bind(application.allowOtherGuardianAccess)}
+)
+"""
+            )
+        }
         .execute()
 
     return application.id
@@ -1249,15 +1118,14 @@ fun Database.Transaction.insertApplicationForm(applicationForm: DevApplicationFo
         "Invalid form type for the application"
     }
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-UPDATE application SET document = :document, form_modified = now()
-WHERE id = :applicationId
+    createUpdate {
+            sql(
+                """
+UPDATE application SET document = ${bindJson(applicationForm.document)}, form_modified = now()
+WHERE id = ${bind(applicationForm.applicationId)}
 """
-        )
-        .bind("applicationId", applicationForm.applicationId)
-        .bindJson("document", applicationForm.document)
+            )
+        }
         .execute()
     return applicationForm.id ?: UUID.randomUUID()
 }
@@ -1269,16 +1137,18 @@ data class DevFamilyContact(
     val priority: Int
 )
 
-fun Database.Transaction.insert(contact: DevFamilyContact) =
-    insertTestDataRow(
-            contact,
-            """
+fun Database.Transaction.insert(row: DevFamilyContact): FamilyContactId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO family_contact (id, child_id, contact_person_id, priority)
-VALUES (:id, :childId, :contactPersonId, :priority)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.contactPersonId)}, ${bind(row.priority)})
 RETURNING id
 """
-        )
-        .let(::FamilyContactId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class DevBackupPickup(
     val id: BackupPickupId,
@@ -1287,16 +1157,18 @@ data class DevBackupPickup(
     val phone: String
 )
 
-fun Database.Transaction.insert(pickup: DevBackupPickup) =
-    insertTestDataRow(
-            pickup,
-            """
+fun Database.Transaction.insert(row: DevBackupPickup): BackupPickupId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO backup_pickup (id, child_id, name, phone)
-VALUES (:id, :childId, :name, :phone)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.name)}, ${bind(row.phone)})
 RETURNING id
 """
-        )
-        .let(::BackupPickupId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class DevFridgeChild(
     val id: ParentshipId = ParentshipId(UUID.randomUUID()),
@@ -1307,16 +1179,18 @@ data class DevFridgeChild(
     val conflict: Boolean = false
 )
 
-fun Database.Transaction.insert(pickup: DevFridgeChild) =
-    insertTestDataRow(
-            pickup,
-            """
+fun Database.Transaction.insert(row: DevFridgeChild): ParentshipId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date, conflict)
-VALUES (:id, :childId, :headOfChild, :startDate, :endDate, :conflict)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.headOfChild)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.conflict)})
 RETURNING id
 """
-        )
-        .let(::ParentshipId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class DevFridgePartner(
     val partnershipId: PartnershipId,
@@ -1329,16 +1203,18 @@ data class DevFridgePartner(
     val conflict: Boolean = false
 )
 
-fun Database.Transaction.insert(pickup: DevFridgePartner) =
-    insertTestDataRow(
-            pickup,
-            """
+fun Database.Transaction.insert(row: DevFridgePartner): PartnershipId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, created_at, conflict)
-VALUES (:partnershipId, :indx, :otherIndx, :personId, :startDate, :endDate, :createdAt, :conflict)
+VALUES (${bind(row.partnershipId)}, ${bind(row.indx)}, ${bind(row.otherIndx)}, ${bind(row.personId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.createdAt)}, ${bind(row.conflict)})
 RETURNING partnership_id
 """
-        )
-        .let(::PartnershipId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class DevFridgePartnership(
     val id: PartnershipId = PartnershipId(UUID.randomUUID()),
@@ -1393,64 +1269,81 @@ data class DevFosterParent(
     val validDuring: DateRange
 )
 
-fun Database.Transaction.insert(fixture: DevFosterParent) =
-    insertTestDataRow(
-            fixture,
-            """
+fun Database.Transaction.insert(row: DevFosterParent): FosterParentId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO foster_parent (id, child_id, parent_id, valid_during)
-VALUES (:id, :childId, :parentId, :validDuring)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.parentId)}, ${bind(row.validDuring)})
 RETURNING id
 """
-        )
-        .let(::FosterParentId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(employeePin: DevEmployeePin) =
-    insertTestDataRow(
-            employeePin,
-            """
+fun Database.Transaction.insert(row: DevEmployeePin): EmployeePinId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO employee_pin (id, user_id, pin, locked)
-VALUES (:id, :userId, :pin, :locked)
+VALUES (${bind(row.id)}, ${bind(row.userId)}, ${bind(row.pin)}, ${bind(row.locked)})
 RETURNING id
 """
-        )
-        .let(::EmployeePinId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) =
-    @Suppress("DEPRECATION")
-    createQuery("SELECT id FROM employee WHERE external_id = :id")
-        .bind("id", externalId)
+    createQuery { sql("SELECT id FROM employee WHERE external_id = ${bind(externalId)}") }
         .exactlyOne<EmployeeId>()
 
-fun Database.Transaction.insert(aclRow: DevDaycareGroupAcl) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+fun Database.Transaction.insert(row: DevDaycareGroupAcl) {
+    createUpdate {
+            sql(
+                """
 INSERT INTO daycare_group_acl (daycare_group_id, employee_id)
-VALUES (:groupId, :employeeId)
+VALUES (${bind(row.groupId)}, ${bind(row.employeeId)})
 """
-        )
-        .bindKotlin(aclRow)
+            )
+        }
         .execute()
 }
 
-fun Database.Transaction.insert(vardaOrganizerChild: DevVardaOrganizerChild) =
-    insertTestDataRow(
-        vardaOrganizerChild,
-        """
+fun Database.Transaction.insert(row: DevVardaOrganizerChild) {
+    createUpdate {
+            sql(
+                """
 INSERT INTO varda_organizer_child (evaka_person_id, varda_person_oid, varda_child_id, organizer_oid, uploaded_at, varda_person_id)
-VALUES (:evakaPersonId, :vardaPersonOid, :vardaChildId, :organizerOid, :uploadedAt, :vardaPersonId)
-RETURNING evaka_person_id"""
-    )
+VALUES (${bind(row.evakaPersonId)}, ${bind(row.vardaPersonOid)}, ${bind(row.vardaChildId)}, ${bind(row.organizerOid)}, ${bind(row.uploadedAt)}, ${bind(row.vardaPersonId)})
+RETURNING evaka_person_id
+"""
+            )
+        }
+        .execute()
+}
 
-fun Database.Transaction.insertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) =
-    insertTestDataRow(
-        vardaServiceNeed,
-        """
+fun Database.Transaction.insertVardaServiceNeed(row: VardaServiceNeed) {
+    createUpdate {
+            sql(
+                """
 INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_updated, evaka_child_id, varda_decision_id, varda_placement_id, update_failed, errors)
-VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :vardaDecisionId, :vardaPlacementId, :updateFailed, :errors)
+VALUES (
+    ${bind(row.evakaServiceNeedId)},
+    ${bind(row.evakaServiceNeedUpdated)},
+    ${bind(row.evakaChildId)},
+    ${bind(row.vardaDecisionId)},
+    ${bind(row.vardaPlacementId)},
+    ${bind(row.updateFailed)},
+    ${bind(row.errors)}
+)
 RETURNING evaka_service_need_id
     """
-    )
+            )
+        }
+        .execute()
+}
 
 data class DevPedagogicalDocument(
     val id: PedagogicalDocumentId,
@@ -1458,16 +1351,18 @@ data class DevPedagogicalDocument(
     val description: String
 )
 
-fun Database.Transaction.insert(pedagogicalDocument: DevPedagogicalDocument) =
-    insertTestDataRow(
-            pedagogicalDocument,
-            """
+fun Database.Transaction.insert(row: DevPedagogicalDocument): PedagogicalDocumentId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO pedagogical_document (id, child_id, description)
-VALUES (:id, :childId, :description)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.description)})
 RETURNING id
-    """
-        )
-        .let(::PedagogicalDocumentId)
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 data class DevReservation(
     val id: AttendanceReservationId = AttendanceReservationId(UUID.randomUUID()),
@@ -1479,26 +1374,28 @@ data class DevReservation(
     val createdBy: EvakaUserId
 )
 
-fun Database.Transaction.insert(reservation: DevReservation) =
-    insertTestDataRow(
-            reservation,
-            """
+fun Database.Transaction.insert(row: DevReservation): AttendanceReservationId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO attendance_reservation (id, child_id, date, start_time, end_time, created, created_by)
-VALUES (:id, :childId, :date, :startTime, :endTime, :created, :createdBy)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.date)}, ${bind(row.startTime)}, ${bind(row.endTime)}, ${bind(row.created)}, ${bind(row.createdBy)})
 RETURNING id
 """
-        )
-        .let(::AttendanceReservationId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(entry: DevGuardianBlocklistEntry) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+fun Database.Transaction.insert(row: DevGuardianBlocklistEntry) {
+    createUpdate {
+            sql(
+                """
 INSERT INTO guardian_blocklist (guardian_id, child_id)
-VALUES (:guardianId, :childId)
-        """
-        )
-        .bindKotlin(entry)
+VALUES (${bind(row.guardianId)}, ${bind(row.childId)})
+"""
+            )
+        }
         .execute()
 }
 
@@ -1515,201 +1412,236 @@ data class DevInvoiceCorrection(
     val note: String
 )
 
-fun Database.Transaction.insert(invoiceCorrection: DevInvoiceCorrection) =
-    insertTestDataRow(
-            invoiceCorrection,
-            """
+fun Database.Transaction.insert(row: DevInvoiceCorrection): InvoiceCorrectionId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO invoice_correction (id, head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
-VALUES (:id, :headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPrice, :description, :note)
+VALUES (${bind(row.id)}, ${bind(row.headOfFamilyId)}, ${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.product)}, ${bind(row.period)}, ${bind(row.amount)}, ${bind(row.unitPrice)}, ${bind(row.description)}, ${bind(row.note)})
 RETURNING id
 """
-        )
-        .let(::InvoiceCorrectionId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(payment: DevPayment) =
-    insertTestDataRow(
-            payment,
-            """
+fun Database.Transaction.insert(row: DevPayment): PaymentId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO payment (id, unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id, period, number, amount, status, payment_date, due_date, sent_at, sent_by)
-VALUES (:id, :unitId, :unitName, :unitBusinessId, :unitIban, :unitProviderId, :period, :number, :amount, :status, :paymentDate, :dueDate, :sentAt, :sentBy)
+VALUES (${bind(row.id)}, ${bind(row.unitId)}, ${bind(row.unitName)}, ${bind(row.unitBusinessId)}, ${bind(row.unitIban)}, ${bind(row.unitProviderId)}, ${bind(row.period)}, ${bind(row.number)}, ${bind(row.amount)}, ${bind(row.status)}, ${bind(row.paymentDate)}, ${bind(row.dueDate)}, ${bind(row.sentAt)}, ${bind(row.sentBy)})
 RETURNING id
 """
-        )
-        .let(::PaymentId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(calendarEvent: DevCalendarEvent) =
-    insertTestDataRow(
-            calendarEvent,
-            """
+fun Database.Transaction.insert(row: DevCalendarEvent): CalendarEventId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO calendar_event (id, title, description, period, modified_at, content_modified_at)
-VALUES (:id, :title, :description, :period, :modifiedAt, :modifiedAt)
+VALUES (${bind(row.id)}, ${bind(row.title)}, ${bind(row.description)}, ${bind(row.period)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedAt)})
 RETURNING id
 """
-        )
-        .let(::CalendarEventId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(attendee: DevCalendarEventAttendee) =
-    insertTestDataRow(
-            attendee,
-            """
+fun Database.Transaction.insert(row: DevCalendarEventAttendee): CalendarEventAttendeeId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO calendar_event_attendee (id, calendar_event_id, unit_id, group_id, child_id)
-VALUES (:id, :calendarEventId, :unitId, :groupId, :childId)
+VALUES (${bind(row.id)}, ${bind(row.calendarEventId)}, ${bind(row.unitId)}, ${bind(row.groupId)}, ${bind(row.childId)})
 RETURNING id
 """
-        )
-        .let(::CalendarEventAttendeeId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(dailyServiceTimes: DevDailyServiceTimes) =
-    insertTestDataRow(
-            dailyServiceTimes,
-            """
+fun Database.Transaction.insert(row: DevDailyServiceTimes): DailyServiceTimesId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO daily_service_time (id, child_id, type, validity_period, regular_times, monday_times, tuesday_times, wednesday_times, thursday_times, friday_times, saturday_times, sunday_times)
-VALUES (:id, :childId, :type, :validityPeriod, :regularTimes, :mondayTimes, :tuesdayTimes, :wednesdayTimes, :thursdayTimes, :fridayTimes, :saturdayTimes, :sundayTimes)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.type)}, ${bind(row.validityPeriod)}, ${bind(row.regularTimes)}, ${bind(row.mondayTimes)}, ${bind(row.tuesdayTimes)}, ${bind(row.wednesdayTimes)}, ${bind(row.thursdayTimes)}, ${bind(row.fridayTimes)}, ${bind(row.saturdayTimes)}, ${bind(row.sundayTimes)})
+RETURNING id
 """
-        )
-        .let(::DailyServiceTimesId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(guardian: DevGuardian) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+fun Database.Transaction.insert(row: DevGuardian) {
+    createUpdate {
+            sql(
+                """
 INSERT INTO guardian (guardian_id, child_id)
-VALUES (:guardianId, :childId)
+VALUES (${bind(row.guardianId)}, ${bind(row.childId)})
 ON CONFLICT (guardian_id, child_id) DO NOTHING
 """
-        )
-        .bindKotlin(guardian)
+            )
+        }
         .execute()
 }
 
-fun Database.Transaction.insert(absence: DevAbsence) =
-    insertTestDataRow(
-            absence,
-            """
+fun Database.Transaction.insert(row: DevAbsence): AbsenceId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO absence (id, child_id, date, absence_type, modified_at, modified_by, category, questionnaire_id)
-VALUES (:id, :childId, :date, :absenceType, :modifiedAt, :modifiedBy, :absenceCategory, :questionnaireId)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.date)}, ${bind(row.absenceType)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.absenceCategory)}, ${bind(row.questionnaireId)})
+RETURNING id
 """
-        )
-        .let(::AbsenceId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(row: DevDaycareCaretaker) =
-    insertTestDataRow(
-            row,
-            """
+fun Database.Transaction.insert(row: DevDaycareCaretaker): DaycareCaretakerId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
-VALUES (:id, :groupId, :amount, :startDate, :endDate)
+VALUES (${bind(row.id)}, ${bind(row.groupId)}, ${bind(row.amount)}, ${bind(row.startDate)}, ${bind(row.endDate)})
 """
-        )
-        .let(::DaycareCaretakerId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(row: DevDocumentTemplate) =
-    insertTestDataRow(
-            row,
-            """
+fun Database.Transaction.insert(row: DevDocumentTemplate): DocumentTemplateId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO document_template (id, name, type, language, confidential, legal_basis, validity, published, content) 
-VALUES (:id, :name, :type, :language, :confidential, :legalBasis, :validity, :published, :content)
+VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.language)}, ${bind(row.confidential)}, ${bind(row.legalBasis)}, ${bind(row.validity)}, ${bind(row.published)}, ${bind(row.content)})
 """
-        )
-        .let(::DocumentTemplateId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(row: DevChildDocument) =
-    insertTestDataRow(
-            row,
-            """
+fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO child_document (id, status, child_id, template_id, content, published_content, modified_at, published_at)
-VALUES (:id, :status, :childId, :templateId, :content, :publishedContent, :modifiedAt, :publishedAt)
+VALUES (${bind(row.id)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.publishedAt)})
 """
-        )
-        .let(::ChildDocumentId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
 fun Database.Transaction.updateDaycareOperationTimes(
     daycareId: DaycareId,
-    opTimes: List<TimeRange>
+    operationTimes: List<TimeRange>
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE daycare SET operation_times = :operationTimes WHERE id = :daycareId",
-        )
-        .bind("daycareId", daycareId)
-        .bind("operationTimes", opTimes)
+    createUpdate {
+            sql(
+                "UPDATE daycare SET operation_times = ${bind(operationTimes)} WHERE id = ${bind(daycareId)}",
+            )
+        }
         .execute()
 
-fun Database.Transaction.insert(assistanceFactor: DevAssistanceFactor) =
-    insertTestDataRow(
-            assistanceFactor,
-            """
+fun Database.Transaction.insert(row: DevAssistanceFactor): AssistanceFactorId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO assistance_factor (id, child_id, valid_during, capacity_factor, modified, modified_by)
-VALUES (:id, :childId, :validDuring, :capacityFactor, :modified, :modifiedBy)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.capacityFactor)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
 """
-        )
-        .let(::AssistanceFactorId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(daycareAssistance: DevDaycareAssistance) =
-    insertTestDataRow(
-            daycareAssistance,
-            """
+fun Database.Transaction.insert(row: DevDaycareAssistance): DaycareAssistanceId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO daycare_assistance (id, child_id, valid_during, level, modified, modified_by)
-VALUES (:id, :childId, :validDuring, :level, :modified, :modifiedBy)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
 """
-        )
-        .let(::DaycareAssistanceId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(preschoolAssistance: DevPreschoolAssistance) =
-    insertTestDataRow(
-            preschoolAssistance,
-            """
+fun Database.Transaction.insert(row: DevPreschoolAssistance): PreschoolAssistanceId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO preschool_assistance (id, child_id, valid_during, level, modified, modified_by)
-VALUES (:id, :childId, :validDuring, :level, :modified, :modifiedBy)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.level)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
 """
-        )
-        .let(::PreschoolAssistanceId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(otherAssistanceMeasure: DevOtherAssistanceMeasure) =
-    insertTestDataRow(
-            otherAssistanceMeasure,
-            """
+fun Database.Transaction.insert(row: DevOtherAssistanceMeasure): OtherAssistanceMeasureId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO other_assistance_measure (id, child_id, valid_during, type, modified, modified_by)
-VALUES (:id, :childId, :validDuring, :type, :modified, :modifiedBy)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(row.type)}, ${bind(row.modified)}, ${bind(row.modifiedBy)})
 """
-        )
-        .let(::OtherAssistanceMeasureId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(serviceNeed: DevServiceNeed) =
-    insertTestDataRow(
-            serviceNeed,
-            """
+fun Database.Transaction.insert(row: DevServiceNeed): ServiceNeedId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO service_need (id, option_id, placement_id, start_date, end_date, shift_care, confirmed_by, confirmed_at)
-VALUES (:id, :optionId, :placementId, :startDate, :endDate, :shiftCare, :confirmedBy, :confirmedAt)
+VALUES (${bind(row.id)}, ${bind(row.optionId)}, ${bind(row.placementId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.shiftCare)}, ${bind(row.confirmedBy)}, ${bind(row.confirmedAt)})
 """
-        )
-        .let(::ServiceNeedId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(childAttendance: DevChildAttendance) =
-    insertTestDataRow(
-            childAttendance,
-            """
+fun Database.Transaction.insert(row: DevChildAttendance): ChildAttendanceId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
-VALUES (:childId, :unitId, :date, :arrived, :departed)
+VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.date)}, ${bind(row.arrived)}, ${bind(row.departed)})
 """
-        )
-        .let(::ChildAttendanceId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(preschoolTerm: DevPreschoolTerm) =
-    insertTestDataRow(
-            preschoolTerm,
-            """
+fun Database.Transaction.insert(row: DevPreschoolTerm): PreschoolTermId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO preschool_term (id, finnish_preschool, swedish_preschool, extended_term, application_period, term_breaks) 
-VALUES (:id, :finnishPreschool, :swedishPreschool, :extendedTerm, :applicationPeriod, :termBreaks)
+VALUES (${bind(row.id)}, ${bind(row.finnishPreschool)}, ${bind(row.swedishPreschool)}, ${bind(row.extendedTerm)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
 """
-        )
-        .let(::PreschoolTermId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
 
-fun Database.Transaction.insert(clubTerm: DevClubTerm) =
-    insertTestDataRow(
-            clubTerm,
-            """
+fun Database.Transaction.insert(row: DevClubTerm): ClubTermId =
+    createUpdate {
+            sql(
+                """
 INSERT INTO club_term (id, term, application_period, term_breaks) 
-VALUES (:id, :term, :applicationPeriod, :termBreaks)
+VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
 """
-        )
-        .let(::ClubTermId)
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()

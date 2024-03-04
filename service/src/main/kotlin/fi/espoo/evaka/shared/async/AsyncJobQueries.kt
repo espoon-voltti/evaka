@@ -14,20 +14,21 @@ import org.jdbi.v3.json.Json
 private val logger = KotlinLogging.logger {}
 
 fun Database.Transaction.insertJob(jobParams: JobParams<*>): UUID =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO async_job (type, retry_count, retry_interval, run_at, payload)
-VALUES (:jobType, :retryCount, :retryInterval, :runAt, :payload)
+VALUES (
+    ${bind(AsyncJobType.ofPayload(jobParams.payload).name)},
+    ${bind(jobParams.retryCount)},
+    ${bind(jobParams.retryInterval)},
+    ${bind(jobParams.runAt)},
+    ${bindJson(jobParams.payload)}
+)
 RETURNING id
 """
-        )
-        .bind("jobType", AsyncJobType.ofPayload(jobParams.payload).name)
-        .bind("retryCount", jobParams.retryCount)
-        .bind("retryInterval", jobParams.retryInterval)
-        .bind("runAt", jobParams.runAt)
-        .bindJson("payload", jobParams.payload)
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<UUID>()
 
@@ -115,25 +116,23 @@ fun <T : AsyncJobPayload> Database.Transaction.startJob(
     job: ClaimedJobRef<T>,
     now: HelsinkiDateTime
 ): T? =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 WITH started_job AS (
   SELECT id
   FROM async_job
-  WHERE id = :jobId
-  AND claimed_by = :txId
+  WHERE id = ${bind(job.jobId)}
+  AND claimed_by = ${bind(job.txId)}
   FOR UPDATE
 )
 UPDATE async_job
-SET started_at = :now
+SET started_at = ${bind(now)}
 WHERE id = (SELECT id FROM started_job)
 RETURNING payload
 """
-        )
-        .bindKotlin(job)
-        .bind("now", now)
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOneOrNull {
             column(
@@ -143,26 +142,24 @@ RETURNING payload
         }
 
 fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE async_job
-SET completed_at = :now
-WHERE id = :jobId
+SET completed_at = ${bind(now)}
+WHERE id = ${bind(job.jobId)}
 """
-        )
-        .bindKotlin(job)
-        .bind("now", now)
+            )
+        }
         .execute()
 
 fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int =
-    @Suppress("DEPRECATION")
-    createUpdate("""
+    createUpdate {
+            sql("""
 DELETE FROM async_job
-WHERE completed_at < :completedBefore
+WHERE completed_at < ${bind(completedBefore)}
 """)
-        .bind("completedBefore", completedBefore)
+        }
         .execute()
 
 fun Database.Transaction.removeUnclaimedJobs(jobTypes: Collection<AsyncJobType<*>>): Int =
@@ -174,19 +171,20 @@ WHERE completed_at IS NULL
 AND claimed_at IS NULL
 AND type = ANY(${bind(jobTypes.map { it.name })})
     """
-                    .trimIndent()
             )
         }
         .execute()
 
 fun Database.Transaction.removeUncompletedJobs(runBefore: HelsinkiDateTime): Int =
-    @Suppress("DEPRECATION")
-    createUpdate("""
+    createUpdate {
+            sql(
+                """
 DELETE FROM async_job
 WHERE completed_at IS NULL
-AND run_at < :runBefore
-""")
-        .bind("runBefore", runBefore)
+AND run_at < ${bind(runBefore)}
+"""
+            )
+        }
         .execute()
 
 fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {

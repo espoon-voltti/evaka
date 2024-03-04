@@ -55,35 +55,35 @@ class PresenceReportController(private val accessControl: AccessControl) {
 }
 
 fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<PresenceReportRow> {
-    // language=sql
-    val sql =
-        """
-        WITH days AS
-        (
-            SELECT t, extract(DOW FROM t) dw
-            FROM generate_series(:from, :to, '1 day') t
-        )
-        SELECT
-            t::date AS date,
-            daycare.id AS daycare_id,
-            p.social_security_number,
-            dg.name AS daycareGroupName,
-            NOT (a.categories @> absence_categories(pl.type) AND a.categories <@ absence_categories(pl.type)) AS present
-        FROM days
-        LEFT JOIN daycare_group_placement dgp ON daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
-        LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-        LEFT JOIN daycare ON dg.daycare_id = daycare.id
-        LEFT JOIN placement pl ON dgp.daycare_placement_id = pl.id AND pl.type != 'CLUB'::placement_type
-        LEFT JOIN person p ON pl.child_id = p.id
-        LEFT JOIN LATERAL (SELECT coalesce(array_agg(category), '{}') AS categories FROM absence a WHERE p.id = a.child_id AND a.date = t::date) a ON true
-        LEFT JOIN holiday h ON t = h.date
-        WHERE dw = ANY(daycare.operation_days) AND
-          (h.date IS NULL OR daycare.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]) AND
-          (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("from", from).bind("to", to).toList<PresenceReportRow>()
+    return createQuery {
+            sql(
+                """
+WITH days AS
+(
+    SELECT t, extract(DOW FROM t) dw
+    FROM generate_series(${bind(from)}, ${bind(to)}, '1 day') t
+)
+SELECT
+    t::date AS date,
+    daycare.id AS daycare_id,
+    p.social_security_number,
+    dg.name AS daycareGroupName,
+    NOT (a.categories @> absence_categories(pl.type) AND a.categories <@ absence_categories(pl.type)) AS present
+FROM days
+LEFT JOIN daycare_group_placement dgp ON daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
+LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
+LEFT JOIN daycare ON dg.daycare_id = daycare.id
+LEFT JOIN placement pl ON dgp.daycare_placement_id = pl.id AND pl.type != 'CLUB'::placement_type
+LEFT JOIN person p ON pl.child_id = p.id
+LEFT JOIN LATERAL (SELECT coalesce(array_agg(category), '{}') AS categories FROM absence a WHERE p.id = a.child_id AND a.date = t::date) a ON true
+LEFT JOIN holiday h ON t = h.date
+WHERE dw = ANY(daycare.operation_days) AND
+  (h.date IS NULL OR daycare.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]) AND
+  (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
+"""
+            )
+        }
+        .toList<PresenceReportRow>()
 }
 
 data class PresenceReportRow(

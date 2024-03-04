@@ -57,9 +57,9 @@ class DecisionsReportController(private val accessControl: AccessControl) {
 
 private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<DecisionsReportRow> {
     val queryResult =
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT 
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -78,11 +78,10 @@ JOIN decision de ON de.application_id = a.id
 JOIN daycare u ON u.id = de.unit_id
 JOIN care_area ca ON ca.id = u.care_area_id
 JOIN person ch ON ch.id = a.child_id
-WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN :start AND :end
+WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND ${bind(range.end)}
 """
-            )
-            .bind("start", range.start)
-            .bind("end", range.end)
+                )
+            }
             .toList<DecisionsReportQueryRow>()
 
     return queryResult
