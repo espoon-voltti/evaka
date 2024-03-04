@@ -101,31 +101,28 @@ private fun Database.Transaction.markDocumentReadByGuardian(
     documentId: PedagogicalDocumentId,
     guardianId: PersonId
 ) =
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            """
-            INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
-            VALUES (:documentId, :personId, :now)
-            ON CONFLICT(pedagogical_document_id, person_id) DO NOTHING;
-        """
-                .trimIndent()
-        )
-        .bind("documentId", documentId)
-        .bind("personId", guardianId)
-        .bind("now", clock.now())
+    createUpdate {
+            sql(
+                """
+INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
+VALUES (${bind(documentId)}, ${bind(guardianId)}, ${bind(clock.now())})
+ON CONFLICT (pedagogical_document_id, person_id) DO NOTHING
+"""
+            )
+        }
         .execute()
 
 private fun Database.Read.countUnreadDocumentsByUser(
     today: LocalDate,
     userId: PersonId
 ): Map<ChildId, Int> =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    createQuery {
+            sql(
+                """
 WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 ), ready_documents AS (
     SELECT pd.id, pd.child_id
     FROM children c
@@ -136,11 +133,10 @@ SELECT d.child_id, count(*) as unread_count
 FROM ready_documents d
 WHERE NOT EXISTS (
     SELECT 1 FROM pedagogical_document_read pdr
-    WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = :userId
+    WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = ${bind(userId)}
 )
 GROUP BY d.child_id
 """
-        )
-        .bind("today", today)
-        .bind("userId", userId)
+            )
+        }
         .toMap { columnPair("child_id", "unread_count") }
