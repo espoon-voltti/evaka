@@ -28,7 +28,7 @@ export function createAdSamlStrategy(
     [AD_GIVEN_NAME_KEY]: z.string(),
     [AD_FAMILY_NAME_KEY]: z.string(),
     [AD_EMAIL_KEY]: z.string().optional(),
-    [AD_EMPLOYEE_NUMBER_KEY]: z.string().optional()
+    [AD_EMPLOYEE_NUMBER_KEY]: z.string().toLowerCase().optional()
   })
   return createSamlStrategy(sessions, samlConfig, Profile, async (profile) => {
     const asString = (value: unknown) =>
