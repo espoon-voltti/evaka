@@ -28,9 +28,11 @@ import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 
 fun Database.Transaction.upsertValueDecisions(decisions: List<VoucherValueDecision>) {
-    val sql =
-        // language=sql
-        """
+    decisions.forEach { decision ->
+        // TODO: use batch once JDBI makes it less buggy
+        createUpdate {
+                sql(
+                    """
 INSERT INTO voucher_value_decision (
     id,
     status,
@@ -67,104 +69,76 @@ INSERT INTO voucher_value_decision (
     difference,
     created
 ) VALUES (
-    :id,
-    :status::voucher_value_decision_status,
-    :validFrom,
-    :validTo,
-    :decisionNumber,
-    :decisionType::voucher_value_decision_type,
-    :headOfFamilyId,
-    :partnerId,
-    :headOfFamilyIncome,
-    :partnerIncome,
-    :childIncome,
-    :familySize,
-    :feeThresholds,
-    :childId,
-    :childDateOfBirth,
-    :placementUnitId,
-    :placementType::placement_type,
-    :serviceNeedFeeCoefficient,
-    :serviceNeedVoucherValueCoefficient,
-    :serviceNeedFeeDescriptionFi,
-    :serviceNeedFeeDescriptionSv,
-    :serviceNeedVoucherValueDescriptionFi,
-    :serviceNeedVoucherValueDescriptionSv,
-    :serviceNeedMissing,
-    :baseCoPayment,
-    :siblingDiscount,
-    :coPayment,
-    :feeAlterations,
-    :finalCoPayment,
-    :baseValue,
-    :assistanceNeedCoefficient,
-    :voucherValue,
-    :difference,
-    :created
+    ${bind(decision.id)},
+    ${bind(decision.status)}::voucher_value_decision_status,
+    ${bind(decision.validFrom)},
+    ${bind(decision.validTo)},
+    ${bind(decision.decisionNumber)},
+    ${bind(decision.decisionType)}::voucher_value_decision_type,
+    ${bind(decision.headOfFamilyId)},
+    ${bind(decision.partnerId)},
+    ${bindJson(decision.headOfFamilyIncome)},
+    ${bindJson(decision.partnerIncome)},
+    ${bindJson(decision.childIncome)},
+    ${bind(decision.familySize)},
+    ${bindJson(decision.feeThresholds)},
+    ${bind(decision.child.id)},
+    ${bind(decision.child.dateOfBirth)},
+    ${bind(decision.placement?.unitId)},
+    ${bind(decision.placement?.type)}::placement_type,
+    ${bind(decision.serviceNeed?.feeCoefficient)},
+    ${bind(decision.serviceNeed?.voucherValueCoefficient)},
+    ${bind(decision.serviceNeed?.feeDescriptionFi)},
+    ${bind(decision.serviceNeed?.feeDescriptionSv)},
+    ${bind(decision.serviceNeed?.voucherValueDescriptionFi)},
+    ${bind(decision.serviceNeed?.voucherValueDescriptionSv)},
+    ${bind(decision.serviceNeed?.missing ?: false)},
+    ${bind(decision.baseCoPayment)},
+    ${bind(decision.siblingDiscount)},
+    ${bind(decision.coPayment)},
+    ${bindJson(decision.feeAlterations)},
+    ${bind(decision.finalCoPayment)},
+    ${bind(decision.baseValue)},
+    ${bind(decision.assistanceNeedCoefficient)},
+    ${bind(decision.voucherValue)},
+    ${bind(decision.difference)},
+    ${bind(decision.created)}
 ) ON CONFLICT (id) DO UPDATE SET
-    status = :status::voucher_value_decision_status,
-    decision_number = :decisionNumber,
-    valid_from = :validFrom,
-    valid_to = :validTo,
-    head_of_family_id = :headOfFamilyId,
-    partner_id = :partnerId,
-    head_of_family_income = :headOfFamilyIncome,
-    partner_income = :partnerIncome,
-    child_income = :childIncome,
-    family_size = :familySize,
-    fee_thresholds = :feeThresholds,
-    child_id = :childId,
-    child_date_of_birth = :childDateOfBirth,
-    placement_unit_id = :placementUnitId,
-    placement_type = :placementType::placement_type,
-    service_need_fee_coefficient = :serviceNeedFeeCoefficient,
-    service_need_voucher_value_coefficient = :serviceNeedVoucherValueCoefficient,
-    service_need_fee_description_fi = :serviceNeedFeeDescriptionFi,
-    service_need_fee_description_sv = :serviceNeedFeeDescriptionSv,
-    service_need_voucher_value_description_fi = :serviceNeedVoucherValueDescriptionFi,
-    service_need_voucher_value_description_sv = :serviceNeedVoucherValueDescriptionSv,
-    service_need_missing = :serviceNeedMissing,
-    base_co_payment = :baseCoPayment,
-    sibling_discount = :siblingDiscount,
-    co_payment = :coPayment,
-    fee_alterations = :feeAlterations,
-    final_co_payment = :finalCoPayment,
-    base_value = :baseValue,
-    assistance_need_coefficient = :assistanceNeedCoefficient,
-    voucher_value = :voucherValue,
-    difference = :difference,
-    created = :created
+    status = ${bind(decision.status)}::voucher_value_decision_status,
+    decision_number = ${bind(decision.decisionNumber)},
+    valid_from = ${bind(decision.validFrom)},
+    valid_to = ${bind(decision.validTo)},
+    head_of_family_id = ${bind(decision.headOfFamilyId)},
+    partner_id = ${bind(decision.partnerId)},
+    head_of_family_income = ${bindJson(decision.headOfFamilyIncome)},
+    partner_income = ${bindJson(decision.partnerIncome)},
+    child_income = ${bindJson(decision.childIncome)},
+    family_size = ${bind(decision.familySize)},
+    fee_thresholds = ${bindJson(decision.feeThresholds)},
+    child_id = ${bind(decision.child.id)},
+    child_date_of_birth = ${bind(decision.child.dateOfBirth)},
+    placement_unit_id = ${bind(decision.placement?.unitId)},
+    placement_type = ${bind(decision.placement?.type)}::placement_type,
+    service_need_fee_coefficient = ${bind(decision.serviceNeed?.feeCoefficient)},
+    service_need_voucher_value_coefficient = ${bind(decision.serviceNeed?.voucherValueCoefficient)},
+    service_need_fee_description_fi = ${bind(decision.serviceNeed?.feeDescriptionFi)},
+    service_need_fee_description_sv = ${bind(decision.serviceNeed?.feeDescriptionSv)},
+    service_need_voucher_value_description_fi = ${bind(decision.serviceNeed?.voucherValueDescriptionFi)},
+    service_need_voucher_value_description_sv = ${bind(decision.serviceNeed?.voucherValueDescriptionSv)},
+    service_need_missing = ${bind(decision.serviceNeed?.missing ?: false)},
+    base_co_payment = ${bind(decision.baseCoPayment)},
+    sibling_discount = ${bind(decision.siblingDiscount)},
+    co_payment = ${bind(decision.coPayment)},
+    fee_alterations = ${bindJson(decision.feeAlterations)},
+    final_co_payment = ${bind(decision.finalCoPayment)},
+    base_value = ${bind(decision.baseValue)},
+    assistance_need_coefficient = ${bind(decision.assistanceNeedCoefficient)},
+    voucher_value = ${bind(decision.voucherValue)},
+    difference = ${bind(decision.difference)},
+    created = ${bind(decision.created)}
 """
-
-    decisions.forEach { decision ->
-        // TODO: use batch once JDBI makes it less buggy
-        @Suppress("DEPRECATION")
-        createUpdate(sql)
-            .bindKotlin(decision)
-            .bind("headOfFamilyId", decision.headOfFamilyId)
-            .bind("partnerId", decision.partnerId)
-            .bind("childId", decision.child.id)
-            .bind("childDateOfBirth", decision.child.dateOfBirth)
-            .bind("placementUnitId", decision.placement?.unitId)
-            .bind("placementType", decision.placement?.type)
-            .bind("serviceNeedFeeCoefficient", decision.serviceNeed?.feeCoefficient)
-            .bind(
-                "serviceNeedVoucherValueCoefficient",
-                decision.serviceNeed?.voucherValueCoefficient
-            )
-            .bind("serviceNeedFeeDescriptionFi", decision.serviceNeed?.feeDescriptionFi)
-            .bind("serviceNeedFeeDescriptionSv", decision.serviceNeed?.feeDescriptionSv)
-            .bind(
-                "serviceNeedVoucherValueDescriptionFi",
-                decision.serviceNeed?.voucherValueDescriptionFi
-            )
-            .bind(
-                "serviceNeedVoucherValueDescriptionSv",
-                decision.serviceNeed?.voucherValueDescriptionSv
-            )
-            .bind("serviceNeedMissing", decision.serviceNeed?.missing ?: false)
-            .bind("sentAt", decision.sentAt)
-            .bind("created", decision.created)
+                )
+            }
             .execute()
     }
 }
@@ -172,9 +146,9 @@ INSERT INTO voucher_value_decision (
 fun Database.Read.getValueDecisionsByIds(
     ids: List<VoucherValueDecisionId>
 ): List<VoucherValueDecision> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     id,
     valid_from,
@@ -215,11 +189,10 @@ SELECT
     sent_at,
     created
 FROM voucher_value_decision
-WHERE id = ANY(:ids)
+WHERE id = ANY(${bind(ids)})
         """
-                .trimIndent()
-        )
-        .bind("ids", ids)
+            )
+        }
         .toList<VoucherValueDecision>()
 }
 
@@ -229,9 +202,9 @@ fun Database.Read.findValueDecisionsForChild(
     statuses: List<VoucherValueDecisionStatus>? = null,
     lockForUpdate: Boolean = false
 ): List<VoucherValueDecision> {
-    // language=sql
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT
     id,
     valid_from,
@@ -272,26 +245,20 @@ SELECT
     sent_at,
     created
 FROM voucher_value_decision
-WHERE child_id = :childId
-AND (:period::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && :period)
-AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision_status[]))
+WHERE child_id = ${bind(childId)}
+AND (${bind(period)}::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && ${bind(period)})
+AND (${bind(statuses)}::text[] IS NULL OR status = ANY(${bind(statuses)}::voucher_value_decision_status[]))
 ${if (lockForUpdate) "FOR UPDATE" else ""}
 """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("period", period)
-        .bind("statuses", statuses)
+            )
+        }
         .toList<VoucherValueDecision>()
 }
 
 fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>) {
     if (ids.isEmpty()) return
 
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM voucher_value_decision WHERE id = ANY(:ids)")
-        .bind("ids", ids)
+    createUpdate { sql("DELETE FROM voucher_value_decision WHERE id = ANY(${bind(ids)})") }
         .execute()
 }
 
@@ -378,7 +345,6 @@ NOT EXISTS (
         AND vvd.id = decision.id
 )
         """
-            .trimIndent()
 
     val conditions =
         listOfNotNull(
@@ -409,7 +375,6 @@ NOT EXISTS (
             else null
         )
     val sql =
-        // language=sql
         """
 SELECT
     count(*) OVER () AS count,
@@ -445,7 +410,7 @@ WHERE
     $freeTextQuery
     ${if (conditions.isNotEmpty()) {
             """AND ${conditions.joinToString("\nAND ")}
-            """.trimIndent()
+            """
         } else {
             ""
         }}
@@ -462,9 +427,9 @@ LIMIT :pageSize OFFSET :pageSize * :page
 fun Database.Read.getVoucherValueDecision(
     id: VoucherValueDecisionId
 ): VoucherValueDecisionDetailed? {
-    // language=sql
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT
     decision.*,
     date_part('year', age(decision.valid_from, decision.child_date_of_birth)) child_age,
@@ -511,29 +476,30 @@ JOIN daycare ON decision.placement_unit_id = daycare.id
 JOIN care_area ON daycare.care_area_id = care_area.id
 LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
-WHERE decision.id = :id
+WHERE decision.id = ${bind(id)}
 """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<VoucherValueDecisionDetailed>()?.let {
-        it.copy(
-            partnerIsCodebtor =
-                partnerIsCodebtor(
-                    it.headOfFamily.id,
-                    it.partner?.id,
-                    listOf(it.child.id),
-                    DateRange(it.validFrom, it.validTo)
-                )
-        )
-    }
+            )
+        }
+        .exactlyOneOrNull<VoucherValueDecisionDetailed>()
+        ?.let {
+            it.copy(
+                partnerIsCodebtor =
+                    partnerIsCodebtor(
+                        it.headOfFamily.id,
+                        it.partner?.id,
+                        listOf(it.child.id),
+                        DateRange(it.validFrom, it.validTo)
+                    )
+            )
+        }
 }
 
 fun Database.Read.getHeadOfFamilyVoucherValueDecisions(
     headOfFamilyId: PersonId
 ): List<VoucherValueDecisionSummary> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     decision.id,
     decision.status,
@@ -560,10 +526,10 @@ SELECT
 FROM voucher_value_decision decision
 JOIN person head ON decision.head_of_family_id = head.id
 JOIN person child ON decision.child_id = child.id
-WHERE decision.head_of_family_id = :headOfFamilyId
+WHERE decision.head_of_family_id = ${bind(headOfFamilyId)}
 """
-        )
-        .bind("headOfFamilyId", headOfFamilyId)
+            )
+        }
         .toList<VoucherValueDecisionSummary>()
 }
 
@@ -574,7 +540,6 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
     decisionHandlerId: EmployeeId?,
     alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
-    // language=sql
     val sql =
         """
         UPDATE voucher_value_decision SET
@@ -592,7 +557,6 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
         JOIN daycare ON vd.placement_unit_id = daycare.id
         WHERE vd.id = :id AND voucher_value_decision.id = vd.id
         """
-            .trimIndent()
 
     val batch = prepareBatch(sql)
     ids.forEach { id ->
@@ -609,18 +573,18 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
 }
 
 fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId): String? {
-    // language=sql
-    val sql = "SELECT document_key FROM voucher_value_decision WHERE id = :id"
-
-    @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOneOrNull<String>()
+    return createQuery {
+            sql("SELECT document_key FROM voucher_value_decision WHERE id = ${bind(id)}")
+        }
+        .exactlyOneOrNull<String>()
 }
 
 fun Database.Read.getVoucherValueDecisionByLiableCitizen(
     citizenId: PersonId
 ): List<VoucherValueDecisionCitizenInfoRow> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT vvd.id,
        vvd.valid_from,
        vvd.valid_to,
@@ -631,12 +595,11 @@ SELECT vvd.id,
 FROM voucher_value_decision vvd
 WHERE vvd.status IN ('SENT')
 AND vvd.document_key IS NOT NULL
-AND (vvd.head_of_family_id = :citizenId
-    OR vvd.partner_id = :citizenId)
-    """
-                .trimIndent()
-        )
-        .bind("citizenId", citizenId)
+AND (vvd.head_of_family_id = ${bind(citizenId)}
+    OR vvd.partner_id = ${bind(citizenId)})
+"""
+            )
+        }
         .toList<VoucherValueDecisionCitizenInfoRow>()
 }
 
@@ -654,42 +617,40 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     id: VoucherValueDecisionId,
     documentKey: String
 ) {
-    // language=sql
-    val sql = "UPDATE voucher_value_decision SET document_key = :documentKey WHERE id = :id"
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql).bind("id", id).bind("documentKey", documentKey).execute()
+    createUpdate {
+            sql(
+                "UPDATE voucher_value_decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(id)}"
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.updateVoucherValueDecisionStatus(
     ids: List<VoucherValueDecisionId>,
     status: VoucherValueDecisionStatus
 ) {
-    // language=sql
-    val sql =
-        "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
-
-    @Suppress("DEPRECATION") createUpdate(sql).bind("ids", ids).bind("status", status).execute()
+    createUpdate {
+            sql(
+                "UPDATE voucher_value_decision SET status = ${bind(status)}::voucher_value_decision_status WHERE id = ANY(${bind(ids)})"
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.setVoucherValueDecisionType(
     id: VoucherValueDecisionId,
     type: VoucherValueDecisionType
 ) {
-    // language=SQL
-    val sql =
-        """
-        UPDATE voucher_value_decision
-        SET decision_type = :type::voucher_value_decision_type
-        WHERE id = :id
-          AND status = :requiredStatus::voucher_value_decision_status
-    """
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("type", type.toString())
-        .bind("requiredStatus", VoucherValueDecisionStatus.DRAFT.toString())
+    createUpdate {
+            sql(
+                """
+UPDATE voucher_value_decision
+SET decision_type = ${bind(type.toString())}::voucher_value_decision_type
+WHERE id = ${bind(id)}
+  AND status = ${bind(VoucherValueDecisionStatus.DRAFT.toString())}::voucher_value_decision_status
+"""
+            )
+        }
         .execute()
 }
 
@@ -697,13 +658,11 @@ fun Database.Transaction.markVoucherValueDecisionsSent(
     ids: List<VoucherValueDecisionId>,
     now: HelsinkiDateTime
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)"
-        )
-        .bind("ids", ids)
-        .bind("sent", VoucherValueDecisionStatus.SENT)
-        .bind("now", now)
+    createUpdate {
+            sql(
+                "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.SENT)}::voucher_value_decision_status, sent_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
+            )
+        }
         .execute()
 }
 
@@ -732,42 +691,42 @@ fun Database.Transaction.annulVoucherValueDecisions(
 ) {
     if (ids.isEmpty()) return
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE voucher_value_decision SET status = :status, annulled_at = :now WHERE id = ANY(:ids)"
-        )
-        .bind("ids", ids)
-        .bind("status", VoucherValueDecisionStatus.ANNULLED)
-        .bind("now", now)
+    createUpdate {
+            sql(
+                "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.ANNULLED)}, annulled_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisionId) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = :id AND status = 'DRAFT'"
-        )
-        .bind("id", id)
+    createUpdate {
+            sql(
+                "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
+            )
+        }
         .updateExactlyOne()
 }
 
 fun Database.Transaction.removeVoucherValueDecisionIgnore(id: VoucherValueDecisionId) {
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM voucher_value_decision WHERE id = :id AND status = 'IGNORED'")
-        .bind("id", id)
+    createUpdate {
+            sql("DELETE FROM voucher_value_decision WHERE id = ${bind(id)} AND status = 'IGNORED'")
+        }
         .updateExactlyOne()
 }
 
 fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
-    @Suppress("DEPRECATION")
-    createUpdate("SELECT id FROM voucher_value_decision WHERE child_id = :childId FOR UPDATE")
-        .bind("childId", childId)
+    createUpdate {
+            sql(
+                "SELECT id FROM voucher_value_decision WHERE child_id = ${bind(childId)} FOR UPDATE"
+            )
+        }
         .execute()
 }
 
 fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
-    @Suppress("DEPRECATION")
-    createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
-        .bind("ids", ids)
+    createUpdate {
+            sql("SELECT id FROM voucher_value_decision WHERE id = ANY(${bind(ids)}) FOR UPDATE")
+        }
         .execute()
 }

@@ -115,16 +115,16 @@ class InvoiceService(
 
     fun getInvoiceCodes(tx: Database.Read): InvoiceCodes {
         val units =
-            @Suppress("DEPRECATION")
-            tx.createQuery(
-                    """
-        SELECT daycare.id, daycare.name, cost_center
-        FROM daycare
-        WHERE cost_center IS NOT NULL
-        ORDER BY name
-            """
-                        .trimIndent()
-                )
+            tx.createQuery {
+                    sql(
+                        """
+                        SELECT daycare.id, daycare.name, cost_center
+                        FROM daycare
+                        WHERE cost_center IS NOT NULL
+                        ORDER BY name
+                        """
+                    )
+                }
                 .toList<InvoiceDaycare>()
         return InvoiceCodes(productProvider.products, units)
     }
@@ -135,22 +135,17 @@ fun Database.Transaction.markManuallySent(
     now: HelsinkiDateTime,
     invoiceIds: List<InvoiceId>
 ) {
-    val sql =
-        """
-        UPDATE invoice SET status = :status_sent::invoice_status, sent_at = :sent_at, sent_by = :sent_by
-        WHERE id = ANY(:ids) AND status = :status_waiting::invoice_status
-        RETURNING id
-        """
-            .trimIndent()
 
     val updatedIds =
-        @Suppress("DEPRECATION")
-        createQuery(sql)
-            .bind("status_sent", InvoiceStatus.SENT.toString())
-            .bind("status_waiting", InvoiceStatus.WAITING_FOR_SENDING.toString())
-            .bind("sent_at", now)
-            .bind("sent_by", user.evakaUserId)
-            .bind("ids", invoiceIds)
+        createQuery {
+                sql(
+                    """
+UPDATE invoice SET status = ${bind(InvoiceStatus.SENT)}, sent_at = ${bind(now)}, sent_by = ${bind(user.evakaUserId)}
+WHERE id = ANY(${bind(invoiceIds)}) AND status = ${bind(InvoiceStatus.WAITING_FOR_SENDING)}
+RETURNING id
+"""
+                )
+            }
             .toList<InvoiceId>()
 
     if (updatedIds.toSet() != invoiceIds.toSet())

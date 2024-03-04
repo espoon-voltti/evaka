@@ -33,9 +33,9 @@ class FinanceDecisionGenerator(
 
     fun scheduleBatchGeneration(tx: Database.Transaction) {
         val inserted =
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    """
+            tx.createUpdate {
+                    sql(
+                        """
 WITH ids AS (
     SELECT head_of_child AS head_of_family_id
     FROM fridge_child
@@ -59,16 +59,16 @@ SELECT 'GenerateFinanceDecisions',
                        'skipPropagation', true
                    ),
                'dateRange', jsonb_build_object(
-                       'start', :from,
+                       'start', ${bind(feeDecisionMinDate)},
                        'end', NULL
                    )
            ),
        3,
        interval '5 minutes'
-FROM ids;
-        """
-                )
-                .bind("from", feeDecisionMinDate)
+FROM ids
+"""
+                    )
+                }
                 .execute()
 
         logger.info { "Scheduled GenerateFinanceDecisions for $inserted people" }

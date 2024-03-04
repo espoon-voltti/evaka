@@ -67,21 +67,21 @@ FROM service_need_option_voucher_value
 fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, List<ChildRelation>> {
     if (parentIds.isEmpty()) return emptyMap()
 
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
-            SELECT 
-                fc.head_of_child, 
-                daterange(fc.start_date, fc.end_date, '[]') as finite_range,
-                p.id as child_id,
-                p.date_of_birth as child_date_of_birth,
-                p.social_security_number as child_ssn
-            FROM fridge_child fc
-            JOIN person p on fc.child_id = p.id
-            WHERE head_of_child = ANY(:ids) AND NOT conflict
-        """
-        )
-        .bind("ids", parentIds.toTypedArray())
+    return createQuery {
+            sql(
+                """
+SELECT 
+    fc.head_of_child, 
+    daterange(fc.start_date, fc.end_date, '[]') as finite_range,
+    p.id as child_id,
+    p.date_of_birth as child_date_of_birth,
+    p.social_security_number as child_ssn
+FROM fridge_child fc
+JOIN person p on fc.child_id = p.id
+WHERE head_of_child = ANY(${bind(parentIds)}) AND NOT conflict
+"""
+            )
+        }
         .toList<ChildRelation>()
         .mapNotNull {
             val under18 =
@@ -95,17 +95,17 @@ fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, Lis
 }
 
 fun Database.Read.getPartnerRelations(id: PersonId): List<PartnerRelation> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
-            SELECT 
-                fp2.person_id as partnerId,
-                daterange(fp2.start_date, fp2.end_date, '[]') as range
-            FROM fridge_partner fp1
-            JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx <> fp2.indx
-            WHERE fp1.person_id = :id AND NOT fp1.conflict AND NOT fp2.conflict
-        """
-        )
-        .bind("id", id)
+    return createQuery {
+            sql(
+                """
+SELECT 
+    fp2.person_id as partnerId,
+    daterange(fp2.start_date, fp2.end_date, '[]') as range
+FROM fridge_partner fp1
+JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.indx <> fp2.indx
+WHERE fp1.person_id = ${bind(id)} AND NOT fp1.conflict AND NOT fp2.conflict
+"""
+            )
+        }
         .toList<PartnerRelation>()
 }

@@ -50,9 +50,9 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         personId
                     )
                     val invoiceCorrections =
-                        @Suppress("DEPRECATION")
-                        tx.createQuery(
-                                """
+                        tx.createQuery {
+                                sql(
+                                    """
 SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
     i.id AS invoice_id,
     i.status AS invoice_status
@@ -65,10 +65,10 @@ LEFT JOIN LATERAL (
     ORDER BY CASE WHEN i.status = 'DRAFT'::invoice_status THEN 2 ELSE 1 END ASC, i.period_start DESC
     LIMIT 1
 ) i ON true
-WHERE c.head_of_family_id = :personId AND NOT applied_completely
+WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
 """
-                            )
-                            .bind("personId", personId)
+                                )
+                            }
                             .toList<InvoiceCorrection>()
                     val permittedActions =
                         accessControl.getPermittedActions<
@@ -118,15 +118,15 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
                         Action.Person.CREATE_INVOICE_CORRECTION,
                         body.headOfFamilyId
                     )
-                    @Suppress("DEPRECATION")
-                    tx.createUpdate(
-                            """
+                    tx.createUpdate {
+                            sql(
+                                """
 INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
-VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPrice, :description, :note)
+VALUES (${bind(body.headOfFamilyId)}, ${bind(body.childId)}, ${bind(body.unitId)}, ${bind(body.product)}, ${bind(body.period)}, ${bind(body.amount)}, ${bind(body.unitPrice)}, ${bind(body.description)}, ${bind(body.note)})
 RETURNING id
 """
-                        )
-                        .bindKotlin(body)
+                            )
+                        }
                         .executeAndReturnGeneratedKeys()
                         .exactlyOne<InvoiceCorrectionId>()
                 }
@@ -154,16 +154,16 @@ RETURNING id
                     id
                 )
                 try {
-                    @Suppress("DEPRECATION")
-                    tx.createUpdate(
-                            """
+                    tx.createUpdate {
+                            sql(
+                                """
 WITH deleted_invoice_row AS (
-    DELETE FROM invoice_row r USING invoice i WHERE r.correction_id = :id AND r.invoice_id = i.id AND i.status = 'DRAFT'
+    DELETE FROM invoice_row r USING invoice i WHERE r.correction_id = ${bind(id)} AND r.invoice_id = i.id AND i.status = 'DRAFT'
 )
-DELETE FROM invoice_correction WHERE id = :id RETURNING id
+DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
 """
-                        )
-                        .bind("id", id)
+                            )
+                        }
                         .execute()
                 } catch (e: JdbiException) {
                     when (e.psqlCause()?.sqlState) {
@@ -199,10 +199,11 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
                     Action.InvoiceCorrection.UPDATE_NOTE,
                     id
                 )
-                @Suppress("DEPRECATION")
-                tx.createUpdate("UPDATE invoice_correction SET note = :note WHERE id = :id")
-                    .bind("id", id)
-                    .bind("note", body.note)
+                tx.createUpdate {
+                        sql(
+                            "UPDATE invoice_correction SET note = ${bind(body.note)} WHERE id = ${bind(id)}"
+                        )
+                    }
                     .execute()
             }
         }
