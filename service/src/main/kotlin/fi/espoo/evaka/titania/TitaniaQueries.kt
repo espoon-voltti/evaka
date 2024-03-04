@@ -12,14 +12,15 @@ import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Database.Query {
-    val sql =
-        """
-        SELECT id, employee_number
-        FROM employee
-        WHERE employee_number = ANY (:employeeNumbers)
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION") return createQuery(sql).bind("employeeNumbers", employeeNumbers)
+    return createQuery {
+        sql(
+            """
+            SELECT id, employee_number
+            FROM employee
+            WHERE employee_number = ANY (${bind(employeeNumbers)})
+            """
+        )
+    }
 }
 
 fun Database.Read.getEmployeeIdsByNumbers(employeeNumbers: List<String>): Map<String, EmployeeId> {
