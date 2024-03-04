@@ -20,7 +20,6 @@ export const TimesRow = styled.div`
   flex-wrap: nowrap;
   justify-content: space-evenly;
   padding: ${defaultMargins.xs};
-  gap: ${defaultMargins.xs};
 `
 
 export const TimeCell = styled.div<{ warning?: boolean }>`
