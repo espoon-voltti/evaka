@@ -223,22 +223,18 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     val caretakersSum =
         if (type == OccupancyType.REALIZED) {
             """
-        sum(
-            CASE
-                WHEN sar.arrived IS NOT NULL
-                    THEN ROUND(EXTRACT(EPOCH FROM (
-                        LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
-                    )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient, 4)
-                ELSE s.count
-            END
-        )
-        """
-                .trimIndent()
-        } else {
+            sum(
+                CASE
+                    WHEN sar.arrived IS NOT NULL
+                        THEN ROUND(EXTRACT(EPOCH FROM (
+                            LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
+                        )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient, 4)
+                    ELSE s.count
+                END
+            )
             """
-        sum(c.amount)
-        """
-                .trimIndent()
+        } else {
+            "sum(c.amount)"
         }
 
     val presentStaffAttendanceTypes =
@@ -246,26 +242,23 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     val caretakersJoin =
         if (type == OccupancyType.REALIZED) {
             """
-        LEFT JOIN (
-            SELECT group_id, arrived, departed, occupancy_coefficient
-            FROM staff_attendance_realtime
-            WHERE departed IS NOT NULL AND type = ANY($presentStaffAttendanceTypes)
-            UNION ALL
-            SELECT group_id, arrived, departed, occupancy_coefficient
-            FROM staff_attendance_external
-            WHERE departed IS NOT NULL
-        ) sar ON g.id = sar.group_id AND (t = DATE(sar.arrived) OR t = DATE(sar.departed))
-        LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
-        """
-                .trimIndent()
+            LEFT JOIN (
+                SELECT group_id, arrived, departed, occupancy_coefficient
+                FROM staff_attendance_realtime
+                WHERE departed IS NOT NULL AND type = ANY($presentStaffAttendanceTypes)
+                UNION ALL
+                SELECT group_id, arrived, departed, occupancy_coefficient
+                FROM staff_attendance_external
+                WHERE departed IS NOT NULL
+            ) sar ON g.id = sar.group_id AND (t = DATE(sar.arrived) OR t = DATE(sar.departed))
+            LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
+            """
         } else {
             """
-        LEFT JOIN daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date
-        """
-                .trimIndent()
+            LEFT JOIN daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date
+            """
         }
 
-    // language=sql
     val (keyColumns, groupBy) =
         when (K::class) {
             UnitKey::class ->
@@ -300,7 +293,6 @@ AND (${bind(providerType)} IS NULL OR u.provider_type = ${bind(providerType)})
 AND (${bind(unitTypes?.ifEmpty { null })}::care_types[] IS NULL OR u.type && ${bind(unitTypes)}::care_types[])
 GROUP BY $groupBy, t
             """
-                    .trimIndent()
             )
         }
         .toList(mapper)
@@ -311,7 +303,6 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacement
     keys: Set<K>,
     period: FiniteDateRange
 ): Iterable<Placement> {
-    // language=sql
     val (groupingId, daterange, additionalJoin) =
         when (K::class) {
             UnitKey::class -> Triple("u.id", "daterange(p.start_date, p.end_date, '[]')", "")
@@ -324,9 +315,9 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacement
             else -> error("Unsupported placement query class parameter (${K::class})")
         }
 
-    // language=sql
-    val query =
-        """
+    return this.createQuery {
+            sql(
+                """
 SELECT
     $groupingId AS grouping_id,
     p.id AS placement_id,
@@ -338,13 +329,10 @@ SELECT
 FROM placement p
 JOIN daycare u ON p.unit_id = u.id
 $additionalJoin
-WHERE $daterange && :period AND $groupingId = ANY(:keys)
+WHERE $daterange && ${bind(period)} AND $groupingId = ANY(${bind(keys.map { it.groupingId })})
 """
-
-    @Suppress("DEPRECATION")
-    return this.createQuery(query)
-        .bind("keys", keys.map { it.groupingId })
-        .bind("period", period)
+            )
+        }
         .toList<Placement>()
 }
 
@@ -374,18 +362,15 @@ private fun Database.Read.getPeriodsAwayInBackupCareByChildId(
 ): Map<ChildId, List<FiniteDateRange>> {
     data class QueryResult(val childId: ChildId, val startDate: LocalDate, val endDate: LocalDate)
 
-    // language=sql
-    val query =
-        """
+    return this.createQuery {
+            sql(
+                """
 SELECT bc.child_id, bc.start_date, bc.end_date
 FROM backup_care bc
-WHERE daterange(bc.start_date, bc.end_date, '[]') && :period AND bc.child_id = ANY(:childIds)
+WHERE daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)} AND bc.child_id = ANY(${bind(childIds)})
 """
-
-    @Suppress("DEPRECATION")
-    return this.createQuery(query)
-        .bind("childIds", childIds)
-        .bind("period", period)
+            )
+        }
         .toList<QueryResult>()
         .groupBy { it.childId }
         .mapValues { entry -> entry.value.map { FiniteDateRange(it.startDate, it.endDate) } }
@@ -402,9 +387,9 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getBackupCar
             else -> error("Unsupported placement query class parameter (${K::class})")
         }
 
-    // language=sql
-    val query =
-        """
+    return this.createQuery {
+            sql(
+                """
 SELECT
     $groupingId AS grouping_id,
     p.id AS placement_id,
@@ -416,13 +401,10 @@ SELECT
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
 JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && :period AND $groupingId = ANY(:keys)
+WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && ${bind(period)} AND $groupingId = ANY(${bind(keys.map { it.groupingId })})
 """
-
-    @Suppress("DEPRECATION")
-    return this.createQuery(query)
-        .bind("keys", keys.map { it.groupingId })
-        .bind("period", period)
+            )
+        }
         .toList<Placement>()
 }
 
@@ -442,15 +424,15 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
 
     val childBirthdays =
-        @Suppress("DEPRECATION")
-        this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
-            .bind("childIds", childIds)
+        this.createQuery {
+                sql("SELECT id, date_of_birth FROM person WHERE id = ANY(${bind(childIds)})")
+            }
             .toMap { columnPair<ChildId, LocalDate>("id", "date_of_birth") }
 
     val serviceNeeds =
-        @Suppress("DEPRECATION")
-        this.createQuery(
-                """
+        this.createQuery {
+                sql(
+                    """
 SELECT
     sn.placement_id,
     CASE
@@ -475,26 +457,27 @@ JOIN placement pl ON sn.placement_id = pl.id
 JOIN service_need_option sno ON sn.option_id = sno.id
 JOIN person ch ON ch.id = pl.child_id
 JOIN daycare u ON pl.unit_id = u.id
-WHERE sn.placement_id = ANY(:placementIds)
+WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
 """
-            )
-            .bind("placementIds", placements.map { it.placementId })
+                )
+            }
             .toList<ServiceNeed>()
             .groupBy { it.placementId }
 
     val defaultServiceNeedCoefficients =
-        @Suppress("DEPRECATION")
-        this.createQuery(
-                """
-                SELECT 
-                    occupancy_coefficient, 
-                    occupancy_coefficient_under_3y, 
-                    realized_occupancy_coefficient, 
-                    realized_occupancy_coefficient_under_3y, 
-                    valid_placement_type
-                FROM service_need_option WHERE default_option
-                """
-            )
+        this.createQuery {
+                sql(
+                    """
+                    SELECT 
+                        occupancy_coefficient, 
+                        occupancy_coefficient_under_3y, 
+                        realized_occupancy_coefficient, 
+                        realized_occupancy_coefficient_under_3y, 
+                        valid_placement_type
+                    FROM service_need_option WHERE default_option
+                    """
+                )
+            }
             .toMap {
                 column<PlacementType>("valid_placement_type") to row<ServiceNeedCoefficients>()
             }
@@ -510,12 +493,11 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val absences =
         if (type == OccupancyType.REALIZED) {
-            @Suppress("DEPRECATION")
-            this.createQuery(
-                    "SELECT child_id, date, category FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)"
-                )
-                .bind("childIds", childIds)
-                .bind("range", range)
+            this.createQuery {
+                    sql(
+                        "SELECT child_id, date, category FROM absence WHERE child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(range)}, date)"
+                    )
+                }
                 .toList<Absence>()
                 .groupBy { it.childId }
         } else {
@@ -642,9 +624,9 @@ private fun Database.Read.getPlacementPlans(
     period: FiniteDateRange,
     unitIds: Collection<DaycareId>
 ): List<Placement> {
-    @Suppress("DEPRECATION")
-    return this.createQuery(
-            """
+    return this.createQuery {
+            sql(
+                """
 SELECT
     u.id AS grouping_id,
     p.id AS placement_id,
@@ -657,19 +639,18 @@ SELECT
     preschool_daycare_end_date
 FROM placement_plan p
 JOIN application a ON p.application_id = a.id
-JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(:unitIds)
+JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(${bind(unitIds)})
 WHERE NOT p.deleted AND (
-    daterange(p.start_date, p.end_date, '[]') && :period
+    daterange(p.start_date, p.end_date, '[]') && ${bind(period)}
     OR (
         preschool_daycare_start_date IS NOT NULL
         AND preschool_daycare_end_date IS NOT NULL
-        AND daterange(preschool_daycare_start_date, preschool_daycare_end_date, '[]') && :period
+        AND daterange(preschool_daycare_start_date, preschool_daycare_end_date, '[]') && ${bind(period)}
     )
 )
 """
-        )
-        .bind("unitIds", unitIds)
-        .bind("period", period)
+            )
+        }
         .toList<PlacementPlan>()
         .flatMap { placementPlan ->
             // If the placement plan has preschool daycare dates set it means that the placement
