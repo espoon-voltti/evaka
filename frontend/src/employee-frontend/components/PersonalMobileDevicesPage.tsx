@@ -4,10 +4,7 @@
 
 import React, { useCallback, useContext, useState } from 'react'
 
-import {
-  deleteMobileDevice,
-  putMobileDeviceName
-} from 'employee-frontend/api/unit'
+import { wrapResult } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -24,19 +21,27 @@ import { H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import { getPersonalMobileDevices } from '../api/employees'
+import {
+  deleteMobileDevice,
+  getPersonalMobileDevices,
+  putMobileDeviceName
+} from '../generated/api-clients/pairing'
 import { useTranslation } from '../state/i18n'
 import { UIContext } from '../state/ui'
 import { UserContext } from '../state/user'
 
 import { renderResult } from './async-rendering'
 
+const getPersonalMobileDevicesResult = wrapResult(getPersonalMobileDevices)
+const deleteMobileDeviceResult = wrapResult(deleteMobileDevice)
+const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
+
 export default React.memo(function PersonalMobileDevicesPage() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
   const { startPairing } = useContext(UIContext)
   const [mobileDevices, reloadDevices] = useApiState(
-    () => getPersonalMobileDevices(),
+    () => getPersonalMobileDevicesResult(),
     []
   )
   const [openModal, setOpenModal] = useState<{
@@ -145,7 +150,10 @@ const EditNameModal = React.memo(function EditNameModal({
       type="info"
       reject={{ action: close, label: i18n.common.cancel }}
       resolve={{
-        action: () => putMobileDeviceName(id, newName).then(close),
+        action: () =>
+          putMobileDeviceNameResult({ id, body: { name: newName } }).then(
+            close
+          ),
         label: i18n.common.save
       }}
     >
@@ -177,7 +185,7 @@ const DeleteModal = React.memo(function DeleteModal({
       type="warning"
       reject={{ action: close, label: i18n.common.cancel }}
       resolve={{
-        action: () => deleteMobileDevice(id).then(close),
+        action: () => deleteMobileDeviceResult({ id }).then(close),
         label: i18n.common.confirm
       }}
     />

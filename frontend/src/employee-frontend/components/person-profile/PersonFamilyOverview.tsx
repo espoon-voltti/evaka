@@ -10,6 +10,7 @@ import { isLoading } from 'lib-common/api'
 import { IncomeEffect } from 'lib-common/generated/api-types/invoicing'
 import {
   FamilyOverview,
+  FamilyOverviewIncome,
   FamilyOverviewPerson
 } from 'lib-common/generated/api-types/pis'
 import { formatCents } from 'lib-common/money'
@@ -21,12 +22,20 @@ import { H2 } from 'lib-components/typography'
 import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
-import {
-  FamilyOverviewPersonRole,
-  FamilyOverviewRow
-} from '../../types/family-overview'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+
+type FamilyOverviewPersonRole = 'HEAD' | 'PARTNER' | 'CHILD'
+
+interface FamilyOverviewRow {
+  personId: string
+  name: string
+  role: FamilyOverviewPersonRole
+  age: number
+  restrictedDetailsEnabled: boolean
+  address: string
+  income: FamilyOverviewIncome | null
+}
 
 interface Props {
   open: boolean
@@ -72,7 +81,7 @@ function getMembers(
     mapPersonToRow(headOfFamily, 'HEAD', i18n),
     partner && mapPersonToRow(partner, 'PARTNER', i18n),
     ...children.map((item) => mapPersonToRow(item, 'CHILD', i18n))
-  ].filter(Boolean) as FamilyOverviewRow[]
+  ].filter((row): row is FamilyOverviewRow => row !== null)
 }
 
 function getAdults(family: FamilyOverview): FamilyOverviewPerson[] {

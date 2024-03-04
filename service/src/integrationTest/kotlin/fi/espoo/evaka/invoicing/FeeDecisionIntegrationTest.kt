@@ -2018,13 +2018,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed {
-        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id).data
+        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id)
     }
 
     private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> {
-        return feeDecisionController
-            .getHeadOfFamilyFeeDecisions(dbInstance(), user, RealEvakaClock(), id)
-            .data
+        return feeDecisionController.getHeadOfFamilyFeeDecisions(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id
+        )
     }
 
     private fun confirmDrafts(

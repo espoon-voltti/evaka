@@ -7,6 +7,7 @@ import styled, { css } from 'styled-components'
 
 import {
   AbsenceCategory,
+  AbsenceType,
   AbsenceWithModifierInfo,
   GroupMonthCalendarDayChild
 } from 'lib-common/generated/api-types/absence'
@@ -17,12 +18,18 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { absenceColors } from 'lib-customizations/common'
 import colors from 'lib-customizations/common'
 
-import { CellPart } from '../../types/absence'
-
 import { SelectedCell } from './GroupMonthCalendar'
 import UnitCalendarDayCellTooltip from './UnitCalendarDayCellTooltip'
 
 const cellSize = 20
+
+export interface CellPart {
+  childId: UUID
+  date: LocalDate
+  absenceType: AbsenceType | 'TEMPORARY_RELOCATION' | undefined
+  category: AbsenceCategory
+  position: 'left' | 'right'
+}
 
 const AbsenceCellPart = styled.div<{
   $position: 'left' | 'right'

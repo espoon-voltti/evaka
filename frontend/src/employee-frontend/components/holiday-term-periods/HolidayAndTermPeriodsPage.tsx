@@ -42,7 +42,9 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
   )
   const onDeletePeriod = useCallback(
     () =>
-      periodToDelete ? deleteHolidayPeriod(periodToDelete) : Promise.reject(),
+      periodToDelete
+        ? deleteHolidayPeriod({ id: periodToDelete })
+        : Promise.reject(),
     [deleteHolidayPeriod, periodToDelete]
   )
   const navigateToNewHolidayPeriod = useCallback(() => {
@@ -56,7 +58,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
   const onDeleteQuestionnaire = useCallback(
     () =>
       questionnaireToDelete
-        ? deleteQuestionnaire(questionnaireToDelete)
+        ? deleteQuestionnaire({ id: questionnaireToDelete })
         : Promise.reject(),
     [deleteQuestionnaire, questionnaireToDelete]
   )

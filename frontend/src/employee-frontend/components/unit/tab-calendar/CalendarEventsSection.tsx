@@ -16,19 +16,14 @@ import React, {
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, Failure, Result, Success } from 'lib-common/api'
+import { combine, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CalendarEvent,
-  CalendarEventForm,
-  CalendarEventUpdateForm,
   GroupInfo,
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -53,7 +48,12 @@ import { Bold, fontWeights, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
-import { client } from '../../../api/client'
+import {
+  createCalendarEvent,
+  deleteCalendarEvent,
+  getUnitCalendarEvents,
+  modifyCalendarEvent
+} from '../../../generated/api-clients/calendarevent'
 import { useTranslation } from '../../../state/i18n'
 import { UnitContext } from '../../../state/unit'
 import { DayOfWeek } from '../../../types'
@@ -61,63 +61,10 @@ import { renderResult } from '../../async-rendering'
 import { FlexRow } from '../../common/styled/containers'
 import { unitGroupDetailsQuery } from '../queries'
 
-async function getCalendarEvents(
-  unitId: UUID,
-  range: FiniteDateRange
-): Promise<Result<CalendarEvent[]>> {
-  try {
-    const { data } = await client.get<JsonOf<CalendarEvent[]>>(
-      `/units/${unitId}/calendar-events?start=${range.start.toJSON()}&end=${range.end.toJSON()}`
-    )
-    return Success.of(
-      data.map((event) => ({
-        ...event,
-        period: FiniteDateRange.parseJson(event.period),
-        contentModifiedAt: HelsinkiDateTime.parseIso(event.contentModifiedAt),
-        times: event.times.map((time) => ({
-          ...time,
-          date: LocalDate.parseIso(time.date),
-          startTime: LocalTime.parseIso(time.startTime),
-          endTime: LocalTime.parseIso(time.endTime)
-        }))
-      }))
-    )
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-async function createCalendarEvent(
-  data: CalendarEventForm
-): Promise<Result<void>> {
-  try {
-    await client.post('/calendar-event', data)
-    return Success.of()
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-async function updateCalendarEvent(
-  id: UUID,
-  data: CalendarEventUpdateForm
-): Promise<Result<void>> {
-  try {
-    await client.patch(`/calendar-event/${id}`, data)
-    return Success.of()
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-async function deleteCalendarEvent(id: UUID): Promise<Result<void>> {
-  try {
-    await client.delete(`/calendar-event/${id}`)
-    return Success.of()
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
+const createCalendarEventResult = wrapResult(createCalendarEvent)
+const getUnitCalendarEventsResult = wrapResult(getUnitCalendarEvents)
+const modifyCalendarEventResult = wrapResult(modifyCalendarEvent)
+const deleteCalendarEventResult = wrapResult(deleteCalendarEvent)
 
 const EventsWeekContainer = styled.div`
   display: grid;
@@ -247,7 +194,12 @@ export default React.memo(function CalendarEventsSection({
   groupId: UUID | null // null means all groups
 }) {
   const [events, reloadEvents] = useApiState(
-    () => getCalendarEvents(unitId, dateRange),
+    () =>
+      getUnitCalendarEventsResult({
+        unitId,
+        start: dateRange.start,
+        end: dateRange.end
+      }),
     [unitId, dateRange]
   )
 
@@ -460,7 +412,11 @@ const CreateEventModal = React.memo(function CreateEventModal({
   })
 
   const groupData = useQueryResult(
-    unitGroupDetailsQuery(unitId, form.period.start, form.period.end)
+    unitGroupDetailsQuery({
+      unitId,
+      from: form.period.start,
+      to: form.period.end
+    })
   )
 
   const updateForm = useCallback(
@@ -667,13 +623,15 @@ const CreateEventModal = React.memo(function CreateEventModal({
       icon={faCalendarPlus}
       type="info"
       resolveAction={() =>
-        createCalendarEvent({
-          unitId,
-          title: form.title,
-          description: form.description,
-          period: form.period,
-          tree: getFormTree(form.attendees),
-          times: []
+        createCalendarEventResult({
+          body: {
+            unitId,
+            title: form.title,
+            description: form.description,
+            period: form.period,
+            tree: getFormTree(form.attendees),
+            times: []
+          }
         })
       }
       resolveLabel={i18n.unit.calendar.events.create.add}
@@ -875,7 +833,9 @@ const EditEventModal = React.memo(function EditEventModal({
             />
             <AsyncButton
               primary
-              onClick={() => updateCalendarEvent(event.id, form)}
+              onClick={() =>
+                modifyCalendarEventResult({ id: event.id, body: form })
+              }
               onSuccess={() => onClose(true)}
               text={i18n.unit.calendar.events.edit.saveChanges}
               data-qa="save"
@@ -891,7 +851,7 @@ const EditEventModal = React.memo(function EditEventModal({
           title="Haluatko varmasti poistaa tapahtuman?"
           text="Tapahtuma poistetaan sekä henkilökunnan että huoltajien kalenterista."
           type="warning"
-          resolveAction={() => deleteCalendarEvent(event.id)}
+          resolveAction={() => deleteCalendarEventResult({ id: event.id })}
           resolveLabel="Poista tapahtuma"
           onSuccess={() => {
             setShowDeletionModal(false)

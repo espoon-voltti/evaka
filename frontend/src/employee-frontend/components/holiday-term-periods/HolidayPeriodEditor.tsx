@@ -17,7 +17,7 @@ import { holidayPeriodQuery } from './queries'
 export default React.memo(function HolidayPeriodEditor() {
   const { id } = useNonNullableParams<{ id: string }>()
 
-  const holidayPeriod = useQueryResult(holidayPeriodQuery(id), {
+  const holidayPeriod = useQueryResult(holidayPeriodQuery({ id }), {
     enabled: id !== 'new'
   })
 

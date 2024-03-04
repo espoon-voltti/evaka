@@ -126,8 +126,8 @@ export default React.memo(function HolidayPeriodForm({
   const onSubmit = useCallback(
     () =>
       holidayPeriod !== undefined
-        ? updateHolidayPeriod({ id: holidayPeriod.id, data: form.value() })
-        : createHolidayPeriod(form.value()),
+        ? updateHolidayPeriod({ id: holidayPeriod.id, body: form.value() })
+        : createHolidayPeriod({ body: form.value() }),
     [form, holidayPeriod, createHolidayPeriod, updateHolidayPeriod]
   )
 
@@ -170,7 +170,7 @@ export default React.memo(function HolidayPeriodForm({
           disabled={!form.isValid()}
           text={i18n.common.save}
           onSuccess={onSuccess}
-          onClick={onSubmit}
+          onClick={() => onSubmit().then((res) => res.map(() => undefined))}
           data-qa="save-btn"
         />
         <Button onClick={onCancel} text={i18n.common.goBack} />

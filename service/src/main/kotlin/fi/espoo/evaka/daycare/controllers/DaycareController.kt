@@ -92,7 +92,11 @@ class DaycareController(
     }
 
     @GetMapping("/features")
-    fun getFeatures(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<UnitFeatures> {
+    fun getUnitFeatures(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<UnitFeatures> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -107,8 +111,8 @@ class DaycareController(
             .also { Audit.UnitFeaturesRead.log(meta = mapOf("count" to it.size)) }
     }
 
-    @PostMapping("/unit-features")
-    fun postUnitFeatures(
+    @PutMapping("/unit-features")
+    fun updateUnitFeatures(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

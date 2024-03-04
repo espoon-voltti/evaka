@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { combine, Loading, Result } from 'lib-common/api'
+import { combine, Loading, Result, wrapResult } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -13,12 +13,14 @@ import MutateButton, {
 } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
-import { getEmployees } from '../../../api/employees'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
+import { getEmployees } from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
 import { areaQuery, createUnitMutation } from '../queries'
+
+const getEmployeesResult = wrapResult(getEmployees)
 
 export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()
@@ -28,7 +30,7 @@ export default React.memo(function CreateUnitPage() {
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
 
   useEffect(() => {
-    void getEmployees().then((employeesResponse) => {
+    void getEmployeesResult().then((employeesResponse) => {
       setFinanceDecisionHandlerOptions(
         employeesResponse.map((employees) =>
           employees.map((employee) => ({
@@ -64,8 +66,11 @@ export default React.memo(function CreateUnitPage() {
                     primary
                     preventDefault
                     mutation={createUnitMutation}
-                    onClick={() => getFormData() ?? cancelMutation}
-                    onSuccess={(id) => navigate(`/units/${id}/unit-info`)}
+                    onClick={() => {
+                      const body = getFormData()
+                      return body ? { body } : cancelMutation
+                    }}
+                    onSuccess={({ id }) => navigate(`/units/${id}/unit-info`)}
                     disabled={!isValid}
                     text={i18n.unitEditor.submitNew}
                     data-qa="save-button"

@@ -389,9 +389,9 @@ export async function getUnitStats(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteExternalStaffAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteExternalStaffRealtimeAttendances
 */
-export async function deleteExternalStaffAttendances(
+export async function deleteExternalStaffRealtimeAttendances(
   request: {
     unitId: UUID,
     attendanceId: UUID
@@ -406,9 +406,9 @@ export async function deleteExternalStaffAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteStaffAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteStaffRealtimeAttendances
 */
-export async function deleteStaffAttendances(
+export async function deleteStaffRealtimeAttendances(
   request: {
     unitId: UUID,
     attendanceId: UUID
@@ -423,9 +423,9 @@ export async function deleteStaffAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getRealtimeStaffAttendances
 */
-export async function getAttendances(
+export async function getRealtimeStaffAttendances(
   request: {
     unitId: UUID,
     start: LocalDate,
@@ -447,9 +447,9 @@ export async function getAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyExternalAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances
 */
-export async function upsertDailyExternalAttendances(
+export async function upsertDailyExternalRealtimeAttendances(
   request: {
     body: ExternalAttendanceBody
   }
@@ -464,9 +464,9 @@ export async function upsertDailyExternalAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyStaffAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances
 */
-export async function upsertDailyStaffAttendances(
+export async function upsertDailyStaffRealtimeAttendances(
   request: {
     body: StaffAttendanceBody
   }
@@ -481,9 +481,9 @@ export async function upsertDailyStaffAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertStaffAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertStaffRealtimeAttendances
 */
-export async function upsertStaffAttendances(
+export async function upsertStaffRealtimeAttendances(
   request: {
     unitId: UUID,
     body: UpsertStaffAndExternalAttendanceRequest

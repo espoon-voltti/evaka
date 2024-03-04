@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { first, second, useSelectMutation } from 'lib-common/query'
@@ -22,7 +23,6 @@ import { faChild } from 'lib-icons'
 import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
 import {
   createGroupPlacementMutation,
@@ -128,10 +128,12 @@ export default React.memo(function GroupPlacementModal({
       createGroupPlacementMutation,
       (groupId) => ({
         unitId,
-        daycarePlacementId: placementId,
-        groupId,
-        startDate: form.startDate,
-        endDate: form.endDate
+        placementId,
+        body: {
+          groupId,
+          startDate: form.startDate,
+          endDate: form.endDate
+        }
       })
     ],
     [

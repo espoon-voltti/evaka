@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
@@ -34,11 +35,13 @@ import {
   faUsers
 } from 'lib-icons'
 
-import { getPermittedReports } from '../api/reports'
+import { getPermittedReports } from '../generated/api-clients/reports'
 import { useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
 import { AssistanceNeedDecisionReportContext } from './reports/AssistanceNeedDecisionReportContext'
+
+const getPermittedReportsResult = wrapResult(getPermittedReports)
 
 const ReportItems = styled.div`
   margin: 20px 0;
@@ -115,13 +118,17 @@ export default React.memo(function Reports() {
     AssistanceNeedDecisionReportContext
   )
 
-  const [permittedReports] = useApiState(getPermittedReports, [])
+  const [permittedReports] = useApiState(getPermittedReportsResult, [])
+  const permittedReportsSet = useMemo(
+    () => permittedReports.map((reports) => new Set(reports)),
+    [permittedReports]
+  )
 
   return (
     <Container>
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.title}</Title>
-        {renderResult(permittedReports, (reports) => (
+        {renderResult(permittedReportsSet, (reports) => (
           <ReportItems>
             {reports.has('DUPLICATE_PEOPLE') && (
               <Report

@@ -7,6 +7,7 @@ import React, { useCallback, useContext } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { Daycare } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
@@ -28,7 +29,6 @@ import { faSearch } from 'lib-icons'
 import { useTranslation } from '../state/i18n'
 import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
 import { UserContext } from '../state/user'
-import { Unit } from '../types/unit'
 import { RequireRole } from '../utils/roles'
 
 import { unitsQuery } from './unit/queries'
@@ -67,7 +67,7 @@ export default React.memo(function Units() {
   }
 
   const orderedUnits = useCallback(
-    (units: Unit[]) =>
+    (units: Daycare[]) =>
       sortColumn === 'name'
         ? orderBy(
             units,
@@ -87,15 +87,15 @@ export default React.memo(function Units() {
       units
         .map((us) =>
           orderedUnits(us)
-            .filter((unit: Unit) =>
+            .filter((unit: Daycare) =>
               unit.name.toLowerCase().includes(filter.toLowerCase())
             )
             .filter(
-              (unit: Unit) =>
+              (unit: Daycare) =>
                 includeClosed ||
                 !unit.closingDate?.isBefore(LocalDate.todayInSystemTz())
             )
-            .map((unit: Unit) => (
+            .map((unit: Daycare) => (
               <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
                 <Td>
                   <Link to={`/units/${unit.id}`}>{unit.name}</Link>

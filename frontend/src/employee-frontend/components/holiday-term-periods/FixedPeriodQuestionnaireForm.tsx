@@ -285,8 +285,8 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
     const body = isValid && formToQuestionnaireBody(form)
     if (!body) return
     return questionnaire
-      ? updateFixedPeriodQuestionnaire({ id: questionnaire.id, data: body })
-      : createFixedPeriodQuestionnaire(body)
+      ? updateFixedPeriodQuestionnaire({ id: questionnaire.id, body })
+      : createFixedPeriodQuestionnaire({ body })
   }, [
     createFixedPeriodQuestionnaire,
     updateFixedPeriodQuestionnaire,

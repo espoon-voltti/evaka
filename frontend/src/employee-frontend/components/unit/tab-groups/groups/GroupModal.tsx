@@ -72,10 +72,12 @@ export default React.memo(function GroupModal({ unitId }: Props) {
       title={i18n.unit.groups.createModal.title}
       resolveMutation={createGroupMutation}
       resolveAction={() => ({
-        unitId,
-        name: form.name,
-        startDate: form.startDate,
-        initialCaretakers: form.initialCaretakers
+        daycareId: unitId,
+        body: {
+          name: form.name,
+          startDate: form.startDate,
+          initialCaretakers: form.initialCaretakers
+        }
       })}
       onSuccess={clearUiMode}
       resolveLabel={i18n.unit.groups.createModal.confirmButton}

@@ -24,9 +24,9 @@ export async function getSettings(): Promise<Record<SettingType, string>> {
 
 
 /**
-* Generated from fi.espoo.evaka.setting.SettingController.setSettings
+* Generated from fi.espoo.evaka.setting.SettingController.putSettings
 */
-export async function setSettings(
+export async function putSettings(
   request: {
     body: Record<SettingType, string>
   }

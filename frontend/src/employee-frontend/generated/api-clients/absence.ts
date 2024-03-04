@@ -21,29 +21,6 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.absencesOfChild
-*/
-export async function absencesOfChild(
-  request: {
-    childId: UUID,
-    year: number,
-    month: number
-  }
-): Promise<Absence[]> {
-  const params = createUrlSearchParams(
-    ['year', request.year.toString()],
-    ['month', request.month.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<Absence[]>>({
-    url: uri`/absences/by-child/${request.childId}`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonAbsence(e))
-}
-
-
-/**
 * Generated from fi.espoo.evaka.absence.AbsenceController.addPresences
 */
 export async function addPresences(
@@ -108,6 +85,29 @@ export async function futureAbsencesOfChild(
   const { data: json } = await client.request<JsonOf<Absence[]>>({
     url: uri`/absences/by-child/${request.childId}/future`.toString(),
     method: 'GET'
+  })
+  return json.map(e => deserializeJsonAbsence(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.absence.AbsenceController.getAbsencesOfChild
+*/
+export async function getAbsencesOfChild(
+  request: {
+    childId: UUID,
+    year: number,
+    month: number
+  }
+): Promise<Absence[]> {
+  const params = createUrlSearchParams(
+    ['year', request.year.toString()],
+    ['month', request.month.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<Absence[]>>({
+    url: uri`/absences/by-child/${request.childId}`.toString(),
+    method: 'GET',
+    params
   })
   return json.map(e => deserializeJsonAbsence(e))
 }

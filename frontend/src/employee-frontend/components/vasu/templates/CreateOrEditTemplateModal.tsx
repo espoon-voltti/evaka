@@ -4,6 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CreateTemplateRequest,
@@ -23,10 +24,12 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
+import { editTemplate, postTemplate } from '../../../generated/api-clients/vasu'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 
-import { createVasuTemplate, editVasuTemplate } from './api'
+const postTemplateResult = wrapResult(postTemplate)
+const editTemplateResult = wrapResult(editTemplate)
 
 interface Props {
   onSuccess: (templateId: UUID) => void
@@ -58,9 +61,11 @@ export default React.memo(function CreateOrEditTemplateModal({
   const [submitting, setSubmitting] = useState(false)
 
   const apiCall = templateToEdit
-    ? (params: CreateTemplateRequest) =>
-        editVasuTemplate(templateToEdit.id, params)
-    : createVasuTemplate
+    ? (body: CreateTemplateRequest) =>
+        editTemplateResult({ id: templateToEdit.id, body }).then((res) =>
+          res.map(() => templateToEdit.id)
+        )
+    : (body: CreateTemplateRequest) => postTemplateResult({ body })
 
   const isEditableName = !templateToEdit || templateToEdit.documentCount == 0
   const isEditableTypeAndLang = !templateToEdit

@@ -40,6 +40,7 @@ import {
   getClubTerms,
   getPreschoolTerms
 } from '../generated/api-clients/daycare'
+import { getThreadByApplicationId } from '../generated/api-clients/messaging'
 import { getServiceNeedOptionPublicInfos } from '../generated/api-clients/serviceneed'
 import { Translations, useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
@@ -47,7 +48,6 @@ import { asUnitType } from '../types/daycare'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
 import { renderResult, UnwrapResult } from './async-rendering'
-import { getMessageThreadForApplication } from './messages/api'
 
 const getServiceNeedOptionPublicInfosResult = wrapResult(
   getServiceNeedOptionPublicInfos
@@ -56,6 +56,7 @@ const getApplicationResult = wrapResult(getApplicationDetails)
 const getClubTermsResult = wrapResult(getClubTerms)
 const getPreschoolTermsResult = wrapResult(getPreschoolTerms)
 const getApplicationUnitsResult = wrapResult(getApplicationUnits)
+const getThreadByApplicationIdResult = wrapResult(getThreadByApplicationId)
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -100,7 +101,7 @@ export default React.memo(function ApplicationPage() {
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
 
   const [messageThread] = useApiState(
-    () => getMessageThreadForApplication(applicationId),
+    () => getThreadByApplicationIdResult({ applicationId }),
     [applicationId]
   )
 

@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from 'react'
 import { unstable_usePrompt as usePrompt } from 'react-router-dom'
 
+import { wrapResult } from 'lib-common/api'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -17,9 +18,12 @@ import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faLockAlt } from 'lib-icons'
 
-import { isPinCodeLocked, updatePinCode } from '../../api/employees'
+import { isPinLocked, upsertPinCode } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { useWarnOnUnsavedChanges } from '../../utils/useWarnOnUnsavedChanges'
+
+const isPinLockedResult = wrapResult(isPinLocked)
+const upsertPinCodeResult = wrapResult(upsertPinCode)
 
 const badPins = [
   '1234',
@@ -47,7 +51,7 @@ export default React.memo(function EmployeePinCodePage() {
   const [dirty, setDirty] = useState<boolean>(false)
 
   useEffect(() => {
-    void isPinCodeLocked().then((res) => res.map(setPinLocked))
+    void isPinLockedResult().then((res) => res.map(setPinLocked))
   }, [setPinLocked])
 
   function errorCheck(pin: string) {
@@ -61,9 +65,9 @@ export default React.memo(function EmployeePinCodePage() {
   }
 
   function savePinCode() {
-    return updatePinCode(pin)
+    return upsertPinCodeResult({ body: { pin } })
       .then(() => setDirty(false))
-      .then(isPinCodeLocked)
+      .then(isPinLockedResult)
   }
 
   function getInputInfo(): InputInfo | undefined {

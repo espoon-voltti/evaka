@@ -8,7 +8,7 @@ import {
   AutosaveStatus,
   useAutosave
 } from 'employee-frontend/utils/use-autosave'
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
@@ -17,8 +17,16 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import {
   getAssistanceDecisionMakerOptions,
   getAssistanceNeedDecision,
-  putAssistanceNeedDecision
-} from './api'
+  updateAssistanceNeedDecision
+} from '../../../../generated/api-clients/assistanceneed'
+
+const getAssistanceDecisionMakerOptionsResult = wrapResult(
+  getAssistanceDecisionMakerOptions
+)
+const getAssistanceNeedDecisionResult = wrapResult(getAssistanceNeedDecision)
+const updateAssistanceNeedDecisionResult = wrapResult(
+  updateAssistanceNeedDecision
+)
 
 export type AssistanceNeedDecisionInfo = {
   decisionMakerOptions: Result<Employee[]>
@@ -42,7 +50,7 @@ export function useAssistanceNeedDecision(
 
   const loadDecision = useCallback(
     () =>
-      getAssistanceNeedDecision(id).then(
+      getAssistanceNeedDecisionResult({ id }).then(
         (d) =>
           d.map(
             ({ decision }) => decision
@@ -52,7 +60,7 @@ export function useAssistanceNeedDecision(
   )
 
   const [decisionMakerOptions, reloadDecisionMakerOptions] = useApiState(
-    () => getAssistanceDecisionMakerOptions(id),
+    () => getAssistanceDecisionMakerOptionsResult({ id }),
     [id]
   )
 
@@ -60,10 +68,11 @@ export function useAssistanceNeedDecision(
     load: loadDecision,
     onLoaded: setFormState,
     save: (id: UUID, decision: AssistanceNeedDecisionForm) =>
-      putAssistanceNeedDecision(id, decision).then((result) =>
-        reloadDecisionMakerOptions()
-          .then(() => result)
-          .catch(() => result)
+      updateAssistanceNeedDecisionResult({ id, body: { decision } }).then(
+        (result) =>
+          reloadDecisionMakerOptions()
+            .then(() => result)
+            .catch(() => result)
       ),
     getSaveParameters
   })

@@ -4,7 +4,7 @@
 
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Parentship, PersonSummary } from 'lib-common/generated/api-types/pis'
@@ -15,15 +15,22 @@ import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
 import { faChild } from 'lib-icons'
 
-import { addParentship, updateParentship } from '../../../api/parentships'
-import { getPerson } from '../../../api/person'
 import { DbPersonSearch as PersonSearch } from '../../../components/common/PersonSearch'
+import {
+  createParentship,
+  getPersonIdentity,
+  updateParentship
+} from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
 import RetroactiveConfirmation, {
   isChangeRetroactive
 } from '../../common/RetroactiveConfirmation'
+
+const getPersonIdentityResult = wrapResult(getPersonIdentity)
+const createParentshipResult = wrapResult(createParentship)
+const updateParentshipResult = wrapResult(updateParentship)
 
 interface Props {
   headPersonId: UUID
@@ -104,15 +111,25 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
   useEffect(() => {
-    void getPerson(headPersonId).then(setPersonData)
+    void getPersonIdentityResult({ personId: headPersonId }).then(setPersonData)
   }, [headPersonId, setPersonData])
 
   const childFormActions = () => {
     if (!form.child) return
 
     const apiCall = parentship
-      ? updateParentship(parentship.id, form.startDate, form.endDate)
-      : addParentship(headPersonId, form.child.id, form.startDate, form.endDate)
+      ? updateParentshipResult({
+          id: parentship.id,
+          body: { startDate: form.startDate, endDate: form.endDate }
+        })
+      : createParentshipResult({
+          body: {
+            headOfChildId: headPersonId,
+            childId: form.child.id,
+            startDate: form.startDate,
+            endDate: form.endDate
+          }
+        })
 
     void apiCall.then((res: Result<void>) => {
       if (res.isFailure) {

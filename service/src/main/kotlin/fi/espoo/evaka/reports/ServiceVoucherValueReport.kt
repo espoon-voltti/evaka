@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController
 class ServiceVoucherValueReportController(private val accessControl: AccessControl) {
 
     @GetMapping("/units")
-    fun getServiceVoucherValuesForAllUnits(
+    fun getServiceVoucherReportForAllUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
@@ -62,7 +62,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
     )
 
     @GetMapping("/units/{unitId}")
-    fun getServiceVoucherValuesForUnit(
+    fun getServiceVoucherReportForUnit(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,

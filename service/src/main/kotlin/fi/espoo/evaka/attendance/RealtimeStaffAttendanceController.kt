@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/staff-attendances/realtime")
 class RealtimeStaffAttendanceController(private val accessControl: AccessControl) {
     @GetMapping
-    fun getAttendances(
+    fun getRealtimeStaffAttendances(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -185,7 +185,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     @PostMapping("/{unitId}/upsert")
-    fun upsertStaffAttendances(
+    fun upsertStaffRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -282,7 +282,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     @PostMapping("/upsert")
-    fun upsertDailyStaffAttendances(
+    fun upsertDailyStaffRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -365,7 +365,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     @PostMapping("/upsert-external")
-    fun upsertDailyExternalAttendances(
+    fun upsertDailyExternalRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -420,7 +420,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     @DeleteMapping("/{unitId}/{attendanceId}")
-    fun deleteStaffAttendances(
+    fun deleteStaffRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -443,7 +443,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     @DeleteMapping("/{unitId}/external/{attendanceId}")
-    fun deleteExternalStaffAttendances(
+    fun deleteExternalStaffRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

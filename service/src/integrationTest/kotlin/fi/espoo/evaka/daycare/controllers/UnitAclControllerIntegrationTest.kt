@@ -533,9 +533,9 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             http
                 .get("/daycares/${testDaycare.id}/acl")
                 .asUser(admin)
-                .responseObject<UnitAclController.DaycareAclResponse>(jsonMapper)
+                .responseObject<List<DaycareAclRow>>(jsonMapper)
         assertTrue(res.isSuccessful)
-        return body.get().aclRows
+        return body.get()
     }
 
     private fun getTemporaryEmployees(clock: EvakaClock, unitId: DaycareId) =

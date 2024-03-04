@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
+import { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -22,7 +23,6 @@ import {
   updateCaretakers
 } from '../../generated/api-clients/daycare'
 import { useTranslation } from '../../state/i18n'
-import { CaretakerAmount } from '../../types/caretakers'
 
 const createCaretakersResult = wrapResult(createCaretakers)
 const updateCaretakersResult = wrapResult(updateCaretakers)

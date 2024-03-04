@@ -7,10 +7,11 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { Arg0 } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -22,16 +23,21 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { faFileAlt } from 'lib-icons'
 
-import {
-  getPlacementSketchingReport,
-  PlacementSketchingReportFilters
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getPlacementSketchingReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+
+const getPlacementSketchingReportResult = wrapResult(
+  getPlacementSketchingReport
+)
+
+type PlacementSketchingReportFilters = Required<
+  Arg0<typeof getPlacementSketchingReport>
+>
 
 const selectableApplicationStatuses: ApplicationStatus[] = [
   'SENT',
@@ -75,7 +81,7 @@ export default React.memo(function PlacementSketching() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getPlacementSketchingReport(filters).then(setRows)
+    void getPlacementSketchingReportResult(filters).then(setRows)
   }, [filters])
 
   const filteredRows: PlacementSketchingReportRow[] = useMemo(
@@ -124,7 +130,7 @@ export default React.memo(function PlacementSketching() {
             {i18n.reports.placementSketching.earliestPreferredStartDate}
           </FilterLabel>
           <DatePickerDeprecated
-            date={filters.earliestPreferredStartDate}
+            date={filters.earliestPreferredStartDate ?? undefined}
             onChange={(earliestPreferredStartDate) =>
               setFilters({ ...filters, earliestPreferredStartDate })
             }
@@ -147,8 +153,9 @@ export default React.memo(function PlacementSketching() {
                     )
                   })
                 }
-                value={selectableApplicationStatuses.filter((status) =>
-                  filters.applicationStatus.includes(status)
+                value={selectableApplicationStatuses.filter(
+                  (status) =>
+                    filters.applicationStatus?.includes(status) ?? true
                 )}
                 getOptionId={(status) => status}
                 getOptionLabel={(status) => i18n.application.statuses[status]}

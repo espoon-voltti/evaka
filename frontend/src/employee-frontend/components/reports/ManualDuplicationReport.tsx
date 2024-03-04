@@ -8,11 +8,13 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import {
   ManualDuplicationReportRow,
   ManualDuplicationReportViewMode
 } from 'lib-common/generated/api-types/reports'
+import { Arg0 } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -28,14 +30,17 @@ import {
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  getManualDuplicationReport,
-  ManualDuplicationReportFilters
-} from '../../api/reports'
+import { getManualDuplicationReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+
+const getManualDuplicationReportResult = wrapResult(getManualDuplicationReport)
+
+type ManualDuplicationReportFilters = Required<
+  Arg0<typeof getManualDuplicationReport>
+>
 
 type ReportColumnKey = keyof ManualDuplicationReportRow
 
@@ -51,7 +56,7 @@ export default React.memo(function ManualDuplicationReport() {
     viewMode: 'NONDUPLICATED'
   })
   const [reportResult] = useApiState(
-    () => getManualDuplicationReport(filters),
+    () => getManualDuplicationReportResult(filters),
     [filters]
   )
 

@@ -4,7 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
@@ -14,11 +14,14 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { DateFilters, getServiceNeedReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getServiceNeedReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { DateFilters } from '../../types/reports'
 
 import { FilterLabel, FilterRow, TableScrollable } from './common'
+
+const getServiceNeedReportResult = wrapResult(getServiceNeedReport)
 
 interface DisplayFilters {
   careArea: string
@@ -43,7 +46,7 @@ export default React.memo(function ServiceNeeds() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getServiceNeedReport(filters).then(setRows)
+    void getServiceNeedReportResult(filters).then(setRows)
   }, [filters])
 
   const filteredRows: ServiceNeedReportRow[] = useMemo(

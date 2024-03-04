@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { UpdateStateFn } from 'lib-common/form-state'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
@@ -16,10 +17,7 @@ import { faExchange } from 'lib-icons'
 
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import {
-  DaycareGroup,
-  DaycareGroupPlacementDetailed
-} from '../../../../../types/unit'
+import { DaycareGroupPlacementDetailed } from '../../../../../types/unit'
 import { formatName } from '../../../../../utils'
 import { transferGroupMutation } from '../../../queries'
 
@@ -101,8 +99,10 @@ export default React.memo(function GroupTransferModal({
           ? {
               unitId,
               groupPlacementId: groupPlacementId || '',
-              groupId: form.group.id,
-              startDate: form.startDate
+              body: {
+                groupId: form.group.id,
+                startDate: form.startDate
+              }
             }
           : cancelMutation
       }

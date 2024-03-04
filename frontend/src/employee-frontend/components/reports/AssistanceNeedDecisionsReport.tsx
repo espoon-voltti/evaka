@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -25,12 +26,16 @@ import {
   Tr
 } from 'lib-components/layout/Table'
 
-import { getAssistanceNeedDecisionsReport } from '../../api/reports'
+import { getAssistanceNeedDecisionsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { renderResult } from '../async-rendering'
 
 import { FilterLabel, FilterRow } from './common'
+
+const getAssistanceNeedDecisionsReportResult = wrapResult(
+  getAssistanceNeedDecisionsReport
+)
 
 const Wrapper = styled.div`
   width: 100%;
@@ -55,7 +60,7 @@ const RelativeTr = styled(Tr)`
 
 export default React.memo(function AssistanceNeedDecisionsReport() {
   const { i18n } = useTranslation()
-  const [report] = useApiState(getAssistanceNeedDecisionsReport, [])
+  const [report] = useApiState(getAssistanceNeedDecisionsReportResult, [])
   const [careAreaFilter, setCareAreaFilter] = useState<string>()
   const [searchParams, setSearchParams] = useSearchParams()
 

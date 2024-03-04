@@ -87,9 +87,11 @@ export function VasuStateTransitionButtons({
           }
           resolveMutation={updateDocumentStateMutation}
           resolveAction={() => ({
+            id: documentId,
             childId,
-            documentId,
-            eventType: selectedEventType
+            body: {
+              eventType: selectedEventType
+            }
           })}
           resolveLabel={i18n.vasu.transitions[selectedEventType].confirmAction}
           onSuccess={useSuccess.on}

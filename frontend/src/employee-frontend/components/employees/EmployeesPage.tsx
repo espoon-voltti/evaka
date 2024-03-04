@@ -49,7 +49,9 @@ export default React.memo(function EmployeesPage() {
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
   const employees = useQueryResult(
-    searchEmployeesQuery(page, PAGE_SIZE, debouncedSearchTerm)
+    searchEmployeesQuery({
+      body: { page, pageSize: PAGE_SIZE, searchTerm: debouncedSearchTerm }
+    })
   )
 
   return (

@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -20,13 +20,16 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
-import { getDecisionsReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getDecisionsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { PeriodFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
+
+const getDecisionsReportResult = wrapResult(getDecisionsReport)
 
 interface DisplayFilters {
   careArea: string
@@ -53,7 +56,7 @@ export default React.memo(function Decisions() {
   const displayFilter = (row: DecisionsReportRow): boolean =>
     !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
 
-  const loadReport = useRestApi(getDecisionsReport, setRows)
+  const loadReport = useRestApi(getDecisionsReportResult, setRows)
 
   useEffect(() => {
     void loadReport(filters)

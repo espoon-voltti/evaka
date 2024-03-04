@@ -12,24 +12,29 @@ import {
   useState
 } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import {
   InvoiceSortParam,
   InvoiceSummaryResponse,
   PagedInvoiceSummaryResponses,
+  SearchInvoicesRequest,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
 import {
-  createInvoices,
-  getInvoices,
-  InvoiceSearchParams,
+  createDraftInvoices,
+  searchInvoices,
   sendInvoices,
   sendInvoicesByDate
-} from '../../api/invoicing'
+} from '../../generated/api-clients/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+
+const createDraftInvoicesResult = wrapResult(createDraftInvoices)
+const searchInvoicesResult = wrapResult(searchInvoices)
+const sendInvoicesResult = wrapResult(sendInvoices)
+const sendInvoicesByDateResult = wrapResult(sendInvoicesByDate)
 
 const pageSize = 200
 
@@ -137,7 +142,7 @@ export function useInvoicesState() {
     [setState, state.page] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
-  const loadInvoices = useRestApi(getInvoices, setInvoicesResult)
+  const loadInvoices = useRestApi(searchInvoicesResult, setInvoicesResult)
   const reloadInvoices = useCallback(() => {
     const { startDate, endDate } = searchFilters
     if (startDate && endDate && startDate.isAfter(endDate)) {
@@ -145,22 +150,20 @@ export function useInvoicesState() {
     }
 
     const status = searchFilters.status
-    const params: InvoiceSearchParams = {
-      area: searchFilters.area,
-      unit: searchFilters.unit,
-      status: status.length > 0 ? [status] : undefined,
-      distinctions: searchFilters.distinctiveDetails,
-      searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
-      periodStart: startDate,
-      periodEnd: endDate
-    }
-    void loadInvoices(
-      state.page,
+    const params: SearchInvoicesRequest = {
+      page: state.page,
       pageSize,
-      state.sortBy,
-      state.sortDirection,
-      params
-    )
+      sortBy: state.sortBy,
+      sortDirection: state.sortDirection,
+      area: searchFilters.area,
+      unit: searchFilters.unit ?? null,
+      status: status.length > 0 ? [status] : null,
+      distinctions: searchFilters.distinctiveDetails,
+      searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
+      periodStart: startDate ?? null,
+      periodEnd: endDate ?? null
+    }
+    void loadInvoices({ body: params })
   }, [
     state.page,
     state.sortBy,
@@ -171,7 +174,7 @@ export function useInvoicesState() {
   ])
 
   const refreshInvoices = useCallback(async () => {
-    await createInvoices()
+    await createDraftInvoicesResult()
     reloadInvoices()
   }, [reloadInvoices])
 
@@ -184,19 +187,28 @@ export function useInvoicesState() {
       dueDate: LocalDate
     }) =>
       state.allInvoicesToggle
-        ? sendInvoicesByDate(
+        ? sendInvoicesByDateResult({
+            body: {
+              invoiceDate,
+              dueDate,
+              areas: searchFilters.area,
+              from:
+                searchFilters.startDate &&
+                searchFilters.useCustomDatesForInvoiceSending
+                  ? searchFilters.startDate
+                  : LocalDate.todayInSystemTz().withDate(1),
+              to:
+                searchFilters.endDate &&
+                searchFilters.useCustomDatesForInvoiceSending
+                  ? searchFilters.endDate
+                  : LocalDate.todayInSystemTz().lastDayOfMonth()
+            }
+          })
+        : sendInvoicesResult({
             invoiceDate,
             dueDate,
-            searchFilters.area,
-            searchFilters.startDate,
-            searchFilters.endDate,
-            searchFilters.useCustomDatesForInvoiceSending
-          )
-        : sendInvoices(
-            Object.keys(state.checkedInvoices),
-            invoiceDate,
-            dueDate
-          ),
+            body: Object.keys(state.checkedInvoices)
+          }),
     [
       state.checkedInvoices,
       state.allInvoicesToggle,

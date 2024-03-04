@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
@@ -13,12 +13,15 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
-import { getPresenceReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getPresenceReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { PeriodFilters } from '../../types/reports'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow } from './common'
+
+const getPresenceReportResult = wrapResult(getPresenceReport)
 
 export default React.memo(function Presences() {
   const { i18n } = useTranslation()
@@ -30,7 +33,7 @@ export default React.memo(function Presences() {
 
   useEffect(() => {
     setRows(Loading.of())
-    void getPresenceReport(filters).then(setRows)
+    void getPresenceReportResult(filters).then(setRows)
   }, [filters])
 
   return (

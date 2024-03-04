@@ -6,15 +6,13 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  DaycareGroupSummary,
-  getTemporaryEmployee,
-  updateTemporaryEmployee
-} from 'employee-frontend/api/unit'
 import { isValidPinCode } from 'employee-frontend/components/employee/EmployeePinCodePage'
-import { Result, Success } from 'lib-common/api'
+import { Result, Success, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
-import { AclUpdate } from 'lib-common/generated/api-types/daycare'
+import {
+  AclUpdate,
+  DaycareGroupResponse
+} from 'lib-common/generated/api-types/daycare'
 import { TemporaryEmployee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -31,15 +29,22 @@ import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import {
+  getTemporaryEmployee,
+  updateTemporaryEmployee
+} from '../../../generated/api-clients/daycare'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 
 import { FormattedRow } from './UnitAccessControl'
 
+const getTemporaryEmployeeResult = wrapResult(getTemporaryEmployee)
+const updateTemporaryEmployeeResult = wrapResult(updateTemporaryEmployee)
+
 type EmployeeRowEditFormState = {
   firstName: string
   lastName: string
-  selectedGroups: DaycareGroupSummary[] | null
+  selectedGroups: DaycareGroupResponse[] | null
   hasStaffOccupancyEffect: boolean | null
   pinCode: string
 }
@@ -47,14 +52,14 @@ type EmployeeRowEditFormState = {
 interface Props {
   onClose: () => void
   onSuccess: () => void
-  updatesGroupAcl: (
-    unitId: UUID,
-    employeeId: UUID,
-    update: AclUpdate
-  ) => Promise<Result<unknown>>
-  permittedActions: Set<Action.Unit>
+  updatesGroupAcl: (arg: {
+    daycareId: UUID
+    employeeId: UUID
+    body: AclUpdate
+  }) => Promise<Result<unknown>>
+  permittedActions: Action.Unit[]
   unitId: UUID
-  groups: Record<string, DaycareGroupSummary>
+  groups: Record<string, DaycareGroupResponse>
   employeeRow: FormattedRow
 }
 
@@ -68,7 +73,7 @@ export default React.memo(function EmployeeAclRowEditModal({
   const [temporaryEmployee] = useApiState(
     (): Promise<Result<TemporaryEmployee | undefined>> =>
       employeeRow.temporary
-        ? getTemporaryEmployee(unitId, employeeRow.id)
+        ? getTemporaryEmployeeResult({ unitId, employeeId: employeeRow.id })
         : Promise.resolve(Success.of(undefined)),
     [employeeRow.temporary, employeeRow.id, unitId]
   )
@@ -127,7 +132,7 @@ const EmployeeAclEditForm = React.memo(function EmployeeAclEditForm({
   )
 
   const initSelectedGroups = (groupIds: UUID[]) =>
-    permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+    permittedActions.includes('UPDATE_STAFF_GROUP_ACL')
       ? groupOptions.filter((option) => groupIds.includes(option.id))
       : null
 
@@ -155,29 +160,37 @@ const EmployeeAclEditForm = React.memo(function EmployeeAclEditForm({
 
   const submit = useCallback(() => {
     const updateBody: AclUpdate = {
-      groupIds: permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+      groupIds: permittedActions.includes('UPDATE_STAFF_GROUP_ACL')
         ? formData.selectedGroups
           ? formData.selectedGroups.map((g) => g.id)
           : null
         : null,
-      hasStaffOccupancyEffect: permittedActions.has(
+      hasStaffOccupancyEffect: permittedActions.includes(
         'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
       )
         ? formData.hasStaffOccupancyEffect
         : null
     }
     if (employeeRow.temporary) {
-      return updateTemporaryEmployee(unitId, employeeRow.id, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        groupIds: formData.selectedGroups
-          ? formData.selectedGroups.map((item) => item.id)
-          : [],
-        hasStaffOccupancyEffect: formData.hasStaffOccupancyEffect ?? false,
-        pinCode: formData.pinCode ? { pin: formData.pinCode } : null
+      return updateTemporaryEmployeeResult({
+        unitId,
+        employeeId: employeeRow.id,
+        body: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          groupIds: formData.selectedGroups
+            ? formData.selectedGroups.map((item) => item.id)
+            : [],
+          hasStaffOccupancyEffect: formData.hasStaffOccupancyEffect ?? false,
+          pinCode: formData.pinCode ? { pin: formData.pinCode } : null
+        }
       })
     } else {
-      return updatesGroupAcl(unitId, employeeRow.id, updateBody)
+      return updatesGroupAcl({
+        daycareId: unitId,
+        employeeId: employeeRow.id,
+        body: updateBody
+      })
     }
   }, [formData, unitId, employeeRow, updatesGroupAcl, permittedActions])
 
@@ -218,7 +231,7 @@ const EmployeeAclEditForm = React.memo(function EmployeeAclEditForm({
           </FormControl>
         </>
       )}
-      {permittedActions.has('UPDATE_STAFF_GROUP_ACL') && (
+      {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
         <FormControl>
           <FieldLabel>
             {i18n.unit.accessControl.addDaycareAclModal.groups}
@@ -236,12 +249,12 @@ const EmployeeAclEditForm = React.memo(function EmployeeAclEditForm({
           />
         </FormControl>
       )}
-      {permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
+      {permittedActions.includes('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
         <Checkbox
           data-qa="edit-acl-modal-coeff-checkbox"
           checked={formData.hasStaffOccupancyEffect === true}
           disabled={
-            !permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+            !permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
           }
           label={i18n.unit.accessControl.hasOccupancyCoefficient}
           onChange={(checked) => {

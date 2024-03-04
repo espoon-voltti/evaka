@@ -256,7 +256,7 @@ class AbsenceController(
     }
 
     @GetMapping("/by-child/{childId}")
-    fun absencesOfChild(
+    fun getAbsencesOfChild(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

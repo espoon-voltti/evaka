@@ -30,11 +30,15 @@ export default React.memo(function TabGroups({
   const { unitId, unitInformation, filters, setFilters } =
     useContext(UnitContext)
   const groupData = useQueryResult(
-    unitGroupDetailsQuery(unitId, filters.startDate, filters.endDate)
+    unitGroupDetailsQuery({
+      unitId,
+      from: filters.startDate,
+      to: filters.endDate
+    })
   )
 
   const groupPermittedActions: Result<
-    Record<string, Set<Action.Group> | undefined>
+    Record<string, Action.Group[] | undefined>
   > = useMemo(
     () =>
       unitInformation.map((unitInformation) =>

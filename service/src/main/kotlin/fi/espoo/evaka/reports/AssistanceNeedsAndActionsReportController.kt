@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceNeedsAndActionsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-needs-and-actions")
-    fun getAssistanceNeedReport(
+    fun getAssistanceNeedsAndActionsReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -79,7 +79,7 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
     )
 
     @GetMapping("/reports/assistance-needs-and-actions/by-child")
-    fun getAssistanceNeedReportByChild(
+    fun getAssistanceNeedsAndActionsReportByChild(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -94,7 +94,7 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
                         )
-                    getAssistanceNeedReportByChild(it, date, filter)
+                    getAssistanceNeedsAndActionsReportByChild(it, date, filter)
                 }
             }
             .also {
@@ -104,7 +104,7 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
             }
     }
 
-    fun getAssistanceNeedReportByChild(
+    fun getAssistanceNeedsAndActionsReportByChild(
         tx: Database.Read,
         date: LocalDate,
         filter: AccessControlFilter<DaycareId>

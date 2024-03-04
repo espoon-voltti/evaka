@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
+import { wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -29,7 +30,13 @@ import {
   getAssistanceNeedDecision,
   revertToUnsentAssistanceNeedDecision,
   sendAssistanceNeedDecision
-} from './api'
+} from '../../../../generated/api-clients/assistanceneed'
+
+const getAssistanceNeedDecisionResult = wrapResult(getAssistanceNeedDecision)
+const sendAssistanceNeedDecisionResult = wrapResult(sendAssistanceNeedDecision)
+const revertToUnsentAssistanceNeedDecisionResult = wrapResult(
+  revertToUnsentAssistanceNeedDecision
+)
 
 const StickyFooterContainer = styled.div`
   padding: ${defaultMargins.xs};
@@ -44,7 +51,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   const navigate = useNavigate()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(
-    () => getAssistanceNeedDecision(id),
+    () => getAssistanceNeedDecisionResult({ id }),
     [id]
   )
 
@@ -132,7 +139,9 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                       <AsyncButton
                         primary
                         text={t.revertToUnsent}
-                        onClick={() => revertToUnsentAssistanceNeedDecision(id)}
+                        onClick={() =>
+                          revertToUnsentAssistanceNeedDecisionResult({ id })
+                        }
                         onSuccess={reloadDecision}
                         data-qa="revert-to-unsent"
                       />
@@ -142,7 +151,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                     <AsyncButton
                       primary
                       text={t.sendToDecisionMaker}
-                      onClick={() => sendAssistanceNeedDecision(id)}
+                      onClick={() => sendAssistanceNeedDecisionResult({ id })}
                       onSuccess={reloadDecision}
                       disabled={!canBeEdited(decision)}
                       data-qa="send-decision"

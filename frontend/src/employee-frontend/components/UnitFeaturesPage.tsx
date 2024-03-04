@@ -7,18 +7,16 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Failure, Result, Success } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
 import {
   CareType,
   careTypes,
-  ProviderType,
-  UnitFeatures
+  ProviderType
 } from 'lib-common/generated/api-types/daycare'
 import {
   PilotFeature,
   pilotFeatures
 } from 'lib-common/generated/api-types/shared'
-import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -31,33 +29,21 @@ import { H1, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { unitProviderTypes } from 'lib-customizations/employee'
 
-import { client } from '../api/client'
+import {
+  getUnitFeatures,
+  updateUnitFeatures
+} from '../generated/api-clients/daycare'
 
 import { renderResult } from './async-rendering'
 import { TableScrollable } from './reports/common'
 
-async function getUnitFeatures(): Promise<Result<UnitFeatures[]>> {
-  return client
-    .get<JsonOf<UnitFeatures[]>>('/daycares/features')
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-async function updateUnitFeatures(
-  unitIds: UUID[],
-  features: PilotFeature[],
-  enable: boolean
-): Promise<Result<void>> {
-  return client
-    .post(`/daycares/unit-features`, { unitIds, features, enable })
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
+const getUnitFeaturesResult = wrapResult(getUnitFeatures)
+const updateUnitFeaturesResult = wrapResult(updateUnitFeatures)
 
 export default React.memo(function UnitFeaturesPage() {
   const { i18n } = useTranslation()
 
-  const [units, reloadUnits] = useApiState(getUnitFeatures, [])
+  const [units, reloadUnits] = useApiState(getUnitFeaturesResult, [])
 
   const [submitting, setSubmitting] = useState(false)
 
@@ -73,7 +59,9 @@ export default React.memo(function UnitFeaturesPage() {
     ) => {
       setSubmitting(true)
 
-      const result = await updateUnitFeatures(unitIds, features, enable)
+      const result = await updateUnitFeaturesResult({
+        body: { unitIds, features, enable }
+      })
       if (!isUndoAction) {
         setUndoAction([unitIds, features, !enable])
       }

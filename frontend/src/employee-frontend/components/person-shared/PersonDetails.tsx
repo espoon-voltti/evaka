@@ -12,7 +12,7 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
@@ -36,16 +36,25 @@ import {
 import { featureFlags } from 'lib-customizations/employee'
 import { faCopy, faPen, faSync } from 'lib-icons'
 
-import {
-  duplicatePerson,
-  patchPersonDetails,
-  updatePersonAndFamilyFromVtj,
-  updateSsnAddingDisabled
-} from '../../api/person'
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
+import {
+  disableSsn,
+  duplicatePerson,
+  getPersonIdentity,
+  updatePersonAndFamilyFromVtj,
+  updatePersonDetails
+} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { UIContext, UiState } from '../../state/ui'
+
+const getPersonIdentityResult = wrapResult(getPersonIdentity)
+const updatePersonDetailsResult = wrapResult(updatePersonDetails)
+const updatePersonAndFamilyFromVtjResult = wrapResult(
+  updatePersonAndFamilyFromVtj
+)
+const disableSsnResult = wrapResult(disableSsn)
+const duplicatePersonResult = wrapResult(duplicatePerson)
 
 const PostalCodeAndOffice = styled.div`
   display: flex;
@@ -129,16 +138,18 @@ export default React.memo(function PersonDetails({
   const disableSsnAdding = useCallback(
     (disabled: boolean) => {
       setSsnDisableRequest(Loading.of())
-      void updateSsnAddingDisabled(person.id, disabled).then((result) => {
-        setSsnDisableRequest(result)
+      void disableSsnResult({ personId: person.id, body: { disabled } }).then(
+        (result) => {
+          setSsnDisableRequest(result)
 
-        if (result.isSuccess) {
-          onUpdateComplete({
-            ...person,
-            ssnAddingDisabled: disabled
-          })
+          if (result.isSuccess) {
+            onUpdateComplete({
+              ...person,
+              ssnAddingDisabled: disabled
+            })
+          }
         }
-      })
+      )
     },
     [person, onUpdateComplete, setSsnDisableRequest]
   )
@@ -187,17 +198,19 @@ export default React.memo(function PersonDetails({
   }
 
   const onSubmit = () => {
-    void patchPersonDetails(person.id, form).then((res) => {
-      if (res.isSuccess) {
-        if (onUpdateComplete) onUpdateComplete(res.value)
-        clearUiMode()
+    void updatePersonDetailsResult({ personId: person.id, body: form }).then(
+      (res) => {
+        if (res.isSuccess) {
+          onUpdateComplete(res.value)
+          clearUiMode()
+        }
       }
-    })
+    )
   }
 
   const onDuplicate = () => {
     setDuplicateOngoing(true)
-    void duplicatePerson(person.id).then((response) => {
+    void duplicatePersonResult({ personId: person.id }).then((response) => {
       setDuplicateOngoing(false)
       if (response.isSuccess) {
         navigate(`/child-information/${response.value}`)
@@ -207,13 +220,23 @@ export default React.memo(function PersonDetails({
 
   const onVtjUpdate = () => {
     setVtjUpdateOngoing(true)
-    void updatePersonAndFamilyFromVtj(person.id).then((res) => {
-      setVtjUpdateOngoing(false)
-      if (res.isSuccess) {
-        if (onUpdateComplete) onUpdateComplete(res.value)
-        clearUiMode()
+    void updatePersonAndFamilyFromVtjResult({ personId: person.id }).then(
+      (updateResponse) => {
+        if (updateResponse.isSuccess) {
+          void getPersonIdentityResult({ personId: person.id }).then(
+            (getResponse) => {
+              setVtjUpdateOngoing(false)
+              if (getResponse.isSuccess) {
+                onUpdateComplete(getResponse.value)
+                clearUiMode()
+              }
+            }
+          )
+        } else {
+          setVtjUpdateOngoing(false)
+        }
       }
-    })
+    )
   }
 
   const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')

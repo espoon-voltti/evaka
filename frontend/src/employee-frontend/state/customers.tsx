@@ -10,14 +10,21 @@ import React, {
   createContext
 } from 'react'
 
-import { Result, Success } from 'lib-common/api'
+import { Result, Success, wrapResult } from 'lib-common/api'
 import { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 
-import { findByNameOrAddress } from '../api/person'
+import { searchPerson } from '../generated/api-clients/pis'
 import { SearchOrder } from '../types'
-import { SearchColumn } from '../types/person'
+
+const searchPersonResult = wrapResult(searchPerson)
+
+export type SearchColumn =
+  | 'last_name,first_name'
+  | 'date_of_birth'
+  | 'street_address'
+  | 'social_security_number'
 
 export interface CustomersState {
   customers: Result<PersonSummary[]>
@@ -75,9 +82,11 @@ export const CustomersContextProvider = React.memo(
 
     const value = useMemo(() => {
       const useCustomerSearch = () => {
-        const searchCustomers = useRestApi(findByNameOrAddress, setCustomers)
+        const searchCustomers = useRestApi(searchPersonResult, setCustomers)
         useEffect(() => {
-          void searchCustomers(searchTerm, sortColumn, sortDirection)
+          void searchCustomers({
+            body: { searchTerm, orderBy: sortColumn, sortDirection }
+          })
         }, [debouncedSearchTerm, sortColumn, sortDirection]) // eslint-disable-line react-hooks/exhaustive-deps
       }
 

@@ -24,12 +24,18 @@ import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getParentshipsByChild } from '../api/parentships'
-import { getChildDetails, getPersonGuardians } from '../api/person'
 import { getChildBackupCares } from '../generated/api-clients/backupcare'
+import { getChild } from '../generated/api-clients/daycare'
+import {
+  getParentships,
+  getPersonGuardians
+} from '../generated/api-clients/pis'
 import { getPlacements } from '../generated/api-clients/placement'
 
+const getChildResult = wrapResult(getChild)
+const getPersonGuardiansResult = wrapResult(getPersonGuardians)
 const getPlacementsResult = wrapResult(getPlacements)
+const getParentshipsResult = wrapResult(getParentships)
 
 export interface ChildState {
   childId: UUID | undefined
@@ -111,13 +117,13 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     },
     [updatePermittedActions]
   )
-  const loadChild = useRestApi(getChildDetails, setFullChildResponse)
+  const loadChild = useRestApi(getChildResult, setFullChildResponse)
   useEffect(() => {
-    void loadChild(id)
+    void loadChild({ childId: id })
   }, [loadChild, id])
 
   const reloadPermittedActions = useCallback(() => {
-    void getChildDetails(id).then(updatePermittedActions)
+    void getChildResult({ childId: id }).then(updatePermittedActions)
   }, [id, updatePermittedActions])
 
   const person = useMemo(
@@ -150,7 +156,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [parentships] = useApiState(
     async (): Promise<Result<ParentshipWithPermittedActions[]>> =>
       permittedActions.has('READ_PARENTSHIPS')
-        ? await getParentshipsByChild(id)
+        ? await getParentshipsResult({ childId: id })
         : Loading.of(),
     [id, permittedActions]
   )
@@ -168,7 +174,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [guardians, reloadGuardians] = useApiState(
     async () =>
       permittedActions.has('READ_GUARDIANS')
-        ? await getPersonGuardians(id)
+        ? await getPersonGuardiansResult({ personId: id })
         : Loading.of<PersonJSON[]>(),
     [id, permittedActions]
   )

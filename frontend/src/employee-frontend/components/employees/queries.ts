@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
-import { UserRole } from 'lib-common/generated/api-types/shared'
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
@@ -15,33 +13,32 @@ import {
   searchEmployees,
   updateEmployeeGlobalRoles,
   upsertEmployeeDaycareRoles
-} from '../../api/employees'
+} from '../../generated/api-clients/pis'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('employees', {
   searchAll: () => ['search'],
-  search: (page: number, pageSize: number, searchTerm?: string) => [
-    'search',
-    page,
-    pageSize,
-    searchTerm
-  ],
+  search: (
+    page: number | null,
+    pageSize: number | null,
+    searchTerm: string | null
+  ) => ['search', page, pageSize, searchTerm],
   byId: (id: UUID) => ['id', id]
 })
 
 export const searchEmployeesQuery = query({
   api: searchEmployees,
-  queryKey: queryKeys.search
+  queryKey: ({ body: { page, pageSize, searchTerm } }) =>
+    queryKeys.search(page, pageSize, searchTerm)
 })
 
 export const employeeDetailsQuery = query({
   api: getEmployeeDetails,
-  queryKey: queryKeys.byId
+  queryKey: ({ id }) => queryKeys.byId(id)
 })
 
 export const updateEmployeeGlobalRolesMutation = mutation({
-  api: (args: { id: UUID; globalRoles: UserRole[] }) =>
-    updateEmployeeGlobalRoles(args.id, args.globalRoles),
+  api: updateEmployeeGlobalRoles,
   invalidateQueryKeys: (args) => [
     queryKeys.searchAll(),
     queryKeys.byId(args.id)
@@ -49,8 +46,7 @@ export const updateEmployeeGlobalRolesMutation = mutation({
 })
 
 export const upsertEmployeeDaycareRolesMutation = mutation({
-  api: (args: { id: UUID; request: UpsertEmployeeDaycareRolesRequest }) =>
-    upsertEmployeeDaycareRoles(args.id, args.request),
+  api: upsertEmployeeDaycareRoles,
   invalidateQueryKeys: (args) => [
     queryKeys.searchAll(),
     queryKeys.byId(args.id)
@@ -58,20 +54,19 @@ export const upsertEmployeeDaycareRolesMutation = mutation({
 })
 
 export const deleteEmployeeDaycareRolesMutation = mutation({
-  api: (args: { employeeId: UUID; daycareId: UUID | null }) =>
-    deleteEmployeeDaycareRoles(args.employeeId, args.daycareId),
+  api: deleteEmployeeDaycareRoles,
   invalidateQueryKeys: (args) => [
     queryKeys.searchAll(),
-    queryKeys.byId(args.employeeId)
+    queryKeys.byId(args.id)
   ]
 })
 
 export const activateEmployeeMutation = mutation({
   api: activateEmployee,
-  invalidateQueryKeys: (id) => [queryKeys.searchAll(), queryKeys.byId(id)]
+  invalidateQueryKeys: ({ id }) => [queryKeys.searchAll(), queryKeys.byId(id)]
 })
 
 export const deactivateEmployeeMutation = mutation({
   api: deactivateEmployee,
-  invalidateQueryKeys: (id) => [queryKeys.searchAll(), queryKeys.byId(id)]
+  invalidateQueryKeys: ({ id }) => [queryKeys.searchAll(), queryKeys.byId(id)]
 })

@@ -394,7 +394,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun getAbsencesOfChild(childId: ChildId): List<Absence> {
-        return absenceController.absencesOfChild(
+        return absenceController.getAbsencesOfChild(
             dbInstance(),
             employee.user,
             MockEvakaClock(now),

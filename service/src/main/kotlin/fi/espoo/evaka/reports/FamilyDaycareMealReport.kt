@@ -19,8 +19,8 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import java.time.LocalTime
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -30,8 +30,8 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+        @RequestParam startDate: LocalDate,
+        @RequestParam endDate: LocalDate
     ): FamilyDaycareMealReportResult {
         if (endDate < startDate) throw BadRequest("Start date must be before or equal to end date")
         if (endDate.minusMonths(6).isAfter(startDate)) throw BadRequest("Maximum date range is 6kk")

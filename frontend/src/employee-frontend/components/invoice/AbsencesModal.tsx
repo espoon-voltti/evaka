@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import {
   Absence,
   AbsenceCategory,
@@ -20,13 +21,15 @@ import { fontWeights } from 'lib-components/typography'
 import { absenceTypes } from 'lib-customizations/employee'
 import { faAbacus } from 'lib-icons'
 
-import { getAbsencesByChild } from '../../api/invoicing'
 import PeriodPicker from '../../components/absences/PeriodPicker'
 import ColorInfoItem from '../../components/common/ColorInfoItem'
+import { getAbsencesOfChild } from '../../generated/api-clients/absence'
 import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatName } from '../../utils'
 import { renderResult } from '../async-rendering'
+
+const getAbsencesOfChildResult = wrapResult(getAbsencesOfChild)
 
 const Section = styled.section``
 
@@ -70,7 +73,8 @@ export default React.memo(function AbsencesModal({ child, date }: Props) {
   const [selectedDate, setSelectedDate] = useState<LocalDate>(date)
   const [absences] = useApiState(
     () =>
-      getAbsencesByChild(child.id, {
+      getAbsencesOfChildResult({
+        childId: child.id,
         year: selectedDate.getYear(),
         month: selectedDate.getMonth()
       }),

@@ -6,6 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { wrapResult } from 'lib-common/api'
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
@@ -14,10 +15,12 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'
 
-import { getPersonInvoices } from '../../api/invoicing'
+import { getHeadOfFamilyInvoices } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
+
+const getHeadOfFamilyInvoicesResult = wrapResult(getHeadOfFamilyInvoices)
 
 interface Props {
   id: UUID
@@ -30,7 +33,10 @@ export default React.memo(function PersonInvoices({
 }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
-  const [invoices] = useApiState(() => getPersonInvoices(id), [id])
+  const [invoices] = useApiState(
+    () => getHeadOfFamilyInvoicesResult({ id }),
+    [id]
+  )
 
   return (
     <div>

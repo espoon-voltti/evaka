@@ -44,7 +44,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
   const navigate = useNavigate()
 
   const assistanceNeedDecisions = useQueryResult(
-    assistanceNeedPreschoolDecisionBasicsQuery(childId)
+    assistanceNeedPreschoolDecisionBasicsQuery({ childId })
   )
 
   const [removingDecision, setRemovingDecision] = useState<UUID>()
@@ -70,7 +70,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionSection({
             flipped
             text={i18n.childInformation.assistanceNeedDecision.create}
             onClick={async () => {
-              const res = await createDecision(childId)
+              const res = await createDecision({ childId })
               if (res.isSuccess) {
                 navigate(
                   `/child-information/${childId}/assistance-need-preschool-decisions/${res.value.id}/edit`

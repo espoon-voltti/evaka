@@ -385,7 +385,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun createPaymentDrafts(today: LocalDate): List<PaymentId> {
-        paymentController.createDrafts(
+        paymentController.createPaymentDrafts(
             dbInstance(),
             financeUser,
             MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))

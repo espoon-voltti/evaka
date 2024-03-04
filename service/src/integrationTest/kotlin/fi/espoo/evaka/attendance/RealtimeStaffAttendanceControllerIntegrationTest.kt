@@ -111,7 +111,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
 
     @Test
     fun `Attendances without group can be deleted`() {
-        realtimeStaffAttendanceController.upsertDailyStaffAttendances(
+        realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
             dbInstance(),
             unitSupervisor,
             MockEvakaClock(now),
@@ -147,7 +147,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             }
         }
 
-        realtimeStaffAttendanceController.upsertDailyStaffAttendances(
+        realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
             dbInstance(),
             unitSupervisor,
             MockEvakaClock(now),
@@ -162,7 +162,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     private fun getAttendances(unitId: DaycareId): StaffAttendanceResponse {
-        return realtimeStaffAttendanceController.getAttendances(
+        return realtimeStaffAttendanceController.getRealtimeStaffAttendances(
             dbInstance(),
             unitSupervisor,
             MockEvakaClock(now),
@@ -178,7 +178,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         arrived: HelsinkiDateTime,
         departed: HelsinkiDateTime?
     ) {
-        realtimeStaffAttendanceController.upsertDailyStaffAttendances(
+        realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
             dbInstance(),
             unitSupervisor,
             MockEvakaClock(now),

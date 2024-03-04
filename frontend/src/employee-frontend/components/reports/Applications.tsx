@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Loader from 'lib-components/atoms/Loader'
@@ -19,13 +19,16 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 
-import { getApplicationsReport, PeriodFilters } from '../../api/reports'
+import { getApplicationsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { PeriodFilters } from '../../types/reports'
 import { distinct, reducePropertySum } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
+
+const getApplicationsReportResult = wrapResult(getApplicationsReport)
 
 interface DisplayFilters {
   careArea: string
@@ -56,7 +59,7 @@ export default React.memo(function Applications() {
 
   useEffect(() => {
     setRows(Loading.of())
-    void getApplicationsReport(filters).then(setRows)
+    void getApplicationsReportResult(filters).then(setRows)
   }, [filters])
 
   const filteredRows: ApplicationsReportRow[] = useMemo(

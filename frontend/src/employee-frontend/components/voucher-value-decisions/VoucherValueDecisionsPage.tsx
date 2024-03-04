@@ -4,9 +4,10 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import {
   PagedVoucherValueDecisionSummaries,
+  SearchVoucherValueDecisionRequest,
   VoucherValueDecisionSortParam,
   VoucherValueDecisionSummary
 } from 'lib-common/generated/api-types/invoicing'
@@ -15,10 +16,9 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import {
-  getVoucherValueDecisions,
-  sendVoucherValueDecisions,
-  VoucherValueDecisionSearchParams
-} from '../../api/invoicing'
+  searchVoucherValueDecisions,
+  sendVoucherValueDecisionDrafts
+} from '../../generated/api-clients/invoicing'
 import { useCheckedState } from '../../state/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
@@ -27,6 +27,13 @@ import FinanceDecisionHandlerSelectModal from '../finance-decisions/FinanceDecis
 import VoucherValueDecisionActions from './VoucherValueDecisionActions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
 import VoucherValueDecisions from './VoucherValueDecisions'
+
+const searchVoucherValueDecisionsResult = wrapResult(
+  searchVoucherValueDecisions
+)
+const sendVoucherValueDecisionDraftsResult = wrapResult(
+  sendVoucherValueDecisionDrafts
+)
 
 const pageSize = 200
 
@@ -58,7 +65,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
     [page, setTotalDecisions, setTotalPages, setDecisions]
   )
   const reloadDecisions = useRestApi(
-    getVoucherValueDecisions,
+    searchVoucherValueDecisionsResult,
     setDecisionsResult
   )
 
@@ -74,21 +81,25 @@ export default React.memo(function VoucherValueDecisionsPage() {
       return
     }
 
-    const params: VoucherValueDecisionSearchParams = {
+    const params: SearchVoucherValueDecisionRequest = {
+      page: page - 1,
+      pageSize,
+      sortBy,
+      sortDirection,
       statuses: searchFilters.statuses,
       area: searchFilters.area,
-      unit: searchFilters.unit,
+      unit: searchFilters.unit ?? null,
       distinctions: searchFilters.distinctiveDetails,
-      searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
+      searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
         ? searchFilters.financeDecisionHandlerId
-        : undefined,
+        : null,
       difference: searchFilters.difference,
-      startDate,
-      endDate,
+      startDate: startDate ?? null,
+      endDate: endDate ?? null,
       searchByStartDate: searchFilters.searchByStartDate
     }
-    void reloadDecisions(page, pageSize, sortBy, sortDirection, params)
+    void reloadDecisions({ body: params })
   }, [
     page,
     sortBy,
@@ -130,10 +141,10 @@ export default React.memo(function VoucherValueDecisionsPage() {
       {showHandlerSelectModal && (
         <FinanceDecisionHandlerSelectModal
           onResolve={async (decisionHandlerId) => {
-            const result = await sendVoucherValueDecisions(
-              checkedIds,
-              decisionHandlerId
-            )
+            const result = await sendVoucherValueDecisionDraftsResult({
+              decisionHandlerId,
+              body: checkedIds
+            })
             if (result.isSuccess) {
               checkedState.clearChecked()
               loadDecisions()

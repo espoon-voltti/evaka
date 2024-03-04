@@ -8,6 +8,7 @@ import {
   useAutosave,
   AutosaveStatus
 } from 'employee-frontend/utils/use-autosave'
+import { wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import {
   ChildLanguage,
@@ -15,9 +16,13 @@ import {
   VasuDocument,
   VasuDocumentWithPermittedActions
 } from 'lib-common/generated/api-types/vasu'
+import { Arg0 } from 'lib-common/types'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
-import { getVasuDocument, putVasuDocument, PutVasuDocumentParams } from './api'
+import { getDocument, putDocument } from '../../generated/api-clients/vasu'
+
+const getDocumentResult = wrapResult(getDocument)
+const putDocumentResult = wrapResult(putDocument)
 
 export type VasuMetadata = Omit<
   VasuDocument,
@@ -62,17 +67,17 @@ export function useVasu(id: string): Vasu {
     []
   )
 
-  const getSaveParameters: () => [PutVasuDocumentParams] = useCallback(
-    () => [{ documentId: id, content, childLanguage }],
+  const getSaveParameters: () => [Arg0<typeof putDocument>] = useCallback(
+    () => [{ id, body: { content, childLanguage } }],
     [id, content, childLanguage]
   )
 
-  const loadVasuDoc = useCallback(() => getVasuDocument(id), [id])
+  const loadVasuDoc = useCallback(() => getDocumentResult({ id }), [id])
 
   const { status, setDirty } = useAutosave({
     load: loadVasuDoc,
     onLoaded: handleVasuDocLoaded,
-    save: putVasuDocument,
+    save: putDocumentResult,
     getSaveParameters
   })
 

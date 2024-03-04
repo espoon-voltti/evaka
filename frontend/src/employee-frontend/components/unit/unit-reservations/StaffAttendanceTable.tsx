@@ -11,7 +11,7 @@ import uniqBy from 'lodash/uniqBy'
 import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
@@ -42,11 +42,18 @@ import { colors } from 'lib-customizations/common'
 import { faCircleEllipsis } from 'lib-icons'
 
 import {
-  upsertExternalAttendances,
-  upsertStaffAttendances
-} from '../../../api/staff-attendance'
+  upsertDailyExternalRealtimeAttendances,
+  upsertDailyStaffRealtimeAttendances
+} from '../../../generated/api-clients/attendance'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
+
+const upsertDailyStaffRealtimeAttendancesResult = wrapResult(
+  upsertDailyStaffRealtimeAttendances
+)
+const upsertDailyExternalRealtimeAttendancesResult = wrapResult(
+  upsertDailyExternalRealtimeAttendances
+)
 
 import StaffAttendanceDetailsModal, {
   EditedAttendance,
@@ -272,11 +279,13 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
   const onSaveStaff = useCallback(
     (entries: StaffAttendanceUpsert[]) =>
       target.type === 'employee'
-        ? upsertStaffAttendances({
-            unitId,
-            employeeId: target.employeeId,
-            date,
-            entries
+        ? upsertDailyStaffRealtimeAttendancesResult({
+            body: {
+              unitId,
+              employeeId: target.employeeId,
+              date,
+              entries
+            }
           })
         : undefined,
     [date, target, unitId]
@@ -284,11 +293,13 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
   const onSaveExternal = useCallback(
     (entries: ExternalAttendanceUpsert[]) =>
       target.type === 'external'
-        ? upsertExternalAttendances({
-            unitId,
-            name: target.name,
-            date,
-            entries
+        ? upsertDailyExternalRealtimeAttendancesResult({
+            body: {
+              unitId,
+              name: target.name,
+              date,
+              entries
+            }
           })
         : undefined,
     [date, target, unitId]

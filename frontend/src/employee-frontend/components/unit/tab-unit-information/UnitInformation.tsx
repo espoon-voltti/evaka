@@ -7,12 +7,12 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
+import { Daycare } from 'lib-common/generated/api-types/daycare'
 import Title from 'lib-components/atoms/Title'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
-import { Unit } from '../../../types/unit'
 import { DataList } from '../../common/DataList'
 
 const DetailsLink = styled(Link)`
@@ -20,8 +20,8 @@ const DetailsLink = styled(Link)`
 `
 
 interface Props {
-  unit: Unit
-  permittedActions: Set<Action.Unit>
+  unit: Daycare
+  permittedActions: Action.Unit[]
 }
 
 function UnitInformation({ unit, permittedActions }: Props) {
@@ -88,7 +88,7 @@ function UnitInformation({ unit, permittedActions }: Props) {
       <Title size={4}>{i18n.unit.manager.title}</Title>
       {renderDaycareManager()}
 
-      {permittedActions.has('UPDATE') && (
+      {permittedActions.includes('UPDATE') && (
         <>
           <Gap size="L" />
           <DetailsLink

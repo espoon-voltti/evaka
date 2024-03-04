@@ -6,16 +6,14 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import {
-  addDaycareFullAcl,
-  createTemporaryEmployee,
-  DaycareGroupSummary
-} from 'employee-frontend/api/unit'
 import { isValidPinCode } from 'employee-frontend/components/employee/EmployeePinCodePage'
 import { formatName } from 'employee-frontend/utils'
-import { Failure } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
-import { AclUpdate } from 'lib-common/generated/api-types/daycare'
+import {
+  AclUpdate,
+  DaycareGroupResponse
+} from 'lib-common/generated/api-types/daycare'
 import { Employee, TemporaryEmployee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -34,9 +32,16 @@ import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { H1, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
+import {
+  addFullAclForRole,
+  createTemporaryEmployee
+} from '../../../generated/api-clients/daycare'
 import { useTranslation } from '../../../state/i18n'
 
 import { DaycareAclRole } from './UnitAccessControl'
+
+const createTemporaryEmployeeResult = wrapResult(createTemporaryEmployee)
+const addFullAclForRoleResult = wrapResult(addFullAclForRole)
 
 interface EmployeeOption {
   label: string
@@ -48,7 +53,7 @@ type DaycareAclAdditionFormState = {
   firstName: string
   lastName: string
   selectedEmployee: EmployeeOption | null
-  selectedGroups: DaycareGroupSummary[] | null
+  selectedGroups: DaycareGroupResponse[] | null
   hasStaffOccupancyEffect: boolean | null
   pinCode: string
 }
@@ -58,9 +63,9 @@ type DaycareAclAdditionModalProps = {
   onSuccess: () => void
   role?: DaycareAclRole
   unitId: UUID
-  groups: Record<string, DaycareGroupSummary>
+  groups: Record<string, DaycareGroupResponse>
   employees: Employee[]
-  permittedActions: Set<Action.Unit>
+  permittedActions: Action.Unit[]
 }
 
 export default React.memo(function DaycareAclAdditionModal({
@@ -80,7 +85,7 @@ export default React.memo(function DaycareAclAdditionModal({
     lastName: '',
     selectedEmployee: null,
     selectedGroups: null,
-    hasStaffOccupancyEffect: permittedActions.has(
+    hasStaffOccupancyEffect: permittedActions.includes(
       'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
     )
       ? false
@@ -90,24 +95,24 @@ export default React.memo(function DaycareAclAdditionModal({
 
   const submit = useCallback(async () => {
     if (formData.type === 'TEMPORARY') {
-      const requestBody: TemporaryEmployee = {
+      const body: TemporaryEmployee = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         groupIds: formData.selectedGroups?.map((g) => g.id) ?? [],
         hasStaffOccupancyEffect: formData.hasStaffOccupancyEffect ?? false,
         pinCode: formData.pinCode ? { pin: formData.pinCode } : null
       }
-      return createTemporaryEmployee(unitId, requestBody)
+      return createTemporaryEmployeeResult({ unitId, body })
     }
 
     const employeeId = formData.selectedEmployee?.value ?? ''
     const updateBody: AclUpdate = {
-      groupIds: permittedActions.has('UPDATE_STAFF_GROUP_ACL')
+      groupIds: permittedActions.includes('UPDATE_STAFF_GROUP_ACL')
         ? formData.selectedGroups
           ? formData.selectedGroups.map((g) => g.id)
           : null
         : null,
-      hasStaffOccupancyEffect: permittedActions.has(
+      hasStaffOccupancyEffect: permittedActions.includes(
         'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
       )
         ? formData.hasStaffOccupancyEffect
@@ -116,7 +121,11 @@ export default React.memo(function DaycareAclAdditionModal({
     if (employeeId === '' || !role) {
       return Promise.reject(Failure.of({ message: 'no parameters available' }))
     } else {
-      return addDaycareFullAcl(unitId, employeeId, role, updateBody)
+      return addFullAclForRoleResult({
+        daycareId: unitId,
+        employeeId,
+        body: { role, update: updateBody }
+      })
     }
   }, [formData, unitId, role, permittedActions])
 
@@ -231,7 +240,7 @@ export default React.memo(function DaycareAclAdditionModal({
             </FormControl>
           </>
         )}
-        {permittedActions.has('UPDATE_STAFF_GROUP_ACL') && (
+        {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
           <FormControl>
             <FieldLabel>
               {i18n.unit.accessControl.addDaycareAclModal.groups}
@@ -249,7 +258,7 @@ export default React.memo(function DaycareAclAdditionModal({
             />
           </FormControl>
         )}
-        {permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
+        {permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
             data-qa="add-daycare-acl-coeff-checkbox"
             checked={formData.hasStaffOccupancyEffect === true}

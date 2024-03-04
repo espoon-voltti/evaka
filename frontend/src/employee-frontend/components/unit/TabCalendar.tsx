@@ -9,6 +9,10 @@ import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import {
+  DaycareGroup,
+  DaycareResponse
+} from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -24,11 +28,9 @@ import { H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
 
-import { UnitResponse } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { DayOfWeek } from '../../types'
-import { DaycareGroup } from '../../types/unit'
 import GroupMonthCalendar from '../absences/GroupMonthCalendar'
 import { renderResult } from '../async-rendering'
 
@@ -119,7 +121,7 @@ export default React.memo(function TabCalendar() {
 
   return renderResult(unitInformation, (unitInformation) => (
     <>
-      {unitInformation.permittedActions.has('READ_OCCUPANCIES') ? (
+      {unitInformation.permittedActions.includes('READ_OCCUPANCIES') ? (
         <>
           <Occupancy
             unitId={unitId}
@@ -133,7 +135,7 @@ export default React.memo(function TabCalendar() {
           <Gap size="s" />
         </>
       ) : null}
-      {unitInformation.permittedActions.has('READ_GROUP_DETAILS') ? (
+      {unitInformation.permittedActions.includes('READ_GROUP_DETAILS') ? (
         <Calendar unitId={unitId} unitInformation={unitInformation} />
       ) : null}
     </>
@@ -145,9 +147,9 @@ const Calendar = React.memo(function Calendar({
   unitInformation
 }: {
   unitId: string
-  unitInformation: UnitResponse
+  unitInformation: DaycareResponse
 }) {
-  const groups = useQueryResult(unitGroupsQuery(unitId))
+  const groups = useQueryResult(unitGroupsQuery({ daycareId: unitId }))
   return renderResult(groups, (groups) => (
     <CalendarContent unitInformation={unitInformation} groups={groups} />
   ))
@@ -157,7 +159,7 @@ const CalendarContent = React.memo(function CalendarContent({
   unitInformation,
   groups
 }: {
-  unitInformation: UnitResponse
+  unitInformation: DaycareResponse
   groups: DaycareGroup[]
 }) {
   const { i18n } = useTranslation()
@@ -171,9 +173,8 @@ const CalendarContent = React.memo(function CalendarContent({
 
   // Using READ_CHILD_ATTENDANCES to check if the user can see the week view is not exactly accurate,
   // but it's hard to do a finer grained check with the current UX.
-  const hasPermissionToReadAttendances = unitInformation.permittedActions.has(
-    'READ_CHILD_ATTENDANCES'
-  )
+  const hasPermissionToReadAttendances =
+    unitInformation.permittedActions.includes('READ_CHILD_ATTENDANCES')
 
   const [searchParams] = useSearchParams()
 
@@ -213,7 +214,7 @@ const CalendarContent = React.memo(function CalendarContent({
     mode
   })
   const operationalDays = useMemo((): DayOfWeek[] => {
-    const days = unitInformation.daycare.operationDays
+    const days = unitInformation.daycare.operationDays as DayOfWeek[]
     return days.length === 0 ? [1, 2, 3, 4, 5] : days
   }, [unitInformation.daycare.operationDays])
 
@@ -304,7 +305,7 @@ const CalendarContent = React.memo(function CalendarContent({
         ) : null}
       </CollapsibleContentArea>
 
-      {unitInformation.permittedActions.has('READ_CALENDAR_EVENTS') &&
+      {unitInformation.permittedActions.includes('READ_CALENDAR_EVENTS') &&
       (selectedGroup.type === 'group' ||
         (selectedGroup.type === 'all-children' && mode === 'week')) ? (
         <>

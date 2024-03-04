@@ -10,6 +10,7 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import {
   DaycareAssistanceLevel,
   OtherAssistanceMeasureType,
@@ -24,6 +25,7 @@ import {
 } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { Arg0 } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -41,19 +43,30 @@ import {
 } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
-  AssistanceNeedsAndActionsReportFilters,
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
   getPermittedReports
-} from '../../api/reports'
-import ReportDownload from '../../components/reports/ReportDownload'
+} from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { reducePropertySum } from '../../utils'
 import { renderResult } from '../async-rendering'
 import { areaQuery, unitsQuery } from '../unit/queries'
 
 import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
+
+const getPermittedReportsResult = wrapResult(getPermittedReports)
+const getAssistanceNeedsAndActionsReportResult = wrapResult(
+  getAssistanceNeedsAndActionsReport
+)
+const getAssistanceNeedsAndActionsReportByChildResult = wrapResult(
+  getAssistanceNeedsAndActionsReportByChild
+)
+
+type AssistanceNeedsAndActionsReportFilters =
+  | Arg0<typeof getAssistanceNeedsAndActionsReport>
+  | Arg0<typeof getAssistanceNeedsAndActionsReportByChild>
 
 const types = ['DAYCARE', 'PRESCHOOL'] as const
 type Type = (typeof types)[number]
@@ -262,7 +275,7 @@ const resolveGroupingType = (
 
 export default React.memo(function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
-  const [permittedReports] = useApiState(getPermittedReports, [])
+  const [permittedReports] = useApiState(getPermittedReportsResult, [])
   const [filters, setFilters] =
     useState<AssistanceNeedsAndActionsReportFilters>({
       date: LocalDate.todayInSystemTz()
@@ -332,7 +345,9 @@ export default React.memo(function AssistanceNeedsAndActions() {
   }
 
   const reportByChildPermitted = permittedReports
-    .map((permitted) => permitted.has('ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD'))
+    .map((permitted) =>
+      permitted.includes('ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD')
+    )
     .getOrElse(false)
   const reportByChild =
     (rowFilters.careArea !== '' || rowFilters.unit !== '') &&
@@ -551,7 +566,7 @@ const ReportByGroup = ({
   selectedOtherColumns: OtherAssistanceMeasureType[]
 }) => {
   const [result] = useApiState(
-    () => getAssistanceNeedsAndActionsReport(filters),
+    () => getAssistanceNeedsAndActionsReportResult(filters),
     [filters]
   )
   return (
@@ -925,7 +940,7 @@ const ReportByChild = ({
   selectedOtherColumns: OtherAssistanceMeasureType[]
 }) => {
   const [result] = useApiState(
-    () => getAssistanceNeedsAndActionsReportByChild(filters),
+    () => getAssistanceNeedsAndActionsReportByChildResult(filters),
     [filters]
   )
   return (

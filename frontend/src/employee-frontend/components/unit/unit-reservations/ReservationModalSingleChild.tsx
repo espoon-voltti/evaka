@@ -354,7 +354,8 @@ export default React.memo(function ReservationModalSingleChild({
           setShowAllErrors(true)
           return cancelMutation
         } else {
-          return form.value()(child.id)
+          const reservationRequests = form.value()(child.id)
+          return { body: reservationRequests }
         }
       }}
       onSuccess={onClose}

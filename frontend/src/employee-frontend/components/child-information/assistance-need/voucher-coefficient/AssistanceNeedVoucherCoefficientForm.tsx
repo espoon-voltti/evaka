@@ -14,7 +14,7 @@ import styled from 'styled-components'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UIContext } from 'employee-frontend/state/ui'
-import { Failure } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
@@ -33,7 +33,14 @@ import { Gap } from 'lib-components/white-space'
 import {
   createAssistanceNeedVoucherCoefficient,
   updateAssistanceNeedVoucherCoefficient
-} from './api'
+} from '../../../../generated/api-clients/assistanceneed'
+
+const createAssistanceNeedVoucherCoefficientResult = wrapResult(
+  createAssistanceNeedVoucherCoefficient
+)
+const updateAssistanceNeedVoucherCoefficientResult = wrapResult(
+  updateAssistanceNeedVoucherCoefficient
+)
 
 const CoefficientInputContainer = styled.div`
   display: flex;
@@ -197,9 +204,15 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
     }
 
     if (isCreate(props)) {
-      return createAssistanceNeedVoucherCoefficient(props.childId, data)
+      return createAssistanceNeedVoucherCoefficientResult({
+        childId: props.childId,
+        body: data
+      })
     } else {
-      return updateAssistanceNeedVoucherCoefficient(props.coefficient.id, data)
+      return updateAssistanceNeedVoucherCoefficientResult({
+        id: props.coefficient.id,
+        body: data
+      })
     }
   }, [form.coefficient, form.end, form.start, isValid, props])
 

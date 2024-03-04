@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -18,11 +18,17 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import { faPen, faTrash } from 'lib-icons'
 
+import {
+  deleteTemplate,
+  getTemplates
+} from '../../../generated/api-clients/vasu'
 import { useTranslation } from '../../../state/i18n'
 
 import CopyTemplateModal from './CopyTemplateModal'
 import CreateTemplateModal from './CreateOrEditTemplateModal'
-import { deleteVasuTemplate, getVasuTemplateSummaries } from './api'
+
+const getTemplatesResult = wrapResult(getTemplates)
+const deleteTemplateResult = wrapResult(deleteTemplate)
 
 export default React.memo(function VasuTemplatesPage() {
   const { i18n } = useTranslation()
@@ -37,9 +43,9 @@ export default React.memo(function VasuTemplatesPage() {
   const [templateToCopy, setTemplateToCopy] = useState<VasuTemplateSummary>()
   const [templateToEdit, setTemplateToEdit] = useState<VasuTemplateSummary>()
 
-  const loadTemplates = useRestApi(getVasuTemplateSummaries, setTemplates)
+  const loadTemplates = useRestApi(getTemplatesResult, setTemplates)
   useEffect(() => {
-    void loadTemplates()
+    void loadTemplates({ validOnly: false })
   }, [loadTemplates])
 
   return (
@@ -90,8 +96,8 @@ export default React.memo(function VasuTemplatesPage() {
                           icon={faTrash}
                           disabled={template.documentCount > 0}
                           onClick={() => {
-                            void deleteVasuTemplate(template.id).then(() =>
-                              loadTemplates()
+                            void deleteTemplateResult({ id: template.id }).then(
+                              () => loadTemplates({ validOnly: false })
                             )
                           }}
                           aria-label={i18n.common.remove}
@@ -111,7 +117,7 @@ export default React.memo(function VasuTemplatesPage() {
               if (createModalOpen) {
                 navigate(`/vasu-templates/${id}`)
               } else {
-                void loadTemplates()
+                void loadTemplates({ validOnly: false })
                 setTemplateToEdit(undefined)
               }
             }}

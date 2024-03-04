@@ -2,10 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  AssistanceNeedDecisionStatus,
-  AssistanceNeedPreschoolDecisionForm
-} from 'lib-common/generated/api-types/assistanceneed'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
@@ -27,6 +23,18 @@ import {
   updateOtherAssistanceMeasure,
   updatePreschoolAssistance
 } from '../../generated/api-clients/assistance'
+import {
+  annulAssistanceNeedPreschoolDecision,
+  createAssistanceNeedPreschoolDecision,
+  decideAssistanceNeedPreschoolDecision,
+  deleteAssistanceNeedPreschoolDecision,
+  getAssistanceNeedPreschoolDecision,
+  getAssistanceNeedPreschoolDecisions,
+  getAssistancePreschoolDecisionMakerOptions,
+  revertAssistanceNeedPreschoolDecisionToUnsent,
+  sendAssistanceNeedPreschoolDecisionForDecision,
+  updateAssistanceNeedPreschoolDecision
+} from '../../generated/api-clients/assistanceneed'
 import { getUnits } from '../../generated/api-clients/daycare'
 import {
   createDocument,
@@ -39,19 +47,6 @@ import {
   updateDocumentContent
 } from '../../generated/api-clients/document'
 import { createQueryKeys } from '../../query'
-
-import {
-  deleteAssistanceNeedPreschoolDecision,
-  getAssistanceNeedPreschoolDecision,
-  getAssistanceNeedPreschoolDecisionBasics,
-  getAssistanceNeedPreschoolDecisionMakerOptions,
-  postAssistanceNeedPreschoolDecision,
-  putAssistanceNeedPreschoolDecision,
-  putAssistanceNeedPreschoolDecisionAnnul,
-  putAssistanceNeedPreschoolDecisionDecide,
-  putAssistanceNeedPreschoolDecisionSend,
-  putAssistanceNeedPreschoolDecisionUnsend
-} from './assistance-need/decision/api-preschool'
 
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
@@ -221,37 +216,43 @@ export const deleteOtherAssistanceMeasureMutation = mutation({
 })
 
 export const assistanceNeedPreschoolDecisionBasicsQuery = query({
-  api: getAssistanceNeedPreschoolDecisionBasics,
-  queryKey: queryKeys.assistanceNeedPreschoolDecisionBasics
+  api: getAssistanceNeedPreschoolDecisions,
+  queryKey: ({ childId }) =>
+    queryKeys.assistanceNeedPreschoolDecisionBasics(childId)
 })
 
 export const assistanceNeedPreschoolDecisionQuery = query({
   api: getAssistanceNeedPreschoolDecision,
-  queryKey: queryKeys.assistanceNeedPreschoolDecision
+  queryKey: ({ id }) => queryKeys.assistanceNeedPreschoolDecision(id)
 })
 
 export const assistanceNeedPreschoolDecisionMakerOptionsQuery = query({
-  api: (arg: { decisionId: UUID; unitId: UUID | null }) =>
-    getAssistanceNeedPreschoolDecisionMakerOptions(arg.decisionId),
-  queryKey: (arg) => queryKeys.decisionMakerOptions(arg.decisionId, arg.unitId)
+  api: (
+    arg: Arg0<typeof getAssistancePreschoolDecisionMakerOptions> & {
+      unitId: UUID | null
+    }
+  ) => getAssistancePreschoolDecisionMakerOptions(arg),
+  queryKey: ({ id, unitId }) => queryKeys.decisionMakerOptions(id, unitId)
 })
 
 export const createAssistanceNeedPreschoolDecisionMutation = mutation({
-  api: (arg: UUID) => postAssistanceNeedPreschoolDecision(arg),
-  invalidateQueryKeys: (arg) => [
-    queryKeys.assistanceNeedPreschoolDecisionBasics(arg)
+  api: createAssistanceNeedPreschoolDecision,
+  invalidateQueryKeys: ({ childId }) => [
+    queryKeys.assistanceNeedPreschoolDecisionBasics(childId)
   ]
 })
 
 export const updateAssistanceNeedPreschoolDecisionMutation = mutation({
-  api: (arg: { id: UUID; body: AssistanceNeedPreschoolDecisionForm }) =>
-    putAssistanceNeedPreschoolDecision(arg.id, arg.body),
+  api: updateAssistanceNeedPreschoolDecision,
   invalidateQueryKeys: () => [] // no automatic invalidation due to auto-save
 })
 
 export const sendAssistanceNeedPreschoolDecisionMutation = mutation({
-  api: (arg: { childId: UUID; id: UUID }) =>
-    putAssistanceNeedPreschoolDecisionSend(arg.id),
+  api: (
+    arg: Arg0<typeof sendAssistanceNeedPreschoolDecisionForDecision> & {
+      childId: UUID
+    }
+  ) => sendAssistanceNeedPreschoolDecisionForDecision(arg),
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)
@@ -259,8 +260,11 @@ export const sendAssistanceNeedPreschoolDecisionMutation = mutation({
 })
 
 export const unsendAssistanceNeedPreschoolDecisionMutation = mutation({
-  api: (arg: { childId: UUID; id: UUID }) =>
-    putAssistanceNeedPreschoolDecisionUnsend(arg.id),
+  api: (
+    arg: Arg0<typeof revertAssistanceNeedPreschoolDecisionToUnsent> & {
+      childId: UUID
+    }
+  ) => revertAssistanceNeedPreschoolDecisionToUnsent(arg),
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)
@@ -268,11 +272,9 @@ export const unsendAssistanceNeedPreschoolDecisionMutation = mutation({
 })
 
 export const decideAssistanceNeedPreschoolDecisionMutation = mutation({
-  api: (arg: {
-    childId: UUID
-    id: UUID
-    status: AssistanceNeedDecisionStatus
-  }) => putAssistanceNeedPreschoolDecisionDecide(arg.id, arg.status),
+  api: (
+    arg: Arg0<typeof decideAssistanceNeedPreschoolDecision> & { childId: UUID }
+  ) => decideAssistanceNeedPreschoolDecision(arg),
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)
@@ -280,8 +282,9 @@ export const decideAssistanceNeedPreschoolDecisionMutation = mutation({
 })
 
 export const annulAssistanceNeedPreschoolDecisionMutation = mutation({
-  api: (arg: { childId: UUID; id: UUID; reason: string }) =>
-    putAssistanceNeedPreschoolDecisionAnnul(arg.id, arg.reason),
+  api: (
+    arg: Arg0<typeof annulAssistanceNeedPreschoolDecision> & { childId: UUID }
+  ) => annulAssistanceNeedPreschoolDecision(arg),
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)
@@ -289,8 +292,9 @@ export const annulAssistanceNeedPreschoolDecisionMutation = mutation({
 })
 
 export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
-  api: (arg: { childId: UUID; id: UUID }) =>
-    deleteAssistanceNeedPreschoolDecision(arg.id),
+  api: (
+    arg: Arg0<typeof deleteAssistanceNeedPreschoolDecision> & { childId: UUID }
+  ) => deleteAssistanceNeedPreschoolDecision(arg),
   invalidateQueryKeys: (arg) => [
     queryKeys.assistanceNeedPreschoolDecisionBasics(arg.childId),
     queryKeys.assistanceNeedPreschoolDecision(arg.id)

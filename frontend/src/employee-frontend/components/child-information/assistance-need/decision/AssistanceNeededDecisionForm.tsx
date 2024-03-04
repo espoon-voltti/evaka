@@ -4,7 +4,6 @@
 
 import React, { SetStateAction, useCallback, useMemo } from 'react'
 
-import { getEmployees } from 'employee-frontend/api/employees'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
@@ -31,8 +30,10 @@ import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { getUnits } from '../../../../generated/api-clients/daycare'
+import { getEmployees } from '../../../../generated/api-clients/pis'
 
 const getUnitsResult = wrapResult(getUnits)
+const getEmployeesResult = wrapResult(getEmployees)
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,
@@ -217,7 +218,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
     () => getUnitsResult({ areaIds: null, type: 'ALL', from: null }),
     []
   )
-  const [employees] = useApiState(() => getEmployees(), [])
+  const [employees] = useApiState(() => getEmployeesResult(), [])
 
   const { i18n, lang } = useTranslation()
   const t = useMemo(() => i18n.childInformation.assistanceNeedDecision, [i18n])

@@ -121,7 +121,12 @@ export default class LocalTime implements Ordered<LocalTime> {
       const [, hour, minute, second, nanosecond] =
         parts &&
         parts.map((part) => (part !== undefined ? parseInt(part, 10) : 0))
-      const result = LocalTime.tryCreate(hour, minute, second, nanosecond)
+      const result = LocalTime.tryCreate(
+        hour,
+        minute,
+        second ?? 0,
+        nanosecond ?? 0
+      )
       if (result) {
         return result
       }

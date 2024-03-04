@@ -5,16 +5,19 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import colors from 'lib-customizations/common'
 
-import { addSsn } from '../../../api/person'
+import { addSsn } from '../../../generated/api-clients/pis'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { isSsnValid } from '../../../utils/validation/validations'
+
+const addSsnResult = wrapResult(addSsn)
 
 const Error = styled.div`
   display: flex;
@@ -42,7 +45,7 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
   const submit = () => {
     let isMounted = true
     setSubmitting(true)
-    void addSsn(personId, ssn)
+    void addSsnResult({ personId, body: { ssn } })
       .then((result) => {
         if (result.isSuccess) {
           if (onUpdateComplete) onUpdateComplete(result.value)

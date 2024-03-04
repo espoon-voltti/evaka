@@ -11,10 +11,11 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { applicationNotesQuery } from '../../api/applications-queries'
 import ApplicationNoteBox from '../../components/application-page/ApplicationNoteBox'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
+
+import { applicationNotesQuery } from './applications-queries'
 
 const Sticky = styled.div`
   position: sticky;

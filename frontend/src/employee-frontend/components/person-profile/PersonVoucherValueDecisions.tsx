@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { PersonContext } from 'employee-frontend/state/person'
+import { wrapResult } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -22,12 +23,19 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
 import {
-  createRetroactiveValueDecisions,
-  getPersonVoucherValueDecisions
-} from '../../api/invoicing'
+  generateRetroactiveVoucherValueDecisions,
+  getHeadOfFamilyVoucherValueDecisions
+} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
+
+const getHeadOfFamilyVoucherValueDecisionsResult = wrapResult(
+  getHeadOfFamilyVoucherValueDecisions
+)
+const generateRetroactiveVoucherValueDecisionsResult = wrapResult(
+  generateRetroactiveVoucherValueDecisions
+)
 
 interface Props {
   id: string
@@ -43,7 +51,7 @@ export default React.memo(function PersonVoucherValueDecisions({
   const { permittedActions } = useContext(PersonContext)
   const [open, setOpen] = useState(startOpen)
   const [voucherValueDecisions, reloadDecisions] = useApiState(
-    () => getPersonVoucherValueDecisions(id),
+    () => getHeadOfFamilyVoucherValueDecisionsResult({ headOfFamilyId: id }),
     [id]
   )
 
@@ -154,7 +162,10 @@ const Modal = React.memo(function Modal({
 
   const resolve = useCallback(() => {
     if (date) {
-      return createRetroactiveValueDecisions(headOfFamily, date)
+      return generateRetroactiveVoucherValueDecisionsResult({
+        id: headOfFamily,
+        body: { from: date }
+      })
     }
     return
   }, [headOfFamily, date])

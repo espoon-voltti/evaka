@@ -40,7 +40,7 @@ class PaymentController(
     }
 
     @PostMapping("/create-drafts")
-    fun createDrafts(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
+    fun createPaymentDrafts(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(

@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { UUID } from 'lib-common/types'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -13,7 +14,6 @@ import { faChild, faExchange } from 'lib-icons'
 
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import { DaycareGroup } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
 import { updateBackupCareMutation } from '../../queries'
 

@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
+import { Result, Success, wrapResult } from 'lib-common/api'
 import { PersonSummary } from 'lib-common/generated/api-types/pis'
 import { getAge } from 'lib-common/utils/local-date'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -13,15 +13,19 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { BaseProps } from 'lib-components/utils'
 
-import {
-  findByNameOrAddress,
-  getOrCreatePersonBySsn,
-  getPerson
-} from '../../api/person'
 import { CHILD_AGE } from '../../constants'
+import {
+  getOrCreatePersonBySsn,
+  getPersonIdentity,
+  searchPerson
+} from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { isSsnValid } from '../../utils/validation/validations'
+
+const getPersonIdentityResult = wrapResult(getPersonIdentity)
+const searchPersonResult = wrapResult(searchPerson)
+const getOrCreatePersonBySsnResult = wrapResult(getOrCreatePersonBySsn)
 
 const Container = styled.div`
   margin: 10px 0;
@@ -29,9 +33,9 @@ const Container = styled.div`
 
 const searchFromVtj = async (q: string): Promise<Result<PersonSummary[]>> => {
   if (isSsnValid(q.toUpperCase())) {
-    return await getOrCreatePersonBySsn(q.toUpperCase(), true).then((res) =>
-      res.map((r) => [r])
-    )
+    return await getOrCreatePersonBySsnResult({
+      body: { ssn: q.toUpperCase(), readonly: true }
+    }).then((res) => res.map((r) => [r]))
   }
 
   return Success.of([])
@@ -39,16 +43,24 @@ const searchFromVtj = async (q: string): Promise<Result<PersonSummary[]>> => {
 
 const search = async (q: string): Promise<Result<PersonSummary[]>> => {
   if (isSsnValid(q.toUpperCase())) {
-    return await getOrCreatePersonBySsn(q.toUpperCase(), false).then((res) =>
+    return await getOrCreatePersonBySsnResult({
+      body: { ssn: q.toUpperCase(), readonly: false }
+    }).then((res) => res.map((r) => [r]))
+  }
+
+  if (q.length === 36) {
+    return await getPersonIdentityResult({ personId: q }).then((res) =>
       res.map((r) => [r])
     )
   }
 
-  if (q.length === 36) {
-    return await getPerson(q).then((res) => res.map((r) => [r]))
-  }
-
-  return await findByNameOrAddress(q, 'last_name,first_name', 'ASC')
+  return await searchPersonResult({
+    body: {
+      searchTerm: q,
+      orderBy: 'last_name,first_name',
+      sortDirection: 'ASC'
+    }
+  })
 }
 
 interface Props extends BaseProps {

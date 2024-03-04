@@ -8,9 +8,10 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import { Arg0 } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -18,16 +19,19 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import {
-  getStartingPlacementsReport,
-  PlacementsReportFilters
-} from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getStartingPlacementsReport } from '../../generated/api-clients/reports'
 import { Translations, useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+
+const getStartingPlacementsReportResult = wrapResult(
+  getStartingPlacementsReport
+)
+
+type PlacementsReportFilters = Arg0<typeof getStartingPlacementsReport>
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -76,7 +80,7 @@ export default React.memo(function StartingPlacements() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getStartingPlacementsReport(filters).then(setRows)
+    void getStartingPlacementsReportResult(filters).then(setRows)
   }, [filters])
 
   const filteredRows: StartingPlacementsRow[] = useMemo(

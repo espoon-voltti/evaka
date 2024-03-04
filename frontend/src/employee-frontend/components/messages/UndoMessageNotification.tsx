@@ -5,15 +5,19 @@
 import differenceInSeconds from 'date-fns/differenceInSeconds'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { faRedo } from 'lib-icons'
 
+import { undoMessage, undoReply } from '../../generated/api-clients/messaging'
 import { useTranslation } from '../../state/i18n'
 
 import { CancelableMessage, MessageContext } from './MessageContext'
-import { undoMessage, undoMessageReply } from './api'
+
+const undoMessageResult = wrapResult(undoMessage)
+const undoReplyResult = wrapResult(undoReply)
 
 export const UndoMessage = React.memo(function UndoMessageToast({
   message,
@@ -36,8 +40,14 @@ export const UndoMessage = React.memo(function UndoMessageToast({
 
     const request =
       'contentId' in message
-        ? undoMessage(message.accountId, message.contentId)
-        : undoMessageReply(message.accountId, message.messageId)
+        ? undoMessageResult({
+            accountId: message.accountId,
+            contentId: message.contentId
+          })
+        : undoReplyResult({
+            accountId: message.accountId,
+            messageId: message.messageId
+          })
 
     setCancelling(true)
     void request

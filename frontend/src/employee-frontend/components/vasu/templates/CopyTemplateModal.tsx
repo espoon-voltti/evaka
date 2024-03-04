@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
@@ -13,9 +14,10 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
+import { copyTemplate } from '../../../generated/api-clients/vasu'
 import { useTranslation } from '../../../state/i18n'
 
-import { copyVasuTemplate } from './api'
+const copyTemplateResult = wrapResult(copyTemplate)
 
 interface Props {
   template: VasuTemplateSummary
@@ -40,11 +42,13 @@ export default React.memo(function CopyTemplateModal({
       title={t.templateModal.copyTitle}
       resolveAction={() => {
         setSubmitting(true)
-        void copyVasuTemplate(
-          template.id,
-          name,
-          new FiniteDateRange(startDate, endDate)
-        ).then((res) => {
+        void copyTemplateResult({
+          id: template.id,
+          body: {
+            name,
+            valid: new FiniteDateRange(startDate, endDate)
+          }
+        }).then((res) => {
           setSubmitting(false)
           if (res.isSuccess) {
             onSuccess(res.value)

@@ -41,7 +41,7 @@ class SettingController(private val accessControl: AccessControl) {
     }
 
     @PutMapping
-    fun setSettings(
+    fun putSettings(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

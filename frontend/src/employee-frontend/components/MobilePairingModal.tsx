@@ -5,7 +5,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
+import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { UUID } from 'lib-common/types'
 import InputField from 'lib-components/atoms/form/InputField'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -15,14 +16,18 @@ import { faPlus } from 'lib-icons'
 
 import {
   getPairingStatus,
-  PairingResponse,
   postPairing,
   postPairingResponse,
   putMobileDeviceName
-} from '../api/unit'
+} from '../generated/api-clients/pairing'
 import { useTranslation } from '../state/i18n'
 
 import { renderResult } from './async-rendering'
+
+const getPairingStatusResult = wrapResult(getPairingStatus)
+const postPairingResult = wrapResult(postPairing)
+const postPairingResponseResult = wrapResult(postPairingResponse)
+const putMobileDeviceNameResult = wrapResult(putMobileDeviceName)
 
 type IdProps = { unitId: UUID } | { employeeId: UUID }
 
@@ -54,24 +59,26 @@ export default React.memo(function MobilePairingModal({
   const [phase, setPhase] = useState<1 | 2 | 3>(1)
   const [responseKey, setResponseKey] = useState<string>('')
   const [deviceName, setDeviceName] = useState<string>('')
-  const [pairingResponse, setPairingResponse] = useState<
-    Result<PairingResponse>
-  >(Loading.of())
+  const [pairingResponse, setPairingResponse] = useState<Result<Pairing>>(
+    Loading.of()
+  )
 
   useEffect(() => {
     if (phase === 1) {
-      void postPairing(idProps).then(setPairingResponse)
+      void postPairingResult({ body: idProps }).then(setPairingResponse)
     }
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (responseKey.length === 12) {
       if (pairingResponse.isSuccess) {
-        void postPairingResponse(
-          pairingResponse.value.id,
-          pairingResponse.value.challengeKey,
-          responseKey
-        ).then((res) => {
+        void postPairingResponseResult({
+          id: pairingResponse.value.id,
+          body: {
+            challengeKey: pairingResponse.value.challengeKey,
+            responseKey
+          }
+        }).then((res) => {
           if (res.isSuccess) {
             setPairingResponse(res)
             if (res.value.status === 'READY') {
@@ -87,14 +94,16 @@ export default React.memo(function MobilePairingModal({
     const polling = setInterval(() => {
       if (pairingResponse.isSuccess) {
         if (pairingResponse.value.status === 'WAITING_CHALLENGE') {
-          void getPairingStatus(pairingResponse.value.id).then((status) => {
-            if (status.isSuccess) {
-              if (status.value.status === 'WAITING_RESPONSE') {
-                clearInterval(polling)
-                setPhase(2)
+          void getPairingStatusResult({ id: pairingResponse.value.id }).then(
+            (status) => {
+              if (status.isSuccess) {
+                if (status.value.status === 'WAITING_RESPONSE') {
+                  clearInterval(polling)
+                  setPhase(2)
+                }
               }
             }
-          })
+          )
         }
       }
     }, 1000)
@@ -108,10 +117,12 @@ export default React.memo(function MobilePairingModal({
 
     const saveDeviceName = () => {
       if (pairingResponse.isSuccess && pairingResponse.value.mobileDeviceId) {
-        void putMobileDeviceName(
-          pairingResponse.value.mobileDeviceId,
-          deviceName
-        ).then(closeModal)
+        void putMobileDeviceNameResult({
+          id: pairingResponse.value.mobileDeviceId,
+          body: {
+            name: deviceName
+          }
+        }).then(closeModal)
       }
     }
 

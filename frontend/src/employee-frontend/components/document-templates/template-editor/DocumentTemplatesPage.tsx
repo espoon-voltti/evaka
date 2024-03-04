@@ -31,7 +31,7 @@ import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRange
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { exportDocumentTemplateUrl } from '../../../api/document-templates'
+import { API_URL } from '../../../api/client'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
 import { FlexRow } from '../../common/styled/containers'
@@ -43,6 +43,10 @@ import {
 
 import TemplateImportModal from './TemplateImportModal'
 import TemplateModal, { TemplateModalMode } from './TemplateModal'
+
+function exportDocumentTemplateUrl(id: UUID): string {
+  return `${API_URL}/document-templates/${encodeURIComponent(id)}/export`
+}
 
 const validityForm = required(openEndedLocalDateRange())
 

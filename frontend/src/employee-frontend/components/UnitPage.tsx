@@ -18,7 +18,7 @@ import {
 } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { UnitResponse } from 'employee-frontend/api/unit'
+import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -39,10 +39,10 @@ import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
 import { unitNotificationsQuery } from './unit/queries'
 
-const defaultTab = (unit: UnitResponse) => {
-  if (unit.permittedActions.has('READ_ATTENDANCES')) return 'calendar'
-  if (unit.permittedActions.has('READ_OCCUPANCIES')) return 'calendar'
-  if (unit.permittedActions.has('READ_GROUP_DETAILS')) return 'groups'
+const defaultTab = (unit: DaycareResponse) => {
+  if (unit.permittedActions.includes('READ_ATTENDANCES')) return 'calendar'
+  if (unit.permittedActions.includes('READ_OCCUPANCIES')) return 'calendar'
+  if (unit.permittedActions.includes('READ_GROUP_DETAILS')) return 'groups'
   return 'unit-info'
 }
 
@@ -51,7 +51,9 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { setTitle } = useContext<TitleState>(TitleContext)
   const { unitInformation, filters, setFilters } = useContext(UnitContext)
 
-  const unitNotifications = useQueryResult(unitNotificationsQuery(id))
+  const unitNotifications = useQueryResult(
+    unitNotificationsQuery({ daycareId: id })
+  )
 
   const [searchParams, setSearchParams] = useSearchParams()
   useEffect(() => {
@@ -120,9 +122,9 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const tabs = useMemo(
     () => [
       ...(unitInformation.isSuccess &&
-      (unitInformation.value.permittedActions.has('READ_OCCUPANCIES') ||
-        unitInformation.value.permittedActions.has('READ_ATTENDANCES') ||
-        unitInformation.value.permittedActions.has('READ_CALENDAR_EVENTS'))
+      (unitInformation.value.permittedActions.includes('READ_OCCUPANCIES') ||
+        unitInformation.value.permittedActions.includes('READ_ATTENDANCES') ||
+        unitInformation.value.permittedActions.includes('READ_CALENDAR_EVENTS'))
         ? [
             {
               id: 'calendar',
@@ -132,7 +134,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           ]
         : []),
       ...(unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.has('READ_GROUP_DETAILS')
+      unitInformation.value.permittedActions.includes('READ_GROUP_DETAILS')
         ? [
             {
               id: 'groups',
@@ -145,7 +147,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           ]
         : []),
       ...(unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.has(
+      unitInformation.value.permittedActions.includes(
         'READ_APPLICATIONS_AND_PLACEMENT_PLANS'
       )
         ? [

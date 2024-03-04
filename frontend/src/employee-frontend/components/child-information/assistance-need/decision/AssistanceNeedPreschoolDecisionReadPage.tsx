@@ -138,7 +138,7 @@ const DecisionReadView = React.memo(function DecisionReadView({
 export default React.memo(function AssistanceNeedPreschoolDecisionReadPage() {
   const { decisionId } = useNonNullableParams<{ decisionId: UUID }>()
   const decisionResult = useQueryResult(
-    assistanceNeedPreschoolDecisionQuery(decisionId)
+    assistanceNeedPreschoolDecisionQuery({ id: decisionId })
   )
 
   return renderResult(decisionResult, (decisionResponse) => (

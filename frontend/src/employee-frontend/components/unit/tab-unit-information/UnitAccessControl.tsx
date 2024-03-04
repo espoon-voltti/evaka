@@ -7,8 +7,9 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import { combine, isLoading, Success } from 'lib-common/api'
+import { combine, isLoading, Success, wrapResult } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
+import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import { DaycareAclRow, UserRole } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -27,18 +28,17 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import { getEmployees } from '../../../api/employees'
 import {
-  DaycareGroupSummary,
+  deleteEarlyChildhoodEducationSecretary,
+  deleteSpecialEducationTeacher,
+  deleteStaff,
   deleteTemporaryEmployee,
   deleteTemporaryEmployeeAcl,
+  deleteUnitSupervisor,
   getTemporaryEmployees,
-  removeDaycareAclEarlyChildhoodEducationSecretary,
-  removeDaycareAclSpecialEducationTeacher,
-  removeDaycareAclStaff,
-  removeDaycareAclSupervisor,
-  updateDaycareGroupAcl
-} from '../../../api/unit'
+  updateGroupAclWithOccupancyCoefficient
+} from '../../../generated/api-clients/daycare'
+import { getEmployees } from '../../../generated/api-clients/pis'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UnitContext } from '../../../state/unit'
@@ -49,9 +49,25 @@ import { renderResult } from '../../async-rendering'
 import DaycareAclAdditionModal from './DaycareAclAdditionModal'
 import EmployeeAclRowEditModal from './EmployeeAclRowEditModal'
 
+const getEmployeesResult = wrapResult(getEmployees)
+const getTemporaryEmployeesResult = wrapResult(getTemporaryEmployees)
+const updateGroupAclWithOccupancyCoefficientResult = wrapResult(
+  updateGroupAclWithOccupancyCoefficient
+)
+const deleteEarlyChildhoodEducationSecretaryResult = wrapResult(
+  deleteEarlyChildhoodEducationSecretary
+)
+const deleteSpecialEducationTeacherResult = wrapResult(
+  deleteSpecialEducationTeacher
+)
+const deleteStaffResult = wrapResult(deleteStaff)
+const deleteUnitSupervisorResult = wrapResult(deleteUnitSupervisor)
+const deleteTemporaryEmployeeAclResult = wrapResult(deleteTemporaryEmployeeAcl)
+const deleteTemporaryEmployeeResult = wrapResult(deleteTemporaryEmployee)
+
 type Props = {
-  groups: Record<UUID, DaycareGroupSummary>
-  permittedActions: Set<Action.Unit>
+  groups: Record<UUID, DaycareGroupResponse>
+  permittedActions: Action.Unit[]
 }
 
 export type DaycareAclRole = Extract<
@@ -87,7 +103,7 @@ function GroupListing({
   unitGroups,
   groupIds
 }: {
-  unitGroups: Record<UUID, DaycareGroupSummary>
+  unitGroups: Record<UUID, DaycareGroupResponse>
   groupIds: UUID[]
 }) {
   const { i18n } = useTranslation()
@@ -124,7 +140,7 @@ function AclRow({
   coefficientPermitted: boolean
   onClickDelete: () => void
   onClickEdit: (employeeRow: FormattedRow) => void
-  unitGroups: Record<UUID, DaycareGroupSummary> | undefined
+  unitGroups: Record<UUID, DaycareGroupResponse> | undefined
 }) {
   const { i18n } = useTranslation()
   const theme = useTheme()
@@ -215,7 +231,7 @@ function AclTable({
   coefficientPermitted
 }: {
   dataQa?: string
-  unitGroups?: Record<UUID, DaycareGroupSummary>
+  unitGroups?: Record<UUID, DaycareGroupResponse>
   rows: FormattedRow[]
   hideTemporaryChip?: boolean
   onDeleteAclRow: (employee: FormattedRow) => void
@@ -345,11 +361,11 @@ export default React.memo(function UnitAccessControl({
   const { unitId, daycareAclRows, reloadDaycareAclRows } =
     useContext(UnitContext)
   const { user } = useContext(UserContext)
-  const [employees] = useApiState(getEmployees, [])
+  const [employees] = useApiState(getEmployeesResult, [])
   const [temporaryEmployees, reloadTemporaryEmployees] = useApiState(
     () =>
-      permittedActions.has('READ_TEMPORARY_EMPLOYEE')
-        ? getTemporaryEmployees(unitId)
+      permittedActions.includes('READ_TEMPORARY_EMPLOYEE')
+        ? getTemporaryEmployeesResult({ unitId })
         : Promise.resolve(Success.of([])),
     [permittedActions, unitId]
   )
@@ -556,7 +572,7 @@ export default React.memo(function UnitAccessControl({
         <EmployeeAclRowEditModal
           onClose={closeEmployeeAclRowEditModal}
           onSuccess={confirmEmployeeAclRowEditModal}
-          updatesGroupAcl={updateDaycareGroupAcl}
+          updatesGroupAcl={updateGroupAclWithOccupancyCoefficientResult}
           permittedActions={permittedActions}
           employeeRow={updateState.employeeRow}
           unitId={unitId}
@@ -589,23 +605,24 @@ export default React.memo(function UnitAccessControl({
               onDeleteAclRow={(employee) =>
                 openRemoveModal({
                   employee,
-                  removeFn: removeDaycareAclSupervisor
+                  removeFn: async (daycareId, employeeId) =>
+                    deleteUnitSupervisorResult({ daycareId, employeeId })
                 })
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
               editPermitted={
-                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
-                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+                permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
               }
-              deletePermitted={permittedActions.has(
+              deletePermitted={permittedActions.includes(
                 'DELETE_ACL_UNIT_SUPERVISOR'
               )}
-              coefficientPermitted={permittedActions.has(
+              coefficientPermitted={permittedActions.includes(
                 'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
-            {permittedActions.has('INSERT_ACL_UNIT_SUPERVISOR') && (
+            {permittedActions.includes('INSERT_ACL_UNIT_SUPERVISOR') && (
               <>
                 <Gap />
                 <AddButton
@@ -627,23 +644,29 @@ export default React.memo(function UnitAccessControl({
               onDeleteAclRow={(employee) =>
                 openRemoveModal({
                   employee,
-                  removeFn: removeDaycareAclSpecialEducationTeacher
+                  removeFn: async (daycareId, employeeId) =>
+                    deleteSpecialEducationTeacherResult({
+                      daycareId,
+                      employeeId
+                    })
                 })
               }
               unitGroups={groups}
               onClickEdit={openEmployeeAclRowEditModal}
               editPermitted={
-                permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
-                permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+                permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
+                permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
               }
-              deletePermitted={permittedActions.has(
+              deletePermitted={permittedActions.includes(
                 'DELETE_ACL_SPECIAL_EDUCATION_TEACHER'
               )}
-              coefficientPermitted={permittedActions.has(
+              coefficientPermitted={permittedActions.includes(
                 'READ_STAFF_OCCUPANCY_COEFFICIENTS'
               )}
             />
-            {permittedActions.has('INSERT_ACL_SPECIAL_EDUCATION_TEACHER') && (
+            {permittedActions.includes(
+              'INSERT_ACL_SPECIAL_EDUCATION_TEACHER'
+            ) && (
               <>
                 <Gap />
                 <AddButton
@@ -667,23 +690,29 @@ export default React.memo(function UnitAccessControl({
                 onDeleteAclRow={(employee) =>
                   openRemoveModal({
                     employee,
-                    removeFn: removeDaycareAclEarlyChildhoodEducationSecretary
+                    removeFn: async (daycareId, employeeId) =>
+                      deleteEarlyChildhoodEducationSecretaryResult({
+                        daycareId,
+                        employeeId
+                      })
                   })
                 }
                 unitGroups={groups}
                 onClickEdit={openEmployeeAclRowEditModal}
                 editPermitted={
-                  permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
-                  permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+                  permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
+                  permittedActions.includes(
+                    'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
+                  )
                 }
-                deletePermitted={permittedActions.has(
+                deletePermitted={permittedActions.includes(
                   'DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
                 )}
-                coefficientPermitted={permittedActions.has(
+                coefficientPermitted={permittedActions.includes(
                   'READ_STAFF_OCCUPANCY_COEFFICIENTS'
                 )}
               />
-              {permittedActions.has(
+              {permittedActions.includes(
                 'INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY'
               ) && (
                 <>
@@ -707,25 +736,29 @@ export default React.memo(function UnitAccessControl({
             onDeleteAclRow={(employee) =>
               openRemoveModal({
                 employee,
-                removeFn: employee.temporary
-                  ? deleteTemporaryEmployeeAcl
-                  : removeDaycareAclStaff
+                removeFn: async (daycareId, employeeId) =>
+                  employee.temporary
+                    ? deleteTemporaryEmployeeAclResult({
+                        unitId: daycareId,
+                        employeeId
+                      })
+                    : deleteStaffResult({ daycareId, employeeId })
               })
             }
             unitGroups={groups}
             onClickEdit={openEmployeeAclRowEditModal}
             editPermitted={
-              permittedActions.has('UPDATE_STAFF_GROUP_ACL') ||
-              permittedActions.has('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
+              permittedActions.includes('UPDATE_STAFF_GROUP_ACL') ||
+              permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS')
             }
-            deletePermitted={permittedActions.has('DELETE_ACL_STAFF')}
-            coefficientPermitted={permittedActions.has(
+            deletePermitted={permittedActions.includes('DELETE_ACL_STAFF')}
+            coefficientPermitted={permittedActions.includes(
               'READ_STAFF_OCCUPANCY_COEFFICIENTS'
             )}
           />
         ))}
-        {(permittedActions.has('INSERT_ACL_STAFF') ||
-          permittedActions.has('CREATE_TEMPORARY_EMPLOYEE')) && (
+        {(permittedActions.includes('INSERT_ACL_STAFF') ||
+          permittedActions.includes('CREATE_TEMPORARY_EMPLOYEE')) && (
           <>
             <Gap />
             <AddButton
@@ -735,7 +768,7 @@ export default React.memo(function UnitAccessControl({
             />
           </>
         )}
-        {permittedActions.has('READ_TEMPORARY_EMPLOYEE')
+        {permittedActions.includes('READ_TEMPORARY_EMPLOYEE')
           ? renderResult(candidateTemporaryEmployees, (employees) =>
               employees.length > 0 ? (
                 <>
@@ -761,15 +794,16 @@ export default React.memo(function UnitAccessControl({
                     onDeleteAclRow={(employee) =>
                       openRemoveTemporaryEmployeeModal({
                         employee,
-                        removeFn: deleteTemporaryEmployee
+                        removeFn: async (unitId, employeeId) =>
+                          deleteTemporaryEmployeeResult({ unitId, employeeId })
                       })
                     }
                     unitGroups={groups}
                     onClickEdit={openEmployeeAclRowEditModal}
-                    editPermitted={permittedActions.has(
+                    editPermitted={permittedActions.includes(
                       'UPDATE_TEMPORARY_EMPLOYEE'
                     )}
-                    deletePermitted={permittedActions.has(
+                    deletePermitted={permittedActions.includes(
                       'DELETE_TEMPORARY_EMPLOYEE'
                     )}
                     coefficientPermitted={true}

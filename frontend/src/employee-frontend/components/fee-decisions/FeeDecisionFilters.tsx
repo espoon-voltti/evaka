@@ -14,8 +14,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { Gap } from 'lib-components/white-space'
 
-import { getFinanceDecisionHandlers } from '../../api/employees'
 import { getUnits } from '../../generated/api-clients/daycare'
+import { getFinanceDecisionHandlers } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import {
@@ -30,6 +30,7 @@ import {
 } from '../common/Filters'
 
 const getUnitsResult = wrapResult(getUnits)
+const getFinanceDecisionHandlersResult = wrapResult(getFinanceDecisionHandlers)
 
 function FeeDecisionFilters() {
   const {
@@ -58,7 +59,7 @@ function FeeDecisionFilters() {
   }, [setUnits])
 
   useEffect(() => {
-    void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
+    void getFinanceDecisionHandlersResult().then(setFinanceDecisionHandlers)
   }, [setFinanceDecisionHandlers])
 
   const selectedFinanceDecisionHandler = useMemo(

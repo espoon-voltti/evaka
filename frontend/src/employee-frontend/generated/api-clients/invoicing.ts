@@ -42,7 +42,6 @@ import { UUID } from 'lib-common/types'
 import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionTypeRequest } from 'lib-common/generated/api-types/invoicing'
-import { Wrapper } from 'lib-common/generated/api-types/shared'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
@@ -61,7 +60,6 @@ import { deserializeJsonPagedPayments } from 'lib-common/generated/api-types/inv
 import { deserializeJsonPagedVoucherValueDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonVoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonVoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
-import { deserializeJsonWrapper } from 'lib-common/generated/api-types/shared'
 import { uri } from 'lib-common/uri'
 
 
@@ -181,14 +179,14 @@ export async function generateRetroactiveFeeDecisions(
 */
 export async function getFeeDecision(
   request: {
-    uuid: UUID
+    id: UUID
   }
-): Promise<Wrapper<FeeDecisionDetailed>> {
-  const { data: json } = await client.request<JsonOf<Wrapper<FeeDecisionDetailed>>>({
-    url: uri`/fee-decisions/${request.uuid}`.toString(),
+): Promise<FeeDecisionDetailed> {
+  const { data: json } = await client.request<JsonOf<FeeDecisionDetailed>>({
+    url: uri`/fee-decisions/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonWrapper((value: JsonOf<FeeDecisionDetailed>) => deserializeJsonFeeDecisionDetailed(value), json)
+  return deserializeJsonFeeDecisionDetailed(json)
 }
 
 
@@ -199,12 +197,12 @@ export async function getHeadOfFamilyFeeDecisions(
   request: {
     id: UUID
   }
-): Promise<Wrapper<FeeDecision[]>> {
-  const { data: json } = await client.request<JsonOf<Wrapper<FeeDecision[]>>>({
+): Promise<FeeDecision[]> {
+  const { data: json } = await client.request<JsonOf<FeeDecision[]>>({
     url: uri`/fee-decisions/head-of-family/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonWrapper((value: JsonOf<FeeDecision[]>) => value.map(e => deserializeJsonFeeDecision(e)), json)
+  return json.map(e => deserializeJsonFeeDecision(e))
 }
 
 
@@ -264,12 +262,12 @@ export async function setFeeDecisionSent(
 */
 export async function setFeeDecisionType(
   request: {
-    uuid: UUID,
+    id: UUID,
     body: FeeDecisionTypeRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decisions/set-type/${request.uuid}`.toString(),
+    url: uri`/fee-decisions/set-type/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeDecisionTypeRequest>
   })
@@ -519,14 +517,14 @@ export async function deleteDraftInvoices(
 */
 export async function getHeadOfFamilyInvoices(
   request: {
-    uuid: UUID
+    id: UUID
   }
-): Promise<Wrapper<Invoice[]>> {
-  const { data: json } = await client.request<JsonOf<Wrapper<Invoice[]>>>({
-    url: uri`/invoices/head-of-family/${request.uuid}`.toString(),
+): Promise<Invoice[]> {
+  const { data: json } = await client.request<JsonOf<Invoice[]>>({
+    url: uri`/invoices/head-of-family/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonWrapper((value: JsonOf<Invoice[]>) => value.map(e => deserializeJsonInvoice(e)), json)
+  return json.map(e => deserializeJsonInvoice(e))
 }
 
 
@@ -537,20 +535,20 @@ export async function getInvoice(
   request: {
     id: UUID
   }
-): Promise<Wrapper<InvoiceDetailedResponse>> {
-  const { data: json } = await client.request<JsonOf<Wrapper<InvoiceDetailedResponse>>>({
+): Promise<InvoiceDetailedResponse> {
+  const { data: json } = await client.request<JsonOf<InvoiceDetailedResponse>>({
     url: uri`/invoices/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonWrapper((value: JsonOf<InvoiceDetailedResponse>) => deserializeJsonInvoiceDetailedResponse(value), json)
+  return deserializeJsonInvoiceDetailedResponse(json)
 }
 
 
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.getInvoiceCodes
 */
-export async function getInvoiceCodes(): Promise<Wrapper<InvoiceCodes>> {
-  const { data: json } = await client.request<JsonOf<Wrapper<InvoiceCodes>>>({
+export async function getInvoiceCodes(): Promise<InvoiceCodes> {
+  const { data: json } = await client.request<JsonOf<InvoiceCodes>>({
     url: uri`/invoices/codes`.toString(),
     method: 'GET'
   })
@@ -701,9 +699,9 @@ export async function getPersonInvoiceCorrections(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.updateNote
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.updateInvoiceCorrectionNote
 */
-export async function updateNote(
+export async function updateInvoiceCorrectionNote(
   request: {
     id: UUID,
     body: NoteUpdateBody
@@ -719,9 +717,9 @@ export async function updateNote(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.createDrafts
+* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.createPaymentDrafts
 */
-export async function createDrafts(): Promise<void> {
+export async function createPaymentDrafts(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/payments/create-drafts`.toString(),
     method: 'POST'
@@ -800,9 +798,9 @@ export async function generateRetroactiveVoucherValueDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.getHeadOfFamilyDecisions
+* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.getHeadOfFamilyVoucherValueDecisions
 */
-export async function getHeadOfFamilyDecisions(
+export async function getHeadOfFamilyVoucherValueDecisions(
   request: {
     headOfFamilyId: UUID
   }
@@ -822,12 +820,12 @@ export async function getVoucherValueDecision(
   request: {
     id: UUID
   }
-): Promise<Wrapper<VoucherValueDecisionDetailed>> {
-  const { data: json } = await client.request<JsonOf<Wrapper<VoucherValueDecisionDetailed>>>({
+): Promise<VoucherValueDecisionDetailed> {
+  const { data: json } = await client.request<JsonOf<VoucherValueDecisionDetailed>>({
     url: uri`/value-decisions/${request.id}`.toString(),
     method: 'GET'
   })
-  return deserializeJsonWrapper((value: JsonOf<VoucherValueDecisionDetailed>) => deserializeJsonVoucherValueDecisionDetailed(value), json)
+  return deserializeJsonVoucherValueDecisionDetailed(json)
 }
 
 
@@ -909,12 +907,12 @@ export async function sendVoucherValueDecisionDrafts(
 */
 export async function setVoucherValueDecisionType(
   request: {
-    uuid: UUID,
+    id: UUID,
     body: VoucherValueDecisionTypeRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/value-decisions/set-type/${request.uuid}`.toString(),
+    url: uri`/value-decisions/set-type/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<VoucherValueDecisionTypeRequest>
   })

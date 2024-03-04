@@ -6,6 +6,10 @@ import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
+import {
+  CaretakerAmount,
+  CaretakersResponse
+} from 'lib-common/generated/api-types/daycare'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -28,7 +32,6 @@ import {
 } from '../generated/api-clients/daycare'
 import { useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
-import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
 import { getStatusLabelByDateRange } from '../utils/date'
 
 const getCaretakersResult = wrapResult(getCaretakers)

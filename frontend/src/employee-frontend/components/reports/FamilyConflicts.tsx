@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
 import { FamilyConflictReportRow } from 'lib-common/generated/api-types/reports'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -15,12 +15,14 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
-import { getFamilyConflictsReport } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
+import { getFamilyConflictsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { distinct } from '../../utils'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+
+const getFamilyConflictsReportResult = wrapResult(getFamilyConflictsReport)
 
 interface DisplayFilters {
   careArea: string
@@ -48,7 +50,7 @@ export default React.memo(function FamilyConflicts() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getFamilyConflictsReport().then(setRows)
+    void getFamilyConflictsReportResult().then(setRows)
   }, [])
 
   const filteredRows: FamilyConflictReportRow[] = useMemo(

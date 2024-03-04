@@ -14,7 +14,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import { useTheme } from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
+import { Failure, Loading, Result, wrapResult } from 'lib-common/api'
 import {
   DraftContent,
   Message,
@@ -44,20 +44,20 @@ import { SelectOption } from 'lib-components/molecules/Select'
 import { faCheck } from 'lib-icons'
 
 import { client } from '../../api/client'
+import {
+  getAccountsByUser,
+  getArchivedMessages,
+  getDraftMessages,
+  getMessageCopies,
+  getReceivedMessages,
+  getSentMessages,
+  getThread,
+  getUnreadMessages,
+  markThreadRead
+} from '../../generated/api-clients/messaging'
 import { UserContext } from '../../state/user'
 
 import { UndoMessage } from './UndoMessageNotification'
-import {
-  getMessageCopies,
-  getMessageDrafts,
-  getArchivedMessages,
-  getMessagingAccounts,
-  getReceivedMessages,
-  getSentMessages,
-  getUnreadCounts,
-  markThreadRead,
-  getThread
-} from './api'
 import {
   AccountView,
   groupMessageBoxes,
@@ -66,6 +66,16 @@ import {
   personalMessageBoxes,
   serviceWorkerMessageBoxes
 } from './types-view'
+
+const getMessageCopiesResult = wrapResult(getMessageCopies)
+const getDraftMessagesResult = wrapResult(getDraftMessages)
+const getArchivedMessagesResult = wrapResult(getArchivedMessages)
+const getAccountsByUserResult = wrapResult(getAccountsByUser)
+const getReceivedMessagesResult = wrapResult(getReceivedMessages)
+const getSentMessagesResult = wrapResult(getSentMessages)
+const getUnreadMessagesResult = wrapResult(getUnreadMessages)
+const markThreadReadResult = wrapResult(markThreadRead)
+const getThreadResult = wrapResult(getThread)
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
@@ -228,7 +238,7 @@ export const MessageContextProvider = React.memo(
     const [accounts] = useApiState(
       () =>
         user?.accessibleFeatures.messages
-          ? getMessagingAccounts()
+          ? getAccountsByUserResult()
           : Promise.resolve(Loading.of<AuthorizedMessageAccount[]>()),
       [user]
     )
@@ -292,7 +302,7 @@ export const MessageContextProvider = React.memo(
     const [unreadCountsByAccount, refreshUnreadCounts] = useApiState(
       () =>
         user?.accessibleFeatures.messages
-          ? getUnreadCounts()
+          ? getUnreadMessagesResult()
           : Promise.resolve(Loading.of<UnreadCountByAccount[]>()),
       [user]
     )
@@ -354,11 +364,14 @@ export const MessageContextProvider = React.memo(
     )
     const loadReceivedMessages = useRestApi(
       (accountId: UUID, page: number) =>
-        getReceivedMessages(accountId, page, PAGE_SIZE),
+        getReceivedMessagesResult({ accountId, page, pageSize: PAGE_SIZE }),
       setReceivedMessagesResult
     )
 
-    const loadMessageDrafts = useRestApi(getMessageDrafts, setMessageDrafts)
+    const loadMessageDrafts = useRestApi(
+      getDraftMessagesResult,
+      setMessageDrafts
+    )
 
     const setSentMessagesResult = useCallback(
       (result: Result<PagedSentMessages>) => {
@@ -371,7 +384,7 @@ export const MessageContextProvider = React.memo(
     )
     const loadSentMessages = useRestApi(
       (accountId: UUID, page: number) =>
-        getSentMessages(accountId, page, PAGE_SIZE),
+        getSentMessagesResult({ accountId, page, pageSize: PAGE_SIZE }),
       setSentMessagesResult
     )
 
@@ -386,7 +399,7 @@ export const MessageContextProvider = React.memo(
     )
     const loadMessageCopies = useRestApi(
       (accountId: UUID, page: number) =>
-        getMessageCopies(accountId, page, PAGE_SIZE),
+        getMessageCopiesResult({ accountId, page, pageSize: PAGE_SIZE }),
       setMessageCopiesResult
     )
 
@@ -401,7 +414,7 @@ export const MessageContextProvider = React.memo(
     )
     const loadArchivedMessages = useRestApi(
       (accountId: UUID, page: number) =>
-        getArchivedMessages(accountId, page, PAGE_SIZE),
+        getArchivedMessagesResult({ accountId, page, pageSize: PAGE_SIZE }),
       setArchivedMessagesResult
     )
 
@@ -409,7 +422,9 @@ export const MessageContextProvider = React.memo(
 
     const loadThread = useRestApi(
       (accountId: UUID, threadId: UUID | null) =>
-        getThread(accountId, threadId),
+        threadId
+          ? getThreadResult({ accountId, threadId })
+          : Promise.resolve(Failure.of({ message: 'threadId is null' })),
       setSingleThread
     )
 
@@ -424,7 +439,9 @@ export const MessageContextProvider = React.memo(
         case 'sent':
           return void loadSentMessages(selectedAccount.account.id, page)
         case 'drafts':
-          return void loadMessageDrafts(selectedAccount.account.id)
+          return void loadMessageDrafts({
+            accountId: selectedAccount.account.id
+          })
         case 'copies':
           return void loadMessageCopies(selectedAccount.account.id, page)
         case 'archive':
@@ -542,10 +559,12 @@ export const MessageContextProvider = React.memo(
           (m) => !m.readAt && m.sender.id !== accountId
         )
         if (thread && hasUnreadMessages) {
-          void markThreadRead(accountId, thread.id).then(() => {
-            refreshMessages(accountId)
-            void refreshUnreadCounts()
-          })
+          void markThreadReadResult({ accountId, threadId: thread.id }).then(
+            () => {
+              refreshMessages(accountId)
+              void refreshUnreadCounts()
+            }
+          )
         }
       },
       [setSelectedThread, selectedAccount, refreshMessages, refreshUnreadCounts]

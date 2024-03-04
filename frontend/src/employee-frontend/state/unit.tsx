@@ -10,20 +10,23 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result, Success, wrapResult } from 'lib-common/api'
+import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { DaycareAclRow } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { getDaycareAclRows, UnitResponse } from '../api/unit'
 import { unitQuery } from '../components/unit/queries'
+import { getDaycareAcl } from '../generated/api-clients/daycare'
 import { UnitFilters } from '../utils/UnitFilters'
+
+const getDaycareAclResult = wrapResult(getDaycareAcl)
 
 export interface UnitState {
   unitId: UUID
-  unitInformation: Result<UnitResponse>
+  unitInformation: Result<DaycareResponse>
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   daycareAclRows: Result<DaycareAclRow[]>
@@ -49,13 +52,13 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   children: React.JSX.Element
 }) {
   const [filters, setFilters] = useState(defaultState.filters)
-  const unitInformation = useQueryResult(unitQuery(id))
+  const unitInformation = useQueryResult(unitQuery({ daycareId: id }))
 
   const [daycareAclRows, reloadDaycareAclRows] = useApiState(
     () =>
       unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.has('READ_ACL')
-        ? getDaycareAclRows(id)
+      unitInformation.value.permittedActions.includes('READ_ACL')
+        ? getDaycareAclResult({ daycareId: id })
         : Promise.resolve(Success.of([])),
     [id, unitInformation]
   )

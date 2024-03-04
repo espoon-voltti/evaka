@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-need-decisions")
-    fun getAssistanceNeedDecisions(
+    fun getAssistanceNeedDecisionsReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock
@@ -55,7 +55,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/reports/assistance-need-decisions/unread-count")
-    fun getAssistanceNeedDecisionUnreadCount(
+    fun getAssistanceNeedDecisionsReportUnreadCount(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock

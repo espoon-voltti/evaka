@@ -21,11 +21,15 @@ import {
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
-import { getParentshipsByHeadOfChild } from '../api/parentships'
-import { getPersonDetails } from '../api/person'
-import { getFamilyByPerson } from '../generated/api-clients/pis'
+import {
+  getFamilyByPerson,
+  getParentships,
+  getPerson
+} from '../generated/api-clients/pis'
 
+const getPersonResult = wrapResult(getPerson)
 const getFamilyByPersonResult = wrapResult(getFamilyByPerson)
+const getParentshipsResult = wrapResult(getParentships)
 
 export interface PersonState {
   person: Result<PersonJSON>
@@ -75,9 +79,9 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     },
     []
   )
-  const loadPerson = useRestApi(getPersonDetails, setFullPersonResponse)
+  const loadPerson = useRestApi(getPersonResult, setFullPersonResponse)
   useEffect(() => {
-    void loadPerson(id)
+    void loadPerson({ personId: id })
   }, [loadPerson, id])
 
   const [family, reloadFamily] = useApiState(
@@ -91,7 +95,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   const [fridgeChildren, loadFridgeChildren] = useApiState(
     async () =>
       permittedActions.has('READ_PARENTSHIPS')
-        ? getParentshipsByHeadOfChild(id)
+        ? getParentshipsResult({ headOfChildId: id })
         : Loading.of<ParentshipWithPermittedActions[]>(),
     [id, permittedActions]
   )
