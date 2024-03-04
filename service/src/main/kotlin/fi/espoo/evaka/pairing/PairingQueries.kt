@@ -21,40 +21,32 @@ fun Database.Transaction.initPairing(
     unitId: DaycareId? = null,
     employeeId: EmployeeId? = null
 ): Pairing {
-    // language=sql
-    val sql =
-        """
-            INSERT INTO pairing (unit_id, employee_id, expires, challenge_key)
-            VALUES (:unitId, :employeeId, :expires, :challenge)
-            RETURNING *
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("employeeId", employeeId)
-        .bind("expires", clock.now().plusMinutes(expiresInMinutes))
-        .bind("challenge", generatePairingKey())
+    val expires = clock.now().plusMinutes(expiresInMinutes)
+    val challenge = generatePairingKey()
+    return createQuery {
+            sql(
+                """
+INSERT INTO pairing (unit_id, employee_id, expires, challenge_key)
+VALUES (${bind(unitId)}, ${bind(employeeId)}, ${bind(expires)}, ${bind(challenge)})
+RETURNING *
+"""
+            )
+        }
         .exactlyOne<Pairing>()
 }
 
 fun Database.Transaction.challengePairing(clock: EvakaClock, challengeKey: String): Pairing {
-    // language=sql
-    val sql =
-        """
-            UPDATE pairing SET response_key = :response, status = 'WAITING_RESPONSE'
-            WHERE challenge_key = :challenge AND status = 'WAITING_CHALLENGE' AND expires > :now AND attempts <= :maxAttempts
-            RETURNING *
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("challenge", challengeKey)
-        .bind("response", generatePairingKey())
-        .bind("now", clock.now())
-        .bind("maxAttempts", maxAttempts)
+    val response = generatePairingKey()
+    val now = clock.now()
+    return createQuery {
+            sql(
+                """
+UPDATE pairing SET response_key = ${bind(response)}, status = 'WAITING_RESPONSE'
+WHERE challenge_key = ${bind(challengeKey)} AND status = 'WAITING_CHALLENGE' AND expires > ${bind(now)} AND attempts <= ${bind(maxAttempts)}
+RETURNING *
+"""
+            )
+        }
         .exactlyOneOrNull<Pairing>() ?: throw NotFound("Valid pairing not found")
 }
 
@@ -65,36 +57,29 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(
     responseKey: String
 ): Pairing {
     val defaultDeviceName = "Nimeämätön laite"
+    val now = clock.now()
 
-    // language=sql
-    val sql =
-        """
-            WITH target_pairing AS (
-                SELECT p.id, unit_id, employee_id
-                FROM pairing p
-                WHERE p.id = :id AND p.challenge_key = :challenge AND p.response_key = :response 
-                    AND p.status = 'WAITING_RESPONSE' AND p.expires > :now AND p.attempts <= :maxAttempts
-            ), new_device AS (
-                INSERT INTO mobile_device (unit_id, employee_id, name)
-                SELECT target_pairing.unit_id, target_pairing.employee_id, :name
-                FROM target_pairing
-                RETURNING mobile_device.id
+    return createQuery {
+            sql(
+                """
+WITH target_pairing AS (
+    SELECT p.id, unit_id, employee_id
+    FROM pairing p
+    WHERE p.id = ${bind(id)} AND p.challenge_key = ${bind(challengeKey)} AND p.response_key = ${bind(responseKey)} 
+        AND p.status = 'WAITING_RESPONSE' AND p.expires > ${bind(now)} AND p.attempts <= ${bind(maxAttempts)}
+), new_device AS (
+    INSERT INTO mobile_device (unit_id, employee_id, name)
+    SELECT target_pairing.unit_id, target_pairing.employee_id, ${bind(defaultDeviceName)}
+    FROM target_pairing
+    RETURNING mobile_device.id
+)
+UPDATE pairing SET status = 'READY', mobile_device_id = new_device.id
+FROM target_pairing, new_device
+WHERE pairing.id = target_pairing.id
+RETURNING pairing.*
+"""
             )
-            UPDATE pairing SET status = 'READY', mobile_device_id = new_device.id
-            FROM target_pairing, new_device
-            WHERE pairing.id = target_pairing.id
-            RETURNING pairing.*
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("id", id)
-        .bind("challenge", challengeKey)
-        .bind("response", responseKey)
-        .bind("name", defaultDeviceName)
-        .bind("now", clock.now())
-        .bind("maxAttempts", maxAttempts)
+        }
         .exactlyOneOrNull<Pairing>() ?: throw NotFound("Valid pairing not found")
 }
 
@@ -104,68 +89,56 @@ fun Database.Transaction.validatePairing(
     challengeKey: String,
     responseKey: String
 ): MobileDeviceIdentity {
-    // language=sql
-    val sql =
-        """
+    val now = clock.now()
+    val longTermToken = UUID.randomUUID()
+    return createQuery {
+            sql(
+                """
 WITH target_pairing AS (
     UPDATE pairing SET status = 'PAIRED'
-    WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'READY' AND expires > :now AND attempts <= :maxAttempts
+    WHERE id = ${bind(id)} AND challenge_key = ${bind(challengeKey)} AND response_key = ${bind(responseKey)} AND status = 'READY' AND expires > ${bind(now)} AND attempts <= ${bind(maxAttempts)}
     RETURNING mobile_device_id
 )
-UPDATE mobile_device SET long_term_token = :longTermToken
+UPDATE mobile_device SET long_term_token = ${bind(longTermToken)}
 WHERE id = (SELECT mobile_device_id FROM target_pairing)
 RETURNING id, long_term_token
         """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("id", id)
-        .bind("challenge", challengeKey)
-        .bind("response", responseKey)
-        .bind("now", clock.now())
-        .bind("maxAttempts", maxAttempts)
-        .bind("longTermToken", UUID.randomUUID())
+            )
+        }
         .exactlyOneOrNull<MobileDeviceIdentity>() ?: throw NotFound("Valid pairing not found")
 }
 
 fun Database.Read.fetchPairingReferenceIds(id: PairingId): Pair<DaycareId?, EmployeeId?> {
-    @Suppress("DEPRECATION")
-    return createQuery("SELECT unit_id, employee_id FROM pairing WHERE id = :id")
-        .bind("id", id)
+    return createQuery { sql("SELECT unit_id, employee_id FROM pairing WHERE id = ${bind(id)}") }
         .exactlyOneOrNull { columnPair("unit_id", "employee_id") }
         ?: throw NotFound("Pairing not found")
 }
 
 fun Database.Read.fetchPairingStatus(clock: EvakaClock, id: PairingId): PairingStatus {
-    // language=sql
-    val sql =
-        """
-            SELECT status FROM pairing
-            WHERE id = :id AND expires > :now AND attempts <= :maxAttempts
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("id", id)
-        .bind("now", clock.now())
-        .bind("maxAttempts", maxAttempts)
+    val now = clock.now()
+    return createQuery {
+            sql(
+                """
+SELECT status FROM pairing
+WHERE id = ${bind(id)} AND expires > ${bind(now)} AND attempts <= ${bind(maxAttempts)}
+"""
+            )
+        }
         .toList<PairingStatus>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
 fun Database.Transaction.incrementAttempts(id: PairingId, challengeKey: String) {
-    // language=sql
-    val sql =
-        """
+    createUpdate {
+            sql(
+                """
             UPDATE pairing
             SET attempts = attempts + 1
-            WHERE id = :id OR challenge_key = :challenge
+            WHERE id = ${bind(id)} OR challenge_key = ${bind(challengeKey)}
         """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql).bind("id", id).bind("challenge", challengeKey).execute()
+            )
+        }
+        .execute()
 }
 
 const val distinguishableChars = "abcdefghkmnpqrstuvwxyz23456789"
