@@ -6,17 +6,14 @@ package fi.espoo.evaka.note.child.sticky
 
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
 
-private fun Database.Read.getChildStickyNotes(
-    predicate: Predicate<DatabaseTable.ChildStickyNote> = Predicate.alwaysTrue()
-) =
-    createQuery<DatabaseTable.ChildStickyNote> {
+private fun Database.Read.getChildStickyNotes(predicate: Predicate = Predicate.alwaysTrue()) =
+    createQuery {
             sql(
                 """
 SELECT id, child_id, note, modified_at, expires

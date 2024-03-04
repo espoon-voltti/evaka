@@ -330,7 +330,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     )
                 )
 
-            tx.createUpdate<Any> {
+            tx.createUpdate {
                     sql(
                         """
                     UPDATE calendar_event

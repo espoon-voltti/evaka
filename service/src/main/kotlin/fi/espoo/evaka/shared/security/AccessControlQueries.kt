@@ -50,7 +50,7 @@ data class ChildAclConfig(
 }
 
 fun employeeChildAclViaPlacement(employee: EmployeeId, now: HelsinkiDateTime) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT pl.child_id, pl.unit_id, role
@@ -63,7 +63,7 @@ AND daycare_acl.employee_id = ${bind(employee)}
     }
 
 fun employeeChildAclViaBackupCare(employee: EmployeeId, now: HelsinkiDateTime) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT bc.child_id, bc.unit_id, role
@@ -76,7 +76,7 @@ AND daycare_acl.employee_id = ${bind(employee)}
     }
 
 fun employeeChildAclViaApplication(employee: EmployeeId) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT a.child_id, pp.unit_id, role
@@ -91,7 +91,7 @@ AND daycare_acl.employee_id = ${bind(employee)}
     }
 
 fun mobileChildAclViaPlacement(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT pl.child_id
@@ -107,7 +107,7 @@ AND EXISTS (
     }
 
 fun mobileChildAclViaBackupCare(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT bc.child_id
@@ -123,7 +123,7 @@ AND EXISTS (
     }
 
 fun mobileChildAclViaApplication(mobileDevice: MobileDeviceId) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT a.child_id

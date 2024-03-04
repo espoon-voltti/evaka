@@ -33,57 +33,54 @@ value class PredicateSqlString(@Language("sql", prefix = "SELECT WHERE ") privat
  * val predicate = Predicate { where("$it.some_column = ${bind(someValue)}") }
  * ```
  */
-sealed interface Predicate<Tag> {
+sealed interface Predicate {
     fun forTable(table: String): PredicateSql
 
-    fun and(other: Predicate<Tag>): Predicate<Tag> = all(this, other)
+    fun and(other: Predicate): Predicate = all(this, other)
 
-    fun or(other: Predicate<Tag>): Predicate<Tag> = any(this, other)
+    fun or(other: Predicate): Predicate = any(this, other)
 
     @JvmInline
-    private value class Single<Tag>(val f: PredicateSql.Builder.(table: String) -> PredicateSql) :
-        Predicate<Tag> {
+    private value class Single(val f: PredicateSql.Builder.(table: String) -> PredicateSql) :
+        Predicate {
         override fun forTable(table: String): PredicateSql =
             PredicateSql.Builder().run { (f)(table) }
     }
 
-    private data object AlwaysTrue : Predicate<Any> {
+    private data object AlwaysTrue : Predicate {
         override fun forTable(table: String): PredicateSql = PredicateSql.alwaysTrue()
     }
 
-    private data object AlwaysFalse : Predicate<Any> {
+    private data object AlwaysFalse : Predicate {
         override fun forTable(table: String): PredicateSql = PredicateSql.alwaysFalse()
     }
 
-    private data class AnyOperator<Tag>(val predicates: List<Predicate<Tag>>) : Predicate<Tag> {
+    private data class AnyOperator(val predicates: List<Predicate>) : Predicate {
         override fun forTable(table: String): PredicateSql =
             PredicateSql.any(predicates.map { it.forTable(table) })
     }
 
-    private data class AllOperator<Tag>(val predicates: List<Predicate<Tag>>) : Predicate<Tag> {
+    private data class AllOperator(val predicates: List<Predicate>) : Predicate {
         override fun forTable(table: String): PredicateSql =
             PredicateSql.all(predicates.map { it.forTable(table) })
     }
 
     companion object {
         /** Returns a predicate using a builder function that accepts a table name as a parameter */
-        operator fun <Tag> invoke(
-            f: PredicateSql.Builder.(table: String) -> PredicateSql
-        ): Predicate<Tag> = Single(f)
+        operator fun invoke(f: PredicateSql.Builder.(table: String) -> PredicateSql): Predicate =
+            Single(f)
 
         /**
          * Returns a predicate that is always true, regardless of how it's used or which table it is
          * later bound to
          */
-        @Suppress("UNCHECKED_CAST")
-        fun <Tag> alwaysTrue(): Predicate<Tag> = AlwaysTrue as Predicate<Tag>
+        fun alwaysTrue(): Predicate = AlwaysTrue
 
         /**
          * Returns a predicate that is always false, regardless of how it's used or which table it
          * is later bound to
          */
-        @Suppress("UNCHECKED_CAST")
-        fun <Tag> alwaysFalse(): Predicate<Tag> = AlwaysFalse as Predicate<Tag>
+        fun alwaysFalse(): Predicate = AlwaysFalse
 
         /**
          * Returns a predicate that returns true if all the given predicates that are not null
@@ -91,23 +88,21 @@ sealed interface Predicate<Tag> {
          *
          * If no non-null predicates are given, the returned predicate returns *true*.
          */
-        fun <Tag> allNotNull(vararg predicates: Predicate<Tag>?): Predicate<Tag> =
-            all(predicates.filterNotNull())
+        fun allNotNull(vararg predicates: Predicate?): Predicate = all(predicates.filterNotNull())
 
         /**
          * Returns a predicate that returns true if all the given predicates return true.
          *
          * If no predicates are given, the returned predicate returns *true*.
          */
-        fun <Tag> all(vararg predicates: Predicate<Tag>): Predicate<Tag> = all(predicates.toList())
+        fun all(vararg predicates: Predicate): Predicate = all(predicates.toList())
 
         /**
          * Returns a predicate that returns true if all the given predicates return true.
          *
          * If no predicates are given, the returned predicate returns *true*.
          */
-        fun <Tag> all(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> =
-            AllOperator(predicates.toList())
+        fun all(predicates: Iterable<Predicate>): Predicate = AllOperator(predicates.toList())
 
         /**
          * Returns a predicate that returns true if any of the given predicates that are not null
@@ -115,23 +110,21 @@ sealed interface Predicate<Tag> {
          *
          * If no non-null predicates are given, the returned predicate returns *false*.
          */
-        fun <Tag> anyNotNull(vararg predicates: Predicate<Tag>?): Predicate<Tag> =
-            any(predicates.filterNotNull())
+        fun anyNotNull(vararg predicates: Predicate?): Predicate = any(predicates.filterNotNull())
 
         /**
          * Returns a predicate that returns true if any of the given predicates returns true.
          *
          * If no predicates are given, the returned predicate returns *false*.
          */
-        fun <Tag> any(vararg predicates: Predicate<Tag>): Predicate<Tag> = any(predicates.toList())
+        fun any(vararg predicates: Predicate): Predicate = any(predicates.toList())
 
         /**
          * Returns a predicate that returns true if any of the given predicates returns true.
          *
          * If no predicates are given, the returned predicate returns *false*.
          */
-        fun <Tag> any(predicates: Iterable<Predicate<Tag>>): Predicate<Tag> =
-            AnyOperator(predicates.toList())
+        fun any(predicates: Iterable<Predicate>): Predicate = AnyOperator(predicates.toList())
     }
 }
 

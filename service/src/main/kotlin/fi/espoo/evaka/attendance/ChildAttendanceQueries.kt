@@ -11,7 +11,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
@@ -33,7 +32,7 @@ fun Database.Transaction.insertAttendance(
     range: TimeInterval
 ): ChildAttendanceId {
     // language=sql
-    return createUpdate<Any> {
+    return createUpdate {
             sql(
                 """
                 INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
@@ -51,7 +50,7 @@ fun Database.Read.getChildAttendanceId(
     unitId: DaycareId,
     now: HelsinkiDateTime
 ): ChildAttendanceId? {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         SELECT id
@@ -75,7 +74,7 @@ fun Database.Read.getCompletedChildAttendanceTimes(
     unitId: DaycareId,
     date: LocalDate
 ): List<TimeRange> {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         SELECT (start_time, end_time)::timerange
@@ -269,7 +268,7 @@ fun Database.Read.getUnitChildAttendances(
 ): Map<ChildId, List<AttendanceTimes>> {
     // get attendances for last week to include possible overnight stays
     val range = FiniteDateRange(now.toLocalDate().minusWeeks(1), now.toLocalDate())
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
 SELECT
@@ -461,7 +460,7 @@ fun Database.Read.childrenHaveAttendanceInRange(
     childIds: Set<PersonId>,
     range: FiniteDateRange
 ): Boolean {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
             SELECT EXISTS(SELECT FROM child_attendance WHERE child_id = any(${bind(childIds)}) AND ${bind(range)} @> date)
@@ -471,10 +470,8 @@ fun Database.Read.childrenHaveAttendanceInRange(
         .exactlyOne()
 }
 
-fun Database.Read.getChildAttendances(
-    where: Predicate<DatabaseTable.ChildAttendance>
-): List<ChildAttendanceRow> =
-    createQuery<Any> {
+fun Database.Read.getChildAttendances(where: Predicate): List<ChildAttendanceRow> =
+    createQuery {
             sql(
                 """
 SELECT child_id, unit_id, date, start_time, end_time

@@ -6,7 +6,6 @@ package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.shared.ClubTermId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -33,7 +32,7 @@ data class ClubTerm(
 }
 
 fun Database.Read.getClubTerms(): List<ClubTerm> {
-    return createQuery<DatabaseTable.ClubTerm> {
+    return createQuery {
             sql(
                 """
                SELECT id, term, application_period, term_breaks FROM club_term order by term
@@ -44,7 +43,7 @@ fun Database.Read.getClubTerms(): List<ClubTerm> {
 }
 
 fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? =
-    createQuery<DatabaseTable.ClubTerm> {
+    createQuery {
             sql(
                 """
                SELECT id, term, application_period, term_breaks FROM club_term WHERE id = ${bind(id)}
@@ -67,7 +66,7 @@ fun Database.Transaction.insertClubTerm(
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
 ): ClubTermId {
-    return createUpdate<DatabaseTable.ClubTerm> {
+    return createUpdate {
             sql(
                 """
         INSERT INTO club_term (term, application_period, term_breaks)
@@ -86,7 +85,7 @@ fun Database.Transaction.updateClubTerm(
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
 ) =
-    createUpdate<DatabaseTable.ClubTerm> {
+    createUpdate {
             sql(
                 """
             UPDATE club_term 
@@ -101,7 +100,7 @@ fun Database.Transaction.updateClubTerm(
         .updateExactlyOne()
 
 fun Database.Transaction.deleteFutureClubTerm(clock: EvakaClock, termId: ClubTermId) {
-    createUpdate<DatabaseTable.ClubTerm> {
+    createUpdate {
             sql(
                 """
            DELETE FROM club_term

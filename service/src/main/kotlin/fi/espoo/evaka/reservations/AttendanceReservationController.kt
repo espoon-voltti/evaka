@@ -826,7 +826,7 @@ private fun Database.Read.getPlacements(
     unitId: DaycareId,
     dateRange: FiniteDateRange
 ): Map<ChildId, List<ChildPlacement>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT
@@ -845,7 +845,7 @@ private fun Database.Read.getGroupPlacements(
     unitId: DaycareId,
     dateRange: FiniteDateRange
 ): Map<ChildId, List<ChildGroupPlacement>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT
@@ -866,7 +866,7 @@ private fun Database.Read.getBackupPlacements(
     unitId: DaycareId,
     dateRange: FiniteDateRange
 ): Map<ChildId, List<ChildBackupPlacement>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT

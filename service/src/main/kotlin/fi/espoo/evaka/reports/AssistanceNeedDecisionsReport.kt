@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -86,7 +85,7 @@ private fun Database.Read.getDecisionRows(
     idFilterDaycare: AccessControlFilter<AssistanceNeedDecisionId>,
     idFilterPreschool: AccessControlFilter<AssistanceNeedPreschoolDecisionId>,
 ): List<AssistanceNeedDecisionsReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
 WITH decisions AS (

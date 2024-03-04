@@ -6,7 +6,6 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.Id
@@ -115,7 +114,7 @@ fun Database.Transaction.insertAttachment(
 }
 
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
-    createQuery<Any> {
+    createQuery {
             check(AttachmentForeignKeys.idFieldCount == 7) {
                 "Unexpected AttachmentForeignKeys field count"
             }
@@ -168,9 +167,9 @@ fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
 /** Changes the parent of *all attachments* that match the given predicate */
 private fun Database.Transaction.changeParent(
     newParent: AttachmentParent,
-    predicate: Predicate<DatabaseTable.Attachment>
+    predicate: Predicate
 ): Int =
-    createUpdate<DatabaseTable.Attachment> {
+    createUpdate {
             val fks = AttachmentForeignKeys(newParent)
             check(AttachmentForeignKeys.idFieldCount == 7) {
                 "Unexpected AttachmentForeignKeys field count"
@@ -207,7 +206,7 @@ fun Database.Transaction.associateOrphanAttachments(
     val numRows =
         changeParent(
             newParent = newParent,
-            Predicate<DatabaseTable.Attachment> {
+            Predicate {
                     where(
                         "$it.uploaded_by = ${bind(uploadedBy)} AND $it.id = ANY(${bind(attachments)})"
                     )
@@ -226,30 +225,28 @@ fun Database.Transaction.dissociateAttachmentsOfParent(
 ): Int =
     changeParent(
         newParent = AttachmentParent.None,
-        Predicate<DatabaseTable.Attachment> { where("$it.uploaded_by = ${bind(uploadedBy)}") }
-            .and(parent.toPredicate())
+        Predicate { where("$it.uploaded_by = ${bind(uploadedBy)}") }.and(parent.toPredicate())
     )
 
-private fun AttachmentParent.toPredicate() =
-    Predicate<DatabaseTable.Attachment> {
-        check(AttachmentForeignKeys.idFieldCount == 7) {
-            "Unexpected AttachmentForeignKeys field count"
-        }
-        when (this@toPredicate) {
-            is AttachmentParent.Application -> where("$it.application_id = ${bind(applicationId)}")
-            is AttachmentParent.FeeAlteration ->
-                where("$it.fee_alteration_id = ${bind(feeAlterationId)}")
-            is AttachmentParent.Income -> where("$it.income_id = ${bind(incomeId)}")
-            is AttachmentParent.IncomeStatement ->
-                where("$it.income_statement_id = ${bind(incomeStatementId)}")
-            is AttachmentParent.MessageContent ->
-                where("$it.message_content_id = ${bind(messageContentId)}")
-            is AttachmentParent.MessageDraft -> where("$it.message_draft_id = ${bind(draftId)}")
-            is AttachmentParent.PedagogicalDocument ->
-                where("$it.pedagogical_document_id = ${bind(pedagogicalDocumentId)}")
-            is AttachmentParent.None ->
-                where(
-                    """
+private fun AttachmentParent.toPredicate() = Predicate {
+    check(AttachmentForeignKeys.idFieldCount == 7) {
+        "Unexpected AttachmentForeignKeys field count"
+    }
+    when (this@toPredicate) {
+        is AttachmentParent.Application -> where("$it.application_id = ${bind(applicationId)}")
+        is AttachmentParent.FeeAlteration ->
+            where("$it.fee_alteration_id = ${bind(feeAlterationId)}")
+        is AttachmentParent.Income -> where("$it.income_id = ${bind(incomeId)}")
+        is AttachmentParent.IncomeStatement ->
+            where("$it.income_statement_id = ${bind(incomeStatementId)}")
+        is AttachmentParent.MessageContent ->
+            where("$it.message_content_id = ${bind(messageContentId)}")
+        is AttachmentParent.MessageDraft -> where("$it.message_draft_id = ${bind(draftId)}")
+        is AttachmentParent.PedagogicalDocument ->
+            where("$it.pedagogical_document_id = ${bind(pedagogicalDocumentId)}")
+        is AttachmentParent.None ->
+            where(
+                """
 $it.application_id IS NULL
 AND $it.fee_alteration_id IS NULL
 AND $it.income_id IS NULL
@@ -258,12 +255,12 @@ AND $it.message_content_id IS NULL
 AND $it.message_draft_id IS NULL
 AND $it.pedagogical_document_id IS NULL
             """
-                )
-        }
+            )
     }
+}
 
 fun Database.Read.userAttachmentCount(userId: EvakaUserId, parent: AttachmentParent): Int =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT count(*)
@@ -276,7 +273,7 @@ AND ${predicate(parent.toPredicate().forTable("attachment"))}
         .exactlyOne<Int>()
 
 fun Database.Read.getOrphanAttachments(olderThan: HelsinkiDateTime): List<AttachmentId> =
-    createQuery<DatabaseTable.Attachment> {
+    createQuery {
             sql(
                 """
 SELECT id

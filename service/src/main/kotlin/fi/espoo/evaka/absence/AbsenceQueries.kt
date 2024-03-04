@@ -13,7 +13,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -226,7 +225,7 @@ fun Database.Transaction.deleteChildAbsences(
     date: LocalDate,
     categories: Set<AbsenceCategory> = AbsenceCategory.entries.toSet()
 ): List<AbsenceId> =
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 DELETE FROM absence
@@ -243,7 +242,7 @@ fun Database.Transaction.deleteNonSystemGeneratedAbsencesByCategoryInRange(
     range: DateRange,
     categories: Set<AbsenceCategory>
 ): List<AbsenceId> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 DELETE FROM absence
@@ -263,7 +262,7 @@ fun Database.Transaction.deleteOldGeneratedAbsencesInRange(
     childId: ChildId,
     range: DateRange
 ): List<AbsenceId> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 DELETE FROM absence
@@ -339,7 +338,7 @@ RETURNING id
 }
 
 fun Database.Transaction.deleteAllCitizenEditableAbsencesInRange(range: FiniteDateRange) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 DELETE FROM absence
@@ -358,7 +357,7 @@ fun Database.Read.absenceExists(
     category: AbsenceCategory,
     type: AbsenceType
 ): Boolean =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT exists(
@@ -373,7 +372,7 @@ SELECT exists(
         .exactlyOne()
 
 fun Database.Read.getGroupName(groupId: GroupId): String? =
-    createQuery<Any> {
+    createQuery {
             sql("""
 SELECT daycare_group.name
 FROM daycare_group
@@ -383,7 +382,7 @@ WHERE id = ${bind(groupId)}
         .exactlyOneOrNull()
 
 fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT daycare.id
@@ -396,7 +395,7 @@ WHERE daycare_group.id = ${bind(groupId)}
         .exactlyOne()
 
 private fun placementsQuery(range: FiniteDateRange, groupId: GroupId) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') AS date_range
@@ -434,7 +433,7 @@ fun Database.Read.getPlacementsByRange(
         val dailyPreschoolTime: TimeRange?,
         val dailyPreparatoryTime: TimeRange?,
     )
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
 WITH all_placements AS (
@@ -472,8 +471,8 @@ JOIN daycare ON daycare.id = placement.unit_id
         .toMap()
 }
 
-fun Database.Read.getAbsences(where: Predicate<DatabaseTable.Absence>): List<Absence> =
-    createQuery<Any> {
+fun Database.Read.getAbsences(where: Predicate): List<Absence> =
+    createQuery {
             sql(
                 """
 SELECT
@@ -542,7 +541,7 @@ fun Database.Read.getAbsenceDatesForChildrenInRange(
     childIds: Set<ChildId>,
     range: FiniteDateRange
 ): Map<ChildId, Set<LocalDate>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT a.child_id, a.date
@@ -560,7 +559,7 @@ fun Database.Read.getBackupCaresAffectingGroup(
     groupId: GroupId,
     period: FiniteDateRange
 ): Map<ChildId, List<FiniteDateRange>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT bc.child_id, daterange(bc.start_date, bc.end_date, '[]') AS period
@@ -587,7 +586,7 @@ fun Database.Read.getGroupReservations(
     groupId: GroupId,
     dateRange: FiniteDateRange
 ): Map<Pair<ChildId, LocalDate>, List<ChildReservation>> {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
 WITH all_placements AS (
@@ -641,7 +640,7 @@ fun Database.Read.getGroupDailyServiceTimes(
     groupId: GroupId,
     dateRange: FiniteDateRange
 ): Map<ChildId, List<DailyServiceTimes>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 WITH all_placements AS (

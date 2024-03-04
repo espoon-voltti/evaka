@@ -18,8 +18,8 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByEmployee<T> =
-    QuerySql.Builder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<T>
+private typealias FilterByEmployee =
+    QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
 
 data object IsEmployee : DatabaseActionRule.Params {
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
@@ -29,11 +29,11 @@ data object IsEmployee : DatabaseActionRule.Params {
         }
 
     private fun <T : Id<*>> rule(
-        filter: FilterByEmployee<T>
+        filter: FilterByEmployee
     ): DatabaseActionRule.Scoped<T, IsEmployee> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
-    private data class Query<T : Id<*>>(private val filter: FilterByEmployee<T>) :
+    private data class Query<T : Id<*>>(private val filter: FilterByEmployee) :
         DatabaseActionRule.Scoped.Query<T, IsEmployee> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
@@ -49,7 +49,7 @@ data object IsEmployee : DatabaseActionRule.Params {
                 is AuthenticatedUser.Employee -> {
                     val targetCheck = targets.idTargetPredicate()
                     ctx.tx
-                        .createQuery<T> {
+                        .createQuery {
                             sql(
                                 """
                     SELECT id
@@ -72,7 +72,7 @@ data object IsEmployee : DatabaseActionRule.Params {
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsEmployee
-        ): QuerySql<T>? =
+        ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee -> QuerySql.of { filter(ctx.user, ctx.now) }
                 else -> null
@@ -111,7 +111,7 @@ data object IsEmployee : DatabaseActionRule.Params {
                     override fun queryWithParams(
                         ctx: DatabaseActionRule.QueryContext,
                         params: IsEmployee
-                    ): QuerySql<EmployeeId>? =
+                    ): QuerySql? =
                         when (ctx.user) {
                             is AuthenticatedUser.Employee ->
                                 QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }
@@ -133,7 +133,7 @@ data object IsEmployee : DatabaseActionRule.Params {
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
-                                .createQuery<Boolean> {
+                                .createQuery {
                                     sql(
                                         """
 SELECT EXISTS (
@@ -282,7 +282,7 @@ AND sent_for_decision IS NOT NULL
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
-                                .createQuery<Boolean> {
+                                .createQuery {
                                     sql(
                                         """
 SELECT EXISTS (

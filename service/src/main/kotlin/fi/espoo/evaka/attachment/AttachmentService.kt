@@ -75,11 +75,10 @@ class AttachmentService(
         // We must remove the bookkeeping information *after* we are sure the S3 file has been
         // removed, or we could end up losing all bookkeeping info but have a leftover file.
         dbc.transaction {
-            it.createUpdate<Any> { sql("""
+            it.createUpdate { sql("""
 DELETE FROM attachment
 WHERE id = ${bind(id)}
-""") }
-                .execute()
+""") }.execute()
         }
     }
 

@@ -83,7 +83,7 @@ fun Database.Transaction.updateChildDocumentContent(
     content: DocumentContent,
     now: HelsinkiDateTime
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
             UPDATE child_document
@@ -160,7 +160,7 @@ fun Database.Transaction.changeStatus(
     statusTransition: StatusTransition,
     now: HelsinkiDateTime
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
                 UPDATE child_document
@@ -177,7 +177,7 @@ fun Database.Transaction.changeStatusAndPublish(
     statusTransition: StatusTransition,
     now: HelsinkiDateTime
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
                 UPDATE child_document
@@ -194,7 +194,7 @@ fun Database.Transaction.markCompletedAndPublish(
     ids: List<ChildDocumentId>,
     now: HelsinkiDateTime
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
                 UPDATE child_document

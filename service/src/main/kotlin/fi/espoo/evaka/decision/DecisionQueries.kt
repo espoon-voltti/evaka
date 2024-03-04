@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -24,12 +23,11 @@ import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 private fun Database.Read.createDecisionQuery(
-    decision: Predicate<DatabaseTable.Decision> = Predicate.alwaysTrue(),
-    application: Predicate<DatabaseTable.Application> = Predicate.alwaysTrue(),
-) =
-    createQuery<Any> {
-        sql(
-            """
+    decision: Predicate = Predicate.alwaysTrue(),
+    application: Predicate = Predicate.alwaysTrue(),
+) = createQuery {
+    sql(
+        """
         SELECT
             d.id, d.type, d.start_date, d.end_date, d.document_key, d.other_guardian_document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved, 
             u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
@@ -48,9 +46,9 @@ private fun Database.Read.createDecisionQuery(
         WHERE ${predicate(decision.forTable("d"))}
         AND ${predicate(application.forTable("ap"))}
     """
-                .trimIndent()
-        )
-    }
+            .trimIndent()
+    )
+}
 
 private fun Row.decisionFromResultSet(): Decision =
     Decision(

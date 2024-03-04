@@ -120,7 +120,7 @@ object DatabaseActionRule {
 
             fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
 
-            fun queryWithParams(ctx: QueryContext, params: P): QuerySql<T>?
+            fun queryWithParams(ctx: QueryContext, params: P): QuerySql?
         }
 
         data class Simple<T, P : Params>(override val params: P, override val query: Query<T, P>) :
@@ -155,10 +155,10 @@ internal data class RoleAndFeatures(
 sealed interface AccessControlFilter<out T> {
     data object PermitAll : AccessControlFilter<Nothing>
 
-    data class Some<T>(val filter: QuerySql<T>) : AccessControlFilter<T>
+    data class Some<T>(val filter: QuerySql) : AccessControlFilter<T>
 }
 
-fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate<T> =
+fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate =
     when (this) {
         AccessControlFilter.PermitAll -> Predicate.alwaysTrue()
         is AccessControlFilter.Some<Id<T>> -> Predicate { where("$it.id IN (${subquery(filter)})") }
@@ -168,7 +168,7 @@ fun <T : DatabaseTable> AccessControlFilter<Id<T>>.forTable(table: String): Pred
     toPredicate().forTable(table)
 
 /** Converts a set of ids to an SQL predicate that checks that an id column value is in the set */
-fun <T : Id<*>> Set<T>.idTargetPredicate(): Predicate<T> = Predicate {
+fun <T : Id<*>> Set<T>.idTargetPredicate(): Predicate = Predicate {
     // specialize size=1 case, because it can generate a better query plan
     if (size == 1) where("$it.id = ${bind(single().raw)}")
     else where("$it.id = ANY(${bind(map { target -> target.raw})})")

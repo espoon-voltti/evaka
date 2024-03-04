@@ -200,7 +200,7 @@ internal fun getAllPossiblyAffectedAdultsByChild(
 }
 
 private fun Database.Read.getPartnersFromFinanceDecisions(personId: PersonId) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT partner_id FROM fee_decision WHERE head_of_family_id = ${bind(personId)} AND status NOT IN ('DRAFT', 'IGNORED') AND partner_id IS NOT NULL 
@@ -216,7 +216,7 @@ private fun Database.Read.getPartnersFromFinanceDecisions(personId: PersonId) =
         .toSet<PersonId>()
 
 private fun Database.Read.getChildrenFromFinanceDecisions(personId: PersonId) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT fdc.child_id 
@@ -237,7 +237,7 @@ private fun Database.Read.getChildrenFromFinanceDecisions(personId: PersonId) =
 private data class FeeDecisionParents(val headOfFamilyId: PersonId, val partnerId: PersonId?)
 
 private fun Database.Read.getParentsFromFinanceDecisions(personId: PersonId) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT fd.head_of_family_id, fd.partner_id
@@ -258,7 +258,7 @@ private fun Database.Read.getParentsFromFinanceDecisions(personId: PersonId) =
         .toSet()
 
 private fun Database.Read.getChildrenOfHeadOfFamily(personId: PersonId, range: DateRange? = null) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT child_id

@@ -72,7 +72,7 @@ data class CitizenUserDetails(
 )
 
 fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, keycloak_email
@@ -532,7 +532,7 @@ fun Database.Transaction.updateCitizenOnLogin(
     id: PersonId,
     keycloakEmail: String?
 ) =
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 UPDATE person 

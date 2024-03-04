@@ -140,7 +140,7 @@ fun Database.Transaction.createPartnership(
         }
 
     val partnershipId = UUID.randomUUID()
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         WITH new_fridge_partner AS (
@@ -182,7 +182,7 @@ fun Database.Transaction.updatePartnershipDuration(
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId?
 ): Boolean {
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
         UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modify_source = ${bind(modifySource)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
@@ -200,7 +200,7 @@ fun Database.Transaction.retryPartnership(
     modifiedById: EvakaUserId,
     modificationDate: HelsinkiDateTime
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
         UPDATE fridge_partner SET conflict = false, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}

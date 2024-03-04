@@ -257,7 +257,7 @@ SELECT EXISTS (
 }
 
 fun Database.Read.fetchFamilyContacts(today: LocalDate, childId: ChildId): List<FamilyContact> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 WITH child_guardian AS (

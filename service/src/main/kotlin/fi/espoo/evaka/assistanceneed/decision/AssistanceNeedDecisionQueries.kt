@@ -300,7 +300,7 @@ fun Database.Read.getAssistanceNeedDecisionsByChildId(
     childId: ChildId,
     filter: AccessControlFilter<AssistanceNeedDecisionId>
 ): List<AssistanceNeedDecisionBasics> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created,

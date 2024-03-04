@@ -203,7 +203,7 @@ data class TimelineValueDecision(
 ) : WithRange
 
 private fun Database.Read.getValueDecisions(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, status
@@ -222,7 +222,7 @@ data class TimelineIncome(
 ) : WithRange
 
 private fun Database.Read.getIncomes(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, effect
@@ -356,7 +356,7 @@ data class TimelinePlacement(
 data class TimelinePlacementUnit(val id: DaycareId, val name: String)
 
 private fun Database.Read.getPlacements(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT
@@ -381,7 +381,7 @@ data class TimelineServiceNeed(
 ) : WithRange
 
 private fun Database.Read.getServiceNeeds(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT
@@ -408,7 +408,7 @@ data class TimelineFeeAlteration(
 ) : WithRange
 
 private fun Database.Read.getFeeAlterations(personId: PersonId, range: FiniteDateRange) =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, type, amount, is_absolute as absolute, notes

@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -55,7 +54,7 @@ private fun Database.Read.getChildAgeLanguageRows(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>
 ): List<ChildAgeLanguageReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
         WITH children AS (

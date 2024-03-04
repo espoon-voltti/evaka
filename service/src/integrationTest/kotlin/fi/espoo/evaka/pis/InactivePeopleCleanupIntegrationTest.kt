@@ -18,7 +18,6 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.addToGuardianBlocklist
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
@@ -161,7 +160,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         assertCleanedUpPeople(testDate, setOf())
 
         db.transaction { tx ->
-            tx.createUpdate<DatabaseTable> {
+            tx.createUpdate {
                     sql(
                         "DELETE FROM application_other_guardian WHERE guardian_id = ${bind(otherGuardian)}"
                     )

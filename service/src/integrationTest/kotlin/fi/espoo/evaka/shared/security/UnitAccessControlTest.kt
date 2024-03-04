@@ -150,7 +150,7 @@ class UnitAccessControlTest : AccessControlTest() {
             db.read { accessControl.getAuthorizationFilter(it, user, clock, action) }
         fun execute(filter: AccessControlFilter.Some<DaycareId>) =
             db.read {
-                it.createQuery<Any> {
+                it.createQuery {
                         sql(
                             """
                     SELECT id FROM daycare

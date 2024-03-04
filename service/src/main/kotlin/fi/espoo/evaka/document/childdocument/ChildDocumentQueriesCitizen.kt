@@ -69,7 +69,7 @@ fun Database.Transaction.markChildDocumentAsRead(
     id: ChildDocumentId,
     now: HelsinkiDateTime
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
             INSERT INTO child_document_read (document_id, person_id, read_at) 

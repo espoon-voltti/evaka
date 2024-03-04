@@ -274,7 +274,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
 ): List<AssistanceNeedPreschoolDecisionBasics> {
     // language=sql
     val decisions =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     """
         SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,

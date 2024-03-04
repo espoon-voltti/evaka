@@ -60,7 +60,7 @@ fun Database.Transaction.updateDeviceTracking(
     lastSeen: HelsinkiDateTime,
     tracking: SystemController.MobileDeviceTracking
 ) =
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 UPDATE mobile_device

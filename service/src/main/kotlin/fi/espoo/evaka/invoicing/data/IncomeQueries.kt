@@ -31,10 +31,9 @@ fun Database.Transaction.insertIncome(
     income: IncomeRequest,
     updatedBy: EvakaUserId
 ): IncomeId {
-    val update =
-        createQuery<Any> {
-            sql(
-                """
+    val update = createQuery {
+        sql(
+            """
         INSERT INTO income (
             person_id,
             effect,
@@ -62,8 +61,8 @@ fun Database.Transaction.insertIncome(
         )
         RETURNING id
     """
-            )
-        }
+        )
+    }
 
     return handlingExceptions { update.exactlyOne() }
 }
@@ -75,10 +74,9 @@ fun Database.Transaction.updateIncome(
     income: IncomeRequest,
     updatedBy: EvakaUserId
 ) {
-    val update =
-        createUpdate<Any> {
-            sql(
-                """
+    val update = createUpdate {
+        sql(
+            """
         UPDATE income
         SET
             effect = ${bind(income.effect)},
@@ -93,8 +91,8 @@ fun Database.Transaction.updateIncome(
             application_id = NULL
         WHERE id = ${bind(id)}
     """
-            )
-        }
+        )
+    }
 
     handlingExceptions { update.updateExactlyOne() }
 }

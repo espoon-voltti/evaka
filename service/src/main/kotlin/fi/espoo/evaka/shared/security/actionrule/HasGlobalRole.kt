@@ -21,8 +21,8 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
-private typealias Filter<T> =
-    QuerySql.Builder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<T>
+private typealias Filter =
+    QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
 
 data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
     StaticActionRule, DatabaseActionRule.Params {
@@ -44,10 +44,10 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
         evaluate(ctx.user).isPermitted()
 
-    private fun <T : Id<*>> rule(filter: Filter<T>): DatabaseActionRule.Scoped<T, HasGlobalRole> =
+    private fun <T : Id<*>> rule(filter: Filter): DatabaseActionRule.Scoped<T, HasGlobalRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
-    data class Query<T : Id<*>>(private val filter: Filter<T>) :
+    data class Query<T : Id<*>>(private val filter: Filter) :
         DatabaseActionRule.Scoped.Query<T, HasGlobalRole> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
@@ -63,7 +63,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                 is AuthenticatedUser.Employee -> {
                     val targetCheck = targets.idTargetPredicate()
                     ctx.tx
-                        .createQuery<T> {
+                        .createQuery {
                             sql(
                                 """
                     SELECT id
@@ -86,7 +86,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGlobalRole
-        ): QuerySql<T>? =
+        ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
                     if (ctx.user.globalRoles.any { params.oneOf.contains(it) }) {

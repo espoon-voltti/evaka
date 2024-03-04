@@ -156,10 +156,10 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         @Deprecated("Use new query API instead")
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
 
-        fun <Tag> createQuery(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Query =
-            @Suppress("DEPRECATION") createQuery(QuerySql.Builder<Tag>().run { f(this) })
+        fun createQuery(f: QuerySql.Builder.() -> QuerySql): Query =
+            @Suppress("DEPRECATION") createQuery(QuerySql.Builder().run { f(this) })
 
-        fun createQuery(fragment: QuerySql<*>): Query {
+        fun createQuery(fragment: QuerySql): Query {
             val raw = handle.createQuery(fragment.sql.toString())
             for ((idx, binding) in fragment.bindings.withIndex()) {
                 raw.bindByType(idx, binding.value, binding.type)
@@ -189,10 +189,10 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         @Deprecated("Use new query API instead")
         fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
 
-        fun <Tag> createUpdate(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Update =
-            @Suppress("DEPRECATION") createUpdate(QuerySql.Builder<Tag>().run { f(this) })
+        fun createUpdate(f: QuerySql.Builder.() -> QuerySql): Update =
+            @Suppress("DEPRECATION") createUpdate(QuerySql.Builder().run { f(this) })
 
-        fun createUpdate(fragment: QuerySql<*>): Update {
+        fun createUpdate(fragment: QuerySql): Update {
             val raw = handle.createUpdate(fragment.sql.toString())
             for ((idx, binding) in fragment.bindings.withIndex()) {
                 raw.bindByType(idx, binding.value, binding.type)
@@ -769,10 +769,9 @@ open class SqlBuilder {
         return Binding
     }
 
-    fun <Sub> subquery(f: QuerySql.Builder<Sub>.() -> QuerySql<Sub>): QuerySqlString =
-        subquery(QuerySql.of { f() })
+    fun subquery(f: QuerySql.Builder.() -> QuerySql): QuerySqlString = subquery(QuerySql.of { f() })
 
-    fun <Sub> subquery(fragment: QuerySql<Sub>): QuerySqlString {
+    fun subquery(fragment: QuerySql): QuerySqlString {
         this.bindings += fragment.bindings
         return fragment.sql
     }
@@ -788,26 +787,16 @@ open class SqlBuilder {
     }
 }
 
-/**
- * A builder for SQL, including bound parameter values.
- *
- * This is *very dynamic* and has almost no compile-time checks, but the phantom type parameter
- * `Tag` can be used to assign some type to a query for documentation purpose and to prevent mixing
- * different types of queries.
- */
-data class QuerySql<@Suppress("unused") in Tag>(
-    val sql: QuerySqlString,
-    val bindings: List<ValueBinding<out Any?>>
-) {
+/** A builder for SQL, including bound parameter values. */
+data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out Any?>>) {
     companion object {
-        fun <Tag> of(f: Builder<Tag>.() -> QuerySql<Tag>): QuerySql<Tag> =
-            Builder<Tag>().run { f(this) }
+        fun of(f: Builder.() -> QuerySql): QuerySql = Builder().run { f(this) }
     }
 
-    class Builder<Tag> : SqlBuilder() {
+    class Builder : SqlBuilder() {
         private var used: Boolean = false
 
-        private fun combine(separator: String, queries: Iterable<QuerySql<Tag>>): QuerySql<Tag> {
+        private fun combine(separator: String, queries: Iterable<QuerySql>): QuerySql {
             check(!used) { "builder has already been used" }
             this.used = true
             for (query in queries) {
@@ -819,10 +808,10 @@ data class QuerySql<@Suppress("unused") in Tag>(
             )
         }
 
-        fun union(all: Boolean, queries: Iterable<QuerySql<Tag>>): QuerySql<Tag> =
+        fun union(all: Boolean, queries: Iterable<QuerySql>): QuerySql =
             combine(if (all) "\nUNION ALL\n" else "\nUNION\n", queries)
 
-        fun sql(@Language("sql") sql: String): QuerySql<Tag> {
+        fun sql(@Language("sql") sql: String): QuerySql {
             check(!used) { "builder has already been used" }
             this.used = true
             return QuerySql(QuerySqlString(sql), bindings)

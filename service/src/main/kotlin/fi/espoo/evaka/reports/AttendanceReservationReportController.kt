@@ -253,7 +253,7 @@ private fun Database.Read.getCapacityFactors(
     range: FiniteDateRange,
     children: List<ChildId>,
 ): List<AssistanceNeedRow> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT

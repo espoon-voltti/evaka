@@ -51,7 +51,7 @@ private fun Database.Read.getPlacementGuaranteeRows(
     date: LocalDate,
     unitId: DaycareId?
 ): List<PlacementGuaranteeReportRow> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT

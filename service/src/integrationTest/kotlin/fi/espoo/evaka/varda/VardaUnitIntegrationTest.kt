@@ -63,7 +63,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
         val closingDate = LocalDate.now()
         db.transaction {
-            it.createUpdate<Any> {
+            it.createUpdate {
                     sql(
                         """
                         ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
@@ -85,7 +85,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
         clock.tick()
         db.transaction {
-            it.createUpdate<Any> {
+            it.createUpdate {
                     sql(
                         """
                         ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
@@ -154,7 +154,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
         clock.tick()
         db.transaction {
-            it.createUpdate<Any> {
+            it.createUpdate {
                     sql(
                         """
                         ALTER TABLE daycare DISABLE TRIGGER set_timestamp;

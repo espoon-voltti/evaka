@@ -15,7 +15,7 @@ fun Database.Transaction.upsertPushSubscription(
     device: MobileDeviceId,
     subscription: WebPushSubscription
 ) =
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 INSERT INTO mobile_device_push_subscription (device, endpoint, expires, auth_secret, ecdh_key)
@@ -41,7 +41,7 @@ fun Database.Transaction.upsertPushGroup(
     device: MobileDeviceId,
     group: GroupId
 ) =
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 INSERT INTO mobile_device_push_group (device, daycare_group, created_at)
@@ -52,7 +52,7 @@ VALUES (${bind(device)}, ${bind(group)}, ${bind(now)})
         .execute()
 
 fun Database.Transaction.deletePushSubscription(device: MobileDeviceId) =
-    createUpdate<Any> {
+    createUpdate {
             sql("""
 DELETE FROM mobile_device_push_subscription WHERE device = ${bind(device)}
 """)
@@ -66,7 +66,7 @@ fun Database.Transaction.getOrRefreshToken(
     // Try to save a new token if there's none or it doesn't match our min valid threshold
     // requirement
     val savedNewToken =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     """
 INSERT INTO vapid_jwt (origin, public_key, jwt, expires_at)
@@ -82,7 +82,7 @@ RETURNING origin, public_key, jwt, expires_at
             .exactlyOneOrNull<VapidJwt?>()
     return savedNewToken
         // We didn't save anything -> there must be a valid token in the db
-        ?: createQuery<Any> {
+        ?: createQuery {
                 sql(
                     """
 SELECT origin, public_key, jwt, expires_at
@@ -95,7 +95,7 @@ WHERE (origin, public_key) = (${bind(newToken.origin)}, ${bind(newToken.publicKe
 }
 
 fun Database.Read.getPushCategories(device: MobileDeviceId): Set<PushNotificationCategory> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT unnest(push_notification_categories)
@@ -110,7 +110,7 @@ fun Database.Transaction.setPushCategories(
     device: MobileDeviceId,
     categories: Set<PushNotificationCategory>
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 UPDATE mobile_device SET push_notification_categories = ${bind(categories)}
@@ -125,7 +125,7 @@ fun Database.Read.getPushGroups(
     filter: AccessControlFilter<GroupId>,
     device: MobileDeviceId
 ): Set<GroupId> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT mdpg.daycare_group
@@ -143,7 +143,7 @@ fun Database.Transaction.setPushGroups(
     device: MobileDeviceId,
     groups: Set<GroupId>
 ) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 WITH deleted AS (

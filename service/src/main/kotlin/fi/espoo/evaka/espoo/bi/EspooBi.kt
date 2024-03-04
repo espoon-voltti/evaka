@@ -371,7 +371,7 @@ class StreamingCsvQuery<T : Any>(
 private const val QUERY_STREAM_CHUNK_SIZE = 10_000
 
 private inline fun <reified T : Any> csvQuery(
-    crossinline f: QuerySql.Builder<T>.() -> QuerySql<T>
+    crossinline f: QuerySql.Builder.() -> QuerySql
 ): CsvQuery =
     StreamingCsvQuery(T::class) { tx ->
         tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()

@@ -56,7 +56,7 @@ import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
 private typealias GetUnitRoles =
-    QuerySql.Builder<Any>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<Any>
+    QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
 
 data class HasUnitRole(
     val oneOf: EnumSet<UserRole>,
@@ -78,7 +78,7 @@ data class HasUnitRole(
         when (ctx.user) {
             is AuthenticatedUser.Employee ->
                 ctx.tx
-                    .createQuery<Boolean> {
+                    .createQuery {
                         sql(
                             """
 SELECT EXISTS (
@@ -111,9 +111,7 @@ SELECT EXISTS (
     private fun <T : Id<*>> ruleViaChildAcl(
         cfg: ChildAclConfig,
         idChildQuery:
-            QuerySql.Builder<T>.(
-                user: AuthenticatedUser.Employee, now: HelsinkiDateTime
-            ) -> QuerySql<T>
+            QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
     ): DatabaseActionRule.Scoped<T, HasUnitRole> =
         DatabaseActionRule.Scoped.Simple(
             this,
@@ -152,7 +150,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                 is AuthenticatedUser.Employee -> {
                     val targetCheck = targets.idTargetPredicate()
                     ctx.tx
-                        .createQuery<T> {
+                        .createQuery {
                             sql(
                                 """
 SELECT fragment.id, fragment.role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
@@ -181,7 +179,7 @@ WHERE ${predicate(targetCheck.forTable("fragment"))}
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasUnitRole
-        ): QuerySql<T>? =
+        ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
                     QuerySql.of {
@@ -231,7 +229,7 @@ ${if (params.unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(
                         is AuthenticatedUser.Employee ->
                             Deferred(
                                 ctx.tx
-                                    .createQuery<RoleAndFeatures> {
+                                    .createQuery {
                                         sql(
                                             """
 SELECT role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type

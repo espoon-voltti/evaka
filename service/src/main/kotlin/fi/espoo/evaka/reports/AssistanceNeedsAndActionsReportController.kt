@@ -10,7 +10,6 @@ import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
@@ -146,7 +145,7 @@ private fun Database.Read.getReportRows(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>
 ) =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
 WITH action_counts AS (
@@ -259,7 +258,7 @@ private fun Database.Read.getReportRowsByChild(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>
 ) =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
 WITH actions AS (

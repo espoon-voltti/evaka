@@ -30,8 +30,8 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByCitizen<T> =
-    QuerySql.Builder<T>.(personId: PersonId, now: HelsinkiDateTime) -> QuerySql<T>
+private typealias FilterByCitizen =
+    QuerySql.Builder.(personId: PersonId, now: HelsinkiDateTime) -> QuerySql
 
 data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) =
@@ -43,12 +43,10 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
             else -> false
         }
 
-    private fun <T : Id<*>> rule(
-        filter: FilterByCitizen<T>
-    ): DatabaseActionRule.Scoped<T, IsCitizen> =
+    private fun <T : Id<*>> rule(filter: FilterByCitizen): DatabaseActionRule.Scoped<T, IsCitizen> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
-    private data class Query<T : Id<*>>(private val filter: FilterByCitizen<T>) :
+    private data class Query<T : Id<*>>(private val filter: FilterByCitizen) :
         DatabaseActionRule.Scoped.Query<T, IsCitizen> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
@@ -64,7 +62,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                 is AuthenticatedUser.Citizen -> {
                     val targetCheck = targets.idTargetPredicate()
                     ctx.tx
-                        .createQuery<T> {
+                        .createQuery {
                             sql(
                                 """
                     SELECT id
@@ -87,7 +85,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsCitizen
-        ): QuerySql<T>? =
+        ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Citizen ->
                     if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
@@ -142,7 +140,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                     override fun queryWithParams(
                         ctx: DatabaseActionRule.QueryContext,
                         params: IsCitizen
-                    ): QuerySql<PersonId>? =
+                    ): QuerySql? =
                         when (ctx.user) {
                             is AuthenticatedUser.Citizen ->
                                 QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }

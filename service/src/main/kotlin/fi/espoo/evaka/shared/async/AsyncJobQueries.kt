@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.async
 
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
@@ -33,7 +32,7 @@ RETURNING id
         .exactlyOne<UUID>()
 
 fun Database.Transaction.upsertPermit(pool: AsyncJobPool.Id<*>) {
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 INSERT INTO async_job_work_permit (pool_id, available_at)
@@ -46,7 +45,7 @@ ON CONFLICT DO NOTHING
 }
 
 fun Database.Transaction.claimPermit(pool: AsyncJobPool.Id<*>): WorkPermit =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT available_at
@@ -59,7 +58,7 @@ FOR UPDATE
         .exactlyOne()
 
 fun Database.Transaction.updatePermit(pool: AsyncJobPool.Id<*>, availableAt: HelsinkiDateTime) =
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 UPDATE async_job_work_permit
@@ -74,7 +73,7 @@ fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
     jobTypes: Collection<AsyncJobType<out T>>
 ): ClaimedJobRef<out T>? =
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
 WITH claimed_job AS (
@@ -167,7 +166,7 @@ WHERE completed_at < :completedBefore
         .execute()
 
 fun Database.Transaction.removeUnclaimedJobs(jobTypes: Collection<AsyncJobType<*>>): Int =
-    createUpdate<DatabaseTable> {
+    createUpdate {
             sql(
                 """
 DELETE FROM async_job

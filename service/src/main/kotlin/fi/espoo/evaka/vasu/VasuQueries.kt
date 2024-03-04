@@ -475,7 +475,7 @@ fun Database.Transaction.deleteVasuDocument(id: VasuDocumentId) {
 }
 
 fun Database.Read.getOpenVasusWithExpiredTemplate(today: LocalDate): List<VasuDocumentId> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT id FROM (

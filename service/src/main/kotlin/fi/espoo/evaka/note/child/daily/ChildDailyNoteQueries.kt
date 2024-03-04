@@ -6,7 +6,6 @@ package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -14,10 +13,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-private fun Database.Read.getChildDailyNotes(
-    predicate: Predicate<DatabaseTable.ChildDailyNote> = Predicate.alwaysTrue()
-) =
-    createQuery<DatabaseTable.ChildDailyNote> {
+private fun Database.Read.getChildDailyNotes(predicate: Predicate = Predicate.alwaysTrue()) =
+    createQuery {
         sql(
             """
 SELECT 

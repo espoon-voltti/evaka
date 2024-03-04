@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -53,7 +52,7 @@ data class NonSsnChildrenReportRow(
 private fun Database.Read.getNonSsnChildren(
     examinationDate: LocalDate
 ): List<NonSsnChildrenReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             sql(
                 """
 SELECT child.first_name,

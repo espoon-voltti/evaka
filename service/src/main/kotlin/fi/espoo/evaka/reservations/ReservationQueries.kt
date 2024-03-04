@@ -12,7 +12,6 @@ import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -142,10 +141,8 @@ fun Database.Transaction.insertValidReservations(
     }
 }
 
-fun Database.Read.getReservations(
-    where: Predicate<DatabaseTable.AttendanceReservation>
-): List<ReservationRow> =
-    createQuery<Any> {
+fun Database.Read.getReservations(where: Predicate): List<ReservationRow> =
+    createQuery {
             sql(
                 """
 SELECT
@@ -340,7 +337,7 @@ fun Database.Read.getReservationPlacements(
     childIds: Set<ChildId>,
     range: DateRange
 ): Map<ChildId, List<ReservationPlacement>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
 SELECT
@@ -433,7 +430,7 @@ fun Database.Read.getPlannedAbsenceEnabledRanges(
 ): Map<ChildId, DateSet> {
     val enabledForHourBasedServiceNeedsPredicate =
         if (enabledForHourBasedServiceNeeds) {
-            Predicate<Any> {
+            Predicate {
                 where(
                     "COALESCE(sno.daycare_hours_per_month, sno_default.daycare_hours_per_month) IS NOT NULL"
                 )
@@ -442,7 +439,7 @@ fun Database.Read.getPlannedAbsenceEnabledRanges(
             Predicate.alwaysFalse()
         }
 
-    return createQuery<Any> {
+    return createQuery {
             sql(
                 """
             SELECT

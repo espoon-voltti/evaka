@@ -139,7 +139,7 @@ fun Database.Read.getMaxPaymentNumber(): Long {
 fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
     if (draftIds.isEmpty()) return
 
-    createUpdate<Any> {
+    createUpdate {
             sql(
                 """
             DELETE FROM payment

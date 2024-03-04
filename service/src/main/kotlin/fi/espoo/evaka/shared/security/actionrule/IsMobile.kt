@@ -23,8 +23,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.ChildAclConfig
 
-private typealias FilterByMobile<T> =
-    QuerySql.Builder<T>.(user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime) -> QuerySql<T>
+private typealias FilterByMobile =
+    QuerySql.Builder.(user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime) -> QuerySql
 
 data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) =
@@ -39,9 +39,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
             else -> false
         }
 
-    private fun <T : Id<*>> rule(
-        filter: FilterByMobile<T>
-    ): DatabaseActionRule.Scoped<T, IsMobile> =
+    private fun <T : Id<*>> rule(filter: FilterByMobile): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
     /**
@@ -53,9 +51,9 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
     private fun <T : Id<*>> ruleViaChildAcl(
         cfg: ChildAclConfig,
         idChildQuery:
-            QuerySql.Builder<T>.(
+            QuerySql.Builder.(
                 user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime
-            ) -> QuerySql<T>
+            ) -> QuerySql
     ): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(
             this,
@@ -78,7 +76,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
             }
         )
 
-    private data class Query<T : Id<*>>(private val filter: FilterByMobile<T>) :
+    private data class Query<T : Id<*>>(private val filter: FilterByMobile) :
         DatabaseActionRule.Scoped.Query<T, IsMobile> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
@@ -94,7 +92,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                 is AuthenticatedUser.MobileDevice -> {
                     val targetCheck = targets.idTargetPredicate()
                     ctx.tx
-                        .createQuery<T> {
+                        .createQuery {
                             sql(
                                 """
                     SELECT id
@@ -117,7 +115,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsMobile
-        ): QuerySql<T>? =
+        ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.MobileDevice ->
                     if (params.isPermittedAuthLevel(ctx.user.authLevel)) {

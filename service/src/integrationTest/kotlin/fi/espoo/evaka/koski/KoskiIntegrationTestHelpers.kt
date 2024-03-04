@@ -29,7 +29,7 @@ internal fun Database.Read.getStoredResults() =
     createQuery("select * from koski_study_right").toList<KoskiStudyRightRaw>()
 
 internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) =
-    createUpdate<Any> {
+    createUpdate {
             sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
         }
         .execute()

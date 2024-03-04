@@ -18,11 +18,11 @@ private val dateParamName = { index: Int -> "date_$index" }
 fun freeTextSearchPredicate(tables: Collection<String>, searchText: String): PredicateSql {
     val ssnPredicates =
         findSsnParams(searchText).map { ssn ->
-            Predicate<Any> { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
+            Predicate { where("lower($it.social_security_number) = lower(${bind(ssn)})") }
         }
     val datePredicates =
         findDateParams(searchText).map { date ->
-            Predicate<Any> { where("to_char($it.date_of_birth, 'DDMMYY') = ${bind(date)}") }
+            Predicate { where("to_char($it.date_of_birth, 'DDMMYY') = ${bind(date)}") }
         }
     val freeTextPredicate =
         searchText
@@ -31,9 +31,7 @@ fun freeTextSearchPredicate(tables: Collection<String>, searchText: String): Pre
             .takeIf { it.isNotBlank() }
             ?.let(::freeTextParamsToTsQuery)
             ?.let { tsQuery ->
-                Predicate<Any> {
-                    where("$it.freetext_vec @@ to_tsquery('simple', ${bind(tsQuery)})")
-                }
+                Predicate { where("$it.freetext_vec @@ to_tsquery('simple', ${bind(tsQuery)})") }
             }
 
     val freeTextPredicateSql =

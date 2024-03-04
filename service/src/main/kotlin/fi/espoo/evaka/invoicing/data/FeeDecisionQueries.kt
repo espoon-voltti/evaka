@@ -34,10 +34,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 fun feeDecisionQuery(
-    predicate: Predicate<Any> = Predicate.alwaysTrue(),
+    predicate: Predicate = Predicate.alwaysTrue(),
     lockForUpdate: Boolean = false
 ) =
-    QuerySql.of<Any> {
+    QuerySql.of {
         sql(
             """
 SELECT
@@ -94,8 +94,8 @@ ${if (lockForUpdate) "FOR UPDATE" else ""}
         )
     }
 
-private fun feeDecisionDetailedQuery(predicate: Predicate<Any>) =
-    QuerySql.of<Any> {
+private fun feeDecisionDetailedQuery(predicate: Predicate) =
+    QuerySql.of {
         sql(
             """
 SELECT
@@ -655,14 +655,14 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
     status: List<FeeDecisionStatus>? = null,
     lockForUpdate: Boolean = false
 ): List<FeeDecision> {
-    val headPredicate = Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
+    val headPredicate = Predicate { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
     val validPredicate =
         if (period == null) Predicate.alwaysTrue()
-        else Predicate<Any> { where("$it.valid_during && ${bind(period)}") }
+        else Predicate { where("$it.valid_during && ${bind(period)}") }
     val statusPredicate =
         if (status == null) Predicate.alwaysTrue()
         else
-            Predicate<Any> {
+            Predicate {
                 where(
                     "$it.status = ANY (${bind(status.map { s -> s.name })}::fee_decision_status[])"
                 )

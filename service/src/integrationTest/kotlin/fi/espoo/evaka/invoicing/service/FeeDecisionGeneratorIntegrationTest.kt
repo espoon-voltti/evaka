@@ -3357,8 +3357,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun getFeeDecisions(headOfFamilyId: PersonId): List<FeeDecision> {
-        val headPredicate =
-            Predicate<Any> { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
+        val headPredicate = Predicate { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
         return db.read { tx ->
                 tx.createQuery(feeDecisionQuery(headPredicate)).toList<FeeDecision>()
             }

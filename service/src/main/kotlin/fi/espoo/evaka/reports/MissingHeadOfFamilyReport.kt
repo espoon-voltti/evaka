@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
@@ -63,9 +62,9 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
     to: LocalDate?,
     includeIntentionalDuplicates: Boolean,
 ): List<MissingHeadOfFamilyReportRow> =
-    createQuery<DatabaseTable> {
+    createQuery {
             val dateRange = DateRange(from, to)
-            val duplicateFilter: Predicate<DatabaseTable.Person> =
+            val duplicateFilter: Predicate =
                 if (includeIntentionalDuplicates) Predicate.alwaysTrue()
                 else Predicate { where("$it.duplicate_of IS NULL") }
             sql(

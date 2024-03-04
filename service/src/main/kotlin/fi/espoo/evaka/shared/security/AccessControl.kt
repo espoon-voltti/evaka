@@ -260,7 +260,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
             val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
             val unscopedEvaluator = UnscopedEvaluator(queryCtx)
             val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
-            val filters: MutableList<QuerySql<T>> = mutableListOf()
+            val filters: MutableList<QuerySql> = mutableListOf()
             val rules =
                 actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
             for (rule in rules) {
@@ -392,7 +392,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
             }
         }
 
-        fun queryWithParams(rule: DatabaseActionRule.Scoped<in T, *>): QuerySql<T>? {
+        fun queryWithParams(rule: DatabaseActionRule.Scoped<in T, *>): QuerySql? {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
             return query.queryWithParams(queryCtx, rule.params)

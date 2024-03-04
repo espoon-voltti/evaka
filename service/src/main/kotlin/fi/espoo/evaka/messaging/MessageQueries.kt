@@ -39,7 +39,7 @@ const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
 fun Database.Read.getUnreadMessagesCounts(
     idFilter: AccessControlFilter<MessageAccountId>,
 ): Set<UnreadCountByAccount> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
         SELECT
@@ -306,7 +306,7 @@ RETURNING id
         .toList<MessageId>()
 
 fun Database.Read.getMessageAuthor(content: MessageContentId): MessageAccountId? =
-    createQuery<Any> { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
+    createQuery { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
         .exactlyOneOrNull<MessageAccountId>()
 
 fun Database.Transaction.insertThreadsWithMessages(
@@ -1136,7 +1136,7 @@ fun Database.Read.getReceiversForNewMessage(
     today: LocalDate
 ): List<MessageReceiversResponse> {
     val unitReceivers =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     """
         WITH accounts AS (
@@ -1211,7 +1211,7 @@ fun Database.Read.getReceiversForNewMessage(
             }
 
     val municipalReceivers =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     """
         WITH accounts AS (
@@ -1396,7 +1396,7 @@ fun Database.Read.getStaffCopyRecipients(
     val groupIds = recipients.mapNotNull { it.toGroupId() }
     if (areaIds.isEmpty() && unitIds.isEmpty() && groupIds.isEmpty()) return emptySet()
 
-    return this.createQuery<Any> {
+    return this.createQuery {
             sql(
                 """
 SELECT receiver_acc.id
@@ -1433,7 +1433,7 @@ fun Database.Transaction.undoMessageReply(
     messageId: MessageId
 ) {
     val undoTarget =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     """
             SELECT content_id, thread_id, created AS message_created
@@ -1462,7 +1462,7 @@ fun Database.Transaction.undoNewMessages(
 ): MessageDraftId {
     lockMessageContentForUpdate(contentId)
 
-    this.createQuery<Any> {
+    this.createQuery {
             sql(
                 """
             SELECT created
@@ -1504,13 +1504,13 @@ LIMIT 1 -- all threads with same content are identical in regards to this query
 }
 
 fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThreads: Boolean) {
-    this.createUpdate<Any> {
+    this.createUpdate {
             sql("DELETE FROM application_note WHERE message_content_id = ${bind(contentId)}")
         }
         .execute()
 
     if (deleteThreads) {
-        this.createUpdate<Any> {
+        this.createUpdate {
                 sql(
                     """
                 DELETE FROM message_thread mt
@@ -1526,8 +1526,7 @@ fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThrea
     }
 
     // cascade deletes from message and message_recipients
-    this.createUpdate<Any> { sql("DELETE FROM message_content WHERE id = ${bind(contentId)}") }
-        .execute()
+    this.createUpdate { sql("DELETE FROM message_content WHERE id = ${bind(contentId)}") }.execute()
 }
 
 fun Database.Transaction.resetSenderThreadParticipants(
@@ -1555,7 +1554,7 @@ fun Database.Read.unreadMessageForRecipientExists(
     messageId: MessageId,
     recipientId: MessageAccountId
 ): Boolean {
-    return createQuery<Boolean> {
+    return createQuery {
             sql(
                 """
 SELECT EXISTS (
@@ -1568,7 +1567,7 @@ SELECT EXISTS (
 }
 
 fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =
-    createQuery<MessageThreadStub> {
+    createQuery {
             sql(
                 """
 SELECT id, message_type AS type, title, urgent, sensitive, is_copy
@@ -1581,6 +1580,6 @@ WHERE id = ${bind(id)}
         .exactlyOne<MessageThreadStub>()
 
 fun Database.Read.lockMessageContentForUpdate(id: MessageContentId) {
-    createQuery<Any> { sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ") }
+    createQuery { sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ") }
         .exactlyOneOrNull<Int>()
 }

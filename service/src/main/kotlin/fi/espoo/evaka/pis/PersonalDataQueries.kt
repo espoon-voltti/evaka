@@ -4,12 +4,11 @@
 
 package fi.espoo.evaka.pis
 
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Transaction.updatePersonalDetails(personId: PersonId, body: PersonalDataUpdate) {
-    createUpdate<DatabaseTable> {
+    createUpdate {
             sql(
                 """
                 UPDATE person SET
@@ -25,7 +24,7 @@ fun Database.Transaction.updatePersonalDetails(personId: PersonId, body: Persona
 }
 
 fun Database.Read.getEnabledEmailTypes(personId: PersonId): List<EmailMessageType> {
-    return createQuery<DatabaseTable> {
+    return createQuery {
             sql("SELECT enabled_email_types FROM person WHERE id = ${bind(personId)}")
         }
         .exactlyOne<List<EmailMessageType>?>() ?: EmailMessageType.values().toList()
@@ -35,7 +34,7 @@ fun Database.Transaction.updateEnabledEmailTypes(
     personId: PersonId,
     emailTypes: List<EmailMessageType>
 ) {
-    createUpdate<DatabaseTable> {
+    createUpdate {
             sql(
                 "UPDATE person SET enabled_email_types = ${bind(emailTypes)} WHERE id = ${bind(personId)}"
             )

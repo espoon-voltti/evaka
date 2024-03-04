@@ -42,7 +42,7 @@ class MessagePushNotifications(
     private val logger = KotlinLogging.logger {}
 
     private fun getPendingPushNotifications() =
-        QuerySql.of<Any> {
+        QuerySql.of {
             sql(
                 """
 SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name
@@ -81,7 +81,7 @@ END
         tx: Database.Read,
         messages: Collection<MessageId>
     ): List<AsyncJob.SendMessagePushNotification> =
-        tx.createQuery<Any> {
+        tx.createQuery {
                 sql(
                     """
 SELECT recipient, device
@@ -102,7 +102,7 @@ WHERE notification.message = ANY(${bind(messages)})
         messageRecipient: MessageRecipientId,
         device: MobileDeviceId
     ): GroupNotification? =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     """
 SELECT group_id, group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key

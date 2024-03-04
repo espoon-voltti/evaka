@@ -11,7 +11,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
@@ -278,7 +277,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
             else -> error("Unsupported caretakers query class parameter (${K::class})")
         }
 
-    return createQuery<DatabaseTable> {
+    return createQuery {
             sql(
                 """
 SELECT $keyColumns, t::date AS date,
@@ -501,7 +500,7 @@ WHERE sn.placement_id = ANY(:placementIds)
             }
 
     val assistanceFactors =
-        createQuery<Any> {
+        createQuery {
                 sql(
                     "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
                 )

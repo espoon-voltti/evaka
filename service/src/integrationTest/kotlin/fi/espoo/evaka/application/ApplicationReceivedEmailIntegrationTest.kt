@@ -16,7 +16,6 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -457,7 +456,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     private fun setPersonEmail(personId: PersonId, email: String) {
         db.transaction { tx ->
-            tx.createUpdate<DatabaseTable> {
+            tx.createUpdate {
                     sql("UPDATE person SET email = ${bind(email)} where id = ${bind(personId)}")
                 }
                 .execute()

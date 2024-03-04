@@ -89,7 +89,7 @@ data class ExceededServiceNeedReportUnit(val id: DaycareId, val name: String)
 private fun Database.Read.getExceededServiceNeedReportUnits(
     unitFilter: AccessControlFilter<DaycareId>
 ): List<ExceededServiceNeedReportUnit> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
                 SELECT id, name
@@ -200,7 +200,7 @@ private data class ReportChild(
 )
 
 private fun Database.Read.getChildren(childIds: Set<ChildId>): List<ReportChild> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
                 SELECT id, first_name, last_name
@@ -224,7 +224,7 @@ private fun Database.Read.getServiceNeedsByRange(
     unitId: DaycareId,
     range: FiniteDateRange
 ): Map<ChildId, List<ReportServiceNeed>> =
-    createQuery<Any> {
+    createQuery {
             sql(
                 """
                 SELECT 

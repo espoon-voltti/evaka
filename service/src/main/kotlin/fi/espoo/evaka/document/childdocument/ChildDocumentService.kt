@@ -39,7 +39,7 @@ class ChildDocumentService(
         now: HelsinkiDateTime
     ) {
         val documentIds =
-            tx.createQuery<Any> {
+            tx.createQuery {
                     sql(
                         """
                 SELECT cd.id
@@ -88,7 +88,7 @@ class ChildDocumentService(
         documentId: ChildDocumentId,
         today: LocalDate
     ): List<AsyncJob.SendChildDocumentNotificationEmail> {
-        return tx.createQuery<Any> {
+        return tx.createQuery {
                 sql(
                     """
 WITH children AS (

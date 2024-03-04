@@ -5,7 +5,6 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.pis.EmailMessageType
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
@@ -73,7 +72,7 @@ private data class EmailAndEnabledEmailTypes(
 private fun Database.Read.getEmailAddressAndEnabledTypes(
     personId: PersonId
 ): EmailAndEnabledEmailTypes {
-    return createQuery<DatabaseTable> {
+    return createQuery {
             sql("""SELECT email, enabled_email_types FROM person WHERE id = ${bind(personId)}""")
         }
         .exactlyOne<EmailAndEnabledEmailTypes>()
