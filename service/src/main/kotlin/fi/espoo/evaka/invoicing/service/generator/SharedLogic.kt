@@ -175,8 +175,8 @@ fun <Decision : FinanceDecision<Decision>, Difference> Decision.getDifferencesTo
     return activeDifferences.toSet()
 }
 
-/** If there exists identical old draft, copy created date from it */
-fun <Decision : FinanceDecision<Decision>> Decision.withCreatedDateFromExisting(
+/** If there exists identical old draft, copy id and created date from it */
+fun <Decision : FinanceDecision<Decision>> Decision.withMetadataFromExisting(
     existingDrafts: List<Decision>
 ): Decision {
     val duplicateOldDraft =
@@ -184,5 +184,5 @@ fun <Decision : FinanceDecision<Decision>> Decision.withCreatedDateFromExisting(
             contentEquals(oldDraft) && validDuring == oldDraft.validDuring
         }
 
-    return duplicateOldDraft?.let { withCreated(it.created) } ?: this
+    return duplicateOldDraft?.let { this.withId(it.id.raw).withCreated(it.created) } ?: this
 }

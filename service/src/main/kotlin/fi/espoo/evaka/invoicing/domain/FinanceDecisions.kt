@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
+import java.util.UUID
 
 interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val id: Id<*>
@@ -18,7 +19,7 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
     val validDuring: DateRange
     val created: HelsinkiDateTime
 
-    fun withRandomId(): Decision
+    fun withId(id: UUID): Decision
 
     fun withValidity(period: DateRange): Decision
 

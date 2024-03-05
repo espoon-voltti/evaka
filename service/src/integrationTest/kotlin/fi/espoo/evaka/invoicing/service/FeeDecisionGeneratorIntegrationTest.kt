@@ -209,7 +209,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `new placement overrides existing fee decision`() {
+    fun `regenerating overrides existing fee decision and preserves metadata`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
@@ -224,6 +224,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val result = getAllFeeDecisions()
         assertEquals(1, original.size)
         assertEqualEnoughDecisions(original, result)
+        assertEquals(original.first().id, result.first().id)
+        assertEquals(original.first().created, result.first().created)
     }
 
     @Test

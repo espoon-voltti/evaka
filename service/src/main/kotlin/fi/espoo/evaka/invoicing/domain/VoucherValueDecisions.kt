@@ -58,7 +58,7 @@ data class VoucherValueDecision(
     override val validDuring: DateRange
         @JsonIgnore get() = DateRange(validFrom, validTo)
 
-    override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
+    override fun withId(id: UUID) = this.copy(id = VoucherValueDecisionId(id))
 
     override fun withValidity(period: DateRange) =
         this.copy(validFrom = period.start, validTo = period.end)
