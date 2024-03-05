@@ -357,6 +357,8 @@ export default React.memo(function FileUpload({
       return [...others, file]
     })
 
+  const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25 MB
+
   const addAttachment = async (
     file: File,
     onUpload: (
@@ -364,7 +366,7 @@ export default React.memo(function FileUpload({
       onUploadProgress: (percentage: number) => void
     ) => Promise<Result<UUID>>
   ) => {
-    const error = file.size > 10000000 ? 'FILE_TOO_LARGE' : undefined
+    const error = file.size > MAX_ATTACHMENT_SIZE ? 'FILE_TOO_LARGE' : undefined
     const pseudoId = Math.random()
     const fileObject: FileObject = {
       id: pseudoId.toString(),
