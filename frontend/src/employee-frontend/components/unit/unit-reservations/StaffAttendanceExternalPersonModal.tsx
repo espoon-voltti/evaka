@@ -85,27 +85,25 @@ const externalPersonForm = transformed(
     group,
     hasStaffOccupancyEffect
   }) => {
-    if (date.isToday() && arrivalTime.isAfter(LocalTime.nowInHelsinkiTz())) {
+    const arrived = HelsinkiDateTime.fromLocal(date, arrivalTime)
+    const departed = departureTime
+      ? HelsinkiDateTime.fromLocal(date, departureTime)
+      : null
+    if (departed && !departed.isAfter(arrived)) {
+      return ValidationError.of('timeRangeNotLinear')
+    }
+    if (arrived.isAfter(HelsinkiDateTime.now())) {
       return ValidationError.field('arrivalTime', 'futureTime')
     }
-    if (
-      date.isToday() &&
-      departureTime &&
-      departureTime.isAfter(LocalTime.nowInHelsinkiTz())
-    ) {
+    if (departed && departed.isAfter(HelsinkiDateTime.now())) {
       return ValidationError.field('departureTime', 'futureTime')
-    }
-    if (departureTime && !departureTime.isAfter(arrivalTime)) {
-      return ValidationError.of('timeRangeNotLinear')
     }
     const requestBody: UpsertStaffAndExternalAttendanceRequest = {
       externalAttendances: [
         {
           attendanceId: null,
-          arrived: HelsinkiDateTime.fromLocal(date, arrivalTime),
-          departed: departureTime
-            ? HelsinkiDateTime.fromLocal(date, departureTime)
-            : null,
+          arrived,
+          departed,
           name: name,
           groupId: group,
           hasStaffOccupancyEffect: hasStaffOccupancyEffect
