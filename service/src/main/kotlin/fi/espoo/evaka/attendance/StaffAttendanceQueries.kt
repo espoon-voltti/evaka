@@ -524,71 +524,28 @@ FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.i
         .bind("now", now)
         .execute()
 
-    val defaultDepartureTime = now.minusDays(1).withTime(LocalTime.of(20, 0))
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
-UPDATE staff_attendance_realtime a
-SET departed = CASE WHEN a.arrived < :defaultDepartureTime THEN :defaultDepartureTime ELSE :startOfDay END,
-    departed_automatically = true
-FROM daycare_group g
-JOIN daycare d ON g.daycare_id = d.id
-WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND NOT d.round_the_clock
-        """
-                .trimIndent()
-        )
-        .bind("startOfDay", now.atStartOfDay())
-        .bind("defaultDepartureTime", defaultDepartureTime)
-        .execute()
-
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
-UPDATE staff_attendance_external a
-SET departed = CASE WHEN a.arrived < :defaultDepartureTime THEN :defaultDepartureTime ELSE :startOfDay END,
-    departed_automatically = true
-FROM daycare_group g
-JOIN daycare d ON g.daycare_id = d.id
-WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND NOT d.round_the_clock
-        """
-                .trimIndent()
-        )
-        .bind("startOfDay", now.atStartOfDay())
-        .bind("defaultDepartureTime", defaultDepartureTime)
-        .execute()
-
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE staff_attendance_realtime a
 SET departed = a.arrived + interval '12 hours',
     departed_automatically = true
-FROM daycare_group g
-JOIN daycare d ON g.daycare_id = d.id
-WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id AND d.round_the_clock
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
         """
-                .trimIndent()
-        )
-        .bind("now", now)
+            )
+        }
         .execute()
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE staff_attendance_external a
 SET departed = a.arrived + interval '12 hours',
     departed_automatically = true
-FROM daycare_group g
-JOIN daycare d ON g.daycare_id = d.id
-WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= :now AND a.group_id = g.id AND d.round_the_clock
+WHERE a.departed IS NULL AND a.arrived + INTERVAL '12 hours' <= ${bind(now)}
         """
-                .trimIndent()
-        )
-        .bind("now", now)
+            )
+        }
         .execute()
 }
 
