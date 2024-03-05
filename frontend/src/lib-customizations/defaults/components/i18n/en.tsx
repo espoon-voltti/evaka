@@ -63,13 +63,13 @@ const components: Translations = {
       EXTENSION_MISSING: 'Missing file extension',
       EXTENSION_INVALID: 'Invalid file extension',
       INVALID_CONTENT_TYPE: 'Invalid content type',
-      FILE_TOO_LARGE: 'File is too big (max. 10MB)',
+      FILE_TOO_LARGE: 'File is too big (max. 25 MB)',
       SERVER_ERROR: 'Upload failed'
     },
     input: {
       title: 'Add an attachment',
       text: (fileTypes) =>
-        'Press here or drag and drop a new file. Max file size: 10MB. Allowed formats: ' +
+        'Press here or drag and drop a new file. Max file size: 25 MB. Allowed formats: ' +
         fileTypes
           .map((type) => {
             switch (type) {

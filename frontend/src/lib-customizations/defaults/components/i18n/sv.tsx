@@ -63,13 +63,13 @@ const components: Translations = {
       EXTENSION_MISSING: 'Filtillägget saknas',
       EXTENSION_INVALID: 'Ogiltigt filtillägg',
       INVALID_CONTENT_TYPE: 'Ogiltig filtyp',
-      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
+      FILE_TOO_LARGE: 'För stor fil (max. 25 MB)',
       SERVER_ERROR: 'Uppladdningen misslyckades'
     },
     input: {
       title: 'Lägg till bilaga',
       text: (fileTypes) =>
-        'Tryck här eller dra en bilaga åt gången till lådan. Maximal storlek för filen: 10 MB. Tillåtna format: ' +
+        'Tryck här eller dra en bilaga åt gången till lådan. Maximal storlek för filen: 25 MB. Tillåtna format: ' +
         fileTypes
           .map((type) => {
             switch (type) {

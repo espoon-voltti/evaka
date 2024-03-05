@@ -512,14 +512,14 @@ export const fi = {
         EXTENSION_MISSING: 'Tiedostopääte puuttuu',
         EXTENSION_INVALID: 'Virheellinen tiedostopääte',
         INVALID_CONTENT_TYPE: 'Virheellinen tiedostomuoto',
-        FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
+        FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 25 MB)',
         SERVER_ERROR: 'Lataus ei onnistunut'
       },
       input: {
         title: 'Lisää liite',
         text: [
           'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
-          'Tiedoston maksimikoko: 10MB.',
+          'Tiedoston maksimikoko: 25 MB.',
           'Sallitut tiedostomuodot:',
           'PDF, JPEG/JPG, PNG ja DOC/DOCX'
         ]
