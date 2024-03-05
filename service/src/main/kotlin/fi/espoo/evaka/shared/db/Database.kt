@@ -753,18 +753,37 @@ value class QuerySqlString(@Language("sql") private val sql: String) {
 open class SqlBuilder {
     protected var bindings: List<ValueBinding<out Any?>> = listOf()
 
+    /**
+     * Binds the given value as a query parameter using the default serialization for the value's
+     * compile-time type.
+     *
+     * This function scans default qualifiers specified on the type, so types annotated with `@Json`
+     * are automatically always serialized as JSON.
+     */
     inline fun <reified T> bind(value: T): Binding =
         bind(ValueBinding.of(value, defaultQualifiers<T>()))
 
-    fun bindJson(value: Any): Binding =
+    /**
+     * Binds the given value as a query parameter using JSON serialization.
+     *
+     * This function ignores default qualifiers specified on the type, and explicitly chooses JSON
+     * serialization.
+     */
+    inline fun <reified T> bindJson(value: T): Binding =
         bind(
             ValueBinding(
                 value,
-                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java))
+                // Use runtime type information for non-null values with inheritance
+                // Otherwise Jackson will serialize only the fields in T which might be a
+                // superclass while the runtime value might be a concrete subclass
+                if (value is Any && value.javaClass != T::class.java)
+                    QualifiedType.of(value.javaClass).with(Json::class.java)
+                // Use compile-time type information for other values, including nulls
+                else createQualifiedType(Json::class)
             )
         )
 
-    fun <T> bind(binding: ValueBinding<T>): Binding {
+    fun bind(binding: ValueBinding<*>): Binding {
         this.bindings += binding
         return Binding
     }
