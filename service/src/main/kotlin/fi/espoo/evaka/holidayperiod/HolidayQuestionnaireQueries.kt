@@ -8,11 +8,13 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
-private val questionnaireSelect =
-    """
+private fun Database.Read.questionnaireQuery(where: Predicate): Database.Query = createQuery {
+    sql(
+        """
 SELECT q.id,
        q.type,
        q.absence_type,
@@ -25,13 +27,13 @@ SELECT q.id,
        q.period_option_label,
        q.condition_continuous_placement
 FROM holiday_period_questionnaire q
+WHERE ${predicate(where.forTable("q"))}
 """
-        .trimIndent()
+    )
+}
 
 fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
-    @Suppress("DEPRECATION")
-    this.createQuery("$questionnaireSelect WHERE active @> :date")
-        .bind("date", date)
+    questionnaireQuery(Predicate { where("$it.active @> ${bind(date)}") })
         .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getChildrenWithContinuousPlacement(
@@ -39,16 +41,16 @@ fun Database.Read.getChildrenWithContinuousPlacement(
     userId: PersonId,
     period: FiniteDateRange
 ): List<ChildId> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 )
 SELECT c.child_id
-FROM children c, generate_series(:periodStart::date, :periodEnd::date, '1 day') d
+FROM children c, generate_series(${bind(period.start)}::date, ${bind(period.end)}::date, '1 day') d
 GROUP BY c.child_id
 HAVING bool_and(d::date <@ ANY (
     SELECT daterange(p.start_date, p.end_date, '[]')
@@ -56,45 +58,39 @@ HAVING bool_and(d::date <@ ANY (
     WHERE p.child_id = c.child_id
 ))
 """
-        )
-        .bind("today", today)
-        .bind("userId", userId)
-        .bind("periodStart", period.start)
-        .bind("periodEnd", period.end)
+            )
+        }
         .toList<ChildId>()
 }
 
 fun Database.Read.getUserChildIds(today: LocalDate, userId: PersonId): List<ChildId> {
-    // language=sql
-    val sql =
-        """
-SELECT child_id FROM guardian WHERE guardian_id = :userId
+    return createQuery {
+            sql(
+                """
+SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
 UNION
-SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("today", today).bind("userId", userId).toList<ChildId>()
+            )
+        }
+        .toList<ChildId>()
 }
 
 fun Database.Read.getFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId
 ): FixedPeriodQuestionnaire? =
-    @Suppress("DEPRECATION")
-    this.createQuery("$questionnaireSelect WHERE q.id = :id")
-        .bind("id", id)
+    questionnaireQuery(Predicate { where("$it.id = ${bind(id)}") })
         .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
-    @Suppress("DEPRECATION")
-    this.createQuery("$questionnaireSelect").toList<FixedPeriodQuestionnaire>()
+    questionnaireQuery(Predicate.alwaysTrue()).toList<FixedPeriodQuestionnaire>()
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(
     data: FixedPeriodQuestionnaireBody
 ): HolidayQuestionnaireId =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    createQuery {
+            sql(
+                """
 INSERT INTO holiday_period_questionnaire (
     type,
     absence_type,
@@ -108,57 +104,50 @@ INSERT INTO holiday_period_questionnaire (
     condition_continuous_placement
 )
 VALUES (
-    :type,
-    :absenceType,
-    :requiresStrongAuth,
-    :active,
-    :title,
-    :description,
-    :descriptionLink,
-    :periodOptions,
-    :periodOptionLabel,
-    :conditions.continuousPlacement
+    ${bind(QuestionnaireType.FIXED_PERIOD)},
+    ${bind(data.absenceType)},
+    ${bind(data.requiresStrongAuth)},
+    ${bind(data.active)},
+    ${bindJson(data.title)},
+    ${bindJson(data.description)},
+    ${bindJson(data.descriptionLink)},
+    ${bind(data.periodOptions)},
+    ${bindJson(data.periodOptionLabel)},
+    ${bind(data.conditions.continuousPlacement)}
 )
 RETURNING id
-        """
-                .trimIndent()
-        )
-        .bindKotlin(data)
-        .bind("type", QuestionnaireType.FIXED_PERIOD)
+"""
+            )
+        }
         .exactlyOne<HolidayQuestionnaireId>()
 
 fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,
     data: FixedPeriodQuestionnaireBody
 ) =
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE holiday_period_questionnaire
 SET
-    type = :type,
-    absence_type = :absenceType,
-    requires_strong_auth = :requiresStrongAuth,
-    active = :active,
-    title = :title,
-    description = :description,
-    description_link = :descriptionLink,
-    period_options = :periodOptions,
-    period_option_label = :periodOptionLabel,
-    condition_continuous_placement = :conditions.continuousPlacement
-WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bindKotlin(data)
-        .bind("id", id)
-        .bind("type", QuestionnaireType.FIXED_PERIOD)
+    type = ${bind(QuestionnaireType.FIXED_PERIOD)},
+    absence_type = ${bind(data.absenceType)},
+    requires_strong_auth = ${bind(data.requiresStrongAuth)},
+    active = ${bind(data.active)},
+    title = ${bindJson(data.title)},
+    description = ${bindJson(data.description)},
+    description_link = ${bindJson(data.descriptionLink)},
+    period_options = ${bind(data.periodOptions)},
+    period_option_label = ${bindJson(data.periodOptionLabel)},
+    condition_continuous_placement = ${bind(data.conditions.continuousPlacement)}
+WHERE id = ${bind(id)}
+"""
+            )
+        }
         .updateExactlyOne()
 
 fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) =
-    @Suppress("DEPRECATION")
-    this.createUpdate("DELETE FROM holiday_period_questionnaire WHERE id = :id")
-        .bind("id", id)
+    createUpdate { sql("DELETE FROM holiday_period_questionnaire WHERE id = ${bind(id)}") }
         .execute()
 
 fun Database.Transaction.insertQuestionnaireAnswers(
@@ -195,15 +184,13 @@ fun Database.Read.getQuestionnaireAnswers(
     id: HolidayQuestionnaireId,
     childIds: List<ChildId>
 ): List<HolidayQuestionnaireAnswer> =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT questionnaire_id, child_id, fixed_period
 FROM holiday_questionnaire_answer
-WHERE questionnaire_id = :questionnaireId AND child_id = ANY(:childIds)
+WHERE questionnaire_id = ${bind(id)} AND child_id = ANY(${bind(childIds)})
         """
-                .trimIndent()
-        )
-        .bind("questionnaireId", id)
-        .bind("childIds", childIds)
+            )
+        }
         .toList<HolidayQuestionnaireAnswer>()
