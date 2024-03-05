@@ -347,6 +347,7 @@ export interface ReservationResponseDayChild {
   attendances: TimeInterval[]
   childId: UUID
   reservableTimeRange: ReservableTimeRange
+  reservationLockedDueHolidayPeriod: boolean
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
   shiftCare: boolean

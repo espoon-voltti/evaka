@@ -1891,7 +1891,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             reservations,
             attendances,
             usedService,
-            reservableTimeRange
+            reservableTimeRange,
+            reservationLockedDueHolidayPeriod = false
         )
 
     private fun postReservations(

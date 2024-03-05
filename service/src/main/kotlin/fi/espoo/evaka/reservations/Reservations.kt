@@ -211,6 +211,13 @@ fun createReservationsAndAbsences(
             ?.type
             ?.scheduleType(req.date, clubTerms, preschoolTerms) == ScheduleType.RESERVATION_REQUIRED
     }
+    val childStartDates = tx.getFirstPlacementStartDateByChild(childIds)
+
+    val placementStartAfterHolidayDeadline = { req: DailyReservationRequest ->
+        val holidayPeriod = holidayPeriods.find { it.period.includes(req.date) }
+        val placementStartDate = childStartDates[req.childId]
+        holidayPeriod != null && placementStartDate != null && placementStartDate > holidayPeriod.reservationDeadline
+    }
 
     val validated =
         requests
@@ -239,8 +246,11 @@ fun createReservationsAndAbsences(
 
                         val isAllowed =
                             when (request) {
+                                // if placement start date is after holiday period response deadline
+                                // reservation is allowed
                                 is DailyReservationRequest.Reservations ->
-                                    hasReservation && !hasAbsence
+                                    placementStartAfterHolidayDeadline(request) ||
+                                        hasReservation && !hasAbsence
                                 is DailyReservationRequest.Present -> hasReservation && !hasAbsence
                                 is DailyReservationRequest.Absent -> true
                                 is DailyReservationRequest.Nothing -> false
