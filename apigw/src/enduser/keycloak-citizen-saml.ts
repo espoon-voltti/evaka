@@ -20,18 +20,15 @@ export function createKeycloakCitizenSamlStrategy(
   config: SamlConfig
 ): SamlStrategy {
   return createSamlStrategy(sessions, config, Profile, async (profile) => {
-    const asString = (value: unknown) =>
-      value == null ? undefined : String(value)
-
-    const socialSecurityNumber = asString(profile['socialSecurityNumber'])
+    const socialSecurityNumber = profile.socialSecurityNumber
     if (!socialSecurityNumber)
       throw Error('No socialSecurityNumber in evaka IDP SAML data')
 
     const person = await citizenLogin({
       socialSecurityNumber,
-      firstName: asString(profile['firstName']) ?? '',
-      lastName: asString(profile['lastName']) ?? '',
-      keycloakEmail: asString(profile['email']) ?? ''
+      firstName: profile.firstName ?? '',
+      lastName: profile.lastName ?? '',
+      keycloakEmail: profile.email ?? ''
     })
 
     return {
