@@ -16,7 +16,11 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
-import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import {
+  StaffAttendanceType,
+  StaffMember,
+  UnitInfo
+} from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -50,27 +54,20 @@ import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelect
 import { staffArrivalMutation, staffAttendanceQuery } from './queries'
 import { getAttendanceArrivalDifferenceReasons } from './utils'
 
-export default React.memo(function StaffMarkArrivedPage() {
+const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
+  unitId,
+  employeeId,
+  unitInfo,
+  staffMember
+}: {
+  unitId: UUID
+  employeeId: UUID
+  unitInfo: UnitInfo
+  staffMember: StaffMember
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
   const { selectedGroupId } = useSelectedGroup()
-
-  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  useEffect(() => {
-    reloadUnitInfo()
-  }, [reloadUnitInfo])
-
-  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
-
-  const staffMember = useMemo(
-    () =>
-      staffAttendanceResponse.map((res) =>
-        res.staff.find((s) => s.employeeId === employeeId)
-      ),
-    [employeeId, staffAttendanceResponse]
-  )
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
@@ -85,44 +82,31 @@ export default React.memo(function StaffMarkArrivedPage() {
     [forceUpdateState]
   )
 
+  const groupOptions = useMemo(
+    () => unitInfo.groups.map(({ id }) => id),
+    [unitInfo]
+  )
+
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
-    selectedGroupId.type !== 'all' ? selectedGroupId.id : undefined
+    selectedGroupId.type !== 'all'
+      ? selectedGroupId.id
+      : groupOptions.length > 0
+        ? groupOptions[0]
+        : undefined
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
 
   const getNow = () => mockNow() ?? new Date()
 
-  const groupOptions = useMemo(
-    () =>
-      unitInfoResponse.map((unitInfoResponse) =>
-        unitInfoResponse.groups.map(({ id }) => id)
-      ),
-    [unitInfoResponse]
-  )
-
-  useEffect(() => {
-    if (
-      attendanceGroup === undefined &&
-      groupOptions.isSuccess &&
-      groupOptions.value.length === 1
-    ) {
-      setAttendanceGroup(groupOptions.value[0])
-    }
-  }, [attendanceGroup, groupOptions])
-
   const firstPlannedStartOfTheDay = useMemo(
     () =>
-      staffMember
-        .map((staff) =>
-          staff && staff.plannedAttendances.length > 0
-            ? staff.plannedAttendances.reduce(
-                (prev, curr) => (prev.start.isBefore(curr.start) ? prev : curr),
-                staff.plannedAttendances[0]
-              ).start
-            : null
-        )
-        .getOrElse(null),
+      staffMember && staffMember.plannedAttendances.length > 0
+        ? staffMember.plannedAttendances.reduce(
+            (prev, curr) => (prev.start.isBefore(curr.start) ? prev : curr),
+            staffMember.plannedAttendances[0]
+          ).start
+        : null,
     [staffMember]
   )
 
@@ -154,35 +138,18 @@ export default React.memo(function StaffMarkArrivedPage() {
     [firstPlannedStartOfTheDay]
   )
 
-  const backButtonText = useMemo(
-    () =>
-      staffMember
-        .map((staffMember) =>
-          staffMember
-            ? `${staffMember.firstName} ${staffMember.lastName}`
-            : i18n.common.back
-        )
-        .getOrElse(i18n.common.back),
-    [i18n.common.back, staffMember]
-  )
-
-  const staffAttendanceDifferenceReasons: StaffAttendanceType[] = useMemo(
-    () =>
-      staffMember
-        .map((staff) => {
-          if (time === undefined || !staff?.spanningPlan) return []
-          const arrived = HelsinkiDateTime.fromLocal(
-            LocalDate.todayInHelsinkiTz(),
-            time
-          )
-          return getAttendanceArrivalDifferenceReasons(
-            staff.spanningPlan.start,
-            arrived
-          )
-        })
-        .getOrElse([]),
-    [staffMember, time]
-  )
+  const staffAttendanceDifferenceReasons: StaffAttendanceType[] =
+    useMemo(() => {
+      if (time === undefined || !staffMember.spanningPlan) return []
+      const arrived = HelsinkiDateTime.fromLocal(
+        LocalDate.todayInHelsinkiTz(),
+        time
+      )
+      return getAttendanceArrivalDifferenceReasons(
+        staffMember.spanningPlan.start,
+        arrived
+      )
+    }, [staffMember, time])
 
   const showAttendanceTypeSelection = useMemo(() => {
     if (!hasPlan || !selectedTimeDiffFromPlannedStartOfDayMinutes) return false
@@ -194,6 +161,211 @@ export default React.memo(function StaffMarkArrivedPage() {
     staffAttendanceDifferenceReasons,
     hasPlan
   ])
+
+  const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
+  const pinSet = staffInfo?.pinSet ?? true
+  const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
+
+  const latestCurrentDayDepartureTime =
+    staffMember.latestCurrentDayAttendance?.departed?.toLocalTime()
+  const timeBeforeLastDeparture =
+    latestCurrentDayDepartureTime !== undefined &&
+    time !== undefined &&
+    latestCurrentDayDepartureTime.isAfter(time)
+      ? latestCurrentDayDepartureTime
+      : undefined
+
+  const disableConfirmBecauseOfPlan =
+    showAttendanceTypeSelection &&
+    selectedTimeDiffFromPlannedStartOfDayMinutes != null &&
+    selectedTimeDiffFromPlannedStartOfDayMinutes < -5 &&
+    attendanceType == null
+
+  const confirmDisabled =
+    pinLocked ||
+    !pinSet ||
+    time === undefined ||
+    pinCode.join('').trim().length < 4 ||
+    !selectedTimeIsWithin30MinsFromNow(getNow()) ||
+    !attendanceGroup ||
+    disableConfirmBecauseOfPlan ||
+    timeBeforeLastDeparture !== undefined
+
+  const hasFutureCurrentDay =
+    staffMember.latestCurrentDayAttendance &&
+    (!staffMember.latestCurrentDayAttendance.departed ||
+      (time !== undefined &&
+        staffMember.latestCurrentDayAttendance.arrived.isAfter(
+          HelsinkiDateTime.now().withTime(time)
+        )))
+
+  const hasConflictingFuture =
+    staffMember.hasFutureAttendances || !!hasFutureCurrentDay
+
+  return (
+    <>
+      <Title centered noMargin>
+        {i18n.attendances.staff.loginWithPin}
+      </Title>
+      {hasConflictingFuture && (
+        <AlertBox message={i18n.attendances.staff.hasFutureAttendance} wide />
+      )}
+      <Gap />
+      {!pinSet ? (
+        <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
+      ) : pinLocked ? (
+        <ErrorSegment title={i18n.attendances.staff.pinLocked} />
+      ) : (
+        <PinInput
+          pin={pinCode}
+          onPinChange={setPinCode}
+          invalid={errorCode === 'WRONG_PIN'}
+        />
+      )}
+      <Gap />
+      <TimeWrapper>
+        <CustomTitle>{i18n.attendances.arrivalTime}</CustomTitle>
+        <TimeInput
+          onChange={setTimeStr}
+          value={timeStr}
+          data-qa="input-arrived"
+          info={
+            !selectedTimeIsWithin30MinsFromNow(getNow())
+              ? {
+                  status: 'warning',
+                  text: i18n.common.validation.dateBetween(
+                    formatTime(subMinutes(getNow(), 30)),
+                    formatTime(addMinutes(getNow(), 30))
+                  )
+                }
+              : undefined
+          }
+        />
+        {!selectedTimeIsWithin30MinsFromNow(getNow()) && (
+          <InfoBoxWrapper>
+            <InfoBox
+              message={i18n.attendances.timeDiffTooBigNotification}
+              data-qa="time-diff-too-big-notification"
+            />
+          </InfoBoxWrapper>
+        )}
+        {timeBeforeLastDeparture !== undefined && (
+          <InfoBoxWrapper>
+            <InfoBox
+              message={i18n.attendances.arrivalIsBeforeDeparture(
+                timeBeforeLastDeparture.format()
+              )}
+              data-qa="arrival-before-departure-notification"
+            />
+          </InfoBoxWrapper>
+        )}
+        {showAttendanceTypeSelection && (
+          <StaffAttendanceTypeSelection
+            i18n={i18n}
+            types={staffAttendanceDifferenceReasons}
+            selectedType={attendanceType}
+            setSelectedType={setAttendanceType}
+          />
+        )}
+        {selectedTimeIsWithin30MinsFromNow(getNow()) &&
+          groupOptions.length > 1 && (
+            <>
+              <Gap />
+              <CustomTitle>{i18n.common.group}</CustomTitle>
+              <Select
+                data-qa="group-select"
+                selectedItem={attendanceGroup}
+                items={groupOptions}
+                getItemLabel={(item) =>
+                  unitInfo.groups.find((group) => group.id === item)?.name ?? ''
+                }
+                placeholder={i18n.attendances.chooseGroup}
+                onChange={(group) => setAttendanceGroup(group ?? undefined)}
+              />
+            </>
+          )}
+        <Gap />
+      </TimeWrapper>
+      <Gap size="xs" />
+      <Actions>
+        <FixedSpaceRow fullWidth>
+          <Button text={i18n.common.cancel} onClick={() => navigate(-1)} />
+          <MutateButton
+            primary
+            text={i18n.common.confirm}
+            disabled={confirmDisabled}
+            mutation={staffArrivalMutation}
+            onClick={() => {
+              if (selectedTimeIsWithin30MinsFromNow(getNow()))
+                if (time !== undefined && attendanceGroup) {
+                  return {
+                    unitId,
+                    request: {
+                      employeeId,
+                      groupId: attendanceGroup,
+                      time,
+                      pinCode: pinCode.join(''),
+                      type: attendanceType ?? null
+                    }
+                  }
+                } else {
+                  return cancelMutation
+                }
+              else {
+                forceRerender()
+                return cancelMutation
+              }
+            }}
+            onSuccess={() => {
+              history.go(-1)
+            }}
+            onFailure={({ errorCode }) => {
+              setErrorCode(errorCode)
+              if (errorCode === 'WRONG_PIN') {
+                setPinCode(EMPTY_PIN)
+                pinInputRef.current?.focus()
+              }
+            }}
+            data-qa="mark-arrived-btn"
+          />
+        </FixedSpaceRow>
+      </Actions>
+    </>
+  )
+})
+
+export default React.memo(function StaffMarkArrivedPage() {
+  const { i18n } = useTranslation()
+  const navigate = useNavigate()
+
+  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+
+  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  useEffect(() => {
+    reloadUnitInfo()
+  }, [reloadUnitInfo])
+
+  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
+
+  const staffMember = useMemo(
+    () =>
+      staffAttendanceResponse.map((res) =>
+        res.staff.find((s) => s.employeeId === employeeId)
+      ),
+    [employeeId, staffAttendanceResponse]
+  )
+
+  const backButtonText = useMemo(
+    () =>
+      staffMember
+        .map((staffMember) =>
+          staffMember
+            ? `${staffMember.firstName} ${staffMember.lastName}`
+            : i18n.common.back
+        )
+        .getOrElse(i18n.common.back),
+    [i18n.common.back, staffMember]
+  )
 
   return (
     <TallContentArea
@@ -215,193 +387,21 @@ export default React.memo(function StaffMarkArrivedPage() {
         {renderResult(
           combine(unitInfoResponse, staffMember),
           ([unitInfo, staffMember]) => {
-            if (staffMember === undefined)
+            if (staffMember === undefined) {
               return (
                 <ErrorSegment
                   title={i18n.attendances.staff.errors.employeeNotFound}
                 />
               )
-
-            const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
-            const pinSet = staffInfo?.pinSet ?? true
-            const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
-
-            const latestCurrentDayDepartureTime =
-              staffMember.latestCurrentDayAttendance?.departed?.toLocalTime()
-            const timeBeforeLastDeparture =
-              latestCurrentDayDepartureTime !== undefined &&
-              time !== undefined &&
-              latestCurrentDayDepartureTime.isAfter(time)
-                ? latestCurrentDayDepartureTime
-                : undefined
-
-            const disableConfirmBecauseOfPlan =
-              showAttendanceTypeSelection &&
-              selectedTimeDiffFromPlannedStartOfDayMinutes != null &&
-              selectedTimeDiffFromPlannedStartOfDayMinutes < -5 &&
-              attendanceType == null
-
-            const confirmDisabled =
-              pinLocked ||
-              !pinSet ||
-              time === undefined ||
-              pinCode.join('').trim().length < 4 ||
-              !selectedTimeIsWithin30MinsFromNow(getNow()) ||
-              !attendanceGroup ||
-              disableConfirmBecauseOfPlan ||
-              timeBeforeLastDeparture !== undefined
-
-            const hasFutureCurrentDay =
-              staffMember.latestCurrentDayAttendance &&
-              (!staffMember.latestCurrentDayAttendance.departed ||
-                (time !== undefined &&
-                  staffMember.latestCurrentDayAttendance.arrived.isAfter(
-                    HelsinkiDateTime.now().withTime(time)
-                  )))
-
-            const hasConflictingFuture =
-              staffMember.hasFutureAttendances || !!hasFutureCurrentDay
+            }
 
             return (
-              <>
-                <Title centered noMargin>
-                  {i18n.attendances.staff.loginWithPin}
-                </Title>
-                {hasConflictingFuture && (
-                  <AlertBox
-                    message={i18n.attendances.staff.hasFutureAttendance}
-                    wide
-                  />
-                )}
-                <Gap />
-                {!pinSet ? (
-                  <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
-                ) : pinLocked ? (
-                  <ErrorSegment title={i18n.attendances.staff.pinLocked} />
-                ) : (
-                  <PinInput
-                    pin={pinCode}
-                    onPinChange={setPinCode}
-                    invalid={errorCode === 'WRONG_PIN'}
-                  />
-                )}
-                <Gap />
-                <TimeWrapper>
-                  <CustomTitle>{i18n.attendances.arrivalTime}</CustomTitle>
-                  <TimeInput
-                    onChange={setTimeStr}
-                    value={timeStr}
-                    data-qa="input-arrived"
-                    info={
-                      !selectedTimeIsWithin30MinsFromNow(getNow())
-                        ? {
-                            status: 'warning',
-                            text: i18n.common.validation.dateBetween(
-                              formatTime(subMinutes(getNow(), 30)),
-                              formatTime(addMinutes(getNow(), 30))
-                            )
-                          }
-                        : undefined
-                    }
-                  />
-                  {!selectedTimeIsWithin30MinsFromNow(getNow()) && (
-                    <InfoBoxWrapper>
-                      <InfoBox
-                        message={i18n.attendances.timeDiffTooBigNotification}
-                        data-qa="time-diff-too-big-notification"
-                      />
-                    </InfoBoxWrapper>
-                  )}
-                  {timeBeforeLastDeparture !== undefined && (
-                    <InfoBoxWrapper>
-                      <InfoBox
-                        message={i18n.attendances.arrivalIsBeforeDeparture(
-                          timeBeforeLastDeparture.format()
-                        )}
-                        data-qa="arrival-before-departure-notification"
-                      />
-                    </InfoBoxWrapper>
-                  )}
-                  {showAttendanceTypeSelection && (
-                    <StaffAttendanceTypeSelection
-                      i18n={i18n}
-                      types={staffAttendanceDifferenceReasons}
-                      selectedType={attendanceType}
-                      setSelectedType={setAttendanceType}
-                    />
-                  )}
-                  {selectedTimeIsWithin30MinsFromNow(getNow()) &&
-                    renderResult(groupOptions, (groupOptions) =>
-                      groupOptions.length > 1 ? (
-                        <>
-                          <Gap />
-                          <CustomTitle>{i18n.common.group}</CustomTitle>
-                          <Select
-                            data-qa="group-select"
-                            selectedItem={attendanceGroup}
-                            items={groupOptions}
-                            getItemLabel={(item) =>
-                              unitInfo.groups.find((group) => group.id === item)
-                                ?.name ?? ''
-                            }
-                            placeholder={i18n.attendances.chooseGroup}
-                            onChange={(group) =>
-                              setAttendanceGroup(group ?? undefined)
-                            }
-                          />
-                        </>
-                      ) : null
-                    )}
-                  <Gap />
-                </TimeWrapper>
-                <Gap size="xs" />
-                <Actions>
-                  <FixedSpaceRow fullWidth>
-                    <Button
-                      text={i18n.common.cancel}
-                      onClick={() => navigate(-1)}
-                    />
-                    <MutateButton
-                      primary
-                      text={i18n.common.confirm}
-                      disabled={confirmDisabled}
-                      mutation={staffArrivalMutation}
-                      onClick={() => {
-                        if (selectedTimeIsWithin30MinsFromNow(getNow()))
-                          if (time !== undefined && attendanceGroup) {
-                            return {
-                              unitId,
-                              request: {
-                                employeeId,
-                                groupId: attendanceGroup,
-                                time,
-                                pinCode: pinCode.join(''),
-                                type: attendanceType ?? null
-                              }
-                            }
-                          } else {
-                            return cancelMutation
-                          }
-                        else {
-                          forceRerender()
-                          return cancelMutation
-                        }
-                      }}
-                      onSuccess={() => {
-                        history.go(-1)
-                      }}
-                      onFailure={({ errorCode }) => {
-                        setErrorCode(errorCode)
-                        if (errorCode === 'WRONG_PIN') {
-                          setPinCode(EMPTY_PIN)
-                          pinInputRef.current?.focus()
-                        }
-                      }}
-                      data-qa="mark-arrived-btn"
-                    />
-                  </FixedSpaceRow>
-                </Actions>
-              </>
+              <StaffMarkArrivedInner
+                unitId={unitId}
+                employeeId={employeeId}
+                unitInfo={unitInfo}
+                staffMember={staffMember}
+              />
             )
           }
         )}
