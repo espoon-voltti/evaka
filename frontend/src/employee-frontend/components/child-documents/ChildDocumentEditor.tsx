@@ -25,7 +25,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
@@ -389,7 +389,7 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
 })
 
 export default React.memo(function ChildDocumentEditor() {
-  const { documentId } = useNonNullableParams()
+  const { documentId } = useRouteParams(['documentId'])
   const [searchParams] = useSearchParams()
   const documentResult = useQueryResult(childDocumentQuery({ documentId }))
 

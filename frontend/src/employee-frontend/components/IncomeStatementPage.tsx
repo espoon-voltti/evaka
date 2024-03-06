@@ -18,7 +18,7 @@ import {
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -54,10 +54,10 @@ const getIncomeStatementResult = wrapResult(getIncomeStatement)
 const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
 
 export default React.memo(function IncomeStatementPage() {
-  const { personId, incomeStatementId } = useNonNullableParams<{
-    personId: UUID
-    incomeStatementId: UUID
-  }>()
+  const { personId, incomeStatementId } = useRouteParams([
+    'personId',
+    'incomeStatementId'
+  ])
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 

@@ -24,7 +24,7 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { InternalLink } from 'lib-components/atoms/InternalLink'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -113,7 +113,7 @@ export interface DaycarePlacementPlanForm {
 }
 
 export default React.memo(function PlacementDraft() {
-  const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
+  const { id: applicationId } = useRouteParams(['id'])
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const [placementDraft, setPlacementDraft] = useState<

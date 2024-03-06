@@ -15,8 +15,7 @@ import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { UserRole } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -214,7 +213,7 @@ const EmployeePage = React.memo(function EmployeePage({
 
 export default React.memo(function EmployeePageLoader() {
   const { i18n } = useTranslation()
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRouteParams(['id'])
   const employee = useQueryResult(employeeDetailsQuery({ id }))
   const units = useQueryResult(unitsQuery())
 

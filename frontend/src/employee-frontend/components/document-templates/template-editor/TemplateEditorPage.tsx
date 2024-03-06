@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Container from 'lib-components/layout/Container'
 
 import { renderResult } from '../../async-rendering'
@@ -14,7 +14,7 @@ import { documentTemplateQuery } from '../queries'
 import TemplateContentEditor from './TemplateContentEditor'
 
 export default React.memo(function TemplateEditorPage() {
-  const { templateId } = useNonNullableParams()
+  const { templateId } = useRouteParams(['templateId'])
 
   const templateResult = useQueryResult(documentTemplateQuery({ templateId }))
 

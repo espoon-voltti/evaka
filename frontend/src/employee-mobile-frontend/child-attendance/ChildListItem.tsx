@@ -12,8 +12,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { queryOrDefault, useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bold, InformationText } from 'lib-components/typography'
@@ -110,9 +109,7 @@ export default React.memo(function ChildListItem({
 }: ChildListItemProps) {
   const { unitInfoResponse } = useContext(UnitContext)
 
-  const { unitId } = useNonNullableParams<{
-    unitId: UUID
-  }>()
+  const { unitId } = useRouteParams(['unitId'])
   const { selectedGroupId } = useSelectedGroup()
 
   const { data: groupNotes = [] } = useQuery(

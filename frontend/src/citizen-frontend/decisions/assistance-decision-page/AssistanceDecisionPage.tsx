@@ -10,8 +10,7 @@ import { useTranslation } from 'citizen-frontend/localization'
 import { LocalizationContext } from 'citizen-frontend/localization/state'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -27,7 +26,7 @@ import {
 } from './queries'
 
 export default React.memo(function AssistanceNeedDecisionPage() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRouteParams(['id'])
 
   const assistanceNeedDecision = useQueryResult(assistanceDecisionQuery(id))
   const i18n = useTranslation()

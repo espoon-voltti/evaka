@@ -8,7 +8,7 @@ import { Result } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -42,7 +42,7 @@ export default React.memo(function PreferredStartSubSection({
   verificationRequested,
   terms
 }: ServiceNeedSectionProps) {
-  const { applicationId } = useNonNullableParams<{ applicationId: string }>()
+  const { applicationId } = useRouteParams(['applicationId'])
   const t = useTranslation()
   const [lang] = useLang()
   const labelId = useUniqueId()

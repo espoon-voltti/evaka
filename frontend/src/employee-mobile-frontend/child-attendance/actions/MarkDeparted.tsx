@@ -23,7 +23,7 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -335,10 +335,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 })
 
 export default React.memo(function MarkDeparted() {
-  const { childId, unitId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
+  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 

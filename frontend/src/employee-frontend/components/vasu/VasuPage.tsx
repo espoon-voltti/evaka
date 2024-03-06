@@ -6,8 +6,7 @@ import React from 'react'
 import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
@@ -27,7 +26,7 @@ const FooterContainer = styled.div`
 `
 
 export default React.memo(function VasuPage() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRouteParams(['id'])
   const [searchParams] = useSearchParams()
 
   const { vasu, content, permittedActions, translations } = useVasu(id)

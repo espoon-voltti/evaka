@@ -18,7 +18,7 @@ import {
   GroupInfo
 } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import colors from 'lib-customizations/common'
@@ -31,7 +31,7 @@ import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
 import { zIndex } from '../constants'
-import { ChildAttendanceUIState } from '../types'
+import { ChildAttendanceUIState, parseChildAttendanceUiState } from '../types'
 
 import ChildList from './ChildList'
 import { attendanceStatusesQuery, childrenQuery } from './queries'
@@ -42,11 +42,12 @@ export interface TabItem {
   label: string
   link: string
 }
+
 export default React.memo(function AttendancePageWrapper() {
-  const { unitId, attendanceStatus } = useNonNullableParams<{
-    unitId: string
-    attendanceStatus: ChildAttendanceUIState
-  }>()
+  const { unitId, attendanceStatus } = useRouteParams([
+    'unitId',
+    'attendanceStatus'
+  ])
   const navigate = useNavigate()
   const location = useLocation()
   const { i18n } = useTranslation()
@@ -150,7 +151,8 @@ export default React.memo(function AttendancePageWrapper() {
                   unitId: unitId,
                   unitChildren: children,
                   attendanceStatuses,
-                  attendanceStatus
+                  attendanceStatus:
+                    parseChildAttendanceUiState(attendanceStatus)
                 } satisfies AttendanceContext
               }
             />

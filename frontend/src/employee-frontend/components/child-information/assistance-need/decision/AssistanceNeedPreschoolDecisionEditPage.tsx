@@ -37,7 +37,7 @@ import { Employee } from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
@@ -1001,10 +1001,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
 })
 
 export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
-  const { childId, decisionId } = useNonNullableParams<{
-    childId: UUID
-    decisionId: UUID
-  }>()
+  const { childId, decisionId } = useRouteParams(['childId', 'decisionId'])
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery({ id: decisionId })
   )

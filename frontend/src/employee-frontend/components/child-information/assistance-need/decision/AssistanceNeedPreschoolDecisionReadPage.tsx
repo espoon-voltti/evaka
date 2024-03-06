@@ -7,8 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -136,7 +135,7 @@ const DecisionReadView = React.memo(function DecisionReadView({
 })
 
 export default React.memo(function AssistanceNeedPreschoolDecisionReadPage() {
-  const { decisionId } = useNonNullableParams<{ decisionId: UUID }>()
+  const { decisionId } = useRouteParams(['decisionId'])
   const decisionResult = useQueryResult(
     assistanceNeedPreschoolDecisionQuery({ id: decisionId })
   )

@@ -16,8 +16,7 @@ import {
   IncomeStatement
 } from 'lib-common/generated/api-types/incomestatement'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -41,9 +40,7 @@ import { useTranslation } from '../localization'
 import { incomeStatementQuery } from './queries'
 
 export default React.memo(function IncomeStatementView() {
-  const { incomeStatementId } = useNonNullableParams<{
-    incomeStatementId: UUID
-  }>()
+  const { incomeStatementId } = useRouteParams(['incomeStatementId'])
   const t = useTranslation()
   const navigate = useNavigate()
   const result = useQueryResult(incomeStatementQuery(incomeStatementId))

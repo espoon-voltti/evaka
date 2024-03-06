@@ -19,8 +19,7 @@ import {
   AssistanceNeedDecisionLanguage
 } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee, PersonJSON } from 'lib-common/generated/api-types/pis'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-decision/AssistanceNeedDecisionInfoHeader'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -88,7 +87,7 @@ const HorizontalLineWithoutBottomMargin = styled(HorizontalLine)`
 `
 
 export default React.memo(function AssistanceNeedDecisionEditPage() {
-  const { childId, id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
+  const { childId, id } = useRouteParams(['childId', 'id'])
   const [child] = useApiState(
     () => getPersonIdentityResult({ personId: childId }),
     [childId]

@@ -16,8 +16,7 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -83,7 +82,7 @@ const getMessageSubject = (
   )
 
 export default React.memo(function ApplicationPage() {
-  const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
+  const { id: applicationId } = useRouteParams(['id'])
 
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)

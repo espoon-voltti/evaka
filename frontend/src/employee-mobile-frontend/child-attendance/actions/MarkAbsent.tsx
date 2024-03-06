@@ -12,7 +12,7 @@ import {
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -41,10 +41,7 @@ export default React.memo(function MarkAbsent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { childId, unitId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
+  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<

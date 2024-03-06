@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { MessageReceiver } from 'lib-common/api-types/messaging'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
@@ -109,7 +109,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
 })
 
 export default React.memo(function MessageEditorPageWrapper() {
-  const { unitId, childId } = useNonNullableParams()
+  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   return renderResult(child, (child) => <NewChildMessagePage child={child} />)
 })

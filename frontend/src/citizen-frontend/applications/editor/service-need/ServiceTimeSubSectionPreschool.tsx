@@ -11,7 +11,7 @@ import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serv
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -59,7 +59,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 }: ServiceTimeSubSectionProps) {
   const [lang] = useLang()
   const t = useTranslation()
-  const { applicationId } = useNonNullableParams<{ applicationId: string }>()
+  const { applicationId } = useRouteParams(['applicationId'])
   const labelId = useUniqueId()
 
   const serviceNeedOptionsByType =

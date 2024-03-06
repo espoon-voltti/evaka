@@ -8,8 +8,7 @@ import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -45,7 +44,7 @@ const TopButtonRow = styled(FixedSpaceRow)`
 `
 
 export default React.memo(function VasuPage() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRouteParams(['id'])
   const t = useTranslation()
 
   const [permissionExpanded, { toggle: togglePermissionExpanded }] =

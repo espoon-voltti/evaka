@@ -10,7 +10,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -32,10 +32,7 @@ import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 export default React.memo(function StaffMemberPage() {
-  const { unitId, employeeId } = useNonNullableParams<{
-    unitId: string
-    employeeId: string
-  }>()
+  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const navigate = useNavigate()

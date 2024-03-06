@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -275,7 +275,7 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
 })
 
 export default React.memo(function PersonProfileWrapper() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRouteParams(['id'])
   return (
     <PersonContextProvider id={id}>
       <PersonProfile id={id} />
