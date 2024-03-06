@@ -182,6 +182,16 @@ export interface DevAssistanceAction {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevAssistanceActionOption
+*/
+export interface DevAssistanceActionOption {
+  descriptionFi: string | null
+  id: UUID
+  nameFi: string
+  value: string
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevAssistanceFactor
 */
 export interface DevAssistanceFactor {

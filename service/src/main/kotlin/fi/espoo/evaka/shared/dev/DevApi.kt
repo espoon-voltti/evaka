@@ -23,7 +23,6 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
-import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
@@ -131,7 +130,6 @@ import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.DailyServiceTimesId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId

@@ -17,7 +17,6 @@ import {
   OtherAssistanceMeasure,
   PreschoolAssistance
 } from 'lib-common/generated/api-types/assistance'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import {
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionGuardian,
@@ -101,6 +100,7 @@ import {
   DecisionRequest,
   DevAbsence,
   DevAssistanceAction,
+  DevAssistanceActionOption,
   DevAssistanceNeedDecision,
   DevAssistanceNeedPreschoolDecision,
   DevBackupCare,
@@ -2156,6 +2156,7 @@ export class Fixture {
 
   static assistanceActionOption(): AssistanceActionOptionBuilder {
     return new AssistanceActionOptionBuilder({
+      id: uuidv4(),
       descriptionFi: 'a description',
       nameFi: 'a test assistance action option',
       value: 'TEST_ASSISTANCE_ACTION_OPTION'
@@ -2996,7 +2997,7 @@ export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction>
   }
 }
 
-export class AssistanceActionOptionBuilder extends FixtureBuilder<AssistanceActionOption> {
+export class AssistanceActionOptionBuilder extends FixtureBuilder<DevAssistanceActionOption> {
   async save() {
     await createAssistanceActionOption({ body: [this.data] })
     return this

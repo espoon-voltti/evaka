@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
@@ -44,7 +45,6 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ClubTermId
 import fi.espoo.evaka.shared.DailyServiceTimesId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareAssistanceId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
@@ -1650,12 +1650,26 @@ VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bi
 
 fun Database.Transaction.insert(row: DevAssistanceActionOption): AssistanceActionOptionId =
     createUpdate {
-        sql(
-            """
+            sql(
+                """
 INSERT INTO assistance_action_option(id, value, name_fi, description_fi)
 VALUES (${bind(row.id)}, ${bind(row.value)}, ${bind(row.nameFi)}, ${bind(row.descriptionFi)})        
 """
-        )
-    }
-            .executeAndReturnGeneratedKeys()
-            .exactlyOne()
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(
+    row: DevAssistanceNeedVoucherCoefficient
+): AssistanceNeedVoucherCoefficientId =
+    createUpdate {
+            sql(
+                """     
+INSERT INTO assistance_need_voucher_coefficient(id, child_id, validity_period, coefficient)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bind(row.coefficient)})   
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()

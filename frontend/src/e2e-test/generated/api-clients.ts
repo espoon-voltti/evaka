@@ -5,7 +5,6 @@
 // GENERATED FILE: no manual modifications
 
 import { ApplicationDetails } from 'lib-common/generated/api-types/application'
-import { AssistanceActionOption } from 'lib-common/generated/api-types/assistanceaction'
 import { Autocomplete } from './api-types'
 import { Caretaker } from './api-types'
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
@@ -21,6 +20,7 @@ import { DevAbsence } from './api-types'
 import { DevApiError } from '../dev-api'
 import { DevApplicationWithForm } from './api-types'
 import { DevAssistanceAction } from './api-types'
+import { DevAssistanceActionOption } from './api-types'
 import { DevAssistanceFactor } from './api-types'
 import { DevAssistanceNeedDecision } from './api-types'
 import { DevAssistanceNeedPreschoolDecision } from './api-types'
@@ -378,14 +378,14 @@ export async function createAssistanceAction(
 */
 export async function createAssistanceActionOption(
   request: {
-    body: AssistanceActionOption[]
+    body: DevAssistanceActionOption[]
   }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/assistance-action-option`.toString(),
       method: 'POST',
-      data: request.body satisfies JsonCompatible<AssistanceActionOption[]>
+      data: request.body satisfies JsonCompatible<DevAssistanceActionOption[]>
     })
     return json
   } catch (e) {
