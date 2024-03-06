@@ -179,7 +179,8 @@ const components: Translations = {
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',
     unselectableDate: 'Ogiltigt datum',
-    openAttendance: 'Öppen närvaro'
+    openAttendance: 'Öppen närvaro',
+    generic: 'Kolla'
   }
 }
 

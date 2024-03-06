@@ -848,6 +848,14 @@ const validateArrived = (
     ? LocalTime.tryParse(item.arrived)
     : undefined
 
+  if (
+    config.date.isToday() &&
+    parsedArrived &&
+    parsedArrived.isAfter(LocalTime.nowInHelsinkiTz())
+  ) {
+    return [undefined, 'generic']
+  }
+
   const isOvernightAttendance =
     existing && existing.arrived.toLocalDate().isBefore(config.date)
 
@@ -888,6 +896,18 @@ const validateDeparted = (
   const parsedDeparted = item.departed
     ? LocalTime.tryParse(item.departed)
     : undefined
+
+  if (config.date.isToday() && parsedDeparted) {
+    if (parsedDeparted.isAfter(LocalTime.nowInHelsinkiTz())) {
+      return [undefined, 'generic']
+    }
+    if (
+      arrived &&
+      !HelsinkiDateTime.fromLocal(config.date, parsedDeparted).isAfter(arrived)
+    ) {
+      return [undefined, 'generic']
+    }
+  }
 
   if (!item.departed && isLastAttendance && config.date.isToday()) {
     return [null, undefined]

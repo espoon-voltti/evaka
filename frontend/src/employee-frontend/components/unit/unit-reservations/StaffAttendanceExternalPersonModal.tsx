@@ -7,12 +7,22 @@ import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
+import { Failure, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { localDate, localTime, string, boolean } from 'lib-common/form/fields'
-import { object, oneOf, required, validated } from 'lib-common/form/form'
+import {
+  object,
+  oneOf,
+  required,
+  transformed,
+  validated
+} from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import {
+  StateOf,
+  ValidationError,
+  ValidationSuccess
+} from 'lib-common/form/types'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -54,18 +64,56 @@ type ExternalPersonModalProps = {
   defaultGroupId: UUID
 }
 
-const externalPersonForm = object({
-  date: validated(required(localDate()), (value) =>
-    value.isAfter(LocalDate.todayInHelsinkiTz()) ? 'dateTooLate' : undefined
-  ),
-  arrivalTime: required(localTime()),
-  departureTime: localTime(),
-  name: validated(string(), (value) =>
-    value.length < 3 ? 'required' : undefined
-  ),
-  group: required(oneOf<UUID>()),
-  hasStaffOccupancyEffect: required(boolean())
-})
+const externalPersonForm = transformed(
+  object({
+    date: validated(required(localDate()), (value) =>
+      value.isAfter(LocalDate.todayInHelsinkiTz()) ? 'dateTooLate' : undefined
+    ),
+    arrivalTime: required(localTime()),
+    departureTime: localTime(),
+    name: validated(string(), (value) =>
+      value.length < 3 ? 'required' : undefined
+    ),
+    group: required(oneOf<UUID>()),
+    hasStaffOccupancyEffect: required(boolean())
+  }),
+  ({
+    date,
+    arrivalTime,
+    departureTime,
+    name,
+    group,
+    hasStaffOccupancyEffect
+  }) => {
+    const arrived = HelsinkiDateTime.fromLocal(date, arrivalTime)
+    const departed = departureTime
+      ? HelsinkiDateTime.fromLocal(date, departureTime)
+      : null
+    if (departed && !departed.isAfter(arrived)) {
+      return ValidationError.of('timeRangeNotLinear')
+    }
+    if (arrived.isAfter(HelsinkiDateTime.now())) {
+      return ValidationError.field('arrivalTime', 'futureTime')
+    }
+    if (departed && departed.isAfter(HelsinkiDateTime.now())) {
+      return ValidationError.field('departureTime', 'futureTime')
+    }
+    const requestBody: UpsertStaffAndExternalAttendanceRequest = {
+      externalAttendances: [
+        {
+          attendanceId: null,
+          arrived,
+          departed,
+          name: name,
+          groupId: group,
+          hasStaffOccupancyEffect: hasStaffOccupancyEffect
+        }
+      ],
+      staffAttendances: []
+    }
+    return ValidationSuccess.of(requestBody)
+  }
+)
 
 function initialFormState(
   groups: DaycareGroup[],
@@ -106,29 +154,11 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
   )
 
   const submit = useCallback(() => {
-    const formValue = form.value()
-    const body: UpsertStaffAndExternalAttendanceRequest = {
-      externalAttendances: [
-        {
-          attendanceId: null,
-          arrived: HelsinkiDateTime.fromLocal(
-            formValue.date,
-            formValue.arrivalTime
-          ),
-          departed: formValue.departureTime
-            ? HelsinkiDateTime.fromLocal(
-                formValue.date,
-                formValue.departureTime
-              )
-            : null,
-          name: formValue.name,
-          groupId: formValue.group,
-          hasStaffOccupancyEffect: formValue.hasStaffOccupancyEffect
-        }
-      ],
-      staffAttendances: []
+    if (!form.isValid()) {
+      return Promise.resolve(Failure.of({ message: 'Form not valid' }))
     }
-    return upsertStaffRealtimeAttendancesResult({ unitId, body })
+
+    return upsertStaffRealtimeAttendancesResult({ unitId, body: form.value() })
   }, [form, unitId])
 
   const date = useFormField(form, 'date')

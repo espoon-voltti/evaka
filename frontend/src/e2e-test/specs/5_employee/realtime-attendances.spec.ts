@@ -416,26 +416,27 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('If departure is earlier than arrival, departure is on the next day', async () => {
+      const arrivalDate = mockedToday.subDays(1)
       await prepareTest({
-        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
+        arrived: arrivalDate.toHelsinkiDateTime(LocalTime.of(7, 0))
       })
 
-      let modal = await staffAttendances.openDetails(1, mockedToday)
+      let modal = await staffAttendances.openDetails(1, arrivalDate)
       await modal.setDepartureTime(0, '06:00')
       await modal.save()
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 2,
+        nth: 1,
         attendances: [['07:00', '→']]
       })
       await staffAttendances.assertTableRow({
         rowIx: 1,
-        nth: 3,
+        nth: 2,
         attendances: [['→', '06:00']]
       })
 
-      modal = await staffAttendances.openDetails(1, mockedToday)
+      modal = await staffAttendances.openDetails(1, arrivalDate)
       await waitUntilEqual(() => modal.summary(), {
         plan: '–',
         realized: '07:00 – →',

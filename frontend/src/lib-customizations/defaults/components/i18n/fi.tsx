@@ -175,7 +175,8 @@ const components: Translations = {
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu',
-    openAttendance: 'Avoin kirjaus'
+    openAttendance: 'Avoin kirjaus',
+    generic: 'Tarkista'
   }
 }
 

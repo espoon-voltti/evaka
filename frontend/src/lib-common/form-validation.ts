@@ -33,6 +33,7 @@ export type ErrorKey =
   | 'emailsDoNotMatch'
   | 'httpUrl'
   | 'openAttendance'
+  | 'generic'
 
 export const required = (
   val: unknown,
