@@ -83,7 +83,8 @@ data class StaffMemberAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val type: StaffAttendanceType,
-    val departedAutomatically: Boolean
+    val departedAutomatically: Boolean,
+    val occupancyCoefficient: BigDecimal
 )
 
 data class ExternalAttendance(

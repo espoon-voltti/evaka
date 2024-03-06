@@ -27,6 +27,7 @@ import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
@@ -153,10 +154,7 @@ function StaffAttendanceDetailsModal<
   }
 
   const updateAttendance = useCallback(
-    (
-      index: number,
-      data: Omit<EditedAttendance, 'id' | 'hasStaffOccupancyEffect'>
-    ) =>
+    (index: number, data: Omit<EditedAttendance, 'id'>) =>
       setEditState(({ editState, editStateDate }) => ({
         editStateDate,
         editState: editState.map((row, i) =>
@@ -399,129 +397,154 @@ function StaffAttendanceDetailsModal<
           </FullGridWidth>
         )}
         <ListGrid rowGap="s" labelWidth="auto">
-          {editState.map(({ arrived, departed, type, groupId }, index) => {
-            const gap = getGapBefore(index)
+          {editState.map(
+            (
+              { arrived, departed, type, groupId, hasStaffOccupancyEffect },
+              index
+            ) => {
+              const gap = getGapBefore(index)
 
-            return (
-              <Fragment key={index}>
-                {!!gap && (
-                  <FullGridWidth>
-                    <FixedSpaceRow
-                      justifyContent="center"
-                      alignItems="center"
-                      spacing="s"
-                    >
-                      <FontAwesomeIcon
-                        icon={faExclamationTriangle}
-                        color={colors.status.warning}
+              return (
+                <Fragment key={index}>
+                  {!!gap && (
+                    <FullGridWidth>
+                      <FixedSpaceRow
+                        justifyContent="center"
+                        alignItems="center"
+                        spacing="s"
+                      >
+                        <FontAwesomeIcon
+                          icon={faExclamationTriangle}
+                          color={colors.status.warning}
+                        />
+                        <div data-qa={`attendance-gap-warning-${index}`}>
+                          {i18n.unit.staffAttendance.gapWarning(gap)}
+                        </div>
+                      </FixedSpaceRow>
+                    </FullGridWidth>
+                  )}
+                  <GroupIndicator data-qa="group-indicator">
+                    {type !== null && !presentInGroup(type) ? (
+                      <span>{i18n.unit.staffAttendance.noGroup}</span>
+                    ) : groupId === null ? (
+                      <Select
+                        items={[null, ...openGroups.map(({ id }) => id)]}
+                        selectedItem={groupId}
+                        onChange={(value) =>
+                          updateAttendance(index, {
+                            arrived,
+                            departed,
+                            type,
+                            groupId: value,
+                            hasStaffOccupancyEffect
+                          })
+                        }
+                        getItemLabel={(item) =>
+                          groups.find(({ id }) => id === item)?.name ??
+                          i18n.unit.staffAttendance.noGroup
+                        }
+                        data-qa="attendance-group-select"
                       />
-                      <div data-qa={`attendance-gap-warning-${index}`}>
-                        {i18n.unit.staffAttendance.gapWarning(gap)}
-                      </div>
-                    </FixedSpaceRow>
-                  </FullGridWidth>
-                )}
-                <GroupIndicator data-qa="group-indicator">
-                  {type !== null && !presentInGroup(type) ? (
-                    <span>{i18n.unit.staffAttendance.noGroup}</span>
-                  ) : groupId === null ? (
+                    ) : (
+                      <InlineButton
+                        text={groups.find((g) => g.id === groupId)?.name ?? '-'}
+                        onClick={() =>
+                          updateAttendance(index, {
+                            arrived,
+                            departed,
+                            type,
+                            groupId: null,
+                            hasStaffOccupancyEffect
+                          })
+                        }
+                      />
+                    )}
+                  </GroupIndicator>
+                  {featureFlags.staffAttendanceTypes && !isExternal ? (
                     <Select
-                      items={[null, ...openGroups.map(({ id }) => id)]}
-                      selectedItem={groupId}
+                      items={[...staffAttendanceTypes]}
+                      selectedItem={type}
+                      onChange={(value) =>
+                        value &&
+                        updateAttendance(index, {
+                          arrived,
+                          departed,
+                          type: value,
+                          groupId: presentInGroup(value) ? groupId : null,
+                          hasStaffOccupancyEffect
+                        })
+                      }
+                      getItemLabel={(item) =>
+                        i18n.unit.staffAttendance.types[item]
+                      }
+                      data-qa="attendance-type-select"
+                    />
+                  ) : null}
+                  <InputRow>
+                    <TimeInput
+                      value={arrived}
+                      onChange={(value) =>
+                        updateAttendance(index, {
+                          arrived: value,
+                          departed,
+                          type,
+                          groupId,
+                          hasStaffOccupancyEffect
+                        })
+                      }
+                      info={errorToInputInfo(
+                        errors[index].arrived,
+                        i18n.validationErrors
+                      )}
+                      data-qa="arrival-time-input"
+                    />
+                    <Gap size="xs" horizontal />
+                    <DatePickerSpacer />
+                    <Gap size="xs" horizontal />
+                    <TimeInput
+                      value={departed}
+                      onChange={(value) =>
+                        updateAttendance(index, {
+                          arrived,
+                          departed: value,
+                          type,
+                          groupId,
+                          hasStaffOccupancyEffect
+                        })
+                      }
+                      info={errorToInputInfo(
+                        errors[index].departed,
+                        i18n.validationErrors
+                      )}
+                      data-qa="departure-time-input"
+                    />
+                    <Gap size="xs" horizontal />
+                    <IconButton
+                      icon={faTrash}
+                      onClick={() => removeAttendance(index)}
+                      aria-label={i18n.common.remove}
+                      data-qa="remove-attendance"
+                    />
+                  </InputRow>
+                  <FullGridWidth>
+                    <Checkbox
+                      label={i18n.unit.staffAttendance.hasStaffOccupancyEffect}
+                      checked={hasStaffOccupancyEffect}
                       onChange={(value) =>
                         updateAttendance(index, {
                           arrived,
                           departed,
                           type,
-                          groupId: value
-                        })
-                      }
-                      getItemLabel={(item) =>
-                        groups.find(({ id }) => id === item)?.name ??
-                        i18n.unit.staffAttendance.noGroup
-                      }
-                      data-qa="attendance-group-select"
-                    />
-                  ) : (
-                    <InlineButton
-                      text={groups.find((g) => g.id === groupId)?.name ?? '-'}
-                      onClick={() =>
-                        updateAttendance(index, {
-                          arrived,
-                          departed,
-                          type,
-                          groupId: null
+                          groupId,
+                          hasStaffOccupancyEffect: value
                         })
                       }
                     />
-                  )}
-                </GroupIndicator>
-                {featureFlags.staffAttendanceTypes && !isExternal ? (
-                  <Select
-                    items={[...staffAttendanceTypes]}
-                    selectedItem={type}
-                    onChange={(value) =>
-                      value &&
-                      updateAttendance(index, {
-                        arrived,
-                        departed,
-                        type: value,
-                        groupId: presentInGroup(value) ? groupId : null
-                      })
-                    }
-                    getItemLabel={(item) =>
-                      i18n.unit.staffAttendance.types[item]
-                    }
-                    data-qa="attendance-type-select"
-                  />
-                ) : null}
-                <InputRow>
-                  <TimeInput
-                    value={arrived}
-                    onChange={(value) =>
-                      updateAttendance(index, {
-                        arrived: value,
-                        departed,
-                        type,
-                        groupId
-                      })
-                    }
-                    info={errorToInputInfo(
-                      errors[index].arrived,
-                      i18n.validationErrors
-                    )}
-                    data-qa="arrival-time-input"
-                  />
-                  <Gap size="xs" horizontal />
-                  <DatePickerSpacer />
-                  <Gap size="xs" horizontal />
-                  <TimeInput
-                    value={departed}
-                    onChange={(value) =>
-                      updateAttendance(index, {
-                        arrived,
-                        departed: value,
-                        type,
-                        groupId
-                      })
-                    }
-                    info={errorToInputInfo(
-                      errors[index].departed,
-                      i18n.validationErrors
-                    )}
-                    data-qa="departure-time-input"
-                  />
-                  <Gap size="xs" horizontal />
-                  <IconButton
-                    icon={faTrash}
-                    onClick={() => removeAttendance(index)}
-                    aria-label={i18n.common.remove}
-                    data-qa="remove-attendance"
-                  />
-                </InputRow>
-              </Fragment>
-            )
-          })}
+                  </FullGridWidth>
+                </Fragment>
+              )
+            }
+          )}
           <NewAttendance>
             <InlineButton
               icon={faPlus}

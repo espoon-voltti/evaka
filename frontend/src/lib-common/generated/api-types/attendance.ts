@@ -326,6 +326,7 @@ export interface StaffAttendanceUpsert {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   groupId: UUID | null
+  hasStaffOccupancyEffect: boolean
   id: UUID | null
   type: StaffAttendanceType
 }
@@ -368,6 +369,7 @@ export interface StaffMemberAttendance {
   employeeId: UUID
   groupId: UUID | null
   id: UUID
+  occupancyCoefficient: number
   type: StaffAttendanceType
 }
 

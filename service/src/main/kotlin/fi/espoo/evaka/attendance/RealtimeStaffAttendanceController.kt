@@ -272,7 +272,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val groupId: GroupId?,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?,
-        val type: StaffAttendanceType
+        val type: StaffAttendanceType,
+        val hasStaffOccupancyEffect: Boolean
     )
 
     data class StaffAttendanceBody(
@@ -311,15 +312,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
                         body.unitId
                     )
-                    val occupancyCoefficients =
-                        body.entries
-                            .map { it.groupId }
-                            .distinct()
-                            .associateWith { groupId ->
-                                groupId?.let {
-                                    tx.getOccupancyCoefficientForEmployee(body.employeeId, groupId)
-                                } ?: BigDecimal.ZERO
-                            }
                     val wholeDay =
                         HelsinkiDateTimeRange(
                             HelsinkiDateTime.of(body.date, LocalTime.of(0, 0)),
@@ -331,15 +323,17 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         wholeDay,
                         body.entries.mapNotNull { it.id }
                     )
-                    body.entries.map {
+                    body.entries.map { entry ->
+                        val occupancyCoefficient =
+                            if (entry.hasStaffOccupancyEffect) BigDecimal(7) else BigDecimal.ZERO
                         tx.upsertStaffAttendance(
-                            it.id,
+                            entry.id,
                             body.employeeId,
-                            it.groupId,
-                            it.arrived,
-                            it.departed,
-                            occupancyCoefficients[it.groupId],
-                            it.type,
+                            entry.groupId,
+                            entry.arrived,
+                            entry.departed,
+                            occupancyCoefficient,
+                            entry.type,
                             false
                         )
                     }
