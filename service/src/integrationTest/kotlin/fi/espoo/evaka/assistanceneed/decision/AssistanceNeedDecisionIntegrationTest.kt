@@ -10,6 +10,7 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -30,6 +32,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testDecisionMaker_3
@@ -761,6 +764,338 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val decisionAfter = getAssistanceNeedDecision(decision.id)
         assertEquals(AssistanceNeedDecisionStatus.ANNULLED, decisionAfter.status)
+    }
+
+    @Test
+    fun `endActiveDaycareAssistanceDecisions should not set end date if already set`() {
+        val startDate = LocalDate.of(2022, 1, 1)
+        val endDate = LocalDate.of(2022, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(testDaycare.id)
+                    )
+                )
+            )
+        updateAssistanceNeedDecision(
+            AssistanceNeedDecisionRequest(
+                decision
+                    .toForm()
+                    .copy(
+                        assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME),
+                        validityPeriod = DateRange(startDate, LocalDate.of(2022, 6, 30))
+                    )
+            ),
+            decision.id
+        )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker
+        )
+
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(
+            DateRange(startDate, LocalDate.of(2022, 6, 30)),
+            getAssistanceNeedDecision(decision.id).validityPeriod
+        )
+    }
+
+    @Test
+    fun `endActiveDaycareAssistanceDecisions should set end date if placement unit changes`() {
+        val startDate = LocalDate.of(2022, 1, 1)
+        val endDate = LocalDate.of(2022, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = LocalDate.of(2023, 1, 1),
+                    endDate = LocalDate.of(2023, 12, 31),
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(testDaycare.id)
+                    )
+                )
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker
+        )
+
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(
+            DateRange(startDate, endDate),
+            getAssistanceNeedDecision(decision.id).validityPeriod
+        )
+    }
+
+    @Test
+    fun `endActiveDaycareAssistanceDecisions should not set end date if placement is ending today`() {
+        val startDate = LocalDate.of(2022, 1, 1)
+        val endDate = LocalDate.of(2022, 12, 31)
+        val today = LocalDate.of(2022, 12, 31)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(testDaycare.id)
+                    )
+                )
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker
+        )
+
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(
+            DateRange(startDate, null),
+            getAssistanceNeedDecision(decision.id).validityPeriod
+        )
+    }
+
+    @Test
+    fun `endActiveDaycareAssistanceDecisions should set end date if placement ended yesterday`() {
+        val startDate = LocalDate.of(2022, 1, 1)
+        val endDate = LocalDate.of(2022, 12, 31)
+        val today = LocalDate.of(2023, 1, 1)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(testDaycare.id)
+                    )
+                )
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker
+        )
+
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(
+            DateRange(startDate, endDate),
+            getAssistanceNeedDecision(decision.id).validityPeriod
+        )
+    }
+
+    @Test
+    fun `endActiveDaycareAssistanceDecisions should not set end date if placement type changes to preschool daycare`() {
+        val startDate = LocalDate.of(2022, 1, 1)
+        val endDate = LocalDate.of(2022, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = LocalDate.of(2022, 6, 30),
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2022, 7, 1),
+                    endDate = endDate,
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(testDaycare.id)
+                    )
+                )
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker
+        )
+
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(
+            DateRange(startDate, endDate),
+            getAssistanceNeedDecision(decision.id).validityPeriod
+        )
+    }
+
+    @Test
+    fun `endActiveDaycareAssistanceDecisions should set end date if placement type changes from daycare to preschool`() {
+        val startDate = LocalDate.of(2022, 1, 1)
+        val endDate = LocalDate.of(2022, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2023, 1, 1),
+                    endDate = LocalDate.of(2023, 12, 31),
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(startDate, null),
+                        selectedUnit = UnitIdInfo(testDaycare.id)
+                    )
+                )
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker
+        )
+
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(
+            DateRange(startDate, endDate),
+            getAssistanceNeedDecision(decision.id).validityPeriod
+        )
+    }
+
+    @Test
+    fun `endActiveDaycareAssistanceDecisions should not set end date if end date is before start date`() {
+        val startDate = LocalDate.of(2022, 1, 1)
+        val endDate = LocalDate.of(2022, 12, 31)
+        val today = LocalDate.of(2024, 1, 1)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+        }
+        val decision =
+            createAssistanceNeedDecision(
+                AssistanceNeedDecisionRequest(
+                    testDecision.copy(
+                        validityPeriod = DateRange(endDate.plusDays(1), null),
+                        selectedUnit = UnitIdInfo(testDaycare.id)
+                    )
+                )
+            )
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker
+        )
+
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
+
+        assertEquals(
+            DateRange(endDate.plusDays(1), null),
+            getAssistanceNeedDecision(decision.id).validityPeriod
+        )
     }
 
     private fun getEmailFor(person: DevPerson): Email {
