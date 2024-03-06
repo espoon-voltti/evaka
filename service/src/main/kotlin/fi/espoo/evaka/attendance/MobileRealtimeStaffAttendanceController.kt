@@ -75,7 +75,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val pinCode: String,
         val groupId: GroupId,
         val time: LocalTime,
-        val type: StaffAttendanceType?
+        val type: StaffAttendanceType?,
+        val hasStaffOccupancyEffect: Boolean?
     )
 
     @PostMapping("/arrival")
@@ -115,7 +116,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 body
                             )
                         val occupancyCoefficient =
-                            tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId)
+                            body.hasStaffOccupancyEffect?.let {
+                                if (it) BigDecimal(7) else BigDecimal.ZERO
+                            }
+                                ?: tx.getOccupancyCoefficientForEmployee(
+                                    body.employeeId,
+                                    body.groupId
+                                )
                                 ?: BigDecimal.ZERO
                         attendances.map { attendance ->
                             tx.upsertStaffAttendance(
@@ -181,9 +188,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             ongoingAttendance,
                             body
                         )
-                    val occupancyCoefficient =
-                        tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId)
-                            ?: BigDecimal.ZERO
+                    val occupancyCoefficient = ongoingAttendance.occupancyCoefficient
                     attendances.map { attendance ->
                         tx.upsertStaffAttendance(
                             attendance.id,

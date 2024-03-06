@@ -33,6 +33,11 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         att.type AS attendance_type,
         att.departed_automatically AS attendance_departed_automatically,
         coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids,
+        EXISTS (
+            SELECT 1 
+            FROM staff_occupancy_coefficient soc 
+            WHERE soc.employee_id = dacl.employee_id AND soc.daycare_id = :unitId AND soc.coefficient > 0
+        ) AS occupancy_effect,
         coalesce((
             SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type, 'departedAutomatically', a.departed_automatically) ORDER BY a.arrived)
             FROM staff_attendance_realtime a

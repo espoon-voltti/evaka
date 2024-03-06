@@ -264,6 +264,7 @@ export interface Staff {
 export interface StaffArrivalRequest {
   employeeId: UUID
   groupId: UUID
+  hasStaffOccupancyEffect: boolean | null
   pinCode: string
   time: LocalTime
   type: StaffAttendanceType | null
@@ -351,6 +352,7 @@ export interface StaffMember {
   hasFutureAttendances: boolean
   lastName: string
   latestCurrentDayAttendance: StaffMemberAttendance | null
+  occupancyEffect: boolean
   plannedAttendances: PlannedStaffAttendance[]
   present: UUID | null
   spanningPlan: HelsinkiDateTimeRange | null
