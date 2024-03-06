@@ -383,6 +383,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 language = AssistanceNeedDecisionLanguage.FI,
                                 type = AssistanceNeedPreschoolDecisionType.NEW,
                                 validFrom = LocalDate.of(2019, 1, 1),
+                                validTo = null,
                                 extendedCompulsoryEducation = false,
                                 extendedCompulsoryEducationInfo = "",
                                 grantedAssistanceService = false,

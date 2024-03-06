@@ -68,6 +68,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
             
             ad.type,
             ad.valid_from,
+            ad.valid_to,
             
             ad.extended_compulsory_education,
             ad.extended_compulsory_education_info,
@@ -252,7 +253,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
     // language=sql
     val sql =
         """
-        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,
+        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from, ad.valid_to,
             ad.selected_unit selected_unit_id, unit.name selected_unit_name,
             ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
         FROM assistance_need_preschool_decision ad
@@ -277,7 +278,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
         createQuery {
                 sql(
                     """
-        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,
+        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from, ad.valid_to,
             ad.selected_unit selected_unit_id, unit.name selected_unit_name,
             ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
         FROM assistance_need_preschool_decision ad
@@ -297,7 +298,7 @@ private fun fillInValidToForDecisionResults(
     decisions: List<AssistanceNeedPreschoolDecisionBasics>
 ) =
     decisions.map { decision ->
-        if (decision.validFrom == null) return@map decision
+        if (decision.validFrom == null || decision.validTo != null) return@map decision
 
         val followingStart =
             decisions

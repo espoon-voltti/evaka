@@ -74,6 +74,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             language = AssistanceNeedDecisionLanguage.FI,
             type = AssistanceNeedPreschoolDecisionType.NEW,
             validFrom = LocalDate.of(2022, 1, 1),
+            validTo = null,
             extendedCompulsoryEducation = true,
             extendedCompulsoryEducationInfo = "extendedCompulsoryEducationInfo",
             grantedAssistanceService = true,

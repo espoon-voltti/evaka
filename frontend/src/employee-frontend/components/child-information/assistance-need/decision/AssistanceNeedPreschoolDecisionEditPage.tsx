@@ -103,6 +103,7 @@ const form = mapped(
 
     type: oneOf<AssistanceNeedPreschoolDecisionType>(),
     validFrom: nullBlank(localDate()),
+    validTo: nullBlank(localDate()),
 
     extendedCompulsoryEducation: boolean(),
     extendedCompulsoryEducationInfo: string(),
@@ -290,6 +291,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
         options: getTypeOptions(decision.form.language)
       },
       validFrom: localDate.fromDate(decision.form.validFrom),
+      validTo: localDate.fromDate(decision.form.validTo),
       basisDocumentPedagogicalReportDate: localDate.fromDate(
         decision.form.basisDocumentPedagogicalReportDate
       ),

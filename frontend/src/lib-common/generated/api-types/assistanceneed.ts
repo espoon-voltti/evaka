@@ -337,6 +337,7 @@ export interface AssistanceNeedPreschoolDecisionForm {
   selectedUnit: UUID | null
   type: AssistanceNeedPreschoolDecisionType | null
   validFrom: LocalDate | null
+  validTo: LocalDate | null
   viewOfGuardians: string
 }
 
@@ -610,7 +611,8 @@ export function deserializeJsonAssistanceNeedPreschoolDecisionForm(json: JsonOf<
     basisDocumentPsychologistStatementDate: (json.basisDocumentPsychologistStatementDate != null) ? LocalDate.parseIso(json.basisDocumentPsychologistStatementDate) : null,
     basisDocumentSocialReportDate: (json.basisDocumentSocialReportDate != null) ? LocalDate.parseIso(json.basisDocumentSocialReportDate) : null,
     guardiansHeardOn: (json.guardiansHeardOn != null) ? LocalDate.parseIso(json.guardiansHeardOn) : null,
-    validFrom: (json.validFrom != null) ? LocalDate.parseIso(json.validFrom) : null
+    validFrom: (json.validFrom != null) ? LocalDate.parseIso(json.validFrom) : null,
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
 }
 
