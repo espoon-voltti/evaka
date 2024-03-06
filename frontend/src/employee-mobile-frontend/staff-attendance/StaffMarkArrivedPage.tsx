@@ -34,6 +34,7 @@ import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -96,6 +97,9 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
+  const [occupancyEffect, setOccupancyEffect] = useState<boolean>(
+    staffMember.occupancyEffect
+  )
 
   const getNow = () => mockNow() ?? new Date()
 
@@ -284,8 +288,18 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
               />
             </>
           )}
-        <Gap />
       </TimeWrapper>
+      {!staffMember.occupancyEffect && (
+        <>
+          <Gap />
+          <Checkbox
+            label={i18n.staff.staffOccupancyEffect}
+            checked={occupancyEffect}
+            onChange={setOccupancyEffect}
+          />
+        </>
+      )}
+      <Gap />
       <Gap size="xs" />
       <Actions>
         <FixedSpaceRow fullWidth>
@@ -305,7 +319,8 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
                       groupId: attendanceGroup,
                       time,
                       pinCode: pinCode.join(''),
-                      type: attendanceType ?? null
+                      type: attendanceType ?? null,
+                      hasStaffOccupancyEffect: occupancyEffect
                     }
                   }
                 } else {
