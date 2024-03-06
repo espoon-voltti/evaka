@@ -180,7 +180,8 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = null,
                             arrived = now.minusHours(3),
                             departed = now.minusHours(2),
-                            type = StaffAttendanceType.TRAINING
+                            type = StaffAttendanceType.TRAINING,
+                            hasStaffOccupancyEffect = false
                         )
                     )
             )
@@ -247,7 +248,8 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = arrived,
                             departed = departed,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )

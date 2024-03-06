@@ -1008,7 +1008,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId,
                                 arrived = now,
                                 departed = null,
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true
                             )
                         )
                 )
@@ -1035,7 +1036,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId,
                                 arrived = now,
                                 departed = null,
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true
                             )
                         )
                 )
@@ -1111,14 +1113,16 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId,
                                 arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                                 departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = false
                             ),
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = staffAttendance2Id,
                                 groupId = groupId,
                                 arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 0)),
                                 departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true
                             )
                         )
                 )
@@ -1143,7 +1147,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = null,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.TRAINING
+                            type = StaffAttendanceType.TRAINING,
+                            hasStaffOccupancyEffect = false
                         )
                     )
             )
@@ -1199,7 +1204,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId,
                                 arrived = now.minusHours(2),
                                 departed = now,
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true
                             )
                         )
                 )
@@ -1224,7 +1230,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId2,
                                 arrived = now,
                                 departed = now.plusHours(2),
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = false
                             )
                         )
                 )
@@ -1248,7 +1255,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1281,7 +1289,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1323,7 +1332,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now.plusDays(1),
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1356,7 +1366,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1404,7 +1415,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 pinCode = pinCode,
                 groupId = groupId,
                 time = time,
-                type = type
+                type = type,
+                hasStaffOccupancyEffect = true
             )
         )
     }
