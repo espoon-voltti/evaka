@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -49,7 +49,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 }: ServiceTimeSubSectionProps) {
   const [lang] = useLang()
   const t = useTranslation()
-  const { applicationId } = useNonNullableParams<{ applicationId: string }>()
+  const { applicationId } = useRequiredParams('applicationId')
 
   const fullTimeOptions = useMemo(
     () =>

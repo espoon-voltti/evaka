@@ -10,8 +10,7 @@ import { renderResult } from 'employee-frontend/components/async-rendering'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -47,7 +46,7 @@ const canBeEdited = (decision: AssistanceNeedDecision) =>
   (decision.status === 'DRAFT' && decision.sentForDecision === null)
 
 export default React.memo(function AssistanceNeedDecisionPage() {
-  const { childId, id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
+  const { childId, id } = useRequiredParams('childId', 'id')
   const navigate = useNavigate()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(

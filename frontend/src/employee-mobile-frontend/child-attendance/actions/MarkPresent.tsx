@@ -21,7 +21,7 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
@@ -196,10 +196,7 @@ const JustifyContainer = styled.div`
 `
 
 export default React.memo(function MarkPresent() {
-  const { childId, unitId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
+  const { childId, unitId } = useRequiredParams('childId', 'unitId')
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 

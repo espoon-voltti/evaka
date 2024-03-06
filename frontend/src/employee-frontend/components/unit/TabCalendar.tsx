@@ -16,7 +16,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -116,7 +116,7 @@ function attendanceGroupToString(group: AttendanceGroupFilter): string {
 }
 
 export default React.memo(function TabCalendar() {
-  const { id: unitId } = useNonNullableParams<{ id: UUID }>()
+  const { id: unitId } = useRequiredParams('id')
   const { unitInformation, filters, setFilters } = useContext(UnitContext)
 
   return renderResult(unitInformation, (unitInformation) => (

@@ -14,8 +14,7 @@ import {
   ChildDocumentDetails
 } from 'lib-common/generated/api-types/document'
 import { useMutation, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -45,7 +44,7 @@ const TopButtonRow = styled(FixedSpaceRow)`
 `
 
 export default React.memo(function ChildDocumentPage() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRequiredParams('id')
 
   const decision = useQueryResult(childDocumentDetailsQuery({ documentId: id }))
   const i18n = useTranslation()

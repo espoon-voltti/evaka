@@ -17,8 +17,8 @@ import {
 } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatCents } from 'lib-common/money'
-import { Arg0, UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { Arg0 } from 'lib-common/types'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { formatDecimal } from 'lib-common/utils/number'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -127,7 +127,7 @@ const yearOptions = range(maxYear, minYear - 1, -1)
 export default React.memo(function VoucherServiceProviderUnit() {
   const location = useLocation()
   const { i18n } = useTranslation()
-  const { unitId } = useNonNullableParams<{ unitId: UUID }>()
+  const { unitId } = useRequiredParams('unitId')
   const [report, setReport] = useState<Result<ServiceVoucherUnitReport>>(
     Loading.of()
   )

@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { TabLinks } from 'lib-components/molecules/Tabs'
@@ -39,9 +39,7 @@ interface Props {
 
 export default React.memo(function StaffAttendancesPage({ tab }: Props) {
   const navigate = useNavigate()
-  const { unitId } = useNonNullableParams<{
-    unitId: string
-  }>()
+  const { unitId } = useRequiredParams('unitId')
   const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)

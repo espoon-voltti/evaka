@@ -6,8 +6,7 @@ import React from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import StickyFooter, {
@@ -40,7 +39,7 @@ const StatusContainer = styled.div`
 `
 
 export default React.memo(function VasuEditPage() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRequiredParams('id')
   const [searchParams] = useSearchParams()
   const { i18n } = useTranslation()
   const navigate = useNavigate()

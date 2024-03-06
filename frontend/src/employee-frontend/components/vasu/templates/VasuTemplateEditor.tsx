@@ -31,8 +31,7 @@ import {
   VasuSection,
   VasuTemplate
 } from 'lib-common/generated/api-types/vasu'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -86,7 +85,7 @@ const getTemplateResult = wrapResult(getTemplate)
 const putTemplateContentResult = wrapResult(putTemplateContent)
 
 export default React.memo(function VasuTemplateEditor() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRequiredParams('id')
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
 

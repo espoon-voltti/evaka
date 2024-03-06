@@ -15,8 +15,7 @@ import {
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import {
   Notifications,
   NotificationsContextProvider
@@ -132,7 +131,7 @@ function shouldForwardProp(propName: string, target: unknown) {
 }
 
 function UnitRouter() {
-  const params = useNonNullableParams<{ unitId: string }>()
+  const params = useRequiredParams('unitId')
 
   return (
     <UnitContextProvider unitId={params.unitId}>
@@ -163,7 +162,7 @@ function GroupRouter() {
 
 function ChildAttendanceRouter() {
   // Re-fetch child data when navigating to the attendance section
-  const { unitId } = useNonNullableParams<{ unitId: UUID }>()
+  const { unitId } = useRequiredParams('unitId')
   useQuery(childrenQuery(unitId), { refetchOnMount: 'always' })
   useQuery(attendanceStatusesQuery(unitId), { refetchOnMount: 'always' })
 
@@ -266,10 +265,7 @@ const groupIdKey = 'evakaEmployeeMobileGroupId'
 
 function useGroupIdInLocalStorage() {
   const navigate = useNavigate()
-  const { unitId, groupId } = useNonNullableParams<{
-    unitId: string
-    groupId: string
-  }>()
+  const { unitId, groupId } = useRequiredParams('unitId', 'groupId')
 
   useEffect(() => {
     try {

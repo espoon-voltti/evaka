@@ -10,8 +10,7 @@ import styled from 'styled-components'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -35,10 +34,10 @@ import { useTranslation } from '../localization'
 import { childIncomeStatementQuery } from './queries'
 
 export default React.memo(function ChildIncomeStatementView() {
-  const { childId, incomeStatementId } = useNonNullableParams<{
-    childId: UUID
-    incomeStatementId: UUID
-  }>()
+  const { childId, incomeStatementId } = useRequiredParams(
+    'childId',
+    'incomeStatementId'
+  )
   const t = useTranslation()
   const navigate = useNavigate()
   const result = useQueryResult(

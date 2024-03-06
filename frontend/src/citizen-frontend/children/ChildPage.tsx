@@ -8,7 +8,7 @@ import { useUser } from 'citizen-frontend/auth/state'
 import { Failure, Success } from 'lib-common/api'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
@@ -24,7 +24,7 @@ import ServiceNeedAndDailyServiceTimeSection from './sections/service-need-and-d
 import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 
 export default React.memo(function ChildPage() {
-  const { childId } = useNonNullableParams<{ childId: string }>()
+  const { childId } = useRequiredParams('childId')
   const children = useQueryResult(childrenQuery())
   const child = children.chain<ChildAndPermittedActions>((children) => {
     const child = children.find((child) => child.id === childId)

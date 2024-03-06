@@ -18,8 +18,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenChildren } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useBetterParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import Main from 'lib-components/atoms/Main'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -468,7 +467,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 })
 
 export default React.memo(function ApplicationEditor() {
-  const { applicationId } = useBetterParams<{ applicationId: UUID }>()
+  const { applicationId } = useRequiredParams('applicationId')
   const t = useTranslation()
   const application = useQueryResult(applicationQuery(applicationId))
   const children = useQueryResult(applicationChildrenQuery())

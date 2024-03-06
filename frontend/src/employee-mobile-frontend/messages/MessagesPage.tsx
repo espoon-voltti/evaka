@@ -15,7 +15,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Tabs } from 'lib-components/molecules/Tabs'
@@ -49,9 +49,7 @@ type UiState =
 export default function MessagesPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { unitId } = useNonNullableParams<{
-    unitId: UUID
-  }>()
+  const { unitId } = useRequiredParams('unitId')
 
   const { unitInfoResponse } = useContext(UnitContext)
   const { groupRoute } = useSelectedGroup()

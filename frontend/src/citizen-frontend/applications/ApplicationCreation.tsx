@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Main from 'lib-components/atoms/Main'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -39,7 +39,7 @@ import {
 
 export default React.memo(function ApplicationCreation() {
   const navigate = useNavigate()
-  const { childId } = useNonNullableParams<{ childId: string }>()
+  const { childId } = useRequiredParams('childId')
   const t = useTranslation()
   useTitle(t, t.applications.creation.title)
   const children = useQueryResult(applicationChildrenQuery())

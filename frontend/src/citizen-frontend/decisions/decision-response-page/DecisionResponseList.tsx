@@ -8,8 +8,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -29,7 +28,7 @@ import { decisionsOfApplicationQuery } from '../queries'
 import DecisionResponse from './DecisionResponse'
 
 export default React.memo(function DecisionResponseList() {
-  const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
+  const { applicationId } = useRequiredParams('applicationId')
   const t = useTranslation()
   const navigate = useNavigate()
 

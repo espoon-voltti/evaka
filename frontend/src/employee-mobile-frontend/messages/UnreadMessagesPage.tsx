@@ -8,8 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontSizesMobile, H1, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -27,9 +26,7 @@ import { WideLinkButton } from '../pairing/components'
 import { unreadCountsQuery } from './queries'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
-  const { unitId } = useNonNullableParams<{
-    unitId: UUID
-  }>()
+  const { unitId } = useRequiredParams('unitId')
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)

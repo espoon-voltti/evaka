@@ -22,8 +22,7 @@ import {
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -161,7 +160,7 @@ function redirectToMainPage(navigate: NavigateFunction) {
 }
 
 export default React.memo(function Decision() {
-  const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
+  const { id: applicationId } = useRequiredParams('id')
   const { i18n } = useTranslation()
   const navigate = useNavigate()
   const [decisionDraftGroup, setDecisionDraftGroup] = useState<

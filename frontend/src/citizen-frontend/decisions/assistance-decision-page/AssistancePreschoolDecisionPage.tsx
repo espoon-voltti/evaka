@@ -8,8 +8,7 @@ import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -26,7 +25,7 @@ import {
 } from './queries-preschool'
 
 export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRequiredParams('id')
 
   const decision = useQueryResult(assistanceNeedPreschoolDecisionQuery(id))
   const i18n = useTranslation()

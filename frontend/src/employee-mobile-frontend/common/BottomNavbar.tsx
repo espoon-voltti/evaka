@@ -10,8 +10,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQuery } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -103,9 +102,7 @@ export type BottomNavbarProps = {
 export default function BottomNavbar({ selected }: BottomNavbarProps) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { unitId } = useNonNullableParams<{
-    unitId: UUID
-  }>()
+  const { unitId } = useRequiredParams('unitId')
   const { groupRoute } = useSelectedGroup()
 
   const { unitInfoResponse } = useContext(UnitContext)

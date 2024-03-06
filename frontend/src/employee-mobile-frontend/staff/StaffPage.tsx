@@ -9,8 +9,7 @@ import { combine, Success } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 
@@ -29,9 +28,7 @@ import { staffAttendanceForGroupOrUnit } from './utils'
 
 export default React.memo(function StaffPage() {
   const navigate = useNavigate()
-  const { unitId } = useNonNullableParams<{
-    unitId: UUID
-  }>()
+  const { unitId } = useRequiredParams('unitId')
   const { selectedGroupId } = useSelectedGroup()
 
   const { unitInfoResponse } = useContext(UnitContext)

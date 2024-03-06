@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 
 import { renderResult } from '../async-rendering'
@@ -15,7 +15,7 @@ import FixedPeriodQuestionnaireForm from './FixedPeriodQuestionnaireForm'
 import { questionnaireQuery } from './queries'
 
 export default React.memo(function QuestionnaireEditor() {
-  const { id } = useNonNullableParams<{ id: string }>()
+  const { id } = useRequiredParams('id')
 
   const questionnaire = useQueryResult(questionnaireQuery({ id }), {
     enabled: id !== 'new'

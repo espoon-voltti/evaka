@@ -7,8 +7,7 @@ import React from 'react'
 import { combine } from 'lib-common/api'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Container from 'lib-components/layout/Container'
 
 import Footer from '../../Footer'
@@ -19,7 +18,7 @@ import useTitle from '../../useTitle'
 import { applicationChildrenQuery, applicationQuery } from '../queries'
 
 export default React.memo(function ApplicationReadView() {
-  const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
+  const { applicationId } = useRequiredParams('applicationId')
   const t = useTranslation()
   const application = useQueryResult(applicationQuery(applicationId))
   const children = useQueryResult(applicationChildrenQuery())

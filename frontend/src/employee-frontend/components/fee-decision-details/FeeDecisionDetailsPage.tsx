@@ -10,7 +10,7 @@ import {
   FeeDecisionDetailed,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -35,7 +35,7 @@ const getFeeDecisionResult = wrapResult(getFeeDecision)
 export default React.memo(function FeeDecisionDetailsPage() {
   const [showHandlerSelectModal, setShowHandlerSelectModal] = useState(false)
   const navigate = useNavigate()
-  const { id } = useNonNullableParams<{ id: string }>()
+  const { id } = useRequiredParams('id')
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decision, setDecision] = useState<Result<FeeDecisionDetailed>>(

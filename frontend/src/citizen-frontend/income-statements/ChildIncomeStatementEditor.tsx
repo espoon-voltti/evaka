@@ -13,7 +13,7 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Main from 'lib-components/atoms/Main'
 
 import { renderResult } from '../async-rendering'
@@ -63,10 +63,7 @@ function useInitialEditorState(
 }
 
 export default React.memo(function ChildIncomeStatementEditor() {
-  const params = useNonNullableParams<{
-    incomeStatementId: string
-    childId: string
-  }>()
+  const params = useRequiredParams('incomeStatementId', 'childId')
   const navigate = useNavigate()
   const incomeStatementId =
     params.incomeStatementId === 'new' ? undefined : params.incomeStatementId

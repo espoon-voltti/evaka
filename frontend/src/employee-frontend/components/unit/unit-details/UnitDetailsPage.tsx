@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { combine, Loading, Result, wrapResult } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
   cancelMutation
@@ -26,7 +26,7 @@ import { areaQuery, unitQuery, updateUnitMutation } from '../queries'
 const getEmployeesResult = wrapResult(getEmployees)
 
 export default React.memo(function UnitDetailsPage() {
-  const { id } = useNonNullableParams<{ id: string }>()
+  const { id } = useRequiredParams('id')
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const unit = useQueryResult(unitQuery({ daycareId: id }))

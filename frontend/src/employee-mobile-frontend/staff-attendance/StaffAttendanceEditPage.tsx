@@ -39,7 +39,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -194,10 +194,7 @@ const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
 })
 
 export default React.memo(function StaffAttendanceEditPage() {
-  const { unitId, employeeId } = useNonNullableParams<{
-    unitId: string
-    employeeId: string
-  }>()
+  const { unitId, employeeId } = useRequiredParams('unitId', 'employeeId')
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))

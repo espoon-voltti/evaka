@@ -12,7 +12,7 @@ import { Action } from 'lib-common/generated/action'
 import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -383,7 +383,7 @@ const ChildInformation = React.memo(function ChildInformation({
 })
 
 export default React.memo(function ChildInformationWrapper() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRequiredParams('id')
   return (
     <ChildContextProvider id={id}>
       <ChildInformation id={id} />

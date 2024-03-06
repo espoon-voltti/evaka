@@ -12,7 +12,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -42,10 +42,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, employeeId } = useNonNullableParams<{
-    unitId: string
-    employeeId: string
-  }>()
+  const { unitId, employeeId } = useRequiredParams('unitId', 'employeeId')
 
   const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
   const { groupRoute } = useSelectedGroup()

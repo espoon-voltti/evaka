@@ -9,7 +9,7 @@ import { isValidTime } from 'lib-common/date'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -44,9 +44,7 @@ interface FormState {
 
 export default function MarkExternalStaffMemberArrivalPage() {
   const navigate = useNavigate()
-  const { unitId } = useNonNullableParams<{
-    unitId: string
-  }>()
+  const { unitId } = useRequiredParams('unitId')
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
   const { selectedGroupId } = useSelectedGroup()

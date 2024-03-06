@@ -13,8 +13,7 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -152,10 +151,7 @@ const PinLoginForm = React.memo(function PinLoginForm() {
 
 export const PinLogin = React.memo(function PinLogin() {
   const { unitInfoResponse } = useContext(UnitContext)
-  const { unitId, childId } = useNonNullableParams<{
-    unitId: UUID
-    childId: UUID
-  }>()
+  const { unitId, childId } = useRequiredParams('unitId', 'childId')
   const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const navigate = useNavigate()

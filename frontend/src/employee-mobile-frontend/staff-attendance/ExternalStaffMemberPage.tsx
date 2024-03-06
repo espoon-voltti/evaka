@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
@@ -30,10 +30,7 @@ import { toStaff } from './utils'
 
 export default React.memo(function ExternalStaffMemberPage() {
   const navigate = useNavigate()
-  const { unitId, attendanceId } = useNonNullableParams<{
-    unitId: string
-    attendanceId: string
-  }>()
+  const { unitId, attendanceId } = useRequiredParams('unitId', 'attendanceId')
   const { i18n } = useTranslation()
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))

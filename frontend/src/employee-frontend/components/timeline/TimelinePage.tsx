@@ -12,7 +12,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { Timeline } from 'lib-common/generated/api-types/timeline'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRequiredParams from 'lib-common/useRequiredParams'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import PageWrapper from 'lib-components/layout/PageWrapper'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -43,7 +43,7 @@ const TlContainer = styled.div`
 `
 
 export default React.memo(function TimelinePage() {
-  const { personId } = useNonNullableParams()
+  const { personId } = useRequiredParams('personId')
   const { i18n } = useTranslation()
   const timelineMaxRange = useMemo(
     () =>
