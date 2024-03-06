@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -23,7 +22,6 @@ import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
-import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -148,123 +146,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         )
                 )
             }
-    }
-
-    data class UpsertStaffAttendance(
-        val attendanceId: StaffAttendanceRealtimeId?,
-        val employeeId: EmployeeId,
-        val groupId: GroupId?,
-        val arrived: HelsinkiDateTime,
-        val departed: HelsinkiDateTime?,
-        val type: StaffAttendanceType
-    )
-
-    data class UpsertExternalAttendance(
-        val attendanceId: StaffAttendanceExternalId?,
-        val name: String?,
-        val groupId: GroupId,
-        val hasStaffOccupancyEffect: Boolean,
-        val arrived: HelsinkiDateTime,
-        val departed: HelsinkiDateTime?
-    )
-
-    data class UpsertStaffAndExternalAttendanceRequest(
-        val staffAttendances: List<UpsertStaffAttendance>,
-        val externalAttendances: List<UpsertExternalAttendance>
-    ) {
-        fun isArrivedBeforeDeparted() =
-            staffAttendances.all { it.departed == null || it.arrived < it.departed } &&
-                externalAttendances.all { it.departed == null || it.arrived < it.departed }
-
-        fun hasGroupIdIfPresentInGroup() =
-            staffAttendances.all { it.groupId != null || !it.type.presentInGroup() }
-
-        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
-            staffAttendances.any {
-                it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
-            } ||
-                externalAttendances.any {
-                    it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
-                }
-    }
-
-    @PostMapping("/{unitId}/upsert")
-    fun upsertStaffRealtimeAttendances(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @RequestBody body: UpsertStaffAndExternalAttendanceRequest
-    ) {
-        if (!body.isArrivedBeforeDeparted()) {
-            throw BadRequest("Arrival time must be before departure time for all entries")
-        }
-
-        if (!body.hasGroupIdIfPresentInGroup()) {
-            throw BadRequest("Attendance must have a groupId if present in group")
-        }
-
-        if (body.anyAttendanceAfter(clock.now())) {
-            throw BadRequest("Attendances cannot be in the future")
-        }
-
-        val objectId =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                        unitId
-                    )
-                    try {
-                        val occupancyCoefficients =
-                            body.staffAttendances.associate { attendance ->
-                                Pair(
-                                    attendance.employeeId,
-                                    attendance.groupId?.let {
-                                        tx.getOccupancyCoefficientForEmployee(
-                                            attendance.employeeId,
-                                            attendance.groupId
-                                        )
-                                    } ?: BigDecimal.ZERO
-                                )
-                            }
-                        val staffAttendanceIds =
-                            body.staffAttendances.map {
-                                tx.upsertStaffAttendance(
-                                    it.attendanceId,
-                                    it.employeeId,
-                                    it.groupId,
-                                    it.arrived,
-                                    it.departed,
-                                    occupancyCoefficients[it.employeeId],
-                                    it.type,
-                                    false
-                                )
-                            }
-
-                        val externalStaffAttendanceIds =
-                            body.externalAttendances.map {
-                                tx.upsertExternalStaffAttendance(
-                                    it.attendanceId,
-                                    it.name,
-                                    it.groupId,
-                                    it.arrived,
-                                    it.departed,
-                                    if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                                    else occupancyCoefficientZero,
-                                    false
-                                )
-                            }
-                        staffAttendanceIds + externalStaffAttendanceIds
-                    } catch (e: JdbiException) {
-                        throw mapPSQLException(e)
-                    }
-                }
-            }
-        Audit.StaffAttendanceUpdate.log(targetId = unitId, objectId = objectId)
     }
 
     data class StaffAttendanceUpsert(

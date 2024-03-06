@@ -400,38 +400,6 @@ export interface UnitStats {
   utilization: number
 }
 
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertExternalAttendance
-*/
-export interface UpsertExternalAttendance {
-  arrived: HelsinkiDateTime
-  attendanceId: UUID | null
-  departed: HelsinkiDateTime | null
-  groupId: UUID
-  hasStaffOccupancyEffect: boolean
-  name: string | null
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertStaffAndExternalAttendanceRequest
-*/
-export interface UpsertStaffAndExternalAttendanceRequest {
-  externalAttendances: UpsertExternalAttendance[]
-  staffAttendances: UpsertStaffAttendance[]
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.UpsertStaffAttendance
-*/
-export interface UpsertStaffAttendance {
-  arrived: HelsinkiDateTime
-  attendanceId: UUID | null
-  departed: HelsinkiDateTime | null
-  employeeId: UUID
-  groupId: UUID | null
-  type: StaffAttendanceType
-}
-
 
 export function deserializeJsonAbsenceRangeRequest(json: JsonOf<AbsenceRangeRequest>): AbsenceRangeRequest {
   return {
@@ -637,33 +605,6 @@ export function deserializeJsonStaffMember(json: JsonOf<StaffMember>): StaffMemb
 
 
 export function deserializeJsonStaffMemberAttendance(json: JsonOf<StaffMemberAttendance>): StaffMemberAttendance {
-  return {
-    ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
-  }
-}
-
-
-export function deserializeJsonUpsertExternalAttendance(json: JsonOf<UpsertExternalAttendance>): UpsertExternalAttendance {
-  return {
-    ...json,
-    arrived: HelsinkiDateTime.parseIso(json.arrived),
-    departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
-  }
-}
-
-
-export function deserializeJsonUpsertStaffAndExternalAttendanceRequest(json: JsonOf<UpsertStaffAndExternalAttendanceRequest>): UpsertStaffAndExternalAttendanceRequest {
-  return {
-    ...json,
-    externalAttendances: json.externalAttendances.map(e => deserializeJsonUpsertExternalAttendance(e)),
-    staffAttendances: json.staffAttendances.map(e => deserializeJsonUpsertStaffAttendance(e))
-  }
-}
-
-
-export function deserializeJsonUpsertStaffAttendance(json: JsonOf<UpsertStaffAttendance>): UpsertStaffAttendance {
   return {
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived),
