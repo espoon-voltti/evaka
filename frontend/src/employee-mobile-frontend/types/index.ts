@@ -5,6 +5,7 @@
 import { AbsenceCategory } from 'lib-common/generated/api-types/absence'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { INVALID } from 'lib-common/useRequiredParams'
 
 import { Translations } from '../common/i18n'
 
@@ -13,6 +14,15 @@ export type ChildAttendanceUIState =
   | 'present'
   | 'departed'
   | 'absent'
+
+export function parseChildAttendanceUiState(state: string) {
+  return state === 'coming' ||
+    state === 'present' ||
+    state === 'departed' ||
+    state === 'absent'
+    ? state
+    : INVALID
+}
 
 export function mapChildAttendanceUIState(
   uiState: ChildAttendanceUIState
