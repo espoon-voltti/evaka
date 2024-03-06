@@ -15,7 +15,8 @@ import {
   oneOf,
   required,
   transformed,
-  validated
+  validated,
+  value
 } from 'lib-common/form/form'
 import { useForm, useFormField } from 'lib-common/form/hooks'
 import {
@@ -23,7 +24,7 @@ import {
   ValidationError,
   ValidationSuccess
 } from 'lib-common/form/types'
-import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
+import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -49,11 +50,11 @@ import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import { upsertStaffRealtimeAttendances } from '../../../generated/api-clients/attendance'
+import { upsertDailyExternalRealtimeAttendances } from '../../../generated/api-clients/attendance'
 import { useTranslation } from '../../../state/i18n'
 
-const upsertStaffRealtimeAttendancesResult = wrapResult(
-  upsertStaffRealtimeAttendances
+const upsertDailyExternalRealtimeAttendancesResult = wrapResult(
+  upsertDailyExternalRealtimeAttendances
 )
 
 type ExternalPersonModalProps = {
@@ -66,6 +67,7 @@ type ExternalPersonModalProps = {
 
 const externalPersonForm = transformed(
   object({
+    unitId: value<string>(),
     date: validated(required(localDate()), (value) =>
       value.isAfter(LocalDate.todayInHelsinkiTz()) ? 'dateTooLate' : undefined
     ),
@@ -78,6 +80,7 @@ const externalPersonForm = transformed(
     hasStaffOccupancyEffect: required(boolean())
   }),
   ({
+    unitId,
     date,
     arrivalTime,
     departureTime,
@@ -98,24 +101,26 @@ const externalPersonForm = transformed(
     if (departed && departed.isAfter(HelsinkiDateTime.now())) {
       return ValidationError.field('departureTime', 'futureTime')
     }
-    const requestBody: UpsertStaffAndExternalAttendanceRequest = {
-      externalAttendances: [
+    const requestBody: ExternalAttendanceBody = {
+      date,
+      name,
+      unitId,
+      entries: [
         {
-          attendanceId: null,
+          id: null,
           arrived,
           departed,
-          name: name,
           groupId: group,
           hasStaffOccupancyEffect: hasStaffOccupancyEffect
         }
-      ],
-      staffAttendances: []
+      ]
     }
     return ValidationSuccess.of(requestBody)
   }
 )
 
 function initialFormState(
+  unitId: UUID,
   groups: DaycareGroup[],
   defaultGroupId: UUID
 ): StateOf<typeof externalPersonForm> {
@@ -126,6 +131,7 @@ function initialFormState(
   }))
 
   return {
+    unitId,
     date: localDate.fromDate(LocalDate.todayInHelsinkiTz()),
     arrivalTime: LocalTime.nowInHelsinkiTz().format(),
     departureTime: '',
@@ -149,7 +155,7 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
 
   const form = useForm(
     externalPersonForm,
-    () => initialFormState(groups, defaultGroupId),
+    () => initialFormState(unitId, groups, defaultGroupId),
     i18n.validationErrors
   )
 
@@ -158,8 +164,8 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
       return Promise.resolve(Failure.of({ message: 'Form not valid' }))
     }
 
-    return upsertStaffRealtimeAttendancesResult({ unitId, body: form.value() })
-  }, [form, unitId])
+    return upsertDailyExternalRealtimeAttendancesResult({ body: form.value() })
+  }, [form])
 
   const date = useFormField(form, 'date')
   const arrivalTime = useFormField(form, 'arrivalTime')
