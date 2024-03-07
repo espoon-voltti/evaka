@@ -47,7 +47,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
-        @Suppress("DEPRECATION") tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
+        tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
         val invoiceCalculationData = calculateInvoiceData(tx, range)
         val invoices =
             draftInvoiceGenerator.generateDraftInvoices(
@@ -245,9 +245,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         tx: Database.Read
     ): Map<PersonId, List<InvoiceCorrection>> {
         val uninvoicedCorrectionsWithInvoicedTotals =
-            @Suppress("DEPRECATION")
-            tx.createQuery(
-                    """
+            tx.createQuery {
+                    sql(
+                        """
 SELECT
     c.id,
     coalesce(
@@ -261,15 +261,18 @@ WHERE NOT c.applied_completely
 GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
 """
-                )
+                    )
+                }
                 .toMap {
                     column<InvoiceCorrectionId>("id") to
                         jsonColumn<List<InvoicedTotal>>("invoiced_corrections")
                 }
 
-        @Suppress("DEPRECATION")
-        return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
-            .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys)
+        return tx.createQuery {
+                sql(
+                    "SELECT * FROM invoice_correction WHERE id = ANY(${bind(uninvoicedCorrectionsWithInvoicedTotals.keys)})"
+                )
+            }
             .toList<InvoiceCorrection>()
             .groupBy { it.headOfFamilyId }
             .mapValues { (_, corrections) ->
@@ -323,7 +326,6 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
 }
 
 fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {
-    @Suppress("DEPRECATION")
     return createQuery(
             feeDecisionQuery(
                 Predicate {
@@ -340,14 +342,12 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDeci
 }
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<PersonId> {
-    val sql =
-        "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status = ANY(:sent::invoice_status[])"
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("period_start", period.start)
-        .bind("period_end", period.end)
-        .bind("sent", listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING))
+    val sent = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
+    return createQuery {
+            sql(
+                "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = ${bind(period.start)} AND period_end = ${bind(period.end)} AND status = ANY(${bind(sent)}::invoice_status[])"
+            )
+        }
         .toList<PersonId>()
 }
 
@@ -362,18 +362,16 @@ fun Database.Read.getAbsenceStubs(
     spanningRange: DateRange,
     categories: Collection<AbsenceCategory>
 ): List<AbsenceStub> {
-    val sql =
-        """
-        SELECT child_id, date, category, absence_type
-        FROM absence
-        WHERE between_start_and_end(:range, date)
-        AND category = ANY(:categories)
-        """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("range", spanningRange)
-        .bind("categories", categories)
+    return createQuery {
+            sql(
+                """
+SELECT child_id, date, category, absence_type
+FROM absence
+WHERE between_start_and_end(${bind(spanningRange)}, date)
+AND category = ANY(${bind(categories)})
+"""
+            )
+        }
         .toList<AbsenceStub>()
 }
 
@@ -387,20 +385,18 @@ private fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: DateRange,
     placementTypes: List<PlacementType>
 ): Map<ChildId, List<Pair<DateRange, PlacementStub>>> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            // language=sql
-            """
+    return createQuery {
+            sql(
+                """
 SELECT p.child_id, c.date_of_birth AS child_date_of_birth, u.id AS unit, daterange(p.start_date, p.end_date, '[]') AS date_range, p.unit_id, p.type
 FROM placement p
 JOIN person c ON p.child_id = c.id
 JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
-WHERE daterange(start_date, end_date, '[]') && :period
-AND p.type = ANY(:invoicedTypes::placement_type[])
+WHERE daterange(start_date, end_date, '[]') && ${bind(spanningPeriod)}
+AND p.type = ANY(${bind(placementTypes)}::placement_type[])
 """
-        )
-        .bind("period", spanningPeriod)
-        .bind("invoicedTypes", placementTypes)
+            )
+        }
         .toList { column<DateRange>("date_range") to row<PlacementStub>() }
         .groupBy { it.second.child.id }
 }
@@ -479,49 +475,53 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
 ): List<Triple<DateRange, PersonId, ChildWithDateOfBirth>> {
     if (childIds.isEmpty()) return listOf()
 
-    val sql =
-        """
-        SELECT
-            fridge_child.head_of_child,
-            child.id AS child_id,
-            child.date_of_birth AS child_date_of_birth,
-            fridge_child.start_date,
-            fridge_child.end_date
-        FROM fridge_child
-        INNER JOIN person AS child ON fridge_child.child_id = child.id
-        WHERE fridge_child.child_id = ANY(:childIds)
-            AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && :dateRange
-            AND conflict = false
-    """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("dateRange", dateRange).bind("childIds", childIds).toList {
-        Triple(
-            DateRange(column("start_date"), column("end_date")),
-            column<PersonId>("head_of_child"),
-            ChildWithDateOfBirth(
-                id = column("child_id"),
-                dateOfBirth = column("child_date_of_birth")
+    return createQuery {
+            sql(
+                """
+SELECT
+    fridge_child.head_of_child,
+    child.id AS child_id,
+    child.date_of_birth AS child_date_of_birth,
+    fridge_child.start_date,
+    fridge_child.end_date
+FROM fridge_child
+INNER JOIN person AS child ON fridge_child.child_id = child.id
+WHERE fridge_child.child_id = ANY(${bind(childIds)})
+    AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && ${bind(dateRange)}
+    AND conflict = false
+"""
             )
-        )
-    }
+        }
+        .toList {
+            Triple(
+                DateRange(column("start_date"), column("end_date")),
+                column<PersonId>("head_of_child"),
+                ChildWithDateOfBirth(
+                    id = column("child_id"),
+                    dateOfBirth = column("child_date_of_birth")
+                )
+            )
+        }
 }
 
 fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
-    val sql =
-        """
-        SELECT daycare.id AS unit_id, area.id AS area_id
-        FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
-    """
-    @Suppress("DEPRECATION") return createQuery(sql).toMap { columnPair("unit_id", "area_id") }
+    return createQuery {
+            sql(
+                """
+SELECT daycare.id AS unit_id, area.id AS area_id
+FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
+"""
+            )
+        }
+        .toMap { columnPair("unit_id", "area_id") }
 }
 
 fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
-    val sql =
-        // language=sql
-        """
+    return createQuery {
+            sql(
+                """
 WITH invoiced_placement AS (
-    SELECT child_id, start_date, end_date FROM placement WHERE type = ANY(:invoicedTypes::placement_type[])
+    SELECT child_id, start_date, end_date FROM placement WHERE type = ANY(${bind(PlacementType.invoiced)}::placement_type[])
 )
 SELECT
   distinct(p09.child_id)
@@ -551,17 +551,17 @@ WHERE
   p09.child_id = p03.child_id AND
   ${if (year != 2020) {
             """
-        p09.child_id = p04.child_id AND
-        p09.child_id = p05.child_id AND
-    """
+  p09.child_id = p04.child_id AND
+  p09.child_id = p05.child_id AND
+"""
         } else {
             ""
         }}
   p09.child_id = p06.child_id;
-    """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced).toList<ChildId>()
+"""
+            )
+        }
+        .toList<ChildId>()
 }
 
 private fun placementOn(year: Int, month: Int): String {

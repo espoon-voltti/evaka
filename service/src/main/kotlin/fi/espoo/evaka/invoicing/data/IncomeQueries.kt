@@ -103,27 +103,26 @@ fun Database.Read.getIncome(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     id: IncomeId
 ): Income? {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
-        SELECT income.*, evaka_user.name AS updated_by_name,
-        (SELECT coalesce(jsonb_agg(json_build_object(
-            'id', id,
-            'name', name,
-            'contentType', content_type
-          )), '[]'::jsonb) FROM (
-            SELECT a.id, a.name, a.content_type
-            FROM attachment a
-            WHERE a.income_id = income.id
-            ORDER BY a.created
-        ) s) AS attachments
-        FROM income
-        JOIN evaka_user ON income.updated_by = evaka_user.id
-        WHERE income.id = :id
-        """
-                .trimIndent()
-        )
-        .bind("id", id)
+    return createQuery {
+            sql(
+                """
+SELECT income.*, evaka_user.name AS updated_by_name,
+(SELECT coalesce(jsonb_agg(json_build_object(
+    'id', id,
+    'name', name,
+    'contentType', content_type
+  )), '[]'::jsonb) FROM (
+    SELECT a.id, a.name, a.content_type
+    FROM attachment a
+    WHERE a.income_id = income.id
+    ORDER BY a.created
+) s) AS attachments
+FROM income
+JOIN evaka_user ON income.updated_by = evaka_user.id
+WHERE income.id = ${bind(id)}
+"""
+            )
+        }
         .exactlyOneOrNull {
             toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
         }
@@ -136,31 +135,29 @@ fun Database.Read.getIncomesForPerson(
     personId: PersonId,
     validAt: LocalDate? = null
 ): List<Income> {
-    val sql =
+    return createQuery {
+            sql(
+                """
+SELECT income.*, evaka_user.name AS updated_by_name,
+(SELECT coalesce(jsonb_agg(json_build_object(
+    'id', id,
+    'name', name,
+    'contentType', content_type
+  )), '[]'::jsonb) FROM (
+    SELECT a.id, a.name, a.content_type
+    FROM attachment a
+    WHERE a.income_id = income.id
+    ORDER BY a.created
+) s) AS attachments
+FROM income
+JOIN evaka_user ON income.updated_by = evaka_user.id
+WHERE person_id = ${bind(personId)}
+AND (${bind(validAt)}::timestamp IS NULL OR tsrange(valid_from, valid_to) @> ${bind(validAt)}::timestamp)
+ORDER BY valid_from DESC
         """
-        SELECT income.*, evaka_user.name AS updated_by_name,
-        (SELECT coalesce(jsonb_agg(json_build_object(
-            'id', id,
-            'name', name,
-            'contentType', content_type
-          )), '[]'::jsonb) FROM (
-            SELECT a.id, a.name, a.content_type
-            FROM attachment a
-            WHERE a.income_id = income.id
-            ORDER BY a.created
-        ) s) AS attachments
-        FROM income
-        JOIN evaka_user ON income.updated_by = evaka_user.id
-        WHERE person_id = :personId
-        AND (:validAt::timestamp IS NULL OR tsrange(valid_from, valid_to) @> :validAt::timestamp)
-        ORDER BY valid_from DESC
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("personId", personId).bind("validAt", validAt).toList {
-        toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
-    }
+            )
+        }
+        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Read.getIncomesFrom(
@@ -172,46 +169,40 @@ fun Database.Read.getIncomesFrom(
 ): List<Income> {
     if (personIds.isEmpty()) return emptyList()
 
-    val sql =
-        """
-        SELECT income.*, evaka_user.name AS updated_by_name, '[]' as attachments
-        FROM income
-        JOIN evaka_user ON income.updated_by = evaka_user.id
-        WHERE
-            person_id = ANY(:personIds)
-            AND (valid_to IS NULL OR valid_to >= :from)
-        """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("personIds", personIds).bind("from", from).toList {
-        toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
-    }
+    return createQuery {
+            sql(
+                """
+SELECT income.*, evaka_user.name AS updated_by_name, '[]' as attachments
+FROM income
+JOIN evaka_user ON income.updated_by = evaka_user.id
+WHERE
+    person_id = ANY(${bind(personIds)})
+    AND (valid_to IS NULL OR valid_to >= ${bind(from)})
+"""
+            )
+        }
+        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
-    @Suppress("DEPRECATION")
-    val update = createUpdate("DELETE FROM income WHERE id = :id").bind("id", incomeId)
+    val update = createUpdate { sql("DELETE FROM income WHERE id = ${bind(incomeId)}") }
 
     handlingExceptions { update.execute() }
 }
 
 fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRange) {
-    val sql =
-        """
-        UPDATE income
-        SET valid_to = :newValidTo
-        WHERE
-            person_id = :personId
-            AND valid_from < :from
-            AND valid_to IS NULL
-        """
-
-    val update =
-        @Suppress("DEPRECATION")
-        createUpdate(sql)
-            .bind("personId", personId)
-            .bind("newValidTo", period.start.minusDays(1))
-            .bind("from", period.start)
+    val update = createUpdate {
+        sql(
+            """
+            UPDATE income
+            SET valid_to = ${bind(period.start.minusDays(1))}
+            WHERE
+                person_id = ${bind(personId)}
+                AND valid_from < ${bind(period.start)}
+                AND valid_to IS NULL
+            """
+        )
+    }
 
     handlingExceptions { update.execute() }
 }

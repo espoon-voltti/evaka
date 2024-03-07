@@ -179,9 +179,9 @@ private fun calculateMaxFeeFromThresholds(
 }
 
 fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT
     id,
     valid_during,
@@ -210,15 +210,15 @@ SELECT
     temporary_fee_sibling,
     temporary_fee_sibling_part_day
 FROM fee_thresholds
-        """
-                .trimIndent()
-        )
+"""
+            )
+        }
         .toList<FeeThresholdsWithId>()
 
 fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds): FeeThresholdsId =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO fee_thresholds (
     id,
     valid_during,
@@ -247,84 +247,83 @@ INSERT INTO fee_thresholds (
     temporary_fee_sibling,
     temporary_fee_sibling_part_day
 ) VALUES (
-    :id,
-    :validDuring,
-    :minIncomeThreshold2,
-    :minIncomeThreshold3,
-    :minIncomeThreshold4,
-    :minIncomeThreshold5,
-    :minIncomeThreshold6,
-    :incomeMultiplier2,
-    :incomeMultiplier3,
-    :incomeMultiplier4,
-    :incomeMultiplier5,
-    :incomeMultiplier6,
-    :maxIncomeThreshold2,
-    :maxIncomeThreshold3,
-    :maxIncomeThreshold4,
-    :maxIncomeThreshold5,
-    :maxIncomeThreshold6,
-    :incomeThresholdIncrease6Plus,
-    :siblingDiscount2,
-    :siblingDiscount2Plus,
-    :maxFee,
-    :minFee,
-    :temporaryFee,
-    :temporaryFeePartDay,
-    :temporaryFeeSibling,
-    :temporaryFeeSiblingPartDay
+    ${bind(UUID.randomUUID())},
+    ${bind(thresholds.validDuring)},
+    ${bind(thresholds.minIncomeThreshold2)},
+    ${bind(thresholds.minIncomeThreshold3)},
+    ${bind(thresholds.minIncomeThreshold4)},
+    ${bind(thresholds.minIncomeThreshold5)},
+    ${bind(thresholds.minIncomeThreshold6)},
+    ${bind(thresholds.incomeMultiplier2)},
+    ${bind(thresholds.incomeMultiplier3)},
+    ${bind(thresholds.incomeMultiplier4)},
+    ${bind(thresholds.incomeMultiplier5)},
+    ${bind(thresholds.incomeMultiplier6)},
+    ${bind(thresholds.maxIncomeThreshold2)},
+    ${bind(thresholds.maxIncomeThreshold3)},
+    ${bind(thresholds.maxIncomeThreshold4)},
+    ${bind(thresholds.maxIncomeThreshold5)},
+    ${bind(thresholds.maxIncomeThreshold6)},
+    ${bind(thresholds.incomeThresholdIncrease6Plus)},
+    ${bind(thresholds.siblingDiscount2)},
+    ${bind(thresholds.siblingDiscount2Plus)},
+    ${bind(thresholds.maxFee)},
+    ${bind(thresholds.minFee)},
+    ${bind(thresholds.temporaryFee)},
+    ${bind(thresholds.temporaryFeePartDay)},
+    ${bind(thresholds.temporaryFeeSibling)},
+    ${bind(thresholds.temporaryFeeSiblingPartDay)}
 )
 RETURNING id
 """
-        )
-        .bindKotlin(thresholds)
-        .bind("id", UUID.randomUUID())
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<FeeThresholdsId>()
 
 fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE fee_thresholds SET valid_during = :validDuring WHERE id = :id")
-        .bind("id", id)
-        .bind("validDuring", newValidity)
+    createUpdate {
+            sql(
+                "UPDATE fee_thresholds SET valid_during = ${bind(newValidity)} WHERE id = ${bind(id)}"
+            )
+        }
         .execute()
 
 fun Database.Transaction.updateFeeThresholds(id: FeeThresholdsId, feeThresholds: FeeThresholds) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE fee_thresholds
 SET
-    valid_during = :validDuring,
-    min_income_threshold_2 = :minIncomeThreshold2,
-    min_income_threshold_3 = :minIncomeThreshold3,
-    min_income_threshold_4 = :minIncomeThreshold4,
-    min_income_threshold_5 = :minIncomeThreshold5,
-    min_income_threshold_6 = :minIncomeThreshold6,
-    income_multiplier_2 = :incomeMultiplier2,
-    income_multiplier_3 = :incomeMultiplier3,
-    income_multiplier_4 = :incomeMultiplier4,
-    income_multiplier_5 = :incomeMultiplier5,
-    income_multiplier_6 = :incomeMultiplier6,
-    max_income_threshold_2 = :maxIncomeThreshold2,
-    max_income_threshold_3 = :maxIncomeThreshold3,
-    max_income_threshold_4 = :maxIncomeThreshold4,
-    max_income_threshold_5 = :maxIncomeThreshold5,
-    max_income_threshold_6 = :maxIncomeThreshold6,
-    income_threshold_increase_6_plus = :incomeThresholdIncrease6Plus,
-    sibling_discount_2 = :siblingDiscount2,
-    sibling_discount_2_plus = :siblingDiscount2Plus,
-    max_fee = :maxFee,
-    min_fee = :minFee,
-    temporary_fee = :temporaryFee,
-    temporary_fee_part_day = :temporaryFeePartDay,
-    temporary_fee_sibling = :temporaryFeeSibling,
-    temporary_fee_sibling_part_day = :temporaryFeeSiblingPartDay
-WHERE id = :id
+    valid_during = ${bind(feeThresholds.validDuring)},
+    min_income_threshold_2 = ${bind(feeThresholds.minIncomeThreshold2)},
+    min_income_threshold_3 = ${bind(feeThresholds.minIncomeThreshold3)},
+    min_income_threshold_4 = ${bind(feeThresholds.minIncomeThreshold4)},
+    min_income_threshold_5 = ${bind(feeThresholds.minIncomeThreshold5)},
+    min_income_threshold_6 = ${bind(feeThresholds.minIncomeThreshold6)},
+    income_multiplier_2 = ${bind(feeThresholds.incomeMultiplier2)},
+    income_multiplier_3 = ${bind(feeThresholds.incomeMultiplier3)},
+    income_multiplier_4 = ${bind(feeThresholds.incomeMultiplier4)},
+    income_multiplier_5 = ${bind(feeThresholds.incomeMultiplier5)},
+    income_multiplier_6 = ${bind(feeThresholds.incomeMultiplier6)},
+    max_income_threshold_2 = ${bind(feeThresholds.maxIncomeThreshold2)},
+    max_income_threshold_3 = ${bind(feeThresholds.maxIncomeThreshold3)},
+    max_income_threshold_4 = ${bind(feeThresholds.maxIncomeThreshold4)},
+    max_income_threshold_5 = ${bind(feeThresholds.maxIncomeThreshold5)},
+    max_income_threshold_6 = ${bind(feeThresholds.maxIncomeThreshold6)},
+    income_threshold_increase_6_plus = ${bind(feeThresholds.incomeThresholdIncrease6Plus)},
+    sibling_discount_2 = ${bind(feeThresholds.siblingDiscount2)},
+    sibling_discount_2_plus = ${bind(feeThresholds.siblingDiscount2Plus)},
+    max_fee = ${bind(feeThresholds.maxFee)},
+    min_fee = ${bind(feeThresholds.minFee)},
+    temporary_fee = ${bind(feeThresholds.temporaryFee)},
+    temporary_fee_part_day = ${bind(feeThresholds.temporaryFeePartDay)},
+    temporary_fee_sibling = ${bind(feeThresholds.temporaryFeeSibling)},
+    temporary_fee_sibling_part_day = ${bind(feeThresholds.temporaryFeeSiblingPartDay)}
+WHERE id = ${bind(id)}
 """
-        )
-        .bindKotlin(feeThresholds)
-        .bind("id", id)
+            )
+        }
         .execute()
 
 fun <T> mapConstraintExceptions(fn: () -> T): T {

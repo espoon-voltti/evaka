@@ -12,39 +12,40 @@ import java.time.LocalDate
 fun Database.Read.getHolidayPeriodsInRange(
     range: FiniteDateRange,
 ): List<HolidayPeriod> =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            "SELECT id, period, reservation_deadline FROM holiday_period h WHERE h.period && :range"
-        )
-        .bind("range", range)
+    createQuery {
+            sql(
+                "SELECT id, period, reservation_deadline FROM holiday_period h WHERE h.period && ${bind(range)}"
+            )
+        }
         .toList<HolidayPeriod>()
 
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
-    @Suppress("DEPRECATION")
-    this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period ORDER BY period")
+    createQuery {
+            sql("SELECT id, period, reservation_deadline FROM holiday_period ORDER BY period")
+        }
         .toList<HolidayPeriod>()
 
 fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
-    @Suppress("DEPRECATION")
-    this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period WHERE id = :id")
-        .bind("id", id)
+    createQuery {
+            sql(
+                "SELECT id, period, reservation_deadline FROM holiday_period WHERE id = ${bind(id)}"
+            )
+        }
         .exactlyOneOrNull<HolidayPeriod>()
 
 fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,
     reservationDeadline: LocalDate
 ): HolidayPeriod =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    createQuery {
+            sql(
+                """
 INSERT INTO holiday_period (period, reservation_deadline)
-VALUES (:period, :reservationDeadline)
+VALUES (${bind(period)}, ${bind(reservationDeadline)})
 RETURNING *
         """
-                .trimIndent()
-        )
-        .bind("period", period)
-        .bind("reservationDeadline", reservationDeadline)
+            )
+        }
         .exactlyOne<HolidayPeriod>()
 
 fun Database.Transaction.updateHolidayPeriod(
@@ -52,21 +53,16 @@ fun Database.Transaction.updateHolidayPeriod(
     period: FiniteDateRange,
     reservationDeadline: LocalDate
 ) =
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE holiday_period
-SET period = :period,
-    reservation_deadline = :reservationDeadline
-WHERE id = :id
+SET period = ${bind(period)}, reservation_deadline = ${bind(reservationDeadline)}
+WHERE id = ${bind(id)}
         """
-                .trimIndent()
-        )
-        .bind("period", period)
-        .bind("reservationDeadline", reservationDeadline)
-        .bind("id", id)
+            )
+        }
         .updateExactlyOne()
 
 fun Database.Transaction.deleteHolidayPeriod(id: HolidayPeriodId) =
-    @Suppress("DEPRECATION")
-    this.createUpdate("DELETE FROM holiday_period WHERE id = :id").bind("id", id).execute()
+    createUpdate { sql("DELETE FROM holiday_period WHERE id = ${bind(id)}") }.execute()

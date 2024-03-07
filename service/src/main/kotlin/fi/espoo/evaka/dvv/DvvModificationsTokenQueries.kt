@@ -12,53 +12,44 @@ fun Database.Transaction.storeDvvModificationToken(
     ssnsSent: Int,
     modificationsReceived: Int
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
-VALUES (:token, :nextToken, :ssnsSent, :modificationsReceived)
-        """
-                .trimIndent()
-        )
-        .bind("token", token)
-        .bind("nextToken", nextToken)
-        .bind("ssnsSent", ssnsSent)
-        .bind("modificationsReceived", modificationsReceived)
+VALUES (${bind(token)}, ${bind(nextToken)}, ${bind(ssnsSent)}, ${bind(modificationsReceived)})
+"""
+            )
+        }
         .execute()
 }
 
 fun Database.Read.getNextDvvModificationToken(): String {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql("""
 SELECT next_token
 FROM dvv_modification_token
 ORDER BY created DESC
 LIMIT 1
-        """
-                .trimIndent()
-        )
+""")
+        }
         .exactlyOne<String>()
 }
 
 fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT token, next_token, ssns_sent, modifications_received
 FROM dvv_modification_token
-WHERE token = :token
-        """
-                .trimIndent()
-        )
-        .bind("token", token)
+WHERE token = ${bind(token)}
+"""
+            )
+        }
         .exactlyOne<DvvModificationToken>()
 }
 
 fun Database.Transaction.deleteDvvModificationToken(token: String) {
-    @Suppress("DEPRECATION")
-    createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""")
-        .bind("token", token)
+    createUpdate { sql("DELETE FROM dvv_modification_token WHERE token = ${bind(token)}") }
         .execute()
 }
 

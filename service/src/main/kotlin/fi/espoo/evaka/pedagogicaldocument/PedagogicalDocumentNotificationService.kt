@@ -36,26 +36,22 @@ class PedagogicalDocumentNotificationService(
         tx: Database.Transaction,
         id: PedagogicalDocumentId
     ): List<AsyncJob.SendPedagogicalDocumentNotificationEmail> {
-        // language=sql
-        val sql =
-            """
-        SELECT DISTINCT
-            doc.id as pedagogical_document_id,
-            p.id as recipient_id,
-            coalesce(lower(p.language), 'fi') as language
-        FROM pedagogical_document doc 
-        JOIN guardian g ON doc.child_id = g.child_id
-        JOIN person p on g.guardian_id = p.id
-        WHERE doc.id = :id
-          AND NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = doc.child_id AND bl.blocked_recipient = p.id)
-          AND p.email IS NOT NULL
-        """
-                .trimIndent()
-
-        @Suppress("DEPRECATION")
-        return tx.createQuery(sql)
-            .bind("id", id)
-            .bind("date", HelsinkiDateTime.now().toLocalDate())
+        return tx.createQuery {
+                sql(
+                    """
+SELECT DISTINCT
+    doc.id as pedagogical_document_id,
+    p.id as recipient_id,
+    coalesce(lower(p.language), 'fi') as language
+FROM pedagogical_document doc 
+JOIN guardian g ON doc.child_id = g.child_id
+JOIN person p on g.guardian_id = p.id
+WHERE doc.id = ${bind(id)}
+  AND NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = doc.child_id AND bl.blocked_recipient = p.id)
+  AND p.email IS NOT NULL
+"""
+                )
+            }
             .toList {
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,
@@ -69,12 +65,11 @@ class PedagogicalDocumentNotificationService(
         id: PedagogicalDocumentId,
         date: HelsinkiDateTime
     ) {
-        @Suppress("DEPRECATION")
-        this.createUpdate(
-                "UPDATE pedagogical_document SET email_job_created_at = :date WHERE id = :id"
-            )
-            .bind("id", id)
-            .bind("date", date)
+        createUpdate {
+                sql(
+                    "UPDATE pedagogical_document SET email_job_created_at = ${bind(date)} WHERE id = ${bind(id)}"
+                )
+            }
             .updateExactlyOne()
     }
 
@@ -83,22 +78,21 @@ class PedagogicalDocumentNotificationService(
     ): Boolean {
         // notification job should be created only if description is set or an attachment is
         // uploaded
-        @Suppress("DEPRECATION")
-        return this.createQuery(
-                """
+        return createQuery {
+                sql(
+                    """
 SELECT EXISTS(
     SELECT 1
     FROM pedagogical_document doc
     LEFT JOIN attachment a ON doc.id = a.pedagogical_document_id
     WHERE
-        doc.id = :id AND
+        doc.id = ${bind(id)} AND
         doc.email_job_created_at IS NULL AND 
         (LENGTH(doc.description) > 0 OR a.id IS NOT NULL)
 )
             """
-                    .trimIndent()
-            )
-            .bind("id", id)
+                )
+            }
             .exactlyOne<Boolean>()
     }
 
@@ -153,15 +147,14 @@ SELECT EXISTS(
 private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
     id: PedagogicalDocumentId
 ) {
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            """
-            UPDATE pedagogical_document
-            SET email_sent = TRUE 
-            WHERE id = :id
-        """
-                .trimIndent()
-        )
-        .bind("id", id)
+    createUpdate {
+            sql(
+                """
+                UPDATE pedagogical_document
+                SET email_sent = TRUE 
+                WHERE id = ${bind(id)}
+                """
+            )
+        }
         .updateExactlyOne()
 }

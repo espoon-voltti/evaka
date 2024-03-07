@@ -156,18 +156,15 @@ private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody
 ): PedagogicalDocument {
-    @Suppress("DEPRECATION")
-    return this.createUpdate(
-            """
-            INSERT INTO pedagogical_document(child_id, created_by, description)
-            VALUES (:child_id, :created_by, :description)
-            RETURNING *
-        """
-                .trimIndent()
-        )
-        .bind("child_id", body.childId)
-        .bind("description", body.description)
-        .bind("created_by", user.evakaUserId)
+    return createUpdate {
+            sql(
+                """
+INSERT INTO pedagogical_document(child_id, created_by, description)
+VALUES (${bind(body.childId)}, ${bind(user.evakaUserId)}, ${bind(body.description)})
+RETURNING *
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<PedagogicalDocument>()
 }
@@ -177,20 +174,16 @@ private fun Database.Transaction.updateDocument(
     body: PedagogicalDocumentPostBody,
     documentId: PedagogicalDocumentId
 ): PedagogicalDocument {
-    @Suppress("DEPRECATION")
-    return this.createUpdate(
-            """
-            UPDATE pedagogical_document
-            SET description = :description, 
-                updated_by = :updated_by
-            WHERE id = :id AND child_id = :child_id
-        """
-                .trimIndent()
-        )
-        .bind("id", documentId)
-        .bind("child_id", body.childId)
-        .bind("description", body.description)
-        .bind("updated_by", user.evakaUserId)
+    return createUpdate {
+            sql(
+                """
+UPDATE pedagogical_document
+SET description = ${bind(body.description)}, 
+    updated_by = ${bind(user.evakaUserId)}
+WHERE id = ${bind(documentId)} AND child_id = ${bind(body.childId)}
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<PedagogicalDocument>()
 }
@@ -198,34 +191,31 @@ private fun Database.Transaction.updateDocument(
 private fun Database.Read.findPedagogicalDocumentsByChild(
     childId: ChildId
 ): List<PedagogicalDocument> {
-    @Suppress("DEPRECATION")
-    return this.createQuery(
-            """
-            SELECT 
-                pd.id,
-                pd.child_id,
-                pd.description,
-                pd.created,
-                pd.updated
-            FROM pedagogical_document pd
-            WHERE child_id = :child_id
-        """
-                .trimIndent()
-        )
-        .bind("child_id", childId)
+    return createQuery {
+            sql(
+                """
+                SELECT 
+                    pd.id,
+                    pd.child_id,
+                    pd.description,
+                    pd.created,
+                    pd.updated
+                FROM pedagogical_document pd
+                WHERE child_id = ${bind(childId)}
+                """
+            )
+        }
         .toList<PedagogicalDocument>()
         .map { pd -> pd.copy(attachments = getPedagogicalDocumentAttachments(pd.id)) }
 }
 
 private fun Database.Transaction.deleteDocument(documentId: PedagogicalDocumentId) {
-    @Suppress("DEPRECATION")
-    this.createUpdate(
-            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = :document_id"
-        )
-        .bind("document_id", documentId)
+    createUpdate {
+            sql(
+                "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ${bind(documentId)}"
+            )
+        }
         .execute()
-    @Suppress("DEPRECATION")
-    this.createUpdate("DELETE FROM pedagogical_document WHERE id = :document_id")
-        .bind("document_id", documentId)
+    createUpdate { sql("DELETE FROM pedagogical_document WHERE id = ${bind(documentId)}") }
         .execute()
 }

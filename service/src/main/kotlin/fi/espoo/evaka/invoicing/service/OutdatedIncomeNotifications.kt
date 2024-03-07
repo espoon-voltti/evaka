@@ -117,16 +117,16 @@ class OutdatedIncomeNotifications(
     ) {
         val language =
             db.read { tx ->
-                @Suppress("DEPRECATION")
-                tx.createQuery(
-                        """
-                        SELECT language
-                        FROM person p
-                        WHERE p.id = :guardianId
-                        AND email IS NOT NULL
-                        """
-                            .trimIndent()
-                    )
+                tx.createQuery {
+                        sql(
+                            """
+                            SELECT language
+                            FROM person p
+                            WHERE p.id = ${bind(msg.guardianId)}
+                            AND email IS NOT NULL
+                            """
+                        )
+                    }
                     .bind("guardianId", msg.guardianId)
                     .exactlyOneOrNull {
                         column<String?>("language")?.lowercase()?.let(Language::tryValueOf)

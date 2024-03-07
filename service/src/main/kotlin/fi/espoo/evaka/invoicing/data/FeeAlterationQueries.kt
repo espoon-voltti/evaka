@@ -13,8 +13,10 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
 
 fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: FeeAlteration) {
-    val sql =
-        """
+    val now = clock.now()
+    val update = createUpdate {
+        sql(
+            """
             INSERT INTO fee_alteration (
                 id,
                 person_id,
@@ -27,48 +29,36 @@ fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: F
                 updated_by,
                 updated_at
             ) VALUES (
-                :id,
-                :person_id,
-                :type::fee_alteration_type,
-                :amount,
-                :is_absolute,
-                :valid_from,
-                :valid_to,
-                :notes,
-                :updated_by,
-                :now
+                ${bind(feeAlteration.id)},
+                ${bind(feeAlteration.personId)},
+                ${bind(feeAlteration.type.toString())}::fee_alteration_type,
+                ${bind(feeAlteration.amount)},
+                ${bind(feeAlteration.isAbsolute)},
+                ${bind(feeAlteration.validFrom)},
+                ${bind(feeAlteration.validTo)},
+                ${bind(feeAlteration.notes)},
+                ${bind(feeAlteration.updatedBy)},
+                ${bind(now)}
             ) ON CONFLICT (id) DO UPDATE SET
-                type = :type::fee_alteration_type,
-                amount = :amount,
-                is_absolute = :is_absolute,
-                valid_from = :valid_from,
-                valid_to = :valid_to,
-                notes = :notes,
-                updated_by = :updated_by,
-                updated_at = :now
-        """
-
-    val update =
-        @Suppress("DEPRECATION")
-        createUpdate(sql)
-            .bind("now", clock.now())
-            .bind("id", feeAlteration.id)
-            .bind("person_id", feeAlteration.personId)
-            .bind("type", feeAlteration.type.toString())
-            .bind("amount", feeAlteration.amount)
-            .bind("is_absolute", feeAlteration.isAbsolute)
-            .bind("valid_from", feeAlteration.validFrom)
-            .bind("valid_to", feeAlteration.validTo)
-            .bind("notes", feeAlteration.notes)
-            .bind("updated_by", feeAlteration.updatedBy)
+                type = ${bind(feeAlteration.type.toString())}::fee_alteration_type,
+                amount = ${bind(feeAlteration.amount)},
+                is_absolute = ${bind(feeAlteration.isAbsolute)},
+                valid_from = ${bind(feeAlteration.validFrom)},
+                valid_to = ${bind(feeAlteration.validTo)},
+                notes = ${bind(feeAlteration.notes)},
+                updated_by = ${bind(feeAlteration.updatedBy)},
+                updated_at = ${bind(now)}
+            """
+        )
+    }
 
     handlingExceptions { update.execute() }
 }
 
 fun Database.Read.getFeeAlteration(id: FeeAlterationId): FeeAlteration? {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     id,
     person_id,
@@ -87,22 +77,21 @@ SELECT
           )), '[]'::jsonb) FROM (
             SELECT a.id, a.name, a.content_type
             FROM attachment a
-            WHERE a.fee_alteration_id = :id
+            WHERE a.fee_alteration_id = ${bind(id)}
             ORDER BY a.created
         ) s) AS attachments
 FROM fee_alteration
-WHERE id = :id
-        """
-                .trimIndent()
-        )
-        .bind("id", id)
+WHERE id = ${bind(id)}
+"""
+            )
+        }
         .exactlyOneOrNull<FeeAlteration>()
 }
 
 fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     id,
     person_id,
@@ -125,12 +114,11 @@ SELECT
             ORDER BY a.created
         ) s) AS attachments
 FROM fee_alteration
-WHERE person_id = :personId
+WHERE person_id = ${bind(personId)}
 ORDER BY valid_from DESC, valid_to DESC
-        """
-                .trimIndent()
-        )
-        .bind("personId", personId)
+"""
+            )
+        }
         .toList<FeeAlteration>()
 }
 
@@ -140,9 +128,9 @@ fun Database.Read.getFeeAlterationsFrom(
 ): List<FeeAlteration> {
     if (personIds.isEmpty()) return emptyList()
 
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     id,
     person_id,
@@ -157,19 +145,15 @@ SELECT
     '[]' as attachments
 FROM fee_alteration
 WHERE
-    person_id = ANY(:personIds)
-    AND (valid_to IS NULL OR valid_to >= :from)
-        """
-                .trimIndent()
-        )
-        .bind("personIds", personIds)
-        .bind("from", from)
+    person_id = ANY(${bind(personIds)})
+    AND (valid_to IS NULL OR valid_to >= ${bind(from)})
+"""
+            )
+        }
         .toList<FeeAlteration>()
 }
 
 fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {
-    @Suppress("DEPRECATION")
-    val update = createUpdate("DELETE FROM fee_alteration WHERE id = :id").bind("id", id)
-
+    val update = createUpdate { sql("DELETE FROM fee_alteration WHERE id = ${bind(id)}") }
     handlingExceptions { update.execute() }
 }

@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Binding
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -74,17 +75,15 @@ data class EmployeeWithDaycareRoles(
 data class EmployeeIdWithName(val id: EmployeeId, val name: String)
 
 fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, temporary_in_unit_id, active)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :employee.temporaryInUnitId, :employee.active)
+VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee.email)}, ${bind(employee.externalId)}, ${bind(employee.employeeNumber)}, ${bind(employee.roles)}::user_role[], ${bind(employee.temporaryInUnitId)}, ${bind(employee.active)})
 RETURNING id, first_name, last_name, email, external_id, created, updated, roles, temporary_in_unit_id, active
-    """
-                .trimIndent()
-        )
-        .bindKotlin("employee", employee)
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<Employee>()
 
@@ -92,60 +91,56 @@ fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
     externalId: ExternalId
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE employee SET external_id = :externalId WHERE employee_number = :employeeNumber AND (external_id != :externalId OR external_id IS NULL)"
-        )
-        .bind("employeeNumber", employeeNumber)
-        .bind("externalId", externalId)
+    createUpdate {
+            sql(
+                "UPDATE employee SET external_id = ${bind(externalId)} WHERE employee_number = ${bind(employeeNumber)} AND (external_id != ${bind(externalId)} OR external_id IS NULL)"
+            )
+        }
         .updateNoneOrOne()
 
-fun Database.Transaction.loginEmployee(clock: EvakaClock, employee: NewEmployee): Employee =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+fun Database.Transaction.loginEmployee(clock: EvakaClock, employee: NewEmployee): Employee {
+    val now = clock.now()
+    return createUpdate {
+            sql(
+                """
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active, last_login)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], :employee.active, :now)
+VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee.email)}, ${bind(employee.externalId)}, ${
+                bind(
+                    employee.employeeNumber
+                )
+            }, ${bind(employee.roles)}::user_role[], ${bind(employee.active)}, ${bind(now)})
 ON CONFLICT (external_id) DO UPDATE
-SET last_login = :now, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
+SET last_login = ${bind(now)}, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
 RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles, active
-    """
-                .trimIndent()
-        )
-        .bindKotlin("employee", employee)
-        .bind("now", clock.now())
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<Employee>()
+}
 
 fun Database.Read.getEmployeeRoles(id: EmployeeId): EmployeeRoles =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT employee.roles AS global_roles, (
     SELECT array_agg(DISTINCT role ORDER BY role)
     FROM daycare_acl
     WHERE employee_id = employee.id
 ) AS all_scoped_roles
 FROM employee
-WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
+WHERE id = ${bind(id)}
+"""
+            )
+        }
         .exactlyOne<EmployeeRoles>()
 
 fun Database.Read.getEmployeeNumber(id: EmployeeId): String? =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery { sql("""
 SELECT employee_number
 FROM employee
-WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
+WHERE id = ${bind(id)}
+""") }
         .exactlyOneOrNull<String>()
 
 private fun Database.Read.searchEmployees(
@@ -153,35 +148,29 @@ private fun Database.Read.searchEmployees(
     externalId: ExternalId? = null,
     temporaryInUnitId: DaycareId? = null
 ): Database.Result<Employee> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
+    createQuery {
+            sql(
+                """
 SELECT e.id, preferred_first_name, first_name, last_name, email, external_id, e.created, e.updated, roles, temporary_in_unit_id, e.active
 FROM employee e
-WHERE (:id::uuid IS NULL OR e.id = :id) AND (:externalId::text IS NULL OR e.external_id = :externalId)
-  AND (:temporaryInUnitId IS NULL OR e.temporary_in_unit_id = :temporaryInUnitId)
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("externalId", externalId)
-        .bind("temporaryInUnitId", temporaryInUnitId)
+WHERE (${bind(id)}::uuid IS NULL OR e.id = ${bind(id)}) AND (${bind(externalId)}::text IS NULL OR e.external_id = ${bind(externalId)})
+  AND (${bind(temporaryInUnitId)} IS NULL OR e.temporary_in_unit_id = ${bind(temporaryInUnitId)})
+"""
+            )
+        }
         .mapTo<Employee>()
 
 private fun Database.Read.searchFinanceDecisionHandlers(id: EmployeeId? = null) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
+    createQuery {
+            sql(
+                """
 SELECT DISTINCT e.id, e.preferred_first_name, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles, e.active
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
-WHERE (:id::uuid IS NULL OR e.id = :id)
+WHERE (${bind(id)}::uuid IS NULL OR e.id = ${bind(id)})
     """
-                .trimIndent()
-        )
-        .bind("id", id)
+            )
+        }
         .mapTo<Employee>()
 
 fun Database.Read.getEmployees(): List<Employee> = searchEmployees().toList()
@@ -198,9 +187,8 @@ fun Database.Read.getEmployee(id: EmployeeId): Employee? =
 fun Database.Read.getEmployeeByExternalId(externalId: ExternalId): Employee? =
     searchEmployees(externalId = externalId).exactlyOneOrNull()
 
-private fun Database.Read.createEmployeeUserQuery(where: String) =
-    @Suppress("DEPRECATION")
-    createQuery(
+private fun Database.Read.createEmployeeUserQuery(where: Predicate) = createQuery {
+    sql(
         """
 SELECT id, preferred_first_name, first_name, last_name, email, active, employee.roles AS global_roles, (
     SELECT array_agg(DISTINCT role ORDER BY role)
@@ -208,31 +196,31 @@ SELECT id, preferred_first_name, first_name, last_name, email, active, employee.
     WHERE employee_id = employee.id
 ) AS all_scoped_roles
 FROM employee
-$where
+WHERE ${predicate(where.forTable("employee"))}
 """
     )
+}
 
 fun Database.Transaction.markEmployeeLastLogin(clock: EvakaClock, id: EmployeeId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE employee 
-SET last_login = :now
-WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("now", clock.now())
+SET last_login = ${bind(clock.now())}
+WHERE id = ${bind(id)}
+"""
+            )
+        }
         .execute()
 
 fun Database.Read.getEmployeeUser(id: EmployeeId): EmployeeUser? =
-    createEmployeeUserQuery("WHERE id = :id").bind("id", id).exactlyOneOrNull<EmployeeUser>()
+    createEmployeeUserQuery(Predicate { where("$it.id = ${bind(id)}") })
+        .exactlyOneOrNull<EmployeeUser>()
 
 fun Database.Read.getEmployeeWithRoles(id: EmployeeId): EmployeeWithDaycareRoles? {
-    // language=SQL
-    val sql =
-        """
+    return createQuery {
+            sql(
+                """
 SELECT
     employee.id,
     employee.external_id,
@@ -261,29 +249,23 @@ SELECT
     ) AS daycare_group_roles
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
-WHERE employee.id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<EmployeeWithDaycareRoles>()
+WHERE employee.id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull<EmployeeWithDaycareRoles>()
 }
 
 fun Database.Transaction.updateEmployee(id: EmployeeId, firstName: String, lastName: String) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE employee SET first_name = :firstName, last_name = :lastName WHERE id = :id"
-        )
-        .bind("id", id)
-        .bind("firstName", firstName)
-        .bind("lastName", lastName)
+    createUpdate {
+            sql(
+                "UPDATE employee SET first_name = ${bind(firstName)}, last_name = ${bind(lastName)} WHERE id = ${bind(id)}"
+            )
+        }
         .updateExactlyOne()
 
 fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE employee SET active = :active WHERE id = :id")
-        .bind("id", id)
-        .bind("active", active)
+    createUpdate { sql("UPDATE employee SET active = ${bind(active)} WHERE id = ${bind(id)}") }
         .updateExactlyOne()
 
 fun Database.Transaction.upsertEmployeeDaycareRoles(
@@ -377,7 +359,6 @@ fun getEmployeesPaged(
 
     val whereClause = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ") ?: "TRUE"
 
-    // language=SQL
     val sql =
         """
 SELECT
@@ -423,81 +404,67 @@ LIMIT :pageSize OFFSET :offset
 }
 
 fun Database.Transaction.deleteEmployee(employeeId: EmployeeId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
-DELETE FROM employee
-WHERE id = :employeeId
-    """
-                .trimIndent()
-        )
-        .bind("employeeId", employeeId)
-        .execute()
+    createUpdate { sql("DELETE FROM employee WHERE id = ${bind(employeeId)}") }.execute()
 
 fun Database.Transaction.upsertPinCode(userId: EmployeeId, pinCode: PinCode) {
     // Note: according to spec, setting a pin resets the failure and opens a locked pin
-    // language=sql
-    val sql =
-        """
-INSERT INTO employee_pin(user_id, pin)
-VALUES(:userId, :pin)
+    val updated =
+        this.createUpdate {
+                sql(
+                    """
+INSERT INTO employee_pin (user_id, pin)
+VALUES (${bind(userId)}, ${bind(pinCode.pin)})
 ON CONFLICT (user_id) DO UPDATE SET
-        user_id = :userId,
-        pin = :pin,
-        locked = false,
-        failure_count = 0
-    """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    val updated = this.createUpdate(sql).bind("userId", userId).bind("pin", pinCode.pin).execute()
+    user_id = ${bind(userId)},
+    pin = ${bind(pinCode.pin)},
+    locked = false,
+    failure_count = 0
+"""
+                )
+            }
+            .execute()
 
     if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
 
 fun Database.Read.getPinCode(userId: EmployeeId): PinCode? =
-    @Suppress("DEPRECATION")
-    createQuery("SELECT pin FROM employee_pin WHERE user_id = :userId")
-        .bind("userId", userId)
+    createQuery { sql("SELECT pin FROM employee_pin WHERE user_id = ${bind(userId)}") }
         .exactlyOneOrNull<PinCode>()
 
 fun Database.Read.employeePinIsCorrect(employeeId: EmployeeId, pin: String): Boolean =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT EXISTS (
     SELECT 1
     FROM employee_pin
-    WHERE user_id = :employeeId
-    AND pin = :pin
+    WHERE user_id = ${bind(employeeId)}
+    AND pin = ${bind(pin)}
     AND locked = false
 )
 """
-                .trimIndent()
-        )
-        .bind("employeeId", employeeId)
-        .bind("pin", pin)
+            )
+        }
         .exactlyOne<Boolean>()
 
 fun Database.Transaction.resetEmployeePinFailureCount(employeeId: EmployeeId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE employee_pin
 SET failure_count = 0
-WHERE user_id = :employeeId
-    """
-                .trimIndent()
-        )
-        .bind("employeeId", employeeId)
+WHERE user_id = ${bind(employeeId)}
+"""
+            )
+        }
         .execute()
 
 fun Database.Transaction.updateEmployeePinFailureCountAndCheckIfLocked(
     employeeId: EmployeeId
 ): Boolean =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 UPDATE employee_pin
 SET 
     failure_count = failure_count + 1,
@@ -507,24 +474,21 @@ SET
             ELSE true
         end    
 WHERE 
-    user_id = :employeeId
+    user_id = ${bind(employeeId)}
 RETURNING locked
 """
-                .trimIndent()
-        )
-        .bind("employeeId", employeeId)
+            )
+        }
         .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
-    @Suppress("DEPRECATION")
-    createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
-        .bind("id", employeeId)
+    createQuery { sql("SELECT locked FROM employee_pin WHERE user_id = ${bind(employeeId)}") }
         .exactlyOneOrNull<Boolean>() ?: false
 
 fun Database.Transaction.clearRolesForInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 WITH employees_to_reset AS (
     SELECT e.id
     FROM employee e
@@ -533,7 +497,7 @@ WITH employees_to_reset AS (
     WHERE (e.roles != '{}' OR d.employee_id IS NOT NULL OR dg.employee_id IS NOT NULL) AND (e.last_login IS NULL OR (
         SELECT max(ts)
         FROM unnest(ARRAY[e.last_login, d.updated, dg.updated]) ts
-    ) < :now - interval '3 months')
+    ) < ${bind(now)} - interval '3 months')
 ), delete_daycare_acl AS (
     DELETE FROM daycare_acl WHERE employee_id = ANY(SELECT id FROM employees_to_reset)
 ), delete_daycare_group_acl AS (
@@ -543,70 +507,65 @@ UPDATE employee SET roles = '{}', active = FALSE
 WHERE id = ANY (SELECT id FROM employees_to_reset)
 RETURNING id
 """
-        )
-        .bind("now", now)
+            )
+        }
         .toList<EmployeeId>()
 }
 
 fun Database.Read.getEmployeeNamesByIds(employeeIds: List<EmployeeId>) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT id, concat(first_name, ' ', last_name) AS name
 FROM employee
-WHERE id = ANY(:ids)
-        """
-                .trimIndent()
-        )
-        .bind("ids", employeeIds)
+WHERE id = ANY(${bind(employeeIds)})
+"""
+            )
+        }
         .toList<EmployeeIdWithName>()
-        .map { it.id to it.name }
-        .toMap()
+        .associate { it.id to it.name }
 
 fun Database.Transaction.setEmployeePreferredFirstName(
     employeeId: EmployeeId,
     preferredFirstName: String?
 ) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE employee SET preferred_first_name = :preferredFirstName WHERE id = :employeeId"
-        )
-        .bind("employeeId", employeeId)
-        .bind("preferredFirstName", preferredFirstName)
+    createUpdate {
+            sql(
+                "UPDATE employee SET preferred_first_name = ${bind(preferredFirstName)} WHERE id = ${bind(employeeId)}"
+            )
+        }
         .execute()
 
 fun Database.Read.getEmployeesByRoles(roles: Set<UserRole>, unitId: DaycareId?): List<Employee> {
     val globalRoles = roles.filter { it.isGlobalRole() }
     val unitScopedRoles = roles.filter { it.isUnitScopedRole() }
     return if (unitId == null) {
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT id, first_name, last_name, email, external_id, created, updated, active
 FROM employee
-WHERE roles && :globalRoles::user_role[]
+WHERE roles && ${bind(globalRoles)}::user_role[]
 ORDER BY last_name, first_name
         """
-            )
-            .bind("globalRoles", globalRoles)
+                )
+            }
             .toList<Employee>()
     } else {
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
+        createQuery {
+                sql(
+                    """
 SELECT id, first_name, last_name, email, external_id, created, updated, active
 FROM employee
-WHERE roles && :globalRoles::user_role[] OR id IN (
+WHERE roles && ${bind(globalRoles)}::user_role[] OR id IN (
     SELECT employee_id
     FROM daycare_acl
-    WHERE daycare_id = :unitId AND role = ANY(:unitScopedRoles::user_role[])
+    WHERE daycare_id = ${bind(unitId)} AND role = ANY(${bind(unitScopedRoles)}::user_role[])
 )
 ORDER BY last_name, first_name
         """
-            )
-            .bind("globalRoles", globalRoles)
-            .bind("unitScopedRoles", unitScopedRoles)
-            .bind("unitId", unitId)
+                )
+            }
             .toList<Employee>()
     }
 }

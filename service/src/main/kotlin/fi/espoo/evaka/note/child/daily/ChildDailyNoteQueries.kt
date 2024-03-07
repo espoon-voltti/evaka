@@ -57,17 +57,15 @@ fun Database.Transaction.createChildDailyNote(
     childId: ChildId,
     note: ChildDailyNoteBody
 ): ChildDailyNoteId {
-    @Suppress("DEPRECATION")
-    return createUpdate(
-            """
+    return createUpdate {
+            sql(
+                """
 INSERT INTO child_daily_note (child_id, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note)
-VALUES(:childId, :note, :feedingNote, :sleepingNote, :sleepingMinutes, :reminders::child_daily_note_reminder[], :reminderNote)
+VALUES (${bind(childId)}, ${bind(note.note)}, ${bind(note.feedingNote)}, ${bind(note.sleepingNote)}, ${bind(note.sleepingMinutes)}, ${bind(note.reminders)}::child_daily_note_reminder[], ${bind(note.reminderNote)})
 RETURNING id
-        """
-                .trimIndent()
-        )
-        .bindKotlin(note)
-        .bind("childId", childId)
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ChildDailyNoteId>()
 }
@@ -77,47 +75,42 @@ fun Database.Transaction.updateChildDailyNote(
     id: ChildDailyNoteId,
     note: ChildDailyNoteBody
 ): ChildDailyNote {
-    @Suppress("DEPRECATION")
-    return createUpdate(
-            """
+    val now = clock.now()
+    return createUpdate {
+            sql(
+                """
 UPDATE child_daily_note SET
-    note = :note, 
-    feeding_note = :feedingNote, 
-    sleeping_note = :sleepingNote,
-    sleeping_minutes = :sleepingMinutes,
-    reminders = :reminders::child_daily_note_reminder[],
-    reminder_note = :reminderNote,
-    modified_at = :now
-WHERE id = :id
+    note = ${bind(note.note)}, 
+    feeding_note = ${bind(note.feedingNote)}, 
+    sleeping_note = ${bind(note.sleepingNote)},
+    sleeping_minutes = ${bind(note.sleepingMinutes)},
+    reminders = ${bind(note.reminders)}::child_daily_note_reminder[],
+    reminder_note = ${bind(note.reminderNote)},
+    modified_at = ${bind(now)}
+WHERE id = ${bind(id)}
 RETURNING *
-        """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .bind("now", clock.now())
-        .bindKotlin(note)
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ChildDailyNote>()
 }
 
 fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE from child_daily_note WHERE id = :noteId").bind("noteId", noteId).execute()
+    createUpdate { sql("DELETE from child_daily_note WHERE id = ${bind(noteId)}") }.execute()
 }
 
 fun Database.Transaction.deleteExpiredNotes(now: HelsinkiDateTime) {
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM child_daily_note WHERE modified_at < :now - INTERVAL '14 hours'")
-        .bind("now", now)
+    createUpdate {
+            sql(
+                "DELETE FROM child_daily_note WHERE modified_at < ${bind(now)} - INTERVAL '14 hours'"
+            )
+        }
         .execute()
 
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM child_sticky_note WHERE expires < :thresholdDate")
-        .bind("thresholdDate", now.toLocalDate())
+    createUpdate { sql("DELETE FROM child_sticky_note WHERE expires < ${bind(now.toLocalDate())}") }
         .execute()
 
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM group_note WHERE expires < :thresholdDate")
-        .bind("thresholdDate", now.toLocalDate())
+    createUpdate { sql("DELETE FROM group_note WHERE expires < ${bind(now.toLocalDate())}") }
         .execute()
 }

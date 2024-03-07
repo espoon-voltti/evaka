@@ -14,9 +14,9 @@ import fi.espoo.evaka.shared.domain.NotFound
 import java.util.UUID
 
 fun Database.Read.getDevice(id: MobileDeviceId): MobileDeviceDetails {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     md.id, md.name, md.employee_id,
     CASE
@@ -26,32 +26,32 @@ SELECT
     md.employee_id IS NOT NULL AS personal_device
 FROM mobile_device md
 LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
-WHERE id = :id
+WHERE id = ${bind(id)}
 GROUP BY md.id, md.name, md.employee_id
 """
-        )
-        .bind("id", id)
+            )
+        }
         .exactlyOneOrNull<MobileDeviceDetails>() ?: throw NotFound("Device $id not found")
 }
 
 fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =
-    @Suppress("DEPRECATION")
-    createQuery("SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token")
-        .bind("token", token)
+    createQuery {
+            sql(
+                "SELECT id, long_term_token FROM mobile_device WHERE long_term_token = ${bind(token)}"
+            )
+        }
         .exactlyOneOrNull<MobileDeviceIdentity>()
         ?: throw NotFound("Device not found with token $token")
 
 fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
-    @Suppress("DEPRECATION")
-    return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId")
-        .bind("unitId", unitId)
+    return createQuery { sql("SELECT id, name FROM mobile_device WHERE unit_id = ${bind(unitId)}") }
         .toList<MobileDevice>()
 }
 
 fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice> {
-    @Suppress("DEPRECATION")
-    return createQuery("SELECT id, name FROM mobile_device WHERE employee_id = :employeeId")
-        .bind("employeeId", employeeId)
+    return createQuery {
+            sql("SELECT id, name FROM mobile_device WHERE employee_id = ${bind(employeeId)}")
+        }
         .toList<MobileDevice>()
 }
 
@@ -72,22 +72,9 @@ WHERE id = ${bind(id)}
         .execute()
 
 fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
-    // language=sql
-    val deviceUpdate = "UPDATE mobile_device SET name = :name WHERE id = :id"
-    @Suppress("DEPRECATION")
-    createUpdate(deviceUpdate)
-        .bind("id", id)
-        .bind("name", name)
+    createUpdate { sql("UPDATE mobile_device SET name = ${bind(name)} WHERE id = ${bind(id)}") }
         .updateExactlyOne(notFoundMsg = "Device $id not found")
 }
 
 fun Database.Transaction.deleteDevice(id: MobileDeviceId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-DELETE FROM mobile_device WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .execute()
+    createUpdate { sql("DELETE FROM mobile_device WHERE id = ${bind(id)}") }.execute()

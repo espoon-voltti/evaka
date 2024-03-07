@@ -30,11 +30,14 @@ class FamilyOverviewService(
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 ) {
     fun getFamilyByAdult(tx: Database.Read, clock: EvakaClock, adultId: PersonId): FamilyOverview? {
-        val sql =
-            """
+        val today = clock.today()
+        val (adults, children) =
+            tx.createQuery {
+                    sql(
+                        """
 WITH adult_ids AS
 (
-    SELECT :id AS id
+    SELECT ${bind(adultId)} AS id
     
     UNION
     
@@ -44,7 +47,7 @@ WITH adult_ids AS
         AND fp1.person_id != fp2.person_id 
         AND fp1.conflict = false 
         AND fp2.conflict = false
-    WHERE fp1.person_id = :id AND daterange(fp1.start_date, fp1.end_date, '[]') @> :today
+    WHERE fp1.person_id = ${bind(adultId)} AND daterange(fp1.start_date, fp1.end_date, '[]') @> ${bind(today)}
 )
 SELECT 
     p.id,
@@ -60,7 +63,7 @@ SELECT
     i.data as income_data
 FROM person p 
 JOIN adult_ids a on p.id = a.id
-LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> :today
+LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> ${bind(today)}
 
 UNION
 
@@ -79,16 +82,13 @@ SELECT
 FROM fridge_child fc
 JOIN adult_ids a ON fc.head_of_child = a.id 
 JOIN person p ON fc.child_id = p.id
-LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> :today
-WHERE daterange(fc.start_date, fc.end_date, '[]') @> :today
+LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> ${bind(today)}
+WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
 AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
-        val (adults, children) =
-            @Suppress("DEPRECATION")
-            tx.createQuery(sql)
-                .bind("today", clock.today())
-                .bind("id", adultId)
+                    )
+                }
                 .map {
                     toFamilyOverviewPerson(
                         jsonMapper,

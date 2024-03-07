@@ -9,9 +9,9 @@ import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
 fun Database.Read.getFeeThresholds(from: LocalDate? = null): List<FeeThresholds> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+    return createQuery {
+            sql(
+                """
 SELECT
     valid_during,
     min_income_threshold_2,
@@ -39,10 +39,9 @@ SELECT
     temporary_fee_sibling,
     temporary_fee_sibling_part_day
 FROM fee_thresholds
-WHERE valid_during && daterange(:from, null)
-        """
-                .trimIndent()
-        )
-        .bind("from", from)
+WHERE valid_during && daterange(${bind(from)}, null)
+"""
+            )
+        }
         .toList<FeeThresholds>()
 }

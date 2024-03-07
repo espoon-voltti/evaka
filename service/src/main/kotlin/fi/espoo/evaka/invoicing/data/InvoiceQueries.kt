@@ -123,60 +123,59 @@ val invoiceDetailedQueryBase =
 fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> {
     if (ids.isEmpty()) return listOf()
 
-    val sql =
-        """
-        $invoiceDetailedQueryBase
-        WHERE invoice.id = ANY(:ids)
-        ORDER BY invoice.id, row.idx
-    """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("ids", ids).map(Row::toDetailedInvoice).useIterable {
-        flattenDetailed(it)
-    }
+    return createQuery {
+            sql(
+                """
+                $invoiceDetailedQueryBase
+                WHERE invoice.id = ANY(${bind(ids)})
+                ORDER BY invoice.id, row.idx
+                """
+            )
+        }
+        .map(Row::toDetailedInvoice)
+        .useIterable { flattenDetailed(it) }
 }
 
 fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
-    val sql =
-        """
-        $invoiceQueryBase
-        WHERE invoice.id = :id
-        ORDER BY invoice.id, row.idx
-    """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("id", id)
+    return createQuery {
+            sql(
+                """
+                $invoiceQueryBase
+                WHERE invoice.id = ${bind(id)}
+                ORDER BY invoice.id, row.idx
+                """
+            )
+        }
         .map(Row::toInvoice)
         .useIterable { flatten(it) }
         .firstOrNull()
 }
 
 fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
-    val sql =
-        """
-        $invoiceDetailedQueryBase
-        WHERE invoice.id = :id
-        ORDER BY invoice.id, row.idx
-    """
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("id", id)
+    return createQuery {
+            sql(
+                """
+                $invoiceDetailedQueryBase
+                WHERE invoice.id = ${bind(id)}
+                ORDER BY invoice.id, row.idx
+                """
+            )
+        }
         .map(Row::toDetailedInvoice)
         .useIterable { flattenDetailed(it) }
         .firstOrNull()
 }
 
 fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invoice> {
-    val sql =
-        """
-        $invoiceQueryBase
-        WHERE invoice.head_of_family = :headOfFamilyId
-        ORDER BY invoice.id, row.idx
-    """
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("headOfFamilyId", headOfFamilyUuid)
+    return createQuery {
+            sql(
+                """
+                $invoiceQueryBase
+                WHERE invoice.head_of_family = ${bind(headOfFamilyUuid)}
+                ORDER BY invoice.id, row.idx
+                """
+            )
+        }
         .map(Row::toInvoice)
         .useIterable { flatten(it) }
 }
@@ -185,19 +184,16 @@ fun Database.Read.getInvoiceIdsByDates(
     range: FiniteDateRange,
     areas: List<String>
 ): List<InvoiceId> {
-    val sql =
-        """
-        SELECT id FROM invoice
-        WHERE between_start_and_end(:range, invoice_date)
-        AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:areas))
-        AND status = :draft::invoice_status
-    """
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("range", range)
-        .bind("areas", areas)
-        .bind("draft", InvoiceStatus.DRAFT)
+    return createQuery {
+            sql(
+                """
+                SELECT id FROM invoice
+                WHERE between_start_and_end(${bind(range)}, invoice_date)
+                AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))
+                AND status = ${bind(InvoiceStatus.DRAFT)}::invoice_status
+                """
+            )
+        }
         .toList<InvoiceId>()
 }
 
@@ -362,19 +358,17 @@ ORDER BY status DESC, due_date, invoice.id, row.idx
 }
 
 fun Database.Read.getMaxInvoiceNumber(): Long {
-    @Suppress("DEPRECATION")
-    return createQuery("SELECT max(number) FROM invoice").exactlyOneOrNull<Long?>() ?: 0
+    return createQuery { sql("SELECT max(number) FROM invoice") }.exactlyOneOrNull<Long?>() ?: 0
 }
 
 fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
     if (draftIds.isEmpty()) return
 
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)"
-        )
-        .bind("status", InvoiceStatus.DRAFT.toString())
-        .bind("draftIds", draftIds)
+    createUpdate {
+            sql(
+                "DELETE FROM invoice WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status AND id = ANY(${bind(draftIds)})"
+            )
+        }
         .execute()
 }
 
@@ -414,18 +408,17 @@ WHERE id = :id
 }
 
 fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
+    createUpdate {
+            sql(
+                """
 UPDATE invoice_row
 SET saved_cost_center = daycare.cost_center, saved_sub_cost_center = care_area.sub_cost_center
 FROM daycare, care_area WHERE invoice_row.unit_id = daycare.id
 AND daycare.care_area_id = care_area.id
-AND invoice_id = ANY(:invoiceIds)
-    """
-                .trimIndent()
-        )
-        .bind("invoiceIds", invoiceIds)
+AND invoice_id = ANY(${bind(invoiceIds)})
+"""
+            )
+        }
         .execute()
 
 fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
@@ -452,22 +445,21 @@ WHERE id = :id
 }
 
 fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {
-    val sql =
-        """
-            DELETE FROM invoice
-            WHERE status = :status::invoice_status
-            AND daterange(period_start, period_end, '[]') && :range
-        """
 
-    @Suppress("DEPRECATION")
-    createUpdate(sql).bind("range", range).bind("status", InvoiceStatus.DRAFT.toString()).execute()
+    createUpdate {
+            sql(
+                """
+                DELETE FROM invoice
+                WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status
+                AND daterange(period_start, period_end, '[]') && ${bind(range)}
+                """
+            )
+        }
+        .execute()
 }
 
 fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
-    @Suppress("DEPRECATION")
-    createUpdate("SELECT id FROM invoice WHERE id = ANY(:ids) FOR UPDATE")
-        .bind("ids", ids)
-        .execute()
+    createUpdate { sql("SELECT id FROM invoice WHERE id = ANY(${bind(ids)}) FOR UPDATE") }.execute()
 }
 
 fun Database.Transaction.upsertInvoices(invoices: List<Invoice>) {
@@ -516,9 +508,7 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
 private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) {
     if (invoiceIds.isEmpty()) return
 
-    @Suppress("DEPRECATION")
-    createUpdate("DELETE FROM invoice_row WHERE invoice_id = ANY(:invoiceIds)")
-        .bind("invoiceIds", invoiceIds)
+    createUpdate { sql("DELETE FROM invoice_row WHERE invoice_id = ANY(${bind(invoiceIds)})") }
         .execute()
 }
 

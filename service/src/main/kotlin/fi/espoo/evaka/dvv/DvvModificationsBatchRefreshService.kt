@@ -66,12 +66,4 @@ class DvvModificationsBatchRefreshService(
 }
 
 private fun Database.Read.getPersonSsnsToUpdate(): List<String> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=sql
-            """
-SELECT DISTINCT(social_security_number) FROM person
-    """
-                .trimIndent()
-        )
-        .toList<String>()
+    createQuery { sql("SELECT DISTINCT(social_security_number) FROM person") }.toList<String>()

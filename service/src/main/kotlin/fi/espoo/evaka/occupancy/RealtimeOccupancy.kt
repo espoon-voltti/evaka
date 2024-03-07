@@ -126,34 +126,32 @@ fun Database.Read.getChildOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
 ): List<ChildOccupancyAttendance> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-    SELECT 
-        ca.child_id,
-        (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
-        (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed,
-        COALESCE(COALESCE(an.capacity_factor, 1) * CASE 
-            WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
-            WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.realized_occupancy_coefficient_under_3y, default_sno.realized_occupancy_coefficient_under_3y)
-            ELSE coalesce(sno.realized_occupancy_coefficient, default_sno.realized_occupancy_coefficient)
-        END, 1.0) AS capacity
-    FROM child_attendance ca
-    JOIN daycare u ON u.id = ca.unit_id
-    JOIN person ch ON ch.id = ca.child_id
-    LEFT JOIN placement pl on pl.child_id = ca.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ca.date
-    LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ca.date
-    LEFT JOIN service_need_option sno on sn.option_id = sno.id
-    LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
-    LEFT JOIN assistance_factor an on an.child_id = ch.id AND an.valid_during @> ca.date
-    WHERE
-        ca.unit_id = :unitId AND
-        tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && :timeRange
-    """
-                .trimIndent()
-        )
-        .bind("unitId", unitId)
-        .bind("timeRange", timeRange)
+    createQuery {
+            sql(
+                """
+SELECT 
+    ca.child_id,
+    (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
+    (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed,
+    COALESCE(COALESCE(an.capacity_factor, 1) * CASE 
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
+        WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.realized_occupancy_coefficient_under_3y, default_sno.realized_occupancy_coefficient_under_3y)
+        ELSE coalesce(sno.realized_occupancy_coefficient, default_sno.realized_occupancy_coefficient)
+    END, 1.0) AS capacity
+FROM child_attendance ca
+JOIN daycare u ON u.id = ca.unit_id
+JOIN person ch ON ch.id = ca.child_id
+LEFT JOIN placement pl on pl.child_id = ca.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ca.date
+LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ca.date
+LEFT JOIN service_need_option sno on sn.option_id = sno.id
+LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
+LEFT JOIN assistance_factor an on an.child_id = ch.id AND an.valid_during @> ca.date
+WHERE
+    ca.unit_id = ${bind(unitId)} AND
+    tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && ${bind(timeRange)}
+"""
+            )
+        }
         .toList<ChildOccupancyAttendance>()
 
 val presentStaffAttendanceTypes =
@@ -163,24 +161,22 @@ fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
 ): List<StaffOccupancyAttendance> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-    SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity
-    FROM staff_attendance_realtime sa
-    JOIN daycare_group dg ON dg.id = sa.group_id
-    WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && :timeRange
-    AND type = ANY($presentStaffAttendanceTypes)
-    
-    UNION ALL
-    
-    SELECT sae.arrived, sae.departed, sae.occupancy_coefficient AS capacity
-    FROM staff_attendance_external sae
-    JOIN daycare_group dg ON dg.id = sae.group_id
-    WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && :timeRange
-    """
-                .trimIndent()
-        )
-        .bind("unitId", unitId)
-        .bind("timeRange", timeRange)
+    createQuery {
+            sql(
+                """
+SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity
+FROM staff_attendance_realtime sa
+JOIN daycare_group dg ON dg.id = sa.group_id
+WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && ${bind(timeRange)}
+AND type = ANY($presentStaffAttendanceTypes)
+
+UNION ALL
+
+SELECT sae.arrived, sae.departed, sae.occupancy_coefficient AS capacity
+FROM staff_attendance_external sae
+JOIN daycare_group dg ON dg.id = sae.group_id
+WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && ${bind(timeRange)}
+"""
+            )
+        }
         .toList<StaffOccupancyAttendance>()
