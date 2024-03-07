@@ -120,14 +120,12 @@ export async function groupMonthCalendar(
   request: {
     groupId: UUID,
     year: number,
-    month: number,
-    includeNonOperationalDays: boolean
+    month: number
   }
 ): Promise<GroupMonthCalendar> {
   const params = createUrlSearchParams(
     ['year', request.year.toString()],
-    ['month', request.month.toString()],
-    ['includeNonOperationalDays', request.includeNonOperationalDays.toString()]
+    ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<GroupMonthCalendar>>({
     url: uri`/absences/${request.groupId}`.toString(),

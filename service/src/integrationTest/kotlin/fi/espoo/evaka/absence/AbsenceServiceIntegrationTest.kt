@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -90,6 +91,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             absenceCategories = setOf(AbsenceCategory.BILLABLE),
             backupCare = false,
             scheduleType = ScheduleType.RESERVATION_REQUIRED,
+            shiftCare = ShiftCareType.NONE,
             missingHolidayReservation = false,
             absences = listOf(),
             reservations = listOf(),
@@ -123,7 +125,6 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     testDaycareGroup.id,
                     today.year,
                     today.monthValue,
-                    includeNonOperationalDays = false
                 )
             }
 
@@ -140,9 +141,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         .map {
                             GroupMonthCalendarDay(
                                 date = it,
-                                holiday = it.isWeekend(),
-                                holidayPeriod = false,
-                                children = if (it.isWeekend()) null else emptyList()
+                                isOperationDay = !it.isWeekend(),
+                                isInHolidayPeriod = false,
+                                children = emptyList()
                             )
                         }
                         .toList()
@@ -171,8 +172,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue,
-                    includeNonOperationalDays = false
+                    placementStart.monthValue
                 )
             }
 
@@ -273,8 +273,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfMonth,
                     testDaycareGroup.id,
                     firstOfMonth.year,
-                    firstOfMonth.monthValue,
-                    includeNonOperationalDays = false
+                    firstOfMonth.monthValue
                 )
             }
 
@@ -307,8 +306,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementDate,
                     testDaycareGroup.id,
                     placementDate.year,
-                    placementDate.monthValue,
-                    includeNonOperationalDays = false
+                    placementDate.monthValue
                 )
             }
 
@@ -331,33 +329,30 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         .map { date ->
                             GroupMonthCalendarDay(
                                 date = date,
-                                holiday = date.isWeekend(),
-                                holidayPeriod = false,
+                                isOperationDay = !date.isWeekend(),
+                                isInHolidayPeriod = false,
                                 children =
-                                    if (date.isWeekend()) null
-                                    else
-                                        listOf(
-                                                emptyDayChild.copy(
-                                                    childId = testChild_1.id,
-                                                    scheduleType = ScheduleType.FIXED_SCHEDULE,
-                                                    absenceCategories =
-                                                        setOf(AbsenceCategory.NONBILLABLE),
-                                                ),
-                                                emptyDayChild.copy(
-                                                    childId = testChild_2.id,
-                                                    absenceCategories =
-                                                        setOf(
-                                                            AbsenceCategory.BILLABLE,
-                                                            AbsenceCategory.NONBILLABLE
-                                                        ),
-                                                ),
-                                                emptyDayChild.copy(
-                                                    childId = testChild_3.id,
-                                                    absenceCategories =
-                                                        setOf(AbsenceCategory.BILLABLE),
-                                                )
+                                    listOf(
+                                            emptyDayChild.copy(
+                                                childId = testChild_1.id,
+                                                scheduleType = ScheduleType.FIXED_SCHEDULE,
+                                                absenceCategories =
+                                                    setOf(AbsenceCategory.NONBILLABLE),
+                                            ),
+                                            emptyDayChild.copy(
+                                                childId = testChild_2.id,
+                                                absenceCategories =
+                                                    setOf(
+                                                        AbsenceCategory.BILLABLE,
+                                                        AbsenceCategory.NONBILLABLE
+                                                    ),
+                                            ),
+                                            emptyDayChild.copy(
+                                                childId = testChild_3.id,
+                                                absenceCategories = setOf(AbsenceCategory.BILLABLE),
                                             )
-                                            .sortedBy { it.childId }
+                                        )
+                                        .sortedBy { it.childId }
                             )
                         }
                         .toList()
@@ -388,8 +383,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue,
-                    includeNonOperationalDays = false
+                    placementStart.monthValue
                 )
             }
 
@@ -406,22 +400,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         .map { date ->
                             GroupMonthCalendarDay(
                                 date = date,
-                                holiday = date.isWeekend(),
-                                holidayPeriod = false,
+                                isOperationDay = !date.isWeekend(),
+                                isInHolidayPeriod = false,
                                 children =
-                                    if (date.isWeekend()) null
-                                    else
-                                        listOf(
-                                            emptyDayChild.copy(
-                                                childId = testChild_1.id,
-                                                scheduleType =
-                                                    if (date == placementStart)
-                                                        ScheduleType.TERM_BREAK
-                                                    else ScheduleType.FIXED_SCHEDULE,
-                                                absenceCategories =
-                                                    setOf(AbsenceCategory.NONBILLABLE),
-                                            ),
-                                        )
+                                    listOf(
+                                        emptyDayChild.copy(
+                                            childId = testChild_1.id,
+                                            scheduleType =
+                                                if (date == placementStart) ScheduleType.TERM_BREAK
+                                                else ScheduleType.FIXED_SCHEDULE,
+                                            absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
+                                        ),
+                                    )
                             )
                         }
                         .toList()
@@ -455,8 +445,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue,
-                    includeNonOperationalDays = false
+                    placementStart.monthValue
                 )
             }
 
@@ -464,33 +453,29 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             (backupCarePeriod.dates().map { date ->
                     GroupMonthCalendarDay(
                         date = date,
-                        holiday = date.isWeekend(),
-                        holidayPeriod = false,
+                        isOperationDay = !date.isWeekend(),
+                        isInHolidayPeriod = false,
                         children =
-                            if (date.isWeekend()) null
-                            else
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        backupCare = true,
-                                    )
+                            listOf(
+                                emptyDayChild.copy(
+                                    childId = testChild_1.id,
+                                    backupCare = true,
                                 )
+                            )
                     )
                 } +
                     normalPeriod.dates().map { date ->
                         GroupMonthCalendarDay(
                             date = date,
-                            holiday = date.isWeekend(),
-                            holidayPeriod = false,
+                            isOperationDay = !date.isWeekend(),
+                            isInHolidayPeriod = false,
                             children =
-                                if (date.isWeekend()) null
-                                else
-                                    listOf(
-                                        emptyDayChild.copy(
-                                            childId = testChild_1.id,
-                                            backupCare = false,
-                                        )
+                                listOf(
+                                    emptyDayChild.copy(
+                                        childId = testChild_1.id,
+                                        backupCare = false,
                                     )
+                                )
                         )
                     })
                 .toList(),
@@ -556,8 +541,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue,
-                    includeNonOperationalDays = false
+                    placementStart.monthValue
                 )
             }
 
@@ -566,25 +550,23 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             (missingReservationsPeriod.dates().map { date ->
                     GroupMonthCalendarDay(
                         date = date,
-                        holiday = date.isWeekend(),
-                        holidayPeriod = true,
+                        isOperationDay = !date.isWeekend(),
+                        isInHolidayPeriod = true,
                         children =
-                            if (date.isWeekend()) null
-                            else
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        missingHolidayReservation = true
-                                    )
+                            listOf(
+                                emptyDayChild.copy(
+                                    childId = testChild_1.id,
+                                    missingHolidayReservation = true
                                 )
+                            )
                     )
                 } +
                     // reservations and absences
                     sequenceOf(
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end.minusDays(2),
-                            holiday = holidayPeriod.end.minusDays(2).isWeekend(),
-                            holidayPeriod = true,
+                            isOperationDay = !holidayPeriod.end.minusDays(2).isWeekend(),
+                            isInHolidayPeriod = true,
                             children =
                                 listOf(
                                     emptyDayChild.copy(
@@ -607,8 +589,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         ),
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end.minusDays(1),
-                            holiday = holidayPeriod.end.minusDays(1).isWeekend(),
-                            holidayPeriod = true,
+                            isOperationDay = !holidayPeriod.end.minusDays(1).isWeekend(),
+                            isInHolidayPeriod = true,
                             children =
                                 listOf(
                                     emptyDayChild.copy(
@@ -637,8 +619,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         ),
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end,
-                            holiday = holidayPeriod.end.isWeekend(),
-                            holidayPeriod = true,
+                            isOperationDay = !holidayPeriod.end.isWeekend(),
+                            isInHolidayPeriod = true,
                             children =
                                 listOf(
                                     emptyDayChild.copy(
@@ -665,17 +647,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     normalPeriod.dates().map { date ->
                         GroupMonthCalendarDay(
                             date = date,
-                            holiday = date.isWeekend(),
-                            holidayPeriod = false,
+                            isOperationDay = !date.isWeekend(),
+                            isInHolidayPeriod = false,
                             children =
-                                if (date.isWeekend()) null
-                                else
-                                    listOf(
-                                        emptyDayChild.copy(
-                                            childId = testChild_1.id,
-                                            missingHolidayReservation = false,
-                                        )
+                                listOf(
+                                    emptyDayChild.copy(
+                                        childId = testChild_1.id,
+                                        missingHolidayReservation = false,
                                     )
+                                )
                         )
                     })
                 .toList(),
@@ -686,12 +666,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `calendar does not show missing holiday reservations for placement type that does not need reservations`() {
         insertGroupPlacement(testChild_1.id, placementType = PlacementType.CLUB)
-        val holidayPeriod =
+        val isInHolidayPeriod =
             FiniteDateRange(placementStart, placementStart.plusMonths(1).minusDays(1))
 
         db.transaction { tx ->
             tx.insertHolidayPeriod(
-                period = holidayPeriod,
+                period = isInHolidayPeriod,
                 reservationDeadline = placementStart // doesn't matter for group month calendar
             )
         }
@@ -703,8 +683,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue,
-                    includeNonOperationalDays = false
+                    placementStart.monthValue
                 )
             }
 
@@ -714,19 +693,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .map { date ->
                     GroupMonthCalendarDay(
                         date = date,
-                        holiday = date.isWeekend(),
-                        holidayPeriod = true,
+                        isOperationDay = !date.isWeekend(),
+                        isInHolidayPeriod = true,
                         children =
-                            if (date.isWeekend()) null
-                            else
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        missingHolidayReservation = false,
-                                        absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
-                                        scheduleType = ScheduleType.TERM_BREAK
-                                    )
+                            listOf(
+                                emptyDayChild.copy(
+                                    childId = testChild_1.id,
+                                    missingHolidayReservation = false,
+                                    absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
+                                    scheduleType = ScheduleType.TERM_BREAK
                                 )
+                            )
                     )
                 }
                 .toList(),
@@ -766,8 +743,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue,
-                    includeNonOperationalDays = false
+                    placementStart.monthValue
                 )
             }
 
@@ -775,35 +751,31 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             (dailyServiceTimesPeriod1.dates().map { date ->
                     GroupMonthCalendarDay(
                         date = date,
-                        holiday = date.isWeekend(),
-                        holidayPeriod = false,
+                        isOperationDay = !date.isWeekend(),
+                        isInHolidayPeriod = false,
                         children =
-                            if (date.isWeekend()) null
-                            else
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        dailyServiceTimes =
-                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-                                    )
+                            listOf(
+                                emptyDayChild.copy(
+                                    childId = testChild_1.id,
+                                    dailyServiceTimes =
+                                        TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
                                 )
+                            )
                     )
                 } +
                     dailyServiceTimesPeriod2.dates().map { date ->
                         GroupMonthCalendarDay(
                             date = date,
-                            holiday = date.isWeekend(),
-                            holidayPeriod = false,
+                            isOperationDay = !date.isWeekend(),
+                            isInHolidayPeriod = false,
                             children =
-                                if (date.isWeekend()) null
-                                else
-                                    listOf(
-                                        emptyDayChild.copy(
-                                            childId = testChild_1.id,
-                                            dailyServiceTimes =
-                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
-                                        )
+                                listOf(
+                                    emptyDayChild.copy(
+                                        childId = testChild_1.id,
+                                        dailyServiceTimes =
+                                            TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
                                     )
+                                )
                         )
                     })
                 .toList(),
@@ -833,8 +805,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue,
-                    includeNonOperationalDays = false
+                    absenceDate.monthValue
                 )
             }
         val child =
@@ -885,8 +856,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue,
-                    includeNonOperationalDays = false
+                    absenceDate.monthValue
                 )
             }
 
@@ -921,8 +891,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue,
-                    includeNonOperationalDays = false
+                    absenceDate.monthValue
                 )
             }
 
@@ -950,8 +919,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue,
-                    includeNonOperationalDays = false
+                    absenceDate.monthValue
                 )
             }
 
@@ -1068,7 +1036,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `group operational days do not include holidays`() {
         val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
         val epiphany2020 = LocalDate.of(2020, 1, 6)
-        db.transaction { it.execute("INSERT INTO holiday (date) VALUES (?)", epiphany2020) }
+        db.transaction { it.insert(DevHoliday(epiphany2020)) }
         val result =
             db.read {
                 getGroupMonthCalendar(
@@ -1076,12 +1044,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfJanuary2020,
                     testDaycareGroup.id,
                     firstOfJanuary2020.year,
-                    firstOfJanuary2020.monthValue,
-                    includeNonOperationalDays = false
+                    firstOfJanuary2020.monthValue
                 )
             }
 
-        val operationDays = result.days.filter { it.children != null }.map { it.date }
+        val operationDays = result.days.filter { it.isOperationDay }.map { it.date }
         assertFalse(operationDays.contains(epiphany2020))
     }
 
@@ -1101,8 +1068,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfJanuary2020,
                     testDaycareGroup.id,
                     firstOfJanuary2020.year,
-                    firstOfJanuary2020.monthValue,
-                    includeNonOperationalDays = false
+                    firstOfJanuary2020.monthValue
                 )
             }
 
@@ -1125,14 +1091,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
     }
@@ -1159,14 +1118,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(60), result.children.map { it.reservationTotalHours })
     }
@@ -1185,14 +1137,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1211,14 +1156,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1240,14 +1178,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1269,14 +1200,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
@@ -1299,14 +1223,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
     }
@@ -1328,16 +1245,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertBackupPlacement(testChild_1.id, backupUnit, backupGroup, backupPeriod)
 
         val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    backupGroup,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
-            }
+            db.read { getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), backupGroup, 2019, 8) }
         assertEquals(listOf(16), result.children.map { it.reservationTotalHours })
     }
 
@@ -1367,14 +1275,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
 
         // 1 operational day * 0 h + 1 operational day * 8 h
@@ -1406,14 +1307,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         // 22 operational days * 8h
         assertEquals(listOf(176), result.children.map { it.reservationTotalHours })
@@ -1440,14 +1334,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         // 8-16 + 8-14 (saturday is not included because the unit is not operational on saturdays)
         assertEquals(listOf(14), result.children.map { it.reservationTotalHours })
@@ -1475,14 +1362,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         // 21 operational days * 8h + 12h
         assertEquals(listOf(180), result.children.map { it.reservationTotalHours })
@@ -1507,14 +1387,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         // 21-9 + 9-15 (overlapping 2 hours are left out)
         assertEquals(listOf(18), result.children.map { it.reservationTotalHours })
@@ -1546,14 +1419,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         // the start and end of absence date overlaps with two reservations but only one reservation
         // is left out
@@ -1578,14 +1444,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(21 + 20 * 8), result.children.map { it.reservationTotalHours })
     }
@@ -1632,14 +1491,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(
             listOf(
@@ -1673,14 +1525,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
     }
@@ -1707,14 +1552,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(60), result.children.map { it.attendanceTotalHours })
     }
@@ -1734,14 +1572,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
     }
@@ -1761,14 +1592,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
     }
@@ -1791,14 +1615,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(24), result.children.map { it.attendanceTotalHours })
     }
@@ -1821,14 +1638,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
     }
@@ -1850,16 +1660,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertAttendances(testChild_1.id, backupUnit, attendances)
 
         val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    backupGroup,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
-            }
+            db.read { getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), backupGroup, 2019, 8) }
         assertEquals(listOf(16), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1871,14 +1672,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 1), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(listOf(0), result.children.map { it.attendanceTotalHours })
     }
@@ -1911,14 +1705,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 31),
-                    testDaycareGroup.id,
-                    2019,
-                    8,
-                    includeNonOperationalDays = false
-                )
+                getGroupMonthCalendar(it, LocalDate.of(2019, 8, 31), testDaycareGroup.id, 2019, 8)
             }
         assertEquals(1, result.children.size)
         assertEquals(
@@ -1971,8 +1758,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementDate,
                     testDaycareGroup.id,
                     placementDate.year,
-                    placementDate.monthValue,
-                    includeNonOperationalDays = false
+                    placementDate.monthValue
                 )
             }
 

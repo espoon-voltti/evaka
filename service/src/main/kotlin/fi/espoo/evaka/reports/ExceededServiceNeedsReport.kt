@@ -14,6 +14,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.ReservationRow
 import fi.espoo.evaka.reservations.computeUsedService
 import fi.espoo.evaka.reservations.getReservations
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -135,34 +136,32 @@ private fun exceededServiceNeedReport(
         range
             .dates()
             .flatMap { date ->
-                if (date.isOperationalDate(operationDays, holidays)) {
-                    children.mapNotNull { child ->
-                        val serviceNeed =
-                            serviceNeeds[child.id]?.find { it.period.includes(date) }
-                                ?: return@mapNotNull null
-                        val childAbsences = absences[child.id to date] ?: emptyList()
-                        val childReservations =
-                            (reservations[child.id to date] ?: emptyList()).mapNotNull {
-                                it.reservation.asTimeRange()
-                            }
-                        val childAttendances =
-                            (attendances[child.id to date] ?: emptyList()).mapNotNull {
-                                it.endTime?.let { endTime -> TimeRange(it.startTime, endTime) }
-                            }
-                        child.id to
-                            computeUsedService(
-                                isDateInFuture = date > today,
-                                serviceNeedHours = serviceNeed.daycareHoursPerMonth,
-                                placementType = serviceNeed.placementType,
-                                preschoolTime = serviceNeed.dailyPreschoolTime,
-                                preparatoryTime = serviceNeed.dailyPreparatoryTime,
-                                absences = childAbsences,
-                                reservations = childReservations,
-                                attendances = childAttendances
-                            )
-                    }
-                } else {
-                    emptyList()
+                children.mapNotNull { child ->
+                    val serviceNeed =
+                        serviceNeeds[child.id]?.find { it.period.includes(date) }
+                            ?: return@mapNotNull null
+                    val childAbsences = absences[child.id to date] ?: emptyList()
+                    val childReservations =
+                        (reservations[child.id to date] ?: emptyList()).mapNotNull {
+                            it.reservation.asTimeRange()
+                        }
+                    val childAttendances =
+                        (attendances[child.id to date] ?: emptyList()).mapNotNull {
+                            it.endTime?.let { endTime -> TimeRange(it.startTime, endTime) }
+                        }
+                    child.id to
+                        computeUsedService(
+                            isDateInFuture = date > today,
+                            serviceNeedHours = serviceNeed.daycareHoursPerMonth,
+                            placementType = serviceNeed.placementType,
+                            preschoolTime = serviceNeed.dailyPreschoolTime,
+                            preparatoryTime = serviceNeed.dailyPreparatoryTime,
+                            isOperationDay = date.isOperationalDate(operationDays, holidays),
+                            shiftCareType = serviceNeed.shiftCare,
+                            absences = childAbsences,
+                            reservations = childReservations,
+                            attendances = childAttendances
+                        )
                 }
             }
             .fold(mutableMapOf<ChildId, Long>()) { acc, (childId, usedService) ->
@@ -217,7 +216,8 @@ private data class ReportServiceNeed(
     val placementType: PlacementType,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
-    val daycareHoursPerMonth: Int
+    val shiftCare: ShiftCareType,
+    val daycareHoursPerMonth: Int,
 )
 
 private fun Database.Read.getServiceNeedsByRange(
@@ -233,6 +233,7 @@ private fun Database.Read.getServiceNeedsByRange(
                     pl.type AS placement_type,
                     u.daily_preschool_time,
                     u.daily_preparatory_time,
+                    sn.shift_care,
                     sno.daycare_hours_per_month
                 FROM daycare u
                 JOIN placement pl ON pl.unit_id = u.id

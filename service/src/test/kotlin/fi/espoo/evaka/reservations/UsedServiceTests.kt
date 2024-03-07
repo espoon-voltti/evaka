@@ -7,6 +7,7 @@ package fi.espoo.evaka.reservations
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalTime
 import kotlin.math.roundToLong
@@ -24,6 +25,8 @@ class UsedServiceTests {
         placementType: PlacementType = PlacementType.DAYCARE,
         dailyPreschoolTimes: TimeRange? = null,
         dailyPreparatoryTimes: TimeRange? = null,
+        isOperationDay: Boolean = true,
+        shiftCareType: ShiftCareType = ShiftCareType.NONE,
         absences: List<Pair<AbsenceType, AbsenceCategory>> = listOf(),
         reservations: List<TimeRange> = listOf(),
         attendances: List<TimeRange> = listOf()
@@ -34,6 +37,8 @@ class UsedServiceTests {
             placementType,
             dailyPreschoolTimes,
             dailyPreparatoryTimes,
+            isOperationDay,
+            shiftCareType,
             absences,
             reservations,
             attendances
@@ -255,6 +260,53 @@ class UsedServiceTests {
             .also {
                 assertEquals(9 * 60, it.usedServiceMinutes)
                 assertEquals(listOf(range(8, 17)), it.usedServiceRanges)
+            }
+    }
+
+    @Test
+    fun `children without intermittent shift care do not use service on non-operation days`() {
+        listOf(ShiftCareType.NONE, ShiftCareType.FULL).forEach { shiftCareType ->
+            compute(
+                    isOperationDay = false,
+                    shiftCareType = shiftCareType,
+                    reservations = listOf(range(8, 16)),
+                    attendances = listOf(range(9, 17))
+                )
+                .also {
+                    assertEquals(0, it.reservedMinutes)
+                    assertEquals(0, it.usedServiceMinutes)
+                    assertEquals(emptyList(), it.usedServiceRanges)
+                }
+        }
+    }
+
+    @Test
+    fun `children with intermittent use service on non-operation days`() {
+        compute(
+                isOperationDay = false,
+                shiftCareType = ShiftCareType.INTERMITTENT,
+                reservations = listOf(range(8, 16)),
+                attendances = listOf(range(9, 17))
+            )
+            .also {
+                assertEquals(8 * 60, it.reservedMinutes)
+                assertEquals(9 * 60, it.usedServiceMinutes)
+                assertEquals(listOf(range(8, 17)), it.usedServiceRanges)
+            }
+    }
+
+    @Test
+    fun `children with intermittent do not get hours divided by 21 on non-operation days`() {
+        compute(
+                isOperationDay = false,
+                shiftCareType = ShiftCareType.INTERMITTENT,
+                reservations = emptyList(),
+                attendances = emptyList()
+            )
+            .also {
+                assertEquals(0, it.reservedMinutes)
+                assertEquals(0, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
             }
     }
 }

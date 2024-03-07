@@ -112,12 +112,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
               operationTime={operationTimes[date.getIsoDayOfWeek() - 1]}
               childId={child.id}
               day={day}
-              intermittent={child.actualServiceNeeds.some(
-                (serviceNeed) =>
-                  serviceNeed.childId === child.id &&
-                  serviceNeed.validDuring.includes(date) &&
-                  serviceNeed.shiftCare === 'INTERMITTENT'
-              )}
+              intermittentShiftCare={day.shiftCare === 'INTERMITTENT'}
               selectedCells={selectedCells}
               toggleCellSelection={toggleCellSelection}
             />
@@ -245,9 +240,8 @@ const MonthCalendarTableHead = React.memo(function AbsenceTableHead({
     <Thead sticky>
       <AbsenceTr>
         <th />
-        {days.map(({ date, children }) =>
-          children !== null || featureFlags.intermittentShiftCare ? (
-            // Operation day
+        {days.map(({ date, isOperationDay }) =>
+          isOperationDay || featureFlags.intermittentShiftCare ? (
             <AbsenceTh
               key={date.getDate()}
               $isToday={date.isToday()}
@@ -304,7 +298,7 @@ export default React.memo(function MonthCalendarTable({
 
   const holidays = groupMonthCalendar.days.reduce<Record<string, boolean>>(
     (prev, next) => {
-      prev[next.date.formatIso()] = next.holiday
+      prev[next.date.formatIso()] = !next.isOperationDay
       return prev
     },
     {}
@@ -360,9 +354,7 @@ function getMonthCalendarRows(
     child,
     days: data.days.map((day) => [
       day.date,
-      day.children
-        ? day.children.find((c) => c.childId === child.id)
-        : undefined
+      day.children.find((c) => c.childId === child.id)
     ])
   }))
 }

@@ -231,7 +231,7 @@ interface MonthCalendarCellProps {
   operationTime: TimeRange | null
   childId: UUID
   day: GroupMonthCalendarDayChild
-  intermittent: boolean
+  intermittentShiftCare: boolean
   selectedCells: SelectedCell[]
   toggleCellSelection: (cell: SelectedCell) => void
 }
@@ -242,7 +242,7 @@ export default React.memo(function MonthCalendarCell({
   operationTime,
   childId,
   day,
-  intermittent,
+  intermittentShiftCare,
   selectedCells,
   toggleCellSelection
 }: MonthCalendarCellProps) {
@@ -284,7 +284,7 @@ export default React.memo(function MonthCalendarCell({
     ) && !day.backupCare
   const requiresBackupCare =
     day.absences.length === 0 &&
-    intermittent &&
+    intermittentShiftCare &&
     unitIsNotOpenOnReservation &&
     !day.backupCare
 
@@ -318,7 +318,7 @@ export default React.memo(function MonthCalendarCell({
         requiresBackupCare={requiresBackupCare}
         isSelected={isSelected}
         isMissingHolidayReservation={day.missingHolidayReservation}
-        intermittentShiftCare={intermittent}
+        intermittentShiftCare={intermittentShiftCare}
         toggle={toggle}
       />
     </Tooltip>
