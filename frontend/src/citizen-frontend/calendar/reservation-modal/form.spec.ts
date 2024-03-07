@@ -64,7 +64,7 @@ const emptyChild: ReservationResponseDayChild = {
     type: 'NORMAL',
     range: defaultReservableTimeRange
   },
-  reservationLockedDueHolidayPeriod: false
+  reservationLockedDueHolidayPeriod: true
 }
 
 const timeInputState = (
