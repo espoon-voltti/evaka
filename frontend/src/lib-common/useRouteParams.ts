@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import * as Sentry from '@sentry/browser'
 import { useParams } from 'react-router-dom'
 
 export default function useRouteParams<
@@ -16,7 +17,7 @@ export default function useRouteParams<
     ...required.map((key) => {
       const value = params[key]
       if (value === undefined) {
-        throw new Error(`Route param ${key} is missing`)
+        Sentry.captureMessage(`Route param ${key} is missing`, 'error')
       }
       return [key, value]
     }),
