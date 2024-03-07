@@ -293,6 +293,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
         <>
           <Gap />
           <Checkbox
+            data-qa="has-occupancy-effect"
             label={i18n.staff.staffOccupancyEffect}
             checked={occupancyEffect}
             onChange={setOccupancyEffect}

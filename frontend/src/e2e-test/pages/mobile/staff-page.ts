@@ -128,6 +128,9 @@ export class StaffAttendancePage {
   }
   staffArrivalPage = {
     groupSelect: new Select(this.page.findByDataQa('group-select')),
+    occupancyEffectCheckbox: new Checkbox(
+      this.page.findByDataQa('has-occupancy-effect')
+    ),
     timeInputWarningText: this.page.findByDataQa('input-arrived-info'),
     arrivalTypeCheckbox: (type: StaffAttendanceType) =>
       new Checkbox(this.page.findByDataQa(`attendance-type-${type}`)),
@@ -254,11 +257,17 @@ export class StaffAttendancePage {
     pin: string
     time: string
     group: DevDaycareGroup
+    hasOccupancyEffect?: boolean
   }) {
     await this.staffMemberPage.markArrivedBtn.click()
     await this.pinInput.locator.type(args.pin)
     await this.anyArrivalPage.arrivedInput.fill(args.time)
     await this.staffArrivalPage.groupSelect.selectOption(args.group.id)
+    if (args.hasOccupancyEffect === true) {
+      await this.staffArrivalPage.occupancyEffectCheckbox.check()
+    } else if (args.hasOccupancyEffect === false) {
+      await this.staffArrivalPage.occupancyEffectCheckbox.uncheck()
+    }
     await this.anyArrivalPage.markArrived.click()
   }
 
