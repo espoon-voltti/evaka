@@ -21,11 +21,6 @@ on:
         required: true
         default: 'master'
 
-
-env:
-  AWS_REGION: eu-west-1
-  ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -69,18 +64,20 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ env.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GHCR: ${{ env.GHCR || 'true' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ROLE: ${{ secrets.AWS_ROLE }}
 
       - name: Build keycloak image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
           name: evaka/keycloak
@@ -93,7 +90,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/allow-disabling-features
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -108,19 +105,21 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ env.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GHCR: ${{ env.GHCR || 'true' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS: false
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: build
         with:
-          registry: ghcr.io/espoon-voltti
+          registry: ghcr.io/${{ github.event.repository.name }}
           name: evaka/frontend-common
           path: ./frontend
           push: ${{ inputs.push || 'true' }}
@@ -135,10 +134,10 @@ jobs:
 
       - name: Build frontend image builder
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: builder
         with:
-          registry: ghcr.io/espoon-voltti
+          registry: ghcr.io/${{ github.event.repository.name }}
           name: evaka/frontend-common-builder
           cache_from: ${{ steps.build.outputs.image_cache }}
           path: ./frontend
@@ -155,7 +154,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/allow-disabling-features
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -184,7 +183,7 @@ jobs:
           node-version: 18
 
       - name: Install fortawesome
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' && env.FONTAWESOME != 'false' }}
         run: |
           cat << EOF > frontend/.npmrc
           @fortawesome:registry=https://npm.fontawesome.com/
@@ -196,17 +195,19 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ env.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GHCR: ${{ env.GHCR || 'true' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ROLE: ${{ secrets.AWS_ROLE }}
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -215,7 +216,7 @@ jobs:
           push: ${{ inputs.push || 'true' }}
           build-args: |
             CACHE_BUST=${{ needs.cache-bust.outputs.cache-bust }}
-            SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
+            SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && env.SENTRY != 'false' && 'true' || 'false' }}
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=pro
@@ -225,7 +226,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/allow-disabling-features
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -268,7 +269,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/allow-disabling-features
 
   api-gateway:
     runs-on: ubuntu-latest
@@ -280,17 +281,19 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ env.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GHCR: ${{ env.GHCR || 'true' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ROLE: ${{ secrets.AWS_ROLE }}
 
       - name: Build and run API-gateway tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: test
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -306,7 +309,7 @@ jobs:
 
       - name: Build API-gateway image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -338,17 +341,19 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ env.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GHCR: ${{ env.GHCR || 'true' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ROLE: ${{ secrets.AWS_ROLE }}
 
       - name: Build Evaka Service image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -363,7 +368,7 @@ jobs:
 
       - name: Build Evaka Service builder image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: builder
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -380,7 +385,7 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/allow-disabling-features
 
     outputs:
       image: ${{ steps.build.outputs.image }}
@@ -399,17 +404,19 @@ jobs:
       - name: Setup Docker building
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ env.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GHCR: ${{ env.GHCR || 'true' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ROLE: ${{ secrets.AWS_ROLE }}
 
       - name: Build and run Evaka Service tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         id: build
         with:
           registry: ${{ steps.setup.outputs.ecr_registry }}
@@ -433,12 +440,13 @@ jobs:
 
       - name: Docker cleanup
         if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+        uses: espoon-voltti/voltti-actions/docker-cleanup@feat/allow-disabling-features
 
   owasp:
     needs:
       - service
     runs-on: ubuntu-latest
+    if: ${{ env.OWASP != 'false' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -446,7 +454,7 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-duration-seconds: 1200
 
@@ -565,7 +573,7 @@ jobs:
         env:
           TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
           BUILD: "false"
-          FRONTEND_IMAGE: "ghcr.io/espoon-voltti/evaka/frontend"
+          FRONTEND_IMAGE: "ghcr.io/${{ github.event.repository.name }}/evaka/frontend"
         run: |
           set -eo pipefail
           ./bin/timings.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}" | tee -a frontend/playwright-filenames.txt
@@ -607,27 +615,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        if: ${{ env.S3 != 'false' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-duration-seconds: 1200
 
       - name: Login to Amazon ECR
+        if: ${{ env.S3 != 'false' }}
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'true'
 
       - name: Extract frontend files
+        if: ${{ env.S3 != 'false' }}
         run: |
           rm -rf ./frontend-build/
           docker create -ti --name frontend_instance "${{ needs.frontend.outputs.image }}" sh
           docker cp frontend_instance:/static ./frontend-build
           docker rm -f frontend_instance
 
-      - name: Clean build from non-versioned files
+      - name: Clean build from non-versioned
+        if: ${{ env.S3 != 'false' }}
         run: |
           cd ./frontend-build/
           for filename in index.html service-worker.js service-worker.js.map; do
@@ -651,12 +662,12 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-duration-seconds: 1200
 
       - name: Login to GitHub Container Registry
-        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        if: ${{ env.GHCR != 'false' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -675,15 +686,18 @@ jobs:
             type=ref,event=pr,prefix=pr-
             type=ref,event=branch,prefix=
 
-      - name: Retag with branch
+      - name: Check metadata
         run: |
           if test -z "$DOCKER_METADATA_OUTPUT_VERSION"; then
             echo "Empty tag"
             exit 1
           fi
 
+      - name: Retag with branch (ghcr)
+        if: ${{ env.GHCR != 'false' }}
+        run: |
           for repository in evaka/keycloak evaka/frontend evaka/frontend-common evaka/frontend-common-builder evaka/service evaka/service-builder evaka/api-gateway; do
-            ghcr_image_base="ghcr.io/espoon-voltti/${repository}"
+            ghcr_image_base="ghcr.io/${{ github.event.repository.name }}/${repository}"
             ghcr_image="${ghcr_image_base}:${{ github.event.pull_request.head.sha || github.sha }}"
             ghcr_target="${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
             echo "Tagging GHCR with '${ghcr_target}'"
@@ -692,6 +706,8 @@ jobs:
             docker push "${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
           done
 
+      - name: Retag with branch (ecr)
+        run: |
           for repository in evaka/keycloak evaka/frontend evaka/service evaka/api-gateway; do
             # ECR retag
             MANIFEST=$(aws ecr batch-get-image --repository-name "$repository" --image-ids imageTag="${{ github.event.pull_request.head.sha || github.sha }}" --output json | jq --raw-output --join-output '.images[0].imageManifest')
@@ -699,7 +715,7 @@ jobs:
           done
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+    if: ${{ env.DEPLOY != 'false' && github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
     env:
       DEPLOY_REPO_OWNER: 'espoon-voltti'
       DEPLOY_REPO_NAME: 'evaka-deploy'
@@ -724,13 +740,13 @@ jobs:
             })
 
   notify:
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    if: ${{ always() && env.SLACK != 'false' && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     needs:
       - deploy
     steps:
       - name: Report failure
-        uses: espoon-voltti/voltti-actions/notify@master
+        uses: espoon-voltti/voltti-actions/notify@feat/allow-disabling-features
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           channel: "#evaka-alerts"
