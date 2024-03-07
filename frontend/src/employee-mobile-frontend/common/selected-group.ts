@@ -13,9 +13,14 @@ interface SelectedGroup {
 }
 
 export const useSelectedGroup = (): SelectedGroup => {
-  const { unitId, groupId: rawGroupId } = useRouteParams(['unitId', 'groupId'])
+  const { unitId, groupId: rawGroupId } = useRouteParams(
+    ['unitId'],
+    ['groupId']
+  )
   const selectedGroupId: SelectedGroupId =
-    rawGroupId === 'all' ? { type: 'all' } : { type: 'one', id: rawGroupId }
+    rawGroupId === undefined || rawGroupId === 'all'
+      ? { type: 'all' }
+      : { type: 'one', id: rawGroupId }
   const groupRoute = `/units/${unitId}/groups/${rawGroupId}`
   return { selectedGroupId, groupRoute }
 }

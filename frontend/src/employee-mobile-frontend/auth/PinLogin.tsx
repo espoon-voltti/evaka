@@ -151,7 +151,7 @@ const PinLoginForm = React.memo(function PinLoginForm() {
 
 export const PinLogin = React.memo(function PinLogin() {
   const { unitInfoResponse } = useContext(UnitContext)
-  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
+  const { unitId, childId } = useRouteParams(['unitId'], ['childId'])
   const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const navigate = useNavigate()

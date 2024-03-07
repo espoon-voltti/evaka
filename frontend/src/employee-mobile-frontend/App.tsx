@@ -168,7 +168,7 @@ function ChildAttendanceRouter() {
 
   return (
     <Routes>
-      <Route path="/" element={<AttendancePageWrapper />}>
+      <Route path="/" element={<AttendancePageWrapper unitId={unitId} />}>
         <Route
           path="list/:attendanceStatus"
           element={<AttendanceTodayWrapper />}
@@ -176,7 +176,7 @@ function ChildAttendanceRouter() {
         <Route
           path="daylist"
           id="daylist"
-          element={<ConfimedReservationDaysWrapper />}
+          element={<ConfimedReservationDaysWrapper unitId={unitId} />}
         />
         <Route path="list" element={<Navigate replace to="/" />} />
       </Route>

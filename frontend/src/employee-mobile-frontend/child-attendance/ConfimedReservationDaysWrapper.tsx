@@ -7,12 +7,14 @@ import React from 'react'
 import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { useQueryResult } from 'lib-common/query'
 
-import { useAttendanceContext } from './AttendancePageWrapper'
 import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'
 import { confirmedDaysReservationsStatisticsQuery } from './queries'
 
-export default React.memo(function ConfirmedReservationsDaysWrapper() {
-  const { unitId } = useAttendanceContext()
+export default React.memo(function ConfirmedReservationsDaysWrapper({
+  unitId
+}: {
+  unitId: string
+}) {
   const statisticsResult = useQueryResult(
     confirmedDaysReservationsStatisticsQuery(unitId)
   )
