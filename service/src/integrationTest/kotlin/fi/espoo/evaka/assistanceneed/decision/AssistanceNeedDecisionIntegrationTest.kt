@@ -955,7 +955,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
-    fun `endActiveDaycareAssistanceDecisions should not set end date if placement type changes to preschool daycare`() {
+    fun `endActiveDaycareAssistanceDecisions should set end date to the end of the last placement if placement type changes to preschool daycare`() {
         val startDate = LocalDate.of(2022, 1, 1)
         val endDate = LocalDate.of(2022, 12, 31)
         val today = LocalDate.of(2024, 1, 1)
