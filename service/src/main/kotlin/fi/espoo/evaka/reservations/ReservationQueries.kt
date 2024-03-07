@@ -336,7 +336,7 @@ SELECT
     u.daily_preparatory_time,
     sn.shift_care AS shift_care_type,
     sno.daycare_hours_per_month,
-    CASE WHEN sn IS NOT NULL THEN daterange(sn.start_date, sn.end_date, '[]') END AS service_need_range
+    CASE WHEN sn.id IS NOT NULL THEN daterange(sn.start_date, sn.end_date, '[]') END AS service_need_range
 FROM placement pl
 JOIN daycare u ON pl.unit_id = u.id
 LEFT JOIN service_need sn ON sn.placement_id = pl.id
