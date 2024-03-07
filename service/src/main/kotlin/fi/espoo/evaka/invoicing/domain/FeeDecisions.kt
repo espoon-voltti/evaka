@@ -52,7 +52,7 @@ data class FeeDecision(
     override val validFrom: LocalDate = validDuring.start
     override val validTo: LocalDate? = validDuring.end
 
-    override fun withRandomId() = this.copy(id = FeeDecisionId(UUID.randomUUID()))
+    override fun withId(id: UUID) = this.copy(id = FeeDecisionId(id))
 
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
 

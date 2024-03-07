@@ -211,14 +211,19 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `value decision drafts not overlapping the period have the same created date after generating new value decision drafts`() {
+    fun `value decision drafts not overlapping the period have the same id and created date after generating new value decision drafts`() {
         createPlacement(startDate, endDate)
         val initialDecisionDraft = getAllValueDecisions().first()
 
         createPlacement(startDate.plusYears(1), endDate.plusYears(1))
         getAllValueDecisions().let { decisions ->
             assertEquals(2, decisions.size)
-            assertEquals(1, decisions.count { it.created == initialDecisionDraft.created })
+            assertEquals(
+                1,
+                decisions.count {
+                    it.id == initialDecisionDraft.id && it.created == initialDecisionDraft.created
+                }
+            )
         }
     }
 
