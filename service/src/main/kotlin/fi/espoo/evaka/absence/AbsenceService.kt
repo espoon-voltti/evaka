@@ -46,8 +46,7 @@ fun getGroupMonthCalendar(
     today: LocalDate,
     groupId: GroupId,
     year: Int,
-    month: Int,
-    includeNonOperationalDays: Boolean
+    month: Int
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -72,10 +71,7 @@ fun getGroupMonthCalendar(
     val operationDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
     val holidays = tx.getHolidays(range)
     val operationDates =
-        range
-            .dates()
-            .filter { includeNonOperationalDays || it.isOperationalDate(operationDays, holidays) }
-            .toSet()
+        range.dates().filter { it.isOperationalDate(operationDays, holidays) }.toSet()
 
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
 
@@ -86,101 +82,95 @@ fun getGroupMonthCalendar(
             .dates()
             .map { date ->
                 val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
-                val operationalDate = date.isOperationalDate(operationDays, holidays)
                 GroupMonthCalendarDay(
                     date = date,
-                    holiday = !operationalDate,
-                    holidayPeriod = isHolidayPeriodDate,
+                    isOperationDay = operationDates.contains(date),
+                    isInHolidayPeriod = isHolidayPeriodDate,
                     children =
-                        if (includeNonOperationalDays || operationalDate) {
-                            placementList
-                                .mapNotNull { (child, placements) ->
-                                    val placement =
-                                        placements.find { it.range.includes(date) }
-                                            ?: return@mapNotNull null
-                                    val serviceNeed =
-                                        actualServiceNeeds[child.id]?.find {
-                                            it.validDuring.includes(date)
-                                        }
-                                    val childAbsences = absences[child.id to date] ?: emptyList()
-                                    val childAttendances =
-                                        attendances[child.id to date] ?: emptyList()
-                                    val childReservations =
-                                        reservations[child.id to date] ?: emptyList()
-                                    val scheduleType =
-                                        placement.type.scheduleType(date, clubTerms, preschoolTerms)
+                        placementList
+                            .mapNotNull { (child, placements) ->
+                                val placement =
+                                    placements.find { it.range.includes(date) }
+                                        ?: return@mapNotNull null
+                                val serviceNeed =
+                                    actualServiceNeeds[child.id]?.find {
+                                        it.validDuring.includes(date)
+                                    }
+                                val childAbsences = absences[child.id to date] ?: emptyList()
+                                val childAttendances = attendances[child.id to date] ?: emptyList()
+                                val childReservations =
+                                    reservations[child.id to date] ?: emptyList()
+                                val scheduleType =
+                                    placement.type.scheduleType(date, clubTerms, preschoolTerms)
+                                val shiftCare = serviceNeed?.shiftCare ?: ShiftCareType.NONE
 
-                                    serviceNeed?.daycareHoursPerMonth?.let { daycareHoursPerMonth ->
-                                        val usedService =
-                                            computeUsedService(
-                                                isDateInFuture = date > today,
-                                                serviceNeedHours = daycareHoursPerMonth,
-                                                placementType = placement.type,
-                                                preschoolTime = placement.preschoolTime,
-                                                preparatoryTime = placement.preparatoryTime,
-                                                absences =
-                                                    childAbsences.map {
-                                                        it.absenceType to it.category
-                                                    },
-                                                reservations =
-                                                    childReservations.mapNotNull {
-                                                        it.reservation.asTimeRange()
-                                                    },
-                                                attendances =
-                                                    childAttendances.mapNotNull {
-                                                        it.endTime?.let { endTime ->
-                                                            TimeRange(it.startTime, endTime)
-                                                        }
+                                serviceNeed?.daycareHoursPerMonth?.let { daycareHoursPerMonth ->
+                                    val usedService =
+                                        computeUsedService(
+                                            isDateInFuture = date > today,
+                                            serviceNeedHours = daycareHoursPerMonth,
+                                            placementType = placement.type,
+                                            preschoolTime = placement.preschoolTime,
+                                            preparatoryTime = placement.preparatoryTime,
+                                            absences =
+                                                childAbsences.map { it.absenceType to it.category },
+                                            reservations =
+                                                childReservations.mapNotNull {
+                                                    it.reservation.asTimeRange()
+                                                },
+                                            attendances =
+                                                childAttendances.mapNotNull {
+                                                    it.endTime?.let { endTime ->
+                                                        TimeRange(it.startTime, endTime)
                                                     }
+                                                }
+                                        )
+                                    usedServiceByChild.updateKey(child.id) {
+                                        (it ?: UsedServiceData(daycareHoursPerMonth)).let { totals
+                                            ->
+                                            totals.copy(
+                                                reservedMinutes =
+                                                    totals.reservedMinutes +
+                                                        usedService.reservedMinutes,
+                                                usedServiceMinutes =
+                                                    totals.usedServiceMinutes +
+                                                        usedService.usedServiceMinutes
                                             )
-                                        usedServiceByChild.updateKey(child.id) {
-                                            (it ?: UsedServiceData(daycareHoursPerMonth)).let {
-                                                totals ->
-                                                totals.copy(
-                                                    reservedMinutes =
-                                                        totals.reservedMinutes +
-                                                            usedService.reservedMinutes,
-                                                    usedServiceMinutes =
-                                                        totals.usedServiceMinutes +
-                                                            usedService.usedServiceMinutes
-                                                )
-                                            }
                                         }
                                     }
-
-                                    GroupMonthCalendarDayChild(
-                                        childId = child.id,
-                                        absenceCategories = placement.type.absenceCategories(),
-                                        backupCare =
-                                            backupCares[child.id]?.any { it.includes(date) }
-                                                ?: false,
-                                        scheduleType = scheduleType,
-                                        missingHolidayReservation =
-                                            scheduleType == ScheduleType.RESERVATION_REQUIRED &&
-                                                isHolidayPeriodDate &&
-                                                childReservations.isEmpty() &&
-                                                childAbsences.isEmpty(),
-                                        absences =
-                                            childAbsences.map { AbsenceWithModifierInfo.from(it) },
-                                        reservations = childReservations,
-                                        dailyServiceTimes =
-                                            (dailyServiceTimes[child.id]?.map { it.times }
-                                                    ?: emptyList())
-                                                .find { it.validityPeriod.includes(date) }
-                                                ?.let { value ->
-                                                    when (value) {
-                                                        is DailyServiceTimesValue.RegularTimes ->
-                                                            value.regularTimes
-                                                        is DailyServiceTimesValue.IrregularTimes ->
-                                                            value.getTimesOnDate(date)
-                                                        is DailyServiceTimesValue.VariableTimes ->
-                                                            null
-                                                    }
-                                                },
-                                    )
                                 }
-                                .sortedBy { it.childId }
-                        } else null
+
+                                GroupMonthCalendarDayChild(
+                                    childId = child.id,
+                                    absenceCategories = placement.type.absenceCategories(),
+                                    backupCare =
+                                        backupCares[child.id]?.any { it.includes(date) } ?: false,
+                                    scheduleType = scheduleType,
+                                    shiftCare = shiftCare,
+                                    missingHolidayReservation =
+                                        scheduleType == ScheduleType.RESERVATION_REQUIRED &&
+                                            isHolidayPeriodDate &&
+                                            childReservations.isEmpty() &&
+                                            childAbsences.isEmpty(),
+                                    absences =
+                                        childAbsences.map { AbsenceWithModifierInfo.from(it) },
+                                    reservations = childReservations,
+                                    dailyServiceTimes =
+                                        (dailyServiceTimes[child.id]?.map { it.times }
+                                                ?: emptyList())
+                                            .find { it.validityPeriod.includes(date) }
+                                            ?.let { value ->
+                                                when (value) {
+                                                    is DailyServiceTimesValue.RegularTimes ->
+                                                        value.regularTimes
+                                                    is DailyServiceTimesValue.IrregularTimes ->
+                                                        value.getTimesOnDate(date)
+                                                    is DailyServiceTimesValue.VariableTimes -> null
+                                                }
+                                            },
+                                )
+                            }
+                            .sortedBy { it.childId }
                 )
             }
             .toList()
@@ -514,9 +504,9 @@ data class UsedServiceTotals(
 
 data class GroupMonthCalendarDay(
     val date: LocalDate,
-    val holiday: Boolean,
-    val holidayPeriod: Boolean,
-    val children: List<GroupMonthCalendarDayChild>? // null if not an operation day for the unit
+    val isOperationDay: Boolean,
+    val isInHolidayPeriod: Boolean,
+    val children: List<GroupMonthCalendarDayChild>
 )
 
 data class GroupMonthCalendarDayChild(
@@ -527,7 +517,8 @@ data class GroupMonthCalendarDayChild(
     val absences: List<AbsenceWithModifierInfo>,
     val reservations: List<ChildReservation>,
     val dailyServiceTimes: TimeRange?,
-    val scheduleType: ScheduleType
+    val scheduleType: ScheduleType,
+    val shiftCare: ShiftCareType
 )
 
 data class ChildServiceNeedInfo(

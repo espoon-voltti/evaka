@@ -38,8 +38,7 @@ class AbsenceController(
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @PathVariable groupId: GroupId,
-        @RequestParam(required = false, defaultValue = "false") includeNonOperationalDays: Boolean
+        @PathVariable groupId: GroupId
     ): GroupMonthCalendar {
         return db.connect { dbc ->
                 dbc.read {
@@ -50,14 +49,7 @@ class AbsenceController(
                         Action.Group.READ_ABSENCES,
                         groupId
                     )
-                    getGroupMonthCalendar(
-                        it,
-                        clock.today(),
-                        groupId,
-                        year,
-                        month,
-                        includeNonOperationalDays
-                    )
+                    getGroupMonthCalendar(it, clock.today(), groupId, year, month)
                 }
             }
             .also {

@@ -126,10 +126,10 @@ export interface GroupMonthCalendarChild {
 * Generated from fi.espoo.evaka.absence.GroupMonthCalendarDay
 */
 export interface GroupMonthCalendarDay {
-  children: GroupMonthCalendarDayChild[] | null
+  children: GroupMonthCalendarDayChild[]
   date: LocalDate
-  holiday: boolean
-  holidayPeriod: boolean
+  isInHolidayPeriod: boolean
+  isOperationDay: boolean
 }
 
 /**
@@ -144,6 +144,7 @@ export interface GroupMonthCalendarDayChild {
   missingHolidayReservation: boolean
   reservations: ChildReservation[]
   scheduleType: ScheduleType
+  shiftCare: ShiftCareType
 }
 
 /**
@@ -245,7 +246,7 @@ export function deserializeJsonGroupMonthCalendarChild(json: JsonOf<GroupMonthCa
 export function deserializeJsonGroupMonthCalendarDay(json: JsonOf<GroupMonthCalendarDay>): GroupMonthCalendarDay {
   return {
     ...json,
-    children: (json.children != null) ? json.children.map(e => deserializeJsonGroupMonthCalendarDayChild(e)) : null,
+    children: json.children.map(e => deserializeJsonGroupMonthCalendarDayChild(e)),
     date: LocalDate.parseIso(json.date)
   }
 }

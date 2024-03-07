@@ -25,7 +25,6 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 
 import {
   addPresences,
@@ -68,8 +67,7 @@ export default React.memo(function GroupMonthCalendarWrapper({
       groupMonthCalendarResult({
         groupId,
         year: selectedYear,
-        month: selectedMonth,
-        includeNonOperationalDays: featureFlags.intermittentShiftCare ?? false
+        month: selectedMonth
       }),
     [groupId, selectedYear, selectedMonth]
   )
@@ -132,7 +130,7 @@ const GroupMonthCalendar = React.memo(function GroupMonthCalendar({
     () =>
       selectedCells.some((cell) =>
         groupMonthCalendar.days.some(
-          (day) => day.date.isEqual(cell.date) && day.holidayPeriod
+          (day) => day.date.isEqual(cell.date) && day.isInHolidayPeriod
         )
       ),
     [groupMonthCalendar.days, selectedCells]
