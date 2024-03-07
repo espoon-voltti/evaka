@@ -68,11 +68,12 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
-    @ExceptionHandler(value = [MaxUploadSizeExceededException::class])
-    fun maxUploadSizeExceeded(
-        req: HttpServletRequest,
-        ex: MaxUploadSizeExceededException
-    ): ResponseEntity<ErrorResponse> {
+    override fun handleMaxUploadSizeExceededException(
+        ex: MaxUploadSizeExceededException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
         logger.warn("Max upload size exceeded (${ex.message})", ex)
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ErrorResponse())
     }

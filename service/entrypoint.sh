@@ -38,8 +38,8 @@ if [ "${DD_PROFILING_ENABLED:-false}" = "true" ]; then
     -Ddd.trace.sample.rate=1 \
     -javaagent:/opt/dd-java-agent.jar \
     -XX:FlightRecorderOptions=stackdepth=256 \
-    -cp . -server $JAVA_OPTS org.springframework.boot.loader.JarLauncher "$@"
+    -cp . -server $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher "$@"
 else
   # shellcheck disable=SC2086
-  exec java -cp . -server $JAVA_OPTS org.springframework.boot.loader.JarLauncher "$@"
+  exec java -cp . -server $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher "$@"
 fi
