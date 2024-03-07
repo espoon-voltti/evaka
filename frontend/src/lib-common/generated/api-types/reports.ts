@@ -59,6 +59,7 @@ export interface AssistanceNeedDecisionsReportRow {
 export interface AssistanceNeedsAndActionsReport {
   actions: AssistanceActionOption[]
   rows: AssistanceNeedsAndActionsReportRow[]
+  showAssistanceNeedVoucherCoefficient: boolean
 }
 
 /**
@@ -67,6 +68,7 @@ export interface AssistanceNeedsAndActionsReport {
 export interface AssistanceNeedsAndActionsReportByChild {
   actions: AssistanceActionOption[]
   rows: AssistanceNeedsAndActionsReportRowByChild[]
+  showAssistanceNeedVoucherCoefficient: boolean
 }
 
 /**
@@ -74,6 +76,7 @@ export interface AssistanceNeedsAndActionsReportByChild {
 */
 export interface AssistanceNeedsAndActionsReportRow {
   actionCounts: Record<string, number>
+  assistanceNeedVoucherCoefficientCount: number
   careAreaName: string
   daycareAssistanceCounts: Record<DaycareAssistanceLevel, number>
   groupId: UUID
@@ -91,6 +94,7 @@ export interface AssistanceNeedsAndActionsReportRow {
 */
 export interface AssistanceNeedsAndActionsReportRowByChild {
   actions: string[]
+  assistanceNeedVoucherCoefficient: number
   careAreaName: string
   childAge: number
   childFirstName: string

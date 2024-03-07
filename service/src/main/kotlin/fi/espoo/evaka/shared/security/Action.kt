@@ -246,7 +246,7 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).any()
         ),
         READ_UNITS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF, REPORT_VIEWER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1921,7 +1921,7 @@ sealed interface Action {
     enum class Unit(override vararg val defaultRules: ScopedActionRule<in DaycareId>) :
         ScopedAction<DaycareId> {
         READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, REPORT_VIEWER),
             HasGlobalRole(FINANCE_STAFF)
                 .andUnitProviderAndCareTypeEquals(
                     setOf(ProviderType.MUNICIPAL, ProviderType.PURCHASED),
@@ -2121,7 +2121,7 @@ sealed interface Action {
                 .inUnit()
         ),
         READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD(
-            HasGlobalRole(ADMIN),
+            HasGlobalRole(ADMIN, REPORT_VIEWER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,

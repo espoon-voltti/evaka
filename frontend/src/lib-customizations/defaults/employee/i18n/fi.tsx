@@ -3699,7 +3699,8 @@ export const fi = {
       },
       basisMissing: 'Peruste puuttuu',
       action: 'Tukitoimi',
-      actionMissing: 'Tukitoimi puuttuu'
+      actionMissing: 'Tukitoimi puuttuu',
+      assistanceNeedVoucherCoefficient: 'Korotettu PS-kerroin'
     },
     occupancies: {
       title: 'Täyttö- ja käyttöasteet',

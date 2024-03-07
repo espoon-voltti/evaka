@@ -115,9 +115,11 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
@@ -1305,6 +1307,24 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
+    @PostMapping("/assistance-action-option")
+    fun createAssistanceActionOption(
+        db: Database,
+        @RequestBody assistanceActionOptions: List<DevAssistanceActionOption>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx -> assistanceActionOptions.forEach { tx.insert(it) } }
+        }
+    }
+
+    @PostMapping("/assistance-action")
+    fun createAssistanceAction(
+        db: Database,
+        @RequestBody assistanceActions: List<DevAssistanceAction>
+    ) {
+        db.connect { dbc -> dbc.transaction { tx -> assistanceActions.forEach { tx.insert(it) } } }
+    }
+
     @PostMapping("/assistance-need-decisions")
     fun createAssistanceNeedDecisions(
         db: Database,
@@ -1328,6 +1348,16 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
             dbc.transaction { tx ->
                 assistanceNeedDecisions.forEach { tx.insertTestAssistanceNeedPreschoolDecision(it) }
             }
+        }
+    }
+
+    @PostMapping("/assistance-need-voucher-coefficients")
+    fun createAssistanceNeedVoucherCoefficients(
+        db: Database,
+        @RequestBody assistanceNeedVoucherCoefficients: List<DevAssistanceNeedVoucherCoefficient>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx -> assistanceNeedVoucherCoefficients.forEach { tx.insert(it) } }
         }
     }
 
@@ -1869,6 +1899,15 @@ data class DevAssistanceAction(
     val otherAction: String = ""
 )
 
+data class DevAssistanceNeedVoucherCoefficient(
+    val id: AssistanceNeedVoucherCoefficientId =
+        AssistanceNeedVoucherCoefficientId(UUID.randomUUID()),
+    val childId: ChildId,
+    val validityPeriod: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
+    val coefficient: BigDecimal = BigDecimal(1.0)
+)
+
 data class DevPlacement(
     val id: PlacementId = PlacementId(UUID.randomUUID()),
     val type: PlacementType = PlacementType.DAYCARE,
@@ -2242,4 +2281,11 @@ data class DevVardaOrganizerChild(
     val organizerOid: String = "organizerOid123",
     val uploadedAt: HelsinkiDateTime? = null,
     val vardaPersonId: Long = Random.nextLong()
+)
+
+data class DevAssistanceActionOption(
+    val id: AssistanceActionOptionId,
+    val value: String = "TEST_ASSISTANCE_ACTION_OPTION",
+    val nameFi: String = "testAssistanceActionOption",
+    val descriptionFi: String?
 )

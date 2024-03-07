@@ -11,6 +11,7 @@ import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import java.math.BigDecimal
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -28,7 +30,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AssistanceNeedsAndActionsReportController(private val accessControl: AccessControl) {
+class AssistanceNeedsAndActionsReportController(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig
+) {
     @GetMapping("/reports/assistance-needs-and-actions")
     fun getAssistanceNeedsAndActionsReport(
         db: Database,
@@ -48,7 +53,9 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     AssistanceNeedsAndActionsReport(
                         actions = it.getAssistanceActionOptions(),
-                        rows = it.getReportRows(date, filter)
+                        rows = it.getReportRows(date, filter),
+                        showAssistanceNeedVoucherCoefficient =
+                            !featureConfig.valueDecisionCapacityFactorEnabled
                     )
                 }
             }
@@ -61,7 +68,8 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
 
     data class AssistanceNeedsAndActionsReport(
         val actions: List<AssistanceActionOption>,
-        val rows: List<AssistanceNeedsAndActionsReportRow>
+        val rows: List<AssistanceNeedsAndActionsReportRow>,
+        val showAssistanceNeedVoucherCoefficient: Boolean
     )
 
     data class AssistanceNeedsAndActionsReportRow(
@@ -75,7 +83,8 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         val noActionCount: Int,
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
-        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
+        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
+        val assistanceNeedVoucherCoefficientCount: Int
     )
 
     @GetMapping("/reports/assistance-needs-and-actions/by-child")
@@ -94,7 +103,12 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
                             clock,
                             Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
                         )
-                    getAssistanceNeedsAndActionsReportByChild(it, date, filter)
+                    getAssistanceNeedsAndActionsReportByChild(
+                        it,
+                        date,
+                        filter,
+                        !featureConfig.valueDecisionCapacityFactorEnabled
+                    )
                 }
             }
             .also {
@@ -107,18 +121,21 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
     fun getAssistanceNeedsAndActionsReportByChild(
         tx: Database.Read,
         date: LocalDate,
-        filter: AccessControlFilter<DaycareId>
+        filter: AccessControlFilter<DaycareId>,
+        showAssistanceNeedVoucherCoefficient: Boolean
     ): AssistanceNeedsAndActionsReportByChild {
         tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
         return AssistanceNeedsAndActionsReportByChild(
             actions = tx.getAssistanceActionOptions(),
-            rows = tx.getReportRowsByChild(date, filter)
+            rows = tx.getReportRowsByChild(date, filter),
+            showAssistanceNeedVoucherCoefficient = showAssistanceNeedVoucherCoefficient
         )
     }
 
     data class AssistanceNeedsAndActionsReportByChild(
         val actions: List<AssistanceActionOption>,
-        val rows: List<AssistanceNeedsAndActionsReportRowByChild>
+        val rows: List<AssistanceNeedsAndActionsReportRowByChild>,
+        val showAssistanceNeedVoucherCoefficient: Boolean
     )
 
     data class AssistanceNeedsAndActionsReportRowByChild(
@@ -135,7 +152,8 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
         val otherAction: String,
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
-        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>
+        @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
+        val assistanceNeedVoucherCoefficient: BigDecimal
     )
 }
 
@@ -226,7 +244,18 @@ WITH action_counts AS (
         GROUP BY 1, 2
     ) daycare_assistance_stats
     GROUP BY daycare_group_id
-)
+), assistance_need_voucher_coefficient_counts AS (
+    SELECT
+        gpl.daycare_group_id,
+        count(vc.child_id) AS count
+    FROM daycare_group_placement gpl
+    JOIN placement pl ON pl.id = gpl.daycare_placement_id
+    JOIN assistance_need_voucher_coefficient vc ON vc.child_id = pl.child_id
+    WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+    AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+    AND vc.validity_period @> ${bind(date)}
+    GROUP BY daycare_group_id
+) 
 SELECT
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -238,7 +267,8 @@ SELECT
     coalesce(no_action_count, 0) AS no_action_count,
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
-    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts
+    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
+    coalesce(assistance_need_voucher_coefficient_counts.count, 0) AS assistance_need_voucher_coefficient_count
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -246,6 +276,7 @@ LEFT JOIN action_counts ON g.id = action_counts.daycare_group_id
 LEFT JOIN daycare_assistance_counts ON g.id = daycare_assistance_counts.daycare_group_id
 LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.daycare_group_id
 LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
+LEFT JOIN assistance_need_voucher_coefficient_counts ON g.id = assistance_need_voucher_coefficient_counts.daycare_group_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """
@@ -336,7 +367,18 @@ WITH actions AS (
         GROUP BY 1, 2, 3
     ) daycare_assistance_stats
     GROUP BY daycare_group_id, child_id
-)
+), assistance_need_voucher_coefficient AS (
+        SELECT
+            gpl.daycare_group_id,
+            vc.child_id,
+            vc.coefficient
+        FROM daycare_group_placement gpl
+        JOIN placement pl ON pl.id = gpl.daycare_placement_id
+        JOIN assistance_need_voucher_coefficient vc ON vc.child_id = pl.child_id
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND vc.validity_period @> ${bind(date)}
+) 
 SELECT
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -351,7 +393,8 @@ SELECT
     coalesce(actions.other_action, '') AS other_action,
     coalesce(daycare_assistance_counts, '{}') AS daycare_assistance_counts,
     coalesce(preschool_assistance_counts, '{}') AS preschool_assistance_counts,
-    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts
+    coalesce(other_assistance_measure_counts, '{}') AS other_assistance_measure_counts,
+    coalesce(assistance_need_voucher_coefficient.coefficient, 1.0) AS assistance_need_voucher_coefficient
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
 JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
@@ -366,6 +409,8 @@ LEFT JOIN preschool_assistance_counts ON g.id = preschool_assistance_counts.dayc
     AND child.id = preschool_assistance_counts.child_id
 LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_counts.daycare_group_id
     AND child.id = other_assistance_measure_counts.child_id
+LEFT JOIN assistance_need_voucher_coefficient ON g.id = assistance_need_voucher_coefficient.daycare_group_id 
+   AND child.id = assistance_need_voucher_coefficient.child_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
         """

@@ -165,6 +165,7 @@ interface GroupingDataByGroup {
   actionCounts: Record<string, number>
   otherActionCount: number
   noActionCount: number
+  assistanceNeedVoucherCoefficientCount: number
 }
 
 const emptyGroupingDataByGroup = (
@@ -201,7 +202,8 @@ const emptyGroupingDataByGroup = (
     {}
   ),
   otherActionCount: 0,
-  noActionCount: 0
+  noActionCount: 0,
+  assistanceNeedVoucherCoefficientCount: 0
 })
 
 interface GroupingDataByChild {
@@ -402,6 +404,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                 }
                 placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
                 getItemLabel={(item) => item.label}
+                data-qa="care-area-filter"
               />
             ))}
           </Wrapper>
@@ -639,7 +642,10 @@ const ReportByGroupTable = ({
               add
             ),
             otherActionCount: groupData.otherActionCount + row.otherActionCount,
-            noActionCount: groupData.noActionCount + row.noActionCount
+            noActionCount: groupData.noActionCount + row.noActionCount,
+            assistanceNeedVoucherCoefficientCount:
+              groupData.assistanceNeedVoucherCoefficientCount +
+              row.assistanceNeedVoucherCoefficientCount
           }
           return data
         },
@@ -731,11 +737,21 @@ const ReportByGroupTable = ({
           {
             label: i18n.reports.assistanceNeedsAndActions.actionMissing,
             key: 'noActionCount'
-          }
+          },
+          ...(report.showAssistanceNeedVoucherCoefficient
+            ? [
+                {
+                  label:
+                    i18n.reports.assistanceNeedsAndActions
+                      .assistanceNeedVoucherCoefficient,
+                  key: 'assistanceNeedVoucherCoefficient'
+                }
+              ]
+            : [])
         ]}
         filename={filename}
       />
-      <TableScrollable>
+      <TableScrollable data-qa="assistance-needs-and-actions-table">
         <Thead>
           <Tr>
             {groupData.type !== 'NO_GROUPING' && (
@@ -785,15 +801,19 @@ const ReportByGroupTable = ({
               </Th>
             )}
             <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
+            {report.showAssistanceNeedVoucherCoefficient && (
+              <Th>{i18n.reports.assistanceNeedsAndActions.actionMissing}</Th>
+            )}
           </Tr>
         </Thead>
         <Tbody>
           {Object.entries(groupData.data).map(([groupingKey, data]) => (
             <React.Fragment key={`${groupData.type}-${groupingKey}`}>
               {groupData.type !== 'NO_GROUPING' && (
-                <Tr>
+                <Tr data-qa="assistance-needs-and-actions-row">
                   <Td>
                     <div
+                      data-qa={`area-${data.name}`}
                       onClick={() =>
                         setGroupsOpen({
                           ...groupsOpen,
@@ -834,6 +854,9 @@ const ReportByGroupTable = ({
                     <Td>{data.otherActionCount}</Td>
                   )}
                   <Td>{data.noActionCount}</Td>
+                  {report.showAssistanceNeedVoucherCoefficient && (
+                    <Td>{data.assistanceNeedVoucherCoefficientCount}</Td>
+                  )}
                 </Tr>
               )}
               {data.rows
@@ -874,6 +897,9 @@ const ReportByGroupTable = ({
                       <Td>{row.otherActionCount}</Td>
                     )}
                     <Td>{row.noActionCount}</Td>
+                    {report.showAssistanceNeedVoucherCoefficient && (
+                      <Td>{row.assistanceNeedVoucherCoefficientCount}</Td>
+                    )}
                   </Tr>
                 ))}
             </React.Fragment>
@@ -921,6 +947,14 @@ const ReportByGroupTable = ({
               </Td>
             )}
             <Td>{reducePropertySum(filteredRows, (r) => r.noActionCount)}</Td>
+            {report.showAssistanceNeedVoucherCoefficient && (
+              <Td>
+                {reducePropertySum(
+                  filteredRows,
+                  (r) => r.assistanceNeedVoucherCoefficientCount
+                )}
+              </Td>
+            )}
           </Tr>
         </TableFooter>
       </TableScrollable>
@@ -1105,6 +1139,16 @@ const ReportByChildTable = ({
                   key: 'otherAction'
                 }
               ]
+            : []),
+          ...(report.showAssistanceNeedVoucherCoefficient
+            ? [
+                {
+                  label:
+                    i18n.reports.assistanceNeedsAndActions
+                      .assistanceNeedVoucherCoefficient,
+                  key: 'assistanceNeedVoucherCoefficient'
+                }
+              ]
             : [])
         ]}
         filename={filename}
@@ -1147,15 +1191,24 @@ const ReportByChildTable = ({
               </Th>
             ))}
             <Th>{i18n.reports.assistanceNeedsAndActions.action}</Th>
+            {report.showAssistanceNeedVoucherCoefficient && (
+              <Th>
+                {
+                  i18n.reports.assistanceNeedsAndActions
+                    .assistanceNeedVoucherCoefficient
+                }
+              </Th>
+            )}
           </Tr>
         </Thead>
         <Tbody>
           {Object.entries(groupData.data).map(([groupingKey, data]) => (
             <React.Fragment key={`${groupData.type}-${groupingKey}`}>
               {groupData.type !== 'NO_GROUPING' && (
-                <Tr>
+                <Tr data-qa="assistance-needs-and-actions-row">
                   <Td>
                     <div
+                      data-qa={`unit-${data.name}`}
                       onClick={() =>
                         setGroupsOpen({
                           ...groupsOpen,
@@ -1170,6 +1223,9 @@ const ReportByChildTable = ({
                       />
                       {data.name}
                     </div>
+                  </Td>
+                  <Td>
+                    {/*This is to add an empty Ikä column to daycare row */}
                   </Td>
                   <Td />
                   {selectedDaycareColumns.map((level) => (
@@ -1188,6 +1244,7 @@ const ReportByChildTable = ({
                     </Td>
                   ))}
                   <Td />
+                  <Td />
                 </Tr>
               )}
               {data.rows
@@ -1197,7 +1254,10 @@ const ReportByChildTable = ({
                     groupsOpen[groupKeyFn(row)]
                 )
                 .map((row: AssistanceNeedsAndActionsReportRowByChild) => (
-                  <Tr key={`${row.unitId}:${row.groupId}.${row.childId}`}>
+                  <Tr
+                    key={`${row.unitId}:${row.groupId}.${row.childId}`}
+                    data-qa="child-row"
+                  >
                     <Td>
                       {groupData.type === 'AREA' ? (
                         row.careAreaName
@@ -1241,6 +1301,10 @@ const ReportByChildTable = ({
                           </span>
                         )}
                     </Td>
+
+                    {report.showAssistanceNeedVoucherCoefficient && (
+                      <Td>{row.assistanceNeedVoucherCoefficient}</Td>
+                    )}
                   </Tr>
                 ))}
             </React.Fragment>
@@ -1276,6 +1340,14 @@ const ReportByChildTable = ({
               </Td>
             ))}
             <Td />
+            {report.showAssistanceNeedVoucherCoefficient && (
+              <Td>
+                {reducePropertySum(
+                  filteredRows,
+                  (r) => r.assistanceNeedVoucherCoefficient
+                )}
+              </Td>
+            )}
           </Tr>
         </TableFooter>
       </TableScrollable>

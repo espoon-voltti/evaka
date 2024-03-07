@@ -464,3 +464,22 @@ export class AssistanceNeedPreschoolDecisionsReportDecision {
   status = this.page.findByDataQa('status')
   annulmentReason = this.page.findByDataQa('annulment-reason')
 }
+
+export class AssistanceNeedsAndActionsReport {
+  constructor(private page: Page) {}
+  needsAndActionsRows = this.page.findAllByDataQa(
+    'assistance-needs-and-actions-row'
+  )
+
+  childRows = this.page.findAllByDataQa('child-row')
+
+  careAreaSelect = new Combobox(this.page.findByDataQa('care-area-filter'))
+
+  async selectCareAreaFilter(area: string) {
+    await this.careAreaSelect.fillAndSelectFirst(area)
+  }
+
+  async openUnit(unitName: string) {
+    await this.page.findByDataQa(`unit-${unitName}`).click()
+  }
+}

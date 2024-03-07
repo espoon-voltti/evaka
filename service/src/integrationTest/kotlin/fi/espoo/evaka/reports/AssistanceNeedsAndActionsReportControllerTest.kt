@@ -7,9 +7,12 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.insertAssistanceActionOptions
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
+import fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareAssistance
@@ -24,6 +27,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -35,6 +39,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
     FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired private lateinit var controller: AssistanceNeedsAndActionsReportController
+
+    val featureConfig: FeatureConfig = testFeatureConfig
     private lateinit var admin: AuthenticatedUser
 
     @BeforeEach
@@ -107,6 +113,13 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         startDate = date,
                         endDate = date,
                         actions = setOf("ASSISTANCE_SERVICE_CHILD")
+                    )
+                )
+                tx.insert(
+                    DevAssistanceNeedVoucherCoefficient(
+                        childId = childId,
+                        validityPeriod = FiniteDateRange(date, date),
+                        coefficient = BigDecimal(1.50)
                     )
                 )
                 childId
@@ -209,7 +222,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     noActionCount = 0,
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 2),
                     preschoolAssistanceCounts = emptyMap(),
-                    otherAssistanceMeasureCounts = emptyMap()
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficientCount = 1
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -222,7 +236,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     noActionCount = 0,
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
-                    otherAssistanceMeasureCounts = emptyMap()
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficientCount = 0
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -235,7 +250,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     noActionCount = 0,
                     daycareAssistanceCounts = emptyMap(),
                     preschoolAssistanceCounts = emptyMap(),
-                    otherAssistanceMeasureCounts = emptyMap()
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficientCount = 0
                 )
             ),
             groupReport.rows
@@ -246,7 +262,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 controller.getAssistanceNeedsAndActionsReportByChild(
                     tx,
                     date,
-                    AccessControlFilter.PermitAll
+                    AccessControlFilter.PermitAll,
+                    true
                 )
             }
         assertEquals(
@@ -265,7 +282,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAction = "",
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
-                    otherAssistanceMeasureCounts = emptyMap()
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.50")
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -281,7 +299,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAction = "other action test",
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
-                    otherAssistanceMeasureCounts = emptyMap()
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.0")
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -297,7 +316,8 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     otherAction = "",
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
-                    otherAssistanceMeasureCounts = emptyMap()
+                    otherAssistanceMeasureCounts = emptyMap(),
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.0")
                 )
             ),
             childReport.rows

@@ -169,6 +169,29 @@ export interface DevApplicationWithForm {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevAssistanceAction
+*/
+export interface DevAssistanceAction {
+  actions: string[]
+  childId: UUID
+  endDate: LocalDate
+  id: UUID
+  otherAction: string
+  startDate: LocalDate
+  updatedBy: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevAssistanceActionOption
+*/
+export interface DevAssistanceActionOption {
+  descriptionFi: string | null
+  id: UUID
+  nameFi: string
+  value: string
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevAssistanceFactor
 */
 export interface DevAssistanceFactor {
@@ -227,6 +250,16 @@ export interface DevAssistanceNeedPreschoolDecision {
   sentForDecision: LocalDate | null
   status: AssistanceNeedDecisionStatus
   unreadGuardianIds: UUID[] | null
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
+*/
+export interface DevAssistanceNeedVoucherCoefficient {
+  childId: UUID
+  coefficient: number
+  id: UUID
+  validityPeriod: FiniteDateRange
 }
 
 /**
@@ -1032,6 +1065,15 @@ export function deserializeJsonDevApplicationWithForm(json: JsonOf<DevApplicatio
 }
 
 
+export function deserializeJsonDevAssistanceAction(json: JsonOf<DevAssistanceAction>): DevAssistanceAction {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
 export function deserializeJsonDevAssistanceFactor(json: JsonOf<DevAssistanceFactor>): DevAssistanceFactor {
   return {
     ...json,
@@ -1058,6 +1100,14 @@ export function deserializeJsonDevAssistanceNeedPreschoolDecision(json: JsonOf<D
     decisionMade: (json.decisionMade != null) ? LocalDate.parseIso(json.decisionMade) : null,
     form: deserializeJsonAssistanceNeedPreschoolDecisionForm(json.form),
     sentForDecision: (json.sentForDecision != null) ? LocalDate.parseIso(json.sentForDecision) : null
+  }
+}
+
+
+export function deserializeJsonDevAssistanceNeedVoucherCoefficient(json: JsonOf<DevAssistanceNeedVoucherCoefficient>): DevAssistanceNeedVoucherCoefficient {
+  return {
+    ...json,
+    validityPeriod: FiniteDateRange.parseJson(json.validityPeriod)
   }
 }
 

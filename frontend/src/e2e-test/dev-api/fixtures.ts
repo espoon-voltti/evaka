@@ -19,7 +19,8 @@ import {
 } from 'lib-common/generated/api-types/assistance'
 import {
   AssistanceNeedPreschoolDecisionForm,
-  AssistanceNeedPreschoolDecisionGuardian
+  AssistanceNeedPreschoolDecisionGuardian,
+  AssistanceNeedVoucherCoefficient
 } from 'lib-common/generated/api-types/assistanceneed'
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import {
@@ -57,9 +58,12 @@ import {
   addPayment,
   addStaffAttendance,
   addStaffAttendancePlan,
+  createAssistanceAction,
+  createAssistanceActionOption,
   createAssistanceFactors,
   createAssistanceNeedDecisions,
   createAssistanceNeedPreschoolDecisions,
+  createAssistanceNeedVoucherCoefficients,
   createBackupCares,
   createCareAreas,
   createChildDocument,
@@ -95,6 +99,8 @@ import {
   Caretaker,
   DecisionRequest,
   DevAbsence,
+  DevAssistanceAction,
+  DevAssistanceActionOption,
   DevAssistanceNeedDecision,
   DevAssistanceNeedPreschoolDecision,
   DevBackupCare,
@@ -2136,6 +2142,27 @@ export class Fixture {
     })
   }
 
+  static assistanceAction(): AssistanceActionBuilder {
+    return new AssistanceActionBuilder({
+      id: uuidv4(),
+      childId: 'not_set',
+      updatedBy: 'not_set',
+      actions: ['ASSISTANCE_SERVICE_CHILD'],
+      endDate: LocalDate.todayInSystemTz(),
+      startDate: LocalDate.todayInSystemTz(),
+      otherAction: ''
+    })
+  }
+
+  static assistanceActionOption(): AssistanceActionOptionBuilder {
+    return new AssistanceActionOptionBuilder({
+      id: uuidv4(),
+      descriptionFi: 'a description',
+      nameFi: 'a test assistance action option',
+      value: 'TEST_ASSISTANCE_ACTION_OPTION'
+    })
+  }
+
   static childDocument(): ChildDocumentBuilder {
     return new ChildDocumentBuilder({
       id: uuidv4(),
@@ -2154,6 +2181,18 @@ export class Fixture {
         ]
       },
       publishedContent: null
+    })
+  }
+
+  static assistanceNeedVoucherCoefficient(): AssistanceNeedVoucherCoefficientBuilder {
+    return new AssistanceNeedVoucherCoefficientBuilder({
+      id: uuidv4(),
+      childId: 'not_set',
+      validityPeriod: new FiniteDateRange(
+        LocalDate.todayInSystemTz(),
+        LocalDate.todayInSystemTz()
+      ),
+      coefficient: 1.0
     })
   }
 }
@@ -2551,6 +2590,17 @@ export class AssistanceNeedDecisionBuilder extends FixtureBuilder<DevAssistanceN
   }
 }
 
+export class AssistanceNeedVoucherCoefficientBuilder extends FixtureBuilder<AssistanceNeedVoucherCoefficient> {
+  async save() {
+    await createAssistanceNeedVoucherCoefficients({ body: [this.data] })
+    return this
+  }
+
+  copy() {
+    return new AssistanceNeedVoucherCoefficientBuilder({ ...this.data })
+  }
+}
+
 export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAssistanceNeedPreschoolDecision> {
   async save() {
     await createAssistanceNeedPreschoolDecisions({ body: [this.data] })
@@ -2932,5 +2982,29 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
 
   copy() {
     return new ChildDocumentBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction> {
+  async save() {
+    await createAssistanceAction({ body: [this.data] })
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new AssistanceActionBuilder({ ...this.data })
+  }
+}
+
+export class AssistanceActionOptionBuilder extends FixtureBuilder<DevAssistanceActionOption> {
+  async save() {
+    await createAssistanceActionOption({ body: [this.data] })
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new AssistanceActionOptionBuilder({ ...this.data })
   }
 }

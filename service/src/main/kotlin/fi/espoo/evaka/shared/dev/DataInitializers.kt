@@ -30,9 +30,11 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceActionOptionId
 import fi.espoo.evaka.shared.AssistanceFactorId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
@@ -1640,6 +1642,32 @@ fun Database.Transaction.insert(row: DevClubTerm): ClubTermId =
                 """
 INSERT INTO club_term (id, term, application_period, term_breaks) 
 VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(row: DevAssistanceActionOption): AssistanceActionOptionId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO assistance_action_option(id, value, name_fi, description_fi)
+VALUES (${bind(row.id)}, ${bind(row.value)}, ${bind(row.nameFi)}, ${bind(row.descriptionFi)})        
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(
+    row: DevAssistanceNeedVoucherCoefficient
+): AssistanceNeedVoucherCoefficientId =
+    createUpdate {
+            sql(
+                """     
+INSERT INTO assistance_need_voucher_coefficient(id, child_id, validity_period, coefficient)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bind(row.coefficient)})   
 """
             )
         }
