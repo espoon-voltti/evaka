@@ -216,7 +216,9 @@ fun createReservationsAndAbsences(
     val placementStartAfterHolidayDeadline = { req: DailyReservationRequest ->
         val holidayPeriod = holidayPeriods.find { it.period.includes(req.date) }
         val placementStartDate = childStartDates[req.childId]
-        holidayPeriod != null && placementStartDate != null && placementStartDate > holidayPeriod.reservationDeadline
+        holidayPeriod != null &&
+            placementStartDate != null &&
+            placementStartDate > holidayPeriod.reservationDeadline
     }
 
     val validated =
