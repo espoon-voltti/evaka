@@ -6,6 +6,7 @@ package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
@@ -583,7 +584,7 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                     } else {
                         coefficientSum.sum
                             .divide(
-                                caretakers.caretakerCount * BigDecimal(7),
+                                caretakers.caretakerCount * occupancyCoefficientSeven,
                                 4,
                                 RoundingMode.HALF_EVEN
                             )

@@ -206,7 +206,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     )
                     body.entries.map { entry ->
                         val occupancyCoefficient =
-                            if (entry.hasStaffOccupancyEffect) BigDecimal(7) else BigDecimal.ZERO
+                            if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
+                            else occupancyCoefficientZero
                         tx.upsertStaffAttendance(
                             entry.id,
                             body.employeeId,

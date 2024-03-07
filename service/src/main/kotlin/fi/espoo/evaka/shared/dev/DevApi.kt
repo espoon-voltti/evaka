@@ -35,6 +35,7 @@ import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
+import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
@@ -2112,7 +2113,7 @@ data class DevStaffAttendance(
     val groupId: GroupId? = null,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val occupancyCoefficient: BigDecimal = BigDecimal(7),
+    val occupancyCoefficient: BigDecimal = occupancyCoefficientSeven,
     val type: StaffAttendanceType = StaffAttendanceType.PRESENT,
     val departedAutomatically: Boolean = false
 )

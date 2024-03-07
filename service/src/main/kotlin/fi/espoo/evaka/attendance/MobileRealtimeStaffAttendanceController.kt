@@ -117,7 +117,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             )
                         val occupancyCoefficient =
                             body.hasStaffOccupancyEffect?.let {
-                                if (it) BigDecimal(7) else BigDecimal.ZERO
+                                if (it) occupancyCoefficientSeven else occupancyCoefficientZero
                             }
                                 ?: tx.getOccupancyCoefficientForEmployee(
                                     body.employeeId,
@@ -276,8 +276,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 arrivalTime = attendance.arrived,
                                 departureTime = attendance.departed,
                                 occupancyCoefficient =
-                                    if (attendance.hasStaffOccupancyEffect) BigDecimal(7)
-                                    else BigDecimal.ZERO,
+                                    if (attendance.hasStaffOccupancyEffect)
+                                        occupancyCoefficientSeven
+                                    else occupancyCoefficientZero,
                                 type = attendance.type,
                                 departedAutomatically = false
                             )
