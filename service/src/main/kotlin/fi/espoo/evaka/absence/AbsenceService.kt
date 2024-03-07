@@ -112,6 +112,8 @@ fun getGroupMonthCalendar(
                                             placementType = placement.type,
                                             preschoolTime = placement.preschoolTime,
                                             preparatoryTime = placement.preparatoryTime,
+                                            isOperationDay = operationDates.contains(date),
+                                            shiftCareType = shiftCare,
                                             absences =
                                                 childAbsences.map { it.absenceType to it.category },
                                             reservations =

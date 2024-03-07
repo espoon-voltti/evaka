@@ -171,6 +171,8 @@ class ReservationControllerCitizen(
                                                                         placementDay.preschoolTime,
                                                                         placementDay
                                                                             .preparatoryTime,
+                                                                        placementDay.isOperationDay,
+                                                                        placementDay.shiftCareType,
                                                                         childAbsences.map {
                                                                             it.absenceType to
                                                                                 it.category
@@ -380,7 +382,9 @@ class ReservationControllerCitizen(
 data class PlacementDay(
     val placementType: PlacementType,
     val scheduleType: ScheduleType,
+    val isOperationDay: Boolean,
     val shiftCare: Boolean,
+    val shiftCareType: ShiftCareType,
     val daycareHoursPerMonth: Int?,
     val reservableTimeRange: ReservableTimeRange,
     val preschoolTime: TimeRange?,
@@ -417,7 +421,9 @@ private fun placementDay(
         PlacementDay(
             placementType = placement.type,
             scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
+            isOperationDay = operationTime != null,
             shiftCare = shiftCare,
+            shiftCareType = shiftCareType,
             daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
             reservableTimeRange =
                 if (shiftCareType == ShiftCareType.INTERMITTENT) {

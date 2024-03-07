@@ -22,6 +22,7 @@ import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildAttendanceId
@@ -520,10 +521,21 @@ fun computeUsedService(
     placementType: PlacementType,
     preschoolTime: TimeRange?,
     preparatoryTime: TimeRange?,
+    isOperationDay: Boolean,
+    shiftCareType: ShiftCareType,
     absences: List<Pair<AbsenceType, AbsenceCategory>>,
     reservations: List<TimeRange>,
     attendances: List<TimeRange>
 ): UsedServiceResult {
+    if (!isOperationDay && shiftCareType != ShiftCareType.INTERMITTENT) {
+        return UsedServiceResult(
+            reservedMinutes = 0,
+            attendedMinutes = 0,
+            usedServiceMinutes = 0,
+            usedServiceRanges = emptyList()
+        )
+    }
+
     val fixedScheduleTimes =
         listOfNotNull(
             placementType.fixedScheduleRange(
@@ -563,7 +575,7 @@ fun computeUsedService(
             else -> 0
         }
 
-    if (reservations.isEmpty() && attendances.isEmpty()) {
+    if (isOperationDay && reservations.isEmpty() && attendances.isEmpty()) {
         val daysInMonth = 21
         return UsedServiceResult(
             reservedMinutes = 0,
