@@ -491,6 +491,40 @@ fun Database.Transaction.endActiveAssistanceNeedDecisions(
         .execute()
 }
 
+fun Database.Transaction.endActiveDaycareAssistanceDecisions(date: LocalDate) =
+    createUpdate {
+            sql(
+                """
+WITH daycare_assistance_decision_with_new_end_date AS (
+    SELECT daycare_assistance_decision.id, max(placement.end_date) AS new_end_date
+    FROM assistance_need_decision daycare_assistance_decision
+    JOIN placement ON daycare_assistance_decision.child_id = placement.child_id
+     AND daycare_assistance_decision.selected_unit = placement.unit_id
+     AND daycare_assistance_decision.validity_period @> placement.end_date
+    WHERE daycare_assistance_decision.status = 'ACCEPTED'
+      AND upper_inf(daycare_assistance_decision.validity_period)
+      AND placement.type IN (
+        'DAYCARE',
+        'DAYCARE_PART_TIME',
+        'DAYCARE_FIVE_YEAR_OLDS',
+        'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
+        'PRESCHOOL_DAYCARE',
+        'PRESCHOOL_DAYCARE_ONLY',
+        'PREPARATORY_DAYCARE',
+        'PREPARATORY_DAYCARE_ONLY')
+    GROUP BY daycare_assistance_decision.id
+    HAVING max(placement.end_date) < ${bind(date)}
+)
+UPDATE assistance_need_decision
+SET validity_period = daterange(lower(validity_period), new_end_date, '[]')
+FROM daycare_assistance_decision_with_new_end_date
+WHERE daycare_assistance_decision_with_new_end_date.id = assistance_need_decision.id
+"""
+                    .trimIndent()
+            )
+        }
+        .execute()
+
 fun Database.Read.hasLaterAssistanceNeedDecisions(
     childId: ChildId,
     startDate: LocalDate,

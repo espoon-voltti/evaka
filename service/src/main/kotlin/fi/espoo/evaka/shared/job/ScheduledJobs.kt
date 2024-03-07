@@ -8,6 +8,7 @@ import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
+import fi.espoo.evaka.assistanceneed.decision.endActiveDaycareAssistanceDecisions
 import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
@@ -54,6 +55,10 @@ enum class ScheduledJob(
     DvvUpdate(
         ScheduledJobs::dvvUpdate,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 0)))
+    ),
+    EndActiveDaycareAssistanceDecisions(
+        ScheduledJobs::endActiveDaycareAssistanceDecisions,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
     ),
     EndOfDayAttendanceUpkeep(
         ScheduledJobs::endOfDayAttendanceUpkeep,
@@ -186,6 +191,10 @@ class ScheduledJobs(
         env.jobs.map {
             ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }
+
+    fun endActiveDaycareAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(clock.today()) }
+    }
 
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
         val today = clock.today()
