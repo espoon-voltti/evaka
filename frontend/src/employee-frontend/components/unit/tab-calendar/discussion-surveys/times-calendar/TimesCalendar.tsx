@@ -39,11 +39,9 @@ import {
   addCalendarEventTimeMutation,
   groupDiscussionReservationDaysQuery
 } from '../../queries'
-import {
-  DiscussionSurveyEditMode,
-  timesForm
-} from '../survey-editor/DiscussionSurveyEditor'
+import { ChildGroupInfo } from '../DiscussionSurveyView'
 import { NewEventTimeForm } from '../survey-editor/DiscussionTimesForm'
+import { timesForm } from '../survey-editor/form'
 
 import CalendarEventTimeInput from './CalendarEventTimeInput'
 import CalendarEventTimeReservation, {
@@ -64,6 +62,7 @@ export interface CalendarWeek {
 }
 
 type DateType = 'past' | 'today' | 'future' | 'otherMonth'
+type CalendarMode = 'create' | 'reserve'
 
 function dateType(year: number, month: number, date: LocalDate): DateType {
   if (date.year !== year || date.month !== month) return 'otherMonth'
@@ -203,21 +202,25 @@ export const DiscussionReservationCalendar = React.memo(
     groupId,
     eventData,
     invitees,
-    calendarRange
+    calendarRange,
+    times,
+    addAction,
+    removeAction
   }: {
     unitId: UUID
     groupId: UUID
     eventData: CalendarEvent | null
-    invitees: ChildBasics[]
+    invitees: ChildGroupInfo[]
     calendarRange: FiniteDateRange
+    times: BoundForm<typeof timesForm>
+    addAction: (et: NewEventTimeForm) => void
+    removeAction: (id: UUID) => void
   }) {
     const [reservationModalVisible, setReservationModalVisible] =
       useState(false)
 
     const [selectedEventTime, setSelectedEventTime] =
       useState<CalendarEventTime | null>(null)
-
-    const [newTimes, setNewTimes] = useState<NewEventTimeForm[]>([])
 
     const calendarDays = useQueryResult(
       groupDiscussionReservationDaysQuery(
@@ -228,14 +231,16 @@ export const DiscussionReservationCalendar = React.memo(
       )
     )
 
-    const addNewTime = useCallback(
-      (eventTime: NewEventTimeForm) => setNewTimes([...newTimes, eventTime]),
-      [setNewTimes, newTimes]
-    )
-    const removeTimeById = useCallback(
-      (eventTimeId: UUID) =>
-        setNewTimes(newTimes.filter((t) => t.id !== eventTimeId)),
-      [setNewTimes, newTimes]
+    const dailyInvitees = useMemo(
+      () =>
+        invitees
+          .filter((i) =>
+            i.groupPlacements.some(
+              (gp) => selectedEventTime && gp.includes(selectedEventTime.date)
+            )
+          )
+          .map((i) => i.child),
+      [selectedEventTime, invitees]
     )
 
     return (
@@ -247,7 +252,7 @@ export const DiscussionReservationCalendar = React.memo(
               setReservationModalVisible(false)
               setSelectedEventTime(null)
             }}
-            invitees={invitees}
+            invitees={dailyInvitees}
             eventData={eventData}
           />
         )}
@@ -267,11 +272,11 @@ export const DiscussionReservationCalendar = React.memo(
                     setSelectedEventTime(et)
                     setReservationModalVisible(true)
                   }}
-                  removeAction={removeTimeById}
-                  addAction={addNewTime}
-                  newTimes={newTimes}
+                  removeAction={removeAction}
+                  addAction={addAction}
+                  times={times}
                   editMode="reserve"
-                  reservationChildren={invitees}
+                  reservationChildren={invitees.map((i) => i.child)}
                 />
               ))}
             </div>
@@ -320,7 +325,6 @@ export const DiscussionTimesCalendar = React.memo(
                   month={m.month}
                   weeks={m.weeks}
                   times={times}
-                  newTimes={[]}
                   eventData={null}
                   addAction={addAction}
                   removeAction={removeAction}
@@ -342,7 +346,6 @@ export const TimesMonth = React.memo(function TimesMonth({
   month,
   weeks,
   times,
-  newTimes,
   addAction,
   removeAction,
   reserveAction,
@@ -353,12 +356,11 @@ export const TimesMonth = React.memo(function TimesMonth({
   year: number
   month: number
   weeks: CalendarWeek[]
-  times?: BoundForm<typeof timesForm>
-  newTimes: NewEventTimeForm[]
+  times: BoundForm<typeof timesForm>
   addAction: (et: NewEventTimeForm) => void
   removeAction: (id: UUID) => void
   reserveAction?: (eventTime: CalendarEventTime) => void
-  editMode: DiscussionSurveyEditMode
+  editMode: CalendarMode
   reservationChildren: ChildBasics[]
 }) {
   const { i18n } = useTranslation()
@@ -386,7 +388,6 @@ export const TimesMonth = React.memo(function TimesMonth({
             month={month}
             week={w}
             times={times}
-            newTimes={newTimes}
             addAction={addAction}
             removeAction={removeAction}
             reserveAction={reserveAction}
@@ -405,7 +406,6 @@ export const TimesWeek = React.memo(function TimesWeek({
   month,
   week,
   times,
-  newTimes,
   addAction,
   removeAction,
   reserveAction,
@@ -415,12 +415,11 @@ export const TimesWeek = React.memo(function TimesWeek({
   year: number
   month: number
   week: CalendarWeek
-  newTimes: NewEventTimeForm[]
-  times?: BoundForm<typeof timesForm>
+  times: BoundForm<typeof timesForm>
   addAction: (et: NewEventTimeForm) => void
   removeAction: (id: UUID) => void
   reserveAction?: (eventTime: CalendarEventTime) => void
-  editMode: DiscussionSurveyEditMode
+  editMode: CalendarMode
   reservationChildren: ChildBasics[]
 }) {
   return (
@@ -443,7 +442,7 @@ export const TimesWeek = React.memo(function TimesWeek({
               eventData={eventData}
               removeAction={removeAction}
               addAction={addAction}
-              newTimes={newTimes.filter((t) => t.date.isEqual(d.date))}
+              times={times}
               key={`${d.date.formatIso()}${month}${year}`}
               day={d}
               dateType={dateType(year, month, d.date)}
@@ -511,18 +510,16 @@ export const TimesDay = React.memo(function TimesDay({
 
       {!isWeekend && isOperationDay && (
         <>
-          <div data-qa="events">
-            {otherEvents.length > 0 ||
-              (otherSurveys.length > 0 && (
+          {otherEvents.length > 0 ||
+            (otherSurveys.length > 0 && (
+              <EventContainer data-qa="events">
                 <OtherEventMarker
                   events={otherEvents}
                   surveys={otherSurveys}
                   date={day.date}
                 />
-              ))}
-          </div>
-
-          <div data-qa="events" />
+              </EventContainer>
+            ))}
           {eventTimesToday && eventTimesToday.length > 0 && (
             <TimesContainer data-qa="times" className="edit">
               {eventTimesToday.map((t, i) => (
@@ -570,7 +567,7 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
   reserveAction,
   addAction,
   removeAction,
-  newTimes
+  times
 }: {
   reservationChildren: ChildBasics[]
   eventData: CalendarEvent
@@ -579,7 +576,7 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
   reserveAction: (eventTime: CalendarEventTime) => void
   addAction: (eventTime: NewEventTimeForm) => void
   removeAction: (eventTimeId: UUID) => void
-  newTimes: NewEventTimeForm[]
+  times: BoundForm<typeof timesForm>
 }) {
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events.discussionReservation
@@ -626,6 +623,14 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
     [addAction, day.date]
   )
 
+  const newTimeField = useFormField(times, 'times')
+  const newTimeElems = useFormElems(newTimeField)
+
+  const dailyTimes = useMemo(
+    () => newTimeElems.filter((t) => t.state.date.isEqual(day.date)),
+    [newTimeElems, day.date]
+  )
+
   return dateType === 'otherMonth' || dateType === 'past' ? (
     <InactiveCell />
   ) : (
@@ -642,16 +647,17 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
       </DayCellHeader>
       {!isWeekend && isOperationDay && (
         <>
-          <div data-qa="events">
-            {(otherEvents.length > 0 || otherSurveys.length > 0) && (
+          {(otherEvents.length > 0 || otherSurveys.length > 0) && (
+            <EventContainer data-qa="events">
               <OtherEventMarker
                 events={otherEvents}
                 surveys={otherSurveys}
                 date={day.date}
               />
-            )}
-          </div>
-          <>
+            </EventContainer>
+          )}
+
+          {reservationEventTimes && reservationEventTimes.length > 0 && (
             <TimesContainer className="reserve">
               {reservationEventTimes.map((e, i) => (
                 <CalendarEventTimeReservation
@@ -664,17 +670,22 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
                 />
               ))}
             </TimesContainer>
+          )}
 
+          {dailyTimes && dailyTimes.length > 0 && (
             <TimesContainer>
-              {newTimes.map((time) => (
+              {dailyTimes.map((time) => (
                 <NewCalendarEventTimeEditor
-                  key={`${day.date.format()}-new-time-input-${time.id}`}
+                  key={`${day.date.format()}-new-time-input-${time.state.id}`}
+                  bind={time}
                   addAction={(et: CalendarEventTimeForm) => {
                     addCalendarEventTime({
                       eventId: eventData.id,
                       form: et
                     })
-                      .then(() => removeAction(time.id))
+                      .then(() => {
+                        removeAction(time.state.id)
+                      })
                       .catch(() =>
                         setErrorMessage({
                           title: t.eventTime.addError,
@@ -684,21 +695,19 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
                       )
                   }}
                   removeAction={removeAction}
-                  day={day.date}
-                  editorId={time.id}
                 />
               ))}
             </TimesContainer>
+          )}
 
-            <ButtonContainer>
-              <InlineButton
-                onClick={createNewTime}
-                data-qa={`${day.date.formatIso()}-add-time-button`}
-                icon={faPlus}
-                text={i18n.common.add}
-              />
-            </ButtonContainer>
-          </>
+          <ButtonContainer>
+            <InlineButton
+              onClick={createNewTime}
+              data-qa={`${day.date.formatIso()}-add-time-button`}
+              icon={faPlus}
+              text={i18n.common.add}
+            />
+          </ButtonContainer>
         </>
       )}
     </DayCell>
@@ -771,6 +780,10 @@ const TimesContainer = styled.div`
   &.edit {
     margin-left: 10px;
   }
+`
+
+const EventContainer = styled.div`
+  margin-bottom: 10px;
 `
 
 const ButtonContainer = styled.div`

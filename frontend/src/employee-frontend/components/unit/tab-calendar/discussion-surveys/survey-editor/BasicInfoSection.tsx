@@ -13,7 +13,8 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2, H3, Label } from 'lib-components/typography'
 
-import { WidthLimiter, basicInfoForm } from './DiscussionSurveyEditor'
+import { WidthLimiter } from './DiscussionSurveyEditor'
+import { basicInfoForm } from './form'
 
 const FormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
 const FormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`

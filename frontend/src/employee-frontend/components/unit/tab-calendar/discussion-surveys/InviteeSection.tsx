@@ -14,6 +14,8 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 
+import { ChildGroupInfo } from './DiscussionSurveyView'
+
 const ReservationCount = styled.span`
   font-weight: ${fontWeights.bold};
 `
@@ -43,8 +45,8 @@ export default React.memo(function InviteeSection({
   reserved,
   unreserved
 }: {
-  reserved: ChildBasics[]
-  unreserved: ChildBasics[]
+  reserved: ChildGroupInfo[]
+  unreserved: ChildGroupInfo[]
 }) {
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events.discussionReservation
@@ -53,11 +55,11 @@ export default React.memo(function InviteeSection({
     <FixedSpaceRow spacing="XL" fullWidth justifyContent="space-between">
       <FixedSpaceColumn fullWidth>
         <ReservationCount>{`${t.unreservedTitle} (${unreserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
-        <ChildNameList childList={unreserved} />
+        <ChildNameList childList={unreserved.map((u) => u.child)} />
       </FixedSpaceColumn>
       <FixedSpaceColumn fullWidth>
         <ReservationCount>{`${t.reservedTitle} (${reserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
-        <ChildNameList childList={reserved} />
+        <ChildNameList childList={reserved.map((r) => r.child)} />
       </FixedSpaceColumn>
     </FixedSpaceRow>
   )

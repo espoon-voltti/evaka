@@ -14,6 +14,7 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { UIContext } from 'employee-frontend/state/ui'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
@@ -41,9 +42,57 @@ import { deleteCalendarEventMutation } from '../queries'
 import InviteeSection from './InviteeSection'
 import {
   BorderedBox,
+  NewEventTimeForm,
   TimesCalendarContainer
 } from './survey-editor/DiscussionTimesForm'
+import { timesForm } from './survey-editor/form'
 import { DiscussionReservationCalendar } from './times-calendar/TimesCalendar'
+
+export interface ChildGroupInfo {
+  child: ChildBasics
+  groupPlacements: DateRange[]
+}
+
+export const getInvitedChildInfo = (
+  unitDetails: UnitGroupDetails,
+  eventData: CalendarEvent,
+  groupId: UUID
+) => {
+  const fullGroupSelections = eventData.groups.filter((g) => {
+    const anyIndividuals =
+      eventData.individualChildren.length > 0 &&
+      eventData.individualChildren.some((c) => c.groupId === g.id)
+    return !anyIndividuals
+  })
+  const childSelections = eventData.individualChildren.map((c) => c.id)
+  const allInvitedChildren = unitDetails.placements
+    .filter((p) => {
+      const isPartOfFullGroupSelection = p.groupPlacements.some((gp) => {
+        const placedGroupIsInFullGroups = fullGroupSelections.some(
+          (gi) => gi.id === gp.groupId
+        )
+        const durationsOverlap = eventData.period.overlaps(
+          new DateRange(gp.startDate, gp.endDate)
+        )
+        return placedGroupIsInFullGroups && durationsOverlap
+      })
+      const isPartOfIndividualSelections = childSelections.includes(p.child.id)
+      return isPartOfFullGroupSelection || isPartOfIndividualSelections
+    })
+    .map((p) => ({
+      child: p.child,
+      groupPlacements: p.groupPlacements
+        .filter((gp) => gp.groupId === groupId)
+        .map((gp) => new DateRange(gp.startDate, gp.endDate))
+    }))
+
+  const sortedResults = orderBy(allInvitedChildren, [
+    (c) => c.child.lastName,
+    (c) => c.child.firstName,
+    (c) => c.child.id
+  ])
+  return sortedResults
+}
 
 const SurveyStatusChip = React.memo(function SurveyStatusChip({
   status
@@ -69,34 +118,23 @@ const ReservationCalendarSection = React.memo(
     groupId,
     eventData,
     invitees,
-    calendarPeriodEnd
+    calendarRange,
+    expandCalendarAction,
+    times,
+    addAction,
+    removeAction
   }: {
     unitId: UUID
     groupId: UUID
     eventData: CalendarEvent
-    invitees: ChildBasics[]
-    calendarPeriodEnd: LocalDate
+    invitees: ChildGroupInfo[]
+    calendarRange: FiniteDateRange
+    expandCalendarAction: () => void
+    times: BoundForm<typeof timesForm>
+    addAction: (et: NewEventTimeForm) => void
+    removeAction: (id: UUID) => void
   }) {
-    const [calendarHorizonInMonths, setCalendarHorizonInMonths] =
-      useState<number>(0)
     const { i18n } = useTranslation()
-
-    const calendarRange = useMemo(() => {
-      const today = LocalDate.todayInSystemTz()
-      const previousMondayFromStart = today.subDays(today.getIsoDayOfWeek() - 1)
-      const lastDayOfEndMonth = LocalDate.of(
-        calendarPeriodEnd.year,
-        calendarPeriodEnd.month,
-        1
-      )
-        .addMonths(1 + calendarHorizonInMonths)
-        .subDays(1)
-      const standardizedPeriod = new FiniteDateRange(
-        previousMondayFromStart,
-        lastDayOfEndMonth
-      )
-      return standardizedPeriod
-    }, [calendarPeriodEnd, calendarHorizonInMonths])
 
     return (
       <TimesCalendarContainer>
@@ -106,13 +144,14 @@ const ReservationCalendarSection = React.memo(
           eventData={eventData}
           calendarRange={calendarRange}
           invitees={invitees}
+          times={times}
+          addAction={addAction}
+          removeAction={removeAction}
         />
         <Gap size="L" />
         <FixedSpaceRow fullWidth alignItems="center" justifyContent="center">
           <ExpandHorizonButton
-            onClick={() =>
-              setCalendarHorizonInMonths(calendarHorizonInMonths + 1)
-            }
+            onClick={expandCalendarAction}
             text={
               i18n.unit.calendar.events.discussionReservation.calendar
                 .addTimeButton
@@ -148,8 +187,32 @@ export default React.memo(function DiscussionReservationSurveyView({
   }, [navigate, eventData.id, groupId, unitId])
   const t = i18n.unit.calendar.events
 
+  const getCalendarHorizon = useCallback(() => {
+    const today = LocalDate.todayInSystemTz()
+    const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
+
+    const defaultHorizonDate = previousMonday.addMonths(3).lastDayOfMonth()
+
+    const eventDataHorizonDate = eventData.period.end.lastDayOfMonth()
+
+    return defaultHorizonDate.isAfter(eventDataHorizonDate)
+      ? defaultHorizonDate
+      : eventDataHorizonDate
+  }, [eventData.period.end])
+
+  const [calendarHorizonDate, setCalendarHorizonDate] =
+    useState<LocalDate>(getCalendarHorizon())
+
+  const calendarRange = useMemo(() => {
+    const today = LocalDate.todayInSystemTz()
+
+    const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
+
+    return new FiniteDateRange(previousMonday, calendarHorizonDate)
+  }, [calendarHorizonDate])
+
   const unitDetails = useQueryResult(
-    unitGroupDetailsQuery(unitId, eventData.period.start, eventData.period.end)
+    unitGroupDetailsQuery(unitId, calendarRange.start, calendarRange.end)
   )
 
   const [deleteConfirmModalVisible, setDeleteConfirmModalVisible] =
@@ -163,41 +226,27 @@ export default React.memo(function DiscussionReservationSurveyView({
     [eventData.period.end]
   )
 
-  const getInvitedChildren = useCallback(
-    (unitDetails: UnitGroupDetails) => {
-      const fullGroupSelections = eventData.groups.filter((g) => {
-        const anyIndividuals =
-          eventData.individualChildren.length > 0 &&
-          eventData.individualChildren.some((c) => c.groupId === g.id)
-        return !anyIndividuals
-      })
-      const childSelections = eventData.individualChildren.map((c) => c.id)
-      const allInvitedChildren = unitDetails.placements
-        .filter((p) => {
-          const isPartOfFullGroupSelection = p.groupPlacements.some((gp) => {
-            const placedGroupIsInFullGroups = fullGroupSelections.some(
-              (gi) => gi.id === gp.groupId
-            )
-            const durationsOverlap = eventData.period.overlaps(
-              new DateRange(gp.startDate, gp.endDate)
-            )
-            return placedGroupIsInFullGroups && durationsOverlap
-          })
-          const isPartOfIndividualSelections = childSelections.includes(
-            p.child.id
-          )
-          return isPartOfFullGroupSelection || isPartOfIndividualSelections
-        })
-        .map((p) => p.child)
+  const discussionTimesForm = useForm(
+    timesForm,
+    () => ({
+      times: []
+    }),
+    i18n.validationErrors
+  )
 
-      const sortedResults = orderBy(allInvitedChildren, [
-        (c) => c.lastName,
-        (c) => c.firstName,
-        (c) => c.id
-      ])
-      return sortedResults
+  const { times } = useFormFields(discussionTimesForm)
+
+  const addTimeForDay = useCallback(
+    (et: NewEventTimeForm) => {
+      times.set([...times.state, et])
     },
-    [eventData.groups, eventData.individualChildren, eventData.period]
+    [times]
+  )
+  const removeTimeById = useCallback(
+    (id: UUID) => {
+      times.set(times.state.filter((t) => t.id !== id))
+    },
+    [times]
   )
 
   return (
@@ -284,12 +333,23 @@ export default React.memo(function DiscussionReservationSurveyView({
             </FormFieldGroup>
           </FormSectionGroup>
           {renderResult(unitDetails, (unitDetailsResult) => {
-            const sortedInvitees = getInvitedChildren(unitDetailsResult)
+            const sortedCalendarInvitees = getInvitedChildInfo(
+              unitDetailsResult,
+              eventData,
+              groupId
+            )
+            const sortedPeriodInvitees: ChildGroupInfo[] =
+              sortedCalendarInvitees.filter((c) =>
+                c.groupPlacements.some((gp) =>
+                  gp.overlapsWith(eventData.period.asDateRange())
+                )
+              )
             const reservations = eventData.times.filter(
               (t) => t.childId !== null
             )
-            const [reserved, unreserved] = partition(sortedInvitees, (e) =>
-              reservations.some((r) => r.childId === e.id)
+            const [reserved, unreserved] = partition(
+              sortedPeriodInvitees,
+              (e) => reservations.some((r) => r.childId === e.child.id)
             )
 
             return (
@@ -314,8 +374,16 @@ export default React.memo(function DiscussionReservationSurveyView({
                     unitId={unitId}
                     groupId={groupId}
                     eventData={eventData}
-                    invitees={sortedInvitees}
-                    calendarPeriodEnd={eventData.period.end}
+                    invitees={sortedCalendarInvitees}
+                    calendarRange={calendarRange}
+                    expandCalendarAction={() =>
+                      setCalendarHorizonDate(
+                        calendarHorizonDate.addMonths(1).lastDayOfMonth()
+                      )
+                    }
+                    times={discussionTimesForm}
+                    addAction={addTimeForDay}
+                    removeAction={removeTimeById}
                   />
                 </FormSectionGroup>
               </>

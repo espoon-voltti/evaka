@@ -135,10 +135,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     )
 
                     val holidays = tx.getHolidays(range)
-                    val unitInfo =
+                    val unitOperationDays =
                         tx.getUnitOperationDays()[unitId]
                             ?: throw NotFound("Unit operation days not found")
-                    val events = tx.getCalendarEventsByGroupWithRange(groupId, range)
+                    val groupEvents = tx.getCalendarEventsByGroupWithRange(groupId, range)
 
                     range
                         .dates()
@@ -146,7 +146,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                             DiscussionReservationDay(
                                 date = day,
                                 events =
-                                    events
+                                    groupEvents
                                         .filter { event -> event.period.includes(day) }
                                         .filter { event ->
                                             event.times.isEmpty() ||
@@ -154,7 +154,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                                         }
                                         .toSet(),
                                 isHoliday = holidays.contains(day),
-                                isOperationalDay = unitInfo.contains(day.dayOfWeek)
+                                isOperationalDay = unitOperationDays.contains(day.dayOfWeek)
                             )
                         }
                         .toSet()
