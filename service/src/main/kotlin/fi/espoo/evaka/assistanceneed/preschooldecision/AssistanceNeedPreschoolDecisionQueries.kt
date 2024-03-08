@@ -372,6 +372,37 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         .updateExactlyOne()
 }
 
+fun Database.Transaction.endActivePreschoolAssistanceDecisions(date: LocalDate) =
+    createUpdate {
+            sql(
+                """
+WITH preschool_assistance_decision_with_new_end_date AS (
+    SELECT preschool_assistance_decision.id, max(placement.end_date) AS new_end_date
+    FROM assistance_need_preschool_decision preschool_assistance_decision
+    JOIN placement ON preschool_assistance_decision.child_id = placement.child_id
+     AND preschool_assistance_decision.selected_unit = placement.unit_id
+     AND daterange(preschool_assistance_decision.valid_from, preschool_assistance_decision.valid_to, '[]') @> placement.end_date
+    WHERE preschool_assistance_decision.status = 'ACCEPTED'
+      AND preschool_assistance_decision.valid_to IS NULL
+      AND placement.type IN (
+        'PRESCHOOL',
+        'PRESCHOOL_DAYCARE',
+        'PRESCHOOL_CLUB',
+        'PREPARATORY',
+        'PREPARATORY_DAYCARE')
+    GROUP BY preschool_assistance_decision.id
+    HAVING max(placement.end_date) < ${bind(date)}
+)
+UPDATE assistance_need_preschool_decision
+SET valid_to = new_end_date
+FROM preschool_assistance_decision_with_new_end_date
+WHERE preschool_assistance_decision_with_new_end_date.id = assistance_need_preschool_decision.id
+"""
+                    .trimIndent()
+            )
+        }
+        .execute()
+
 fun Database.Transaction.updateAssistanceNeedPreschoolDocumentKey(
     id: AssistanceNeedPreschoolDecisionId,
     key: String
