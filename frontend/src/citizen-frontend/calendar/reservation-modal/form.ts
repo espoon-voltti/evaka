@@ -606,10 +606,9 @@ const allChildrenAreLockedDueHolidayPeriod = (
   selectedChildren: string[]
 ) =>
   calendarDays.every((day) =>
-    selectedChildren.some((childId) =>
+    selectedChildren.every((childId) =>
       day.children.some(
-        (child) =>
-          child.childId === childId && child.reservationLockedDueHolidayPeriod
+        (child) => child.childId === childId && child.lockedByHolidayPeriod
       )
     )
   )

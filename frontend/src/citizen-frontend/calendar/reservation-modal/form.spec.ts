@@ -64,7 +64,7 @@ const emptyChild: ReservationResponseDayChild = {
     type: 'NORMAL',
     range: defaultReservableTimeRange
   },
-  reservationLockedDueHolidayPeriod: true
+  lockedByHolidayPeriod: true
 }
 
 const timeInputState = (
@@ -1472,7 +1472,7 @@ describe('resetTimes', () => {
         ]
       })
     })
-    it('Closed holiday period + reservationLockedDueHolidayPeriod = false', () => {
+    it('Closed holiday period + lockedByHolidayPeriod = false', () => {
       const holidayPeriods = [
         { period: selectedRange, state: 'closed' as const }
       ]
@@ -1480,7 +1480,11 @@ describe('resetTimes', () => {
         (day) => ({
           ...day,
           children: [
-            { ...emptyChild, reservationLockedDueHolidayPeriod: false }
+            { ...emptyChild, lockedByHolidayPeriod: false },
+            {
+              ...emptyChild,
+              childId: 'child-2'
+            }
           ]
         })
       )
@@ -1495,7 +1499,7 @@ describe('resetTimes', () => {
         resetTimes(dayProperties, undefined, {
           repetition: 'WEEKLY',
           selectedRange,
-          selectedChildren: [emptyChild.childId]
+          selectedChildren: [emptyChild.childId, 'child-2']
         })
       ).toEqual({
         branch: 'weeklyTimes',

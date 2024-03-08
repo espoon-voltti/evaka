@@ -205,8 +205,8 @@ class ReservationControllerCitizen(
                                                             usedService = usedServiceResult,
                                                             reservableTimeRange =
                                                                 placementDay.reservableTimeRange,
-                                                            reservationLockedDueHolidayPeriod =
-                                                                isReservationLockedDueHolidayPeriod(
+                                                            lockedByHolidayPeriod =
+                                                                isLockedByHolidayPeriod(
                                                                     holidayPeriods,
                                                                     date,
                                                                     today,
@@ -241,7 +241,7 @@ class ReservationControllerCitizen(
             }
     }
 
-    private fun isReservationLockedDueHolidayPeriod(
+    private fun isLockedByHolidayPeriod(
         holidayPeriods: List<HolidayPeriod>,
         date: LocalDate,
         today: LocalDate,
@@ -580,7 +580,7 @@ data class ReservationResponseDayChild(
     val attendances: List<TimeInterval>,
     val usedService: UsedServiceResult?,
     val reservableTimeRange: ReservableTimeRange,
-    val reservationLockedDueHolidayPeriod: Boolean
+    val lockedByHolidayPeriod: Boolean
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
