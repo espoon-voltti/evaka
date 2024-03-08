@@ -1472,6 +1472,48 @@ describe('resetTimes', () => {
         ]
       })
     })
+    it('Closed holiday period + reservationLockedDueHolidayPeriod = false', () => {
+      const holidayPeriods = [
+        { period: selectedRange, state: 'closed' as const }
+      ]
+      const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
+        (day) => ({
+          ...day,
+          children: [
+            { ...emptyChild, reservationLockedDueHolidayPeriod: false }
+          ]
+        })
+      )
+
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
+
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'WEEKLY',
+          selectedRange,
+          selectedChildren: [emptyChild.childId]
+        })
+      ).toEqual({
+        branch: 'weeklyTimes',
+        state: [1, 2, 3, 4, 5].map((weekDay) => ({
+          weekDay,
+          day: {
+            branch: 'reservation',
+            state: {
+              validTimeRange: defaultReservableTimeRange,
+              reservation: {
+                branch: 'timeRanges',
+                state: [timeInputState('', '')]
+              }
+            }
+          }
+        }))
+      })
+    })
 
     it('Open holiday period covers the whole period', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
