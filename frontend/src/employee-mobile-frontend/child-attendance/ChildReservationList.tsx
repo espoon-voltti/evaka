@@ -19,8 +19,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { reservationHasTimes } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { theme } from 'lib-customizations/common'
 
 import ChildSubListItem from './ChildSubListItem'
@@ -52,9 +51,7 @@ const ChildSubList = styled.div`
 export default React.memo(function ChildReservationList({
   date
 }: ChildReservationListProps) {
-  const { unitId } = useNonNullableParams<{
-    unitId: UUID
-  }>()
+  const { unitId } = useRouteParams(['unitId'])
 
   const { selectedGroupId } = useSelectedGroup()
 

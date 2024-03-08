@@ -11,7 +11,7 @@ import {
   InvoiceDetailedResponse,
   InvoiceRowDetailed
 } from 'lib-common/generated/api-types/invoicing'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -34,7 +34,7 @@ const getInvoiceResult = wrapResult(getInvoice)
 const getInvoiceCodesResult = wrapResult(getInvoiceCodes)
 
 export default React.memo(function InvoiceDetailsPage() {
-  const { id } = useNonNullableParams<{ id: string }>()
+  const { id } = useRouteParams(['id'])
   const { i18n } = useTranslation()
   const [invoice, setInvoice] = useState<Result<InvoiceDetailedResponse>>(
     Loading.of()

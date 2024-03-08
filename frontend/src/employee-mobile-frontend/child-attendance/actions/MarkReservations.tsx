@@ -40,7 +40,7 @@ import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
@@ -216,10 +216,7 @@ export default React.memo(function MarkReservations() {
   const navigate = useNavigate()
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
-  const { childId, unitId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
+  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const reservations = useQueryResult(getConfirmedRangeQuery(childId))
   const absences = useQueryResult(getFutureAbsencesByChildQuery(childId))

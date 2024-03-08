@@ -16,8 +16,7 @@ import {
   AssistanceNeedPreschoolDecisionResponse
 } from 'lib-common/generated/api-types/assistanceneed'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import Button from 'lib-components/atoms/buttons/Button'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -247,7 +246,7 @@ const DecisionView = React.memo(function DecisionView({
 
 export default React.memo(
   function AssistanceNeedDecisionsReportPreschoolDecision() {
-    const { decisionId } = useNonNullableParams<{ decisionId: UUID }>()
+    const { decisionId } = useRouteParams(['decisionId'])
     const decisionResult = useQueryResult(
       assistanceNeedPreschoolDecisionQuery({ id: decisionId })
     )

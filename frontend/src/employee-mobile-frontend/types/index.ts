@@ -14,6 +14,19 @@ export type ChildAttendanceUIState =
   | 'departed'
   | 'absent'
 
+export function parseChildAttendanceUiState(state: string) {
+  if (
+    state === 'coming' ||
+    state === 'present' ||
+    state === 'departed' ||
+    state === 'absent'
+  ) {
+    return state
+  } else {
+    throw new Error(`Invalid child attendance UI state: ${state}`)
+  }
+}
+
 export function mapChildAttendanceUIState(
   uiState: ChildAttendanceUIState
 ): AttendanceStatus {

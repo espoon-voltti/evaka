@@ -16,7 +16,7 @@ import {
   AssistanceNeedDecisionStatus
 } from 'lib-common/generated/api-types/assistanceneed'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -81,7 +81,7 @@ const DangerAsyncButton = styled(AsyncButton)`
 `
 
 export default React.memo(function AssistanceNeedDecisionsReportDecision() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRouteParams(['id'])
   const navigate = useNavigate()
 
   const [assistanceNeedDecision, reloadDecision] = useApiState(

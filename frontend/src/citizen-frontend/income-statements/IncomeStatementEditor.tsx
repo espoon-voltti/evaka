@@ -13,7 +13,7 @@ import {
   useQueryResult
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 
 import { renderResult } from '../async-rendering'
@@ -55,7 +55,7 @@ function useInitialEditorState(id: UUID | undefined): Result<EditorState> {
 }
 
 export default React.memo(function IncomeStatementEditor() {
-  const params = useNonNullableParams<{ incomeStatementId: string }>()
+  const params = useRouteParams(['incomeStatementId'])
   const navigate = useNavigate()
   const incomeStatementId =
     params.incomeStatementId === 'new' ? undefined : params.incomeStatementId

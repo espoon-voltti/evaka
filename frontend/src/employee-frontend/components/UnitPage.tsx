@@ -22,7 +22,7 @@ import { DaycareResponse } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
@@ -236,7 +236,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
 })
 
 export default React.memo(function UnitPageWrapper() {
-  const { id } = useNonNullableParams<{ id: UUID }>()
+  const { id } = useRouteParams(['id'])
   return (
     <UnitContextProvider id={id}>
       <UnitPage id={id} />

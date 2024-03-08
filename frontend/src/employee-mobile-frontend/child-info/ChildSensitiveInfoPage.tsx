@@ -7,8 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { renderPinRequiringResult } from '../auth/renderPinRequiringResult'
@@ -25,10 +24,7 @@ export default React.memo(function ChildSensitiveInfoPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { childId, unitId } = useNonNullableParams<{
-    childId: UUID
-    unitId: UUID
-  }>()
+  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const childName = useMemo(
     () =>

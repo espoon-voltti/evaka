@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { combine, Failure, Result, Success } from 'lib-common/api'
 import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 
 import { renderResult } from '../async-rendering'
@@ -18,7 +18,7 @@ import { clubTermsQuery } from './queries'
 
 export default React.memo(function ClubTermPeriodEditor() {
   const navigate = useNavigate()
-  const { termId } = useNonNullableParams<{ termId: string }>()
+  const { termId } = useRouteParams(['termId'])
 
   const clubTerms = useQueryResult(clubTermsQuery())
 

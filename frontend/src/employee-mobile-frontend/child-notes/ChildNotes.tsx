@@ -11,7 +11,7 @@ import {
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -84,10 +84,7 @@ export default React.memo(function ChildNotes() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, childId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
+  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
   const { selectedGroupId } = useSelectedGroup()
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 

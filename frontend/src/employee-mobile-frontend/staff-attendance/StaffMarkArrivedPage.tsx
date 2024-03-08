@@ -22,7 +22,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -54,10 +54,7 @@ export default React.memo(function StaffMarkArrivedPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, employeeId } = useNonNullableParams<{
-    unitId: UUID
-    employeeId: UUID
-  }>()
+  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
   const { selectedGroupId } = useSelectedGroup()
 
   const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)

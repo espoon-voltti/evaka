@@ -10,8 +10,7 @@ import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -53,10 +52,7 @@ export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, childId } = useNonNullableParams<{
-    unitId: UUID
-    childId: UUID
-  }>()
+  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
 
   const { unitInfoResponse } = useContext(UnitContext)
   const { selectedGroupId, groupRoute } = useSelectedGroup()

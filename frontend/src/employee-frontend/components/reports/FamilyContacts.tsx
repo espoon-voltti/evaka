@@ -7,8 +7,7 @@ import { Link } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -23,7 +22,7 @@ import { TableScrollable } from './common'
 import { familyContactsReportQuery } from './queries'
 
 export default React.memo(function FamilyContacts() {
-  const { unitId } = useNonNullableParams<{ unitId: UUID }>()
+  const { unitId } = useRouteParams(['unitId'])
   const { i18n } = useTranslation()
 
   const rows = useQueryResult(familyContactsReportQuery({ unitId }))

@@ -12,7 +12,7 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -67,10 +67,7 @@ const FlexRowRightAlign = styled(FlexRow)`
 `
 
 export default React.memo(function GroupCaretakers() {
-  const { unitId, groupId } = useNonNullableParams<{
-    unitId: UUID
-    groupId: UUID
-  }>()
+  const { unitId, groupId } = useRouteParams(['unitId', 'groupId'])
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [caretakers, setCaretakers] = useState<Result<CaretakersResponse>>(
