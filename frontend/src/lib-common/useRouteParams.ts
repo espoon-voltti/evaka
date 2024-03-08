@@ -32,12 +32,5 @@ export default function useRouteParams<
   ]) as RequiredObject<Required> & OptionalObject<Optional>
 }
 
-type RequiredObject<T> = T extends [infer First, ...infer Rest]
-  ? (First extends string ? { [K in First]: string } : never) &
-      RequiredObject<Rest>
-  : unknown // T & unknown = T
-
-type OptionalObject<T> = T extends [infer First, ...infer Rest]
-  ? (First extends string ? { [K in First]?: string } : never) &
-      OptionalObject<Rest>
-  : unknown // T & unknown = T
+type RequiredObject<T extends string[]> = { [K in T[number]]: string }
+type OptionalObject<T extends string[]> = { [K in T[number]]?: string }
