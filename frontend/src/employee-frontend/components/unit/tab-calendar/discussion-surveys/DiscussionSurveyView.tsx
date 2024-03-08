@@ -5,7 +5,13 @@
 import { faPen, faQuestion, faTrash } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { useNavigate } from 'react-router'
 import styled from 'styled-components'
 
@@ -21,6 +27,7 @@ import { ChildBasics } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -45,7 +52,7 @@ import {
   NewEventTimeForm,
   TimesCalendarContainer
 } from './survey-editor/DiscussionTimesForm'
-import { timesForm } from './survey-editor/form'
+import { eventTimeArray, timesForm } from './survey-editor/form'
 import { DiscussionReservationCalendar } from './times-calendar/TimesCalendar'
 
 export interface ChildGroupInfo {
@@ -130,7 +137,7 @@ const ReservationCalendarSection = React.memo(
     invitees: ChildGroupInfo[]
     calendarRange: FiniteDateRange
     expandCalendarAction: () => void
-    times: BoundForm<typeof timesForm>
+    times: BoundForm<typeof eventTimeArray>
     addAction: (et: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
   }) {
@@ -200,6 +207,7 @@ export default React.memo(function DiscussionReservationSurveyView({
       : eventDataHorizonDate
   }, [eventData.period.end])
 
+  const calendarRef = useRef(null)
   const [calendarHorizonDate, setCalendarHorizonDate] =
     useState<LocalDate>(getCalendarHorizon())
 
@@ -236,7 +244,7 @@ export default React.memo(function DiscussionReservationSurveyView({
 
   const { times } = useFormFields(discussionTimesForm)
 
-  const addTimeForDay = useCallback(
+  const addTime = useCallback(
     (et: NewEventTimeForm) => {
       times.set([...times.state, et])
     },
@@ -366,7 +374,7 @@ export default React.memo(function DiscussionReservationSurveyView({
 
                 <FormSectionGroup>
                   <BorderedBox>
-                    <H3 noMargin>
+                    <H3 noMargin ref={calendarRef}>
                       {t.discussionReservation.surveyDiscussionTimesTitle}
                     </H3>
                   </BorderedBox>
@@ -376,13 +384,14 @@ export default React.memo(function DiscussionReservationSurveyView({
                     eventData={eventData}
                     invitees={sortedCalendarInvitees}
                     calendarRange={calendarRange}
-                    expandCalendarAction={() =>
+                    expandCalendarAction={() => {
                       setCalendarHorizonDate(
                         calendarHorizonDate.addMonths(1).lastDayOfMonth()
                       )
-                    }
-                    times={discussionTimesForm}
-                    addAction={addTimeForDay}
+                      scrollRefIntoView(calendarRef, 500)
+                    }}
+                    times={times}
+                    addAction={addTime}
                     removeAction={removeTimeById}
                   />
                 </FormSectionGroup>

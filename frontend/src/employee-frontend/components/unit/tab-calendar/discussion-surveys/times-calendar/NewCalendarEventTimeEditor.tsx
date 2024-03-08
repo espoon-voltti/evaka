@@ -35,9 +35,9 @@ export default React.memo(function NewCalendarEventTimeEditor({
 
   return (
     <InputContainer spacing="xxs" alignItems="center" justifyContent="center">
-      <TimeInputF bind={startTime} info={{ text: '' }} />
+      <TimeInputF bind={startTime} info={{ text: '' }} size="narrow" />
       <span>–</span>
-      <TimeInputF bind={endTime} info={{ text: '' }} />
+      <TimeInputF bind={endTime} info={{ text: '' }} size="narrow" />
       <InlineButton
         icon={faCheck}
         disabled={!bind.isValid()}

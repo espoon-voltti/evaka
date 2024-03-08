@@ -4,7 +4,14 @@ import { Form } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { TreeNodeInfo } from './DiscussionTimesForm'
+export interface TreeNodeInfo {
+  key: string
+  text: string
+  checked: boolean
+  children: TreeNodeInfo[]
+  firstName: string
+  lastName: string
+}
 
 export const treeNodeInfo = (): Form<
   TreeNodeInfo,
@@ -33,12 +40,18 @@ export const calendarEventTimeForm = object({
   timeRange: required(requiredLocalTimeRange())
 })
 
+export const eventTimeArray = array(calendarEventTimeForm)
+
 export const timesForm = object({
-  times: array(calendarEventTimeForm)
+  times: eventTimeArray
+})
+
+export const attendeeForm = object({
+  attendees: array(recursive(treeNodeInfo))
 })
 
 export const surveyForm = object({
   title: required(string()),
   description: required(string()),
-  attendees: array(recursive(treeNodeInfo))
+  times: array(calendarEventTimeForm)
 })

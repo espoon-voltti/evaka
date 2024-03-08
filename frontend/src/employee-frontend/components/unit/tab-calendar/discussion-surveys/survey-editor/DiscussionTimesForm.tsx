@@ -3,23 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
-import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { mapped } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import {
-  CalendarEvent,
-  GroupInfo,
-  IndividualChild
-} from 'lib-common/generated/api-types/calendarevent'
-import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
+import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
@@ -30,7 +26,7 @@ import { DiscussionTimesCalendar } from '../times-calendar/TimesCalendar'
 
 import { DiscussionSurveyEditMode } from './DiscussionSurveyEditor'
 import DiscussionSurveyForm from './DiscussionSurveyForm'
-import { timesForm } from './form'
+import { surveyForm } from './form'
 
 export const TimesCalendarContainer = styled.div`
   max-height: 680px;
@@ -46,76 +42,11 @@ export const BorderedBox = styled.div`
   padding-top: 24px;
   padding-bottom: 24px;
 `
-
-//export type TreeNodeInfo = TreeNode & { lastName: string, firstName: string }
-export interface TreeNodeInfo {
-  key: string
-  text: string
-  checked: boolean
-  children: TreeNodeInfo[]
-  firstName: string
-  lastName: string
-}
-
 export type NewEventTimeForm = {
   id: UUID
   date: LocalDate
   childId: null
   timeRange: { startTime: string; endTime: string }
-}
-
-const isChildSelected = (childId: string, selections: IndividualChild[]) =>
-  selections.some((s) => s.id === childId)
-const resolveInviteeTreeNodes = (
-  invitedAttendees: {
-    individualChildren: IndividualChild[]
-    groups: GroupInfo[]
-  },
-  groupResult: UnitGroupDetails,
-  groupId: UUID,
-  period: FiniteDateRange
-): TreeNodeInfo[] => {
-  const { groups, placements } = groupResult
-  const currentGroup = groups.filter((g) => g.id === groupId)
-  return currentGroup.map((g) => {
-    // individualChildren contains childSelections that are not a part of a full group selection
-    // -> any children there means their full group is not selected
-    const individualChildrenOfSelectedGroup =
-      invitedAttendees.individualChildren.filter((c) => c.groupId === groupId)
-    const groupChildren = placements.filter((p) =>
-      p.groupPlacements.some(
-        (gp) =>
-          gp.groupId === g.id &&
-          period.overlaps(new DateRange(gp.startDate, gp.endDate))
-      )
-    )
-
-    const sortedGroupChildren: TreeNodeInfo[] = orderBy(groupChildren, [
-      ({ child }) => child.lastName,
-      ({ child }) => child.firstName
-    ]).map(({ child: c }) => ({
-      key: c.id,
-      text: `${c.firstName} ${c.lastName}`,
-      checked:
-        individualChildrenOfSelectedGroup.length === 0 ||
-        isChildSelected(c.id, individualChildrenOfSelectedGroup),
-      children: [],
-      firstName: c.firstName,
-      lastName: c.lastName
-    }))
-
-    // group is always selected:
-    // - the full group is selected by default for a new survey
-    // - existing survey has to have at least one attendee for the group -> tree node selected
-    return {
-      text: g.name,
-      key: g.id,
-      checked: true,
-      children: sortedGroupChildren,
-      firstName: '',
-      lastName: ''
-    }
-  })
 }
 
 export default React.memo(function DiscussionTimesForm({
@@ -132,6 +63,7 @@ export default React.memo(function DiscussionTimesForm({
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events
 
+  const calendarRef = useRef(null)
   const getCalendarHorizon = useCallback(() => {
     const today = LocalDate.todayInSystemTz()
     const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
@@ -150,15 +82,21 @@ export default React.memo(function DiscussionTimesForm({
   const [calendarHorizonDate, setCalendarHorizonDate] =
     useState<LocalDate>(getCalendarHorizon())
 
-  const discussionTimesForm = useForm(
-    timesForm,
+  const mappedForm = mapped(surveyForm, (output) => ({
+    ...output
+  }))
+
+  const initializedForm = useForm(
+    mappedForm,
     () => ({
+      title: eventData?.title ?? '',
+      description: eventData?.description ?? '',
       times: []
     }),
     i18n.validationErrors
   )
 
-  const { times } = useFormFields(discussionTimesForm)
+  const { times } = useFormFields(initializedForm)
 
   const period = useMemo(() => {
     const today = LocalDate.todayInSystemTz()
@@ -190,15 +128,7 @@ export default React.memo(function DiscussionTimesForm({
     unitGroupDetailsQuery(unitId, calendarRange.start, calendarRange.end)
   )
 
-  const invitedAttendees = useMemo(
-    () => ({
-      individualChildren: eventData?.individualChildren ?? [],
-      groups: eventData?.groups ?? []
-    }),
-    [eventData]
-  )
-
-  const addTimeForDay = useCallback(
+  const addTime = useCallback(
     (et: NewEventTimeForm) => {
       times.set([...times.state, et])
     },
@@ -212,69 +142,59 @@ export default React.memo(function DiscussionTimesForm({
   )
 
   return (
-    <>
-      <div>
-        {renderResult(groupData, (groupResult) => {
-          const attendeeTree: TreeNodeInfo[] = resolveInviteeTreeNodes(
-            invitedAttendees,
-            groupResult,
-            groupId,
-            period
-          )
+    <div>
+      {renderResult(groupData, (groupResult) => (
+        <>
+          <DiscussionSurveyForm
+            eventData={eventData}
+            period={period}
+            form={initializedForm}
+            groupResult={groupResult}
+            groupId={groupId}
+            unitId={unitId}
+          />
 
-          return (
+          {editMode === 'create' && (
             <>
-              <DiscussionSurveyForm
-                eventData={eventData}
-                period={period}
-                groupId={groupId}
-                attendeeNodes={attendeeTree}
-                timesBind={discussionTimesForm}
-                unitId={unitId}
-              />
+              <BorderedBox>
+                <H3 noMargin>
+                  {t.discussionReservation.surveyDiscussionTimesTitle}
+                </H3>
+              </BorderedBox>
+              <TimesCalendarContainer>
+                <DiscussionTimesCalendar
+                  unitId={unitId}
+                  groupId={groupId}
+                  times={times}
+                  calendarRange={calendarRange}
+                  addAction={addTime}
+                  removeAction={removeTimeById}
+                />
 
-              {editMode === 'create' && (
-                <>
-                  <BorderedBox>
-                    <H3 noMargin>
-                      {t.discussionReservation.surveyDiscussionTimesTitle}
-                    </H3>
-                  </BorderedBox>
-                  <TimesCalendarContainer>
-                    <DiscussionTimesCalendar
-                      unitId={unitId}
-                      groupId={groupId}
-                      times={discussionTimesForm}
-                      calendarRange={calendarRange}
-                      addAction={addTimeForDay}
-                      removeAction={removeTimeById}
-                    />
-
-                    <Gap size="L" />
-                    <FixedSpaceRow
-                      fullWidth
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Button
-                        onClick={() =>
-                          setCalendarHorizonDate(
-                            calendarHorizonDate.addMonths(1).lastDayOfMonth()
-                          )
-                        }
-                        text={
-                          i18n.unit.calendar.events.discussionReservation
-                            .calendar.addTimeButton
-                        }
-                      />
-                    </FixedSpaceRow>
-                  </TimesCalendarContainer>
-                </>
-              )}
+                <Gap size="L" ref={calendarRef} />
+                <FixedSpaceRow
+                  fullWidth
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Button
+                    onClick={() => {
+                      setCalendarHorizonDate(
+                        calendarHorizonDate.addMonths(1).lastDayOfMonth()
+                      )
+                      scrollRefIntoView(calendarRef, 500)
+                    }}
+                    text={
+                      i18n.unit.calendar.events.discussionReservation.calendar
+                        .addTimeButton
+                    }
+                  />
+                </FixedSpaceRow>
+              </TimesCalendarContainer>
             </>
-          )
-        })}
-      </div>
-    </>
+          )}
+        </>
+      ))}
+    </div>
   )
 })

@@ -13,7 +13,7 @@ import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UIContext } from 'employee-frontend/state/ui'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { BoundForm, useFormElems, useFormField } from 'lib-common/form/hooks'
+import { BoundForm, useFormElems } from 'lib-common/form/hooks'
 import {
   CalendarEvent,
   CalendarEventTime,
@@ -41,7 +41,7 @@ import {
 } from '../../queries'
 import { ChildGroupInfo } from '../DiscussionSurveyView'
 import { NewEventTimeForm } from '../survey-editor/DiscussionTimesForm'
-import { timesForm } from '../survey-editor/form'
+import { eventTimeArray } from '../survey-editor/form'
 
 import CalendarEventTimeInput from './CalendarEventTimeInput'
 import CalendarEventTimeReservation, {
@@ -212,7 +212,7 @@ export const DiscussionReservationCalendar = React.memo(
     eventData: CalendarEvent | null
     invitees: ChildGroupInfo[]
     calendarRange: FiniteDateRange
-    times: BoundForm<typeof timesForm>
+    times: BoundForm<typeof eventTimeArray>
     addAction: (et: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
   }) {
@@ -298,7 +298,7 @@ export const DiscussionTimesCalendar = React.memo(
   }: {
     unitId: UUID
     groupId: UUID
-    times: BoundForm<typeof timesForm>
+    times: BoundForm<typeof eventTimeArray>
     addAction: (date: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
     calendarRange: FiniteDateRange
@@ -356,7 +356,7 @@ export const TimesMonth = React.memo(function TimesMonth({
   year: number
   month: number
   weeks: CalendarWeek[]
-  times: BoundForm<typeof timesForm>
+  times: BoundForm<typeof eventTimeArray>
   addAction: (et: NewEventTimeForm) => void
   removeAction: (id: UUID) => void
   reserveAction?: (eventTime: CalendarEventTime) => void
@@ -377,7 +377,7 @@ export const TimesMonth = React.memo(function TimesMonth({
   )
 
   return monthHasCurrentOrFutureDays ? (
-    <ContentArea opaque={false} key={`${month}${year}`} paddingHorizontal="1px">
+    <ContentArea opaque={false} key={`${month}${year}`} paddingHorizontal="2px">
       <H3>{`${i18n.common.datetime.months[month - 1]} ${year}`}</H3>
       <Grid>
         {weeks.map((w) => (
@@ -415,7 +415,7 @@ export const TimesWeek = React.memo(function TimesWeek({
   year: number
   month: number
   week: CalendarWeek
-  times: BoundForm<typeof timesForm>
+  times: BoundForm<typeof eventTimeArray>
   addAction: (et: NewEventTimeForm) => void
   removeAction: (id: UUID) => void
   reserveAction?: (eventTime: CalendarEventTime) => void
@@ -463,7 +463,7 @@ export const TimesDay = React.memo(function TimesDay({
   addAction,
   removeAction
 }: {
-  times: BoundForm<typeof timesForm>
+  times: BoundForm<typeof eventTimeArray>
   day: DiscussionReservationDay
   dateType: DateType
   addAction: (et: NewEventTimeForm) => void
@@ -481,8 +481,7 @@ export const TimesDay = React.memo(function TimesDay({
     [day.isHoliday, day.isOperationalDay]
   )
 
-  const timesField = useFormField(times, 'times')
-  const eventTimes = useFormElems(timesField)
+  const eventTimes = useFormElems(times)
   const eventTimesToday = useMemo(
     () => eventTimes.filter((t) => t.state.date.isEqual(day.date)),
     [eventTimes, day.date]
@@ -576,7 +575,7 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
   reserveAction: (eventTime: CalendarEventTime) => void
   addAction: (eventTime: NewEventTimeForm) => void
   removeAction: (eventTimeId: UUID) => void
-  times: BoundForm<typeof timesForm>
+  times: BoundForm<typeof eventTimeArray>
 }) {
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events.discussionReservation
@@ -623,8 +622,7 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
     [addAction, day.date]
   )
 
-  const newTimeField = useFormField(times, 'times')
-  const newTimeElems = useFormElems(newTimeField)
+  const newTimeElems = useFormElems(times)
 
   const dailyTimes = useMemo(
     () => newTimeElems.filter((t) => t.state.date.isEqual(day.date)),
@@ -759,7 +757,7 @@ const DayCell = styled.div<{
 const DayCellHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  margin: 0px 0px ${defaultMargins.s} ${defaultMargins.s};
+  margin: 0px 0px ${defaultMargins.s} ${defaultMargins.xs};
   width: 100%;
 `
 

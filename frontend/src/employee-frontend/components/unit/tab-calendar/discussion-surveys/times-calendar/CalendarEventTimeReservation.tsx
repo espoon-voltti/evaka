@@ -57,6 +57,10 @@ const TimeSpan = styled.span`
   font-weight: ${fontWeights.bold};
 `
 
+const ChildLinkButton = styled(InlineButton)`
+  text-wrap: pretty;
+  text-align: start;
+`
 export default React.memo(function CalendarEventTimeReservation({
   eventTime,
   reservationChild,
@@ -74,7 +78,7 @@ export default React.memo(function CalendarEventTimeReservation({
       className={reservationChild ? 'reserved' : 'unreserved'}
     >
       <TimeSpan>{`${eventTime.startTime.format()} – ${eventTime.endTime.format()}`}</TimeSpan>
-      <InlineButton
+      <ChildLinkButton
         onClick={() => reserveAction(eventTime)}
         text={
           reservationChild

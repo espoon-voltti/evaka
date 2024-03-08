@@ -4,11 +4,12 @@
 
 import { faQuestion } from 'Icons'
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { mapped } from 'lib-common/form/form'
 import {
@@ -17,7 +18,11 @@ import {
   useFormElems,
   useFormFields
 } from 'lib-common/form/hooks'
-import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import {
+  CalendarEvent,
+  IndividualChild
+} from 'lib-common/generated/api-types/calendarevent'
+import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -40,8 +45,7 @@ import {
   updateCalendarEventMutation
 } from '../../queries'
 
-import { TreeNodeInfo } from './DiscussionTimesForm'
-import { surveyForm, timesForm } from './form'
+import { TreeNodeInfo, attendeeForm, surveyForm } from './form'
 
 const SurveyFormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
 const SurveyFormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`
@@ -52,20 +56,34 @@ export const WidthLimiter = styled.div`
 `
 export type DiscussionSurveyEditMode = 'create' | 'reserve'
 
+const getTreeSelectionAsRecord = (tree: TreeNode[]) =>
+  Object.fromEntries(
+    tree
+      ?.filter((group) => group.checked)
+      .map((group) => [
+        group.key,
+        hasUncheckedChildren(group)
+          ? group.children
+              ?.filter((child) => child.checked)
+              .map((child) => child.key) ?? []
+          : null
+      ]) ?? []
+  )
+
 export default React.memo(function DiscussionSurveyForm({
-  timesBind,
-  attendeeNodes,
+  form,
   eventData,
   groupId,
   unitId,
-  period
+  period,
+  groupResult
 }: {
-  timesBind: BoundForm<typeof timesForm>
-  attendeeNodes: TreeNodeInfo[]
+  form: BoundForm<typeof surveyForm>
   eventData: CalendarEvent | null
   groupId: UUID
   unitId: UUID
   period: FiniteDateRange
+  groupResult: UnitGroupDetails
 }) {
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events
@@ -75,78 +93,79 @@ export default React.memo(function DiscussionSurveyForm({
 
   const navigate = useNavigate()
 
-  const getTreeSelectionAsRecord = (tree: TreeNode[]) =>
-    Object.fromEntries(
-      tree
-        ?.filter((group) => group.checked)
-        .map((group) => [
-          group.key,
-          hasUncheckedChildren(group)
-            ? group.children
-                ?.filter((child) => child.checked)
-                .map((child) => child.key) ?? []
-            : null
-        ]) ?? []
-    )
+  const invitedAttendees = useMemo(
+    () => ({
+      individualChildren: eventData?.individualChildren ?? [],
+      groups: eventData?.groups ?? []
+    }),
+    [eventData]
+  )
 
-  const mappedForm = mapped(surveyForm, (output) => ({
+  const isChildSelected = (childId: string, selections: IndividualChild[]) =>
+    selections.some((s) => s.id === childId)
+
+  const attendeeTree: TreeNodeInfo[] = useMemo(() => {
+    const { groups, placements } = groupResult
+    const currentGroup = groups.filter((g) => g.id === groupId)
+    return currentGroup.map((g) => {
+      // individualChildren contains childSelections that are not a part of a full group selection
+      // -> any children there means their full group is not selected
+      const individualChildrenOfSelectedGroup =
+        invitedAttendees.individualChildren.filter((c) => c.groupId === groupId)
+      const groupChildren = placements.filter((p) =>
+        p.groupPlacements.some(
+          (gp) =>
+            gp.groupId === g.id &&
+            period.overlaps(new DateRange(gp.startDate, gp.endDate))
+        )
+      )
+
+      const sortedGroupChildren = orderBy(groupChildren, [
+        ({ child }) => child.lastName,
+        ({ child }) => child.firstName
+      ]).map(({ child: c }) => ({
+        key: c.id,
+        text: `${c.firstName} ${c.lastName}`,
+        checked:
+          individualChildrenOfSelectedGroup.length === 0 ||
+          isChildSelected(c.id, individualChildrenOfSelectedGroup),
+        children: [],
+        firstName: c.firstName,
+        lastName: c.lastName
+      }))
+
+      // group is always selected:
+      // - the full group is selected by default for a new survey
+      // - existing survey has to have at least one attendee for the group -> tree node selected
+      return {
+        text: g.name,
+        key: g.id,
+        checked: true,
+        children: sortedGroupChildren,
+        firstName: '',
+        lastName: ''
+      }
+    })
+  }, [invitedAttendees, groupResult, groupId, period])
+
+  const mappedAttendeeForm = mapped(attendeeForm, (output) => ({
     ...output,
     tree: getTreeSelectionAsRecord(output.attendees),
     unitId: unitId
   }))
 
-  const initializedForm = useForm(
-    mappedForm,
+  const initializedAttendeeForm = useForm(
+    mappedAttendeeForm,
     () => ({
-      title: eventData?.title ?? '',
-      description: eventData?.description ?? '',
-      attendees: attendeeNodes
+      attendees: attendeeTree
     }),
     i18n.validationErrors
   )
 
-  const { title, description, attendees } = useFormFields(initializedForm)
-  const { times } = useFormFields(timesBind)
+  const { attendees } = useFormFields(initializedAttendeeForm)
+
+  const { times, title, description } = useFormFields(form)
   const timeElems = useFormElems(times)
-
-  useEffect(
-    () =>
-      attendees.update((prev) => {
-        const previousGroupNode = prev[0]
-        const newGroupNode = attendeeNodes[0]
-        const previousChildren = previousGroupNode?.children ?? []
-
-        if (
-          previousChildren.length > 0 &&
-          previousChildren.every((pc) => pc.checked)
-        ) {
-          return attendeeNodes
-        } else {
-          const newChildren = newGroupNode?.children ?? []
-          const addedChildren = newChildren
-            .filter((ni) => !previousChildren.some((pi) => pi.key === ni.key))
-            .map((c) => ({ ...c, checked: false }))
-          const removedChildren = previousChildren.filter(
-            (pi) => !newChildren.some((ni) => pi.key === ni.key)
-          )
-          return [
-            {
-              ...previousGroupNode,
-              children: orderBy(
-                [
-                  ...previousChildren.filter(
-                    (pi) => !removedChildren.some((ri) => ri === pi)
-                  ),
-                  ...addedChildren
-                ],
-                [(c) => c.lastName, (c) => c.firstName, (c) => c.key]
-              )
-            }
-          ]
-        }
-      }),
-    [attendeeNodes, attendees]
-  )
 
   const basicInfoValidationErrors = useMemo(
     () => ({
@@ -223,7 +242,7 @@ export default React.memo(function DiscussionSurveyForm({
                 )
               } else {
                 navigate(
-                  `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys}`,
+                  `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`,
                   { replace: true }
                 )
               }
@@ -314,34 +333,38 @@ export default React.memo(function DiscussionSurveyForm({
                 )
           }
           onClick={() => {
+            const values = form.value()
+            const attendeeValue = attendees.value()
+            const baseForm = {
+              ...values,
+              unitId,
+              period,
+              tree: getTreeSelectionAsRecord(attendeeValue)
+            }
             if (eventData) {
-              const updateForm = isBasicInfoValid
+              return isBasicInfoValid
                 ? {
                     eventId: eventData.id,
                     form: {
-                      ...initializedForm.value(),
-                      times: [],
-                      period
+                      ...baseForm,
+                      times: null
                     }
                   }
                 : cancelMutation
-              return updateForm
             } else {
-              const createForm = isFullyValid
+              return isFullyValid
                 ? {
                     eventId: '',
                     form: {
-                      ...initializedForm.value(),
+                      ...baseForm,
                       times: times.value().map((t) => ({
                         ...t,
                         startTime: t.timeRange.start,
                         endTime: t.timeRange.end
-                      })),
-                      period
+                      }))
                     }
                   }
                 : cancelMutation
-              return createForm
             }
           }}
           data-qa="save-button"

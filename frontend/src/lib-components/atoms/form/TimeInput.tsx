@@ -25,7 +25,7 @@ export interface TimeInputProps
     | 'aria-describedby'
     | 'data-qa'
   > {
-  wide?: boolean
+  size?: 'wide' | 'normal' | 'narrow'
   value: string
   onChange: (v: string) => void
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
@@ -35,7 +35,7 @@ const TimeInput = React.memo(function TimeInput({
   value,
   onChange,
   onFocus,
-  wide,
+  size,
   ...props
 }: TimeInputProps) {
   const onChangeWithAutocomplete = useCallback(
@@ -43,7 +43,15 @@ const TimeInput = React.memo(function TimeInput({
     [value, onChange]
   )
 
-  const InputComponent = wide ? ScalingInput : ShorterInput
+  const InputComponent = size
+    ? size === 'narrow'
+      ? MinimalInput
+      : size === 'wide'
+        ? ScalingInput
+        : size === 'normal'
+          ? ShorterInput
+          : ShorterInput
+    : ShorterInput
 
   return (
     <InputComponent
@@ -61,6 +69,15 @@ const TimeInput = React.memo(function TimeInput({
 })
 
 export default TimeInput
+
+const MinimalInput = styled(InputField)`
+  width: calc(4em);
+  max-width: calc(4em);
+
+  input {
+    font-size: 1em;
+  }
+`
 
 const ShorterInput = styled(InputField)`
   width: calc(3.2em + 24px);
