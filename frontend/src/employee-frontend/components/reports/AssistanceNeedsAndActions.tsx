@@ -287,7 +287,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
     () => areasResult.map((areas) => sortBy(areas, (area) => area.name)),
     [areasResult]
   )
-  const unitsResult = useQueryResult(unitsQuery())
+  const unitsResult = useQueryResult(unitsQuery({ includeClosed: true }))
   const sortedUnits = useMemo(
     () => unitsResult.map((units) => sortBy(units, (unit) => unit.name)),
     [unitsResult]

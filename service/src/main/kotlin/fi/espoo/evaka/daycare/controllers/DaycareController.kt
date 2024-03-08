@@ -80,12 +80,17 @@ class DaycareController(
     private val accessControl: AccessControl
 ) {
     @GetMapping
-    fun getDaycares(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Daycare> {
+    fun getDaycares(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam includeClosed: Boolean?
+    ): List<Daycare> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
-                    tx.getDaycares(filter)
+                    tx.getDaycares(clock, filter, includeClosed ?: true)
                 }
             }
             .also { Audit.UnitSearch.log(meta = mapOf("count" to it.size)) }

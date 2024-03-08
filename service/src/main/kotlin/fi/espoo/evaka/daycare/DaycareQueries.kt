@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -142,8 +143,19 @@ WHERE ${predicate(predicate.forTable("daycare"))}
         )
     }
 
-fun Database.Read.getDaycares(filter: AccessControlFilter<DaycareId>): List<Daycare> =
-    @Suppress("DEPRECATION") createQuery(daycaresQuery(filter.toPredicate())).toList<Daycare>()
+fun Database.Read.getDaycares(
+    clock: EvakaClock,
+    filter: AccessControlFilter<DaycareId>,
+    includeClosed: Boolean
+): List<Daycare> {
+    val predicate =
+        if (includeClosed) Predicate.alwaysTrue()
+        else
+            Predicate {
+                where("$it.closing_date IS NULL OR $it.closing_date > ${bind(clock.today())}")
+            }
+    return createQuery(daycaresQuery(filter.toPredicate().and(predicate))).toList<Daycare>()
+}
 
 data class UnitApplyPeriods(
     val id: DaycareId,

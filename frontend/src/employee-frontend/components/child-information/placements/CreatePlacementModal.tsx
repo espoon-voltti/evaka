@@ -51,7 +51,7 @@ interface Form {
 function CreatePlacementModal({ childId, reload }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
-  const units = useQueryResult(unitsQuery())
+  const units = useQueryResult(unitsQuery({ includeClosed: true }))
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unit: null,

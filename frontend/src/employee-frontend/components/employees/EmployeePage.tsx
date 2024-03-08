@@ -215,7 +215,7 @@ export default React.memo(function EmployeePageLoader() {
   const { i18n } = useTranslation()
   const { id } = useRouteParams(['id'])
   const employee = useQueryResult(employeeDetailsQuery({ id }))
-  const units = useQueryResult(unitsQuery())
+  const units = useQueryResult(unitsQuery({ includeClosed: false }))
 
   return (
     <Container>

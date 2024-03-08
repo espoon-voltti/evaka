@@ -83,7 +83,7 @@ export default React.memo(function AttendanceReservation() {
     filters.range.start.addMonths(2)
   )
 
-  const units = useQueryResult(unitsQuery())
+  const units = useQueryResult(unitsQuery({ includeClosed: true }))
   const groups = useQueryResult(
     queryOrDefault(unitGroupsQuery, [])(unitId ? { daycareId: unitId } : null)
   )

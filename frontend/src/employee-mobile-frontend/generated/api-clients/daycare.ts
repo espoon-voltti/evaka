@@ -213,10 +213,18 @@ export async function getDaycare(
 /**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getDaycares
 */
-export async function getDaycares(): Promise<Daycare[]> {
+export async function getDaycares(
+  request: {
+    includeClosed?: boolean | null
+  }
+): Promise<Daycare[]> {
+  const params = createUrlSearchParams(
+    ['includeClosed', request.includeClosed?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<Daycare[]>>({
     url: uri`/daycares`.toString(),
-    method: 'GET'
+    method: 'GET',
+    params
   })
   return json.map(e => deserializeJsonDaycare(e))
 }
