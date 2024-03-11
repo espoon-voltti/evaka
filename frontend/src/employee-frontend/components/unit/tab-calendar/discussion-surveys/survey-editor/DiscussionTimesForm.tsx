@@ -63,7 +63,7 @@ export default React.memo(function DiscussionTimesForm({
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events
 
-  const calendarRef = useRef(null)
+  const horizonRef = useRef<HTMLDivElement | null>(null)
   const getCalendarHorizon = useCallback(() => {
     const today = LocalDate.todayInSystemTz()
     const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
@@ -169,9 +169,10 @@ export default React.memo(function DiscussionTimesForm({
                   calendarRange={calendarRange}
                   addAction={addTime}
                   removeAction={removeTimeById}
+                  horizonRef={horizonRef}
                 />
 
-                <Gap size="L" ref={calendarRef} />
+                <Gap size="L" />
                 <FixedSpaceRow
                   fullWidth
                   alignItems="center"
@@ -182,7 +183,7 @@ export default React.memo(function DiscussionTimesForm({
                       setCalendarHorizonDate(
                         calendarHorizonDate.addMonths(1).lastDayOfMonth()
                       )
-                      scrollRefIntoView(calendarRef, 500)
+                      scrollRefIntoView(horizonRef, 200)
                     }}
                     text={
                       i18n.unit.calendar.events.discussionReservation.calendar

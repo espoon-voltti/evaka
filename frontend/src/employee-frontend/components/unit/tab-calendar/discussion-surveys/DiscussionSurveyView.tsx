@@ -6,6 +6,7 @@ import { faPen, faQuestion, faTrash } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
 import React, {
+  MutableRefObject,
   useCallback,
   useContext,
   useMemo,
@@ -129,7 +130,8 @@ const ReservationCalendarSection = React.memo(
     expandCalendarAction,
     times,
     addAction,
-    removeAction
+    removeAction,
+    horizonRef
   }: {
     unitId: UUID
     groupId: UUID
@@ -140,6 +142,7 @@ const ReservationCalendarSection = React.memo(
     times: BoundForm<typeof eventTimeArray>
     addAction: (et: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
+    horizonRef: MutableRefObject<HTMLDivElement | null>
   }) {
     const { i18n } = useTranslation()
 
@@ -154,6 +157,7 @@ const ReservationCalendarSection = React.memo(
           times={times}
           addAction={addAction}
           removeAction={removeAction}
+          horizonRef={horizonRef}
         />
         <Gap size="L" />
         <FixedSpaceRow fullWidth alignItems="center" justifyContent="center">
@@ -207,7 +211,7 @@ export default React.memo(function DiscussionReservationSurveyView({
       : eventDataHorizonDate
   }, [eventData.period.end])
 
-  const calendarRef = useRef(null)
+  const horizonRef = useRef<HTMLDivElement | null>(null)
   const [calendarHorizonDate, setCalendarHorizonDate] =
     useState<LocalDate>(getCalendarHorizon())
 
@@ -374,7 +378,7 @@ export default React.memo(function DiscussionReservationSurveyView({
 
                 <FormSectionGroup>
                   <BorderedBox>
-                    <H3 noMargin ref={calendarRef}>
+                    <H3 noMargin>
                       {t.discussionReservation.surveyDiscussionTimesTitle}
                     </H3>
                   </BorderedBox>
@@ -388,11 +392,12 @@ export default React.memo(function DiscussionReservationSurveyView({
                       setCalendarHorizonDate(
                         calendarHorizonDate.addMonths(1).lastDayOfMonth()
                       )
-                      scrollRefIntoView(calendarRef, 500)
+                      scrollRefIntoView(horizonRef, 200)
                     }}
                     times={times}
                     addAction={addTime}
                     removeAction={removeTimeById}
+                    horizonRef={horizonRef}
                   />
                 </FormSectionGroup>
               </>

@@ -5,7 +5,13 @@
 import { faPlus, faTrash } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, {
+  MutableRefObject,
+  useCallback,
+  useContext,
+  useMemo,
+  useState
+} from 'react'
 import styled, { css } from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -205,7 +211,8 @@ export const DiscussionReservationCalendar = React.memo(
     calendarRange,
     times,
     addAction,
-    removeAction
+    removeAction,
+    horizonRef
   }: {
     unitId: UUID
     groupId: UUID
@@ -215,6 +222,7 @@ export const DiscussionReservationCalendar = React.memo(
     times: BoundForm<typeof eventTimeArray>
     addAction: (et: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
+    horizonRef: MutableRefObject<HTMLDivElement | null>
   }) {
     const [reservationModalVisible, setReservationModalVisible] =
       useState(false)
@@ -261,7 +269,7 @@ export const DiscussionReservationCalendar = React.memo(
           const calendarMonths = groupByMonth(calendarDaysResult)
           return (
             <div>
-              {calendarMonths.map((m) => (
+              {calendarMonths.map((m, i) => (
                 <TimesMonth
                   month={m.month}
                   weeks={m.weeks}
@@ -277,6 +285,8 @@ export const DiscussionReservationCalendar = React.memo(
                   times={times}
                   editMode="reserve"
                   reservationChildren={invitees.map((i) => i.child)}
+                  isLastMonth={i === calendarMonths.length - 1}
+                  horizonRef={horizonRef}
                 />
               ))}
             </div>
@@ -294,7 +304,8 @@ export const DiscussionTimesCalendar = React.memo(
     times,
     addAction,
     removeAction,
-    calendarRange
+    calendarRange,
+    horizonRef
   }: {
     unitId: UUID
     groupId: UUID
@@ -302,6 +313,7 @@ export const DiscussionTimesCalendar = React.memo(
     addAction: (date: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
     calendarRange: FiniteDateRange
+    horizonRef: MutableRefObject<HTMLDivElement | null>
   }) {
     const calendarDays = useQueryResult(
       groupDiscussionReservationDaysQuery(
@@ -318,7 +330,7 @@ export const DiscussionTimesCalendar = React.memo(
           const calendarMonths = groupByMonth(calendarDaysResult)
           return (
             <div>
-              {calendarMonths.map((m) => (
+              {calendarMonths.map((m, i) => (
                 <TimesMonth
                   key={`${m.month}${m.year}`}
                   year={m.year}
@@ -330,6 +342,8 @@ export const DiscussionTimesCalendar = React.memo(
                   removeAction={removeAction}
                   editMode="create"
                   reservationChildren={[]}
+                  isLastMonth={i === calendarMonths.length - 1}
+                  horizonRef={horizonRef}
                 />
               ))}
             </div>
@@ -350,7 +364,9 @@ export const TimesMonth = React.memo(function TimesMonth({
   removeAction,
   reserveAction,
   editMode,
-  reservationChildren
+  reservationChildren,
+  isLastMonth,
+  horizonRef
 }: {
   eventData: CalendarEvent | null
   year: number
@@ -362,6 +378,8 @@ export const TimesMonth = React.memo(function TimesMonth({
   reserveAction?: (eventTime: CalendarEventTime) => void
   editMode: CalendarMode
   reservationChildren: ChildBasics[]
+  isLastMonth: boolean
+  horizonRef: MutableRefObject<HTMLDivElement | null>
 }) {
   const { i18n } = useTranslation()
   const monthHasCurrentOrFutureDays = useMemo(
@@ -376,8 +394,22 @@ export const TimesMonth = React.memo(function TimesMonth({
     [weeks, month]
   )
 
+  const ref = useCallback(
+    (e: HTMLDivElement) => {
+      if (isLastMonth) {
+        horizonRef.current = e ?? undefined
+      }
+    },
+    [isLastMonth, horizonRef]
+  )
+
   return monthHasCurrentOrFutureDays ? (
-    <ContentArea opaque={false} key={`${month}${year}`} paddingHorizontal="2px">
+    <ContentArea
+      opaque={false}
+      key={`${month}${year}`}
+      paddingHorizontal="2px"
+      ref={ref}
+    >
       <H3>{`${i18n.common.datetime.months[month - 1]} ${year}`}</H3>
       <Grid>
         {weeks.map((w) => (
