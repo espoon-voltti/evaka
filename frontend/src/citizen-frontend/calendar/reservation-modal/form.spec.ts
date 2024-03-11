@@ -63,7 +63,8 @@ const emptyChild: ReservationResponseDayChild = {
   reservableTimeRange: {
     type: 'NORMAL',
     range: defaultReservableTimeRange
-  }
+  },
+  lockedByHolidayPeriod: true
 }
 
 const timeInputState = (
@@ -1469,6 +1470,52 @@ describe('resetTimes', () => {
             }
           }
         ]
+      })
+    })
+    it('Closed holiday period + lockedByHolidayPeriod = false', () => {
+      const holidayPeriods = [
+        { period: selectedRange, state: 'closed' as const }
+      ]
+      const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
+        (day) => ({
+          ...day,
+          children: [
+            { ...emptyChild, lockedByHolidayPeriod: false },
+            {
+              ...emptyChild,
+              childId: 'child-2'
+            }
+          ]
+        })
+      )
+
+      const dayProperties = new DayProperties(
+        calendarDays,
+        reservableRange,
+        holidayPeriods
+      )
+
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'WEEKLY',
+          selectedRange,
+          selectedChildren: [emptyChild.childId, 'child-2']
+        })
+      ).toEqual({
+        branch: 'weeklyTimes',
+        state: [1, 2, 3, 4, 5].map((weekDay) => ({
+          weekDay,
+          day: {
+            branch: 'reservation',
+            state: {
+              validTimeRange: defaultReservableTimeRange,
+              reservation: {
+                branch: 'timeRanges',
+                state: [timeInputState('', '')]
+              }
+            }
+          }
+        }))
       })
     })
 

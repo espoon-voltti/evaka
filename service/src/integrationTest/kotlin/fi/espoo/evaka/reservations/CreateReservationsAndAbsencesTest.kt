@@ -1055,7 +1055,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             it.insertTestPlacement(
                 childId = child.id,
                 unitId = daycare.id,
-                startDate = monday,
+                startDate = beforeThreshold.toLocalDate().minusDays(2),
                 endDate = monday.plusYears(1)
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)

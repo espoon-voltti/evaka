@@ -537,7 +537,8 @@ export function resetDay(
 
   if (
     holidayPeriodState === 'closed' &&
-    hasNoReservationsForSomeChild(calendarDays, selectedChildren)
+    hasNoReservationsForSomeChild(calendarDays, selectedChildren) &&
+    allChildrenAreLockedDueHolidayPeriod(calendarDays, selectedChildren)
   ) {
     return { branch: 'readOnly', state: 'reservationClosed' }
   }
@@ -596,6 +597,18 @@ const hasNoReservationsForSomeChild = (
           child.scheduleType === 'RESERVATION_REQUIRED' &&
           child.reservations.length === 0 &&
           child.absence === null
+      )
+    )
+  )
+
+const allChildrenAreLockedDueHolidayPeriod = (
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: string[]
+) =>
+  calendarDays.every((day) =>
+    selectedChildren.every((childId) =>
+      day.children.some(
+        (child) => child.childId === childId && child.lockedByHolidayPeriod
       )
     )
   )
