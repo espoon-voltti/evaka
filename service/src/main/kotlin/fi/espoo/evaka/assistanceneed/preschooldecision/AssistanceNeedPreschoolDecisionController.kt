@@ -221,6 +221,17 @@ class AssistanceNeedPreschoolDecisionController(
                     if (decision.status.isDecided()) {
                         throw BadRequest("Already-decided decisions cannot be decided again")
                     }
+                    if (decision.form.validFrom == null) {
+                        throw BadRequest("Accepted decision must have a start date")
+                    }
+
+                    if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
+                        tx.endActiveAssistanceNeedPreschoolDecisions(
+                            decision.id,
+                            decision.form.validFrom.minusDays(1),
+                            decision.child.id
+                        )
+                    }
 
                     tx.decideAssistanceNeedPreschoolDecision(
                         id = id,

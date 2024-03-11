@@ -266,7 +266,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
         @Suppress("DEPRECATION")
         createQuery(sql).bind("childId", childId).toList<AssistanceNeedPreschoolDecisionBasics>()
 
-    return fillInValidToForDecisionResults(decisions)
+    return decisions
 }
 
 fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
@@ -291,31 +291,8 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
             }
             .toList<AssistanceNeedPreschoolDecisionBasics>()
 
-    return fillInValidToForDecisionResults(decisions)
+    return decisions
 }
-
-private fun fillInValidToForDecisionResults(
-    decisions: List<AssistanceNeedPreschoolDecisionBasics>
-) =
-    decisions.map { decision ->
-        if (decision.validFrom == null || decision.validTo != null) return@map decision
-
-        val followingStart =
-            decisions
-                .filter {
-                    (it.id == decision.id || it.status == AssistanceNeedDecisionStatus.ACCEPTED) &&
-                        it.validFrom != null
-                }
-                .sortedWith(
-                    compareByDescending<AssistanceNeedPreschoolDecisionBasics> { it.validFrom }
-                        .thenByDescending { it.created }
-                )
-                .takeWhile { it.id != decision.id }
-                .lastOrNull()
-                ?.validFrom ?: return@map decision
-
-        decision.copy(validTo = maxOf(decision.validFrom, followingStart.minusDays(1)))
-    }
 
 fun Database.Transaction.deleteAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId
@@ -371,6 +348,25 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         .bind("unreadGuardianIds", unreadGuardianIds)
         .updateExactlyOne()
 }
+
+fun Database.Transaction.endActiveAssistanceNeedPreschoolDecisions(
+    excludingId: AssistanceNeedPreschoolDecisionId,
+    endDate: LocalDate,
+    childId: ChildId
+) =
+    createUpdate {
+            sql(
+                """
+UPDATE assistance_need_preschool_decision
+SET valid_to = ${bind(endDate)}
+WHERE id <> ${bind(excludingId)}
+  AND (valid_to IS NULL OR valid_to > ${bind(endDate)})
+  AND child_id = ${bind(childId)}
+  AND status = 'ACCEPTED'
+"""
+            )
+        }
+        .execute()
 
 fun Database.Transaction.endActivePreschoolAssistanceDecisions(date: LocalDate) =
     createUpdate {
