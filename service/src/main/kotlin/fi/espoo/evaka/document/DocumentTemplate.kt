@@ -136,7 +136,7 @@ data class ExportedDocumentTemplate(
     @Json val content: DocumentTemplateContent
 )
 
-data class DocumentTemplateCreateRequest(
+data class DocumentTemplateBasicsRequest(
     val name: String,
     val type: DocumentType,
     val language: DocumentLanguage,

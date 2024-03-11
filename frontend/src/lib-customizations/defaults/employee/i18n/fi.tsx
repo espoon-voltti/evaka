@@ -4268,8 +4268,6 @@ export const fi = {
       validity: 'Voimassa ajalla'
     },
     templateEditor: {
-      language: 'Kieli',
-      legalBasis: 'Lakiperuste',
       confidential: 'Salassapidettävä',
       addSection: 'Uusi osio',
       titleNewSection: 'Uusi osio',

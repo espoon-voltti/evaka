@@ -14,6 +14,7 @@ import {
   getTemplates,
   importTemplate,
   publishTemplate,
+  updateDraftTemplateBasics,
   updateDraftTemplateContent,
   updateTemplateValidity
 } from '../../generated/api-clients/document'
@@ -56,6 +57,14 @@ export const duplicateDocumentTemplateMutation = mutation({
 export const importDocumentTemplateMutation = mutation({
   api: importTemplate,
   invalidateQueryKeys: () => [queryKeys.documentTemplateSummaries()]
+})
+
+export const updateDocumentTemplateBasicsMutation = mutation({
+  api: updateDraftTemplateBasics,
+  invalidateQueryKeys: (arg) => [
+    queryKeys.documentTemplateSummaries(),
+    queryKeys.documentTemplate(arg.templateId)
+  ]
 })
 
 export const updateDocumentTemplateContentMutation = mutation({

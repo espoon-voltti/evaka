@@ -37,7 +37,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: DocumentTemplateCreateRequest
+        @RequestBody body: DocumentTemplateBasicsRequest
     ): DocumentTemplate {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -189,7 +189,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
-        @RequestBody body: DocumentTemplateCreateRequest
+        @RequestBody body: DocumentTemplateBasicsRequest
     ): DocumentTemplate {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -205,6 +205,33 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                 }
             }
             .also { Audit.DocumentTemplateCopy.log(targetId = templateId) }
+    }
+
+    @PutMapping("/{templateId}")
+    fun updateDraftTemplateBasics(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable templateId: DocumentTemplateId,
+        @RequestBody body: DocumentTemplateBasicsRequest
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.DocumentTemplate.UPDATE,
+                        templateId
+                    )
+                    tx.getTemplate(templateId)?.also {
+                        if (it.published) throw BadRequest("Cannot update published template")
+                    } ?: throw NotFound("Template $templateId not found")
+
+                    tx.updateDraftTemplateBasics(templateId, body)
+                }
+                .also { Audit.DocumentTemplateUpdateBasics.log(targetId = templateId) }
+        }
     }
 
     @PutMapping("/{templateId}/content")
