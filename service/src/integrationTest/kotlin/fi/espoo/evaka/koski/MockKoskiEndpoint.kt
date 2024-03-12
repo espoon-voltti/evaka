@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,18 +7,17 @@ package fi.espoo.evaka.koski
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.google.common.collect.Multimaps
 import com.google.common.collect.SetMultimap
-import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
-import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder.post
-import io.javalin.apibuilder.ApiBuilder.put
-import io.javalin.http.Context
-import io.javalin.http.HandlerType
-import jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST
-import jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.random.Random
 import mu.KotlinLogging
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RestController
 
 private typealias PersonOid = String
 
@@ -28,17 +27,10 @@ private typealias Ssn = String
 
 data class MockStudyRight(val version: Int, val opiskeluoikeus: Opiskeluoikeus)
 
-class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoCloseable {
-    private val app =
-        Javalin.create { config ->
-                config.router.apiBuilder {
-                    put("/oppija", ::oppija)
-                    post("/oppija", ::oppija)
-                }
-            }
-            .start(port)
+@RestController
+@RequestMapping("/public/mock-koski")
+class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
     private val logger = KotlinLogging.logger {}
-
     private val lock = ReentrantLock()
     private val persons = HashMap<Ssn, PersonOid>()
     private val studyRights = HashMap<StudyRightOid, MockStudyRight>()
@@ -47,65 +39,41 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
     private var personOid = Random.nextInt(1_000_000)
     private var studyRightOid = Random.nextInt(1_000_000)
 
-    val port
-        get() = app.port()
+    @RequestMapping("/oppija", method = [RequestMethod.PUT, RequestMethod.POST])
+    fun oppija(method: HttpMethod, @RequestBody oppija: Oppija): ResponseEntity<Any> {
+        logger.info { "Mock Koski received $method body: $oppija" }
 
-    fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> =
-        lock.withLock { HashMap(studyRights) }
-
-    fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> =
-        lock.withLock { personStudyRights.get(oid) }
-
-    fun clearData() =
-        lock.withLock {
-            persons.clear()
-            studyRights.clear()
-        }
-
-    private fun oppija(ctx: Context) {
-        logger.info { "Mock Koski received ${ctx.method()} body: ${ctx.body()}" }
-        val oppija = jsonMapper.readValue(ctx.body(), Oppija::class.java)
-
-        when (ctx.method()) {
-            HandlerType.POST -> {
+        when (method) {
+            HttpMethod.POST -> {
                 if (oppija.opiskeluoikeudet.any { it.oid != null }) {
-                    ctx.contentType("text/plain")
-                        .status(SC_BAD_REQUEST)
-                        .result("Trying to create a study right with OID")
-                    return
+                    return ResponseEntity.badRequest()
+                        .body("Trying to create a study right with OID")
                 }
                 oppija.opiskeluoikeudet.forEach { opiskeluOikeus ->
                     opiskeluOikeus.suoritukset.forEach {
                         if (it.toimipiste.oid == UNIT_OID_THAT_TRIGGERS_400) {
-                            ctx.contentType("text/plain")
-                                .status(SC_BAD_REQUEST)
-                                .result("Simulated bad request")
-                            return
+                            return ResponseEntity.badRequest().body("Simulated bad request")
                         }
                     }
                 }
             }
-            HandlerType.PUT ->
+            HttpMethod.PUT ->
                 if (
                     oppija.opiskeluoikeudet
                         .mapNotNull { it.oid }
                         .any { !studyRights.containsKey(it) }
                 ) {
-                    ctx.contentType("application/json")
-                        .status(SC_NOT_FOUND)
-                        .result(
-                            jsonMapper.writeValueAsString(
-                                listOf(
-                                    KoskiClient.Error(
-                                        key = "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia",
-                                        message = "Not found"
-                                    )
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(
+                            listOf(
+                                KoskiClient.Error(
+                                    key = "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia",
+                                    message = "Not found"
                                 )
                             )
                         )
-                    return
                 }
-            else -> error("Unsupported operation type ${ctx.method()}")
+            else -> error("Unsupported operation type $method")
         }
 
         val response =
@@ -172,18 +140,22 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
                     }
                 }
             }
-        ctx.contentType("application/json").result(jsonMapper.writeValueAsString(response))
+        return ResponseEntity.ok(response)
     }
 
-    override fun close() {
-        app.stop()
-    }
+    fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> =
+        lock.withLock { HashMap(studyRights) }
+
+    fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> =
+        lock.withLock { personStudyRights.get(oid) }
+
+    fun clearData() =
+        lock.withLock {
+            persons.clear()
+            studyRights.clear()
+        }
 
     companion object {
         const val UNIT_OID_THAT_TRIGGERS_400 = "SIMULATE_BAD_REQUEST"
-
-        fun start(): MockKoskiServer {
-            return MockKoskiServer(defaultJsonMapperBuilder().build(), port = 0)
-        }
     }
 }

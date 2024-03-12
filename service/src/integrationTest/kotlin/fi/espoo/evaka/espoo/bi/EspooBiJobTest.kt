@@ -6,51 +6,44 @@ package fi.espoo.evaka.espoo.bi
 
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EspooBiEnv
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import io.javalin.security.BasicAuthCredentials
 import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.springframework.beans.factory.annotation.Autowired
 
-class EspooBiJobTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val credentials = BasicAuthCredentials(username = "user", password = "password")
+class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2023, 1, 1, 1, 0)))
     private val fuel = FuelManager()
-    private lateinit var server: MockBiServer
+
+    @Autowired private lateinit var mockEndpoint: MockBiEndpoint
     private lateinit var job: EspooBiJob
 
     @BeforeAll
     override fun beforeAll() {
         super.beforeAll()
-        server = MockBiServer.start(credentials)
         val client =
             EspooBiHttpClient(
                 fuel,
                 EspooBiEnv(
-                    url = "http://localhost:${server.port}",
-                    username = credentials.username,
-                    password = Sensitive(credentials.password)
+                    url = "http://localhost:$httpPort/public/mock-espoo-bi",
+                    username = "user",
+                    password = Sensitive("password")
                 )
             )
         job = EspooBiJob(client)
     }
 
-    @AfterAll
-    fun afterAll() {
-        server.close()
-    }
-
     @BeforeEach
     fun beforeEach() {
-        server.clearData()
+        mockEndpoint.clearData()
     }
 
     @Test
@@ -69,7 +62,7 @@ class EspooBiJobTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         )
 
-        val request = server.getCapturedRequests().values.single()
+        val request = mockEndpoint.getCapturedRequests().values.single()
         val expected = record.toByteArray(CSV_CHARSET)
         val chunks =
             request.body.asSequence().chunked(expected.size, List<Byte>::toByteArray).toList()
