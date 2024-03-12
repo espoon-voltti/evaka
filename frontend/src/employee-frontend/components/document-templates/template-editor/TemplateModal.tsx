@@ -37,7 +37,7 @@ import {
   importDocumentTemplateMutation
 } from '../queries'
 
-const documentTemplateForm = object({
+export const documentTemplateForm = object({
   name: validated(string(), nonBlank),
   type: required(oneOf<DocumentType>()),
   language: required(oneOf<DocumentLanguage>()),

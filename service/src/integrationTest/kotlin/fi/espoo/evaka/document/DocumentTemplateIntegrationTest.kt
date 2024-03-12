@@ -55,7 +55,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
 
     val testCreationRequest =
-        DocumentTemplateCreateRequest(
+        DocumentTemplateBasicsRequest(
             name = "test",
             type = DocumentType.PEDAGOGICAL_ASSESSMENT,
             language = DocumentLanguage.FI,
@@ -111,6 +111,20 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             summaries
         )
 
+        controller.updateDraftTemplateBasics(
+            dbInstance(),
+            employeeUser,
+            now,
+            created.id,
+            testCreationRequest.copy(
+                name = "name2",
+                language = DocumentLanguage.SV,
+                type = DocumentType.PEDAGOGICAL_REPORT,
+                confidential = false,
+                legalBasis = "$42b"
+            )
+        )
+
         controller.updateDraftTemplateContent(
             dbInstance(),
             employeeUser,
@@ -122,7 +136,18 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         controller.updateTemplateValidity(dbInstance(), employeeUser, now, created.id, newValidity)
 
         val fetched = controller.getTemplate(dbInstance(), employeeUser, now, created.id)
-        assertEquals(created.copy(content = testContent, validity = newValidity), fetched)
+        assertEquals(
+            created.copy(
+                name = "name2",
+                language = DocumentLanguage.SV,
+                type = DocumentType.PEDAGOGICAL_REPORT,
+                confidential = false,
+                legalBasis = "$42b",
+                content = testContent,
+                validity = newValidity
+            ),
+            fetched
+        )
 
         controller.deleteDraftTemplate(dbInstance(), employeeUser, now, created.id)
 
@@ -134,7 +159,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `test publishing, after which content cannot be updated or template deleted`() {
+    fun `test publishing, after which basics and content cannot be updated or template deleted`() {
         val created =
             controller.createTemplate(dbInstance(), employeeUser, now, testCreationRequest)
         controller.updateDraftTemplateContent(
@@ -147,6 +172,16 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         controller.publishTemplate(dbInstance(), employeeUser, now, created.id)
 
         assertTrue(controller.getTemplate(dbInstance(), employeeUser, now, created.id).published)
+
+        assertThrows<BadRequest> {
+            controller.updateDraftTemplateBasics(
+                dbInstance(),
+                employeeUser,
+                now,
+                created.id,
+                testCreationRequest.copy(name = "changed")
+            )
+        }
 
         assertThrows<BadRequest> {
             controller.updateDraftTemplateContent(
@@ -192,7 +227,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 created.id,
-                DocumentTemplateCreateRequest(
+                DocumentTemplateBasicsRequest(
                     name = "another",
                     type = DocumentType.PEDAGOGICAL_REPORT,
                     language = DocumentLanguage.SV,

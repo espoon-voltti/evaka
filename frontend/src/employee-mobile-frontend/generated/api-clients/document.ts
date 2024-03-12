@@ -10,8 +10,8 @@ import { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/a
 import { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { DocumentTemplate } from 'lib-common/generated/api-types/document'
+import { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
-import { DocumentTemplateCreateRequest } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document'
 import { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { JsonCompatible } from 'lib-common/json'
@@ -33,13 +33,13 @@ import { uri } from 'lib-common/uri'
 */
 export async function createTemplate(
   request: {
-    body: DocumentTemplateCreateRequest
+    body: DocumentTemplateBasicsRequest
   }
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
     url: uri`/document-templates`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<DocumentTemplateCreateRequest>
+    data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
   return deserializeJsonDocumentTemplate(json)
 }
@@ -67,13 +67,13 @@ export async function deleteDraftTemplate(
 export async function duplicateTemplate(
   request: {
     templateId: UUID,
-    body: DocumentTemplateCreateRequest
+    body: DocumentTemplateBasicsRequest
   }
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
     url: uri`/document-templates/${request.templateId}/duplicate`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<DocumentTemplateCreateRequest>
+    data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
   return deserializeJsonDocumentTemplate(json)
 }
@@ -171,6 +171,24 @@ export async function publishTemplate(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/document-templates/${request.templateId}/publish`.toString(),
     method: 'PUT'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.DocumentTemplateController.updateDraftTemplateBasics
+*/
+export async function updateDraftTemplateBasics(
+  request: {
+    templateId: UUID,
+    body: DocumentTemplateBasicsRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/document-templates/${request.templateId}`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
   return json
 }

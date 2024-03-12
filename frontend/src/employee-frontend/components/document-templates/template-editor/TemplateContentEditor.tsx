@@ -2,34 +2,52 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import { faPen } from 'Icons'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { swapElements } from 'lib-common/array'
-import { useForm, useFormElems, useFormField } from 'lib-common/form/hooks'
-import { DocumentTemplate } from 'lib-common/generated/api-types/document'
+import { openEndedLocalDateRange } from 'lib-common/form/fields'
+import {
+  useForm,
+  useFormElems,
+  useFormField,
+  useFormFields
+} from 'lib-common/form/hooks'
+import {
+  DocumentTemplate,
+  documentTypes
+} from 'lib-common/generated/api-types/document'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
+import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H1, H2 } from 'lib-components/typography'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
+import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../state/i18n'
 import LabelValueList from '../../common/LabelValueList'
 import {
   publishDocumentTemplateMutation,
+  updateDocumentTemplateBasicsMutation,
   updateDocumentTemplateContentMutation
 } from '../queries'
 import { getTemplateFormInitialState, templateContentForm } from '../templates'
 
+import { documentTemplateForm } from './TemplateModal'
 import TemplateSectionModal from './TemplateSectionModal'
 import TemplateSectionView from './TemplateSectionView'
 
@@ -68,23 +86,7 @@ export default React.memo(function TemplateContentEditor({
   return (
     <div>
       <ContentArea opaque>
-        <LabelValueList
-          spacing="small"
-          contents={[
-            {
-              label: i18n.documentTemplates.templateEditor.language,
-              value: i18n.documentTemplates.languages[template.language]
-            },
-            {
-              label: i18n.documentTemplates.templateEditor.legalBasis,
-              value: template.legalBasis
-            },
-            {
-              label: i18n.documentTemplates.templateEditor.confidential,
-              value: template.confidential ? i18n.common.yes : i18n.common.no
-            }
-          ]}
-        />
+        <BasicsSection template={template} editingAllowed={!readOnly} />
       </ContentArea>
       <Gap />
       <ContentArea opaque>
@@ -175,3 +177,153 @@ export default React.memo(function TemplateContentEditor({
     </div>
   )
 })
+
+const BasicsSection = React.memo(function BasicsSection({
+  template,
+  editingAllowed
+}: {
+  template: DocumentTemplate
+  editingAllowed: boolean
+}) {
+  const { i18n } = useTranslation()
+  const [editing, setEditing] = useState(false)
+
+  return editing ? (
+    <BasicsEditor template={template} onClose={() => setEditing(false)} />
+  ) : (
+    <FixedSpaceColumn>
+      <FixedSpaceRow justifyContent="space-between">
+        <H1>{template.name}</H1>
+        {editingAllowed && (
+          <InlineButton
+            onClick={() => setEditing(true)}
+            text="Muokkaa lomakkeen perustietoja"
+            icon={faPen}
+          />
+        )}
+      </FixedSpaceRow>
+      <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
+        <GrovingDiv>
+          <LabelValueList
+            spacing="small"
+            contents={[
+              {
+                label: i18n.documentTemplates.templateModal.validity,
+                value: template.validity.format()
+              },
+              {
+                label: i18n.documentTemplates.templateModal.language,
+                value: i18n.documentTemplates.languages[template.language]
+              },
+              {
+                label: i18n.documentTemplates.templateModal.type,
+                value: i18n.documentTemplates.documentTypes[template.type]
+              }
+            ]}
+          />
+        </GrovingDiv>
+        <FixedSpaceColumn spacing="xxs">
+          <span>{template.legalBasis}</span>
+          {template.confidential && (
+            <span>{i18n.documentTemplates.templateEditor.confidential}</span>
+          )}
+        </FixedSpaceColumn>
+      </FixedSpaceRow>
+    </FixedSpaceColumn>
+  )
+})
+
+const BasicsEditor = React.memo(function BasicsEditor({
+  template,
+  onClose
+}: {
+  template: DocumentTemplate
+  onClose: () => void
+}) {
+  const { i18n, lang } = useTranslation()
+
+  const typeOptions = useMemo(
+    () =>
+      documentTypes.map((option) => ({
+        domValue: option,
+        value: option,
+        label: i18n.documentTemplates.documentTypes[option]
+      })),
+    [i18n.documentTemplates]
+  )
+
+  const languageOptions = useMemo(
+    () =>
+      ['FI' as const, 'SV' as const].map((option) => ({
+        domValue: option,
+        value: option,
+        label: i18n.documentTemplates.languages[option]
+      })),
+    [i18n.documentTemplates]
+  )
+
+  const form = useForm(
+    documentTemplateForm,
+    () => ({
+      name: template.name,
+      type: {
+        domValue: template.type,
+        options: typeOptions
+      },
+      language: {
+        domValue: template.language,
+        options: languageOptions
+      },
+      confidential: template.confidential,
+      legalBasis: template.legalBasis,
+      validity: openEndedLocalDateRange.fromRange(template.validity)
+    }),
+    {
+      ...i18n.validationErrors
+    }
+  )
+
+  const { name, type, language, confidential, legalBasis, validity } =
+    useFormFields(form)
+
+  return (
+    <FixedSpaceColumn>
+      <div>
+        <Label>{i18n.documentTemplates.templateModal.name}</Label>
+        <InputFieldF bind={name} hideErrorsBeforeTouched data-qa="name-input" />
+        <Gap />
+        <Label>{i18n.documentTemplates.templateModal.validity}</Label>
+        <DateRangePickerF bind={validity} locale={lang} />
+        <Gap />
+        <Label>{i18n.documentTemplates.templateModal.type}</Label>
+        <SelectF bind={type} data-qa="type-select" />
+        <Gap />
+        <Label>{i18n.documentTemplates.templateModal.language}</Label>
+        <SelectF bind={language} />
+        <Gap />
+        <Label>{i18n.documentTemplates.templateModal.legalBasis}</Label>
+        <InputFieldF bind={legalBasis} hideErrorsBeforeTouched />
+        <Gap />
+        <CheckboxF
+          bind={confidential}
+          label={i18n.documentTemplates.templateModal.confidential}
+        />
+      </div>
+      <FixedSpaceRow justifyContent="flex-end">
+        <Button onClick={onClose} text={i18n.common.cancel} />
+        <MutateButton
+          primary
+          mutation={updateDocumentTemplateBasicsMutation}
+          disabled={!form.isValid()}
+          onClick={() => ({ templateId: template.id, body: form.value() })}
+          text={i18n.common.save}
+          onSuccess={onClose}
+        />
+      </FixedSpaceRow>
+    </FixedSpaceColumn>
+  )
+})
+
+const GrovingDiv = styled.div`
+  flex-grow: 1;
+`

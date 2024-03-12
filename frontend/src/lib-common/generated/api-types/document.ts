@@ -222,22 +222,22 @@ export interface DocumentTemplate {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateContent
+* Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest
 */
-export interface DocumentTemplateContent {
-  sections: Section[]
-}
-
-/**
-* Generated from fi.espoo.evaka.document.DocumentTemplateCreateRequest
-*/
-export interface DocumentTemplateCreateRequest {
+export interface DocumentTemplateBasicsRequest {
   confidential: boolean
   language: DocumentLanguage
   legalBasis: string
   name: string
   type: DocumentType
   validity: DateRange
+}
+
+/**
+* Generated from fi.espoo.evaka.document.DocumentTemplateContent
+*/
+export interface DocumentTemplateContent {
+  sections: Section[]
 }
 
 /**
@@ -497,7 +497,7 @@ export function deserializeJsonDocumentTemplate(json: JsonOf<DocumentTemplate>):
 }
 
 
-export function deserializeJsonDocumentTemplateCreateRequest(json: JsonOf<DocumentTemplateCreateRequest>): DocumentTemplateCreateRequest {
+export function deserializeJsonDocumentTemplateBasicsRequest(json: JsonOf<DocumentTemplateBasicsRequest>): DocumentTemplateBasicsRequest {
   return {
     ...json,
     validity: DateRange.parseJson(json.validity)

@@ -8,7 +8,7 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 
-fun Database.Transaction.insertTemplate(template: DocumentTemplateCreateRequest): DocumentTemplate {
+fun Database.Transaction.insertTemplate(template: DocumentTemplateBasicsRequest): DocumentTemplate {
     return createQuery {
             sql(
                 """
@@ -35,7 +35,7 @@ RETURNING *
 
 fun Database.Transaction.duplicateTemplate(
     id: DocumentTemplateId,
-    template: DocumentTemplateCreateRequest
+    template: DocumentTemplateBasicsRequest
 ): DocumentTemplate {
     return createQuery {
             sql(
@@ -69,6 +69,28 @@ fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
 fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTemplate? {
     return createQuery { sql("SELECT * FROM document_template WHERE id = ${bind(id)}") }
         .exactlyOneOrNull<ExportedDocumentTemplate>()
+}
+
+fun Database.Transaction.updateDraftTemplateBasics(
+    id: DocumentTemplateId,
+    basics: DocumentTemplateBasicsRequest
+) {
+    createUpdate {
+            sql(
+                """
+                UPDATE document_template
+                SET
+                    name = ${bind(basics.name)}, 
+                    type = ${bind(basics.type)},
+                    language = ${bind(basics.language)},
+                    confidential = ${bind(basics.confidential)},
+                    legal_basis = ${bind(basics.legalBasis)},
+                    validity = ${bind(basics.validity)}
+                WHERE id = ${bind(id)} AND published = false
+                """
+            )
+        }
+        .updateExactlyOne()
 }
 
 fun Database.Transaction.updateDraftTemplateContent(

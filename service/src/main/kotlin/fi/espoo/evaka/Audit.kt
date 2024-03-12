@@ -203,6 +203,7 @@ enum class Audit(
     DocumentTemplateDelete,
     DocumentTemplatePublish,
     DocumentTemplateRead,
+    DocumentTemplateUpdateBasics,
     DocumentTemplateUpdateContent,
     DocumentTemplateUpdateValidity,
     EmployeeActivate(securityEvent = true, securityLevel = "high"),
