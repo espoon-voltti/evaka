@@ -4,24 +4,14 @@
 
 package fi.espoo.evaka.shared.auth
 
-import fi.espoo.evaka.shared.DaycareId
+sealed class AclAuthorization<in T> {
+    abstract fun isAuthorized(id: T): Boolean
 
-sealed class AclAuthorization {
-    abstract fun isAuthorized(id: DaycareId): Boolean
-
-    abstract val ids: Set<DaycareId>?
-
-    data object All : AclAuthorization() {
-        override fun isAuthorized(id: DaycareId): Boolean = true
-
-        override val ids: Set<DaycareId>? = null
+    data object All : AclAuthorization<Any>() {
+        override fun isAuthorized(id: Any): Boolean = true
     }
 
-    data class Subset(override val ids: Set<DaycareId>) : AclAuthorization() {
-        override fun isAuthorized(id: DaycareId): Boolean = ids.contains(id)
-    }
-
-    fun isEmpty(): Boolean {
-        return this is Subset && this.ids.isEmpty()
+    data class Subset<T>(val ids: Set<T>) : AclAuthorization<T>() {
+        override fun isAuthorized(id: T): Boolean = ids.contains(id)
     }
 }

@@ -119,7 +119,7 @@ fun Database.Transaction.updatePlacement(
     id: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    aclAuth: AclAuthorization = AclAuthorization.All,
+    aclAuth: AclAuthorization<DaycareId> = AclAuthorization.All,
     useFiveYearsOldDaycare: Boolean
 ): Placement {
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
@@ -311,7 +311,7 @@ private fun Database.Transaction.clearOldPlacements(
     from: LocalDate,
     to: LocalDate,
     excludePlacement: PlacementId? = null,
-    aclAuth: AclAuthorization = AclAuthorization.All
+    aclAuth: AclAuthorization<DaycareId> = AclAuthorization.All
 ) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
@@ -439,7 +439,7 @@ private fun Database.Transaction.splitPlacementWithGap(
     )
 }
 
-private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
+private fun checkAclAuth(aclAuth: AclAuthorization<DaycareId>, placement: Placement) {
     if (!aclAuth.isAuthorized(placement.unitId)) {
         throw Conflict("Not authorized to modify placement (placementId: ${placement.id})")
     }
