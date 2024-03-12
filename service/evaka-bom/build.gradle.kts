@@ -48,7 +48,6 @@ dependencies {
         api("org.thymeleaf:thymeleaf:3.1.2.RELEASE")
         api(libs.flyingsaucer.core)
         api(libs.flyingsaucer.pdf.openpdf)
-        api("org.yaml:snakeyaml:2.2")
         api(libs.ktlint.cli.ruleset.core)
         api(libs.ktlint.rule.engine.core)
         api(libs.ktlint.test)
@@ -57,6 +56,9 @@ dependencies {
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.16.0"))
     api(platform("org.apache.cxf:cxf-bom:4.0.3"))
+    // Spring Boot specifies a version constraint for Jetty, but we have other libraries relying
+    // on an older version -> we enforce a specific Jetty BOM version and ignore Spring Boot
+    api(enforcedPlatform("org.eclipse.jetty:jetty-bom:11.0.20"))
     api(platform("org.jdbi:jdbi3-bom:3.45.0"))
     api(platform(libs.kotlin.bom))
     api(platform("org.junit:junit-bom:5.10.0"))
