@@ -4,7 +4,7 @@
 
 ARG FRONTEND_TAG=master
 
-FROM ghcr.io/espoon-voltti/evaka/frontend-common-builder:${FRONTEND_TAG} as frontend
+FROM ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/frontend-common-builder:${FRONTEND_TAG} as frontend
 
 RUN apt-get update \
  && apt-get install -y curl \

@@ -8,14 +8,14 @@ version: '3.5'
 
 services:
   evaka-proxy:
-    image: ${FRONTEND_IMAGE:-ghcr.io/espoon-voltti/evaka/frontend-common}:${TAG:-master}
+    image: ${FRONTEND_IMAGE:-ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/frontend-common}:${TAG:-master}
     build:
       context: ../frontend/
       additional_contexts: # requires docker compose 2.17.0 or newer
         customizations: ../frontend/src/lib-customizations/espoo
       cache_from:
-        - ghcr.io/espoon-voltti/evaka/frontend-common:cache-${CACHE_TAG:-master}
-        - ghcr.io/espoon-voltti/evaka/frontend-common:cache-master
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/frontend-common:cache-${CACHE_TAG:-master}
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/frontend-common:cache-master
     ports:
       - "9099:8080"
     environment:
@@ -37,12 +37,12 @@ services:
       - s3-mock
 
   api-gw:
-    image: ghcr.io/espoon-voltti/evaka/api-gateway:${TAG:-master}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/api-gateway:${TAG:-master}
     build:
       context: ../apigw/
       cache_from:
-        - ghcr.io/espoon-voltti/evaka/api-gateway:cache-${CACHE_TAG:-master}
-        - ghcr.io/espoon-voltti/evaka/api-gateway:cache-master
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/api-gateway:cache-${CACHE_TAG:-master}
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/api-gateway:cache-master
     ports:
       - "3000"
     hostname: api-gw
@@ -66,13 +66,13 @@ services:
       PRETTY_LOGS: "false"
 
   evaka-srv:
-    image: ghcr.io/espoon-voltti/evaka/service:${TAG:-master}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/service:${TAG:-master}
     build:
       context: ..
       dockerfile: service/Dockerfile
       cache_from:
-        - ghcr.io/espoon-voltti/evaka/service:cache-${CACHE_TAG:-master}
-        - ghcr.io/espoon-voltti/evaka/service:cache-master
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/service:cache-${CACHE_TAG:-master}
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/service:cache-master
     ports:
       - "8888"
     hostname: evaka-srv

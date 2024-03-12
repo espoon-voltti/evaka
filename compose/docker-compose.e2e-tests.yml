@@ -8,15 +8,15 @@ version: "3.5"
 
 services:
   playwright:
-    image: ghcr.io/espoon-voltti/evaka/e2e-playwright:${PLAYWRIGHT_TAG:-master}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/e2e-playwright:${PLAYWRIGHT_TAG:-master}
     build:
       context: ./e2e/
       dockerfile: ./playwright.Dockerfile
       args:
         FRONTEND_TAG: ${TAG:-master}
       cache_from:
-        - ghcr.io/espoon-voltti/evaka/e2e-playwright:cache-${CACHE_TAG:-master}
-        - ghcr.io/espoon-voltti/evaka/e2e-playwright:cache-master
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/e2e-playwright:cache-${CACHE_TAG:-master}
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/e2e-playwright:cache-master
     volumes:
       - ..:/repo
     ipc: host

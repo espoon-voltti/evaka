@@ -16,12 +16,12 @@ version: '3.5'
 
 services:
   db:
-    image: ghcr.io/espoon-voltti/evaka/test-db:${TEST_DB_TAG:-master}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/test-db:${TEST_DB_TAG:-master}
     build:
       context: ./db/
       cache_from:
-        - ghcr.io/espoon-voltti/evaka/test-db:cache-${CACHE_TAG:-master}
-        - ghcr.io/espoon-voltti/evaka/test-db:cache-master
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/test-db:cache-${CACHE_TAG:-master}
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/test-db:cache-master
     ports:
     - "5432:5432"
     volumes:
@@ -61,12 +61,12 @@ services:
       retries: 5
 
   keycloak:
-    image: ghcr.io/espoon-voltti/evaka/keycloak:${TAG:-master}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/keycloak:${TAG:-master}
     build:
       context: ../keycloak/
       cache_from:
-        - ghcr.io/espoon-voltti/evaka/keycloak:cache-${CACHE_TAG:-master}
-        - ghcr.io/espoon-voltti/evaka/keycloak:cache-master
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/keycloak:cache-${CACHE_TAG:-master}
+        - ghcr.io/${GITHUB_REPOSITORY_OWNER:-espoon-voltti}/evaka/keycloak:cache-master
     ports:
       - "8080:8080"
     environment:
