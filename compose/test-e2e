@@ -6,6 +6,7 @@
 
 export UID="${UID:-$(id -u)}"
 export GID="${GID:-$(id -g)}"
+export GITHUB_REPOSITORY_OWNER="${GITHUB_REPOSITORY_OWNER:-$(git remote get-url origin | sed 's/:/\//g' | rev | cut -d'/' -f2 |rev)}"
 
 if [ "${BUILD:-true}" = "true" ] && ( [ "$1" = "up" ] || [ "$1" = "run" ] ); then
     docker compose -f docker-compose.yml -f docker-compose.e2e.yml build --parallel # not building playwright

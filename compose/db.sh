@@ -4,9 +4,11 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-set -e
+set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+
+export GITHUB_REPOSITORY_OWNER="${GITHUB_REPOSITORY_OWNER:-$(git remote get-url origin | sed 's/:/\//g' | rev | cut -d'/' -f2 |rev)}"
 
 backup_path="./backup"
 backup_remote_path="/backup"

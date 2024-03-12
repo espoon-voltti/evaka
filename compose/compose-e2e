@@ -1,8 +1,12 @@
-#!/bin/sh -e
+#!/bin/bash
 
 # SPDX-FileCopyrightText: 2017-2023 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
+
+set -euo pipefail
+
+export GITHUB_REPOSITORY_OWNER="${GITHUB_REPOSITORY_OWNER:-$(git remote get-url origin | sed 's/:/\//g' | rev | cut -d'/' -f2 |rev)}"
 
 if [ "${BUILD:-true}" = "true" ] && ( [ "$1" = "up" ] || [ "$1" = "run" ] ); then
     docker compose -f docker-compose.yml -f docker-compose.e2e.yml build --parallel

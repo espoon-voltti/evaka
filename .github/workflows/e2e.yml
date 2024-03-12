@@ -35,8 +35,9 @@ jobs:
 
       - name: Setup Docker building
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ vars.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,10 +45,10 @@ jobs:
 
       - name: Build playwright image
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         with:
           public_registry_prefix: ""
-          registry: "ghcr.io/espoon-voltti"
+          registry: ghcr.io/${{ github.repository_owner }}
           name: evaka/e2e-playwright
           path: ./compose/e2e/
           dockerfile: ./compose/e2e/playwright.Dockerfile
@@ -62,8 +63,9 @@ jobs:
 
       - name: Setup Docker building
         id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
+        uses: espoon-voltti/voltti-actions/docker-setup@feat/allow-disabling-features
         with:
+          DOCKERHUB: ${{ vars.DOCKERHUB || 'true' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,10 +73,10 @@ jobs:
 
       - name: Build db image
         id: build
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@feat/allow-disabling-features
         with:
           public_registry_prefix: ""
-          registry: "ghcr.io/espoon-voltti"
+          registry: ghcr.io/${{ github.repository_owner }}
           name: evaka/test-db
           path: ./compose/db/
           dockerfile: ./compose/db/Dockerfile
