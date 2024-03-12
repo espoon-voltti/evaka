@@ -38,12 +38,10 @@ import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
@@ -59,7 +57,6 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var fridgeParentId: PersonId
     private lateinit var guardianId: PersonId
 
-    private lateinit var acl: AccessControlList
     private lateinit var accessControl: AccessControl
 
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
@@ -109,7 +106,6 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                 )
             mobileId = it.insert(DevMobileDevice(unitId = daycareId))
         }
-        acl = AccessControlList(jdbi, noopTracer)
         accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)
     }
 
@@ -122,9 +118,6 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @EnumSource(names = ["ADMIN", "SERVICE_WORKER", "FINANCE_ADMIN"])
     fun testGlobalRoleAuthorization(role: UserRole) {
         val user = AuthenticatedUser.Employee(employeeId, setOf(role))
-        val aclAuth = AclAuthorization.All
-
-        assertEquals(aclAuth, acl.getAuthorizedUnits(user))
 
         db.read { tx ->
             assertTrue(
@@ -140,10 +133,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     @EnumSource(names = ["UNIT_SUPERVISOR", "STAFF"])
     fun testAclRoleAuthorization(role: UserRole) {
         val user = AuthenticatedUser.Employee(employeeId, setOf(role))
-        val negativeAclAuth = AclAuthorization.Subset(emptySet())
-        val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))
 
-        assertEquals(negativeAclAuth, acl.getAuthorizedUnits(user))
         db.read { tx ->
             assertFalse(
                 accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
@@ -155,7 +145,6 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         db.transaction { it.insertDaycareAclRow(daycareId, employeeId, role) }
 
-        assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))
         db.read { tx ->
             assertTrue(
                 accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
@@ -164,14 +153,5 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                 accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardianId)
             )
         }
-    }
-
-    @Test
-    fun testMobileAclRoleAuthorization() {
-        val user = AuthenticatedUser.MobileDevice(mobileId)
-
-        val expectedAclAuth = AclAuthorization.Subset(setOf(daycareId))
-
-        assertEquals(expectedAclAuth, acl.getAuthorizedUnits(user))
     }
 }
