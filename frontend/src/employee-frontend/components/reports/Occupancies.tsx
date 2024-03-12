@@ -403,8 +403,6 @@ export default React.memo(function Occupancies() {
     return cols
   }, [] as Date[])
 
-  const includeGroups = filters.type.startsWith('GROUP_')
-
   const careAreaAll = { id: undefined, name: i18n.common.all }
 
   return (
@@ -601,7 +599,9 @@ export default React.memo(function Occupancies() {
                     [
                       i18n.reports.common.careAreaName,
                       i18n.reports.common.unitName,
-                      includeGroups ? i18n.reports.common.groupName : undefined,
+                      filters.display === 'GROUPS'
+                        ? i18n.reports.common.groupName
+                        : undefined,
                       usedValues !== 'raw'
                         ? i18n.reports.occupancies.average
                         : undefined,
@@ -631,7 +631,7 @@ export default React.memo(function Occupancies() {
                           ? i18n.reports.occupancies.unitsGroupedByArea
                           : i18n.reports.common.unitName}
                       </Th>
-                      {includeGroups && (
+                      {filters.display === 'GROUPS' && (
                         <Th>{i18n.reports.common.groupName}</Th>
                       )}
                       {usedValues !== 'raw' && (
@@ -657,7 +657,9 @@ export default React.memo(function Occupancies() {
                               colSpan={
                                 usedValues === 'raw'
                                   ? 4 + dateCols.length
-                                  : undefined
+                                  : filters.display === 'GROUPS'
+                                    ? 2
+                                    : undefined
                               }
                             >
                               <div
@@ -740,7 +742,9 @@ export default React.memo(function Occupancies() {
                   {usedValues !== 'raw' && (
                     <StyledTfoot>
                       <Tr>
-                        <Td colSpan={includeGroups ? 4 : undefined}>
+                        <Td
+                          colSpan={filters.display === 'GROUPS' ? 2 : undefined}
+                        >
                           {i18n.reports.common.total}
                         </Td>
                         <Td colSpan={1 + dateCols.length}>
