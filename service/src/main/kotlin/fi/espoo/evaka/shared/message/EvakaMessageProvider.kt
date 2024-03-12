@@ -145,19 +145,19 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
             MessageLanguage.FI ->
                 DecisionSendAddress(
                     "Espoon Kaupunki, Talousyksikkö, Varhaiskasvatuksen laskutus, PL 30",
-                    "02700",
+                    "02070",
                     "Espoon kaupunki",
                     "PL 30",
-                    "02700 Espoon kaupunki",
+                    "02070 Espoon kaupunki",
                     ""
                 )
             MessageLanguage.SV ->
                 DecisionSendAddress(
                     "Esbo stad, ekonomieheten/småbarnspedagogik, PB 30",
-                    "02700",
+                    "02070",
                     "Esbo",
                     "PB 30",
-                    "02700 Esbo",
+                    "02070 Esbo",
                     ""
                 )
         }
