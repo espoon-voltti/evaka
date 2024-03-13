@@ -3636,6 +3636,7 @@ export const fi = {
         'Raportti listaa lapset, joiden palveluntarpeen tunnit on ylitetty.',
       serviceNeedHours: 'Palvelun tarve (h)',
       usedServiceHours: 'Käytetty (h)',
+      groupLinkHeading: 'Yksikön viikkokalenteri',
       excessHours: 'Ylitys (h)'
     },
     units: {

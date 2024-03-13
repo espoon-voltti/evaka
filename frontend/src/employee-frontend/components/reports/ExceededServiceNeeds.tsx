@@ -152,6 +152,7 @@ const Report = React.memo(function Report({
                 <Thead>
                   <Tr>
                     <Th>{i18n.reports.common.childName}</Th>
+                    <Th>{i18n.reports.exceededServiceNeed.groupLinkHeading}</Th>
                     <Th>{i18n.reports.exceededServiceNeed.serviceNeedHours}</Th>
                     <Th>{i18n.reports.exceededServiceNeed.usedServiceHours}</Th>
                     <Th>{i18n.reports.exceededServiceNeed.excessHours}</Th>
@@ -170,6 +171,17 @@ const Report = React.memo(function Report({
                               true
                             )}
                           </Link>
+                        </Td>
+                        <Td>
+                          {!!row.groupId && (
+                            <>
+                              <Link
+                                to={`/units/${row.unitId}/calendar?group=${row.groupId}&date=${year.value()}-${String(month.value()).padStart(2, '0')}-01&mode=week`}
+                              >
+                                {row.groupName}
+                              </Link>
+                            </>
+                          )}
                         </Td>
                         <Td>{row.serviceNeedHoursPerMonth}</Td>
                         <Td>{row.usedServiceHours}</Td>
