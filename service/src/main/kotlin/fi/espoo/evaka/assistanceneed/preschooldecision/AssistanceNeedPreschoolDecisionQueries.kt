@@ -327,7 +327,8 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId,
     status: AssistanceNeedDecisionStatus,
     decisionMade: LocalDate?,
-    unreadGuardianIds: List<PersonId>?
+    unreadGuardianIds: List<PersonId>?,
+    validTo: LocalDate?
 ) {
     // language=sql
     val sql =
@@ -336,7 +337,8 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         SET 
             status = :status,
             decision_made = :decisionMade,
-            unread_guardian_ids = :unreadGuardianIds
+            unread_guardian_ids = :unreadGuardianIds,
+            valid_to = :validTo
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         """
             .trimIndent()
@@ -346,6 +348,7 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         .bind("status", status)
         .bind("decisionMade", decisionMade)
         .bind("unreadGuardianIds", unreadGuardianIds)
+        .bind("validTo", validTo)
         .updateExactlyOne()
 }
 
@@ -360,6 +363,7 @@ fun Database.Transaction.endActiveAssistanceNeedPreschoolDecisions(
 UPDATE assistance_need_preschool_decision
 SET valid_to = ${bind(endDate)}
 WHERE id <> ${bind(excludingId)}
+  AND valid_from <= ${bind(endDate)}
   AND (valid_to IS NULL OR valid_to > ${bind(endDate)})
   AND child_id = ${bind(childId)}
   AND status = 'ACCEPTED'
@@ -398,6 +402,24 @@ WHERE preschool_assistance_decision_with_new_end_date.id = assistance_need_presc
             )
         }
         .execute()
+
+fun Database.Read.getNextAssistanceNeedPreschoolDecisionValidFrom(
+    childId: ChildId,
+    startDate: LocalDate,
+) =
+    createQuery {
+            sql(
+                """
+SELECT min(valid_from)
+FROM assistance_need_preschool_decision
+WHERE child_id = ${bind(childId)}
+  AND valid_from >= ${bind(startDate)}
+  AND status = 'ACCEPTED'
+"""
+            )
+        }
+        .mapTo<LocalDate>()
+        .exactlyOneOrNull()
 
 fun Database.Transaction.updateAssistanceNeedPreschoolDocumentKey(
     id: AssistanceNeedPreschoolDecisionId,

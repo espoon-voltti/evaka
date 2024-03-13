@@ -52,6 +52,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import mu.KotlinLogging
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -398,6 +399,38 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         FileOutputStream(file).use { it.write(pdf) }
 
         logger.debug { "Generated assistance need decision PDF to ${file.absolutePath}" }
+    }
+
+    @Test
+    fun `accepting earlier decision works`() {
+        val decision1 = createAndFillDecision(testForm.copy(validFrom = LocalDate.of(2022, 1, 1)))
+        sendAssistanceNeedDecision(decision1.id)
+        decideDecision(decision1.id, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker)
+
+        val decision2 = createAndFillDecision(testForm.copy(validFrom = LocalDate.of(2023, 1, 1)))
+        sendAssistanceNeedDecision(decision2.id)
+        decideDecision(decision2.id, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker)
+
+        val decision3 = createAndFillDecision(testForm.copy(validFrom = LocalDate.of(2021, 1, 1)))
+        sendAssistanceNeedDecision(decision3.id)
+        decideDecision(decision3.id, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker)
+
+        val decisions = getDecisionsByChild(testChild_1.id)
+        assertThat(decisions)
+            .extracting({ it.status }, { it.validFrom }, { it.validTo })
+            .containsExactlyInAnyOrder(
+                Tuple(
+                    AssistanceNeedDecisionStatus.ACCEPTED,
+                    LocalDate.of(2021, 1, 1),
+                    LocalDate.of(2021, 12, 31)
+                ),
+                Tuple(
+                    AssistanceNeedDecisionStatus.ACCEPTED,
+                    LocalDate.of(2022, 1, 1),
+                    LocalDate.of(2022, 12, 31)
+                ),
+                Tuple(AssistanceNeedDecisionStatus.ACCEPTED, LocalDate.of(2023, 1, 1), null),
+            )
     }
 
     @Test
