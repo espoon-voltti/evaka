@@ -5,6 +5,8 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.deactivatePersonalMessageAccountIfNeeded
+import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 import fi.espoo.evaka.pis.NewEmployee
@@ -157,6 +159,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 )
 
                 it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role)
+                it.upsertEmployeeMessageAccount(id)
             }
         }
         Audit.EmployeeUpdateDaycareRoles.log(
@@ -174,16 +177,17 @@ class EmployeeController(private val accessControl: AccessControl) {
         @RequestParam(required = false) daycareId: DaycareId?
     ) {
         db.connect { dbc ->
-            dbc.transaction {
+            dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
-                    it,
+                    tx,
                     user,
                     clock,
                     Action.Employee.DELETE_DAYCARE_ROLES,
                     id
                 )
 
-                it.deleteEmployeeDaycareRoles(id, daycareId)
+                tx.deleteEmployeeDaycareRoles(id, daycareId)
+                deactivatePersonalMessageAccountIfNeeded(tx, id)
             }
         }
         Audit.EmployeeDeleteDaycareRoles.log(targetId = id, meta = mapOf("daycareId" to daycareId))
