@@ -4235,6 +4235,9 @@ export const fi = {
           reject: 'Peruuta'
         }
       }
+    },
+    serviceNeeds: {
+      title: 'Palveluntarpeet'
     }
   },
   documentTemplates: {
