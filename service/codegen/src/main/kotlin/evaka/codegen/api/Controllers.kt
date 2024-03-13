@@ -58,14 +58,6 @@ data class EndpointMetadata(
     val isJsonEndpoint: Boolean,
     val isDeprecated: Boolean,
     val path: String,
-    /**
-     * Index number of the path, counted by the order the paths were scanned.
-     *
-     * For example, a controller method with `@GetMapping(value = ["/units", "/public/units"])`:
-     * - EndpointMetadata(path="/units", pathIndex=0, ...)
-     * - EndpointMetadata(path="/public/units", pathIndex=1, ...)
-     */
-    val pathIndex: Int,
     val httpMethod: RequestMethod,
     val pathVariables: List<NamedParameter>,
     val requestParameters: List<NamedParameter>,
@@ -152,15 +144,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                         kotlinMethod.returnType.arguments.single().type
                     } else kotlinMethod.returnType
                 } else null
-            // Extract all possible path patterns manually in order to preserve order if possible.
-            // The underlying Spring types use sets, but they seem to be order-preserving
-            // implementations
-            val paths =
-                listOfNotNull(
-                        info.pathPatternsCondition?.patterns?.map { it.patternString },
-                        info.patternsCondition?.patterns?.toList()
-                    )
-                    .flatten()
+            val paths = info.directPaths + info.patternValues
             val methods = info.methodsCondition.methods
             val consumesJson =
                 info.consumesCondition.isEmpty ||
@@ -169,11 +153,8 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                 info.producesCondition.isEmpty ||
                     info.producesCondition.producibleMediaTypes.contains(MediaType.APPLICATION_JSON)
             paths
-                .withIndex()
-                .flatMap { (pathIndex, path) ->
-                    methods.map { method -> Triple(path, pathIndex, method) }
-                }
-                .map { (path, pathIndex, method) ->
+                .flatMap { path -> methods.map { method -> Pair(path, method) } }
+                .map { (path, method) ->
                     EndpointMetadata(
                         controllerClass = controllerClass,
                         controllerMethod = kotlinMethod,
@@ -181,7 +162,6 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                             consumesJson && producesJson && responseBodyType != typeOf<Any>(),
                         isDeprecated = kotlinMethod.hasAnnotation<Deprecated>(),
                         path = path,
-                        pathIndex = pathIndex,
                         httpMethod = method,
                         pathVariables = pathVariables,
                         requestParameters = requestParameters,
