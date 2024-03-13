@@ -848,7 +848,7 @@ export async function getPersonIdentity(
   }
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
-    url: uri`/person/identity/${request.personId}`.toString(),
+    url: uri`/person/details/${request.personId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonPersonJSON(json)

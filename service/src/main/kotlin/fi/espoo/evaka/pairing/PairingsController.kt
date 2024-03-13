@@ -99,7 +99,13 @@ class PairingsController(
      */
     data class PostPairingChallengeReq(val challengeKey: String)
 
-    @PostMapping("/public/pairings/challenge")
+    @PostMapping(
+        path =
+            [
+                "/public/pairings/challenge", // deprecated
+                "/employee-mobile/public/pairings/challenge"
+            ]
+    )
     fun postPairingChallenge(
         db: Database,
         clock: EvakaClock,
@@ -223,7 +229,13 @@ class PairingsController(
      */
     data class PairingStatusRes(val status: PairingStatus)
 
-    @GetMapping("/public/pairings/{id}/status")
+    @GetMapping(
+        path =
+            [
+                "/public/pairings/{id}/status", // deprecated
+                "/employee-mobile/public/pairings/{id}/status"
+            ]
+    )
     fun getPairingStatus(
         db: Database,
         clock: EvakaClock,

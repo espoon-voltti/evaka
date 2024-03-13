@@ -166,7 +166,14 @@ class ServiceNeedController(
             .also { Audit.ServiceNeedOptionsRead.log(meta = mapOf("count" to it.size)) }
     }
 
-    @GetMapping("/public/service-needs/options")
+    @GetMapping(
+        path =
+            [
+                "/public/service-needs/options", // deprecated
+                "/citizen/public/service-needs/options",
+                "/employee/public/service-needs/options"
+            ]
+    )
     fun getServiceNeedOptionPublicInfos(
         db: Database,
         @RequestParam(required = true) placementTypes: List<PlacementType>

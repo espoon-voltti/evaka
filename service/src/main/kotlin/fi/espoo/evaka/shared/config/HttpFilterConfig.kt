@@ -80,6 +80,9 @@ class HttpFilterConfig {
         private fun HttpServletRequest.requiresAuthentication(): Boolean =
             when {
                 isHealthCheck() -> false
+                requestURI.startsWith("/citizen/public/") -> false
+                requestURI.startsWith("/employee/public/") -> false
+                requestURI.startsWith("/employee-mobile/public/") -> false
                 requestURI.startsWith("/public/") -> false
                 mockIntegrationEnabled && requestURI.startsWith("/mock-integration/") -> false
                 devApiEnabled && requestURI.startsWith("/dev-api/") -> false
@@ -90,6 +93,8 @@ class HttpFilterConfig {
             when {
                 requestURI.startsWith("/system/") -> user is AuthenticatedUser.SystemInternalUser
                 requestURI.startsWith("/citizen/") -> user is AuthenticatedUser.Citizen
+                requestURI.startsWith("/employee/") -> user is AuthenticatedUser.Employee
+                requestURI.startsWith("/employee-mobile/") -> user is AuthenticatedUser.MobileDevice
                 requestURI.startsWith("/integration/") -> user is AuthenticatedUser.Integration
                 else -> true
             }

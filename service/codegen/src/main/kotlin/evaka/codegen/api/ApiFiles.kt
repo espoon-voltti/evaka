@@ -22,7 +22,8 @@ fun generateApiFiles(): Map<TsFile, String> {
             .filterNot {
                 it.isDeprecated ||
                     it.path.startsWith("/integration") ||
-                    it.path.startsWith("/system")
+                    it.path.startsWith("/system") ||
+                    endpointExcludes.contains(it.path)
             }
     endpoints.forEach { it.validate() }
 
@@ -217,7 +218,12 @@ fun generateApiClients(
         endpoints
             .groupBy { Pair(it.controllerClass, it.controllerMethod) }
             .values
-            .map { duplicates -> duplicates.minBy { it.pathIndex } }
+            .map { duplicates ->
+                require(duplicates.size == 1) {
+                    "Endpoint conflict:\n${duplicates.joinToString("\n")}"
+                }
+                duplicates.single()
+            }
             .sortedWith(
                 compareBy(
                     { it.controllerClass.jvmName },
