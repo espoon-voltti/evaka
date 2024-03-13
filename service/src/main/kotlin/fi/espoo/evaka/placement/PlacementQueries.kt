@@ -630,6 +630,26 @@ WHERE EXISTS (
         .toList<DaycareGroupPlacement>()
 }
 
+fun Database.Read.getGroupPlacementsByChildren(
+    childIds: Set<ChildId>,
+    range: FiniteDateRange
+): Map<ChildId, ChildDaycareGroupPlacement> {
+    return createQuery {
+            sql(
+                """
+SELECT pl.child_id, gp.daycare_group_id AS group_id, dg.name AS group_name
+FROM daycare_group_placement gp
+JOIN daycare_group dg ON dg.id = gp.daycare_group_id
+JOIN placement pl ON pl.id = gp.daycare_placement_id
+WHERE pl.child_id = ANY(${bind(childIds)}) AND daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)}
+ORDER BY gp.start_date
+"""
+            )
+        }
+        .toList<ChildDaycareGroupPlacement>()
+        .associateBy { it.childId }
+}
+
 fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
     return createQuery {
             sql(

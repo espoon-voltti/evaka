@@ -11,12 +11,14 @@ import fi.espoo.evaka.attendance.ChildAttendanceRow
 import fi.espoo.evaka.attendance.getChildAttendances
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getGroupPlacementsByChildren
 import fi.espoo.evaka.reservations.ReservationRow
 import fi.espoo.evaka.reservations.computeUsedService
 import fi.espoo.evaka.reservations.getReservations
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -106,9 +108,12 @@ data class ExceededServiceNeedReportRow(
     val childId: ChildId,
     val childFirstName: String,
     val childLastName: String,
+    val groupId: GroupId?,
+    val unitId: DaycareId,
     val serviceNeedHoursPerMonth: Int,
     val usedServiceHours: Int,
-    val excessHours: Int
+    val excessHours: Int,
+    val groupName: String?
 )
 
 private fun exceededServiceNeedReport(
@@ -127,6 +132,7 @@ private fun exceededServiceNeedReport(
     val serviceNeeds = tx.getServiceNeedsByRange(unitId, range)
     val childIds = serviceNeeds.keys
 
+    val childGroups = tx.getGroupPlacementsByChildren(childIds, range)
     val children = tx.getChildren(childIds)
     val absences = tx.getAbsencesByRange(childIds, range)
     val reservations = tx.getReservationsByRange(childIds, range)
@@ -183,6 +189,9 @@ private fun exceededServiceNeedReport(
                 childId = child.id,
                 childFirstName = child.firstName,
                 childLastName = child.lastName,
+                unitId = unitId,
+                groupId = childGroups[child.id]?.groupId,
+                groupName = childGroups[child.id]?.groupName,
                 serviceNeedHoursPerMonth = serviceNeedHoursPerMonth,
                 usedServiceHours = usedServiceHours,
                 excessHours = excessHours

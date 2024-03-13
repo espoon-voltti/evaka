@@ -737,3 +737,9 @@ data class DaycareBasics(
     val enabledPilotFeatures: List<PilotFeature>,
     val language: Language
 )
+
+data class ChildDaycareGroupPlacement(
+    val childId: ChildId,
+    val groupId: GroupId,
+    val groupName: String
+)

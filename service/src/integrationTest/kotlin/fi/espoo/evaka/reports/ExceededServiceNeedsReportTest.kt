@@ -9,12 +9,14 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -45,6 +47,8 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
         val child1 = DevPerson()
         val child2 = DevPerson()
 
+        val daycareGroup = DevDaycareGroup(daycareId = daycare.id, startDate = start, endDate = end)
+
         db.transaction { tx ->
             tx.insertServiceNeedOption(snDaycareHours120)
             tx.insert(admin)
@@ -54,6 +58,8 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(child2, DevPersonType.CHILD)
 
             tx.insert(DevHoliday(LocalDate.of(2024, 1, 1)))
+
+            tx.insert(daycareGroup)
 
             tx.insertTestPlacement(
                     childId = child1.id,
@@ -67,6 +73,12 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                         period = FiniteDateRange(start, end),
                         optionId = snDaycareHours120.id,
                         confirmedBy = admin.evakaUserId,
+                    )
+                    tx.insertTestDaycareGroupPlacement(
+                        placementId,
+                        daycareGroup.id,
+                        startDate = start,
+                        endDate = end
                     )
                 }
 
@@ -129,6 +141,9 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                     childId = child1.id,
                     childFirstName = child1.firstName,
                     childLastName = child1.lastName,
+                    unitId = daycare.id,
+                    groupId = daycareGroup.id,
+                    groupName = daycareGroup.name,
                     serviceNeedHoursPerMonth = 120,
                     usedServiceHours = 176,
                     excessHours = 56
