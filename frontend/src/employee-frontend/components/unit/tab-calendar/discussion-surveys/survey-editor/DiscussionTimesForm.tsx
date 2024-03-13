@@ -3,30 +3,26 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { MutableRefObject, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { mapped } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { unitGroupDetailsQuery } from '../../../queries'
 import { DiscussionTimesCalendar } from '../times-calendar/TimesCalendar'
 
-import { DiscussionSurveyEditMode } from './DiscussionSurveyEditor'
 import DiscussionSurveyForm from './DiscussionSurveyForm'
-import { surveyForm } from './form'
+import { filterAttendees, mergeAttendeeChanges, surveyForm } from './form'
 
 export const TimesCalendarContainer = styled.div`
   max-height: 680px;
@@ -49,38 +45,41 @@ export type NewEventTimeForm = {
   timeRange: { startTime: string; endTime: string }
 }
 
+export const getPeriodFromDatesOrToday = (
+  dates: LocalDate[]
+): FiniteDateRange => {
+  const today = LocalDate.todayInSystemTz()
+  const sortedDates = orderBy(dates)
+  return sortedDates.length > 0
+    ? new FiniteDateRange(sortedDates[0], sortedDates[sortedDates.length - 1])
+    : new FiniteDateRange(today, today)
+}
+
 export default React.memo(function DiscussionTimesForm({
   eventData,
   groupId,
   unitId,
-  editMode
+  groupData,
+  horizonRef,
+  calendarRange,
+  extendHorizonAction
 }: {
   eventData: CalendarEvent | null
   groupId: UUID
   unitId: UUID
-  editMode: DiscussionSurveyEditMode
+  groupData: UnitGroupDetails
+  horizonRef: MutableRefObject<HTMLDivElement | null>
+  calendarRange: FiniteDateRange
+  extendHorizonAction: () => void
 }) {
   const { i18n } = useTranslation()
   const t = i18n.unit.calendar.events
+  const today = LocalDate.todayInSystemTz()
 
-  const horizonRef = useRef<HTMLDivElement | null>(null)
-  const getCalendarHorizon = useCallback(() => {
-    const today = LocalDate.todayInSystemTz()
-    const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
-
-    const defaultHorizonDate = previousMonday.addMonths(3).lastDayOfMonth()
-
-    const eventDataHorizonDate = eventData
-      ? eventData.period.end.lastDayOfMonth()
-      : today
-
-    return defaultHorizonDate.isAfter(eventDataHorizonDate)
-      ? defaultHorizonDate
-      : eventDataHorizonDate
-  }, [eventData])
-
-  const [calendarHorizonDate, setCalendarHorizonDate] =
-    useState<LocalDate>(getCalendarHorizon())
+  const initialPeriod = useMemo(
+    () => eventData?.period ?? new FiniteDateRange(today, today),
+    [eventData, today]
+  )
 
   const mappedForm = mapped(surveyForm, (output) => ({
     ...output
@@ -91,42 +90,41 @@ export default React.memo(function DiscussionTimesForm({
     () => ({
       title: eventData?.title ?? '',
       description: eventData?.description ?? '',
-      times: []
+      times: [],
+      attendees: filterAttendees(groupData, groupId, eventData, initialPeriod)
     }),
-    i18n.validationErrors
+    i18n.validationErrors,
+    {
+      onUpdate(prevState, nextState) {
+        // if times have changed, check whether their min-max period has changed
+        const oldTimes = prevState.times.map((t) => t.date)
+        const newTimes = nextState.times.map((t) => t.date)
+        if (oldTimes.length === 0 && newTimes.length === 0) {
+          return nextState
+        } else {
+          const oldPeriod = getPeriodFromDatesOrToday(oldTimes)
+          const newPeriod = getPeriodFromDatesOrToday(newTimes)
+          if (oldPeriod.isEqual(newPeriod)) {
+            return nextState
+          } else {
+            // in case of a period change, recalculate attendees from group placement data
+            return {
+              ...nextState,
+              attendees: mergeAttendeeChanges(
+                groupData,
+                prevState,
+                newPeriod,
+                groupId,
+                eventData
+              )
+            }
+          }
+        }
+      }
+    }
   )
 
   const { times } = useFormFields(initializedForm)
-
-  const period = useMemo(() => {
-    const today = LocalDate.todayInSystemTz()
-
-    if (eventData) {
-      return eventData.period
-    } else {
-      if (times.state.length > 0) {
-        const sortedTimes = orderBy(times.state, [(t) => t.date])
-        return new FiniteDateRange(
-          sortedTimes[0].date,
-          sortedTimes[sortedTimes.length - 1].date
-        )
-      } else {
-        return new FiniteDateRange(today, today)
-      }
-    }
-  }, [times.state, eventData])
-
-  const calendarRange = useMemo(() => {
-    const today = LocalDate.todayInSystemTz()
-
-    const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
-
-    return new FiniteDateRange(previousMonday, calendarHorizonDate)
-  }, [calendarHorizonDate])
-
-  const groupData = useQueryResult(
-    unitGroupDetailsQuery(unitId, calendarRange.start, calendarRange.end)
-  )
 
   const addTime = useCallback(
     (et: NewEventTimeForm) => {
@@ -143,59 +141,47 @@ export default React.memo(function DiscussionTimesForm({
 
   return (
     <div>
-      {renderResult(groupData, (groupResult) => (
+      <DiscussionSurveyForm
+        eventData={eventData}
+        form={initializedForm}
+        groupId={groupId}
+        unitId={unitId}
+      />
+
+      {!eventData && (
         <>
-          <DiscussionSurveyForm
-            eventData={eventData}
-            period={period}
-            form={initializedForm}
-            groupResult={groupResult}
-            groupId={groupId}
-            unitId={unitId}
-          />
-
-          {editMode === 'create' && (
-            <>
-              <BorderedBox>
-                <H3 noMargin>
-                  {t.discussionReservation.surveyDiscussionTimesTitle}
-                </H3>
-              </BorderedBox>
-              <TimesCalendarContainer>
-                <DiscussionTimesCalendar
-                  unitId={unitId}
-                  groupId={groupId}
-                  times={times}
-                  calendarRange={calendarRange}
-                  addAction={addTime}
-                  removeAction={removeTimeById}
-                  horizonRef={horizonRef}
-                />
-
-                <Gap size="L" />
-                <FixedSpaceRow
-                  fullWidth
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Button
-                    onClick={() => {
-                      setCalendarHorizonDate(
-                        calendarHorizonDate.addMonths(1).lastDayOfMonth()
-                      )
-                      scrollRefIntoView(horizonRef, 200)
-                    }}
-                    text={
-                      i18n.unit.calendar.events.discussionReservation.calendar
-                        .addTimeButton
-                    }
-                  />
-                </FixedSpaceRow>
-              </TimesCalendarContainer>
-            </>
-          )}
+          <BorderedBox>
+            <H3 noMargin>
+              {t.discussionReservation.surveyDiscussionTimesTitle}
+            </H3>
+          </BorderedBox>
+          <TimesCalendarContainer>
+            <DiscussionTimesCalendar
+              unitId={unitId}
+              groupId={groupId}
+              times={times}
+              calendarRange={calendarRange}
+              addAction={addTime}
+              removeAction={removeTimeById}
+              horizonRef={horizonRef}
+            />
+            <Gap size="L" />
+            <FixedSpaceRow
+              fullWidth
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Button
+                onClick={extendHorizonAction}
+                text={
+                  i18n.unit.calendar.events.discussionReservation.calendar
+                    .addTimeButton
+                }
+              />
+            </FixedSpaceRow>
+          </TimesCalendarContainer>
         </>
-      ))}
+      )}
     </div>
   )
 })
