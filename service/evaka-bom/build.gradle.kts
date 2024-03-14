@@ -53,7 +53,7 @@ dependencies {
         api("org.apache.santuario:xmlsec:4.0.0")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.16.0"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.17.0"))
     api(platform("org.apache.cxf:cxf-bom:4.0.3"))
     // Spring Boot specifies a version constraint for Jetty, but we have other libraries relying
     // on an older version -> we enforce a specific Jetty BOM version and ignore Spring Boot
