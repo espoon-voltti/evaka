@@ -39,7 +39,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @RequestParam(required = false) areaId: AreaId?
+        @RequestParam areaId: AreaId?
     ): ServiceVoucherReport {
         return db.connect { dbc ->
             dbc.read { tx ->

@@ -576,8 +576,8 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
         val deleted =
             db.connect { dbc ->

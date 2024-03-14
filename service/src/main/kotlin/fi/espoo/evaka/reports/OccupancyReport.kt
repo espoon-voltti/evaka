@@ -35,9 +35,9 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam type: OccupancyType,
-        @RequestParam(required = false) careAreaId: AreaId?,
-        @RequestParam(required = false) providerType: ProviderType?,
-        @RequestParam(required = false) unitTypes: Set<CareType>?,
+        @RequestParam careAreaId: AreaId?,
+        @RequestParam providerType: ProviderType?,
+        @RequestParam unitTypes: Set<CareType>?,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<OccupancyUnitReportResultRow> {
@@ -86,9 +86,9 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam type: OccupancyType,
-        @RequestParam(required = false) careAreaId: AreaId?,
-        @RequestParam(required = false) providerType: ProviderType?,
-        @RequestParam(required = false) unitTypes: Set<CareType>?,
+        @RequestParam careAreaId: AreaId?,
+        @RequestParam providerType: ProviderType?,
+        @RequestParam unitTypes: Set<CareType>?,
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<OccupancyGroupReportResultRow> {

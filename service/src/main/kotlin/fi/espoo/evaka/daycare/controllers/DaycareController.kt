@@ -181,12 +181,8 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @RequestParam(required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        from: LocalDate? = null,
-        @RequestParam(required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        to: LocalDate? = null
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
     ): List<DaycareGroup> {
         return db.connect { dbc ->
                 dbc.read {

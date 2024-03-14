@@ -36,7 +36,7 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("id") guardianId: PersonId
+        @RequestParam id: PersonId
     ): DecisionListResponse {
         val decisions =
             db.connect { dbc ->
@@ -46,7 +46,7 @@ class DecisionController(
                         user,
                         clock,
                         Action.Person.READ_DECISIONS,
-                        guardianId
+                        id
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -55,10 +55,10 @@ class DecisionController(
                             clock,
                             Action.Decision.READ
                         )
-                    it.getDecisionsByGuardian(guardianId, filter)
+                    it.getDecisionsByGuardian(id, filter)
                 }
             }
-        Audit.DecisionRead.log(targetId = guardianId, meta = mapOf("count" to decisions.size))
+        Audit.DecisionRead.log(targetId = id, meta = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -67,7 +67,7 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("id") childId: ChildId
+        @RequestParam id: ChildId
     ): DecisionListResponse {
         val decisions =
             db.connect { dbc ->
@@ -77,7 +77,7 @@ class DecisionController(
                         user,
                         clock,
                         Action.Child.READ_DECISIONS,
-                        childId
+                        id
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -86,10 +86,10 @@ class DecisionController(
                             clock,
                             Action.Decision.READ
                         )
-                    it.getDecisionsByChild(childId, filter)
+                    it.getDecisionsByChild(id, filter)
                 }
             }
-        Audit.DecisionRead.log(targetId = childId, meta = mapOf("count" to decisions.size))
+        Audit.DecisionRead.log(targetId = id, meta = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -98,7 +98,7 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("id") applicationId: ApplicationId
+        @RequestParam id: ApplicationId
     ): DecisionListResponse {
         val decisions =
             db.connect { dbc ->
@@ -108,7 +108,7 @@ class DecisionController(
                         user,
                         clock,
                         Action.Application.READ_DECISIONS,
-                        applicationId
+                        id
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -117,10 +117,10 @@ class DecisionController(
                             clock,
                             Action.Decision.READ
                         )
-                    it.getDecisionsByApplication(applicationId, filter)
+                    it.getDecisionsByApplication(id, filter)
                 }
             }
-        Audit.DecisionReadByApplication.log(targetId = applicationId)
+        Audit.DecisionReadByApplication.log(targetId = id)
 
         return DecisionListResponse(decisions)
     }
@@ -150,7 +150,7 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") decisionId: DecisionId
+        @PathVariable id: DecisionId
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 val decision =
@@ -160,15 +160,15 @@ class DecisionController(
                             user,
                             clock,
                             Action.Decision.DOWNLOAD_PDF,
-                            decisionId
+                            id
                         )
 
                         val decision =
-                            tx.getDecision(decisionId)
-                                ?: error("Cannot find decision for decision id '$decisionId'")
+                            tx.getDecision(id)
+                                ?: error("Cannot find decision for decision id '$id'")
                         val application =
                             tx.fetchApplicationDetails(decision.applicationId)
-                                ?: error("Cannot find application for decision id '$decisionId'")
+                                ?: error("Cannot find application for decision id '$id'")
 
                         val child =
                             tx.getPersonById(application.childId)
@@ -193,7 +193,7 @@ class DecisionController(
                     }
                 decisionService.getDecisionPdf(dbc, decision)
             }
-            .also { Audit.DecisionDownloadPdf.log(targetId = decisionId) }
+            .also { Audit.DecisionDownloadPdf.log(targetId = id) }
     }
 }
 

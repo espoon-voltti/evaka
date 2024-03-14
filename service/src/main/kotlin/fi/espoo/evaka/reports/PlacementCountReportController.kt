@@ -28,11 +28,9 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("examinationDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        examinationDate: LocalDate,
-        @RequestParam(name = "providerTypes") requestedProviderTypes: List<ProviderType>?,
-        @RequestParam(name = "placementTypes") requestedPlacementTypes: List<PlacementType>?
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam examinationDate: LocalDate,
+        @RequestParam providerTypes: List<ProviderType>?,
+        @RequestParam placementTypes: List<PlacementType>?
     ): PlacementCountReportResult {
         return db.connect { dbc ->
                 dbc.read {
@@ -45,8 +43,8 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementCountReportRows(
                         examinationDate,
-                        requestedProviderTypes ?: ProviderType.entries,
-                        requestedPlacementTypes ?: PlacementType.entries
+                        providerTypes ?: ProviderType.entries,
+                        placementTypes ?: PlacementType.entries
                     )
                 }
             }
@@ -55,8 +53,8 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                     meta =
                         mapOf(
                             "examinationDate" to examinationDate,
-                            "providerTypes" to requestedProviderTypes,
-                            "careTypes" to requestedPlacementTypes
+                            "providerTypes" to providerTypes,
+                            "careTypes" to placementTypes
                         )
                 )
             }

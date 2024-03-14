@@ -117,8 +117,8 @@ export async function getPlacementPlans(
 ): Promise<PlacementPlanDetails[]> {
   const params = createUrlSearchParams(
     ['daycareId', request.daycareId],
-    ['from', request.from?.formatIso()],
-    ['to', request.to?.formatIso()]
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<PlacementPlanDetails[]>>({
     url: uri`/placements/plans`.toString(),

@@ -73,8 +73,8 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
-        @RequestParam(value = "childId", required = false) childId: PersonId? = null
+        @RequestParam headOfChildId: PersonId? = null,
+        @RequestParam childId: PersonId? = null
     ): List<ParentshipWithPermittedActions> {
         if ((childId != null) == (headOfChildId != null)) {
             throw BadRequest("One and only one of parameters headOfChildId and childId is required")
@@ -127,7 +127,7 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: ParentshipId
+        @PathVariable id: ParentshipId
     ): Parentship {
         return db.connect { dbc ->
                 dbc.read {
@@ -143,7 +143,7 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: ParentshipId,
+        @PathVariable id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
     ) {
         db.connect { dbc ->
@@ -169,21 +169,15 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") parentshipId: ParentshipId
+        @PathVariable id: ParentshipId
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Parentship.RETRY,
-                    parentshipId
-                )
-                parentshipService.retryParentship(it, clock, parentshipId)
+                accessControl.requirePermissionFor(it, user, clock, Action.Parentship.RETRY, id)
+                parentshipService.retryParentship(it, clock, id)
             }
         }
-        Audit.ParentShipsRetry.log(targetId = parentshipId)
+        Audit.ParentShipsRetry.log(targetId = id)
     }
 
     @DeleteMapping("/{id}")
@@ -191,7 +185,7 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: ParentshipId
+        @PathVariable id: ParentshipId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->

@@ -25,8 +25,8 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("year") year: Int,
-        @RequestParam("month") month: Int
+        @RequestParam year: Int,
+        @RequestParam month: Int
     ): List<StartingPlacementsRow> {
         return db.connect { dbc ->
                 dbc.read {

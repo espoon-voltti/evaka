@@ -28,10 +28,9 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
-        @RequestParam("showIntentionalDuplicates", required = false, defaultValue = "false")
-        showIntentionalDuplicates: Boolean
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
+        @RequestParam showIntentionalDuplicates: Boolean = false
     ): List<MissingHeadOfFamilyReportRow> {
         return db.connect { dbc ->
                 dbc.read {

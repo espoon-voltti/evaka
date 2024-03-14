@@ -108,7 +108,7 @@ class AssistanceNeedVoucherCoefficientController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId,
+        @PathVariable id: AssistanceNeedVoucherCoefficientId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
         return db.connect { dbc ->
@@ -118,46 +118,30 @@ class AssistanceNeedVoucherCoefficientController(
                         user,
                         clock,
                         Action.AssistanceNeedVoucherCoefficient.UPDATE,
-                        assistanceNeedVoucherCoefficientId
+                        id
                     )
-                    val existing =
-                        tx.getAssistanceNeedVoucherCoefficientById(
-                            assistanceNeedVoucherCoefficientId
-                        )
-                    adjustExistingCoefficients(
-                        tx,
-                        existing.childId,
-                        body.validityPeriod,
-                        assistanceNeedVoucherCoefficientId
-                    )
+                    val existing = tx.getAssistanceNeedVoucherCoefficientById(id)
+                    adjustExistingCoefficients(tx, existing.childId, body.validityPeriod, id)
 
                     val combinedRange =
                         DateSet.of(existing.validityPeriod, body.validityPeriod)
                             .spanningRange()!!
                             .asDateRange()
-                    tx.updateAssistanceNeedVoucherCoefficient(
-                            id = assistanceNeedVoucherCoefficientId,
-                            data = body
+                    tx.updateAssistanceNeedVoucherCoefficient(id = id, data = body).also {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    existing.childId,
+                                    combinedRange
+                                )
+                            ),
+                            runAt = clock.now()
                         )
-                        .also {
-                            asyncJobRunner.plan(
-                                tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        existing.childId,
-                                        combinedRange
-                                    )
-                                ),
-                                runAt = clock.now()
-                            )
-                        }
+                    }
                 }
             }
-            .also {
-                Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(
-                    targetId = assistanceNeedVoucherCoefficientId
-                )
-            }
+            .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = id) }
     }
 
     @DeleteMapping("/assistance-need-voucher-coefficients/{id}")
@@ -165,7 +149,7 @@ class AssistanceNeedVoucherCoefficientController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId
+        @PathVariable id: AssistanceNeedVoucherCoefficientId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -174,12 +158,12 @@ class AssistanceNeedVoucherCoefficientController(
                     user,
                     clock,
                     Action.AssistanceNeedVoucherCoefficient.DELETE,
-                    assistanceNeedVoucherCoefficientId
+                    id
                 )
                 val existing =
-                    tx.deleteAssistanceNeedVoucherCoefficient(assistanceNeedVoucherCoefficientId)
+                    tx.deleteAssistanceNeedVoucherCoefficient(id)
                         ?: throw NotFound(
-                            "Assistance need voucher coefficient $assistanceNeedVoucherCoefficientId cannot found or cannot be deleted",
+                            "Assistance need voucher coefficient $id cannot found or cannot be deleted",
                             "VOUCHER_COEFFICIENT_NOT_FOUND"
                         )
                 asyncJobRunner.plan(
@@ -194,9 +178,7 @@ class AssistanceNeedVoucherCoefficientController(
                 )
             }
         }
-        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(
-            targetId = assistanceNeedVoucherCoefficientId
-        )
+        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(targetId = id)
     }
 
     private fun adjustExistingCoefficients(

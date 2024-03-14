@@ -212,7 +212,7 @@ class AssistanceController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") assistanceActionId: AssistanceActionId,
+        @PathVariable id: AssistanceActionId,
         @RequestBody body: AssistanceActionRequest
     ): AssistanceAction {
         return db.connect { dbc ->
@@ -222,17 +222,17 @@ class AssistanceController(
                         user,
                         clock,
                         Action.AssistanceAction.UPDATE,
-                        assistanceActionId
+                        id
                     )
                 }
                 assistanceActionService.updateAssistanceAction(
                     dbc,
                     user = user,
-                    id = assistanceActionId,
+                    id = id,
                     data = body
                 )
             }
-            .also { Audit.ChildAssistanceActionUpdate.log(targetId = assistanceActionId) }
+            .also { Audit.ChildAssistanceActionUpdate.log(targetId = id) }
     }
 
     @DeleteMapping("/assistance-actions/{id}")
@@ -240,7 +240,7 @@ class AssistanceController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") assistanceActionId: AssistanceActionId
+        @PathVariable id: AssistanceActionId
     ) {
         db.connect { dbc ->
             dbc.read {
@@ -249,12 +249,12 @@ class AssistanceController(
                     user,
                     clock,
                     Action.AssistanceAction.DELETE,
-                    assistanceActionId
+                    id
                 )
             }
-            assistanceActionService.deleteAssistanceAction(dbc, assistanceActionId)
+            assistanceActionService.deleteAssistanceAction(dbc, id)
         }
-        Audit.ChildAssistanceActionDelete.log(targetId = assistanceActionId)
+        Audit.ChildAssistanceActionDelete.log(targetId = id)
     }
 
     @GetMapping("/assistance-action-options")

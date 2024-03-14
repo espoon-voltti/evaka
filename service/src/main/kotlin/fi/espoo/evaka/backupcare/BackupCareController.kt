@@ -38,7 +38,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("childId") childId: ChildId
+        @PathVariable childId: ChildId
     ): ChildBackupCaresResponse {
         return ChildBackupCaresResponse(
             db.connect { dbc ->
@@ -78,7 +78,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("childId") childId: ChildId,
+        @PathVariable childId: ChildId,
         @RequestBody body: NewBackupCare
     ): BackupCareCreateResponse {
         try {
@@ -120,7 +120,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") backupCareId: BackupCareId,
+        @PathVariable id: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
     ) {
         try {
@@ -131,11 +131,11 @@ class BackupCareController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.BackupCare.UPDATE,
-                        backupCareId
+                        id
                     )
                     if (
                         !tx.childPlacementsHasConsecutiveRange(
-                            tx.getBackupCareChildId(backupCareId),
+                            tx.getBackupCareChildId(id),
                             body.period
                         )
                     ) {
@@ -144,7 +144,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                         )
                     }
 
-                    val existing = tx.getBackupCare(backupCareId)
+                    val existing = tx.getBackupCare(id)
                     if (existing != null) {
                         if (!existing.period.start.isEqual(body.period.start)) {
                             if (existing.period.start.isBefore(body.period.start)) {
@@ -209,10 +209,10 @@ class BackupCareController(private val accessControl: AccessControl) {
                             }
                         }
                     }
-                    tx.updateBackupCare(backupCareId, body.period, body.groupId)
+                    tx.updateBackupCare(id, body.period, body.groupId)
                 }
             }
-            Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
+            Audit.BackupCareUpdate.log(targetId = id, objectId = body.groupId)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
@@ -223,18 +223,12 @@ class BackupCareController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") backupCareId: BackupCareId
+        @PathVariable id: BackupCareId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.BackupCare.DELETE,
-                    backupCareId
-                )
-                val backupCare = tx.getBackupCare(backupCareId)
+                accessControl.requirePermissionFor(tx, user, clock, Action.BackupCare.DELETE, id)
+                val backupCare = tx.getBackupCare(id)
                 if (backupCare != null) {
                     tx.clearCalendarEventAttendees(
                         backupCare.childId,
@@ -242,10 +236,10 @@ class BackupCareController(private val accessControl: AccessControl) {
                         backupCare.period
                     )
                 }
-                tx.deleteBackupCare(backupCareId)
+                tx.deleteBackupCare(id)
             }
         }
-        Audit.BackupCareDelete.log(targetId = backupCareId)
+        Audit.BackupCareDelete.log(targetId = id)
     }
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
@@ -253,11 +247,9 @@ class BackupCareController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("daycareId") daycareId: DaycareId,
-        @RequestParam("startDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        startDate: LocalDate,
-        @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
+        @PathVariable daycareId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): UnitBackupCaresResponse {
         val backupCares =
             db.connect { dbc ->

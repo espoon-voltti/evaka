@@ -27,7 +27,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("childId") childId: ChildId,
+        @PathVariable childId: ChildId,
         @RequestBody body: ChildBackupPickupContent
     ): ChildBackupPickupCreateResponse {
         return ChildBackupPickupCreateResponse(
@@ -54,7 +54,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("childId") childId: ChildId
+        @PathVariable childId: ChildId
     ): List<ChildBackupPickup> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -81,7 +81,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") id: BackupPickupId,
+        @PathVariable id: BackupPickupId,
         @RequestBody body: ChildBackupPickupContent
     ) {
         db.connect { dbc ->
@@ -98,7 +98,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("id") id: BackupPickupId
+        @PathVariable id: BackupPickupId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->

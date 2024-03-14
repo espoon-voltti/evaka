@@ -41,18 +41,15 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("placementStartDate")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        placementStartDate: LocalDate,
-        @RequestParam("earliestPreferredStartDate")
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) placementStartDate: LocalDate,
+        @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         earliestPreferredStartDate: LocalDate?,
-        @RequestParam("applicationStatus", required = false)
-        applicationStatus: Set<ApplicationStatus>? = null,
-        @RequestParam("earliestApplicationSentDate", required = false)
+        @RequestParam applicationStatus: Set<ApplicationStatus>? = null,
+        @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         earliestApplicationSentDate: LocalDate? = null,
-        @RequestParam("latestApplicationSentDate", required = false)
+        @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         latestApplicationSentDate: LocalDate? = null
     ): List<PlacementSketchingReportRow> {

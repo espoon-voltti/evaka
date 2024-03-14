@@ -166,12 +166,8 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        @RequestParam(required = false)
-        invoiceDate: LocalDate?,
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        @RequestParam(required = false)
-        dueDate: LocalDate?,
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam invoiceDate: LocalDate?,
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam dueDate: LocalDate?,
         @RequestBody invoiceIds: List<InvoiceId>
     ) {
         db.connect { dbc ->

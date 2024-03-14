@@ -1507,9 +1507,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
 
     @GetMapping("/email-content")
     fun getEmails(
-        @RequestParam("message", required = false, defaultValue = "pendingDecisionNotification")
-        message: EmailMessageType,
-        @RequestParam("format", required = false, defaultValue = "html") format: String
+        @RequestParam message: EmailMessageType = EmailMessageType.pendingDecisionNotification,
+        @RequestParam format: String = "html"
     ): ResponseEntity<Any> {
         val emailContent =
             when (message) {

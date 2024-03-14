@@ -267,7 +267,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "guardianId") guardianId: PersonId
+        @PathVariable guardianId: PersonId
     ): List<PersonApplicationSummary> {
         return db.connect { dbc ->
                 dbc.read {
@@ -289,7 +289,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "childId") childId: ChildId
+        @PathVariable childId: ChildId
     ): List<PersonApplicationSummary> {
         return db.connect { dbc ->
                 dbc.read {
@@ -318,7 +318,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "applicationId") applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId
     ): ApplicationResponse {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -438,7 +438,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "applicationId") applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId
     ): PlacementPlanDraft {
         return db.connect { dbc ->
                 dbc.read {
@@ -464,7 +464,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "applicationId") applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId
     ): DecisionDraftGroup {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -548,7 +548,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "applicationId") applicationId: ApplicationId,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftUpdate>
     ) {
         db.connect { dbc ->
@@ -571,7 +571,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "unitId") unitId: DaycareId
+        @PathVariable unitId: DaycareId
     ) {
         db.connect { dbc ->
             dbc.transaction {

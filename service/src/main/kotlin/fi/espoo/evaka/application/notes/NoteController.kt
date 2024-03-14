@@ -108,7 +108,7 @@ class NoteController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("noteId") noteId: ApplicationNoteId,
+        @PathVariable noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest
     ) {
         db.connect { dbc ->
@@ -131,7 +131,7 @@ class NoteController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("noteId") noteId: ApplicationNoteId
+        @PathVariable noteId: ApplicationNoteId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->

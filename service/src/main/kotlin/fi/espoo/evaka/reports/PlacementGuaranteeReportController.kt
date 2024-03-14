@@ -28,7 +28,7 @@ class PlacementGuaranteeReportController(private val accessControl: AccessContro
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam date: LocalDate,
-        @RequestParam(required = false) unitId: DaycareId? = null
+        @RequestParam unitId: DaycareId? = null
     ): List<PlacementGuaranteeReportRow> {
         return db.connect { dbc ->
             dbc.read { tx ->

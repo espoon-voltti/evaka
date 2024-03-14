@@ -21,7 +21,7 @@ private val logger = KotlinLogging.logger {}
 class MockDvvModificationsService {
 
     @GetMapping("/v1/kirjausavain/{date}")
-    fun getApiKey(@PathVariable("date") date: String?): String {
+    fun getApiKey(@PathVariable date: String?): String {
         logger.info { "Mock dvv GET /kirjausavain/$date called" }
         return "{\"viimeisinKirjausavain\":100000021}"
     }
