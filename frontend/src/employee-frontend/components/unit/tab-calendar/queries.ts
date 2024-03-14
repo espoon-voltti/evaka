@@ -3,27 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  CalendarEventForm,
-  CalendarEventTimeEmployeeReservationForm,
-  CalendarEventTimeForm
-} from 'lib-common/generated/api-types/calendarevent'
-import LocalDate from 'lib-common/local-date'
-import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-
-import { createQueryKeys } from '../../../query'
-
-import {
   addCalendarEventTime,
   createCalendarEvent,
-  deleteCalendarEventOfUnit,
+  deleteCalendarEvent,
   deleteCalendarEventTime,
   getCalendarEvent,
-  getDiscussionReservationDaysForGroup,
-  getDiscussionSurveysOfGroup,
+  getGroupCalendarEventsWithTimes,
+  getGroupDiscussionReservationDays,
   setCalendarEventTimeReservation,
   updateCalendarEvent
-} from './api'
+} from 'employee-frontend/generated/api-clients/calendarevent'
+import LocalDate from 'lib-common/local-date'
+import { mutation, query } from 'lib-common/query'
+import { Arg0, UUID } from 'lib-common/types'
+
+import { createQueryKeys } from '../../../query'
 
 export const queryKeys = createQueryKeys('calendarEvent', {
   groupDiscussionSurveys: (groupId: UUID) => [
@@ -40,59 +34,53 @@ export const queryKeys = createQueryKeys('calendarEvent', {
 })
 
 export const groupDiscussionSurveysQuery = query({
-  api: getDiscussionSurveysOfGroup,
-  queryKey: queryKeys.groupDiscussionSurveys
+  api: getGroupCalendarEventsWithTimes,
+  queryKey: ({ groupId }) => queryKeys.groupDiscussionSurveys(groupId)
 })
 
 export const discussionSurveyQuery = query({
   api: getCalendarEvent,
-  queryKey: queryKeys.discussionSurvey
+  queryKey: ({ id }) => queryKeys.discussionSurvey(id)
 })
 
 export const groupDiscussionReservationDaysQuery = query({
-  api: getDiscussionReservationDaysForGroup,
-  queryKey: queryKeys.groupDiscussionReservationDays
+  api: getGroupDiscussionReservationDays,
+  queryKey: ({ unitId, groupId, start, end }) =>
+    queryKeys.groupDiscussionReservationDays(unitId, groupId, start, end)
 })
 
 export const createCalendarEventMutation = mutation({
-  api: ({ eventId: _, form }: { eventId: UUID; form: CalendarEventForm }) =>
-    createCalendarEvent({ form }),
+  api: (arg: Arg0<typeof createCalendarEvent>) => createCalendarEvent(arg),
   invalidateQueryKeys: () => []
 })
 
 export const deleteCalendarEventMutation = mutation({
-  api: ({ eventId, groupId: _ }: { eventId: UUID; groupId: UUID }) =>
-    deleteCalendarEventOfUnit(eventId),
+  api: (arg: Arg0<typeof deleteCalendarEvent> & { groupId: UUID }) =>
+    deleteCalendarEvent(arg),
   invalidateQueryKeys: ({ groupId }) => [
     queryKeys.groupDiscussionSurveys(groupId)
   ]
 })
 
 export const updateCalendarEventMutation = mutation({
-  api: ({ eventId, form }: { eventId: UUID; form: CalendarEventForm }) =>
-    updateCalendarEvent({ eventId, form }),
-  invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
+  api: (arg: Arg0<typeof updateCalendarEvent>) => updateCalendarEvent(arg),
+  invalidateQueryKeys: ({ id }) => [queryKeys.discussionSurvey(id)]
 })
 
 export const setCalendarEventTimeReservationMutation = mutation({
-  api: ({
-    form,
-    eventId: _
-  }: {
-    form: CalendarEventTimeEmployeeReservationForm
-    eventId: UUID
-  }) => setCalendarEventTimeReservation({ form }),
+  api: (
+    arg: Arg0<typeof setCalendarEventTimeReservation> & { eventId: UUID }
+  ) => setCalendarEventTimeReservation(arg),
   invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
 })
 
 export const addCalendarEventTimeMutation = mutation({
-  api: ({ eventId, form }: { eventId: UUID; form: CalendarEventTimeForm }) =>
-    addCalendarEventTime({ eventId, form }),
-  invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
+  api: (arg: Arg0<typeof addCalendarEventTime>) => addCalendarEventTime(arg),
+  invalidateQueryKeys: ({ id }) => [queryKeys.discussionSurvey(id)]
 })
 
 export const deleteCalendarEventTimeMutation = mutation({
-  api: ({ eventId: _, eventTimeId }: { eventId: UUID; eventTimeId: UUID }) =>
-    deleteCalendarEventTime({ eventTimeId }),
+  api: (arg: Arg0<typeof deleteCalendarEventTime> & { eventId: UUID }) =>
+    deleteCalendarEventTime(arg),
   invalidateQueryKeys: ({ eventId }) => [queryKeys.discussionSurvey(eventId)]
 })

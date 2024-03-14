@@ -223,68 +223,76 @@ export default React.memo(function DiscussionSurveyForm({
           onClick={() => setCancelConfirmModalVisible(true)}
           data-qa="cancel-button"
         />
-
-        <MutateButton
-          primary
-          mutation={
-            eventData?.id
-              ? updateCalendarEventMutation
-              : createCalendarEventMutation
-          }
-          text={
-            eventData
-              ? t.discussionReservation.saveSurveyButton
-              : t.discussionReservation.createSurveyButton
-          }
-          disabled={eventData ? !isBasicInfoValid : !isFullyValid}
-          onSuccess={() =>
-            eventData
-              ? navigate(
-                  `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`
-                )
-              : navigate(
-                  `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`
-                )
-          }
-          onClick={() => {
-            const values = form.value()
-            const attendeeValue = attendees.value()
-            const baseFormValues = {
-              ...values,
-              unitId,
-              period: getPeriodFromDatesOrToday(
-                values.times.map((t) => t.date)
-              ),
-              tree: getTreeSelectionAsRecord(attendeeValue)
+        {eventData ? (
+          <MutateButton
+            primary
+            mutation={updateCalendarEventMutation}
+            text={t.discussionReservation.saveSurveyButton}
+            disabled={!isBasicInfoValid}
+            onSuccess={() =>
+              navigate(
+                `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`
+              )
             }
-            if (eventData) {
+            onClick={() => {
+              const values = form.value()
+              const attendeeValue = attendees.value()
+              const baseFormValues = {
+                ...values,
+                unitId,
+                period: getPeriodFromDatesOrToday(
+                  values.times.map((t) => t.date)
+                ),
+                tree: getTreeSelectionAsRecord(attendeeValue)
+              }
+
               return isBasicInfoValid
                 ? {
-                    eventId: eventData.id,
-                    form: {
+                    id: eventData.id,
+                    body: {
                       ...baseFormValues,
                       times: null
                     }
                   }
                 : cancelMutation
-            } else {
+            }}
+            data-qa="save-button"
+          />
+        ) : (
+          <MutateButton
+            primary
+            mutation={createCalendarEventMutation}
+            text={t.discussionReservation.createSurveyButton}
+            disabled={!isFullyValid}
+            onSuccess={(newId) =>
+              navigate(
+                `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${newId}`
+              )
+            }
+            onClick={() => {
+              const values = form.value()
+              const attendeeValue = attendees.value()
+              const baseFormValues = {
+                ...values,
+                unitId,
+                period: getPeriodFromDatesOrToday(
+                  values.times.map((t) => t.date)
+                ),
+                tree: getTreeSelectionAsRecord(attendeeValue)
+              }
+
               return isFullyValid
                 ? {
-                    eventId: '',
-                    form: {
+                    body: {
                       ...baseFormValues,
-                      times: times.value().map((t) => ({
-                        ...t,
-                        startTime: t.timeRange.start,
-                        endTime: t.timeRange.end
-                      }))
+                      times: times.value()
                     }
                   }
                 : cancelMutation
-            }
-          }}
-          data-qa="save-button"
-        />
+            }}
+            data-qa="save-button"
+          />
+        )}
       </FixedSpaceRow>
     </>
   )

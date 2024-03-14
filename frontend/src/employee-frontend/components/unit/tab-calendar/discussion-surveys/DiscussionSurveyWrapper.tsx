@@ -6,8 +6,7 @@ import React, { useMemo } from 'react'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 
 import { discussionSurveyQuery } from '../queries'
 
@@ -21,14 +20,14 @@ export default React.memo(function DiscussionReservationSurveyWrapper({
 }: {
   mode: DiscussionReservationSurveyViewMode
 }) {
-  const { groupId, unitId, eventId } = useNonNullableParams<{
-    groupId: UUID
-    unitId: UUID
-    eventId: UUID
-  }>()
+  const { groupId, unitId, eventId } = useRouteParams([
+    'groupId',
+    'unitId',
+    'eventId'
+  ])
 
   const existingEvent = useMemo(() => !!eventId && eventId !== 'new', [eventId])
-  const eventData = useQueryResult(discussionSurveyQuery(eventId), {
+  const eventData = useQueryResult(discussionSurveyQuery({ id: eventId }), {
     enabled: existingEvent
   })
 

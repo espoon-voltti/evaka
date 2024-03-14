@@ -43,12 +43,7 @@ export default React.memo(function NewCalendarEventTimeEditor({
         disabled={!bind.isValid()}
         text=""
         onClick={() => {
-          const eventTime = bind.value()
-          addAction({
-            startTime: eventTime.timeRange.start,
-            endTime: eventTime.timeRange.end,
-            date: eventTime.date
-          })
+          addAction(bind.value())
         }}
       />
       <InlineButton

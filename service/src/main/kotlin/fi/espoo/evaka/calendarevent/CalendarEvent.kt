@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
@@ -82,8 +83,7 @@ data class CalendarEventForm(
 
 data class CalendarEventTimeForm(
     val date: LocalDate,
-    val startTime: LocalTime,
-    val endTime: LocalTime
+    val timeRange: TimeRange
 )
 
 data class CalendarEventTimeEmployeeReservationForm(

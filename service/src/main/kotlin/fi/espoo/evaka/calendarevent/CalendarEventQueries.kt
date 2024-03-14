@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
@@ -175,7 +174,9 @@ RETURNING id
         .bind("createdAt", createdAt)
         .bind("createdBy", createdBy)
         .bind("calendarEventId", calendarEventId)
-        .bindKotlin(time)
+        .bind("date", time.date)
+        .bind("startTime", time.timeRange.start)
+        .bind("endTime", time.timeRange.end)
         .executeAndReturnGeneratedKeys()
         .mapTo<CalendarEventTimeId>()
         .exactlyOne()
@@ -230,11 +231,6 @@ fun Database.Read.getCalendarEventIdByTimeId(id: CalendarEventTimeId) =
         .bind("id", id)
         .exactlyOneOrNull<CalendarEventId>()
 
-fun Database.Read.getCalendarEventByTimeId(id: CalendarEventTimeId) =
-    createQuery("SELECT calendar_event_id, period,  FROM calendar_event_time WHERE id = :id")
-        .bind("id", id)
-        .exactlyOneOrNull<CalendarEvent>()
-
 fun Database.Read.getCalendarEventChildIds(calendarEventId: CalendarEventId) =
     @Suppress("DEPRECATION")
     createQuery(
@@ -272,14 +268,15 @@ fun Database.Transaction.updateCalendarEventWithPeriod(
     period: FiniteDateRange,
     updateForm: CalendarEventUpdateForm
 ) =
-    this.createUpdate(
-            """
+    this.createUpdate {
+            sql(
+                """
 UPDATE calendar_event
 SET title = :title, description = :description, period = :period, modified_at = :modifiedAt, content_modified_at = :modifiedAt
 WHERE id = :eventId
         """
-                .trimIndent()
-        )
+            )
+        }
         .bind("eventId", eventId)
         .bind("modifiedAt", modifiedAt)
         .bindKotlin(updateForm)
@@ -551,15 +548,15 @@ fun Database.Transaction.updateCalendarEventPeriod(
     modifiedAt: HelsinkiDateTime,
     period: FiniteDateRange
 ) =
-    this.createUpdate<DatabaseTable.CalendarEvent> {
-        sql(
-            """
+    this.createUpdate {
+            sql(
+                """
 UPDATE calendar_event
 SET period = :period, modified_at = :modifiedAt, content_modified_at = :modifiedAt
 WHERE id = :eventId
         """
-        )
-    }
+            )
+        }
         .bind("eventId", eventId)
         .bind("modifiedAt", modifiedAt)
         .bind("period", period)

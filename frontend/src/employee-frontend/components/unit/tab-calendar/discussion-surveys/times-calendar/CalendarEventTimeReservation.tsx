@@ -153,7 +153,7 @@ export const DiscussionReservationModal = React.memo(
     const deleteEventTime = useCallback(() => {
       deleteCalendarEventTime({
         eventId: eventData.id,
-        eventTimeId: eventTime.id
+        id: eventTime.id
       })
         .then(() => onClose(true))
         .catch(() =>
@@ -273,7 +273,7 @@ export const DiscussionReservationModal = React.memo(
                 } else {
                   deleteCalendarEventTime({
                     eventId: eventData.id,
-                    eventTimeId: eventTime.id
+                    id: eventTime.id
                   })
                     .then(() => onClose(true))
                     .catch(() =>
@@ -298,7 +298,7 @@ export const DiscussionReservationModal = React.memo(
               <MutateButton
                 primary
                 onClick={() => ({
-                  form: {
+                  body: {
                     calendarEventTimeId: eventTime.id,
                     childId: reservationChild.value().childId
                   },

@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { useQueryResult } from 'lib-common/query'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
+import useRouteParams from 'lib-common/useRouteParams'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -36,17 +36,14 @@ const ClickableSurvey = styled.div`
 
 export default React.memo(function DiscussionReservationSurveysPage() {
   const { i18n } = useTranslation()
-  const { groupId, unitId } = useNonNullableParams<{
-    groupId: string
-    unitId: string
-  }>()
-  const unitInformation = useQueryResult(unitQuery(unitId))
+  const { groupId, unitId } = useRouteParams(['groupId', 'unitId'])
+  const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
 
   //discussion surveys are calendar events that have:
   // - at least one calendar event time
   // - at least one attendee in the selected group
   const discussionSurveys = useQueryResult(
-    groupDiscussionSurveysQuery(unitId, groupId)
+    groupDiscussionSurveysQuery({ unitId, groupId })
   )
   const navigate = useNavigate()
   const t = i18n.unit.calendar.events

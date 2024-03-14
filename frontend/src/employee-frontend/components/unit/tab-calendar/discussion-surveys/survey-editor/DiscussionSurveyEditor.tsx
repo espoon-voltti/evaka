@@ -56,7 +56,11 @@ export default React.memo(function DiscussionSurveyEditor({
   }, [calendarHorizonDate])
 
   const groupData = useQueryResult(
-    unitGroupDetailsQuery(unitId, calendarRange.start, calendarRange.end)
+    unitGroupDetailsQuery({
+      unitId,
+      from: calendarRange.start,
+      to: calendarRange.end
+    })
   )
 
   const extendHorizon = () => {

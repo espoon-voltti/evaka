@@ -224,7 +224,11 @@ export default React.memo(function DiscussionReservationSurveyView({
   }, [calendarHorizonDate])
 
   const unitDetails = useQueryResult(
-    unitGroupDetailsQuery(unitId, calendarRange.start, calendarRange.end)
+    unitGroupDetailsQuery({
+      unitId,
+      from: calendarRange.start,
+      to: calendarRange.end
+    })
   )
 
   const [deleteConfirmModalVisible, setDeleteConfirmModalVisible] =
@@ -274,7 +278,7 @@ export default React.memo(function DiscussionReservationSurveyView({
           }}
           resolve={{
             action: () => {
-              deleteCalendarEvent({ groupId: groupId, eventId: eventData.id })
+              deleteCalendarEvent({ groupId: groupId, id: eventData.id })
                 .catch(() => {
                   setErrorMessage({
                     title: t.discussionReservation.deleteConfirmation.error,

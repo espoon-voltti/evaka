@@ -8,6 +8,7 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import TimeRange from '../../time-range'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
@@ -80,8 +81,7 @@ export interface CalendarEventTimeEmployeeReservationForm {
 */
 export interface CalendarEventTimeForm {
   date: LocalDate
-  endTime: LocalTime
-  startTime: LocalTime
+  timeRange: TimeRange
 }
 
 /**
@@ -173,8 +173,7 @@ export function deserializeJsonCalendarEventTimeForm(json: JsonOf<CalendarEventT
   return {
     ...json,
     date: LocalDate.parseIso(json.date),
-    endTime: LocalTime.parseIso(json.endTime),
-    startTime: LocalTime.parseIso(json.startTime)
+    timeRange: TimeRange.parseJson(json.timeRange)
   }
 }
 
@@ -185,5 +184,14 @@ export function deserializeJsonCitizenCalendarEvent(json: JsonOf<CitizenCalendar
     attendingChildren: Object.fromEntries(Object.entries(json.attendingChildren).map(
       ([k, v]) => [k, v.map(e => deserializeJsonAttendingChild(e))]
     ))
+  }
+}
+
+
+export function deserializeJsonDiscussionReservationDay(json: JsonOf<DiscussionReservationDay>): DiscussionReservationDay {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    events: json.events.map(e => deserializeJsonCalendarEvent(e))
   }
 }

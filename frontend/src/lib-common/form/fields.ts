@@ -276,7 +276,7 @@ export const requiredLocalTimeRange = () =>
       ) {
         return ValidationError.of('timeFormat')
       } else {
-        return ValidationSuccess.of({ start: startTime, end: endTime })
+        return ValidationSuccess.of(TimeRange.tryCreate(startTime, endTime))
       }
     }
   )

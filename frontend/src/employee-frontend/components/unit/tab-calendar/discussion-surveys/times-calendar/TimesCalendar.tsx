@@ -231,12 +231,12 @@ export const DiscussionReservationCalendar = React.memo(
       useState<CalendarEventTime | null>(null)
 
     const calendarDays = useQueryResult(
-      groupDiscussionReservationDaysQuery(
+      groupDiscussionReservationDaysQuery({
         unitId,
         groupId,
-        calendarRange.start,
-        calendarRange.end
-      )
+        start: calendarRange.start,
+        end: calendarRange.end
+      })
     )
 
     const dailyInvitees = useMemo(
@@ -316,12 +316,12 @@ export const DiscussionTimesCalendar = React.memo(
     horizonRef: MutableRefObject<HTMLDivElement | null>
   }) {
     const calendarDays = useQueryResult(
-      groupDiscussionReservationDaysQuery(
+      groupDiscussionReservationDaysQuery({
         unitId,
         groupId,
-        calendarRange.start,
-        calendarRange.end
-      )
+        start: calendarRange.start,
+        end: calendarRange.end
+      })
     )
 
     return (
@@ -541,16 +541,15 @@ export const TimesDay = React.memo(function TimesDay({
 
       {!isWeekend && isOperationDay && (
         <>
-          {otherEvents.length > 0 ||
-            (otherSurveys.length > 0 && (
-              <EventContainer data-qa="events">
-                <OtherEventMarker
-                  events={otherEvents}
-                  surveys={otherSurveys}
-                  date={day.date}
-                />
-              </EventContainer>
-            ))}
+          {(otherEvents.length > 0 || otherSurveys.length > 0) && (
+            <EventContainer data-qa="events">
+              <OtherEventMarker
+                events={otherEvents}
+                surveys={otherSurveys}
+                date={day.date}
+              />
+            </EventContainer>
+          )}
           {eventTimesToday && eventTimesToday.length > 0 && (
             <TimesContainer data-qa="times" className="edit">
               {eventTimesToday.map((t, i) => (
@@ -710,8 +709,8 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
                   bind={time}
                   addAction={(et: CalendarEventTimeForm) => {
                     addCalendarEventTime({
-                      eventId: eventData.id,
-                      form: et
+                      id: eventData.id,
+                      body: et
                     })
                       .then(() => {
                         removeAction(time.state.id)
