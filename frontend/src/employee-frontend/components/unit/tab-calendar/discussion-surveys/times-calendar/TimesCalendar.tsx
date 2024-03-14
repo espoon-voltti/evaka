@@ -15,7 +15,6 @@ import React, {
 import styled, { css } from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UIContext } from 'employee-frontend/state/ui'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -28,7 +27,7 @@ import {
 } from 'lib-common/generated/api-types/calendarevent'
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
-import { useMutation, useQueryResult } from 'lib-common/query'
+import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -41,10 +40,7 @@ import { H3, fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import {
-  addCalendarEventTimeMutation,
-  groupDiscussionReservationDaysQuery
-} from '../../queries'
+import { addCalendarEventTimeMutation } from '../../queries'
 import { ChildGroupInfo } from '../DiscussionSurveyView'
 import { NewEventTimeForm } from '../survey-editor/DiscussionTimesForm'
 import { eventTimeArray } from '../survey-editor/form'
@@ -204,21 +200,19 @@ export const OtherEventMarker = React.memo(
 
 export const DiscussionReservationCalendar = React.memo(
   function DiscussionReservationCalendar({
-    unitId,
-    groupId,
     eventData,
     invitees,
     calendarRange,
+    calendarDays,
     times,
     addAction,
     removeAction,
     horizonRef
   }: {
-    unitId: UUID
-    groupId: UUID
     eventData: CalendarEvent | null
     invitees: ChildGroupInfo[]
     calendarRange: FiniteDateRange
+    calendarDays: DiscussionReservationDay[]
     times: BoundForm<typeof eventTimeArray>
     addAction: (et: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
@@ -230,13 +224,15 @@ export const DiscussionReservationCalendar = React.memo(
     const [selectedEventTime, setSelectedEventTime] =
       useState<CalendarEventTime | null>(null)
 
-    const calendarDays = useQueryResult(
-      groupDiscussionReservationDaysQuery({
-        unitId,
-        groupId,
-        start: calendarRange.start,
-        end: calendarRange.end
-      })
+    const visibleCalendarDays = useMemo(
+      () =>
+        calendarDays.filter((d) => d.date.isEqualOrBefore(calendarRange.end)),
+      [calendarDays, calendarRange.end]
+    )
+
+    const calendarMonths = useMemo(
+      () => groupByMonth(visibleCalendarDays),
+      [visibleCalendarDays]
     )
 
     const dailyInvitees = useMemo(
@@ -264,92 +260,80 @@ export const DiscussionReservationCalendar = React.memo(
             eventData={eventData}
           />
         )}
-
-        {renderResult(calendarDays, (calendarDaysResult) => {
-          const calendarMonths = groupByMonth(calendarDaysResult)
-          return (
-            <div>
-              {calendarMonths.map((m, i) => (
-                <TimesMonth
-                  month={m.month}
-                  weeks={m.weeks}
-                  eventData={eventData}
-                  year={m.year}
-                  key={`${m.month}${m.year}`}
-                  reserveAction={(et) => {
-                    setSelectedEventTime(et)
-                    setReservationModalVisible(true)
-                  }}
-                  removeAction={removeAction}
-                  addAction={addAction}
-                  times={times}
-                  editMode="reserve"
-                  reservationChildren={invitees.map((i) => i.child)}
-                  isLastMonth={i === calendarMonths.length - 1}
-                  horizonRef={horizonRef}
-                />
-              ))}
-            </div>
-          )
-        })}
+        {calendarMonths.map((m, i) => (
+          <TimesMonth
+            month={m.month}
+            weeks={m.weeks}
+            eventData={eventData}
+            year={m.year}
+            key={`${m.month}${m.year}`}
+            reserveAction={(et) => {
+              setSelectedEventTime(et)
+              setReservationModalVisible(true)
+            }}
+            removeAction={removeAction}
+            addAction={addAction}
+            times={times}
+            editMode="reserve"
+            reservationChildren={invitees.map((i) => i.child)}
+            isLastMonth={i === calendarMonths.length - 1}
+            horizonRef={horizonRef}
+          />
+        ))}
       </>
     )
   }
 )
 
 export const DiscussionTimesCalendar = React.memo(
-  function DiscussionReservationCalendar({
-    unitId,
-    groupId,
+  function DiscussionTimesCalendar({
     times,
     addAction,
     removeAction,
     calendarRange,
+    calendarDays,
     horizonRef
   }: {
-    unitId: UUID
-    groupId: UUID
     times: BoundForm<typeof eventTimeArray>
     addAction: (date: NewEventTimeForm) => void
     removeAction: (id: UUID) => void
     calendarRange: FiniteDateRange
+    calendarDays: DiscussionReservationDay[]
     horizonRef: MutableRefObject<HTMLDivElement | null>
   }) {
-    const calendarDays = useQueryResult(
-      groupDiscussionReservationDaysQuery({
-        unitId,
-        groupId,
-        start: calendarRange.start,
-        end: calendarRange.end
-      })
+    const visibleCalendarDays = useMemo(
+      () =>
+        calendarDays.filter((d) => d.date.isEqualOrBefore(calendarRange.end)),
+      [calendarDays, calendarRange.end]
+    )
+
+    const calendarMonths = useMemo(
+      () => groupByMonth(visibleCalendarDays),
+      [visibleCalendarDays]
     )
 
     return (
-      <>
-        {renderResult(calendarDays, (calendarDaysResult) => {
-          const calendarMonths = groupByMonth(calendarDaysResult)
+      <div>
+        {calendarMonths.map((m, i) => {
+          const isLast = i === calendarMonths.length - 1
           return (
-            <div>
-              {calendarMonths.map((m, i) => (
-                <TimesMonth
-                  key={`${m.month}${m.year}`}
-                  year={m.year}
-                  month={m.month}
-                  weeks={m.weeks}
-                  times={times}
-                  eventData={null}
-                  addAction={addAction}
-                  removeAction={removeAction}
-                  editMode="create"
-                  reservationChildren={[]}
-                  isLastMonth={i === calendarMonths.length - 1}
-                  horizonRef={horizonRef}
-                />
-              ))}
-            </div>
+            <TimesMonth
+              key={`${m.month}${m.year}`}
+              year={m.year}
+              month={m.month}
+              weeks={m.weeks}
+              times={times}
+              eventData={null}
+              addAction={addAction}
+              removeAction={removeAction}
+              editMode="create"
+              reservationChildren={[]}
+              isLastMonth={isLast}
+              horizonRef={horizonRef}
+            />
           )
         })}
-      </>
+      </div>
     )
   }
 )
@@ -404,12 +388,7 @@ export const TimesMonth = React.memo(function TimesMonth({
   )
 
   return monthHasCurrentOrFutureDays ? (
-    <ContentArea
-      opaque={false}
-      key={`${month}${year}`}
-      paddingHorizontal="2px"
-      ref={ref}
-    >
+    <ContentArea opaque={false} key={`${month}${year}`} paddingHorizontal="2px">
       <H3>{`${i18n.common.datetime.months[month - 1]} ${year}`}</H3>
       <Grid>
         {weeks.map((w) => (
@@ -428,6 +407,7 @@ export const TimesMonth = React.memo(function TimesMonth({
           />
         ))}
       </Grid>
+      <div ref={ref} />
     </ContentArea>
   ) : null
 })

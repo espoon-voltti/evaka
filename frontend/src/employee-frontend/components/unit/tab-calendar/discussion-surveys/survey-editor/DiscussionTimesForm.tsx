@@ -10,7 +10,10 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { mapped } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import {
+  CalendarEvent,
+  DiscussionReservationDay
+} from 'lib-common/generated/api-types/calendarevent'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -62,6 +65,8 @@ export default React.memo(function DiscussionTimesForm({
   groupData,
   horizonRef,
   calendarRange,
+  maxCalendarRange,
+  calendarDays,
   extendHorizonAction
 }: {
   eventData: CalendarEvent | null
@@ -70,6 +75,8 @@ export default React.memo(function DiscussionTimesForm({
   groupData: UnitGroupDetails
   horizonRef: MutableRefObject<HTMLDivElement | null>
   calendarRange: FiniteDateRange
+  calendarDays: DiscussionReservationDay[]
+  maxCalendarRange: FiniteDateRange
   extendHorizonAction: () => void
 }) {
   const { i18n } = useTranslation()
@@ -157,28 +164,33 @@ export default React.memo(function DiscussionTimesForm({
           </BorderedBox>
           <TimesCalendarContainer>
             <DiscussionTimesCalendar
-              unitId={unitId}
-              groupId={groupId}
               times={times}
               calendarRange={calendarRange}
+              calendarDays={calendarDays}
               addAction={addTime}
               removeAction={removeTimeById}
               horizonRef={horizonRef}
             />
-            <Gap size="L" />
-            <FixedSpaceRow
-              fullWidth
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Button
-                onClick={extendHorizonAction}
-                text={
-                  i18n.unit.calendar.events.discussionReservation.calendar
-                    .addTimeButton
-                }
-              />
-            </FixedSpaceRow>
+
+            {calendarRange.end.isBefore(maxCalendarRange.end) && (
+              <>
+                <Gap size="L" />
+                <FixedSpaceRow
+                  fullWidth
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Button
+                    onClick={extendHorizonAction}
+                    text={
+                      i18n.unit.calendar.events.discussionReservation.calendar
+                        .addTimeButton
+                    }
+                  />
+                </FixedSpaceRow>
+                <Gap size="m" />
+              </>
+            )}
           </TimesCalendarContainer>
         </>
       )}

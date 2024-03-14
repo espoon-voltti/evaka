@@ -19,10 +19,14 @@ import styled from 'styled-components'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UIContext } from 'employee-frontend/state/ui'
+import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { BoundForm, useForm, useFormFields } from 'lib-common/form/hooks'
-import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import {
+  CalendarEvent,
+  DiscussionReservationDay
+} from 'lib-common/generated/api-types/calendarevent'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
@@ -45,7 +49,10 @@ import { Gap } from 'lib-components/white-space'
 import { theme } from 'lib-customizations/common'
 
 import { unitGroupDetailsQuery } from '../../queries'
-import { deleteCalendarEventMutation } from '../queries'
+import {
+  deleteCalendarEventMutation,
+  groupDiscussionReservationDaysQuery
+} from '../queries'
 
 import InviteeSection from './InviteeSection'
 import {
@@ -122,22 +129,22 @@ const SurveyStatusChip = React.memo(function SurveyStatusChip({
 
 const ReservationCalendarSection = React.memo(
   function ReservationCalendarSection({
-    unitId,
-    groupId,
     eventData,
     invitees,
     calendarRange,
+    maxCalendarRange,
+    calendarDays,
     expandCalendarAction,
     times,
     addAction,
     removeAction,
     horizonRef
   }: {
-    unitId: UUID
-    groupId: UUID
     eventData: CalendarEvent
     invitees: ChildGroupInfo[]
     calendarRange: FiniteDateRange
+    maxCalendarRange: FiniteDateRange
+    calendarDays: DiscussionReservationDay[]
     expandCalendarAction: () => void
     times: BoundForm<typeof eventTimeArray>
     addAction: (et: NewEventTimeForm) => void
@@ -149,26 +156,34 @@ const ReservationCalendarSection = React.memo(
     return (
       <TimesCalendarContainer>
         <DiscussionReservationCalendar
-          unitId={unitId}
-          groupId={groupId}
           eventData={eventData}
           calendarRange={calendarRange}
+          calendarDays={calendarDays}
           invitees={invitees}
           times={times}
           addAction={addAction}
           removeAction={removeAction}
           horizonRef={horizonRef}
         />
-        <Gap size="L" />
-        <FixedSpaceRow fullWidth alignItems="center" justifyContent="center">
-          <ExpandHorizonButton
-            onClick={expandCalendarAction}
-            text={
-              i18n.unit.calendar.events.discussionReservation.calendar
-                .addTimeButton
-            }
-          />
-        </FixedSpaceRow>
+        {calendarRange.end.isBefore(maxCalendarRange.end) && (
+          <>
+            <Gap size="L" />
+            <FixedSpaceRow
+              fullWidth
+              alignItems="center"
+              justifyContent="center"
+            >
+              <ExpandHorizonButton
+                onClick={expandCalendarAction}
+                text={
+                  i18n.unit.calendar.events.discussionReservation.calendar
+                    .addTimeButton
+                }
+              />
+            </FixedSpaceRow>
+            <Gap size="m" />
+          </>
+        )}
       </TimesCalendarContainer>
     )
   }
@@ -198,36 +213,60 @@ export default React.memo(function DiscussionReservationSurveyView({
   }, [navigate, eventData.id, groupId, unitId])
   const t = i18n.unit.calendar.events
 
+  const today = LocalDate.todayInSystemTz()
   const getCalendarHorizon = useCallback(() => {
-    const today = LocalDate.todayInSystemTz()
     const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
 
-    const defaultHorizonDate = previousMonday.addMonths(3).lastDayOfMonth()
+    const defaultHorizonDate = previousMonday.addMonths(1).lastDayOfMonth()
 
     const eventDataHorizonDate = eventData.period.end.lastDayOfMonth()
 
     return defaultHorizonDate.isAfter(eventDataHorizonDate)
       ? defaultHorizonDate
       : eventDataHorizonDate
-  }, [eventData.period.end])
+  }, [eventData.period.end, today])
 
   const horizonRef = useRef<HTMLDivElement | null>(null)
+
   const [calendarHorizonDate, setCalendarHorizonDate] =
     useState<LocalDate>(getCalendarHorizon())
 
-  const calendarRange = useMemo(() => {
-    const today = LocalDate.todayInSystemTz()
+  const maxCalendarRange = useMemo(
+    () =>
+      new FiniteDateRange(
+        today.subDays(today.getIsoDayOfWeek() - 1),
+        today.addMonths(5).lastDayOfMonth()
+      ),
+    [today]
+  )
 
+  const visibleCalendarRange = useMemo(() => {
     const previousMonday = today.subDays(today.getIsoDayOfWeek() - 1)
-
     return new FiniteDateRange(previousMonday, calendarHorizonDate)
-  }, [calendarHorizonDate])
+  }, [calendarHorizonDate, today])
 
-  const unitDetails = useQueryResult(
+  const extendHorizon = () => {
+    const candidateHorizon = calendarHorizonDate.addMonths(1).lastDayOfMonth()
+    if (candidateHorizon.isEqualOrBefore(maxCalendarRange.end)) {
+      setCalendarHorizonDate(candidateHorizon)
+      scrollRefIntoView(horizonRef, 80)
+    }
+  }
+
+  const groupData = useQueryResult(
     unitGroupDetailsQuery({
       unitId,
-      from: calendarRange.start,
-      to: calendarRange.end
+      from: maxCalendarRange.start,
+      to: maxCalendarRange.end
+    })
+  )
+
+  const calendarDays = useQueryResult(
+    groupDiscussionReservationDaysQuery({
+      unitId,
+      groupId,
+      start: maxCalendarRange.start,
+      end: maxCalendarRange.end
     })
   )
 
@@ -348,65 +387,63 @@ export default React.memo(function DiscussionReservationSurveyView({
               </WidthLimiter>
             </FormFieldGroup>
           </FormSectionGroup>
-          {renderResult(unitDetails, (unitDetailsResult) => {
-            const sortedCalendarInvitees = getInvitedChildInfo(
-              unitDetailsResult,
-              eventData,
-              groupId
-            )
-            const sortedPeriodInvitees: ChildGroupInfo[] =
-              sortedCalendarInvitees.filter((c) =>
-                c.groupPlacements.some((gp) =>
-                  gp.overlapsWith(eventData.period.asDateRange())
-                )
+          {renderResult(
+            combine(groupData, calendarDays),
+            ([unitDetailsResult, calendarDaysResult]) => {
+              const sortedCalendarInvitees = getInvitedChildInfo(
+                unitDetailsResult,
+                eventData,
+                groupId
               )
-            const reservations = eventData.times.filter(
-              (t) => t.childId !== null
-            )
-            const [reserved, unreserved] = partition(
-              sortedPeriodInvitees,
-              (e) => reservations.some((r) => r.childId === e.child.id)
-            )
+              const sortedPeriodInvitees: ChildGroupInfo[] =
+                sortedCalendarInvitees.filter((c) =>
+                  c.groupPlacements.some((gp) =>
+                    gp.overlapsWith(eventData.period.asDateRange())
+                  )
+                )
+              const reservations = eventData.times.filter(
+                (t) => t.childId !== null
+              )
+              const [reserved, unreserved] = partition(
+                sortedPeriodInvitees,
+                (e) => reservations.some((r) => r.childId === e.child.id)
+              )
 
-            return (
-              <>
-                <FormSectionGroup>
-                  <H3>{t.discussionReservation.surveyInviteeTitle}</H3>
-                  <FormFieldGroup>
-                    <InviteeSection
-                      reserved={reserved}
-                      unreserved={unreserved}
+              return (
+                <>
+                  <FormSectionGroup>
+                    <H3>{t.discussionReservation.surveyInviteeTitle}</H3>
+                    <FormFieldGroup>
+                      <InviteeSection
+                        reserved={reserved}
+                        unreserved={unreserved}
+                      />
+                    </FormFieldGroup>
+                  </FormSectionGroup>
+
+                  <FormSectionGroup>
+                    <BorderedBox>
+                      <H3 noMargin>
+                        {t.discussionReservation.surveyDiscussionTimesTitle}
+                      </H3>
+                    </BorderedBox>
+                    <ReservationCalendarSection
+                      eventData={eventData}
+                      invitees={sortedCalendarInvitees}
+                      calendarRange={visibleCalendarRange}
+                      maxCalendarRange={maxCalendarRange}
+                      calendarDays={calendarDaysResult}
+                      expandCalendarAction={extendHorizon}
+                      times={times}
+                      addAction={addTime}
+                      removeAction={removeTimeById}
+                      horizonRef={horizonRef}
                     />
-                  </FormFieldGroup>
-                </FormSectionGroup>
-
-                <FormSectionGroup>
-                  <BorderedBox>
-                    <H3 noMargin>
-                      {t.discussionReservation.surveyDiscussionTimesTitle}
-                    </H3>
-                  </BorderedBox>
-                  <ReservationCalendarSection
-                    unitId={unitId}
-                    groupId={groupId}
-                    eventData={eventData}
-                    invitees={sortedCalendarInvitees}
-                    calendarRange={calendarRange}
-                    expandCalendarAction={() => {
-                      setCalendarHorizonDate(
-                        calendarHorizonDate.addMonths(1).lastDayOfMonth()
-                      )
-                      scrollRefIntoView(horizonRef, 200)
-                    }}
-                    times={times}
-                    addAction={addTime}
-                    removeAction={removeTimeById}
-                    horizonRef={horizonRef}
-                  />
-                </FormSectionGroup>
-              </>
-            )
-          })}
+                  </FormSectionGroup>
+                </>
+              )
+            }
+          )}
         </ContentArea>
       </Container>
     </>
