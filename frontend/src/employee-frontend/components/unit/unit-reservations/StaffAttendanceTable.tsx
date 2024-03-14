@@ -760,7 +760,8 @@ export const staffAttendanceValidator =
           type: item.type,
           arrived,
           departed,
-          groupId
+          groupId,
+          hasStaffOccupancyEffect: item.hasStaffOccupancyEffect
         }
       }
 

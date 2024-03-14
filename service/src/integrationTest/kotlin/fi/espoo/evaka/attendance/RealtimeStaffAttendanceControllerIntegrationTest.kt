@@ -71,8 +71,20 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
 
     @Test
     fun `Attendances can be added to multiple units`() {
-        upsertDailyStaffAttendances(testDaycare.id, groupId1, now.minusHours(3), now.minusHours(2))
-        upsertDailyStaffAttendances(testDaycare2.id, groupId2, now.minusHours(1), null)
+        upsertDailyStaffAttendances(
+            unitId = testDaycare.id,
+            groupId = groupId1,
+            arrived = now.minusHours(3),
+            departed = now.minusHours(2),
+            hasStaffOccupancyEffect = true
+        )
+        upsertDailyStaffAttendances(
+            unitId = testDaycare2.id,
+            groupId = groupId2,
+            arrived = now.minusHours(1),
+            departed = null,
+            hasStaffOccupancyEffect = false
+        )
 
         val unit1Attendances = getAttendances(testDaycare.id)
         assertEquals(1, unit1Attendances.staff.size)
@@ -89,6 +101,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 assertEquals(now.minusHours(3), attendanceEntry.arrived)
                 assertEquals(now.minusHours(2), attendanceEntry.departed)
                 assertEquals(StaffAttendanceType.PRESENT, attendanceEntry.type)
+                assertEquals(
+                    occupancyCoefficientSeven.stripTrailingZeros(),
+                    attendanceEntry.occupancyCoefficient.stripTrailingZeros()
+                )
             }
         }
 
@@ -107,6 +123,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 assertEquals(now.minusHours(1), attendanceEntry.arrived)
                 assertEquals(null, attendanceEntry.departed)
                 assertEquals(StaffAttendanceType.PRESENT, attendanceEntry.type)
+                assertEquals(
+                    BigDecimal.ZERO,
+                    attendanceEntry.occupancyCoefficient.stripTrailingZeros()
+                )
             }
         }
     }
@@ -180,7 +200,8 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = null,
                             arrived = now.minusHours(3),
                             departed = now.minusHours(2),
-                            type = StaffAttendanceType.TRAINING
+                            type = StaffAttendanceType.TRAINING,
+                            hasStaffOccupancyEffect = false
                         )
                     )
             )
@@ -230,7 +251,8 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         unitId: DaycareId,
         groupId: GroupId,
         arrived: HelsinkiDateTime,
-        departed: HelsinkiDateTime?
+        departed: HelsinkiDateTime?,
+        hasStaffOccupancyEffect: Boolean = true
     ) {
         realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
             dbInstance(),
@@ -247,7 +269,8 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = arrived,
                             departed = departed,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = hasStaffOccupancyEffect
                         )
                     )
             )

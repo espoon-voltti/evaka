@@ -48,6 +48,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
+import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -60,6 +61,7 @@ import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faLockAlt, faTrash } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
+import { FlexColumn } from '../common/components'
 import { Translations, useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
 import { UnitContext } from '../common/unit'
@@ -81,7 +83,8 @@ const staffAttendanceForm = mapped(
       arrivedDate: required(localDate()),
       arrivedTime: required(localTime()),
       departedDate: required(localDate()),
-      departedTime: localTime()
+      departedTime: localTime(),
+      occupancyEffect: required(boolean())
     }),
     (output) => {
       if (!typesWithoutGroup.includes(output.type) && output.groupId === null) {
@@ -114,7 +117,8 @@ const staffAttendanceForm = mapped(
     departed:
       output.departedTime !== undefined
         ? HelsinkiDateTime.fromLocal(output.departedDate, output.departedTime)
-        : null
+        : null,
+    hasStaffOccupancyEffect: output.occupancyEffect
   })
 )
 
@@ -152,6 +156,12 @@ const initialFormState = (
   )
 })
 
+function isUpsert(
+  attendance: StaffMemberAttendance | StaffAttendanceUpsert
+): attendance is StaffAttendanceUpsert {
+  return 'hasStaffOccupancyEffect' in attendance
+}
+
 const initialRowState = (
   i18n: Translations,
   date: LocalDate,
@@ -186,7 +196,10 @@ const initialRowState = (
   arrivedDate: localDate.fromDate(attendance.arrived.toLocalDate()),
   arrivedTime: attendance.arrived.toLocalTime().format(),
   departedDate: localDate.fromDate(attendance.departed?.toLocalDate() ?? date),
-  departedTime: attendance.departed?.toLocalTime().format() ?? ''
+  departedTime: attendance.departed?.toLocalTime().format() ?? '',
+  occupancyEffect: isUpsert(attendance)
+    ? attendance.hasStaffOccupancyEffect
+    : attendance.occupancyCoefficient > 0
 })
 
 const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
@@ -396,7 +409,8 @@ const StaffAttendancesEditor = ({
                     type: latest?.type ?? 'PRESENT',
                     groupId: latest?.groupId ?? null,
                     arrived: latest?.departed ?? HelsinkiDateTime.now(),
-                    departed: null
+                    departed: null,
+                    hasStaffOccupancyEffect: staffMember.occupancyEffect
                   })
                 ])
               }}
@@ -451,7 +465,8 @@ const StaffAttendanceEditor = ({
     arrivedDate,
     arrivedTime,
     departedDate,
-    departedTime
+    departedTime,
+    occupancyEffect
   } = useFormFields(form)
 
   const groupIdDomValue = groupId.state.domValue
@@ -461,7 +476,7 @@ const StaffAttendanceEditor = ({
   const dateLabelVisible = !arrivedDateValue.isEqual(departedDateValue)
 
   return (
-    <>
+    <FlexColumn>
       <FixedSpaceRow alignItems="baseline" data-qa="group">
         {groupEditMode.value() ? (
           <SelectF bind={groupId} data-qa="group-selector" />
@@ -531,7 +546,12 @@ const StaffAttendanceEditor = ({
           </IconContainer>
         </FixedSpaceRow>
       </FixedSpaceRow>
-    </>
+      <CheckboxF
+        bind={occupancyEffect}
+        label={i18n.staff.staffOccupancyEffect}
+        data-qa="occupancy-effect"
+      />
+    </FlexColumn>
   )
 }
 

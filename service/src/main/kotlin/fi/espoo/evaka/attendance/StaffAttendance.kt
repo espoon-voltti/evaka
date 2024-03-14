@@ -52,6 +52,7 @@ data class StaffMember(
     val firstName: String,
     val lastName: String,
     val groupIds: List<GroupId>,
+    val occupancyEffect: Boolean,
     @Nested("attendance") val latestCurrentDayAttendance: StaffMemberAttendance?,
     @Json val attendances: List<StaffMemberAttendance>,
     @Json val plannedAttendances: List<PlannedStaffAttendance>,
@@ -82,7 +83,8 @@ data class StaffMemberAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val type: StaffAttendanceType,
-    val departedAutomatically: Boolean
+    val departedAutomatically: Boolean,
+    val occupancyCoefficient: BigDecimal
 )
 
 data class ExternalAttendance(

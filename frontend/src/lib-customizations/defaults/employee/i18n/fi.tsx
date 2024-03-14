@@ -2515,7 +2515,8 @@ export const fi = {
         namePlaceholder: 'Sukunimi Etunimi',
         group: 'Ryhmä'
       },
-      departedAutomatically: 'Automaattikatkaistu'
+      departedAutomatically: 'Automaattikatkaistu',
+      hasStaffOccupancyEffect: 'Kasvatusvastuullinen'
     },
     error: {
       placement: {

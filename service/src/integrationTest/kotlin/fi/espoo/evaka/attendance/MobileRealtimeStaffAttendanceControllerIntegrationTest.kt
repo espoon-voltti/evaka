@@ -101,7 +101,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
-    fun `Employee with no planned attendances can be marked as arrived`() {
+    fun `Employee with no planned attendances can be marked as arrived without occupancy effect`() {
         val pinCode = "1212"
         val employee = DevEmployee()
         db.transaction { tx ->
@@ -112,7 +112,15 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        markArrival(arrivalTime, employee.id, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(
+            arrivalTime,
+            employee.id,
+            pinCode,
+            groupId,
+            arrivalTime.toLocalTime(),
+            null,
+            hasStaffOccupancyEffect = false
+        )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employee.id, it.employeeId)
@@ -120,7 +128,41 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(1, it.attendances.size)
             assertEquals(arrivalTime, it.attendances.first().arrived)
             assertEquals(null, it.attendances.first().departed)
-            assertEquals(StaffAttendanceType.PRESENT, it.attendances.last().type)
+            assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
+            assertEquals(
+                occupancyCoefficientZero,
+                it.attendances.first().occupancyCoefficient.stripTrailingZeros()
+            )
+        }
+    }
+
+    @Test
+    fun `Employee with no planned attendances can be marked as arrived with occupancy effect`() {
+        val pinCode = "1212"
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(DevEmployeePin(userId = employee.id, pin = pinCode))
+            tx.insertDaycareAclRow(testDaycare.id, employee.id, UserRole.STAFF)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee.id, listOf(groupId))
+        }
+
+        val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        markArrival(
+            arrivalTime,
+            employee.id,
+            pinCode,
+            groupId,
+            arrivalTime.toLocalTime(),
+            null,
+            hasStaffOccupancyEffect = true
+        )
+        val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
+        attendances.staff.first().let {
+            assertEquals(
+                occupancyCoefficientSeven.stripTrailingZeros(),
+                it.attendances.first().occupancyCoefficient.stripTrailingZeros()
+            )
         }
     }
 
@@ -1008,13 +1050,33 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId,
                                 arrived = now,
                                 departed = null,
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true
                             )
                         )
                 )
             )
         assertThat(insertResponse.deleted).isEmpty()
         assertThat(insertResponse.inserted).hasSize(1)
+        val attendances =
+            mobileRealtimeStaffAttendanceController.getAttendancesByUnit(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id
+            )
+        assertThat(attendances.staff).hasSize(1)
+        assertThat(attendances.staff.first().attendances).hasSize(1)
+        attendances.staff.first().attendances.first().also {
+            assertEquals(
+                occupancyCoefficientSeven.stripTrailingZeros(),
+                it.occupancyCoefficient.stripTrailingZeros()
+            )
+            assertEquals(now, it.arrived)
+            assertEquals(null, it.departed)
+            assertEquals(StaffAttendanceType.PRESENT, it.type)
+            assertEquals(groupId, it.groupId)
+        }
 
         val staffAttendanceId = insertResponse.inserted.first()
 
@@ -1033,15 +1095,32 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = staffAttendanceId,
                                 groupId = groupId,
-                                arrived = now,
-                                departed = null,
-                                type = StaffAttendanceType.PRESENT
+                                arrived = now.minusHours(1),
+                                departed = now,
+                                type = StaffAttendanceType.JUSTIFIED_CHANGE,
+                                hasStaffOccupancyEffect = false
                             )
                         )
                 )
             )
         assertThat(updateResponse.deleted).containsExactly(staffAttendanceId)
         assertThat(updateResponse.inserted).hasSize(1)
+        val attendances2 =
+            mobileRealtimeStaffAttendanceController.getAttendancesByUnit(
+                dbInstance(),
+                mobileUser,
+                MockEvakaClock(now),
+                testDaycare.id
+            )
+        assertThat(attendances2.staff).hasSize(1)
+        assertThat(attendances2.staff.first().attendances).hasSize(1)
+        attendances2.staff.first().attendances.first().also {
+            assertEquals(occupancyCoefficientZero, it.occupancyCoefficient.stripTrailingZeros())
+            assertEquals(now.minusHours(1), it.arrived)
+            assertEquals(now, it.departed)
+            assertEquals(StaffAttendanceType.JUSTIFIED_CHANGE, it.type)
+            assertEquals(groupId, it.groupId)
+        }
 
         val deleteResponse =
             mobileRealtimeStaffAttendanceController.setAttendances(
@@ -1111,14 +1190,16 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId,
                                 arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                                 departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = false
                             ),
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = staffAttendance2Id,
                                 groupId = groupId,
                                 arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 0)),
                                 departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true
                             )
                         )
                 )
@@ -1143,7 +1224,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = null,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.TRAINING
+                            type = StaffAttendanceType.TRAINING,
+                            hasStaffOccupancyEffect = false
                         )
                     )
             )
@@ -1199,7 +1281,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId,
                                 arrived = now.minusHours(2),
                                 departed = now,
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = true
                             )
                         )
                 )
@@ -1224,7 +1307,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 groupId = groupId2,
                                 arrived = now,
                                 departed = now.plusHours(2),
-                                type = StaffAttendanceType.PRESENT
+                                type = StaffAttendanceType.PRESENT,
+                                hasStaffOccupancyEffect = false
                             )
                         )
                 )
@@ -1248,7 +1332,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1281,7 +1366,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1323,7 +1409,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now.plusDays(1),
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1356,7 +1443,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             arrived = now,
                             departed = null,
-                            type = StaffAttendanceType.PRESENT
+                            type = StaffAttendanceType.PRESENT,
+                            hasStaffOccupancyEffect = true
                         )
                     )
             )
@@ -1394,6 +1482,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         time: LocalTime,
         type: StaffAttendanceType?,
         user: AuthenticatedUser.MobileDevice = mobileUser,
+        hasStaffOccupancyEffect: Boolean = true
     ) {
         mobileRealtimeStaffAttendanceController.markArrival(
             dbInstance(),
@@ -1404,7 +1493,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 pinCode = pinCode,
                 groupId = groupId,
                 time = time,
-                type = type
+                type = type,
+                hasStaffOccupancyEffect = hasStaffOccupancyEffect
             )
         )
     }

@@ -32,9 +32,15 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         att.departed AS attendance_departed,
         att.type AS attendance_type,
         att.departed_automatically AS attendance_departed_automatically,
+        att.occupancy_coefficient AS attendance_occupancy_coefficient,
         coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids,
+        EXISTS (
+            SELECT 1 
+            FROM staff_occupancy_coefficient soc 
+            WHERE soc.employee_id = dacl.employee_id AND soc.daycare_id = :unitId AND soc.coefficient > 0
+        ) AS occupancy_effect,
         coalesce((
-            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type, 'departedAutomatically', a.departed_automatically) ORDER BY a.arrived)
+            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type, 'departedAutomatically', a.departed_automatically, 'occupancyCoefficient', a.occupancy_coefficient) ORDER BY a.arrived)
             FROM staff_attendance_realtime a
             LEFT JOIN daycare_group dg ON dg.id = a.group_id
             WHERE e.id = a.employee_id AND (dg.daycare_id = :unitId OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && tstzrange(:rangeStart, :rangeEnd)
@@ -59,7 +65,7 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         GROUP BY employee_id
     ) dgacl ON true
     LEFT JOIN LATERAL (
-        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.type, sa.departed_automatically
+        SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.type, sa.departed_automatically, sa.occupancy_coefficient
         FROM staff_attendance_realtime sa
         JOIN daycare_group dg ON dg.id = sa.group_id
         WHERE sa.employee_id = dacl.employee_id AND dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrange(:rangeStart, :rangeEnd)
@@ -270,7 +276,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     groupId: GroupId?,
     arrivalTime: HelsinkiDateTime,
     departureTime: HelsinkiDateTime?,
-    occupancyCoefficient: BigDecimal?,
+    occupancyCoefficient: BigDecimal,
     departedAutomatically: Boolean = false
 ): StaffAttendanceExternalId {
     if (attendanceId == null) {
@@ -296,7 +302,8 @@ fun Database.Transaction.upsertExternalStaffAttendance(
         return createUpdate(
                 """
             UPDATE staff_attendance_external
-            SET name = :name, arrived = :arrived, departed = :departed, departed_automatically = :departedAutomatically
+            SET name = :name, arrived = :arrived, departed = :departed, 
+                occupancy_coefficient = :occupancyCoefficient, departed_automatically = :departedAutomatically
             WHERE id = :id
             """
                     .trimIndent()
@@ -305,6 +312,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
             .bind("name", name)
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
+            .bind("occupancyCoefficient", occupancyCoefficient)
             .bind("departedAutomatically", departedAutomatically)
             .updateExactlyOne()
             .let { attendanceId }

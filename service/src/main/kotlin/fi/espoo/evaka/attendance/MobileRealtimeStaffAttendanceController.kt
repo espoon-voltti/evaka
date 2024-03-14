@@ -75,7 +75,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val pinCode: String,
         val groupId: GroupId,
         val time: LocalTime,
-        val type: StaffAttendanceType?
+        val type: StaffAttendanceType?,
+        val hasStaffOccupancyEffect: Boolean?
     )
 
     @PostMapping("/arrival")
@@ -115,7 +116,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 body
                             )
                         val occupancyCoefficient =
-                            tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId)
+                            body.hasStaffOccupancyEffect?.let {
+                                if (it) occupancyCoefficientSeven else occupancyCoefficientZero
+                            }
+                                ?: tx.getOccupancyCoefficientForEmployee(
+                                    body.employeeId,
+                                    body.groupId
+                                )
                                 ?: BigDecimal.ZERO
                         attendances.map { attendance ->
                             tx.upsertStaffAttendance(
@@ -181,9 +188,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             ongoingAttendance,
                             body
                         )
-                    val occupancyCoefficient =
-                        tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId)
-                            ?: BigDecimal.ZERO
+                    val occupancyCoefficient = ongoingAttendance.occupancyCoefficient
                     attendances.map { attendance ->
                         tx.upsertStaffAttendance(
                             attendance.id,
@@ -262,11 +267,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     val deletedIds = existing.map { it.id }
                     deletedIds.forEach { tx.deleteStaffAttendance(it) }
 
-                    val occupancyCoefficients =
-                        groupIds.associateWith { groupId ->
-                            tx.getOccupancyCoefficientForEmployee(body.employeeId, groupId)
-                                ?: occupancyCoefficientZero
-                        }
                     val updatedIds =
                         body.rows.map { attendance ->
                             tx.upsertStaffAttendance(
@@ -276,8 +276,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 arrivalTime = attendance.arrived,
                                 departureTime = attendance.departed,
                                 occupancyCoefficient =
-                                    occupancyCoefficients[attendance.groupId]
-                                        ?: occupancyCoefficientZero,
+                                    if (attendance.hasStaffOccupancyEffect)
+                                        occupancyCoefficientSeven
+                                    else occupancyCoefficientZero,
                                 type = attendance.type,
                                 departedAutomatically = false
                             )

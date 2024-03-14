@@ -132,7 +132,8 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markStaffArrived({
       pin,
       time: arrivalTime,
-      group: daycareGroupFixture
+      group: daycareGroupFixture,
+      hasOccupancyEffect: true
     })
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.assertEmployeeAttendances([
@@ -152,6 +153,39 @@ describe('Realtime staff attendance page', () => {
     ])
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(0)
+  })
+
+  test('Occupancy effect can not be unchecked on arrival if it has been given permanently but can be edited', async () => {
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0))
+    await Fixture.staffOccupancyCoefficient(
+      daycare2Fixture.id,
+      staffFixture.data.id
+    ).save()
+    const arrivalTime = '05:59'
+
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+
+    await staffAttendancePage.staffMemberPage.markArrivedBtn.click()
+    await staffAttendancePage.pinInput.locator.type(pin)
+    await staffAttendancePage.anyArrivalPage.arrivedInput.fill(arrivalTime)
+    await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
+      daycareGroupFixture.id
+    )
+    await staffAttendancePage.staffArrivalPage.occupancyEffectCheckbox.waitUntilHidden()
+    await staffAttendancePage.anyArrivalPage.markArrived.click()
+
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.editButton.click()
+
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.occupancyEffect.waitUntilChecked(true)
+    await editPage.occupancyEffect.uncheck()
+    await editPage.submit(pin)
+
+    await staffAttendancePage.editButton.click()
+    await editPage.occupancyEffect.waitUntilChecked(false)
   })
 
   test('Staff member cannot use departure time that is before last arrival time', async () => {

@@ -28,7 +28,6 @@ import { StaffDepartureRequest } from 'lib-common/generated/api-types/attendance
 import { UUID } from 'lib-common/types'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
 import { UnitStats } from 'lib-common/generated/api-types/attendance'
-import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAttendanceChild } from 'lib-common/generated/api-types/attendance'
@@ -475,24 +474,6 @@ export async function upsertDailyStaffRealtimeAttendances(
     url: uri`/staff-attendances/realtime/upsert`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffAttendanceBody>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertStaffRealtimeAttendances
-*/
-export async function upsertStaffRealtimeAttendances(
-  request: {
-    unitId: UUID,
-    body: UpsertStaffAndExternalAttendanceRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/${request.unitId}/upsert`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<UpsertStaffAndExternalAttendanceRequest>
   })
   return json
 }
