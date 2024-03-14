@@ -34,14 +34,14 @@ export async function getAttendanceReservations(
     unitId: UUID,
     from: LocalDate,
     to: LocalDate,
-    includeNonOperationalDays: boolean
+    includeNonOperationalDays?: boolean | null
   }
 ): Promise<UnitAttendanceReservations> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
     ['from', request.from.formatIso()],
     ['to', request.to.formatIso()],
-    ['includeNonOperationalDays', request.includeNonOperationalDays.toString()]
+    ['includeNonOperationalDays', request.includeNonOperationalDays?.toString()]
   )
   const { data: json } = await client.request<JsonOf<UnitAttendanceReservations>>({
     url: uri`/attendance-reservations`.toString(),

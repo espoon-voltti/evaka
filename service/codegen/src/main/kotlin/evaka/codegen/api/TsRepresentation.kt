@@ -167,7 +167,7 @@ data class TsType(
 )
 
 /** A TS object property, which may be optional (not necessarily the same thing as nullable) */
-data class TsProperty(val type: KType, val isOptional: Boolean = false)
+data class TsProperty(val type: KType, val isOptional: Boolean = type.isMarkedNullable)
 
 private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, TsProperty> =
     props
@@ -183,6 +183,7 @@ private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, 
                             ?.getAnnotation(ForceCodeGenType::class.java)
                             ?.type
                             ?.createType(nullable = prop.returnType.isMarkedNullable)
-                            ?: prop.returnType)
+                            ?: prop.returnType),
+                    isOptional = false
                 )
         }
