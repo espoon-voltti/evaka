@@ -29,7 +29,7 @@ import {
 import { Gap } from 'lib-components/white-space'
 import { translations } from 'lib-customizations/employee'
 
-import { markAssistanceNeedDecisionAsOpened } from '../../generated/api-clients/assistanceneed'
+import { markAssistanceNeedPreschoolDecisionAsOpened } from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
@@ -126,9 +126,9 @@ const DecisionView = React.memo(function DecisionView({
 
   useEffect(() => {
     if (!decision.decisionMakerHasOpened && isDecisionMaker) {
-      void markAssistanceNeedDecisionAsOpened({ id: decision.id }).then(() =>
-        refreshAssistanceNeedDecisionCounts()
-      )
+      void markAssistanceNeedPreschoolDecisionAsOpened({
+        id: decision.id
+      }).then(() => refreshAssistanceNeedDecisionCounts())
     }
   }, [decision, isDecisionMaker, refreshAssistanceNeedDecisionCounts])
 
