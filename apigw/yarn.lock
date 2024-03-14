@@ -2668,10 +2668,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "date-fns@npm:3.3.0"
-  checksum: e93a99f0a447e26e01aeb099ee711abbced3b62f40e28c84effd09e69788f93587f2daec43950ead417faeebbd94afddc335bfd442c34443b03f09dfc0022ff8
+"date-fns@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "date-fns@npm:3.4.0"
+  checksum: 38932c99ad28a69a18bd9e2331d0c86a46146d3e9efc92cbc612400a075785231c3271822948eb0377db738fa8a583aa4782d8246a939fe6f188727ea9323c29
   languageName: node
   linkType: hard
 
@@ -3212,7 +3212,7 @@ __metadata:
     concurrently: "npm:^8.2.0"
     connect-redis: "npm:^7.1.0"
     cookie-parser: "npm:^1.4.6"
-    date-fns: "npm:^3.3.0"
+    date-fns: "npm:^3.4.0"
     dd-trace: "npm:^5.6.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
