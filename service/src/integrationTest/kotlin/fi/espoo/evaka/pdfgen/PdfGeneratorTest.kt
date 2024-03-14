@@ -12,15 +12,32 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
+import fi.espoo.evaka.document.DocumentLanguage
+import fi.espoo.evaka.document.DocumentTemplate
+import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.Question
+import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.document.childdocument.AnsweredQuestion
+import fi.espoo.evaka.document.childdocument.ChildBasics
+import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
+import fi.espoo.evaka.document.childdocument.DocumentContent
+import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.document.childdocument.generateHtml
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -160,6 +177,97 @@ class PdfGeneratorTest {
         createPDF(preparatoryDecision, false, DocumentLang.SV)
         createPDF(voucherDecision, false, DocumentLang.SV)
         createPDF(clubDecision, false, DocumentLang.SV)
+    }
+
+    @Test
+    fun createChildDocumentPdf() {
+        val content =
+            DocumentContent(
+                answers =
+                    listOf(
+                        AnsweredQuestion.TextAnswer(questionId = "s1q1", answer = "Ihan jees"),
+                        AnsweredQuestion.TextAnswer(
+                            questionId = "s1q2",
+                            answer =
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus euismod turpis leo. \n" +
+                                    "in commodo velit interdum vitae. Vivamus eu felis libero. Aliquam non pellentesque ex. \n" +
+                                    "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
+                                    "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
+                                    "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
+                                    "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
+                        ),
+                        AnsweredQuestion.TextAnswer(
+                            questionId = "s2q1",
+                            answer = "Laskiaispulla mantelimassalla"
+                        )
+                    )
+            )
+        val document =
+            ChildDocumentDetails(
+                id = ChildDocumentId(UUID.randomUUID()),
+                status = DocumentStatus.COMPLETED,
+                publishedAt = HelsinkiDateTime.now(),
+                child =
+                    ChildBasics(
+                        id = PersonId(UUID.randomUUID()),
+                        firstName = "Tessa",
+                        lastName = "Testaaja",
+                        dateOfBirth = LocalDate.now().minusYears(4)
+                    ),
+                template =
+                    DocumentTemplate(
+                        id = DocumentTemplateId(UUID.randomUUID()),
+                        type = DocumentType.HOJKS,
+                        name = "Testi-HOJKS",
+                        language = DocumentLanguage.FI,
+                        confidential = true,
+                        legalBasis = "$3 varhaiskasvatuslaki",
+                        validity =
+                            DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(1)),
+                        published = true,
+                        content =
+                            DocumentTemplateContent(
+                                sections =
+                                    listOf(
+                                        Section(
+                                            id = "s1",
+                                            label = "Eka osio",
+                                            questions =
+                                                listOf(
+                                                    Question.TextQuestion(
+                                                        id = "s1q1",
+                                                        label = "Mitä kuuluu?"
+                                                    ),
+                                                    Question.TextQuestion(
+                                                        id = "s1q2",
+                                                        label = "Kerro lisää"
+                                                    )
+                                                )
+                                        ),
+                                        Section(
+                                            id = "s2",
+                                            label = "Toka osio",
+                                            questions =
+                                                listOf(
+                                                    Question.TextQuestion(
+                                                        id = "s2q1",
+                                                        label = "Lempiruoat?"
+                                                    )
+                                                )
+                                        )
+                                    )
+                            )
+                    ),
+                content = content,
+                publishedContent = content
+            )
+
+        val html = generateHtml(document)
+        val bytes = pdfGenerator.render(html)
+        val file = File.createTempFile("child_document_", ".pdf")
+        FileOutputStream(file).use { it.write(bytes) }
+
+        logger.debug { "Generated child document PDF to ${file.absolutePath}" }
     }
 
     private fun createPDF(

@@ -7,6 +7,7 @@ package fi.espoo.evaka.document
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.document.childdocument.AnsweredQuestion
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.domain.DateRange
@@ -31,20 +32,51 @@ enum class QuestionType {
 sealed class Question(val type: QuestionType) {
     abstract val id: String
 
+    abstract fun generateHtml(answer: AnsweredQuestion<*>): String
+
+    fun htmlClassName() = "question question-${type.name.lowercase().replace('_', '-')}"
+
     @JsonTypeName("TEXT")
     data class TextQuestion(
         override val id: String,
         val label: String,
         val infoText: String = "",
         val multiline: Boolean = false
-    ) : Question(QuestionType.TEXT)
+    ) : Question(QuestionType.TEXT) {
+        override fun generateHtml(answer: AnsweredQuestion<*>): String {
+            if (answer !is AnsweredQuestion.TextAnswer || !answer.isStructurallyValid(this)) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            return """
+                <div class="${htmlClassName()}">
+                    <label>$label</label>
+                    <div>
+                        ${answer.answer.split("\n").joinToString("<br/>")}
+                    </div>
+                </div>
+            """
+                .trimIndent()
+        }
+    }
 
     @JsonTypeName("CHECKBOX")
     data class CheckboxQuestion(
         override val id: String,
         val label: String,
         val infoText: String = ""
-    ) : Question(QuestionType.CHECKBOX)
+    ) : Question(QuestionType.CHECKBOX) {
+        override fun generateHtml(answer: AnsweredQuestion<*>): String {
+            if (answer !is AnsweredQuestion.CheckboxAnswer || !answer.isStructurallyValid(this)) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            return """
+                <div class="${htmlClassName()}">
+                    TODO
+                </div>
+            """
+                .trimIndent()
+        }
+    }
 
     @JsonTypeName("CHECKBOX_GROUP")
     data class CheckboxGroupQuestion(
@@ -52,7 +84,21 @@ sealed class Question(val type: QuestionType) {
         val label: String,
         val options: List<CheckboxGroupQuestionOption>,
         val infoText: String = ""
-    ) : Question(QuestionType.CHECKBOX_GROUP)
+    ) : Question(QuestionType.CHECKBOX_GROUP) {
+        override fun generateHtml(answer: AnsweredQuestion<*>): String {
+            if (
+                answer !is AnsweredQuestion.CheckboxGroupAnswer || !answer.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            return """
+                <div class="${htmlClassName()}">
+                    TODO
+                </div>
+            """
+                .trimIndent()
+        }
+    }
 
     @JsonTypeName("RADIO_BUTTON_GROUP")
     data class RadioButtonGroupQuestion(
@@ -60,7 +106,22 @@ sealed class Question(val type: QuestionType) {
         val label: String,
         val options: List<RadioButtonGroupQuestionOption>,
         val infoText: String = ""
-    ) : Question(QuestionType.RADIO_BUTTON_GROUP)
+    ) : Question(QuestionType.RADIO_BUTTON_GROUP) {
+        override fun generateHtml(answer: AnsweredQuestion<*>): String {
+            if (
+                answer !is AnsweredQuestion.RadioButtonGroupAnswer ||
+                    !answer.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            return """
+                <div class="${htmlClassName()}">
+                    TODO
+                </div>
+            """
+                .trimIndent()
+        }
+    }
 
     @JsonTypeName("STATIC_TEXT_DISPLAY")
     data class StaticTextDisplayQuestion(
@@ -68,11 +129,38 @@ sealed class Question(val type: QuestionType) {
         val label: String = "",
         val text: String = "",
         val infoText: String = ""
-    ) : Question(QuestionType.STATIC_TEXT_DISPLAY)
+    ) : Question(QuestionType.STATIC_TEXT_DISPLAY) {
+        override fun generateHtml(answer: AnsweredQuestion<*>): String {
+            if (
+                answer !is AnsweredQuestion.StaticTextDisplayAnswer ||
+                    !answer.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            return """
+                <div class="${htmlClassName()}">
+                    TODO
+                </div>
+            """
+                .trimIndent()
+        }
+    }
 
     @JsonTypeName("DATE")
     data class DateQuestion(override val id: String, val label: String, val infoText: String = "") :
-        Question(QuestionType.DATE)
+        Question(QuestionType.DATE) {
+        override fun generateHtml(answer: AnsweredQuestion<*>): String {
+            if (answer !is AnsweredQuestion.DateAnswer || !answer.isStructurallyValid(this)) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            return """
+                <div class="${htmlClassName()}">
+                    TODO
+                </div>
+            """
+                .trimIndent()
+        }
+    }
 
     @JsonTypeName("GROUPED_TEXT_FIELDS")
     data class GroupedTextFieldsQuestion(
@@ -81,7 +169,22 @@ sealed class Question(val type: QuestionType) {
         val fieldLabels: List<String>,
         val infoText: String = "",
         val allowMultipleRows: Boolean
-    ) : Question(QuestionType.GROUPED_TEXT_FIELDS)
+    ) : Question(QuestionType.GROUPED_TEXT_FIELDS) {
+        override fun generateHtml(answer: AnsweredQuestion<*>): String {
+            if (
+                answer !is AnsweredQuestion.GroupedTextFieldsAnswer ||
+                    !answer.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            return """
+                <div class="${htmlClassName()}">
+                    TODO
+                </div>
+            """
+                .trimIndent()
+        }
+    }
 }
 
 data class CheckboxGroupQuestionOption(
