@@ -367,11 +367,15 @@ export class StaffAttendanceEditPage {
   private page: Page
   addLink: Element
   cancelButton: Element
+  occupancyEffect: Checkbox
 
   constructor(page: Page) {
     this.page = page
     this.addLink = page.findByDataQa('add')
     this.cancelButton = page.findByDataQa('cancel')
+    this.occupancyEffect = new Checkbox(
+      this.page.findByDataQa('occupancy-effect')
+    )
   }
 
   async selectGroup(index: number, groupId: UUID) {

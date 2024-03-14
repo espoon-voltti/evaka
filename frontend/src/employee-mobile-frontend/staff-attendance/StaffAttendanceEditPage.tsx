@@ -549,6 +549,7 @@ const StaffAttendanceEditor = ({
       <CheckboxF
         bind={occupancyEffect}
         label={i18n.staff.staffOccupancyEffect}
+        data-qa="occupancy-effect"
       />
     </FlexColumn>
   )
