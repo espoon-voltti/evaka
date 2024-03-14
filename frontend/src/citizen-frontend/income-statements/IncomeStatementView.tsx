@@ -43,7 +43,7 @@ export default React.memo(function IncomeStatementView() {
   const { incomeStatementId } = useRouteParams(['incomeStatementId'])
   const t = useTranslation()
   const navigate = useNavigate()
-  const result = useQueryResult(incomeStatementQuery(incomeStatementId))
+  const result = useQueryResult(incomeStatementQuery({ incomeStatementId }))
 
   const handleEdit = useCallback(() => {
     navigate('edit')

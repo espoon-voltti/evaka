@@ -4,6 +4,7 @@
 
 import React, { useCallback } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
@@ -13,14 +14,13 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 import { H3, H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveIncomeStatementAttachment
-} from '../attachments'
+import { getAttachmentUrl, saveIncomeStatementAttachment } from '../attachments'
+import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
 import { useTranslation } from '../localization'
 
 import { AttachmentType } from './types/common'
+
+const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
 
 export default React.memo(function Attachments({
   incomeStatementId,
@@ -58,7 +58,7 @@ export default React.memo(function Attachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() => {
+      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

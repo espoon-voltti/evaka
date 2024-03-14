@@ -59,15 +59,6 @@ export async function saveApplicationAttachment(
   )
 }
 
-export async function deleteAttachment(id: UUID): Promise<Result<void>> {
-  try {
-    await client.delete(`/citizen/attachments/${id}`)
-    return Success.of(void 0)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
 export function getAttachmentUrl(
   attachmentId: UUID,
   requestedFilename: string

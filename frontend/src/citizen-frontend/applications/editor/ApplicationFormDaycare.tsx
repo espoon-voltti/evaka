@@ -34,7 +34,9 @@ export default React.memo(function ApplicationFormDaycare({
   const t = useTranslation()
 
   const serviceNeedOptions = useQueryResult(
-    serviceNeedOptionPublicInfosQuery(['DAYCARE', 'DAYCARE_PART_TIME']),
+    serviceNeedOptionPublicInfosQuery({
+      placementTypes: ['DAYCARE', 'DAYCARE_PART_TIME']
+    }),
     {
       // If service need options are not enabled, backend sets to null
       enabled: formData.serviceNeed.serviceNeedOption !== null,

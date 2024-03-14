@@ -4,16 +4,16 @@
 
 import React, { useCallback } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
-import {
-  deleteAttachment,
-  getAttachmentUrl,
-  saveIncomeStatementAttachment
-} from '../attachments'
+import { getAttachmentUrl, saveIncomeStatementAttachment } from '../attachments'
+import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
+
+const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
 
 export default React.memo(function Attachments({
   incomeStatementId,
@@ -47,7 +47,7 @@ export default React.memo(function Attachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachment(id)).map(() => {
+      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

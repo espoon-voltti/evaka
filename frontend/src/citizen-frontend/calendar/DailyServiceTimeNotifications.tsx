@@ -13,7 +13,8 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import colors from 'lib-customizations/common'
 import { faExclamation, faInfo } from 'lib-icons'
 
-import { dismissDailyServiceTimeNotifications } from './api'
+import { dismissDailyServiceTimeNotification } from '../generated/api-clients/dailyservicetimes'
+
 import { dailyServiceTimeNotificationsQuery } from './queries'
 
 export default React.memo(function DailyServiceTimeNotification() {
@@ -44,7 +45,7 @@ export default React.memo(function DailyServiceTimeNotification() {
         icon: faInfo,
         iconColor: colors.main.m2,
         onClose() {
-          void dismissDailyServiceTimeNotifications([notification.id])
+          void dismissDailyServiceTimeNotification({ body: [notification.id] })
         },
         children: i18n.calendar.dailyServiceTimeModifiedNotification(
           notification.dateFrom.format()
@@ -72,9 +73,9 @@ export default React.memo(function DailyServiceTimeNotification() {
       icon={faExclamation}
       resolve={{
         async action() {
-          await dismissDailyServiceTimeNotifications(
-            modalNotificationDates.map(({ id }) => id)
-          )
+          await dismissDailyServiceTimeNotification({
+            body: modalNotificationDates.map(({ id }) => id)
+          })
           setModalNotificationDates([])
         },
         label: i18n.calendar.dailyServiceTimeModifiedDestructivelyModal.ok

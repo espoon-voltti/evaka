@@ -6,9 +6,8 @@ import LocalDate from 'lib-common/local-date'
 import { query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
+import { getChildAttendanceSummary } from '../../../generated/api-clients/children'
 import { createQueryKeys } from '../../../query'
-
-import { getAttendanceSummary } from './api'
 
 const queryKeys = createQueryKeys('serviceNeedAndDailyServiceTime', {
   attendanceSummary: (childId: UUID, date: LocalDate) => [
@@ -19,6 +18,7 @@ const queryKeys = createQueryKeys('serviceNeedAndDailyServiceTime', {
 })
 
 export const attendanceSummaryQuery = query({
-  api: getAttendanceSummary,
-  queryKey: queryKeys.attendanceSummary
+  api: getChildAttendanceSummary,
+  queryKey: ({ childId, yearMonth }) =>
+    queryKeys.attendanceSummary(childId, yearMonth)
 })

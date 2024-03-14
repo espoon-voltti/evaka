@@ -410,7 +410,7 @@ export default React.memo(function PedagogicalDocumentsSection({
 const PedagogicalDocumentsContent = React.memo(
   function PedagogicalDocumentsContent({ childId }: { childId: UUID }) {
     const pedagogicalDocuments = useQueryResult(
-      pedagogicalDocumentsQuery(childId)
+      pedagogicalDocumentsQuery({ childId })
     )
     const { mutate: markPedagogicalDocumentAsRead } = useMutation(
       markPedagogicalDocumentAsReadMutation

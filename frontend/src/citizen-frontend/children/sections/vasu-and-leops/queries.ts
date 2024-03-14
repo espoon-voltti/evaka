@@ -5,14 +5,13 @@
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { createQueryKeys } from '../../../query'
-
 import {
   getChildVasuSummaries,
-  getUnreadVasuDocumentsCount,
-  getVasuDocument,
-  givePermissionToShareVasu
-} from './api'
+  getDocument,
+  getGuardianUnreadVasuCount,
+  givePermissionToShare
+} from '../../../generated/api-clients/vasu'
+import { createQueryKeys } from '../../../query'
 
 const queryKeys = createQueryKeys('vasuAndLeops', {
   summariesByChild: (childId: UUID) => ['summaries', childId],
@@ -21,24 +20,24 @@ const queryKeys = createQueryKeys('vasuAndLeops', {
 })
 
 export const vasuDocumentQuery = query({
-  api: getVasuDocument,
-  queryKey: queryKeys.document
+  api: getDocument,
+  queryKey: ({ id }) => queryKeys.document(id)
 })
 
 export const unreadVasuDocumentsCountQuery = query({
-  api: getUnreadVasuDocumentsCount,
+  api: getGuardianUnreadVasuCount,
   queryKey: queryKeys.unreadCount
 })
 
 export const givePermissionToShareVasuMutation = mutation({
-  api: givePermissionToShareVasu,
-  invalidateQueryKeys: (documentId) => [
-    vasuDocumentQuery(documentId).queryKey,
+  api: givePermissionToShare,
+  invalidateQueryKeys: ({ id }) => [
+    vasuDocumentQuery({ id }).queryKey,
     unreadVasuDocumentsCountQuery().queryKey
   ]
 })
 
 export const childVasuSummariesQuery = query({
   api: getChildVasuSummaries,
-  queryKey: queryKeys.summariesByChild
+  queryKey: ({ childId }) => queryKeys.summariesByChild(childId)
 })

@@ -5,9 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationDetails as ApplicationDetailsGen,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -26,7 +28,7 @@ import ContactInfoSection from './ContactInfoSection'
 import ServiceNeedSection from './ServiceNeedSection'
 
 type DaycareApplicationVerificationViewProps = {
-  application: ApplicationDetails
+  application: ApplicationDetailsGen
   formData: ApplicationFormData
   type: ApplicationType
   closeVerification: () => void

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -19,7 +18,10 @@ import {
   TIME_REGEXP,
   validate
 } from 'lib-common/form-validation'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationDetails as ApplicationDetailsGen,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -75,7 +77,7 @@ const preferredStartDateValidator =
       : err
 
 export const validateApplication = (
-  apiData: ApplicationDetails,
+  apiData: ApplicationDetailsGen,
   form: ApplicationFormData,
   terms?: FiniteDateRange[]
 ): ApplicationFormDataErrors => {

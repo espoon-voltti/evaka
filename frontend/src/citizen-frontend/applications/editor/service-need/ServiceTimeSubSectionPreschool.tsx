@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -28,10 +28,10 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
+import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
@@ -45,6 +45,8 @@ const Hyphenbox = styled.div`
 type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 
 const applicationType = 'PRESCHOOL'
+
+const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
   originalPreferredStartDate,
@@ -104,7 +106,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
     })
 
   const deleteExtendedCareAttachment = (id: UUID) =>
-    deleteAttachment(id).then((result) => {
+    deleteAttachmentResult({ attachmentId: id }).then((result) => {
       result.isSuccess &&
         updateFormData({
           shiftCareAttachments: formData.shiftCareAttachments.filter(

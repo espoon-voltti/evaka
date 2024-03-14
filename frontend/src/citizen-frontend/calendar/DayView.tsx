@@ -261,7 +261,7 @@ function Edit({
           useShowAllErrors.on()
           return cancelMutation
         } else {
-          return form.value()(modalData.response.date)
+          return { body: form.value()(modalData.response.date) }
         }
       }}
       disabled={!form.isValid()}

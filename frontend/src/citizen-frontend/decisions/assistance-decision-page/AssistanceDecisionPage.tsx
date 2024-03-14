@@ -28,14 +28,14 @@ import {
 export default React.memo(function AssistanceNeedDecisionPage() {
   const { id } = useRouteParams(['id'])
 
-  const assistanceNeedDecision = useQueryResult(assistanceDecisionQuery(id))
+  const assistanceNeedDecision = useQueryResult(assistanceDecisionQuery({ id }))
   const i18n = useTranslation()
 
   const { mutate: markAssistanceNeedDecisionAsRead } = useMutationResult(
     markAssistanceNeedDecisionAsReadMutation
   )
   useEffect(() => {
-    markAssistanceNeedDecisionAsRead(id)
+    markAssistanceNeedDecisionAsRead({ id })
   }, [id, markAssistanceNeedDecisionAsRead])
 
   return (

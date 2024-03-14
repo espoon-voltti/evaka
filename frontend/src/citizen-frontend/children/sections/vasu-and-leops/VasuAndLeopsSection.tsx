@@ -273,7 +273,7 @@ const VasuAndLeopsContent = React.memo(function VasuAndLeopsContent({
 }: {
   childId: UUID
 }) {
-  const vasus = useQueryResult(childVasuSummariesQuery(childId))
+  const vasus = useQueryResult(childVasuSummariesQuery({ childId }))
   const i18n = useTranslation()
 
   const user = useUser()

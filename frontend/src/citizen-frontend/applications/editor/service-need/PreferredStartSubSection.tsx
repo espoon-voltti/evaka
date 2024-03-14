@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { Result } from 'lib-common/api'
+import { Result, wrapResult } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -20,16 +20,18 @@ import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import {
-  deleteAttachment,
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
+import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
+
+const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,
@@ -77,7 +79,7 @@ export default React.memo(function PreferredStartSubSection({
     })
 
   const deleteUrgencyAttachment = (id: UUID) =>
-    deleteAttachment(id).then((result) => {
+    deleteAttachmentResult({ attachmentId: id }).then((result) => {
       result.isSuccess &&
         updateFormData({
           urgencyAttachments: formData.urgencyAttachments.filter(

@@ -44,10 +44,10 @@ function useInitialEditorState(
     queryOrDefault(
       childIncomeStatementQuery,
       null
-    )(id ? { childId, id } : undefined)
+    )(id ? { childId, incomeStatementId: id } : undefined)
   )
   const startDates = useQueryResult(
-    childIncomeStatementStartDatesQuery(childId)
+    childIncomeStatementStartDatesQuery({ childId })
   )
 
   return combine(incomeStatement, startDates).map(
@@ -112,7 +112,7 @@ export default React.memo(function ChildIncomeStatementEditor() {
         if (id) {
           return updateChildIncomeStatement({
             childId,
-            id,
+            incomeStatementId: id,
             body: validatedData
           })
         } else {

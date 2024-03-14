@@ -5,16 +5,15 @@
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { createQueryKeys } from '../query'
-
 import {
   acceptDecision,
-  getApplicationNotifications,
+  getApplicationDecisions,
   getDecisions,
-  getDecisionsOfApplication,
-  getFinanceDecisionsForCitizen,
+  getGuardianApplicationNotifications,
+  getLiableCitizenFinanceDecisions,
   rejectDecision
-} from './api'
+} from '../generated/api-clients/application'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('applicationDecisions', {
   all: () => ['all'],
@@ -29,24 +28,24 @@ export const decisionsQuery = query({
 })
 
 export const financeDecisionsQuery = query({
-  api: getFinanceDecisionsForCitizen,
+  api: getLiableCitizenFinanceDecisions,
   queryKey: queryKeys.financeDecisions
 })
 
 export const decisionsOfApplicationQuery = query({
-  api: getDecisionsOfApplication,
-  queryKey: queryKeys.byApplication
+  api: getApplicationDecisions,
+  queryKey: ({ applicationId }) => queryKeys.byApplication(applicationId)
 })
 
 export const applicationNotificationsQuery = query({
-  api: getApplicationNotifications,
+  api: getGuardianApplicationNotifications,
   queryKey: queryKeys.notifications
 })
 
 export const acceptDecisionMutation = mutation({
   api: acceptDecision,
   invalidateQueryKeys: ({ applicationId }) => [
-    decisionsOfApplicationQuery(applicationId).queryKey,
+    decisionsOfApplicationQuery({ applicationId }).queryKey,
     applicationNotificationsQuery().queryKey
   ]
 })
@@ -54,7 +53,7 @@ export const acceptDecisionMutation = mutation({
 export const rejectDecisionMutation = mutation({
   api: rejectDecision,
   invalidateQueryKeys: ({ applicationId }) => [
-    decisionsOfApplicationQuery(applicationId).queryKey,
+    decisionsOfApplicationQuery({ applicationId }).queryKey,
     applicationNotificationsQuery().queryKey
   ]
 })

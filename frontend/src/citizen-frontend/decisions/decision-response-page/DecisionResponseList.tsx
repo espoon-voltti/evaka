@@ -33,7 +33,7 @@ export default React.memo(function DecisionResponseList() {
   const navigate = useNavigate()
 
   const decisionsRequest = useQueryResult(
-    decisionsOfApplicationQuery(applicationId)
+    decisionsOfApplicationQuery({ applicationId })
   )
 
   const [

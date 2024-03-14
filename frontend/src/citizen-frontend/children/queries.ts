@@ -4,9 +4,8 @@
 
 import { query } from 'lib-common/query'
 
+import { getChildren } from '../generated/api-clients/children'
 import { createQueryKeys } from '../query'
-
-import { getChildren } from './api'
 
 const queryKeys = createQueryKeys('children', {
   all: () => null

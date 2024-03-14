@@ -100,14 +100,16 @@ export default React.memo(function DecisionResponse({
     setSubmitting(true)
     return acceptDecision({
       applicationId,
-      decisionId,
-      requestedStartDate
+      body: {
+        decisionId,
+        requestedStartDate
+      }
     })
   }
 
   const handleRejectDecision = async () => {
     setSubmitting(true)
-    return rejectDecision({ applicationId, decisionId })
+    return rejectDecision({ applicationId, body: { decisionId } })
   }
 
   const onSubmit = async () => {

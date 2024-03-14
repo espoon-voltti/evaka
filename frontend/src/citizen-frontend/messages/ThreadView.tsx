@@ -300,11 +300,13 @@ export default React.memo(function ThreadView({
           <MessageReplyEditor
             mutation={replyToThreadMutation}
             onSubmit={() => ({
-              content: replyContent,
               messageId: messages.slice(-1)[0].id,
-              recipientAccountIds: recipients
-                .filter((r) => r.selected)
-                .map((r) => r.id)
+              body: {
+                content: replyContent,
+                recipientAccountIds: recipients
+                  .filter((r) => r.selected)
+                  .map((r) => r.id)
+              }
             })}
             onUpdateContent={onUpdateContent}
             onDiscard={onDiscard}

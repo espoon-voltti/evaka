@@ -179,7 +179,9 @@ export default React.memo(
             />
             <MutateButton
               mutation={updateNotificationSettingsMutation}
-              onClick={() => form.value()}
+              onClick={() => ({
+                body: form.value()
+              })}
               onSuccess={useEditing.off}
               text={t.common.save}
               primary

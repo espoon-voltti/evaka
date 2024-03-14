@@ -5,14 +5,13 @@
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { createQueryKeys } from '../../query'
-
 import {
-  getAssistanceDecisions,
-  getAssistanceDecisionUnreadCounts,
-  getAssitanceDecision,
+  getAssistanceNeedDecision,
+  getAssistanceNeedDecisions,
+  getAssistanceNeedDecisionUnreadCount,
   markAssistanceNeedDecisionAsRead
-} from './api'
+} from '../../generated/api-clients/assistanceneed'
+import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('assistanceDecisions', {
   all: () => ['all'],
@@ -21,17 +20,17 @@ const queryKeys = createQueryKeys('assistanceDecisions', {
 })
 
 export const assistanceDecisionsQuery = query({
-  api: getAssistanceDecisions,
+  api: getAssistanceNeedDecisions,
   queryKey: queryKeys.all
 })
 
 export const assistanceDecisionQuery = query({
-  api: getAssitanceDecision,
-  queryKey: queryKeys.detail
+  api: getAssistanceNeedDecision,
+  queryKey: ({ id }) => queryKeys.detail(id)
 })
 
 export const assistanceDecisionUnreadCountsQuery = query({
-  api: getAssistanceDecisionUnreadCounts,
+  api: getAssistanceNeedDecisionUnreadCount,
   queryKey: queryKeys.unreadCounts
 })
 

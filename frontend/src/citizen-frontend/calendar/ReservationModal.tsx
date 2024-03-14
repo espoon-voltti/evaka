@@ -308,7 +308,9 @@ export default React.memo(function ReservationModal({
                     return cancelMutation
                   } else {
                     const request = form.value().toRequest(dayProperties)
-                    return request.length > 0 ? request : cancelMutation
+                    return request.length > 0
+                      ? { body: request }
+                      : cancelMutation
                   }
                 }}
                 onSuccess={onSuccess}

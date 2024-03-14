@@ -27,7 +27,7 @@ export const ConfirmDeleteThread = React.memo(function ConfirmDeleteThread({
   return (
     <MutateFormModal
       resolveMutation={archiveThreadMutation}
-      resolveAction={() => threadId}
+      resolveAction={() => ({ threadId })}
       rejectAction={onClose}
       title={t.messages.confirmDelete.title}
       text={t.messages.confirmDelete.text}

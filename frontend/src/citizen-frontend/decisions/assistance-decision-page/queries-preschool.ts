@@ -5,14 +5,13 @@
 import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
-import { createQueryKeys } from '../../query'
-
 import {
   getAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecisions,
-  getAssistanceNeedPreschoolDecisionUnreadCounts,
+  getAssistanceNeedPreschoolDecisionUnreadCount,
   markAssistanceNeedPreschoolDecisionAsRead
-} from './api-preschool'
+} from '../../generated/api-clients/assistanceneed'
+import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('assistancePreschoolDecisions', {
   all: () => ['all'],
@@ -27,11 +26,11 @@ export const assistanceNeedPreschoolDecisionsQuery = query({
 
 export const assistanceNeedPreschoolDecisionQuery = query({
   api: getAssistanceNeedPreschoolDecision,
-  queryKey: queryKeys.detail
+  queryKey: ({ id }) => queryKeys.detail(id)
 })
 
 export const assistanceNeedPreschoolDecisionUnreadCountsQuery = query({
-  api: getAssistanceNeedPreschoolDecisionUnreadCounts,
+  api: getAssistanceNeedPreschoolDecisionUnreadCount,
   queryKey: queryKeys.unreadCounts
 })
 

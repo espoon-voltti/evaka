@@ -7,19 +7,20 @@ import sortBy from 'lodash/sortBy'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 
-import { createQueryKeys } from '../query'
-
+import { getCitizenCalendarEvents } from '../generated/api-clients/calendarevent'
+import { getDailyServiceTimeNotifications } from '../generated/api-clients/dailyservicetimes'
 import {
+  answerFixedPeriodQuestionnaire,
   getActiveQuestionnaires,
-  getCalendarEvents,
-  getDailyServiceTimeNotifications,
-  getHolidayPeriods,
-  getIncomeExpirationDates,
+  getHolidayPeriods
+} from '../generated/api-clients/holidayperiod'
+import { getExpiringIncome } from '../generated/api-clients/invoicing'
+import {
   getReservations,
   postAbsences,
-  postFixedPeriodQuestionnaireAnswer,
   postReservations
-} from './api'
+} from '../generated/api-clients/reservations'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('calendar', {
   allReservations: () => ['reservations'],
@@ -41,12 +42,12 @@ const queryKeys = createQueryKeys('calendar', {
 
 export const reservationsQuery = query({
   api: getReservations,
-  queryKey: queryKeys.reservations
+  queryKey: ({ from, to }) => queryKeys.reservations(from, to)
 })
 
 export const calendarEventsQuery = query({
-  api: getCalendarEvents,
-  queryKey: queryKeys.calendarEvents
+  api: getCitizenCalendarEvents,
+  queryKey: ({ start, end }) => queryKeys.calendarEvents(start, end)
 })
 
 export const dailyServiceTimeNotificationsQuery = query({
@@ -78,7 +79,7 @@ export const activeQuestionnaireQuery = query({
 })
 
 export const answerFixedPeriodQuestionnaireMutation = mutation({
-  api: postFixedPeriodQuestionnaireAnswer,
+  api: answerFixedPeriodQuestionnaire,
   invalidateQueryKeys: () => [
     activeQuestionnaireQuery().queryKey,
     queryKeys.allReservations()
@@ -87,7 +88,7 @@ export const answerFixedPeriodQuestionnaireMutation = mutation({
 
 export const incomeExpirationDatesQuery = query({
   api: () =>
-    getIncomeExpirationDates().then((incomeExpirationDates) =>
+    getExpiringIncome().then((incomeExpirationDates) =>
       incomeExpirationDates.length > 0
         ? sortBy(incomeExpirationDates, (d) => d)[0]
         : null

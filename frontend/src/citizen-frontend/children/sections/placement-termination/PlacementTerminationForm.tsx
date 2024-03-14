@@ -8,6 +8,7 @@ import maxBy from 'lodash/maxBy'
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useMemo, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import {
   PlacementTerminationRequestBody,
   PlacementType,
@@ -23,9 +24,10 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../../ModalAccessibilityWrapper'
+import { postPlacementTermination } from '../../../generated/api-clients/placement'
 import { useLang, useTranslation } from '../../../localization'
 
-import { terminatePlacement } from './api'
+const postPlacementTerminationResult = wrapResult(postPlacementTermination)
 
 type TerminationFormState =
   | { type: 'valid'; data: PlacementTerminationRequestBody }
@@ -145,7 +147,10 @@ export default React.memo(function PlacementTerminationForm({
   const onSubmit = useCallback(
     () =>
       terminationState.type === 'valid'
-        ? terminatePlacement(childId, terminationState.data)
+        ? postPlacementTerminationResult({
+            childId,
+            body: terminationState.data
+          })
         : Promise.reject('Invalid params'),
     [childId, terminationState]
   )

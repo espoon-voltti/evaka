@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
-import { Success } from 'lib-common/api'
+import { Success, wrapResult } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -16,15 +16,22 @@ import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
+import {
+  getChildDailyServiceTimes,
+  getChildServiceNeeds
+} from '../../../generated/api-clients/children'
+
 import AttendanceSummaryTable from './AttendanceSummaryTable'
 import DailyServiceTimeTable from './DailyServiceTimeTable'
 import ServiceNeedTable from './ServiceNeedTable'
-import { getDailyServiceTimes, getServiceNeeds } from './api'
 
 interface ServiceNeedProps {
   childId: UUID
   showServiceTimes: boolean
 }
+
+const getChildServiceNeedsResult = wrapResult(getChildServiceNeeds)
+const getChildDailyServiceTimesResult = wrapResult(getChildDailyServiceTimes)
 
 export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
   childId,
@@ -33,13 +40,13 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
   const t = useTranslation()
   const [open, setOpen] = useState(false)
   const [serviceNeedsResponse] = useApiState(
-    () => getServiceNeeds(childId),
+    () => getChildServiceNeedsResult({ childId }),
     [childId]
   )
   const [dailyServiceTimesResponse] = useApiState(
     () =>
       showServiceTimes
-        ? getDailyServiceTimes(childId)
+        ? getChildDailyServiceTimesResult({ childId })
         : Promise.resolve(Success.of([])),
     [childId, showServiceTimes]
   )

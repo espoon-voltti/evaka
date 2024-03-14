@@ -44,19 +44,25 @@ import {
 
 function useReservationsDefaultRange(): Result<ReservationsResponse> {
   return useQueryResult(
-    reservationsQuery(
-      LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
-      LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
-    )
+    reservationsQuery({
+      from: LocalDate.todayInSystemTz()
+        .subMonths(1)
+        .startOfMonth()
+        .startOfWeek(),
+      to: LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+    })
   )
 }
 
 function useEventsDefaultRange(): Result<CitizenCalendarEvent[]> {
   return useQueryResult(
-    calendarEventsQuery(
-      LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
-      LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
-    )
+    calendarEventsQuery({
+      start: LocalDate.todayInSystemTz()
+        .subMonths(1)
+        .startOfMonth()
+        .startOfWeek(),
+      end: LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+    })
   )
 }
 

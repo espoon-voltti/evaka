@@ -5,14 +5,10 @@
 import axios from 'axios'
 import sortBy from 'lodash/sortBy'
 
-import { deserializePublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { mapConfig } from 'lib-customizations/citizen'
-
-import { client } from '../api-client'
 
 import { MapAddress } from './MapView'
 import {
@@ -20,12 +16,6 @@ import {
   UnitWithDistance,
   UnitWithStraightDistance
 } from './distances'
-
-export async function fetchUnits(type: ApplicationType): Promise<PublicUnit[]> {
-  return client
-    .get<JsonOf<PublicUnit[]>>(`/public/units/${type}`)
-    .then(({ data }) => data.map(deserializePublicUnit))
-}
 
 type AutocompleteResponse = {
   features: {

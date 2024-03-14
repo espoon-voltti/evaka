@@ -95,7 +95,9 @@ export default React.memo(function PersonalDetailsSection({
             type="submit"
             text={t.common.save}
             mutation={updatePersonalDetailsMutation}
-            onClick={() => form.value()}
+            onClick={() => ({
+              body: form.value()
+            })}
             onSuccess={() => {
               reloadUser()
               setEditing.off()
