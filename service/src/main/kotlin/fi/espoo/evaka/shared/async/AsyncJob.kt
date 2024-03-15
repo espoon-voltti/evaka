@@ -271,6 +271,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class VardaUpdateChild(val childId: ChildId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class ResetVardaChild(val childId: ChildId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -370,6 +374,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Id(AsyncJob::class, "varda"),
                 AsyncJobPool.Config(concurrency = 1),
                 setOf(
+                    VardaUpdateChild::class,
                     UpdateVardaChild::class,
                     ResetVardaChild::class,
                     DeleteVardaChild::class,
