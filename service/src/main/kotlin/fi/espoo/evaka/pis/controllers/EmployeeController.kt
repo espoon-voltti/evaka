@@ -148,6 +148,10 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable(value = "id") id: EmployeeId,
         @RequestBody body: UpsertEmployeeDaycareRolesRequest
     ) {
+        if (body.daycareIds.isEmpty()) {
+            throw BadRequest("No daycare IDs provided")
+        }
+
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
