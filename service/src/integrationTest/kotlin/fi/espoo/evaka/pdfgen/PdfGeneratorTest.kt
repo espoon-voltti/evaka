@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -23,7 +23,7 @@ import fi.espoo.evaka.document.childdocument.ChildBasics
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
-import fi.espoo.evaka.document.childdocument.generateHtml
+import fi.espoo.evaka.document.childdocument.generateChildDocumentHtml
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -262,7 +262,7 @@ class PdfGeneratorTest {
                 publishedContent = content
             )
 
-        val html = generateHtml(document)
+        val html = generateChildDocumentHtml(document)
         val bytes = pdfGenerator.render(html)
         val file = File.createTempFile("child_document_", ".pdf")
         FileOutputStream(file).use { it.write(bytes) }
