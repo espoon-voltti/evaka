@@ -263,7 +263,10 @@ export interface ExceededServiceNeedReportRow {
   childId: UUID
   childLastName: string
   excessHours: number
+  groupId: UUID | null
+  groupName: string | null
   serviceNeedHoursPerMonth: number
+  unitId: UUID
   usedServiceHours: number
 }
 
