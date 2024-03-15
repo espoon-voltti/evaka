@@ -196,10 +196,8 @@ class PdfGeneratorTest {
                                     "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
                                     "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
                         ),
-                        AnsweredQuestion.TextAnswer(
-                            questionId = "s2q1",
-                            answer = "Laskiaispulla mantelimassalla"
-                        )
+                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q1", answer = true),
+                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q2", answer = false)
                     )
             )
         val document =
@@ -240,7 +238,8 @@ class PdfGeneratorTest {
                                                     ),
                                                     Question.TextQuestion(
                                                         id = "s1q2",
-                                                        label = "Kerro lisää"
+                                                        label = "Kerro lisää",
+                                                        multiline = true
                                                     )
                                                 )
                                         ),
@@ -249,9 +248,13 @@ class PdfGeneratorTest {
                                             label = "Toka osio",
                                             questions =
                                                 listOf(
-                                                    Question.TextQuestion(
+                                                    Question.CheckboxQuestion(
                                                         id = "s2q1",
-                                                        label = "Lempiruoat?"
+                                                        label = "Hyväksyn käyttöehdot"
+                                                    ),
+                                                    Question.CheckboxQuestion(
+                                                        id = "s2q2",
+                                                        label = "Minulle saa lähettää mainoksia"
                                                     )
                                                 )
                                         )

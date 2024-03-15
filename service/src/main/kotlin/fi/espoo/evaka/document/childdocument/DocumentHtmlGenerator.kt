@@ -4,8 +4,10 @@
 
 package fi.espoo.evaka.document.childdocument
 
+import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
 
 // language=css
@@ -48,40 +50,41 @@ fun generateChildDocumentHtml(document: ChildDocumentDetails): String {
 }
 
 private fun generateBody(document: ChildDocumentDetails): HtmlElement {
-    return HtmlElement.body(
-        children =
-            listOf(
-                HtmlElement.h1(document.template.name),
-                HtmlElement.h2("${document.child.firstName} ${document.child.lastName}"),
-                HtmlElement.div(
-                    className = "sections",
-                    children =
-                        document.template.content.sections.map {
-                            generateSectionHtml(it, document.content.answers)
-                        }
-                )
-            )
-    )
+    return HtmlBuilder.body {
+        listOf(
+            h1(document.template.name),
+            h2("${document.child.firstName} ${document.child.lastName}"),
+            div(className = "sections") {
+                document.template.content.sections.map {
+                    generateSectionHtml(it, document.content.answers, document.template.language)
+                }
+            }
+        )
+    }
 }
 
-private fun generateSectionHtml(section: Section, answers: List<AnsweredQuestion<*>>): HtmlElement {
-    return HtmlElement.div(
-        className = "section",
-        children =
-            listOf(
-                HtmlElement.h2(section.label),
-                HtmlElement.div(
-                    className = "questions",
-                    children = section.questions.map { generateQuestionHtml(it, answers) }
-                )
-            )
-    )
+private fun generateSectionHtml(
+    section: Section,
+    answers: List<AnsweredQuestion<*>>,
+    language: DocumentLanguage
+): HtmlElement {
+    return HtmlBuilder.div(className = "section") {
+        listOf(
+            h2(section.label),
+            div(className = "questions") {
+                section.questions.map { generateQuestionHtml(it, answers, language) }
+            }
+        )
+    }
 }
 
 private fun generateQuestionHtml(
     question: Question,
-    answers: List<AnsweredQuestion<*>>
+    answers: List<AnsweredQuestion<*>>,
+    language: DocumentLanguage
 ): HtmlElement {
-    return answers.find { it.questionId == question.id }?.let { question.generateHtml(it) }
+    return answers
+        .find { it.questionId == question.id }
+        ?.let { question.generateHtml(it, language) }
         ?: throw IllegalStateException("No answer found for question ${question.id}")
 }

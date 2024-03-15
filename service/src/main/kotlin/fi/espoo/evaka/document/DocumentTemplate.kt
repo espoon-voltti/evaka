@@ -10,6 +10,7 @@ import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.document.childdocument.AnsweredQuestion
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.json.Json
@@ -33,7 +34,7 @@ enum class QuestionType {
 sealed class Question(val type: QuestionType) {
     abstract val id: String
 
-    abstract fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement
+    abstract fun generateHtml(answer: AnsweredQuestion<*>, language: DocumentLanguage): HtmlElement
 
     fun htmlClassName() = "question question-${type.name.lowercase().replace('_', '-')}"
 
@@ -44,23 +45,19 @@ sealed class Question(val type: QuestionType) {
         val infoText: String = "",
         val multiline: Boolean = false
     ) : Question(QuestionType.TEXT) {
-        override fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement {
+        override fun generateHtml(
+            answer: AnsweredQuestion<*>,
+            language: DocumentLanguage
+        ): HtmlElement {
             if (answer !is AnsweredQuestion.TextAnswer || !answer.isStructurallyValid(this)) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
-            return HtmlElement.div(
-                className = htmlClassName(),
-                children =
-                    listOf(
-                        HtmlElement.label(label),
-                        HtmlElement.div(
-                            children =
-                                answer.answer.split("\n").flatMap {
-                                    listOf(HtmlElement.text(it), HtmlElement.br())
-                                }
-                        )
-                    )
-            )
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(
+                    label(label),
+                    div { answer.answer.split("\n").flatMap { listOf(text(it), br()) } }
+                )
+            }
         }
     }
 
@@ -70,11 +67,21 @@ sealed class Question(val type: QuestionType) {
         val label: String,
         val infoText: String = ""
     ) : Question(QuestionType.CHECKBOX) {
-        override fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement {
+        override fun generateHtml(
+            answer: AnsweredQuestion<*>,
+            language: DocumentLanguage
+        ): HtmlElement {
             if (answer !is AnsweredQuestion.CheckboxAnswer || !answer.isStructurallyValid(this)) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
-            return HtmlElement.div(className = htmlClassName(), child = HtmlElement.text("TODO"))
+            val answerText =
+                when (language) {
+                    DocumentLanguage.FI -> if (answer.answer) "Kyllä" else "Ei"
+                    DocumentLanguage.SV -> if (answer.answer) "Ja" else "Nej"
+                }
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(label(label), div(answerText))
+            }
         }
     }
 
@@ -85,13 +92,16 @@ sealed class Question(val type: QuestionType) {
         val options: List<CheckboxGroupQuestionOption>,
         val infoText: String = ""
     ) : Question(QuestionType.CHECKBOX_GROUP) {
-        override fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement {
+        override fun generateHtml(
+            answer: AnsweredQuestion<*>,
+            language: DocumentLanguage
+        ): HtmlElement {
             if (
                 answer !is AnsweredQuestion.CheckboxGroupAnswer || !answer.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
-            return HtmlElement.div(className = htmlClassName(), child = HtmlElement.text("TODO"))
+            return HtmlBuilder.div("TODO", className = htmlClassName())
         }
     }
 
@@ -102,14 +112,17 @@ sealed class Question(val type: QuestionType) {
         val options: List<RadioButtonGroupQuestionOption>,
         val infoText: String = ""
     ) : Question(QuestionType.RADIO_BUTTON_GROUP) {
-        override fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement {
+        override fun generateHtml(
+            answer: AnsweredQuestion<*>,
+            language: DocumentLanguage
+        ): HtmlElement {
             if (
                 answer !is AnsweredQuestion.RadioButtonGroupAnswer ||
                     !answer.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
-            return HtmlElement.div(className = htmlClassName(), child = HtmlElement.text("TODO"))
+            return HtmlBuilder.div("TODO", className = htmlClassName())
         }
     }
 
@@ -120,25 +133,31 @@ sealed class Question(val type: QuestionType) {
         val text: String = "",
         val infoText: String = ""
     ) : Question(QuestionType.STATIC_TEXT_DISPLAY) {
-        override fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement {
+        override fun generateHtml(
+            answer: AnsweredQuestion<*>,
+            language: DocumentLanguage
+        ): HtmlElement {
             if (
                 answer !is AnsweredQuestion.StaticTextDisplayAnswer ||
                     !answer.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
-            return HtmlElement.div(className = htmlClassName(), child = HtmlElement.text("TODO"))
+            return HtmlBuilder.div("TODO", className = htmlClassName())
         }
     }
 
     @JsonTypeName("DATE")
     data class DateQuestion(override val id: String, val label: String, val infoText: String = "") :
         Question(QuestionType.DATE) {
-        override fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement {
+        override fun generateHtml(
+            answer: AnsweredQuestion<*>,
+            language: DocumentLanguage
+        ): HtmlElement {
             if (answer !is AnsweredQuestion.DateAnswer || !answer.isStructurallyValid(this)) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
-            return HtmlElement.div(className = htmlClassName(), child = HtmlElement.text("TODO"))
+            return HtmlBuilder.div("TODO", className = htmlClassName())
         }
     }
 
@@ -150,14 +169,17 @@ sealed class Question(val type: QuestionType) {
         val infoText: String = "",
         val allowMultipleRows: Boolean
     ) : Question(QuestionType.GROUPED_TEXT_FIELDS) {
-        override fun generateHtml(answer: AnsweredQuestion<*>): HtmlElement {
+        override fun generateHtml(
+            answer: AnsweredQuestion<*>,
+            language: DocumentLanguage
+        ): HtmlElement {
             if (
                 answer !is AnsweredQuestion.GroupedTextFieldsAnswer ||
                     !answer.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
-            return HtmlElement.div(className = htmlClassName(), child = HtmlElement.text("TODO"))
+            return HtmlBuilder.div("TODO", className = htmlClassName())
         }
     }
 }

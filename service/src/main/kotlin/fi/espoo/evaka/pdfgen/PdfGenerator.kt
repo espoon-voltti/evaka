@@ -57,7 +57,6 @@ class PdfGenerator(
         }
 
     fun render(html: String): ByteArray {
-        println(html)
         val output = ByteArrayOutputStream()
         tracer.withSpan("render html") {
             with(ITextRenderer()) {

@@ -34,36 +34,108 @@ sealed class HtmlElement {
             return HtmlEscape.escapeHtml5Xml(text)
         }
     }
-
-    companion object {
-        fun text(text: String) = Text(text)
-
-        fun body(children: List<HtmlElement> = emptyList()) = Tag("body", children)
-
-        fun body(child: HtmlElement) = body(listOf(child))
-
-        fun br(className: String? = null) = Tag("br", children = emptyList(), className)
-
-        fun div(children: List<HtmlElement> = emptyList(), className: String? = null) =
-            Tag("div", children, className)
-
-        fun div(child: HtmlElement, className: String? = null) = div(listOf(child), className)
-
-        fun div(text: String, className: String? = null) = div(text(text), className)
-
-        fun h1(text: String, className: String? = null) = Tag("h1", listOf(text(text)), className)
-
-        fun h2(text: String, className: String? = null) = Tag("h2", listOf(text(text)), className)
-
-        fun h3(text: String, className: String? = null) = Tag("h3", listOf(text(text)), className)
-
-        fun h4(text: String, className: String? = null) = Tag("h4", listOf(text(text)), className)
-
-        fun label(children: List<HtmlElement> = emptyList(), className: String? = null) =
-            Tag("label", children, className)
-
-        fun label(child: HtmlElement, className: String? = null) = label(listOf(child), className)
-
-        fun label(text: String, className: String? = null) = label(text(text), className)
-    }
 }
+
+data object HtmlBuilder {
+    fun text(text: String) = HtmlElement.Text(text)
+
+    fun body(children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }) =
+        HtmlElement.Tag("body", HtmlBuilder.children())
+
+    fun br(
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("br", emptyList(), className)
+
+    fun div(
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null,
+        children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }
+    ) = HtmlElement.Tag("div", HtmlBuilder.children(), className)
+
+    fun div(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("div", listOf(HtmlElement.Text(text)), className)
+
+    fun h1(
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null,
+        children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }
+    ) = HtmlElement.Tag("h1", HtmlBuilder.children(), className)
+
+    fun h1(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("h1", listOf(HtmlElement.Text(text)), className)
+
+    fun h2(
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null,
+        children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }
+    ) = HtmlElement.Tag("h2", HtmlBuilder.children(), className)
+
+    fun h2(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("h2", listOf(HtmlElement.Text(text)), className)
+
+    fun h3(
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null,
+        children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }
+    ) = HtmlElement.Tag("h3", HtmlBuilder.children(), className)
+
+    fun h3(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("h3", listOf(HtmlElement.Text(text)), className)
+
+    fun label(
+        className: String? = null,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        children: HtmlBuilder.() -> List<HtmlElement>
+    ) = HtmlElement.Tag("label", HtmlBuilder.children(), className)
+
+    fun label(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("label", listOf(HtmlElement.Text(text)), className)
+
+    fun li(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("li", listOf(HtmlElement.Text(text)), className)
+
+    fun ul(
+        className: String? = null,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        children: HtmlBuilder.() -> List<HtmlElement.Tag>
+    ) = HtmlElement.Tag("ul", HtmlBuilder.children(), className)
+
+    fun p(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("p", listOf(HtmlElement.Text(text)), className)
+
+    fun span(
+        className: String? = null,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        children: HtmlBuilder.() -> List<HtmlElement>
+    ) = HtmlElement.Tag("span", HtmlBuilder.children(), className)
+
+    fun span(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("span", listOf(HtmlElement.Text(text)), className)
+}
+
+class UseNamedArguments private constructor()
