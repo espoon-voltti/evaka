@@ -294,7 +294,14 @@ data class KoskiEnv(
     }
 }
 
-data class VardaEnv(val url: String, val sourceSystem: String, val basicAuth: Sensitive<String>) {
+data class VardaEnv(
+    val url: URI,
+    val sourceSystem: String,
+    val basicAuth: Sensitive<String>,
+    val startDate: LocalDate?,
+    val endDate: LocalDate?,
+    val localDevPort: Int?
+) {
     companion object {
         fun fromEnvironment(env: Environment) =
             VardaEnv(
@@ -310,7 +317,12 @@ data class VardaEnv(val url: String, val sourceSystem: String, val basicAuth: Se
                             "evaka.integration.varda.basic_auth",
                             "fi.espoo.integration.varda.basic_auth"
                         ) ?: ""
-                    )
+                    ),
+                startDate = env.lookup("evaka.integration.varda.start_date"),
+                endDate = env.lookup("evaka.integration.varda.end_date"),
+
+                // Port that's forwarded to Varda for local development
+                localDevPort = env.lookup("evaka.integration.varda.local_dev_port")
             )
     }
 }
