@@ -1,5 +1,5 @@
---- ../../../../../../../../update/IdpReviewProfileAuthenticator.java.22.0.3.orig	2023-09-13 17:28:43.032373490 +0300
-+++ EvakaReviewProfileAuthenticator.java	2023-09-13 17:17:14.375025031 +0300
+--- ../../../../../../../../update/IdpReviewProfileAuthenticator.java.24.0.1.orig	2024-03-15 09:56:58.369647893 +0200
++++ EvakaReviewProfileAuthenticator.java	2024-03-15 11:17:26.017534526 +0200
 @@ -15,7 +15,7 @@
   * limitations under the License.
   */
@@ -75,7 +75,7 @@
          UserModelDelegate updatedProfile = new UserModelDelegate(null) {
  
              @Override
-@@ -160,6 +183,7 @@
+@@ -195,6 +218,7 @@
          attributes.putIfAbsent(UserModel.USERNAME, Collections.singletonList(updatedProfile.getUsername()));
          UserProfile profile = profileProvider.create(UserProfileContext.IDP_REVIEW, attributes, updatedProfile);
  
@@ -83,7 +83,7 @@
          try {
              String oldEmail = userCtx.getEmail();
  
-@@ -170,8 +194,17 @@
+@@ -205,8 +229,17 @@
                  }
              });
          } catch (ValidationException pve) {
@@ -102,7 +102,7 @@
              Response challenge = context.form()
                      .setErrors(errors)
                      .setAttribute(LoginFormsProvider.UPDATE_PROFILE_CONTEXT_ATTR, userCtx)
-@@ -183,6 +216,11 @@
+@@ -218,6 +251,11 @@
              return;
          }
  

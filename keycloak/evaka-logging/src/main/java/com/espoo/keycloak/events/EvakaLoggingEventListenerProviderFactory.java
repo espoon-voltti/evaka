@@ -18,6 +18,8 @@ public class EvakaLoggingEventListenerProviderFactory implements EventListenerPr
 
     private Logger.Level successLevel;
     private Logger.Level errorLevel;
+    private boolean sanitize;
+    private Character quotes;
 
     private boolean hashUsername;
     private boolean dropUsername;
@@ -33,7 +35,7 @@ public class EvakaLoggingEventListenerProviderFactory implements EventListenerPr
 
     @Override
     public EventListenerProvider create(KeycloakSession session) {
-        return new EvakaLoggingEventListenerProvider(session, logger, successLevel, errorLevel,
+        return new EvakaLoggingEventListenerProvider(session, logger, successLevel, errorLevel, quotes, sanitize,
                 hashUsername, dropUsername, hashSessionId, dropSessionId, hashIpAdderss, dropIpAdderss,
                 hashIdentity, dropIdentity);
     }
@@ -46,6 +48,13 @@ public class EvakaLoggingEventListenerProviderFactory implements EventListenerPr
     public void init(Config.Scope config) {
         successLevel = Logger.Level.valueOf(config.get("success-level", "debug").toUpperCase());
         errorLevel = Logger.Level.valueOf(config.get("error-level", "warn").toUpperCase());
+        sanitize = config.getBoolean("sanitize", true);
+        String quotesString = config.get("quotes", "\"");
+        if (!quotesString.equals("none") && quotesString.length() > 1) {
+            logger.warn("Invalid quotes configuration, it should be none or one character to use as quotes. Using default \" quotes");
+            quotesString = "\"";
+        }
+        quotes = quotesString.equals("none")? null : quotesString.charAt(0);
 
         hashUsername = getBooleanEnvironment("LOG_HASH_USERNAME");
         dropUsername = getBooleanEnvironment("LOG_DROP_USERNAME");
