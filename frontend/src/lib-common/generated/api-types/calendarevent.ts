@@ -28,6 +28,7 @@ export interface AttendingChild {
 export interface CalendarEvent {
   contentModifiedAt: HelsinkiDateTime
   description: string
+  eventType: CalendarEventType
   groups: GroupInfo[]
   id: UUID
   individualChildren: IndividualChild[]
@@ -42,6 +43,7 @@ export interface CalendarEvent {
 */
 export interface CalendarEventForm {
   description: string
+  eventType: CalendarEventType
   period: FiniteDateRange
   times: CalendarEventTimeForm[] | null
   title: string
@@ -83,6 +85,13 @@ export interface CalendarEventTimeForm {
   date: LocalDate
   timeRange: TimeRange
 }
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventType
+*/
+export type CalendarEventType =
+  | 'DAYCARE_EVENT'
+  | 'DISCUSSION_SURVEY'
 
 /**
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventUpdateForm

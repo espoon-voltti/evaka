@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class CalendarEventController(private val accessControl: AccessControl) {
@@ -79,7 +79,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/units/{unitId}/groups/{groupId}/discussion-surveys")
-    fun getGroupCalendarEventsWithTimes(
+    fun getGroupDiscussionSurveys(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -95,9 +95,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Unit.READ_CALENDAR_EVENTS,
                         unitId
                     )
-                    tx.getCalendarEventsByGroup(groupId).filter { calendarEvent ->
-                        calendarEvent.times.isNotEmpty()
-                    }
+                    tx.getCalendarEventsByGroupAndType(
+                        groupId,
+                        listOf(CalendarEventType.DISCUSSION_SURVEY)
+                    )
                 }
             }
             .also {
@@ -138,7 +139,11 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     val unitOperationDays =
                         tx.getUnitOperationDays()[unitId]
                             ?: throw NotFound("Unit operation days not found")
-                    val groupEvents = tx.getCalendarEventsByGroupWithRange(groupId, range)
+                    val groupEvents =
+                        tx.getCalendarEventsByUnitWithRange(unitId, range).filter {
+                            it.groups.isEmpty() ||
+                                it.groups.any { groupInfo -> groupInfo.id == groupId }
+                        }
 
                     range
                         .dates()
@@ -355,17 +360,18 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEvent.UPDATE,
                         id
                     )
-                    val cetId = tx.createCalendarEventTime(id, body, clock.now(), user.evakaUserId)
                     val associatedEvent = tx.getCalendarEventById(id)
+                    if (
+                        associatedEvent == null ||
+                            associatedEvent.eventType != CalendarEventType.DISCUSSION_SURVEY
+                    ) {
+                        throw NotFound("No corresponding discussion survey found")
+                    }
+                    val cetId = tx.createCalendarEventTime(id, body, clock.now(), user.evakaUserId)
                     tx.updateCalendarEventPeriod(
                         eventId = id,
                         modifiedAt = clock.now(),
-                        period =
-                            getPeriodOfTimes(
-                                associatedEvent?.times
-                                    ?: throw NotFound("No corresponding calendar event found"),
-                                clock.today()
-                            )
+                        period = getPeriodOfTimes(associatedEvent.times, clock.today())
                     )
                     cetId
                 }

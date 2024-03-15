@@ -27,13 +27,14 @@ private fun Database.Read.getCalendarEventsQuery(
     calendarEventId: CalendarEventId? = null,
     unitId: DaycareId? = null,
     range: FiniteDateRange? = null,
-    groupId: GroupId? = null
+    groupId: GroupId? = null,
+    eventTypes: List<CalendarEventType>? = emptyList()
 ) =
     @Suppress("DEPRECATION")
     this.createQuery(
             """
 SELECT
-    ce.id, cea.unit_id, ce.title, ce.description, ce.period, ce.content_modified_at,
+    ce.id, cea.unit_id, ce.title, ce.description, ce.period, ce.content_modified_at, ce.event_type,
     (
         coalesce(jsonb_agg(DISTINCT jsonb_build_object(
             'id', cea.group_id,
@@ -65,7 +66,8 @@ LEFT JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
 WHERE (:calendarEventId IS NULL OR ce.id = :calendarEventId) 
 AND (:unitId IS NULL OR cea.unit_id = :unitId) 
 AND (:groupId IS NULL OR cea.group_id = :groupId)
-AND (:range IS NULL OR ce.period && :range) 
+AND (:range IS NULL OR ce.period && :range)
+AND (:eventTypes::calendar_event_type[] = '{}' OR ce.event_type = ANY(:eventTypes::calendar_event_type[]))
 AND (cea.child_id IS NULL OR EXISTS(
     -- filter out attendees that haven't been placed in the specified unit/group,
     -- for example due to changes in placements after the event creation or a new backup care
@@ -83,6 +85,7 @@ GROUP BY ce.id, cea.unit_id
         .bind("unitId", unitId)
         .bind("groupId", groupId)
         .bind("range", range)
+        .bind("eventTypes", eventTypes)
 
 fun Database.Transaction.createCalendarEvent(
     event: CalendarEventForm,
@@ -93,8 +96,8 @@ fun Database.Transaction.createCalendarEvent(
         @Suppress("DEPRECATION")
         this.createUpdate(
                 """
-INSERT INTO calendar_event (created_at, title, description, period, modified_at, content_modified_at)
-VALUES (:createdAt, :title, :description, :period, :createdAt, :createdAt)
+INSERT INTO calendar_event (created_at, title, description, period, modified_at, content_modified_at, event_type)
+VALUES (:createdAt, :title, :description, :period, :createdAt, :createdAt, :eventType)
 RETURNING id
         """
                     .trimIndent()
@@ -106,7 +109,7 @@ RETURNING id
 
     createCalendarEventAttendees(eventId, event.unitId, event.tree)
 
-    if (!event.times.isNullOrEmpty()) {
+    if (event.eventType == CalendarEventType.DISCUSSION_SURVEY && !event.times.isNullOrEmpty()) {
         event.times.forEach { time -> createCalendarEventTime(eventId, time, createdAt, createdBy) }
     }
 
@@ -188,11 +191,13 @@ fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
 fun Database.Read.getCalendarEventById(id: CalendarEventId) =
     getCalendarEventsQuery(calendarEventId = id).exactlyOneOrNull<CalendarEvent>()
 
-fun Database.Read.getCalendarEventsByGroup(groupId: GroupId) =
-    getCalendarEventsQuery(groupId = groupId).toList<CalendarEvent>()
+fun Database.Read.getCalendarEventsByGroupAndType(
+    groupId: GroupId,
+    eventTypes: List<CalendarEventType>
+) = getCalendarEventsQuery(groupId = groupId, eventTypes = eventTypes).toList<CalendarEvent>()
 
-fun Database.Read.getCalendarEventsByGroupWithRange(groupId: GroupId, range: FiniteDateRange) =
-    getCalendarEventsQuery(groupId = groupId, range = range).toList<CalendarEvent>()
+fun Database.Read.getCalendarEventsByUnitWithRange(unitId: DaycareId, range: FiniteDateRange) =
+    getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
 
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
     @Suppress("DEPRECATION")
@@ -260,44 +265,6 @@ WHERE id = :eventId
         .bind("eventId", eventId)
         .bind("modifiedAt", modifiedAt)
         .bindKotlin(updateForm)
-        .updateExactlyOne()
-
-fun Database.Transaction.updateCalendarEventWithPeriod(
-    eventId: CalendarEventId,
-    modifiedAt: HelsinkiDateTime,
-    period: FiniteDateRange,
-    updateForm: CalendarEventUpdateForm
-) =
-    this.createUpdate {
-            sql(
-                """
-UPDATE calendar_event
-SET title = :title, description = :description, period = :period, modified_at = :modifiedAt, content_modified_at = :modifiedAt
-WHERE id = :eventId
-        """
-            )
-        }
-        .bind("eventId", eventId)
-        .bind("modifiedAt", modifiedAt)
-        .bindKotlin(updateForm)
-        .bind("period", period)
-        .updateExactlyOne()
-
-fun Database.Transaction.setCalendarEventContentModifiedAt(
-    eventId: CalendarEventId,
-    modifiedAt: HelsinkiDateTime
-) =
-    this.createUpdate {
-            sql(
-                """
-UPDATE calendar_event
-SET content_modified_at = :modifiedAt
-WHERE id = :eventId
-        """
-            )
-        }
-        .bind("eventId", eventId)
-        .bind("modifiedAt", modifiedAt)
         .updateExactlyOne()
 
 fun Database.Transaction.insertCalendarEventTimeReservation(

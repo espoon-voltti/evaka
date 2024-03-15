@@ -34,14 +34,11 @@ data class CalendarEvent(
     val description: String,
     val period: FiniteDateRange,
     @Json val times: Set<CalendarEventTime>,
-    val contentModifiedAt: HelsinkiDateTime
+    val contentModifiedAt: HelsinkiDateTime,
+    val eventType: CalendarEventType
 )
 
-data class CalendarEventInfo(
-    val id: CalendarEventId,
-    val title: String,
-    val description: String
-)
+data class CalendarEventInfo(val id: CalendarEventId, val title: String, val description: String)
 
 data class DiscussionReservationDay(
     val date: LocalDate,
@@ -78,13 +75,11 @@ data class CalendarEventForm(
     val title: String,
     val description: String,
     val period: FiniteDateRange,
-    val times: List<CalendarEventTimeForm>? = null
+    val times: List<CalendarEventTimeForm>? = null,
+    val eventType: CalendarEventType
 )
 
-data class CalendarEventTimeForm(
-    val date: LocalDate,
-    val timeRange: TimeRange
-)
+data class CalendarEventTimeForm(val date: LocalDate, val timeRange: TimeRange)
 
 data class CalendarEventTimeEmployeeReservationForm(
     val calendarEventTimeId: CalendarEventTimeId,

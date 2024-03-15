@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testChild_1
@@ -137,7 +138,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = null,
                 title = "Unit-wide event",
                 description = "uwe",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(3))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -168,7 +170,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to null),
                 title = "Group-wide event",
                 description = "gwe",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -199,7 +202,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -235,11 +239,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     times =
                         listOf(
                             CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
                             )
-                        )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
                 )
             )
 
@@ -247,7 +251,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = event.times.first().id,
                 childId = testChild_1.id
             )
@@ -259,13 +263,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 event.id,
-                CalendarEventTimeForm(today.plusDays(3), LocalTime.of(8, 40), LocalTime.of(9, 0))
+                CalendarEventTimeForm(
+                    date = today.plusDays(3),
+                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0))
+                )
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
             )
@@ -293,11 +300,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     times =
                         listOf(
                             CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
                             )
-                        )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
                 )
             )
 
@@ -305,7 +312,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = event.times.first().id,
                 childId = testChild_1.id
             )
@@ -317,13 +324,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 event.id,
-                CalendarEventTimeForm(today.plusDays(3), LocalTime.of(8, 40), LocalTime.of(9, 0))
+                CalendarEventTimeForm(
+                    date = today.plusDays(3),
+                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0))
+                )
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
             )
@@ -351,11 +361,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     times =
                         listOf(
                             CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
                             )
-                        )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
                 )
             )
 
@@ -363,7 +373,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = event.times.first().id,
                 childId = testChild_1.id
             )
@@ -375,13 +385,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 event.id,
-                CalendarEventTimeForm(today.plusDays(3), LocalTime.of(8, 40), LocalTime.of(9, 0))
+                CalendarEventTimeForm(
+                    date = today.plusDays(3),
+                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0))
+                )
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
             )
@@ -409,11 +422,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     times =
                         listOf(
                             CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
                             )
-                        )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
                 )
             )
 
@@ -421,8 +434,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Child-specific event",
                 description = "cse",
-                tree = mapOf(groupId to setOf(testChild_1.id)),
-                period = created.period
+                tree = mapOf(groupId to setOf(testChild_1.id))
             )
         val updated = updateCalendarEvent(created.id, updateForm)
 
@@ -459,18 +471,18 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     times =
                         listOf(
                             CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
                             )
-                        )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
                 )
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = created.times.first().id,
                 childId = testChild_1.id
             )
@@ -481,8 +493,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Child-specific event",
                 description = "cse",
-                tree = mapOf(groupId to setOf(testChild_2.id)),
-                period = created.period
+                tree = mapOf(groupId to setOf(testChild_2.id))
             )
         val updated = updateCalendarEvent(created.id, updateForm)
         assertThat(updated)
@@ -521,11 +532,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     times =
                         listOf(
                             CalendarEventTimeForm(
-                                today.plusDays(3),
-                                LocalTime.of(8, 20),
-                                LocalTime.of(8, 40)
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
                             )
-                        )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
                 )
             )
         val calendarEventTimeId = event.times.first().id
@@ -538,7 +549,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .containsExactly(Tuple(today.plusDays(3), LocalTime.of(8, 20), LocalTime.of(8, 40)))
 
         val reservationForm =
-            CalendarEventTimeReservationForm(
+            CalendarEventTimeCitizenReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
                 childId = testChild_1.id
             )
@@ -557,7 +568,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 dbInstance(),
                 guardian,
                 clock,
-                CalendarEventTimeReservationForm(
+                CalendarEventTimeCitizenReservationForm(
                     calendarEventTimeId = calendarEventTimeId,
                     childId = testChild_2.id
                 )
@@ -599,7 +610,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -617,11 +629,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     today.plusDays(4)
                 )[0]
                 .id,
-            CalendarEventUpdateForm(
-                title = "Updated title",
-                description = "desc, updated",
-                period = form.period
-            )
+            CalendarEventUpdateForm(title = "Updated title", description = "desc, updated")
         )
 
         val event =
@@ -647,7 +655,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -689,7 +698,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -699,7 +709,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = null,
                 title = "Unit-wide event",
                 description = "uw",
-                period = FiniteDateRange(today.plusDays(1), today.plusDays(1))
+                period = FiniteDateRange(today.plusDays(1), today.plusDays(1)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
@@ -709,7 +720,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to null),
                 title = "Group event",
                 description = "gw",
-                period = FiniteDateRange(today.plusDays(1), today.plusDays(1))
+                period = FiniteDateRange(today.plusDays(1), today.plusDays(1)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form3)
 
@@ -782,7 +794,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to null),
                 title = "Group event",
                 description = "ge",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -824,7 +837,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_2.id)),
                 title = "Individual child event (other child)",
                 description = "ie",
-                period = FiniteDateRange(today.minusDays(1), today.plusDays(2))
+                period = FiniteDateRange(today.minusDays(1), today.plusDays(2)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -849,7 +863,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId2 to null),
                 title = "Group event",
                 description = "ge",
-                period = FiniteDateRange(today.minusDays(1), today.plusDays(2))
+                period = FiniteDateRange(today.minusDays(1), today.plusDays(2)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -874,7 +889,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = null,
                 title = "Unit-wide event in another unit",
                 description = "uw",
-                period = FiniteDateRange(today.minusDays(1), today.plusDays(2))
+                period = FiniteDateRange(today.minusDays(1), today.plusDays(2)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -899,7 +915,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to null),
                 title = "Group event",
                 description = "ge",
-                period = FiniteDateRange(placementStart.minusDays(10), placementStart.minusDays(8))
+                period = FiniteDateRange(placementStart.minusDays(10), placementStart.minusDays(8)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -909,7 +926,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = null,
                 title = "Unit-wide event",
                 description = "uw",
-                period = FiniteDateRange(placementStart.minusDays(20), placementStart.minusDays(20))
+                period =
+                    FiniteDateRange(placementStart.minusDays(20), placementStart.minusDays(20)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
@@ -966,7 +985,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to null),
                 title = "Group event (unit 1)",
                 description = "u1_g",
-                period = FiniteDateRange(placementStart, placementStart.plusDays(30))
+                period = FiniteDateRange(placementStart, placementStart.plusDays(30)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -976,7 +996,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = null,
                 title = "Unit event (unit 2)",
                 description = "u1_u",
-                period = FiniteDateRange(placementStart, placementStart.plusDays(30))
+                period = FiniteDateRange(placementStart, placementStart.plusDays(30)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
@@ -1034,7 +1055,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.deletePlacement(dbInstance(), admin, clock, placementId)
@@ -1064,7 +1086,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.updatePlacementById(
@@ -1100,7 +1123,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.updatePlacementById(
@@ -1136,7 +1160,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.deleteGroupPlacement(dbInstance(), admin, clock, groupPlacementId)
@@ -1166,7 +1191,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
@@ -1202,7 +1228,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
@@ -1234,7 +1261,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1274,7 +1302,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1310,7 +1339,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1357,7 +1387,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1415,7 +1446,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(unit2GroupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.updateBackupCare(
@@ -1462,7 +1494,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(unit2GroupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.updateBackupCare(
@@ -1509,7 +1542,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(unit2GroupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.deleteBackupCare(
@@ -1544,7 +1578,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementControllerCitizen.postPlacementTermination(
@@ -1585,7 +1620,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_1.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
 
         assertThrows<BadRequest> {
@@ -1612,7 +1648,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = mapOf(groupId to setOf(testChild_3.id)),
                 title = "Child-specific event",
                 description = "cse",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(4))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
 
         assertThrows<BadRequest> {
@@ -1641,7 +1678,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = null,
                 title = "Unit-wide event",
                 description = "uwe",
-                period = FiniteDateRange(today.plusDays(3), today.plusDays(3))
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DAYCARE_EVENT
             )
         calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -1667,7 +1705,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 tree = null,
                 title = "Unit-wide event",
                 description = "uwe",
-                period = FiniteDateRange(today, today.plusDays(3))
+                period = FiniteDateRange(today, today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY
             )
         val newEventData = createCalendarEvent(form = form, clock = tickingClock)
 
@@ -1677,8 +1716,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Updated title",
                 description = form.description,
-                tree = form.tree,
-                period = form.period
+                tree = form.tree
             )
 
         val modifiedEventData =
@@ -1700,8 +1738,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val eventTimeForm =
             CalendarEventTimeForm(
                 date = today.plusDays(1),
-                startTime = LocalTime.of(9, 0),
-                endTime = LocalTime.of(9, 30)
+                timeRange = TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 30))
             )
 
         val eventTimeId =
@@ -1715,13 +1752,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertThat(updatedEventData.contentModifiedAt < timeAddedEventData.contentModifiedAt)
         tickingClock.tick()
 
-        val reservationForm =
-            CalendarEventTimeReservationForm(
+        val citizenReservationForm =
+            CalendarEventTimeCitizenReservationForm(
                 calendarEventTimeId = eventTimeId,
                 childId = testChild_1.id
             )
 
-        addEventTimeReservationAsCitizen(form = reservationForm, clock = tickingClock)
+        addEventTimeReservationAsCitizen(form = citizenReservationForm, clock = tickingClock)
         val citizenReservedEventData = readCalendarEvent(newEventData.id)
 
         assertEquals(
@@ -1743,7 +1780,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         tickingClock.tick()
 
-        setCalendarEventTimeReservationAsEmployee(clock = tickingClock, form = reservationForm)
+        val employeeReservationForm =
+            CalendarEventTimeEmployeeReservationForm(
+                calendarEventTimeId = eventTimeId,
+                childId = testChild_1.id
+            )
+
+        setCalendarEventTimeReservationAsEmployee(
+            clock = tickingClock,
+            form = employeeReservationForm
+        )
         val employeeReservedEventData = readCalendarEvent(newEventData.id)
 
         assertEquals(
@@ -1836,7 +1882,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     ) = calendarEventController.deleteCalendarEventTime(dbInstance(), user, clock, eventTimeId)
 
     private fun addEventTimeReservationAsCitizen(
-        form: CalendarEventTimeReservationForm,
+        form: CalendarEventTimeCitizenReservationForm,
         user: AuthenticatedUser.Citizen = guardian,
         clock: EvakaClock = this.clock
     ) = calendarEventController.addCalendarEventTimeReservation(dbInstance(), user, clock, form)
@@ -1858,6 +1904,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun setCalendarEventTimeReservationAsEmployee(
         user: AuthenticatedUser.Employee = admin,
         clock: EvakaClock = this.clock,
-        form: CalendarEventTimeReservationForm
+        form: CalendarEventTimeEmployeeReservationForm
     ) = calendarEventController.setCalendarEventTimeReservation(dbInstance(), user, clock, form)
 }

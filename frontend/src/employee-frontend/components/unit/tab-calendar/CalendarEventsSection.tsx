@@ -648,6 +648,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
             description: form.description,
             period: form.period,
             tree: getFormTree(form.attendees),
+            eventType: 'DAYCARE_EVENT',
             times: []
           }
         })

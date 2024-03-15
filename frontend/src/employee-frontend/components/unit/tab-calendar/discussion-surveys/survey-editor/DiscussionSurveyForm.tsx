@@ -9,7 +9,10 @@ import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { BoundForm, useFormFields } from 'lib-common/form/hooks'
-import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import {
+  CalendarEvent,
+  CalendarEventType
+} from 'lib-common/generated/api-types/calendarevent'
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -272,13 +275,15 @@ export default React.memo(function DiscussionSurveyForm({
             onClick={() => {
               const values = form.value()
               const attendeeValue = attendees.value()
+              const eventType: CalendarEventType = 'DISCUSSION_SURVEY'
               const baseFormValues = {
                 ...values,
                 unitId,
                 period: getPeriodFromDatesOrToday(
                   values.times.map((t) => t.date)
                 ),
-                tree: getTreeSelectionAsRecord(attendeeValue)
+                tree: getTreeSelectionAsRecord(attendeeValue),
+                eventType
               }
 
               return isFullyValid

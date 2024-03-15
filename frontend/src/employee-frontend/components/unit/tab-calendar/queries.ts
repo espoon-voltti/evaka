@@ -8,8 +8,8 @@ import {
   deleteCalendarEvent,
   deleteCalendarEventTime,
   getCalendarEvent,
-  getGroupCalendarEventsWithTimes,
   getGroupDiscussionReservationDays,
+  getGroupDiscussionSurveys,
   setCalendarEventTimeReservation,
   updateCalendarEvent
 } from 'employee-frontend/generated/api-clients/calendarevent'
@@ -34,7 +34,7 @@ export const queryKeys = createQueryKeys('calendarEvent', {
 })
 
 export const groupDiscussionSurveysQuery = query({
-  api: getGroupCalendarEventsWithTimes,
+  api: getGroupDiscussionSurveys,
   queryKey: ({ groupId }) => queryKeys.groupDiscussionSurveys(groupId)
 })
 

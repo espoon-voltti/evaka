@@ -499,8 +499,8 @@ export const TimesDay = React.memo(function TimesDay({
     [eventTimes, day.date]
   )
 
-  const [otherEvents, otherSurveys] = useMemo(
-    () => partition(day.events, (ce) => ce.times.length === 0),
+  const [otherSurveys, otherEvents] = useMemo(
+    () => partition(day.events, (ce) => ce.eventType === 'DISCUSSION_SURVEY'),
     [day.events]
   )
 
@@ -617,9 +617,9 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
     return sortedTimesToday
   }, [eventData.times, day.date])
 
-  const [otherEvents, otherSurveys] = useMemo(() => {
-    const otherEvents = day.events.filter((e) => e.id !== eventData.id)
-    return partition(otherEvents, (ce) => ce.times.length === 0)
+  const [otherSurveys, otherEvents] = useMemo(() => {
+    const restOfEvents = day.events.filter((e) => e.id !== eventData.id)
+    return partition(restOfEvents, (ce) => ce.eventType === 'DISCUSSION_SURVEY')
   }, [day.events, eventData.id])
 
   const createNewTime = useCallback(
