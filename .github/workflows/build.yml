@@ -178,7 +178,7 @@ jobs:
           path: frontend/node_modules
           key: fortawesome-${{ hashFiles('frontend/setup-pro-icons.sh') }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
         with:
           node-version: 18
