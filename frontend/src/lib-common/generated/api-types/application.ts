@@ -86,9 +86,6 @@ export type ApplicationDateType =
 * Generated from fi.espoo.evaka.application.ApplicationDecisions
 */
 export interface ApplicationDecisions {
-  applicationId: UUID
-  childId: UUID
-  childName: string
   decisions: DecisionSummary[]
 }
 
@@ -467,6 +464,8 @@ export interface DecisionDraftGroup {
 * Generated from fi.espoo.evaka.application.DecisionSummary
 */
 export interface DecisionSummary {
+  applicationId: UUID
+  childId: UUID
   id: UUID
   resolved: LocalDate | null
   sentDate: LocalDate
