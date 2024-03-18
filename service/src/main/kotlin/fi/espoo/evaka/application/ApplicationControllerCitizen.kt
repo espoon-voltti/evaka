@@ -416,7 +416,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<ApplicationDecisions> {
+    ): ApplicationDecisions {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -426,10 +426,15 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Person.READ_DECISIONS,
                         user.id
                     )
-                    it.getOwnDecisions(user.id)
+                    ApplicationDecisions(decisions = it.getOwnDecisions(user.id))
                 }
             }
-            .also { Audit.DecisionRead.log(targetId = user.id, meta = mapOf("count" to it.size)) }
+            .also {
+                Audit.DecisionRead.log(
+                    targetId = user.id,
+                    meta = mapOf("count" to it.decisions.size)
+                )
+            }
     }
 
     data class DecisionWithValidStartDatePeriod(
@@ -720,14 +725,13 @@ data class ApplicationsOfChild(
 data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType)
 
 data class ApplicationDecisions(
-    val applicationId: ApplicationId,
-    val childId: ChildId,
-    val childName: String,
-    val decisions: List<DecisionSummary>
+    val decisions: List<DecisionSummary>,
 )
 
 data class DecisionSummary(
     val id: DecisionId,
+    val childId: ChildId,
+    val applicationId: ApplicationId,
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,

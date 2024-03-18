@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.decision
 
-import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.shared.ApplicationId
@@ -170,7 +169,6 @@ fun Database.Read.getDecisionsByGuardian(
 data class ApplicationDecisionRow(
     val applicationId: ApplicationId,
     val childId: ChildId,
-    val childName: String,
     val id: DecisionId,
     val type: DecisionType,
     val status: DecisionStatus,
@@ -178,14 +176,13 @@ data class ApplicationDecisionRow(
     val resolved: LocalDate?
 )
 
-fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisions> {
-    // language=sql
-    val sql =
-        """
+fun Database.Read.getOwnDecisions(guardianId: PersonId): List<DecisionSummary> =
+    createQuery {
+            sql(
+                """
         SELECT
             d.application_id,
             p.id AS child_id,
-            p.first_name || ' ' || p.last_name AS child_name,
             d.id,
             d.type,
             d.status,
@@ -194,33 +191,18 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
         FROM decision d
         JOIN application a ON d.application_id = a.id
         JOIN person p ON a.child_id = p.id
-        WHERE a.guardian_id = :guardianId
+        WHERE a.guardian_id = ${bind(guardianId)}
         AND NOT EXISTS (
             SELECT 1 FROM guardian_blocklist b
             WHERE b.child_id = a.child_id
-            AND b.guardian_id = :guardianId
+            AND b.guardian_id = ${bind(guardianId)}
         )
         AND d.sent_date IS NOT NULL
         AND a.status != 'WAITING_MAILING'::application_status_type
         """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    val rows = createQuery(sql).bind("guardianId", guardianId).toList<ApplicationDecisionRow>()
-
-    return rows
-        .groupBy { it.applicationId }
-        .map { (applicationId, decisions) ->
-            ApplicationDecisions(
-                applicationId,
-                decisions.first().childId,
-                decisions.first().childName,
-                decisions.map {
-                    DecisionSummary(it.id, it.type, it.status, it.sentDate, it.resolved)
-                }
             )
         }
-}
+        .toList()
 
 fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> {
     // language=sql

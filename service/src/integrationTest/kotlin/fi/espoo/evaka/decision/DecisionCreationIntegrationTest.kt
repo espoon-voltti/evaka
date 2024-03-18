@@ -353,23 +353,19 @@ WHERE id = :unitId
             applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
         assertEquals(
             citizenDecisions,
-            listOf(
-                ApplicationDecisions(
-                    applicationId = applicationId,
-                    childId = testChild_6.id,
-                    childName =
-                        "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula",
-                    decisions =
-                        listOf(
-                            DecisionSummary(
-                                id = createdDecisions[0].id,
-                                type = DecisionType.DAYCARE,
-                                status = DecisionStatus.PENDING,
-                                sentDate = LocalDate.now(),
-                                resolved = null
-                            )
+            ApplicationDecisions(
+                decisions =
+                    listOf(
+                        DecisionSummary(
+                            id = createdDecisions[0].id,
+                            applicationId = applicationId,
+                            childId = testChild_6.id,
+                            type = DecisionType.DAYCARE,
+                            status = DecisionStatus.PENDING,
+                            sentDate = LocalDate.now(),
+                            resolved = null
                         )
-                )
+                    )
             )
         )
     }
@@ -408,7 +404,7 @@ WHERE id = :unitId
 
         val citizenDecisions =
             applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
-        assertEquals(0, citizenDecisions.size)
+        assertEquals(ApplicationDecisions(decisions = emptyList()), citizenDecisions)
     }
 
     private fun checkDecisionDrafts(

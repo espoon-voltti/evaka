@@ -75,10 +75,8 @@ export default React.memo(function Decisions() {
     () =>
       applicationDecisions
         .map(
-          (decisions) =>
-            decisions.flatMap(({ decisions }) =>
-              decisions.filter(applicationDecisionIsUnread)
-            ).length
+          ({ decisions }) =>
+            decisions.filter(applicationDecisionIsUnread).length
         )
         .getOrElse(0),
     [applicationDecisions]
@@ -110,14 +108,9 @@ export default React.memo(function Decisions() {
             .map((child) => {
               const childDecisions = sortBy(
                 [
-                  ...applicationDecisions
-                    .filter(({ childId }) => child.id === childId)
-                    .flatMap(({ applicationId, decisions }) =>
-                      decisions.map((decision) => ({
-                        ...decision,
-                        applicationId
-                      }))
-                    ),
+                  ...applicationDecisions.decisions.filter(
+                    ({ childId }) => child.id === childId
+                  ),
                   ...assistanceDecisions.filter(
                     ({ childId }) => child.id === childId
                   ),

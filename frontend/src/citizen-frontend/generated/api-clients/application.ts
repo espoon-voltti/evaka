@@ -159,12 +159,12 @@ export async function getChildPlacementStatusByApplicationType(
 /**
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getDecisions
 */
-export async function getDecisions(): Promise<ApplicationDecisions[]> {
-  const { data: json } = await client.request<JsonOf<ApplicationDecisions[]>>({
+export async function getDecisions(): Promise<ApplicationDecisions> {
+  const { data: json } = await client.request<JsonOf<ApplicationDecisions>>({
     url: uri`/citizen/decisions`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonApplicationDecisions(e))
+  return deserializeJsonApplicationDecisions(json)
 }
 
 
