@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -22,7 +23,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -47,7 +47,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class PlacementController(
-    private val acl: AccessControlList,
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     featureConfig: FeatureConfig
@@ -69,11 +68,11 @@ class PlacementController(
         endDate: LocalDate? = null
     ): PlacementResponse {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     when {
                         daycareId != null ->
                             accessControl.requirePermissionFor(
-                                it,
+                                tx,
                                 user,
                                 clock,
                                 Action.Unit.READ_PLACEMENT,
@@ -81,7 +80,7 @@ class PlacementController(
                             )
                         childId != null ->
                             accessControl.requirePermissionFor(
-                                it,
+                                tx,
                                 user,
                                 clock,
                                 Action.Child.READ_PLACEMENT,
@@ -90,16 +89,23 @@ class PlacementController(
                         else -> throw BadRequest("daycareId or childId is required")
                     }
 
-                    val auth = acl.getAuthorizedUnits(user)
-                    val authorizedDaycares = auth.ids ?: emptySet()
+                    val authorizedDaycares =
+                        tx.getDaycares(
+                                accessControl.requireAuthorizationFilter(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Unit.READ
+                                )
+                            )
+                            .asSequence()
+                            .map { it.id }
+                            .toSet()
 
-                    it.getDetailedDaycarePlacements(daycareId, childId, startDate, endDate)
+                    tx.getDetailedDaycarePlacements(daycareId, childId, startDate, endDate)
                         .map { placement ->
                             // TODO: is some info only hidden on frontend?
-                            if (
-                                auth !is AclAuthorization.All &&
-                                    !authorizedDaycares.contains(placement.daycare.id)
-                            ) {
+                            if (!authorizedDaycares.contains(placement.daycare.id)) {
                                 placement.copy(isRestrictedFromUser = true)
                             } else {
                                 placement
@@ -116,14 +122,14 @@ class PlacementController(
                                 placements = placements,
                                 permittedPlacementActions =
                                     accessControl.getPermittedActions(
-                                        it,
+                                        tx,
                                         user,
                                         clock,
                                         placementIds
                                     ),
                                 permittedServiceNeedActions =
                                     accessControl.getPermittedActions(
-                                        it,
+                                        tx,
                                         user,
                                         clock,
                                         serviceNeedIds
@@ -295,7 +301,19 @@ class PlacementController(
                     Action.Placement.UPDATE,
                     placementId
                 )
-                val aclAuth = acl.getAuthorizedUnits(user)
+                val authorizedDaycares =
+                    tx.getDaycares(
+                            accessControl.requireAuthorizationFilter(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ
+                            )
+                        )
+                        .asSequence()
+                        .map { it.id }
+                        .toSet()
+                val aclAuth = AclAuthorization.Subset(ids = authorizedDaycares)
                 val oldPlacement =
                     tx.updatePlacement(
                         placementId,
