@@ -62,6 +62,14 @@ COPY ./theme/ /work/
 
 RUN npm run build
 
+
+FROM registry.access.redhat.com/ubi9 AS curl
+
+RUN mkdir -p /mnt/rootfs
+RUN dnf install --installroot /mnt/rootfs curl --releasever 9 --setopt install_weak_deps=false --nodocs -y \
+ && dnf --installroot /mnt/rootfs clean all \
+ && rpm --root /mnt/rootfs -e --nodeps setup
+
 ## KeyCloak container ##
 
 FROM base
@@ -75,6 +83,8 @@ ADD --chmod=0644 \
     --checksum=sha256:424a3e03a17df0a2bc2b3ca749d81b04e79d59cb7aeec8876a5a3f308d0caf51 \
     https://raw.githubusercontent.com/danielmiessler/SecLists/2023.1/Passwords/xato-net-10-million-passwords-1000000.txt \
     /opt/keycloak/data/password-blacklists/default.txt
+
+COPY --from=curl /mnt/rootfs /
 
 COPY --from=builder-theme /work/evaka /opt/keycloak/themes/evaka
 COPY --from=builder-authenticator /project/target/evaka-review-profile.jar \
