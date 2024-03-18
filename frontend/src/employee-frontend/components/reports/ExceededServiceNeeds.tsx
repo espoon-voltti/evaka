@@ -139,7 +139,8 @@ const Report = React.memo(function Report({
                       true
                     ),
                     row.serviceNeedHoursPerMonth,
-                    row.usedServiceHours
+                    row.usedServiceHours,
+                    row.excessHours
                   ])
                 ]}
                 filename={() => {
