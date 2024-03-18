@@ -12,13 +12,16 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
+import fi.espoo.evaka.document.CheckboxGroupQuestionOption
 import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
+import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.document.childdocument.AnsweredQuestion
+import fi.espoo.evaka.document.childdocument.CheckboxGroupAnswerContent
 import fi.espoo.evaka.document.childdocument.ChildBasics
 import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
 import fi.espoo.evaka.document.childdocument.DocumentContent
@@ -197,7 +200,45 @@ class PdfGeneratorTest {
                                     "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
                         ),
                         AnsweredQuestion.CheckboxAnswer(questionId = "s2q1", answer = true),
-                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q2", answer = false)
+                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q2", answer = false),
+                        AnsweredQuestion.StaticTextDisplayAnswer(
+                            questionId = "s2q3",
+                            answer = null
+                        ),
+                        AnsweredQuestion.CheckboxGroupAnswer(
+                            questionId = "s2q4",
+                            answer =
+                                listOf(
+                                    CheckboxGroupAnswerContent(optionId = "2"),
+                                    CheckboxGroupAnswerContent(optionId = "3", "Lohikäärme")
+                                )
+                        ),
+                        AnsweredQuestion.RadioButtonGroupAnswer(questionId = "s2q6", answer = "2"),
+                        AnsweredQuestion.DateAnswer(
+                            questionId = "s3q1",
+                            answer = LocalDate.of(2023, 5, 20)
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            questionId = "s3q2",
+                            answer =
+                                listOf(
+                                    listOf(
+                                        "Roope",
+                                        "Ankka",
+                                        "Triljonääri",
+                                        "roope.ankka@ankkalinna.fi",
+                                        "+358 99 765 4321"
+                                    )
+                                )
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            questionId = "s3q3",
+                            answer =
+                                listOf(
+                                    listOf("Aku Kalevi Uolevi", "Ankka", "Isä"),
+                                    listOf("Hilda", "Hanhivaara", "Ilkeä äitipuoli")
+                                )
+                        )
                     )
             )
         val document =
@@ -208,18 +249,19 @@ class PdfGeneratorTest {
                 child =
                     ChildBasics(
                         id = PersonId(UUID.randomUUID()),
-                        firstName = "Tessa",
-                        lastName = "Testaaja",
+                        firstName = "Tessa Tiina-Tellervo",
+                        lastName = "Testaaja-Meikäläinen",
                         dateOfBirth = LocalDate.now().minusYears(4)
                     ),
                 template =
                     DocumentTemplate(
                         id = DocumentTemplateId(UUID.randomUUID()),
                         type = DocumentType.HOJKS,
-                        name = "Testi-HOJKS",
+                        name = "Varhaiskasvatussuunnitelma 2023-2024",
                         language = DocumentLanguage.FI,
                         confidential = true,
-                        legalBasis = "$3 varhaiskasvatuslaki",
+                        legalBasis =
+                            "§3.2b varhaiskasvatuslaki, varhaiskasvatuslautakunnan päätös ja määräys 11.3.2017",
                         validity =
                             DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(1)),
                         published = true,
@@ -255,6 +297,91 @@ class PdfGeneratorTest {
                                                     Question.CheckboxQuestion(
                                                         id = "s2q2",
                                                         label = "Minulle saa lähettää mainoksia"
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q3",
+                                                        label = "Ylimääräinen väliotsikko"
+                                                    ),
+                                                    Question.CheckboxGroupQuestion(
+                                                        id = "s2q4",
+                                                        label = "Suosikkielämet",
+                                                        options =
+                                                            listOf(
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "1",
+                                                                    label = "Kissa"
+                                                                ),
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "2",
+                                                                    label = "Koira"
+                                                                ),
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "3",
+                                                                    label = "Muu, mikä?",
+                                                                    withText = true
+                                                                )
+                                                            )
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q5",
+                                                        text = "Staattinen tekstikappale."
+                                                    ),
+                                                    Question.RadioButtonGroupQuestion(
+                                                        id = "s2q6",
+                                                        label = "Laskiaispullaan kuuluu?",
+                                                        options =
+                                                            listOf(
+                                                                RadioButtonGroupQuestionOption(
+                                                                    id = "1",
+                                                                    label = "Hillo"
+                                                                ),
+                                                                RadioButtonGroupQuestionOption(
+                                                                    id = "2",
+                                                                    label = "Mantelimassa"
+                                                                )
+                                                            )
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q7",
+                                                        label = "Valitusoikeus",
+                                                        text =
+                                                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus euismod turpis leo. " +
+                                                                "in commodo velit interdum vitae. Vivamus eu felis libero. Aliquam non pellentesque ex. " +
+                                                                "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
+                                                                "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
+                                                                "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
+                                                                "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
+                                                    )
+                                                )
+                                        ),
+                                        Section(
+                                            id = "s3",
+                                            label = "Kolmas osio",
+                                            questions =
+                                                listOf(
+                                                    Question.DateQuestion(
+                                                        id = "s3q1",
+                                                        label = "Keskustelun päivämäärä"
+                                                    ),
+                                                    Question.GroupedTextFieldsQuestion(
+                                                        id = "s3q2",
+                                                        label = "Päätöksen tekijä",
+                                                        fieldLabels =
+                                                            listOf(
+                                                                "Etunimi",
+                                                                "Sukunimi",
+                                                                "Titteli",
+                                                                "Sähköpoti",
+                                                                "Puhelinnumero"
+                                                            ),
+                                                        allowMultipleRows = false
+                                                    ),
+                                                    Question.GroupedTextFieldsQuestion(
+                                                        id = "s3q3",
+                                                        label = "Osallistujat",
+                                                        fieldLabels =
+                                                            listOf("Etunimi", "Sukunimi", "Rooli"),
+                                                        allowMultipleRows = true
                                                     )
                                                 )
                                         )

@@ -39,6 +39,8 @@ sealed class HtmlElement {
 data object HtmlBuilder {
     fun text(text: String) = HtmlElement.Text(text)
 
+    fun multilineText(text: String) = text.split("\n").flatMap { listOf(text(it), br()) }
+
     fun body(children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }) =
         HtmlElement.Tag("body", HtmlBuilder.children())
 
@@ -136,6 +138,30 @@ data object HtmlBuilder {
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
         className: String? = null
     ) = HtmlElement.Tag("span", listOf(HtmlElement.Text(text)), className)
+
+    fun table(
+        className: String? = null,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        children: HtmlBuilder.() -> List<HtmlElement>
+    ) = HtmlElement.Tag("table", HtmlBuilder.children(), className)
+
+    fun td(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("td", listOf(HtmlElement.Text(text)), className)
+
+    fun th(
+        text: String,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        className: String? = null
+    ) = HtmlElement.Tag("th", listOf(HtmlElement.Text(text)), className)
+
+    fun tr(
+        className: String? = null,
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        children: HtmlBuilder.() -> List<HtmlElement>
+    ) = HtmlElement.Tag("tr", HtmlBuilder.children(), className)
 }
 
 class UseNamedArguments private constructor()
