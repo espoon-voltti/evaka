@@ -22,6 +22,7 @@ import fi.espoo.evaka.placement.TerminatablePlacementType
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -31,6 +32,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -82,6 +84,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private final val groupId = GroupId(UUID.randomUUID())
     private final val groupId2 = GroupId(UUID.randomUUID())
+    private final val group1Data =
+        DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = "TestGroup1")
     private final val unit2GroupId = GroupId(UUID.randomUUID())
 
     private lateinit var placementId: PlacementId
@@ -96,11 +100,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
-            tx.insert(
-                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = "TestGroup1")
-            )
+            tx.insert(group1Data)
             tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id))
             tx.insert(DevDaycareGroup(id = unit2GroupId, daycareId = testDaycare2.id))
+            tx.insert(DevHoliday(today.plusDays(3)))
+
             placementId =
                 tx.insertTestPlacement(
                     childId = testChild_1.id,
@@ -1805,6 +1809,196 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             employeeReservedEventData.contentModifiedAt < deletedTimeEventData.contentModifiedAt
         )
     }
+
+    @Test
+    fun `group discussion surveys are returned`() {
+        val daycareEventForm =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to null),
+                title = "This SHOULD NOT be returned",
+                description = "Red herring event that should not be returned",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
+            )
+        this.calendarEventController.createCalendarEvent(
+            dbInstance(),
+            admin,
+            clock,
+            daycareEventForm
+        )
+
+        val groupDiscussionSurveyForm =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to null),
+                title = "This SHOULD BE returned",
+                description = "Discussion survey",
+                period = FiniteDateRange(today.plusDays(1), today.plusDays(1)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times =
+                    listOf(
+                        CalendarEventTimeForm(
+                            date = today.plusDays(1),
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                        )
+                    )
+            )
+        val id =
+            this.calendarEventController.createCalendarEvent(
+                dbInstance(),
+                admin,
+                clock,
+                groupDiscussionSurveyForm
+            )
+        val groupDiscussionSurvey = this.readCalendarEvent(id)
+
+        val otherGroupDiscussionSurveyForm =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId2 to null),
+                title = "This SHOULD NOT BE returned",
+                description = "Discussion survey for another group",
+                period = FiniteDateRange(today.plusDays(1), today.plusDays(1)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times =
+                    listOf(
+                        CalendarEventTimeForm(
+                            today.plusDays(1),
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                        )
+                    )
+            )
+        this.calendarEventController.createCalendarEvent(
+            dbInstance(),
+            admin,
+            clock,
+            otherGroupDiscussionSurveyForm
+        )
+
+        val returnedSurveys = getGroupDiscussionSurveys(unitId = testDaycare.id, groupId = groupId)
+
+        assertEquals(listOf(groupDiscussionSurvey), returnedSurveys)
+    }
+
+    @Test
+    fun `group discussion survey reservation days contain correct events and day information`() {
+
+        val daycareEventForm =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to null),
+                title = "Background event",
+                description = "Daycare event in the background",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
+                eventType = CalendarEventType.DAYCARE_EVENT
+            )
+        val dcEventId =
+            this.calendarEventController.createCalendarEvent(
+                dbInstance(),
+                admin,
+                clock,
+                daycareEventForm
+            )
+
+        val dcEvent = readCalendarEvent(dcEventId)
+
+        val groupDiscussionSurveyForm =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to null),
+                title = "Background survey",
+                description = "Discussion survey in the background",
+                period = FiniteDateRange(today.plusDays(2), today.plusDays(4)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times =
+                    listOf(
+                        CalendarEventTimeForm(
+                            date = today.plusDays(2),
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                        ),
+                        CalendarEventTimeForm(
+                            date = today.plusDays(4),
+                            timeRange = TimeRange(LocalTime.of(14, 0), LocalTime.of(15, 0))
+                        )
+                    )
+            )
+        val discussionSurveyId =
+            this.calendarEventController.createCalendarEvent(
+                dbInstance(),
+                admin,
+                clock,
+                groupDiscussionSurveyForm
+            )
+
+        val discussionSurvey = readCalendarEvent(discussionSurveyId)
+
+        val reservationDays =
+            getDiscussionSurveyReservationDays(
+                unitId = testDaycare.id,
+                groupId = groupId,
+                start = today.plusDays(2),
+                end = today.plusDays(4)
+            )
+
+        assertThat(reservationDays)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .isEqualTo(
+                listOf(
+                    DiscussionReservationDay(
+                        date = today.plusDays(2),
+                        events = setOf(discussionSurvey),
+                        isHoliday = false,
+                        isOperationalDay = true
+                    ),
+                    DiscussionReservationDay(
+                        date = today.plusDays(3),
+                        events = setOf(dcEvent),
+                        isHoliday = true,
+                        isOperationalDay = true
+                    ),
+                    DiscussionReservationDay(
+                        date = today.plusDays(4),
+                        events = setOf(discussionSurvey, dcEvent),
+                        isHoliday = false,
+                        isOperationalDay = true
+                    )
+                )
+            )
+    }
+
+    private fun getDiscussionSurveyReservationDays(
+        user: AuthenticatedUser.Employee = admin,
+        clock: EvakaClock = this.clock,
+        unitId: DaycareId,
+        groupId: GroupId,
+        start: LocalDate,
+        end: LocalDate
+    ): Set<DiscussionReservationDay> =
+        calendarEventController.getGroupDiscussionReservationDays(
+            dbInstance(),
+            user,
+            clock,
+            unitId,
+            groupId,
+            start,
+            end
+        )
+
+    private fun getGroupDiscussionSurveys(
+        user: AuthenticatedUser.Employee = admin,
+        clock: EvakaClock = this.clock,
+        unitId: DaycareId,
+        groupId: GroupId
+    ) =
+        calendarEventController.getGroupDiscussionSurveys(
+            dbInstance(),
+            user,
+            clock,
+            unitId,
+            groupId
+        )
 
     private fun createCalendarEvent(
         form: CalendarEventForm,
