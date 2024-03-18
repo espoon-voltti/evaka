@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
+import org.unbescape.html.HtmlEscape
 
 /** Use http://localhost:9099/api/internal/dev-api/email-content to preview email messages */
 class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvider {
@@ -526,7 +527,7 @@ $unsubscribeEn
                     if (event.period.end != event.period.start) {
                         period += "-${event.period.end.format(format)}"
                     }
-                    "<li>$period: ${event.title}</li>"
+                    "<li>$period: ${HtmlEscape.escapeHtml5(event.title)}</li>"
                 } +
                 "</ul>"
         return EmailContent.fromHtml(
