@@ -87,6 +87,7 @@ class PlacementController(
 
                     val authorizedDaycares =
                         tx.getDaycares(
+                                clock,
                                 accessControl.requireAuthorizationFilter(
                                     tx,
                                     user,
@@ -286,6 +287,7 @@ class PlacementController(
                 )
                 val authorizedDaycares =
                     tx.getDaycares(
+                            clock,
                             accessControl.requireAuthorizationFilter(
                                 tx,
                                 user,

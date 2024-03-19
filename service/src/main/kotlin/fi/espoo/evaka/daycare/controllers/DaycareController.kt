@@ -84,13 +84,13 @@ class DaycareController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam includeClosed: Boolean?
+        @RequestParam includeClosed: Boolean = true
     ): List<Daycare> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
-                    tx.getDaycares(clock, filter, includeClosed ?: true)
+                    tx.getDaycares(clock, filter, includeClosed)
                 }
             }
             .also { Audit.UnitSearch.log(meta = mapOf("count" to it.size)) }

@@ -146,7 +146,7 @@ WHERE ${predicate(predicate.forTable("daycare"))}
 fun Database.Read.getDaycares(
     clock: EvakaClock,
     filter: AccessControlFilter<DaycareId>,
-    includeClosed: Boolean
+    includeClosed: Boolean = true
 ): List<Daycare> {
     val predicate =
         if (includeClosed) Predicate.alwaysTrue()
