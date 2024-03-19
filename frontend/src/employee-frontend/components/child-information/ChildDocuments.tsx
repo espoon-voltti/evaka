@@ -175,7 +175,7 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
           !documents.some(
             ({ data: doc }) =>
               doc.templateId === template.id && doc.status !== 'COMPLETED'
-          )
+          ) && !template.type.startsWith('MIGRATED_')
       )
 
       return (

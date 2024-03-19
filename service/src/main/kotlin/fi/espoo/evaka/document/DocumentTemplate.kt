@@ -106,7 +106,9 @@ data class Section(
 enum class DocumentType(val statuses: List<DocumentStatus>) {
     PEDAGOGICAL_REPORT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     PEDAGOGICAL_ASSESSMENT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
-    HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED))
+    HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
+    MIGRATED_VASU(listOf(DocumentStatus.COMPLETED)),
+    MIGRATED_LEOPS(listOf(DocumentStatus.COMPLETED))
 }
 
 enum class DocumentLanguage {

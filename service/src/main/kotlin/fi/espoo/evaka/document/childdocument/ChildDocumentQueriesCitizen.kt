@@ -4,11 +4,13 @@
 
 package fi.espoo.evaka.document.childdocument
 
+import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.vasu.VASU_MIGRATION_COMPLETED
 
 fun Database.Read.getChildDocumentCitizenSummaries(
     user: AuthenticatedUser.Citizen,
@@ -29,6 +31,10 @@ fun Database.Read.getChildDocumentCitizenSummaries(
             )
         }
         .toList<ChildDocumentCitizenSummary>()
+        .filter {
+            VASU_MIGRATION_COMPLETED ||
+                it.type !in listOf(DocumentType.MIGRATED_VASU, DocumentType.MIGRATED_LEOPS)
+        }
 }
 
 fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {
@@ -61,6 +67,10 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
             )
         }
         .exactlyOneOrNull<ChildDocumentCitizenDetails>()
+        ?.takeIf {
+            VASU_MIGRATION_COMPLETED ||
+                it.template.type !in listOf(DocumentType.MIGRATED_VASU, DocumentType.MIGRATED_LEOPS)
+        }
 }
 
 fun Database.Transaction.markChildDocumentAsRead(

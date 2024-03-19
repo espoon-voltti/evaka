@@ -4243,7 +4243,9 @@ export const fi = {
     documentTypes: {
       PEDAGOGICAL_REPORT: 'Pedagoginen selvitys',
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio',
-      HOJKS: 'HOJKS'
+      HOJKS: 'HOJKS',
+      MIGRATED_VASU: 'Varhaiskasvatussuunnitelma',
+      MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma'
     },
     languages: {
       FI: 'Suomenkielinen',
