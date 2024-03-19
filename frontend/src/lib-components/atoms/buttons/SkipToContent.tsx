@@ -11,7 +11,7 @@ import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
 const SkipToContentLink = styled.a`
   position: absolute;
   z-index: 10000;
-  left: -1000px;
+  left: -10000px;
 
   padding: 12px 24px;
   margin-top: 12px;
