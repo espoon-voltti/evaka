@@ -47,7 +47,7 @@ import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {
   areas: () => ['areas'],
-  units: () => ['units'],
+  units: (arg: Arg0<typeof getDaycares>) => ['units', arg],
   unit: (unitId: UUID) => ['unit', unitId],
   unitNotifications: (unitId: UUID) => ['unitNotifications', unitId],
   unitOccupancies: (unitId: UUID, from: LocalDate, to: LocalDate) => [

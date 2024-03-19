@@ -63,7 +63,7 @@ const PlacementGuaranteeFilters = ({
   setFilters: (filters: PlacementGuaranteeReportFilters) => void
 }) => {
   const { i18n, lang } = useTranslation()
-  const unitsResult = useQueryResult(unitsQuery())
+  const unitsResult = useQueryResult(unitsQuery({ includeClosed: true }))
   const sortedUnits = useMemo(
     () => unitsResult.map((units) => sortBy(units, (unit) => unit.name)),
     [unitsResult]
