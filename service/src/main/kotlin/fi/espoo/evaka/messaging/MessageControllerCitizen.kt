@@ -72,7 +72,7 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable("threadId") threadId: MessageThreadId
+        @PathVariable threadId: MessageThreadId
     ) {
         db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -88,7 +88,7 @@ class MessageControllerCitizen(
     fun archiveThread(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        @PathVariable("threadId") threadId: MessageThreadId
+        @PathVariable threadId: MessageThreadId
     ) {
         db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }

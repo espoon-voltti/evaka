@@ -142,7 +142,7 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(required = false) incomeId: IncomeId?,
+        @PathVariable incomeId: IncomeId?,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         return db.connect { dbc ->
@@ -303,7 +303,7 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
+        @PathVariable incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         return db.connect { dbc ->
@@ -342,7 +342,7 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(required = false) feeAlterationId: FeeAlterationId?,
+        @PathVariable feeAlterationId: FeeAlterationId?,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         return db.connect { dbc ->

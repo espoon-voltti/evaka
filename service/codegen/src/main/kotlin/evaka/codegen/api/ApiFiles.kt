@@ -250,7 +250,7 @@ fun generateApiClient(
     val argumentType =
         TsObjectLiteral(
                 (endpoint.pathVariables + endpoint.requestParameters).associate {
-                    it.name to TsProperty(it.type, isOptional = it.type.isMarkedNullable)
+                    it.name to TsProperty(it.toOptionalType())
                 } + mapOfNotNullValues("body" to endpoint.requestBodyType?.let(::TsProperty))
             )
             .takeIf { it.properties.isNotEmpty() }
@@ -269,9 +269,9 @@ fun generateApiClient(
         if (endpoint.pathVariables.isNotEmpty())
             endpoint.pathVariables.associate {
                 it.name to
-                    generator.serializePathVariable(it.type, TsCode("request.${it.name}")).let {
-                        TsCode { "\${${inline(it)}}" }
-                    }
+                    generator
+                        .serializePathVariable(it.toOptionalType(), TsCode("request.${it.name}"))
+                        .let { TsCode { "\${${inline(it)}}" } }
             }
         else emptyMap()
 
@@ -280,7 +280,7 @@ fun generateApiClient(
             val nameValuePairs =
                 endpoint.requestParameters.map { param ->
                     generator.toRequestParamPairs(
-                        param.type,
+                        param.toOptionalType(),
                         param.name,
                         TsCode("request.${param.name}")
                     )

@@ -202,11 +202,11 @@ export async function getTemplate(
 */
 export async function getTemplates(
   request: {
-    validOnly: boolean
+    validOnly?: boolean | null
   }
 ): Promise<VasuTemplateSummary[]> {
   const params = createUrlSearchParams(
-    ['validOnly', request.validOnly.toString()]
+    ['validOnly', request.validOnly?.toString()]
   )
   const { data: json } = await client.request<JsonOf<VasuTemplateSummary[]>>({
     url: uri`/vasu/templates`.toString(),

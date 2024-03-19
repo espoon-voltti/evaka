@@ -26,7 +26,7 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("viewMode") viewMode: ManualDuplicationReportViewMode?
+        @RequestParam viewMode: ManualDuplicationReportViewMode?
     ): List<ManualDuplicationReportRow> {
         return db.connect { dbc ->
                 dbc.read {

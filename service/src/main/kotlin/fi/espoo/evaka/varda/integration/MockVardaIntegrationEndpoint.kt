@@ -90,7 +90,7 @@ class MockVardaIntegrationEndpoint {
 
     @PutMapping("/v1/toimipaikat/{vardaId}/")
     fun updateUnit(
-        @PathVariable("vardaId") vardaId: Long?,
+        @PathVariable vardaId: Long?,
         @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
     ): String =

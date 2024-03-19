@@ -25,8 +25,7 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("showIntentionalDuplicates", required = false)
-        showIntentionalDuplicates: Boolean?,
+        @RequestParam showIntentionalDuplicates: Boolean?,
     ): List<DuplicatePeopleReportRow> {
         return db.connect { dbc ->
                 dbc.read {

@@ -47,7 +47,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @RequestParam(required = false) groupIds: List<GroupId>?
+        @RequestParam groupIds: List<GroupId>?
     ): List<AttendanceReservationReportRow> {
         if (start.isAfter(end)) throw BadRequest("Inverted time range")
         if (end.isAfter(start.plusMonths(2))) throw BadRequest("Too long time range")
@@ -93,7 +93,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @RequestParam(required = false) groupIds: List<GroupId>?,
+        @RequestParam groupIds: List<GroupId>?,
     ): List<AttendanceReservationReportByChildRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->

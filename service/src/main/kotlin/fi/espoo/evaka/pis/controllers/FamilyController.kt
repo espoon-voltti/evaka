@@ -44,7 +44,7 @@ class FamilyController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: PersonId
+        @PathVariable id: PersonId
     ): FamilyOverview {
         return db.connect { dbc ->
                 dbc.read {
@@ -84,7 +84,7 @@ class FamilyController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam(value = "childId", required = true) childId: ChildId
+        @RequestParam childId: ChildId
     ): List<FamilyContact> {
         return db.connect { dbc ->
                 dbc.read {

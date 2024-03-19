@@ -68,8 +68,8 @@ class LocationController {
     fun getUnits(
         db: Database,
         @RequestParam type: UnitTypeFilter,
-        @RequestParam(required = false) areaIds: List<AreaId>?,
-        @RequestParam(required = false) from: LocalDate?
+        @RequestParam areaIds: List<AreaId>?,
+        @RequestParam from: LocalDate?
     ): List<UnitStub> {
         return db.connect { dbc -> dbc.read { it.getUnits(areaIds, type, from) } }
             .sortedBy { it.name.lowercase() }

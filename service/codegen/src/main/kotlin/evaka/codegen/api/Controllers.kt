@@ -9,10 +9,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
-import kotlin.reflect.full.functions
-import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.valueParameters
+import kotlin.reflect.full.*
 import kotlin.reflect.jvm.javaMethod
 import kotlin.reflect.typeOf
 import org.springframework.context.ApplicationContext
@@ -101,7 +98,21 @@ data class EndpointMetadata(
     }
 }
 
-data class NamedParameter(val name: String, val type: KType)
+data class NamedParameter(val name: String, val type: KType, val isOptional: Boolean) {
+    /**
+     * Returns a type that represents both the nullability and optionality of the parameter type.
+     *
+     * This can be different from the actual parameter type, because a Kotlin method can have a
+     * non-nullable parameter with a default value. In this case `type` would not be marked nullable
+     * but the type returned by `toOptionalType()` would be.
+     */
+    fun toOptionalType() =
+        type.classifier!!.createType(
+            type.arguments,
+            type.isMarkedNullable || isOptional,
+            type.annotations
+        )
+}
 
 private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMetadata> {
     fun KFunction<*>.find(param: MethodParameter): KParameter =
@@ -109,13 +120,16 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
     fun <A : Annotation> KFunction<*>.findAnnotatedParameter(
         annotation: KClass<A>,
         getName: (A) -> String?,
+        isRequired: (A) -> Boolean,
         param: MethodParameter
     ): NamedParameter {
         val kotlinParam = find(param)
-        val name =
-            param.getParameterAnnotation(annotation.java)?.let(getName)?.takeIf { it.isNotBlank() }
-                ?: kotlinParam.name!!
-        return NamedParameter(name = name, type = kotlinParam.type)
+        val paramAnnotation = param.getParameterAnnotation(annotation.java)
+        return NamedParameter(
+            name = paramAnnotation?.let(getName)?.takeIf { it.isNotBlank() } ?: kotlinParam.name!!,
+            type = kotlinParam.type,
+            isOptional = !(paramAnnotation?.let(isRequired) ?: true) || kotlinParam.isOptional
+        )
     }
 
     val pathSupport = PathVariableMethodArgumentResolver()
@@ -134,13 +148,23 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                 method.methodParameters
                     .filter { pathSupport.supportsParameter(it) }
                     .mapNotNull { param ->
-                        kotlinMethod.findAnnotatedParameter(PathVariable::class, { it.name }, param)
+                        kotlinMethod.findAnnotatedParameter(
+                            PathVariable::class,
+                            { it.name },
+                            { it.required },
+                            param
+                        )
                     }
             val requestParameters =
                 method.methodParameters
                     .filter { paramSupport.supportsParameter(it) }
                     .mapNotNull { param ->
-                        kotlinMethod.findAnnotatedParameter(RequestParam::class, { it.name }, param)
+                        kotlinMethod.findAnnotatedParameter(
+                            RequestParam::class,
+                            { it.name },
+                            { it.required },
+                            param
+                        )
                     }
             val requestBodyType =
                 method.methodParameters

@@ -58,14 +58,10 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam(value = "daycareId", required = false) daycareId: DaycareId? = null,
-        @RequestParam(value = "childId", required = false) childId: ChildId? = null,
-        @RequestParam(value = "from", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        startDate: LocalDate? = null,
-        @RequestParam(value = "to", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        endDate: LocalDate? = null
+        @RequestParam daycareId: DaycareId? = null,
+        @RequestParam childId: ChildId? = null,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
     ): PlacementResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -102,7 +98,7 @@ class PlacementController(
                             .map { it.id }
                             .toSet()
 
-                    tx.getDetailedDaycarePlacements(daycareId, childId, startDate, endDate)
+                    tx.getDetailedDaycarePlacements(daycareId, childId, from, to)
                         .map { placement ->
                             // TODO: is some info only hidden on frontend?
                             if (!authorizedDaycares.contains(placement.daycare.id)) {
@@ -142,11 +138,7 @@ class PlacementController(
                 Audit.PlacementSearch.log(
                     targetId = daycareId ?: childId,
                     meta =
-                        mapOf(
-                            "startDate" to startDate,
-                            "endDate" to endDate,
-                            "count" to it.placements.size
-                        )
+                        mapOf("startDate" to from, "endDate" to to, "count" to it.placements.size)
                 )
             }
     }
@@ -156,13 +148,9 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam(value = "daycareId", required = true) daycareId: DaycareId,
-        @RequestParam(value = "from", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        startDate: LocalDate,
-        @RequestParam(value = "to", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        endDate: LocalDate
+        @RequestParam daycareId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<PlacementPlanDetails> {
         return db.connect { dbc ->
                 dbc.read {
@@ -174,18 +162,13 @@ class PlacementController(
                         daycareId
                     )
 
-                    it.getPlacementPlans(
-                        HelsinkiDateTime.now().toLocalDate(),
-                        daycareId,
-                        startDate,
-                        endDate
-                    )
+                    it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, from, to)
                 }
             }
             .also {
                 Audit.PlacementPlanSearch.log(
                     targetId = daycareId,
-                    meta = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
+                    meta = mapOf("startDate" to from, "endDate" to to, "count" to it.size)
                 )
             }
     }
@@ -288,7 +271,7 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("placementId") placementId: PlacementId,
+        @PathVariable placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
     ) {
         val now = clock.now()
@@ -363,7 +346,7 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("placementId") placementId: PlacementId
+        @PathVariable placementId: PlacementId
     ) {
         val now = clock.now()
         db.connect { dbc ->
@@ -424,7 +407,7 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("placementId") placementId: PlacementId,
+        @PathVariable placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
     ): GroupPlacementId {
         return db.connect { dbc ->
@@ -458,7 +441,7 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
+        @PathVariable groupPlacementId: GroupPlacementId
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -480,7 +463,7 @@ class PlacementController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
+        @PathVariable groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody
     ) {
         db.connect { dbc ->

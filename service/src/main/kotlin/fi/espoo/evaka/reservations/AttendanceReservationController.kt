@@ -74,7 +74,7 @@ class AttendanceReservationController(
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam(required = false, defaultValue = "false") includeNonOperationalDays: Boolean
+        @RequestParam includeNonOperationalDays: Boolean = false
     ): UnitAttendanceReservations {
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val period = FiniteDateRange(from, to)

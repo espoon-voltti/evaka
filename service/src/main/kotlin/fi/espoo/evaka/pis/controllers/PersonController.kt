@@ -175,7 +175,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "personId") personId: PersonId
+        @PathVariable personId: PersonId
     ): PersonJSON {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -216,7 +216,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "personId") personId: PersonId
+        @PathVariable personId: PersonId
     ): List<PersonWithChildrenDTO> {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -241,7 +241,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "personId") childId: ChildId
+        @PathVariable personId: ChildId
     ): List<PersonJSON> {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -250,14 +250,14 @@ class PersonController(
                         user,
                         clock,
                         Action.Child.READ_GUARDIANS,
-                        childId
+                        personId
                     )
-                    personService.getGuardians(it, user, childId)
+                    personService.getGuardians(it, user, personId)
                 }
             }
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
-                Audit.PersonGuardianRead.log(targetId = childId, meta = mapOf("count" to it.size))
+                Audit.PersonGuardianRead.log(targetId = personId, meta = mapOf("count" to it.size))
             }
     }
 
@@ -266,7 +266,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "personId") childId: ChildId
+        @PathVariable(value = "personId") personId: ChildId
     ): List<PersonJSON> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -275,15 +275,15 @@ class PersonController(
                         user,
                         clock,
                         Action.Child.READ_BLOCKED_GUARDIANS,
-                        childId
+                        personId
                     )
-                    tx.getBlockedGuardians(childId).mapNotNull { tx.getPersonById(it) }
+                    tx.getBlockedGuardians(personId).mapNotNull { tx.getPersonById(it) }
                 }
             }
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
                 Audit.PersonBlockedGuardiansRead.log(
-                    targetId = childId,
+                    targetId = personId,
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -322,7 +322,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "personId") personId: PersonId,
+        @PathVariable personId: PersonId,
         @RequestBody data: PersonPatch
     ): PersonJSON {
         return db.connect { dbc ->
@@ -409,7 +409,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "personId") personId: PersonId
+        @PathVariable personId: PersonId
     ) {
         db.connect { dbc ->
             dbc.transaction {

@@ -29,8 +29,8 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
     ): List<MissingServiceNeedReportRow> {
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 

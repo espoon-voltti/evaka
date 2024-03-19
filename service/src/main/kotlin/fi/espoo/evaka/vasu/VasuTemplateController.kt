@@ -121,7 +121,7 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam(required = false) validOnly: Boolean = false
+        @RequestParam validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->

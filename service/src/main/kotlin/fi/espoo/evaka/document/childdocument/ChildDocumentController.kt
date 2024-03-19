@@ -77,7 +77,7 @@ class ChildDocumentController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam(required = true) childId: PersonId
+        @RequestParam childId: PersonId
     ): List<ChildDocumentSummaryWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->

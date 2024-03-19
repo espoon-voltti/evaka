@@ -27,7 +27,7 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ServiceNeedReportRow> {
         return db.connect { dbc ->
                 dbc.read {

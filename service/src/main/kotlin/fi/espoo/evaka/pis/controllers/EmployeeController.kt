@@ -92,7 +92,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId
+        @PathVariable id: EmployeeId
     ): Employee {
         return db.connect { dbc ->
                 dbc.read {
@@ -108,7 +108,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId,
+        @PathVariable id: EmployeeId,
         @RequestBody body: List<UserRole>
     ) {
         db.connect { dbc ->
@@ -143,7 +143,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId,
+        @PathVariable id: EmployeeId,
         @RequestBody body: UpsertEmployeeDaycareRolesRequest
     ) {
         db.connect { dbc ->
@@ -170,8 +170,8 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId,
-        @RequestParam(required = false) daycareId: DaycareId?
+        @PathVariable id: EmployeeId,
+        @RequestParam daycareId: DaycareId?
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -194,7 +194,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId
+        @PathVariable id: EmployeeId
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -211,7 +211,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId
+        @PathVariable id: EmployeeId
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -228,7 +228,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId
+        @PathVariable id: EmployeeId
     ): EmployeeWithDaycareRoles {
         return db.connect { dbc ->
                 dbc.read {
@@ -271,7 +271,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "id") id: EmployeeId
+        @PathVariable id: EmployeeId
     ) {
         db.connect { dbc ->
             dbc.transaction {
