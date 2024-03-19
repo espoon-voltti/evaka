@@ -128,7 +128,7 @@ jobs:
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
           build-contexts:
-            customizations=frontend/src/lib-customizations/espoo
+            customizations=frontend/src/lib-customizations/${{ vars.ORGANIZATION || 'defaults' }}
 
       - name: Build frontend image builder
         if: vars.AWS == 'true'
@@ -148,7 +148,7 @@ jobs:
             commit=${{ github.event.pull_request.head.sha || github.sha }}
             ICONS=free
           build-contexts:
-            customizations=frontend/src/lib-customizations/espoo
+            customizations=frontend/src/lib-customizations/${{ vars.ORGANIZATION || 'defaults' }}
 
       - name: Docker cleanup
         if: always()
@@ -219,7 +219,7 @@ jobs:
             ICONS=${{ vars.FONTAWESOME == 'true' && 'pro' || 'free' }}
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           build-contexts:
-            customizations=frontend/src/lib-customizations/espoo
+            customizations=frontend/src/lib-customizations/${{ vars.ORGANIZATION || 'defaults' }}
 
       - name: Docker cleanup
         if: always()
