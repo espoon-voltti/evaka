@@ -730,7 +730,7 @@ export class DayProperties {
     let maxDate: LocalDate | undefined = undefined
 
     calendarDays.forEach((day) => {
-      if (reservableRange.includes(day.date) && day.children.length > 0) {
+      if (reservableRange.includes(day.date)) {
         if (!minDate || day.date.isBefore(minDate)) {
           minDate = day.date
         }
