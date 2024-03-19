@@ -418,15 +418,25 @@ class ApplicationControllerCitizen(
         clock: EvakaClock
     ): ApplicationDecisions {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_DECISIONS,
                         user.id
                     )
-                    ApplicationDecisions(decisions = it.getOwnDecisions(user.id))
+                    val decisions = tx.getOwnDecisions(user.id)
+                    ApplicationDecisions(
+                        decisions = decisions,
+                        permittedActions =
+                            accessControl.getPermittedActions(
+                                tx,
+                                user,
+                                clock,
+                                decisions.map { it.id }
+                            )
+                    )
                 }
             }
             .also {
@@ -439,7 +449,8 @@ class ApplicationControllerCitizen(
 
     data class DecisionWithValidStartDatePeriod(
         val decision: Decision,
-        val validRequestedStartDatePeriod: FiniteDateRange
+        val validRequestedStartDatePeriod: FiniteDateRange,
+        val permittedActions: Set<Action.Citizen.Decision>
     )
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -460,13 +471,25 @@ class ApplicationControllerCitizen(
                     )
                     tx.fetchApplicationDetails(applicationId)
                         ?: throw NotFound("Application not found")
-                    tx.getSentDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
-                        .map {
-                            DecisionWithValidStartDatePeriod(
-                                it,
-                                it.validRequestedStartDatePeriod(featureConfig)
-                            )
-                        }
+                    val decisions =
+                        tx.getSentDecisionsByApplication(
+                            applicationId,
+                            AccessControlFilter.PermitAll
+                        )
+                    val permittedActions =
+                        accessControl.getPermittedActions<DecisionId, Action.Citizen.Decision>(
+                            tx,
+                            user,
+                            clock,
+                            decisions.map { it.id }
+                        )
+                    decisions.map {
+                        DecisionWithValidStartDatePeriod(
+                            it,
+                            it.validRequestedStartDatePeriod(featureConfig),
+                            permittedActions[it.id] ?: emptySet(),
+                        )
+                    }
                 }
             }
             .also {
@@ -726,6 +749,7 @@ data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType
 
 data class ApplicationDecisions(
     val decisions: List<DecisionSummary>,
+    val permittedActions: Map<DecisionId, Set<Action.Citizen.Decision>>,
 )
 
 data class DecisionSummary(

@@ -93,6 +93,7 @@ export default React.memo(function DecisionResponseList() {
                   <React.Fragment key={decision.decision.id}>
                     <DecisionResponse
                       decision={decision.decision}
+                      permittedActions={new Set(decision.permittedActions)}
                       validRequestedStartDatePeriod={
                         decision.validRequestedStartDatePeriod
                       }
