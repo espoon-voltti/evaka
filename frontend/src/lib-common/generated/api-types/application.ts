@@ -87,6 +87,7 @@ export type ApplicationDateType =
 */
 export interface ApplicationDecisions {
   decisions: DecisionSummary[]
+  permittedActions: Record<UUID, Action.Citizen.Decision[]>
 }
 
 /**
@@ -478,6 +479,7 @@ export interface DecisionSummary {
 */
 export interface DecisionWithValidStartDatePeriod {
   decision: Decision
+  permittedActions: Action.Citizen.Decision[]
   validRequestedStartDatePeriod: FiniteDateRange
 }
 

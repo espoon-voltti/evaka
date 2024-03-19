@@ -52,7 +52,8 @@ val generatedFiles =
                 generateNamespace(
                     "Citizen",
                     generateEnum<Action.Citizen.Application>(),
-                    generateEnum<Action.Citizen.Child>()
+                    generateEnum<Action.Citizen.Child>(),
+                    generateEnum<Action.Citizen.Decision>(),
                 ),
             )
         )

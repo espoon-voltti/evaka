@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowsByApplication
@@ -365,7 +366,9 @@ WHERE id = :unitId
                             sentDate = LocalDate.now(),
                             resolved = null
                         )
-                    )
+                    ),
+                permittedActions =
+                    mapOf(createdDecisions[0].id to setOf(Action.Citizen.Decision.DOWNLOAD_PDF))
             )
         )
     }
@@ -404,7 +407,10 @@ WHERE id = :unitId
 
         val citizenDecisions =
             applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
-        assertEquals(ApplicationDecisions(decisions = emptyList()), citizenDecisions)
+        assertEquals(
+            ApplicationDecisions(decisions = emptyList(), permittedActions = emptyMap()),
+            citizenDecisions
+        )
     }
 
     private fun checkDecisionDrafts(

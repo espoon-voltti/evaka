@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import mapValues from 'lodash/mapValues'
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
@@ -130,7 +131,11 @@ export default React.memo(function Decisions() {
                   'applicationId' in decision
                     ? applicationDecisionIsUnread(decision)
                     : decision.isUnread
-                ).length
+                ).length,
+                applicationDecisionPermittedActions: mapValues(
+                  applicationDecisions.permittedActions,
+                  (actions) => new Set(actions)
+                )
               }
             })
             .filter((child) => child.decisions.length > 0)
@@ -206,7 +211,14 @@ export default React.memo(function Decisions() {
                     <Fragment key={decision.id}>
                       <HorizontalLine dashed slim />
                       {'applicationId' in decision ? (
-                        <ApplicationDecision {...decision} />
+                        <ApplicationDecision
+                          {...decision}
+                          permittedActions={
+                            child.applicationDecisionPermittedActions[
+                              decision.id
+                            ] ?? new Set()
+                          }
+                        />
                       ) : 'assistanceLevels' in decision ? (
                         <AssistanceDecision {...decision} />
                       ) : (
