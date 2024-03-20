@@ -5,7 +5,11 @@
 package fi.espoo.evaka.varda.new
 
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.varda.VardaUnitProviderType
+import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 
@@ -156,4 +160,86 @@ data class Varhaiskasvatussuhde(
         toimipaikka_oid == other.toimipaikka_oid &&
             alkamis_pvm == other.alkamis_pvm &&
             paattymis_pvm == other.paattymis_pvm
+}
+
+enum class MaksunPerusteKoodi(val code: String) {
+    FIVE_YEAR_OLDS_DAYCARE("MP02"),
+    DAYCARE("MP03")
+}
+
+data class Maksutieto(
+    val huoltajat: List<VardaClient.Huoltaja>,
+    val alkamis_pvm: LocalDate,
+    val paattymis_pvm: LocalDate?,
+    val perheen_koko: Int?,
+    val maksun_peruste_koodi: String,
+    val asiakasmaksu: BigDecimal,
+    val palveluseteli_arvo: BigDecimal?,
+    val paos_organisaatio_oid: String?
+) : Diffable<VardaClient.MaksutietoResponse> {
+    companion object {
+        fun fromEvaka(guardians: List<PersonDTO>, data: VardaFeeData): Maksutieto? {
+            val huoltajat =
+                guardians
+                    .filter {
+                        it.identity is ExternalIdentifier.SSN &&
+                            (it.id == data.headOfFamilyId || it.id == data.partnerId)
+                    }
+                    .map {
+                        VardaClient.Huoltaja(
+                            henkilotunnus = (it.identity as ExternalIdentifier.SSN).ssn,
+                            henkilo_oid = it.ophPersonOid?.takeIf { oid -> oid.isNotBlank() },
+                            etunimet = it.firstName,
+                            sukunimi = it.lastName,
+                        )
+                    }
+            if (huoltajat.isEmpty()) {
+                return null
+            }
+
+            return Maksutieto(
+                huoltajat = huoltajat,
+                alkamis_pvm = data.validDuring.start,
+                paattymis_pvm = data.validDuring.end,
+                maksun_peruste_koodi =
+                    if (
+                            data.placementType == PlacementType.DAYCARE_FIVE_YEAR_OLDS ||
+                                data.placementType == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+                        ) {
+                            MaksunPerusteKoodi.FIVE_YEAR_OLDS_DAYCARE
+                        } else {
+                            MaksunPerusteKoodi.DAYCARE
+                        }
+                        .code,
+                perheen_koko = data.familySize,
+                asiakasmaksu = BigDecimal(data.totalFee).divide(BigDecimal(100)),
+                palveluseteli_arvo =
+                    data.voucherValue?.let { BigDecimal(it).divide(BigDecimal(100)) },
+                paos_organisaatio_oid = data.voucherUnitOrganizerOid,
+            )
+        }
+    }
+
+    fun toVarda(lahdejarjestelma: String, lapsi: URI) =
+        VardaClient.CreateMaksutietoRequest(
+            lahdejarjestelma = lahdejarjestelma,
+            lapsi = lapsi,
+            huoltajat = huoltajat,
+            alkamis_pvm = alkamis_pvm,
+            paattymis_pvm = paattymis_pvm,
+            maksun_peruste_koodi = maksun_peruste_koodi,
+            palveluseteli_arvo = palveluseteli_arvo,
+            asiakasmaksu = asiakasmaksu,
+            perheen_koko = perheen_koko,
+        )
+
+    override fun diffEq(other: VardaClient.MaksutietoResponse): Boolean =
+        huoltajat.map { it.henkilo_oid }.toSet() ==
+            other.huoltajat.map { it.henkilo_oid }.toSet() &&
+            alkamis_pvm == other.alkamis_pvm &&
+            paattymis_pvm == other.paattymis_pvm &&
+            maksun_peruste_koodi == other.maksun_peruste_koodi &&
+            palveluseteli_arvo == other.palveluseteli_arvo &&
+            asiakasmaksu == other.asiakasmaksu &&
+            perheen_koko == other.perheen_koko
 }

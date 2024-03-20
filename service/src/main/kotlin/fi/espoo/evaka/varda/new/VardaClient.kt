@@ -21,11 +21,15 @@ import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import fi.espoo.evaka.shared.utils.token
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import fi.espoo.voltti.logging.loggers.error
+import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
+
+fun maskHenkilotunnus(henkilotunnus: String?): String? =
+    henkilotunnus?.let { "${it.slice(0..4)}******" }
 
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
@@ -42,14 +46,12 @@ class VardaClient(
     ) {
         init {
             check(henkilotunnus != null || henkilo_oid != null) {
-                "Both params ssn and oid must not be null"
+                "Both params henkilotunnus and henkilo_oid must not be null"
             }
         }
 
-        override fun toString(): String {
-            val henkilotunnusMasked = henkilotunnus?.let { "${it.slice(0..4)}******" }
-            return "VardaPersonSearchRequest(henkilotunnus=$henkilotunnusMasked, henkilo_oid=$henkilo_oid)"
-        }
+        override fun toString(): String =
+            "VardaPersonSearchRequest(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid)"
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -169,6 +171,55 @@ class VardaClient(
 
     fun getVarhaiskasvatussuhteetByLapsi(lapsiUrl: URI): List<VarhaiskasvatussuhdeResponse> =
         getAllPages(lapsiUrl.resolve("varhaiskasvatussuhteet/"))
+
+    data class Huoltaja(
+        @JsonInclude(JsonInclude.Include.NON_NULL) val henkilotunnus: String?,
+        @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String?,
+        val etunimet: String,
+        val sukunimi: String
+    ) {
+        init {
+            check(henkilotunnus != null || henkilo_oid != null) {
+                "Both params henkilotunnus and henkilo_oid must not be null"
+            }
+        }
+
+        override fun toString(): String =
+            "Huoltaja(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid, etunimet=$etunimet, sukunimi=$sukunimi)"
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class CreateMaksutietoRequest(
+        val lahdejarjestelma: String,
+        val huoltajat: List<Huoltaja>,
+        val lapsi: URI,
+        val alkamis_pvm: LocalDate,
+        val paattymis_pvm: LocalDate?,
+        val maksun_peruste_koodi: String,
+        val palveluseteli_arvo: BigDecimal?,
+        val asiakasmaksu: BigDecimal,
+        val perheen_koko: Int?,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class MaksutietoResponse(
+        val url: URI,
+        val lahdejarjestelma: String,
+        val huoltajat: List<Huoltaja>,
+        val lapsi: URI,
+        val alkamis_pvm: LocalDate,
+        val paattymis_pvm: LocalDate?,
+        val maksun_peruste_koodi: String,
+        val palveluseteli_arvo: BigDecimal?,
+        val asiakasmaksu: BigDecimal,
+        val perheen_koko: Int?,
+    )
+
+    fun createMaksutieto(body: CreateMaksutietoRequest): MaksutietoResponse =
+        post(baseUrl.resolve("v1/maksutiedot/"), body)
+
+    fun getMaksutiedotByLapsi(lapsiUrl: URI): List<MaksutietoResponse> =
+        getAllPages(lapsiUrl.resolve("maksutiedot/"))
 
     private inline fun <reified R> get(url: URI): R = request(Method.GET, url)
 
