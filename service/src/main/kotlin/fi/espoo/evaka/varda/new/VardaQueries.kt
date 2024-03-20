@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda.new
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
@@ -39,7 +40,8 @@ data class VardaServiceNeed(
     val shiftCare: Boolean,
     val providerType: ProviderType,
     val ophOrganizerOid: String,
-    val ophUnitOid: String
+    val ophUnitOid: String,
+    val unitInvoicedByMunicipality: Boolean,
 )
 
 fun Database.Read.getVardaServiceNeeds(childId: ChildId, range: DateRange): List<VardaServiceNeed> {
@@ -48,6 +50,7 @@ fun Database.Read.getVardaServiceNeeds(childId: ChildId, range: DateRange): List
                 """
 SELECT
     sn.id,
+    sn.updated AS service_need_updated,
     p.child_id AS child_id,
     daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)} AS range,
     -- The default application date is set to be 15 days before the start because it's the minimum
@@ -64,7 +67,7 @@ SELECT
     d.provider_type,
     d.oph_organizer_oid,
     d.oph_unit_oid,
-    sn.updated AS service_need_updated
+    d.invoiced_by_municipality AS unit_invoiced_by_municipality
 FROM service_need sn
 JOIN service_need_option sno on sn.option_id = sno.id
 JOIN placement p ON p.id = sn.placement_id
@@ -96,6 +99,60 @@ WHERE
         }
         .toList<VardaServiceNeed>()
 }
+
+data class VardaFeeData(
+    val validDuring: DateRange,
+    val headOfFamilyId: PersonId,
+    val partnerId: PersonId?,
+    val placementType: PlacementType?,
+    val familySize: Int,
+    val totalFee: Int,
+    val voucherValue: Int?,
+    val voucherUnitOrganizerOid: String?
+)
+
+fun Database.Read.getVardaFeeData(childId: ChildId, range: FiniteDateRange): List<VardaFeeData> =
+    createQuery {
+            sql(
+                """
+SELECT
+    fd.valid_during * ${bind(range)} AS valid_during,
+    fd.head_of_family_id,
+    fd.partner_id,
+    fdc.placement_type,
+    fd.family_size,
+    fd.total_fee,
+    NULL AS voucher_value,
+    NULL AS voucher_unit_organizer_oid
+FROM fee_decision fd
+JOIN fee_decision_child fdc ON fdc.fee_decision_id = fd.id
+WHERE
+    fd.status = 'SENT' AND
+    fd.valid_during && ${bind(range)} AND
+    fdc.child_id = ${bind(childId)}
+
+UNION ALL
+
+SELECT
+    daterange(vvd.valid_from, vvd.valid_to) * ${bind(range)} AS valid_during,
+    vvd.head_of_family_id,
+    vvd.partner_id,
+    vvd.placement_type,
+    vvd.family_size,
+    vvd.final_co_payment AS total_fee,
+    vvd.voucher_value,
+    u.oph_organizer_oid AS voucher_unit_organizer_oid
+FROM voucher_value_decision vvd
+JOIN daycare u ON u.id = vvd.placement_unit_id
+WHERE
+    vvd.status = 'SENT' AND
+    daterange(vvd.valid_from, vvd.valid_to, '[]') && ${bind(range)} AND
+    vvd.child_id = ${bind(childId)} AND
+    placement_type IS NOT NULL
+"""
+            )
+        }
+        .toList()
 
 data class VardaPerson(
     val firstName: String,

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
+import fi.espoo.evaka.pis.getDependantGuardians
 import fi.espoo.evaka.pis.updateOphPersonOid
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -16,6 +17,7 @@ import fi.espoo.evaka.shared.config.FuelManagerConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import java.net.URI
 import java.time.LocalDate
@@ -29,9 +31,9 @@ class VardaUpdateServiceNew(
     ophEnv: OphEnv,
     vardaEnv: VardaEnv
 ) {
-    // To test Varda QA environment from your local machine:
+    // To test against Varda QA environment from your local machine:
     //
-    // 1. Get the basic auth credentials for your municipality's Varda QA environment
+    // 1. Get your municipality's basic auth credentials for Varda QA environment
     //
     // 2. Set up port forwarding to Varda via a bastion host, e.g.:
     //
@@ -96,6 +98,9 @@ class VardaUpdateServiceNew(
     }
 
     fun updateChild(dbc: Database.Connection, childId: ChildId) {
+        // Varda's validation rules can be deduced from the list of error codes:
+        // https://virkailija.opintopolku.fi/varda/julkinen/koodistot/vardavirheviestit
+
         val person = dbc.read { it.getVardaPerson(childId) }
         if (person.ophPersonOid == null && person.socialSecurityNumber == null) {
             throw IllegalStateException("Child $childId has no ophOid or ssn")
@@ -103,17 +108,50 @@ class VardaUpdateServiceNew(
 
         val serviceNeeds = dbc.read { it.getVardaServiceNeeds(childId, vardaEnabledRange) }
 
+        // Only fee data after 2019-09-01 can be sent to Varda (error code MA019)
+        val vardaFeeDataRange = DateRange(LocalDate.of(2019, 9, 1), null)
+
+        val feeData =
+            if (serviceNeeds.isNotEmpty()) {
+                    // Each maksutieto must be within the range of the start of first
+                    // varhaiskasvatuspaatos and the end of the last varhaiskasvatuspaatos
+                    // (see error codes MA005, MA006, MA007)
+                    val serviceNeedRange =
+                        FiniteDateRange(
+                            serviceNeeds.minOf { it.range.start },
+                            serviceNeeds.maxOf { it.range.end }
+                        )
+                    val feeDataRange =
+                        vardaEnabledRange
+                            .intersection(vardaFeeDataRange)
+                            ?.intersection(serviceNeedRange)
+                    if (feeDataRange != null) {
+                        dbc.read { it.getVardaFeeData(childId, feeDataRange) }
+                    } else {
+                        emptyList()
+                    }
+                } else {
+                    emptyList()
+                }
+                .filter { fee ->
+                    val serviceNeed = serviceNeeds.find { it.range.overlaps(fee.validDuring) }
+                    serviceNeed != null && serviceNeed.unitInvoicedByMunicipality
+                }
+
         val henkilo = getOrCreateHenkilo(person)
         if (person.ophPersonOid == null) {
             dbc.transaction { it.updateOphPersonOid(childId, henkilo.henkilo_oid) }
         }
 
+        val guardians = dbc.read { it.getDependantGuardians(childId) }
+
         val vardaLapset =
             henkilo.lapsi.map { lapsiUrl ->
                 val lapsiResponse = client.getLapsi(lapsiUrl)
-                val paatoksetResponse = client.getVarhaiskasvatuspaatoksetByLapsi(lapsiResponse.url)
+                val maksutiedotResponse = client.getMaksutiedotByLapsi(lapsiUrl)
+                val paatoksetResponse = client.getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl)
                 val varhaiskasvatussuhteetResponse =
-                    client.getVarhaiskasvatussuhteetByLapsi(lapsiResponse.url)
+                    client.getVarhaiskasvatussuhteetByLapsi(lapsiUrl)
 
                 VardaLapsiNode(
                     lapsi = lapsiResponse,
@@ -126,11 +164,14 @@ class VardaUpdateServiceNew(
                                         it.varhaiskasvatuspaatos == paatos.url
                                     }
                             )
-                        }
+                        },
+                    maksutiedot = maksutiedotResponse
                 )
             }
 
         val uniqueEvakaLapset = serviceNeeds.map { Lapsi.fromEvaka(it, omaOrganisaatioOid) }.toSet()
+        val evakaFeeData = feeData.mapNotNull { Maksutieto.fromEvaka(guardians, it) }
+
         val evakaLapset =
             uniqueEvakaLapset.map { lapsi ->
                 EvakaLapsiNode(
@@ -143,6 +184,14 @@ class VardaUpdateServiceNew(
                                 varhaiskasvatussuhteet =
                                     listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                             )
+                        },
+                    maksutiedot =
+                        evakaFeeData.filter {
+                            if (lapsi.paos_organisaatio_oid == null) {
+                                it.paos_organisaatio_oid == null
+                            } else {
+                                it.paos_organisaatio_oid == lapsi.paos_organisaatio_oid
+                            }
                         }
                 )
             }
@@ -151,15 +200,21 @@ class VardaUpdateServiceNew(
         lapsetDiff.removed.forEach { deleteLapsiRecursive(it) }
         lapsetDiff.added.forEach { createLapsiRecursive(it, henkilo.url) }
         lapsetDiff.unchanged.forEach { (vardaLapsi, evakaLapsi) ->
+            val maksutiedotDiff = diff(vardaLapsi.maksutiedot, evakaLapsi.maksutiedot)
             val paatoksetDiff =
                 diff(
                     vardaLapsi.varhaiskasvatuspaatokset,
                     evakaLapsi.varhaiskasvatuspaatokset,
                 )
+
+            maksutiedotDiff.removed.forEach { deleteMaksutieto(it) }
             paatoksetDiff.removed.forEach { deleteVarhaiskasvatuspaatosRecursive(it) }
+
             paatoksetDiff.added.forEach {
                 createVarhaiskasvatuspaatosRecursive(it, vardaLapsi.lapsi.url)
             }
+            maksutiedotDiff.added.forEach { createMaksutieto(it, vardaLapsi.lapsi.url) }
+
             paatoksetDiff.unchanged.forEach { (vardaPaatos, evakaPaatos) ->
                 val suhteetDiff =
                     diff(vardaPaatos.varhaiskasvatussuhteet, evakaPaatos.varhaiskasvatussuhteet)
@@ -284,9 +339,28 @@ class VardaUpdateServiceNew(
         )
     }
 
+    /** Returns true if the maksutieto was deleted */
+    fun deleteMaksutieto(vardaMaksutieto: VardaClient.MaksutietoResponse): Boolean {
+        if (
+            vardaMaksutieto.lahdejarjestelma != lahdejarjestelma ||
+                !vardaEnabledRange.contains(
+                    DateRange(vardaMaksutieto.alkamis_pvm, vardaMaksutieto.paattymis_pvm)
+                )
+        ) {
+            return false
+        }
+        client.delete(vardaMaksutieto.url)
+        return true
+    }
+
+    fun createMaksutieto(vardaMaksutieto: Maksutieto, lapsiUrl: URI) {
+        client.createMaksutieto(vardaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
+    }
+
     data class EvakaLapsiNode(
         val lapsi: Lapsi,
         val varhaiskasvatuspaatokset: List<EvakaVarhaiskasvatuspaatosNode>,
+        val maksutiedot: List<Maksutieto>
     ) : Diffable<VardaLapsiNode> {
         override fun diffEq(other: VardaLapsiNode): Boolean = lapsi.diffEq(other.lapsi)
     }
@@ -302,6 +376,7 @@ class VardaUpdateServiceNew(
     data class VardaLapsiNode(
         val lapsi: VardaClient.LapsiResponse,
         val varhaiskasvatuspaatokset: List<VardaVarhaiskasvatuspaatosNode>,
+        val maksutiedot: List<VardaClient.MaksutietoResponse>
     )
 
     data class VardaVarhaiskasvatuspaatosNode(
