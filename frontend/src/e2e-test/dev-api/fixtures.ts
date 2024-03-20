@@ -53,6 +53,7 @@ import {
   addAclRoleForDaycare,
   addCalendarEvent,
   addCalendarEventAttendee,
+  addCalendarEventTime,
   addDailyServiceTime,
   addDailyServiceTimeNotification,
   addPayment,
@@ -106,6 +107,7 @@ import {
   DevBackupCare,
   DevCalendarEvent,
   DevCalendarEventAttendee,
+  DevCalendarEventTime,
   DevCareArea,
   DevChildAttendance,
   DevChildDocument,
@@ -2079,7 +2081,8 @@ export class Fixture {
         LocalDate.of(2020, 1, 1),
         LocalDate.of(2020, 1, 1)
       ),
-      modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN)
+      modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
+      eventType: 'DAYCARE_EVENT'
     })
   }
 
@@ -2090,6 +2093,19 @@ export class Fixture {
       unitId: '',
       groupId: null,
       childId: null
+    })
+  }
+
+  static calendarEventTime(): CalendarEventTimeBuilder {
+    return new CalendarEventTimeBuilder({
+      id: uuidv4(),
+      date: LocalDate.of(2020, 1, 1),
+      calendarEventId: 'not set',
+      childId: null,
+      modifiedBy: systemInternalUser,
+      modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
+      start: LocalTime.of(8, 0),
+      end: LocalTime.of(8, 30)
     })
   }
 
@@ -2882,6 +2898,17 @@ export class CalendarEventAttendeeBuilder extends FixtureBuilder<DevCalendarEven
 
   copy() {
     return new CalendarEventAttendeeBuilder({ ...this.data })
+  }
+}
+
+export class CalendarEventTimeBuilder extends FixtureBuilder<DevCalendarEventTime> {
+  async save() {
+    await addCalendarEventTime({ body: this.data })
+    return this
+  }
+
+  copy() {
+    return new CalendarEventTimeBuilder({ ...this.data })
   }
 }
 

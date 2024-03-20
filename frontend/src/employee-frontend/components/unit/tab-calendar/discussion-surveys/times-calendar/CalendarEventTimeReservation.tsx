@@ -76,8 +76,9 @@ export default React.memo(function CalendarEventTimeReservation({
       spacing="xs"
       alignItems="flex-start"
       className={reservationChild ? 'reserved' : 'unreserved'}
+      data-qa="reservation-row"
     >
-      <TimeSpan>{`${eventTime.startTime.format()} – ${eventTime.endTime.format()}`}</TimeSpan>
+      <TimeSpan data-qa="event-time-range">{`${eventTime.startTime.format()} – ${eventTime.endTime.format()}`}</TimeSpan>
       <ChildLinkButton
         onClick={() => reserveAction(eventTime)}
         text={
@@ -85,6 +86,7 @@ export default React.memo(function CalendarEventTimeReservation({
             ? `${reservationChild.firstName}  ${reservationChild.lastName}`
             : i18n.unit.calendar.events.discussionReservation.reserveButton
         }
+        data-qa="reserve-event-time-button"
       />
     </ReservationRow>
   )
@@ -194,6 +196,7 @@ export const DiscussionReservationModal = React.memo(
           close={cancelChanges}
           closeLabel={i18n.common.closeModal}
           padding="L"
+          data-qa="reservation-modal"
         >
           <H2
             noMargin
@@ -210,6 +213,7 @@ export const DiscussionReservationModal = React.memo(
                 i18n.unit.calendar.events.discussionReservation.reserveButton
               }
               onClick={() => setViewMode('select')}
+              data-qa="add-reservation-select-button"
             />
           )}
 
@@ -233,6 +237,7 @@ export const DiscussionReservationModal = React.memo(
                   i ? `${i.firstName} ${i.lastName}` : ''
                 }
                 placeholder={t.reservationModal.selectPlaceholder}
+                data-qa="reservee-select"
               />
               <InlineButton
                 text={i18n.common.remove}
@@ -285,7 +290,7 @@ export const DiscussionReservationModal = React.memo(
                     )
                 }
               }}
-              data-qa="delete"
+              data-qa="delete-reservation-button"
               icon={faTrash}
             />
 
@@ -307,7 +312,7 @@ export const DiscussionReservationModal = React.memo(
                 onSuccess={() => onClose(true)}
                 text={i18n.unit.calendar.events.edit.saveChanges}
                 mutation={setCalendarEventTimeReservationMutation}
-                data-qa="save"
+                data-qa="submit-reservation-button"
                 disabled={reservationChild.state.childId === eventTime.childId}
               />
             </FixedSpaceRow>
@@ -351,6 +356,7 @@ export const DiscussionReservationModal = React.memo(
               label: t.reservationModal.deleteConfirmation.continueButton
             }}
             text={t.reservationModal.deleteConfirmation.text}
+            data-qa="delete-confirmation-modal"
           />
         )}
       </>

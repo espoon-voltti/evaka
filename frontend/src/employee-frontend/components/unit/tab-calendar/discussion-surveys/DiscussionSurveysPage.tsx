@@ -7,6 +7,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { isLoading } from 'lib-common/api'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -88,7 +89,10 @@ export default React.memo(function DiscussionReservationSurveysPage() {
           data-qa="create-discussion-survey-button"
         />
         {renderResult(sortedSurveys, (events) => (
-          <SurveyList>
+          <SurveyList
+            data-qa="discussion-survey-list"
+            data-isloading={isLoading(sortedSurveys)}
+          >
             {events.map((e) => (
               <li key={e.id}>
                 <ClickableSurvey onClick={() => navigateToSurvey(e.id)}>

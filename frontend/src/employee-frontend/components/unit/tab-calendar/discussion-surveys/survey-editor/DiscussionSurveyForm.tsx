@@ -186,6 +186,7 @@ export default React.memo(function DiscussionSurveyForm({
               info={info('title')}
               placeholder={t.discussionReservation.surveySubjectPlaceholder}
               maxLength={30}
+              data-qa="survey-title-input"
             />
           </WidthLimiter>
         </SurveyFormFieldGroup>
@@ -199,6 +200,7 @@ export default React.memo(function DiscussionSurveyForm({
               bind={description}
               info={info('description')}
               placeholder={t.discussionReservation.surveySummaryPlaceholder}
+              data-qa="survey-description-input"
             />
           </WidthLimiter>
         </SurveyFormFieldGroup>
@@ -211,7 +213,7 @@ export default React.memo(function DiscussionSurveyForm({
             <TreeDropdown
               tree={attendees.state}
               onChange={attendees.set}
-              data-qa="attendees-select"
+              data-qa="survey-attendees-select"
               placeholder={
                 i18n.unit.calendar.events.create.attendeesPlaceholder
               }
@@ -259,7 +261,7 @@ export default React.memo(function DiscussionSurveyForm({
                   }
                 : cancelMutation
             }}
-            data-qa="save-button"
+            data-qa="survey-editor-submit-button"
           />
         ) : (
           <MutateButton
@@ -295,7 +297,7 @@ export default React.memo(function DiscussionSurveyForm({
                   }
                 : cancelMutation
             }}
-            data-qa="save-button"
+            data-qa="survey-editor-submit-button"
           />
         )}
       </FixedSpaceRow>

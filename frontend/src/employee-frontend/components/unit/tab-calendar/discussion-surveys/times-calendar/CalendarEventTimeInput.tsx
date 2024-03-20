@@ -26,10 +26,25 @@ export default React.memo(function CalendarEventTimeInput({
   const { startTime, endTime } = useFormFields(timeRange)
 
   return (
-    <InputContainer spacing="xxs" alignItems="center" justifyContent="center">
-      <TimeInputF bind={startTime} info={{ text: '' }} size="narrow" />
+    <InputContainer
+      spacing="xxs"
+      alignItems="center"
+      justifyContent="center"
+      data-qa="time-input-container"
+    >
+      <TimeInputF
+        bind={startTime}
+        info={{ text: '' }}
+        size="narrow"
+        data-qa="event-time-start-input"
+      />
       <span>–</span>
-      <TimeInputF bind={endTime} info={{ text: '' }} size="narrow" />
+      <TimeInputF
+        bind={endTime}
+        info={{ text: '' }}
+        size="narrow"
+        data-qa="event-time-end-input"
+      />
     </InputContainer>
   )
 })

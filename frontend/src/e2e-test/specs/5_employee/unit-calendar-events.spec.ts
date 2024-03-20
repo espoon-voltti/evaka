@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -20,6 +21,7 @@ import {
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
+import { DiscussionSurveyReadView } from '../../pages/employee/units/unit-discussion-survey-page'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -39,6 +41,8 @@ const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
 const groupId: UUID = uuidv4()
 const groupId2 = uuidv4()
+const testSurveyId = uuidv4()
+const eventTimeId = uuidv4()
 
 beforeEach(async () => {
   await resetDatabase()
@@ -110,6 +114,33 @@ beforeEach(async () => {
       daycarePlacementId: child2DaycarePlacementId,
       startDate: placementStartDate,
       endDate: placementEndDate
+    })
+    .save()
+
+  await Fixture.calendarEvent()
+    .with({
+      id: testSurveyId,
+      title: 'Survey title',
+      description: 'Survey description',
+      period: new FiniteDateRange(mockedToday, mockedToday),
+      eventType: 'DISCUSSION_SURVEY'
+    })
+    .save()
+
+  await Fixture.calendarEventAttendee()
+    .with({
+      calendarEventId: testSurveyId,
+      unitId: daycare.id,
+      groupId: groupId
+    })
+    .save()
+
+  await Fixture.calendarEventTime()
+    .with({
+      id: eventTimeId,
+      calendarEventId: testSurveyId,
+      date: mockedToday,
+      modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.MIN)
     })
     .save()
 
@@ -197,5 +228,179 @@ describe('Calendar events', () => {
 
     await calendarPage.calendarEventsSection.assertNoEventsForDay(startDate)
     await calendarPage.calendarEventsSection.assertNoEventsForDay(endDate)
+  })
+})
+
+describe('Discussion surveys', () => {
+  test('Employee can see existing discussion survey in survey list', async () => {
+    await calendarPage.weekModeButton.click()
+
+    const surveyPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+
+    await surveyPage.assertDiscussionSurveyInList({
+      id: testSurveyId,
+      title: 'Survey title',
+      status: 'Lähetetty'
+    })
+  })
+
+  test('Employee can delete a survey', async () => {
+    await calendarPage.weekModeButton.click()
+
+    const surveyListPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+    const surveyView = await surveyListPage.openDiscussionSurvey(testSurveyId)
+    await surveyView.waitUntilLoaded()
+    const confirmDeleteModal = await surveyView.deleteSurvey()
+    await confirmDeleteModal.submit()
+
+    await surveyListPage.assertDiscussionSurveyNotInList(testSurveyId)
+  })
+
+  test('Employee can edit a survey', async () => {
+    await calendarPage.weekModeButton.click()
+
+    const surveyListPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+    const surveyView = await surveyListPage.openDiscussionSurvey(testSurveyId)
+    await surveyView.waitUntilLoaded()
+    const surveyEditor = await surveyView.openSurveyEditor()
+    await surveyEditor.waitUntilLoaded()
+    const newTitle = 'Test change for title'
+    const newDescription = 'Test change for description'
+    await surveyEditor.titleInput.fill(newTitle)
+    await surveyEditor.descriptionInput.fill(newDescription)
+    await surveyEditor.submit()
+
+    await surveyView.waitUntilLoaded()
+    await surveyView.assertSurveyTitle(newTitle)
+    await surveyView.assertSurveyDescription(newDescription)
+  })
+
+  test('Employee can add event times for survey', async () => {
+    const testDay = mockedToday.addDays(1)
+    await calendarPage.weekModeButton.click()
+
+    const surveyListPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+    const surveyView = await surveyListPage.openDiscussionSurvey(testSurveyId)
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.addEventTimeForDay(testDay, {
+      startTime: '09:00',
+      endTime: '09:30'
+    })
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.assertEventTimeExists(0, testDay, {
+      startTime: '09:00',
+      endTime: '09:30'
+    })
+
+    await surveyView.addEventTimeForDay(testDay, {
+      startTime: '10:00',
+      endTime: '10:30'
+    })
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.assertEventTimeExists(1, testDay, {
+      startTime: '10:00',
+      endTime: '10:30'
+    })
+  })
+
+  test('Employee can delete event time', async () => {
+    const testDay = mockedToday.addDays(1)
+    await calendarPage.weekModeButton.click()
+
+    const surveyListPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+    const surveyView = await surveyListPage.openDiscussionSurvey(testSurveyId)
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.addEventTimeForDay(testDay, {
+      startTime: '09:00',
+      endTime: '09:30'
+    })
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.assertEventTimeExists(0, testDay, {
+      startTime: '09:00',
+      endTime: '09:30'
+    })
+
+    const reserationModal = await surveyView.openReservationModal(0, testDay)
+    await reserationModal.deleteEventTime()
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.assertNoTimesExist(testDay)
+  })
+
+  test('Employee can reserve a time', async () => {
+    const childName = 'Antero Onni Leevi Aatu Högfors'
+    const testDay = mockedToday.addDays(1)
+    await calendarPage.weekModeButton.click()
+
+    const surveyListPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+    const surveyView = await surveyListPage.openDiscussionSurvey(testSurveyId)
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.addEventTimeForDay(testDay, {
+      startTime: '09:00',
+      endTime: '09:30'
+    })
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.assertEventTimeExists(0, testDay, {
+      startTime: '09:00',
+      endTime: '09:30'
+    })
+
+    const reserationModal = await surveyView.openReservationModal(0, testDay)
+    await reserationModal.reserveEventTimeForChild(childName)
+    await surveyView.waitUntilLoaded()
+
+    await surveyView.assertReservationExists(testDay, 0, childName)
+    await surveyView.assertReservedAttendeeExists(child1Fixture.id)
+  })
+
+  test('Employee can create new survey', async () => {
+    const testDay = mockedToday.addDays(1)
+    await calendarPage.weekModeButton.click()
+
+    const newSurvey = {
+      title: 'New survey title',
+      description: 'New survey description'
+    }
+    const surveyListPage =
+      await calendarPage.calendarEventsSection.openDiscussionSurveyPage()
+    const surveyEditor = await surveyListPage.openNewDiscussionSurveyEditor()
+    await surveyEditor.titleInput.fill(newSurvey.title)
+    await surveyEditor.descriptionInput.fill(newSurvey.description)
+    await surveyEditor.attendeeSelect.open()
+    await surveyEditor.attendeeSelect.option(groupId).uncheck()
+    await waitUntilTrue(() => surveyEditor.submitSurveyButton.disabled)
+    await surveyEditor.attendeeSelect.option(child1Fixture.id).check()
+    await surveyEditor.attendeeSelect.option(child2Fixture.id).uncheck()
+    await surveyEditor.attendeeSelect.close()
+
+    await surveyEditor.addEventTime(testDay, 0, {
+      startTime: '10:00',
+      endTime: '10:20'
+    })
+    await waitUntilFalse(() => surveyEditor.submitSurveyButton.disabled)
+    await surveyEditor.submit()
+
+    const surveyView = new DiscussionSurveyReadView(page)
+    await surveyView.waitUntilLoaded()
+    await surveyView.assertSurveyTitle(newSurvey.title)
+    await surveyView.assertSurveyDescription(newSurvey.description)
+    await surveyView.assertUnreservedAttendeeExists(child1Fixture.id)
+    await surveyView.assertEventTimeExists(0, testDay, {
+      startTime: '10:00',
+      endTime: '10:20'
+    })
   })
 })

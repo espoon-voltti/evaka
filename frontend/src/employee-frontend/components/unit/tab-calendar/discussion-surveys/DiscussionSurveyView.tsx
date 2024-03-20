@@ -154,7 +154,7 @@ const ReservationCalendarSection = React.memo(
     const { i18n } = useTranslation()
 
     return (
-      <TimesCalendarContainer>
+      <TimesCalendarContainer data-qa="reservation-calendar">
         <DiscussionReservationCalendar
           eventData={eventData}
           calendarRange={calendarRange}
@@ -179,6 +179,7 @@ const ReservationCalendarSection = React.memo(
                   i18n.unit.calendar.events.discussionReservation.calendar
                     .addTimeButton
                 }
+                data-qa="expand-horizon-button"
               />
             </FixedSpaceRow>
             <Gap size="m" />
@@ -336,6 +337,7 @@ export default React.memo(function DiscussionReservationSurveyView({
             label: i18n.common.remove
           }}
           text={t.discussionReservation.deleteConfirmation.text}
+          data-qa="deletion-confirm-modal"
         />
       )}
       <Container>
@@ -347,13 +349,13 @@ export default React.memo(function DiscussionReservationSurveyView({
         />
         <ContentArea opaque>
           <FixedSpaceRow alignItems="center" justifyContent="space-between">
-            <H2>{eventData.title}</H2>
+            <H2 data-qa="survey-title">{eventData.title}</H2>
             <FixedSpaceRow alignItems="center" spacing="L">
               <InlineButton
                 icon={faTrash}
                 text={t.discussionReservation.deleteSurveyButton}
                 onClick={() => setDeleteConfirmModalVisible(true)}
-                data-qa={`button-delete-survey-${eventData.id}`}
+                data-qa="survey-delete-button"
               />
               <SurveyStatusChip status={status} />
             </FixedSpaceRow>
@@ -369,6 +371,7 @@ export default React.memo(function DiscussionReservationSurveyView({
               icon={faPen}
               text={t.discussionReservation.editSurveyButton}
               onClick={onEdit}
+              data-qa="survey-edit-button"
             />
           </FixedSpaceRow>
 
@@ -383,7 +386,7 @@ export default React.memo(function DiscussionReservationSurveyView({
                 <Label>{t.discussionReservation.surveySummary}</Label>
               </ExpandingInfo>
               <WidthLimiter>
-                <p>{eventData?.description}</p>
+                <p data-qa="survey-description">{eventData?.description}</p>
               </WidthLimiter>
             </FormFieldGroup>
           </FormSectionGroup>
@@ -423,7 +426,7 @@ export default React.memo(function DiscussionReservationSurveyView({
 
                   <FormSectionGroup>
                     <BorderedBox>
-                      <H3 noMargin>
+                      <H3 noMargin data-qa="survey-reservation-calendar-title">
                         {t.discussionReservation.surveyDiscussionTimesTitle}
                       </H3>
                     </BorderedBox>

@@ -22,6 +22,7 @@ import {
 } from '../../../utils/page'
 
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
+import { DiscussionSurveyListPage } from './unit-discussion-survey-page'
 import { UnitGroupsPage } from './unit-groups-page'
 import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 import { UnitWeekCalendarPage } from './unit-week-calendar-page'
@@ -854,6 +855,11 @@ class PlacementProposalsSection {
 
 export class UnitCalendarEventsSection {
   constructor(private readonly page: Page) {}
+
+  async openDiscussionSurveyPage() {
+    await this.page.findByDataQa('discussion-survey-page-button').click()
+    return new DiscussionSurveyListPage(this.page)
+  }
 
   async openEventCreationModal() {
     await this.page.findByDataQa('create-new-event-btn').click()

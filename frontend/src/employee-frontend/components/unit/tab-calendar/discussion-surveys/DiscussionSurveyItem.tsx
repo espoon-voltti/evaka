@@ -43,15 +43,23 @@ export default React.memo(function DiscussionReservationSurveyListItem({
     ENDED: theme.colors.grayscale.g15
   }
   return (
-    <SurveyItemContainer justifyContent="space-between" alignItems="center">
+    <SurveyItemContainer
+      data-qa={`survey-${eventData.id}`}
+      justifyContent="space-between"
+      alignItems="center"
+    >
       <FixedSpaceRow>
-        <H3>{eventData.title}</H3>
+        <H3 data-qa="survey-title">{eventData.title}</H3>
       </FixedSpaceRow>
       <FixedSpaceRow justifyContent="flex-end" spacing="L" alignItems="center">
-        <ModifiedAtText>
+        <ModifiedAtText data-qa="survey-modified-at">
           {`${t.surveyModifiedAt} ${eventData.contentModifiedAt.toLocalDate().format()}`}
         </ModifiedAtText>
-        <StaticChip fitContent color={statusColor[status]}>
+        <StaticChip
+          data-qa="survey-status"
+          fitContent
+          color={statusColor[status]}
+        >
           {t.surveyStatus[status]}
         </StaticChip>
       </FixedSpaceRow>

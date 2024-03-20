@@ -162,7 +162,7 @@ export default React.memo(function DiscussionTimesForm({
               {t.discussionReservation.surveyDiscussionTimesTitle}
             </H3>
           </BorderedBox>
-          <TimesCalendarContainer>
+          <TimesCalendarContainer data-qa="survey-times-calendar">
             <DiscussionTimesCalendar
               times={times}
               calendarRange={calendarRange}

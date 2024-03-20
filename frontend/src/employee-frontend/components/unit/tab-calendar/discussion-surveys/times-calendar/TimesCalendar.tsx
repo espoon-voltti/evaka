@@ -258,6 +258,7 @@ export const DiscussionReservationCalendar = React.memo(
             }}
             invitees={dailyInvitees}
             eventData={eventData}
+            data-qa="reservation-modal"
           />
         )}
         {calendarMonths.map((m, i) => (
@@ -389,7 +390,7 @@ export const TimesMonth = React.memo(function TimesMonth({
 
   return monthHasCurrentOrFutureDays ? (
     <ContentArea opaque={false} key={`${month}${year}`} paddingHorizontal="2px">
-      <H3>{`${i18n.common.datetime.months[month - 1]} ${year}`}</H3>
+      <H3 data-qa="calendar-month-header">{`${i18n.common.datetime.months[month - 1]} ${year}`}</H3>
       <Grid>
         {weeks.map((w) => (
           <TimesWeek
@@ -509,7 +510,7 @@ export const TimesDay = React.memo(function TimesDay({
   ) : (
     <DayCell
       $today={dateType === 'today'}
-      $holiday={!isOperationDay}
+      $holiday={!isOperationDay && !isWeekend}
       $weekend={isWeekend}
       data-qa={`times-calendar-day-${day.date.formatIso()}`}
     >
@@ -712,7 +713,7 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
           <ButtonContainer>
             <InlineButton
               onClick={createNewTime}
-              data-qa={`${day.date.formatIso()}-add-time-button`}
+              data-qa="add-time-button"
               icon={faPlus}
               text={i18n.common.add}
             />

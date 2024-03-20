@@ -23,14 +23,16 @@ const ReservationCount = styled.span`
 const getChildUrl = (c: { id: string }) => `/child-information/${c.id}`
 
 const ChildNameList = React.memo(function ChildNameList({
-  childList
+  childList,
+  'data-qa': dataQa
 }: {
   childList: ChildBasics[]
+  'data-qa'?: string
 }) {
   return (
-    <p>
+    <p data-qa={dataQa}>
       {childList.map((item, index) => (
-        <span key={item.id}>
+        <span key={item.id} data-qa={`attendee-${item.id}`}>
           <Link to={getChildUrl(item)}>
             {`${item.firstName} ${item.lastName}`}
           </Link>
@@ -55,11 +57,17 @@ export default React.memo(function InviteeSection({
     <FixedSpaceRow spacing="XL" fullWidth justifyContent="space-between">
       <FixedSpaceColumn fullWidth>
         <ReservationCount>{`${t.unreservedTitle} (${unreserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
-        <ChildNameList childList={unreserved.map((u) => u.child)} />
+        <ChildNameList
+          childList={unreserved.map((u) => u.child)}
+          data-qa="unreserved-attendees"
+        />
       </FixedSpaceColumn>
       <FixedSpaceColumn fullWidth>
         <ReservationCount>{`${t.reservedTitle} (${reserved.length}/${unreserved.length + reserved.length})`}</ReservationCount>
-        <ChildNameList childList={reserved.map((r) => r.child)} />
+        <ChildNameList
+          childList={reserved.map((r) => r.child)}
+          data-qa="reserved-attendees"
+        />
       </FixedSpaceColumn>
     </FixedSpaceRow>
   )

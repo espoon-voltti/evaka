@@ -34,10 +34,25 @@ export default React.memo(function NewCalendarEventTimeEditor({
   const { startTime, endTime } = useFormFields(timeRange)
 
   return (
-    <InputContainer spacing="xxs" alignItems="center" justifyContent="center">
-      <TimeInputF bind={startTime} info={{ text: '' }} size="narrow" />
+    <InputContainer
+      spacing="xxs"
+      alignItems="center"
+      justifyContent="center"
+      data-qa="time-input-container"
+    >
+      <TimeInputF
+        bind={startTime}
+        info={{ text: '' }}
+        size="narrow"
+        data-qa="event-time-start-input"
+      />
       <span>–</span>
-      <TimeInputF bind={endTime} info={{ text: '' }} size="narrow" />
+      <TimeInputF
+        bind={endTime}
+        info={{ text: '' }}
+        size="narrow"
+        data-qa="event-time-end-input"
+      />
       <InlineButton
         icon={faCheck}
         disabled={!bind.isValid()}
@@ -45,6 +60,7 @@ export default React.memo(function NewCalendarEventTimeEditor({
         onClick={() => {
           addAction(bind.value())
         }}
+        data-qa="event-time-submit"
       />
       <InlineButton
         icon={faTrash}
@@ -52,6 +68,7 @@ export default React.memo(function NewCalendarEventTimeEditor({
         onClick={() => {
           removeAction(bind.state.id)
         }}
+        data-qa="event-time-delete"
       />
     </InputContainer>
   )

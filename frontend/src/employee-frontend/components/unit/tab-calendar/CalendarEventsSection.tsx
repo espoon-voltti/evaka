@@ -285,6 +285,7 @@ export default React.memo(function CalendarEventsSection({
       <FlexRow justifyContent={groupId ? 'space-between' : 'flex-end'}>
         {featureFlags.discussionReservations && !!groupId && (
           <DiscussionLink
+            data-qa="discussion-survey-page-button"
             to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`}
           >
             {
