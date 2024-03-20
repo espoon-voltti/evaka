@@ -76,9 +76,8 @@ class VardaUpdateServiceNew(
 
     private val vardaEnabledRange =
         DateRange(
-            // PostgreSQL doesn't support LocalDate.MIN, so use an "early enough" date by
-            // default instead
-            vardaEnv.startDate ?: LocalDate.of(2000, 1, 1),
+            // 2019-01-01 was the hard-coded cutoff date of the old Varda integration
+            vardaEnv.startDate ?: LocalDate.of(2019, 1, 1),
             vardaEnv.endDate
         )
 
