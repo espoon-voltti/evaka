@@ -15,6 +15,7 @@ import {
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../../../../../state/i18n'
@@ -33,7 +34,13 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
     name: string
     startDate: LocalDate
     endDate: LocalDate | null
-  }>({ name: group.name, startDate: group.startDate, endDate: group.endDate })
+    jamixCustomerId: string | null
+  }>({
+    name: group.name,
+    startDate: group.startDate,
+    endDate: group.endDate,
+    jamixCustomerId: group.jamixCustomerId
+  })
 
   return (
     <MutateFormModal
@@ -85,6 +92,22 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
             type="full-width"
             data-qa="end-date-input"
           />
+          {featureFlags.jamixIntegration && (
+            <>
+              <Gap size="s" />
+              <div className="bold">
+                {i18n.unit.groups.updateModal.jamixTitle}
+              </div>
+              <InputField
+                value={data.jamixCustomerId ?? ''}
+                onChange={(jamixCustomerId) =>
+                  setData((state) => ({ ...state, jamixCustomerId }))
+                }
+                data-qa="jamix-customer-id-input"
+                placeholder={i18n.unit.groups.updateModal.jamixPlaceholder}
+              />
+            </>
+          )}
         </section>
         <InfoBox message={i18n.unit.groups.updateModal.info} thin />
       </FixedSpaceColumn>

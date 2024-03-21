@@ -39,7 +39,8 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     timeUsageInfo: true,
-    discussionReservations: false
+    discussionReservations: false,
+    jamixIntegration: true
   },
   staging: {
     citizenShiftCareAbsence: true,
@@ -67,7 +68,8 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     timeUsageInfo: true,
-    discussionReservations: false
+    discussionReservations: false,
+    jamixIntegration: true
   },
   prod: {
     citizenShiftCareAbsence: true,

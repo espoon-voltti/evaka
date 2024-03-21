@@ -232,6 +232,10 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Enable discussion reservation surveys
    */
   discussionReservations?: boolean
+  /**
+   * Display Jamix food ordering service related functions
+   */
+  jamixIntegration?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
