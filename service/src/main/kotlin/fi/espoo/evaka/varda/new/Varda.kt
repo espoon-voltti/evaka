@@ -13,24 +13,6 @@ import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 
-fun <Old, New> diff(
-    old: List<Old>,
-    new: List<New>,
-    eq: (Old, New) -> Boolean,
-    onRemoved: (Old) -> Unit = { _ -> },
-    onAdded: (New) -> Unit = { _ -> },
-    onUnchanged: (Old, New) -> Unit = { _, _ -> }
-) {
-    old.filter { oldItem -> new.none { newItem -> eq(oldItem, newItem) } }.forEach(onRemoved)
-    new.filter { newItem -> old.none { oldItem -> eq(oldItem, newItem) } }.forEach(onAdded)
-    old.forEach { oldItem ->
-        val newItem = new.find { eq(oldItem, it) }
-        if (newItem != null) {
-            onUnchanged(oldItem, newItem)
-        }
-    }
-}
-
 data class Lapsi(
     val vakatoimija_oid: String?,
     val oma_organisaatio_oid: String?,
