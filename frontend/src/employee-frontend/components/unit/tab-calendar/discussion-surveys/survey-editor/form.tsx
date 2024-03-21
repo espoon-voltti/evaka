@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import orderBy from 'lodash/orderBy'
 
 import DateRange from 'lib-common/date-range'
