@@ -31,6 +31,8 @@ private val logger = KotlinLogging.logger {}
 fun maskHenkilotunnus(henkilotunnus: String?): String? =
     henkilotunnus?.let { "${it.slice(0..4)}******" }
 
+fun maskName(name: String): String = name.take(2) + "*".repeat(name.length - 2)
+
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
@@ -63,7 +65,18 @@ class VardaClient(
         val henkilo_oid: String,
         val syntyma_pvm: String?,
         val lapsi: List<URI>
-    )
+    ) {
+        override fun toString() =
+            "HenkiloResponse(" +
+                "url=$url, " +
+                "etunimet=${maskName(etunimet)}, " +
+                "sukunimi=${maskName(sukunimi)}, " +
+                "kutsumanimi=${maskName(kutsumanimi)}, " +
+                "henkilo_oid=$henkilo_oid, " +
+                "syntyma_pvm=$syntyma_pvm, " +
+                "lapsi=$lapsi" +
+                ")"
+    }
 
     fun haeHenkilo(body: VardaPersonSearchRequest): HenkiloResponse? =
         post(baseUrl.resolve("v1/hae-henkilo/"), body)
@@ -185,7 +198,12 @@ class VardaClient(
         }
 
         override fun toString(): String =
-            "Huoltaja(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid, etunimet=$etunimet, sukunimi=$sukunimi)"
+            "Huoltaja(" +
+                "henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, " +
+                "henkilo_oid=$henkilo_oid, " +
+                "etunimet=${maskName(etunimet)}, " +
+                "sukunimi=${maskName(sukunimi)}" +
+                ")"
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
