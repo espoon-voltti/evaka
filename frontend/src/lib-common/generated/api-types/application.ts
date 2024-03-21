@@ -86,6 +86,7 @@ export type ApplicationDateType =
 * Generated from fi.espoo.evaka.application.ApplicationDecisions
 */
 export interface ApplicationDecisions {
+  canDecide: UUID[]
   decisions: DecisionSummary[]
   permittedActions: Record<UUID, Action.Citizen.Decision[]>
 }
@@ -478,6 +479,7 @@ export interface DecisionSummary {
 * Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.DecisionWithValidStartDatePeriod
 */
 export interface DecisionWithValidStartDatePeriod {
+  canDecide: boolean
   decision: Decision
   permittedActions: Action.Citizen.Decision[]
   validRequestedStartDatePeriod: FiniteDateRange

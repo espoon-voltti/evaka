@@ -39,6 +39,7 @@ interface Props {
   resolved: LocalDate | null
   status: DecisionStatus
   permittedActions: Set<Action.Citizen.Decision>
+  canDecide: boolean
 }
 
 export default React.memo(function ApplicationDecision({
@@ -48,7 +49,8 @@ export default React.memo(function ApplicationDecision({
   sentDate,
   resolved,
   status,
-  permittedActions
+  permittedActions,
+  canDecide
 }: Props) {
   const t = useTranslation()
   const [open, setOpen] = useState(resolved === null)
@@ -99,16 +101,16 @@ export default React.memo(function ApplicationDecision({
           {t.decisions.applicationDecisions.status[status]}
         </StaticChip>
       </ListGrid>
-      {status === 'PENDING' ? (
-        <ConfirmationDialog applicationId={applicationId} type={type} />
-      ) : (
-        permittedActions.has('DOWNLOAD_PDF') && (
-          <>
-            <Gap size="m" />
-            <PdfLink decisionId={id} />
-          </>
-        )
-      )}
+      {status === 'PENDING'
+        ? canDecide && (
+            <ConfirmationDialog applicationId={applicationId} type={type} />
+          )
+        : permittedActions.has('DOWNLOAD_PDF') && (
+            <>
+              <Gap size="m" />
+              <PdfLink decisionId={id} />
+            </>
+          )}
     </CollapsibleContentArea>
   )
 })

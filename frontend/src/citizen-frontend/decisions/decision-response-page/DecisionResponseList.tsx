@@ -94,6 +94,7 @@ export default React.memo(function DecisionResponseList() {
                     <DecisionResponse
                       decision={decision.decision}
                       permittedActions={new Set(decision.permittedActions)}
+                      canDecide={decision.canDecide}
                       validRequestedStartDatePeriod={
                         decision.validRequestedStartDatePeriod
                       }
