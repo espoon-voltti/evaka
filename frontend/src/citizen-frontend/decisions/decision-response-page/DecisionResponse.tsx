@@ -42,6 +42,7 @@ interface SingleDecisionProps {
   rejectCascade: boolean
   handleReturnToPreviousPage: () => void
   permittedActions: Set<Action.Citizen.Decision>
+  canDecide: boolean
 }
 
 export default React.memo(function DecisionResponse({
@@ -50,7 +51,8 @@ export default React.memo(function DecisionResponse({
   blocked,
   rejectCascade,
   handleReturnToPreviousPage,
-  permittedActions
+  permittedActions,
+  canDecide
 }: SingleDecisionProps) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -178,7 +180,7 @@ export default React.memo(function DecisionResponse({
           {t.decisions.applicationDecisions.status[status]}
         </Status>
       </ListGrid>
-      {decision.status === 'PENDING' && (
+      {decision.status === 'PENDING' && canDecide && (
         <>
           <Gap size="s" />
           <H3 fitted>{t.decisions.applicationDecisions.response.title}</H3>

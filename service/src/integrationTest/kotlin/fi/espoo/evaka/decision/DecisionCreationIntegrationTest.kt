@@ -366,7 +366,8 @@ WHERE id = :unitId
                         )
                     ),
                 permittedActions =
-                    mapOf(createdDecisions[0].id to setOf(Action.Citizen.Decision.DOWNLOAD_PDF))
+                    mapOf(createdDecisions[0].id to setOf(Action.Citizen.Decision.DOWNLOAD_PDF)),
+                canDecide = setOf(applicationId)
             )
         )
     }
@@ -406,7 +407,11 @@ WHERE id = :unitId
         val citizenDecisions =
             applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
         assertEquals(
-            ApplicationDecisions(decisions = emptyList(), permittedActions = emptyMap()),
+            ApplicationDecisions(
+                decisions = emptyList(),
+                permittedActions = emptyMap(),
+                canDecide = emptySet()
+            ),
             citizenDecisions
         )
     }

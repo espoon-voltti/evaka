@@ -135,7 +135,8 @@ export default React.memo(function Decisions() {
                 applicationDecisionPermittedActions: mapValues(
                   applicationDecisions.permittedActions,
                   (actions) => new Set(actions)
-                )
+                ),
+                canDecide: applicationDecisions.canDecide
               }
             })
             .filter((child) => child.decisions.length > 0)
@@ -218,6 +219,9 @@ export default React.memo(function Decisions() {
                               decision.id
                             ] ?? new Set()
                           }
+                          canDecide={child.canDecide.includes(
+                            decision.applicationId
+                          )}
                         />
                       ) : 'assistanceLevels' in decision ? (
                         <AssistanceDecision {...decision} />
