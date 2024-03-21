@@ -275,7 +275,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class VardaUpdateChild(val childId: ChildId) : AsyncJob {
+    data class VardaUpdateChild(val childId: ChildId, val dryRun: Boolean = false) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
