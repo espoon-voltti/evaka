@@ -169,7 +169,12 @@ class VardaUpdateServiceNew(
             }
 
         val uniqueEvakaLapset = serviceNeeds.map { Lapsi.fromEvaka(it, omaOrganisaatioOid) }.toSet()
-        val evakaFeeData = feeData.mapNotNull { Maksutieto.fromEvaka(guardians, it) }
+        val evakaFeeData =
+            feeData
+                .mapNotNull { fee ->
+                    Maksutieto.fromEvaka(guardians, fee)?.let { fee.voucherUnitOrganizerOid to it }
+                }
+                .groupBy({ it.first }, { it.second })
 
         val evakaLapset =
             uniqueEvakaLapset.map { lapsi ->
@@ -184,14 +189,7 @@ class VardaUpdateServiceNew(
                                     listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                             )
                         },
-                    maksutiedot =
-                        evakaFeeData.filter {
-                            if (lapsi.paos_organisaatio_oid == null) {
-                                it.paos_organisaatio_oid == null
-                            } else {
-                                it.paos_organisaatio_oid == lapsi.paos_organisaatio_oid
-                            }
-                        }
+                    maksutiedot = evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
                 )
             }
 
@@ -201,21 +199,25 @@ class VardaUpdateServiceNew(
         diff(
             old = vardaLapset,
             new = evakaLapset,
+            eq = ::lapsiEq,
             onRemoved = { deleteLapsiRecursive(it) },
             onUnchanged = { vardaLapsi, evakaLapsi ->
                 diff(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
+                    eq = ::maksutietoEq,
                     onRemoved = { deleteMaksutieto(it) },
                 )
                 diff(
                     old = vardaLapsi.varhaiskasvatuspaatokset,
                     new = evakaLapsi.varhaiskasvatuspaatokset,
                     onRemoved = { deleteVarhaiskasvatuspaatosRecursive(it) },
+                    eq = ::varhaiskasvatuspaatosEq,
                     onUnchanged = { vardaPaatos, evakaPaatos ->
                         diff(
                             old = vardaPaatos.varhaiskasvatussuhteet,
                             new = evakaPaatos.varhaiskasvatussuhteet,
+                            eq = ::varhaiskasvatussuhdeEq,
                             onRemoved = { deleteVarhaiskasvatussuhde(it) },
                         )
                     }
@@ -226,15 +228,18 @@ class VardaUpdateServiceNew(
             old = vardaLapset,
             new = evakaLapset,
             onAdded = { createLapsiRecursive(it, henkilo.url) },
+            eq = ::lapsiEq,
             onUnchanged = { vardaLapsi, evakaLapsi ->
                 diff(
                     old = vardaLapsi.varhaiskasvatuspaatokset,
                     new = evakaLapsi.varhaiskasvatuspaatokset,
+                    eq = ::varhaiskasvatuspaatosEq,
                     onAdded = { createVarhaiskasvatuspaatosRecursive(it, vardaLapsi.lapsi.url) },
                     onUnchanged = { vardaPaatos, evakaPaatos ->
                         diff(
                             old = vardaPaatos.varhaiskasvatussuhteet,
                             new = evakaPaatos.varhaiskasvatussuhteet,
+                            eq = ::varhaiskasvatussuhdeEq,
                             onAdded = {
                                 createVarhaiskasvatussuhde(
                                     it,
@@ -247,13 +252,14 @@ class VardaUpdateServiceNew(
                 diff(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
+                    eq = ::maksutietoEq,
                     onAdded = { createMaksutieto(it, vardaLapsi.lapsi.url) },
                 )
             }
         )
     }
 
-    fun getOrCreateHenkilo(person: VardaPerson): VardaClient.HenkiloResponse =
+    private fun getOrCreateHenkilo(person: VardaPerson): VardaClient.HenkiloResponse =
         client.haeHenkilo(
             if (person.ophPersonOid != null) {
                 VardaClient.VardaPersonSearchRequest(
@@ -277,7 +283,7 @@ class VardaUpdateServiceNew(
                 )
             )
 
-    fun deleteLapsiRecursive(vardaLapsi: VardaLapsiNode) {
+    private fun deleteLapsiRecursive(vardaLapsi: VardaLapsiNode) {
         var deleteLapsi = true
         vardaLapsi.varhaiskasvatuspaatokset.forEach { paatosNode ->
             val deleted = deleteVarhaiskasvatuspaatosRecursive(paatosNode)
@@ -290,7 +296,7 @@ class VardaUpdateServiceNew(
         }
     }
 
-    fun createLapsiRecursive(evakaLapsi: EvakaLapsiNode, henkiloUrl: URI) {
+    private fun createLapsiRecursive(evakaLapsi: EvakaLapsiNode, henkiloUrl: URI) {
         val lapsi = client.createLapsi(evakaLapsi.lapsi.toVarda(lahdejarjestelma, henkiloUrl))
         evakaLapsi.varhaiskasvatuspaatokset.forEach { paatosNode ->
             createVarhaiskasvatuspaatosRecursive(paatosNode, lapsi.url)
@@ -298,7 +304,7 @@ class VardaUpdateServiceNew(
     }
 
     /** Returns true if the varhaiskasvatuspaatos and associated data was deleted */
-    fun deleteVarhaiskasvatuspaatosRecursive(
+    private fun deleteVarhaiskasvatuspaatosRecursive(
         vardaVarhaiskasvatuspaatos: VardaVarhaiskasvatuspaatosNode
     ): Boolean {
         var deletePaatos = true
@@ -325,7 +331,7 @@ class VardaUpdateServiceNew(
         return true
     }
 
-    fun createVarhaiskasvatuspaatosRecursive(
+    private fun createVarhaiskasvatuspaatosRecursive(
         evakaVarhaiskasvatuspaatos: EvakaVarhaiskasvatuspaatosNode,
         lapsiUrl: URI
     ) {
@@ -339,7 +345,7 @@ class VardaUpdateServiceNew(
     }
 
     /** Returns true if the varhaiskasvatussuhde was deleted */
-    fun deleteVarhaiskasvatussuhde(
+    private fun deleteVarhaiskasvatussuhde(
         vardaVarhaiskasvatussuhde: VardaClient.VarhaiskasvatussuhdeResponse
     ): Boolean {
         if (
@@ -357,7 +363,7 @@ class VardaUpdateServiceNew(
         return true
     }
 
-    fun createVarhaiskasvatussuhde(
+    private fun createVarhaiskasvatussuhde(
         evakaVarhaiskasvatussuhde: Varhaiskasvatussuhde,
         paatosUrl: URI
     ) {
@@ -367,7 +373,7 @@ class VardaUpdateServiceNew(
     }
 
     /** Returns true if the maksutieto was deleted */
-    fun deleteMaksutieto(vardaMaksutieto: VardaClient.MaksutietoResponse): Boolean {
+    private fun deleteMaksutieto(vardaMaksutieto: VardaClient.MaksutietoResponse): Boolean {
         if (
             vardaMaksutieto.lahdejarjestelma != lahdejarjestelma ||
                 !vardaEnabledRange.contains(
@@ -380,34 +386,51 @@ class VardaUpdateServiceNew(
         return true
     }
 
-    fun createMaksutieto(vardaMaksutieto: Maksutieto, lapsiUrl: URI) {
+    private fun createMaksutieto(vardaMaksutieto: Maksutieto, lapsiUrl: URI) {
         client.createMaksutieto(vardaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
     }
+}
 
-    data class EvakaLapsiNode(
-        val lapsi: Lapsi,
-        val varhaiskasvatuspaatokset: List<EvakaVarhaiskasvatuspaatosNode>,
-        val maksutiedot: List<Maksutieto>
-    ) : Diffable<VardaLapsiNode> {
-        override fun diffEq(other: VardaLapsiNode): Boolean = lapsi.diffEq(other.lapsi)
-    }
+private data class EvakaLapsiNode(
+    val lapsi: Lapsi,
+    val varhaiskasvatuspaatokset: List<EvakaVarhaiskasvatuspaatosNode>,
+    val maksutiedot: List<Maksutieto>
+)
 
-    data class EvakaVarhaiskasvatuspaatosNode(
-        val varhaiskasvatuspaatos: Varhaiskasvatuspaatos,
-        val varhaiskasvatussuhteet: List<Varhaiskasvatussuhde>,
-    ) : Diffable<VardaVarhaiskasvatuspaatosNode> {
-        override fun diffEq(other: VardaVarhaiskasvatuspaatosNode): Boolean =
-            varhaiskasvatuspaatos.diffEq(other.varhaiskasvatuspaatos)
-    }
+private data class EvakaVarhaiskasvatuspaatosNode(
+    val varhaiskasvatuspaatos: Varhaiskasvatuspaatos,
+    val varhaiskasvatussuhteet: List<Varhaiskasvatussuhde>,
+)
 
-    data class VardaLapsiNode(
-        val lapsi: VardaClient.LapsiResponse,
-        val varhaiskasvatuspaatokset: List<VardaVarhaiskasvatuspaatosNode>,
-        val maksutiedot: List<VardaClient.MaksutietoResponse>
-    )
+private data class VardaLapsiNode(
+    val lapsi: VardaClient.LapsiResponse,
+    val varhaiskasvatuspaatokset: List<VardaVarhaiskasvatuspaatosNode>,
+    val maksutiedot: List<VardaClient.MaksutietoResponse>
+)
 
-    data class VardaVarhaiskasvatuspaatosNode(
-        val varhaiskasvatuspaatos: VardaClient.VarhaiskasvatuspaatosResponse,
-        val varhaiskasvatussuhteet: List<VardaClient.VarhaiskasvatussuhdeResponse>,
-    )
+private data class VardaVarhaiskasvatuspaatosNode(
+    val varhaiskasvatuspaatos: VardaClient.VarhaiskasvatuspaatosResponse,
+    val varhaiskasvatussuhteet: List<VardaClient.VarhaiskasvatussuhdeResponse>,
+)
+
+private fun lapsiEq(a: VardaLapsiNode, b: EvakaLapsiNode): Boolean {
+    return Lapsi.fromVarda(a.lapsi) == b.lapsi
+}
+
+private fun varhaiskasvatuspaatosEq(
+    a: VardaVarhaiskasvatuspaatosNode,
+    b: EvakaVarhaiskasvatuspaatosNode
+): Boolean {
+    return Varhaiskasvatuspaatos.fromVarda(a.varhaiskasvatuspaatos) == b.varhaiskasvatuspaatos
+}
+
+private fun varhaiskasvatussuhdeEq(
+    a: VardaClient.VarhaiskasvatussuhdeResponse,
+    b: Varhaiskasvatussuhde
+): Boolean {
+    return Varhaiskasvatussuhde.fromVarda(a) == b
+}
+
+private fun maksutietoEq(a: VardaClient.MaksutietoResponse, b: Maksutieto): Boolean {
+    return Maksutieto.fromVarda(a) == b
 }
