@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.DaycareGroupRole
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.Employee
@@ -15,6 +16,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -24,6 +26,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -118,6 +122,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             ),
             getEmployeeDetails(employee.id).daycareRoles.toSet()
         )
+        db.read { assertTrue(it.hasActiveMessagingAccount(employee.id)) }
     }
 
     @Test
@@ -143,6 +148,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         daycare2.id to listOf(daycare2Group.id)
                     )
             )
+            tx.upsertEmployeeMessageAccount(employee.id)
         }
 
         deleteEmployeeDaycareRoles(id = employee.id, daycareId = daycare1.id)
@@ -158,6 +164,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             ),
             updated.daycareGroupRoles
         )
+        db.read { assertTrue(it.hasActiveMessagingAccount(employee.id)) }
     }
 
     @Test
@@ -183,6 +190,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         daycare2.id to listOf(daycare2Group.id)
                     )
             )
+            tx.upsertEmployeeMessageAccount(employee.id)
         }
 
         deleteEmployeeDaycareRoles(id = employee.id, daycareId = null)
@@ -190,6 +198,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val updated = getEmployeeDetails(employee.id)
         assertEquals(emptyList(), updated.daycareRoles)
         assertEquals(emptyList(), updated.daycareGroupRoles)
+        db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
     }
 
     val adminUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
@@ -263,4 +272,14 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             temporaryInUnitId = null,
             active = true
         )
+
+    private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) =
+        createQuery {
+                sql(
+                    """
+        SELECT EXISTS (SELECT 1 FROM message_account WHERE employee_id = ${bind(employeeId)} AND active)
+    """
+                )
+            }
+            .exactlyOne<Boolean>()
 }

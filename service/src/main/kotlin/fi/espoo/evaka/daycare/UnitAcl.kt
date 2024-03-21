@@ -24,10 +24,7 @@ fun removeDaycareAclForRole(
     deactivatePersonalMessageAccountIfNeeded(tx, employeeId)
 }
 
-private fun deactivatePersonalMessageAccountIfNeeded(
-    tx: Database.Transaction,
-    employeeId: EmployeeId
-) {
+fun deactivatePersonalMessageAccountIfNeeded(tx: Database.Transaction, employeeId: EmployeeId) {
     if (!tx.hasAnyDaycareAclRow(employeeId)) {
         // Deactivate the message account when the employee is not in any unit anymore
         tx.deactivateEmployeeMessageAccount(employeeId)
