@@ -368,7 +368,13 @@ WHERE id = :unitId
                         )
                     ),
                 permittedActions =
-                    mapOf(createdDecisions[0].id to setOf(Action.Citizen.Decision.DOWNLOAD_PDF)),
+                    mapOf(
+                        createdDecisions[0].id to
+                            setOf(
+                                Action.Citizen.Decision.READ,
+                                Action.Citizen.Decision.DOWNLOAD_PDF
+                            )
+                    ),
                 canDecide = setOf(applicationId)
             )
         )

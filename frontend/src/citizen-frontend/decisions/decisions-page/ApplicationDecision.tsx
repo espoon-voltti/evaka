@@ -76,7 +76,7 @@ export default React.memo(function ApplicationDecision({
           } ${sentDate.format()}`}
         </H3>
       }
-      countIndicator={resolved === null ? 1 : 0}
+      countIndicator={resolved === null && canDecide ? 1 : 0}
       paddingHorizontal="0"
       paddingVertical="0"
       data-qa={`application-decision-${id}`}

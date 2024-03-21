@@ -60,9 +60,13 @@ export default React.memo(function Decisions() {
     )[]
     firstName: string
     lastName: string
+    canDecide: UUID[]
   }) => {
     const unconfirmedDecisionsCount = child.decisions.filter(
-      (decision) => 'applicationId' in decision && decision.resolved === null
+      (decision) =>
+        'applicationId' in decision &&
+        decision.resolved === null &&
+        child.canDecide.includes(decision.applicationId)
     ).length
     return (
       `${child.firstName} ${child.lastName}` +
@@ -76,8 +80,11 @@ export default React.memo(function Decisions() {
     () =>
       applicationDecisions
         .map(
-          ({ decisions }) =>
-            decisions.filter(applicationDecisionIsUnread).length
+          ({ decisions, canDecide }) =>
+            decisions
+              .filter(applicationDecisionIsUnread)
+              .filter((decision) => canDecide.includes(decision.applicationId))
+              .length
         )
         .getOrElse(0),
     [applicationDecisions]

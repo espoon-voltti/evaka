@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -37,7 +38,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.util.UUID
 import org.springframework.http.MediaType
@@ -419,14 +419,15 @@ class ApplicationControllerCitizen(
     ): ApplicationDecisions {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.Person.READ_DECISIONS,
-                        user.id
-                    )
-                    val decisions = tx.getOwnDecisions(user.id)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.Decision.READ
+                        )
+                    val children = tx.getCitizenChildIds(clock.today(), user.id)
+                    val decisions = tx.getOwnDecisions(user.id, children, filter)
                     ApplicationDecisions(
                         decisions = decisions,
                         permittedActions =
@@ -477,13 +478,14 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Application.READ_DECISIONS,
                         applicationId
                     )
-                    tx.fetchApplicationDetails(applicationId)
-                        ?: throw NotFound("Application not found")
-                    val decisions =
-                        tx.getSentDecisionsByApplication(
-                            applicationId,
-                            AccessControlFilter.PermitAll
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.Decision.READ
                         )
+                    val decisions = tx.getSentDecisionsByApplication(applicationId, filter)
                     val permittedActions =
                         accessControl.getPermittedActions<DecisionId, Action.Citizen.Decision>(
                             tx,

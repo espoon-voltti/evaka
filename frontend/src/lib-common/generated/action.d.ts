@@ -503,7 +503,9 @@ export type Child =
   | 'READ_SERVICE_NEEDS'
   | 'READ_VASU_DOCUMENT_SUMMARIES'
 
-export type Decision = 'DOWNLOAD_PDF'
+export type Decision =
+  | 'DOWNLOAD_PDF'
+  | 'READ'
 
 }
 

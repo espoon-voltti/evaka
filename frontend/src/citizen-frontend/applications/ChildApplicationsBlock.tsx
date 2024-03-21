@@ -185,7 +185,8 @@ export default React.memo(function ChildApplicationsBlock({
               createdDate,
               modifiedDate,
               applicationStatus,
-              transferApplication
+              transferApplication,
+              ownedByCurrentUser
             },
             index
           ) => (
@@ -246,7 +247,8 @@ export default React.memo(function ChildApplicationsBlock({
                   {applicationStatus === 'WAITING_CONFIRMATION' &&
                     permittedActions[applicationId]?.includes(
                       'READ_DECISIONS'
-                    ) && (
+                    ) &&
+                    ownedByCurrentUser && (
                       <ConfirmationContainer>
                         <div color={colors.main.m2}>
                           {t.applicationsList.confirmationLinkInstructions}

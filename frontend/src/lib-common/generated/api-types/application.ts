@@ -398,6 +398,7 @@ export interface CitizenApplicationSummary {
   childName: string | null
   createdDate: HelsinkiDateTime
   modifiedDate: HelsinkiDateTime
+  ownedByCurrentUser: boolean
   preferredUnitName: string | null
   sentDate: LocalDate | null
   startDate: LocalDate | null
