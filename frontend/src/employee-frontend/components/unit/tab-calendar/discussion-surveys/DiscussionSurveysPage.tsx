@@ -40,9 +40,6 @@ export default React.memo(function DiscussionReservationSurveysPage() {
   const { groupId, unitId } = useRouteParams(['groupId', 'unitId'])
   const unitInformation = useQueryResult(unitQuery({ daycareId: unitId }))
 
-  //discussion surveys are calendar events that have:
-  // - at least one calendar event time
-  // - at least one attendee in the selected group
   const discussionSurveys = useQueryResult(
     groupDiscussionSurveysQuery({ unitId, groupId })
   )

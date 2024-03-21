@@ -67,7 +67,7 @@ const getUnitCalendarEventsResult = wrapResult(getUnitCalendarEvents)
 const modifyCalendarEventResult = wrapResult(modifyCalendarEvent)
 const deleteCalendarEventResult = wrapResult(deleteCalendarEvent)
 
-export const EventsWeekContainer = styled.div`
+const EventsWeekContainer = styled.div`
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);

@@ -26,12 +26,15 @@ export default React.memo(function DiscussionReservationSurveyWrapper({
     'eventId'
   ])
 
-  const existingEvent = useMemo(() => !!eventId && eventId !== 'new', [eventId])
+  const hasExistingEvent = useMemo(
+    () => !!eventId && eventId !== 'new',
+    [eventId]
+  )
   const eventData = useQueryResult(discussionSurveyQuery({ id: eventId }), {
-    enabled: existingEvent
+    enabled: hasExistingEvent
   })
 
-  if (existingEvent) {
+  if (hasExistingEvent) {
     if (mode === 'EDIT') {
       return renderResult(eventData, (data) => (
         <DiscussionSurveyEditor

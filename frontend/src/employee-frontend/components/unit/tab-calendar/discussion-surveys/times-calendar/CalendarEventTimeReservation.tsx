@@ -230,9 +230,7 @@ export const DiscussionReservationModal = React.memo(
                 onChange={(item) =>
                   reservationChild.set({ childId: item?.id ?? null })
                 }
-                getItemValue={(i: ChildBasics) =>
-                  i ? `${i.firstName} ${i.lastName}` : ''
-                }
+                getItemValue={(i: ChildBasics) => (i ? i.id : '')}
                 getItemLabel={(i: ChildBasics) =>
                   i ? `${i.firstName} ${i.lastName}` : ''
                 }

@@ -80,9 +80,7 @@ export default React.memo(function DiscussionSurveyForm({
 
   const navigate = useNavigate()
 
-  const { attendees } = useFormFields(form)
-
-  const { times, title, description } = useFormFields(form)
+  const { times, title, description, attendees } = useFormFields(form)
 
   const basicInfoValidationErrors = useMemo(
     () => ({

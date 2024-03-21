@@ -24,10 +24,6 @@ export interface TestEventTime {
   endTime: string
 }
 
-export interface ReserveeInfo {
-  name: string
-}
-
 export class DiscussionSurveyListPage {
   constructor(protected readonly page: Page) {}
 
@@ -145,7 +141,7 @@ export class DiscussionSurveyReadView {
 
   async deleteSurvey() {
     await this.deleteSurveyButton.click()
-    return new ConfirmDeleteModal(
+    return new Modal(
       this.page.findByDataQa('deletion-confirm-modal').findByDataQa('modal')
     )
   }
@@ -244,8 +240,6 @@ export class ReservationDayEventTimeEditor extends CalendarDayEventTimeEditor {
   submitButton = this.findByDataQa('event-time-submit')
   deleteButton = this.findByDataQa('event-time-delete')
 }
-
-export class ConfirmDeleteModal extends Modal {}
 
 export class ReserveModal extends Element {
   submitButton = this.findByDataQa('submit-reservation-button')
