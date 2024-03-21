@@ -368,10 +368,14 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         throw NotFound("No corresponding discussion survey found")
                     }
                     val cetId = tx.createCalendarEventTime(id, body, clock.now(), user.evakaUserId)
+                    val updatedEvent =
+                        tx.getCalendarEventById(id)
+                            ?: throw NotFound("No corresponding discussion survey found")
+
                     tx.updateCalendarEventPeriod(
                         eventId = id,
                         modifiedAt = clock.now(),
-                        period = getPeriodOfTimes(associatedEvent.times, clock.today())
+                        period = getPeriodOfTimes(updatedEvent.times, clock.today())
                     )
                     cetId
                 }
@@ -395,23 +399,20 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEventTime.DELETE,
                         id
                     )
-                    val calendarEventId = tx.getCalendarEventIdByTimeId(id)
+                    val calendarEventId =
+                        tx.getCalendarEventIdByTimeId(id)
+                            ?: throw NotFound("No corresponding discussion survey found")
+
                     tx.deleteCalendarEventTime(id)
 
                     val associatedEvent =
-                        tx.getCalendarEventById(
-                            calendarEventId
-                                ?: throw NotFound("Corresponding calendar event not found")
-                        )
+                        tx.getCalendarEventById(calendarEventId)
+                            ?: throw NotFound("No corresponding calendar event found")
+
                     tx.updateCalendarEventPeriod(
                         eventId = calendarEventId,
                         modifiedAt = clock.now(),
-                        period =
-                            getPeriodOfTimes(
-                                associatedEvent?.times
-                                    ?: throw NotFound("No corresponding calendar event found"),
-                                clock.today()
-                            )
+                        period = getPeriodOfTimes(associatedEvent.times, clock.today())
                     )
                 }
             }
@@ -615,7 +616,7 @@ private fun validate(tx: Database.Read, eventTimeId: CalendarEventTimeId, childI
             ?: throw BadRequest("Calendar event time not found")
 
     if (childId != null && !tx.getCalendarEventChildIds(calendarEventId).contains(childId)) {
-        throw BadRequest("Child ${childId} is not attendee in calendar event")
+        throw BadRequest("Child $childId is not attendee in calendar event")
     }
 }
 

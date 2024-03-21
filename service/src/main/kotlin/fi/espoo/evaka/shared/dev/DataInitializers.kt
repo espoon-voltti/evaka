@@ -1469,16 +1469,16 @@ RETURNING id
 
 fun Database.Transaction.insert(row: DevCalendarEventTime): CalendarEventTimeId =
     createUpdate {
-        sql(
-            """
+            sql(
+                """
 INSERT INTO calendar_event_time (id, date, calendar_event_id, start_time, end_time, child_id, created_at, created_by, updated_at, modified_at, modified_by)
 VALUES (${bind(row.id)}, ${bind(row.date)}, ${bind(row.calendarEventId)}, ${bind(row.start)}, ${bind(row.end)},
 ${bind(row.childId)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)},
 ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
 """
-        )
-    }
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 

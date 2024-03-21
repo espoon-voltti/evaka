@@ -122,16 +122,35 @@ fun Database.Transaction.createCalendarEventAttendees(
     tree: Map<GroupId, Set<ChildId>?>?
 ) {
     if (tree != null) {
+        val batch =
+            prepareBatch(
+                """
+            INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
+            VALUES (:eventId, :unitId, :groupId, :childId)
+        """
+                    .trimIndent()
+            )
         tree.forEach { (groupId, childIds) ->
-            // TODO: batching
             if (childIds != null) {
                 childIds.forEach { childId ->
-                    createCalendarEventAttendee(eventId, unitId, groupId, childId)
+                    batch
+                        .bind("eventId", eventId)
+                        .bind("unitId", unitId)
+                        .bind("groupId", groupId)
+                        .bind("childId", childId)
+                        .add()
                 }
             } else {
-                createCalendarEventAttendee(eventId, unitId, groupId, null)
+                val childId: ChildId? = null
+                batch
+                    .bind("eventId", eventId)
+                    .bind("unitId", unitId)
+                    .bind("groupId", groupId)
+                    .bind("childId", childId)
+                    .add()
             }
         }
+        batch.execute()
     } else {
         createCalendarEventAttendee(eventId, unitId, null, null)
     }
