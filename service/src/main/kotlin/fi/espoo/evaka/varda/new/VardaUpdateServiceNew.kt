@@ -195,34 +195,62 @@ class VardaUpdateServiceNew(
                 )
             }
 
-        val lapsetDiff = diff(vardaLapset, evakaLapset)
-        lapsetDiff.removed.forEach { deleteLapsiRecursive(it) }
-        lapsetDiff.added.forEach { createLapsiRecursive(it, henkilo.url) }
-        lapsetDiff.unchanged.forEach { (vardaLapsi, evakaLapsi) ->
-            val maksutiedotDiff = diff(vardaLapsi.maksutiedot, evakaLapsi.maksutiedot)
-            val paatoksetDiff =
+        // To avoid validation errors caused by overlapping data, first delete outdated entries and
+        // then delete new ones
+
+        diff(
+            old = vardaLapset,
+            new = evakaLapset,
+            onRemoved = { deleteLapsiRecursive(it) },
+            onUnchanged = { vardaLapsi, evakaLapsi ->
                 diff(
-                    vardaLapsi.varhaiskasvatuspaatokset,
-                    evakaLapsi.varhaiskasvatuspaatokset,
+                    old = vardaLapsi.maksutiedot,
+                    new = evakaLapsi.maksutiedot,
+                    onRemoved = { deleteMaksutieto(it) },
                 )
-
-            maksutiedotDiff.removed.forEach { deleteMaksutieto(it) }
-            paatoksetDiff.removed.forEach { deleteVarhaiskasvatuspaatosRecursive(it) }
-
-            paatoksetDiff.added.forEach {
-                createVarhaiskasvatuspaatosRecursive(it, vardaLapsi.lapsi.url)
+                diff(
+                    old = vardaLapsi.varhaiskasvatuspaatokset,
+                    new = evakaLapsi.varhaiskasvatuspaatokset,
+                    onRemoved = { deleteVarhaiskasvatuspaatosRecursive(it) },
+                    onUnchanged = { vardaPaatos, evakaPaatos ->
+                        diff(
+                            old = vardaPaatos.varhaiskasvatussuhteet,
+                            new = evakaPaatos.varhaiskasvatussuhteet,
+                            onRemoved = { deleteVarhaiskasvatussuhde(it) },
+                        )
+                    }
+                )
             }
-            maksutiedotDiff.added.forEach { createMaksutieto(it, vardaLapsi.lapsi.url) }
-
-            paatoksetDiff.unchanged.forEach { (vardaPaatos, evakaPaatos) ->
-                val suhteetDiff =
-                    diff(vardaPaatos.varhaiskasvatussuhteet, evakaPaatos.varhaiskasvatussuhteet)
-                suhteetDiff.removed.forEach { deleteVarhaiskasvatussuhde(it) }
-                suhteetDiff.added.forEach {
-                    createVarhaiskasvatussuhde(it, vardaPaatos.varhaiskasvatuspaatos.url)
-                }
+        )
+        diff(
+            old = vardaLapset,
+            new = evakaLapset,
+            onAdded = { createLapsiRecursive(it, henkilo.url) },
+            onUnchanged = { vardaLapsi, evakaLapsi ->
+                diff(
+                    old = vardaLapsi.varhaiskasvatuspaatokset,
+                    new = evakaLapsi.varhaiskasvatuspaatokset,
+                    onAdded = { createVarhaiskasvatuspaatosRecursive(it, vardaLapsi.lapsi.url) },
+                    onUnchanged = { vardaPaatos, evakaPaatos ->
+                        diff(
+                            old = vardaPaatos.varhaiskasvatussuhteet,
+                            new = evakaPaatos.varhaiskasvatussuhteet,
+                            onAdded = {
+                                createVarhaiskasvatussuhde(
+                                    it,
+                                    vardaPaatos.varhaiskasvatuspaatos.url
+                                )
+                            },
+                        )
+                    }
+                )
+                diff(
+                    old = vardaLapsi.maksutiedot,
+                    new = evakaLapsi.maksutiedot,
+                    onAdded = { createMaksutieto(it, vardaLapsi.lapsi.url) },
+                )
             }
-        }
+        )
     }
 
     fun getOrCreateHenkilo(person: VardaPerson): VardaClient.HenkiloResponse =

@@ -17,25 +17,21 @@ interface Diffable<T> {
     fun diffEq(other: T): Boolean
 }
 
-data class DiffResult<Old, New>(
-    val removed: List<Old>,
-    val added: List<New>,
-    val unchanged: List<Pair<Old, New>>,
-)
-
-fun <Old, New : Diffable<Old>> diff(old: List<Old>, new: List<New>): DiffResult<Old, New> {
-    val removed = old.filter { oldItem -> new.none { newItem -> newItem.diffEq(oldItem) } }
-    val added = new.filter { newItem -> old.none { oldItem -> newItem.diffEq(oldItem) } }
-    val unchanged =
-        old.mapNotNull { oldItem ->
-            val newItem = new.find { it.diffEq(oldItem) }
-            if (newItem == null) {
-                null
-            } else {
-                Pair(oldItem, newItem)
-            }
+fun <Old, New : Diffable<Old>> diff(
+    old: List<Old>,
+    new: List<New>,
+    onRemoved: (Old) -> Unit = { _ -> },
+    onAdded: (New) -> Unit = { _ -> },
+    onUnchanged: (Old, New) -> Unit = { _, _ -> }
+) {
+    old.filter { oldItem -> new.none { newItem -> newItem.diffEq(oldItem) } }.forEach(onRemoved)
+    new.filter { newItem -> old.none { oldItem -> newItem.diffEq(oldItem) } }.forEach(onAdded)
+    old.forEach { oldItem ->
+        val newItem = new.find { it.diffEq(oldItem) }
+        if (newItem != null) {
+            onUnchanged(oldItem, newItem)
         }
-    return DiffResult(removed, added, unchanged)
+    }
 }
 
 data class Lapsi(
