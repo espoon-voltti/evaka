@@ -59,7 +59,7 @@ fun Database.Transaction.updateGroup(
     name: String,
     startDate: LocalDate,
     endDate: LocalDate?,
-    jamixCustomerId: String?
+    jamixCustomerId: Int?
 ) {
     createUpdate {
             sql(

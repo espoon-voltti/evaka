@@ -242,7 +242,7 @@ class DaycareController(
         val name: String,
         val startDate: LocalDate,
         val endDate: LocalDate?,
-        val jamixCustomerId: String?
+        val jamixCustomerId: Int?
     )
 
     @PutMapping("/{daycareId}/groups/{groupId}")

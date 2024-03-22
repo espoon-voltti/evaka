@@ -1,1 +1,1 @@
-ALTER TABLE daycare_group ADD COLUMN jamix_customer_id text;
+ALTER TABLE daycare_group ADD COLUMN jamix_customer_id int;
