@@ -225,3 +225,29 @@ fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
         }
         .updateExactlyOne()
 }
+
+fun Database.Transaction.updateChildDocumentKey(id: ChildDocumentId, documentKey: String) {
+    createUpdate {
+            sql(
+                """
+        UPDATE child_document
+        SET document_key = ${bind(documentKey)}
+        WHERE id = ${bind(id)}
+    """
+            )
+        }
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.resetChildDocumentKey(ids: List<ChildDocumentId>) {
+    val batch =
+        this.prepareBatch(
+            """
+        UPDATE child_document
+        SET document_key = NULL
+        WHERE id = :id
+    """
+        )
+    ids.forEach { batch.bind("id", it).add() }
+    batch.execute()
+}

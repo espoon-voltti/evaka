@@ -55,7 +55,10 @@ class ChildDocumentService(
         if (documentIds.isNotEmpty()) {
             documentIds
                 .filter { !tx.isDocumentPublishedContentUpToDate(it) }
-                .forEach { scheduleEmailNotification(tx, it, now) }
+                .also {
+                    schedulePdfGeneration(tx, it, now)
+                    scheduleEmailNotification(tx, it, now)
+                }
 
             tx.markCompletedAndPublish(documentIds, now)
         }
@@ -63,13 +66,28 @@ class ChildDocumentService(
 
     fun scheduleEmailNotification(
         tx: Database.Transaction,
-        id: ChildDocumentId,
+        ids: List<ChildDocumentId>,
         now: HelsinkiDateTime
     ) {
-        logger.info { "Scheduling sending of child document notification emails (id: $id)" }
+        val payloads = ids.flatMap { getChildDocumentNotifications(tx, it, now.toLocalDate()) }
+        logger.info { "Scheduling sending of ${payloads.size} child document notification emails" }
+        asyncJobRunner.plan(tx, payloads = payloads, runAt = now, retryCount = 10)
+    }
+
+    fun schedulePdfGeneration(
+        tx: Database.Transaction,
+        ids: List<ChildDocumentId>,
+        now: HelsinkiDateTime
+    ) {
+        logger.info { "Scheduling generation of ${ids.size} child document pdfs" }
+
+        // set document key to null until re-generation finishes
+        // the new document key will be the same, so there's no need to separately delete from s3
+        tx.resetChildDocumentKey(ids)
+
         asyncJobRunner.plan(
             tx,
-            payloads = getChildDocumentNotifications(tx, id, now.toLocalDate()),
+            payloads = ids.map { AsyncJob.CreateChildDocumentPdf(it) },
             runAt = now,
             retryCount = 10
         )
