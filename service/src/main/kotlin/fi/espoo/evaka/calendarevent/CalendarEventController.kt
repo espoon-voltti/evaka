@@ -81,7 +81,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
     @GetMapping("/units/{unitId}/groups/{groupId}/discussion-surveys")
     fun getGroupDiscussionSurveys(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable groupId: GroupId
@@ -112,7 +112,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
     @GetMapping("/units/{unitId}/groups/{groupId}/discussion-reservation-days")
     fun getGroupDiscussionReservationDays(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable groupId: GroupId,

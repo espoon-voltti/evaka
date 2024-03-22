@@ -35,8 +35,8 @@ import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
-import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
+import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization

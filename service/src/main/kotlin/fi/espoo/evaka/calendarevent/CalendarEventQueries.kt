@@ -28,11 +28,11 @@ private fun Database.Read.getCalendarEventsQuery(
     unitId: DaycareId? = null,
     range: FiniteDateRange? = null,
     groupId: GroupId? = null,
-    eventTypes: List<CalendarEventType>? = emptyList()
+    eventTypes: List<CalendarEventType>? = null
 ) =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT
     ce.id, cea.unit_id, ce.title, ce.description, ce.period, ce.content_modified_at, ce.event_type,
     (
@@ -67,7 +67,7 @@ WHERE (:calendarEventId IS NULL OR ce.id = :calendarEventId)
 AND (:unitId IS NULL OR cea.unit_id = :unitId) 
 AND (:groupId IS NULL OR cea.group_id = :groupId)
 AND (:range IS NULL OR ce.period && :range)
-AND (:eventTypes::calendar_event_type[] = '{}' OR ce.event_type = ANY(:eventTypes::calendar_event_type[]))
+AND (:eventTypes::calendar_event_type[] IS NULL OR ce.event_type = ANY(:eventTypes::calendar_event_type[]))
 AND (cea.child_id IS NULL OR EXISTS(
     -- filter out attendees that haven't been placed in the specified unit/group,
     -- for example due to changes in placements after the event creation or a new backup care
@@ -79,13 +79,14 @@ AND (cea.child_id IS NULL OR EXISTS(
 ))
 GROUP BY ce.id, cea.unit_id
         """
-                .trimIndent()
-        )
+                    .trimIndent()
+            )
+        }
         .bind("calendarEventId", calendarEventId)
         .bind("unitId", unitId)
         .bind("groupId", groupId)
         .bind("range", range)
-        .bind("eventTypes", eventTypes)
+        .bind("eventTypes", eventTypes.takeIf { !it.isNullOrEmpty() })
 
 fun Database.Transaction.createCalendarEvent(
     event: CalendarEventForm,
@@ -538,12 +539,9 @@ fun Database.Transaction.updateCalendarEventPeriod(
             sql(
                 """
 UPDATE calendar_event
-SET period = :period, modified_at = :modifiedAt, content_modified_at = :modifiedAt
-WHERE id = :eventId
+SET period = ${bind(period)}, modified_at = ${bind(modifiedAt)}, content_modified_at = ${bind(modifiedAt)}
+WHERE id = ${bind(eventId)}
         """
             )
         }
-        .bind("eventId", eventId)
-        .bind("modifiedAt", modifiedAt)
-        .bind("period", period)
         .updateExactlyOne()
