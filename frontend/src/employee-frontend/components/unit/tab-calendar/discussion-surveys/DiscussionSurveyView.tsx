@@ -246,13 +246,13 @@ export default React.memo(function DiscussionReservationSurveyView({
     return new FiniteDateRange(previousMonday, calendarHorizonDate)
   }, [calendarHorizonDate, today])
 
-  const extendHorizon = () => {
+  const extendHorizon = useCallback(() => {
     const candidateHorizon = calendarHorizonDate.addMonths(1).lastDayOfMonth()
     if (candidateHorizon.isEqualOrBefore(maxCalendarRange.end)) {
       setCalendarHorizonDate(candidateHorizon)
       scrollRefIntoView(horizonRef, 80)
     }
-  }
+  }, [maxCalendarRange, calendarHorizonDate])
 
   const groupData = useQueryResult(
     unitGroupDetailsQuery({

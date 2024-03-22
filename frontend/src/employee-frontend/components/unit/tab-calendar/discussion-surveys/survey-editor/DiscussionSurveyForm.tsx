@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faQuestion } from 'Icons'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -80,60 +80,11 @@ export default React.memo(function DiscussionSurveyForm({
 
   const navigate = useNavigate()
 
-  const { times, title, description, attendees } = useFormFields(form)
-
-  const basicInfoValidationErrors = useMemo(
-    () => ({
-      title:
-        title.state && title.state.length > 0
-          ? undefined
-          : ('required' as const),
-      description:
-        description.state && description.state.trim().length > 0
-          ? undefined
-          : ('required' as const),
-      attendees:
-        attendees.state.filter((a) => a.checked).length > 0
-          ? undefined
-          : ('required' as const)
-    }),
-    [attendees.state, title.state, description.state]
-  )
-
-  const timesValidationErrors = useMemo(
-    () => ({
-      times:
-        times.state && times.state.length > 0 && times.isValid()
-          ? undefined
-          : ('required' as const)
-    }),
-    [times]
-  )
+  const { title, description, attendees } = useFormFields(form)
 
   const isBasicInfoValid = useMemo(
-    () =>
-      Object.values(basicInfoValidationErrors).every((e) => e === undefined),
-    [basicInfoValidationErrors]
-  )
-
-  const isFullyValid = useMemo(
-    () =>
-      isBasicInfoValid &&
-      Object.values(timesValidationErrors).every((e) => e === undefined),
-    [isBasicInfoValid, timesValidationErrors]
-  )
-
-  const info = useCallback(
-    (key: keyof typeof basicInfoValidationErrors) => {
-      const error = basicInfoValidationErrors[key]
-      if (!error) return undefined
-
-      return {
-        status: 'warning' as const,
-        text: i18n.validationErrors[error]
-      }
-    },
-    [basicInfoValidationErrors, i18n]
+    () => title.isValid() && description.isValid() && attendees.isValid(),
+    [title, attendees, description]
   )
 
   return (
@@ -181,7 +132,7 @@ export default React.memo(function DiscussionSurveyForm({
           <WidthLimiter>
             <TextAreaF
               bind={title}
-              info={info('title')}
+              info={title.inputInfo()}
               placeholder={t.discussionReservation.surveySubjectPlaceholder}
               maxLength={30}
               data-qa="survey-title-input"
@@ -196,7 +147,7 @@ export default React.memo(function DiscussionSurveyForm({
           <WidthLimiter>
             <TextAreaF
               bind={description}
-              info={info('description')}
+              info={description.inputInfo()}
               placeholder={t.discussionReservation.surveySummaryPlaceholder}
               data-qa="survey-description-input"
             />
@@ -237,28 +188,21 @@ export default React.memo(function DiscussionSurveyForm({
                 `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`
               )
             }
-            onClick={() => {
-              const values = form.value()
-              const attendeeValue = attendees.value()
-              const baseFormValues = {
-                ...values,
-                unitId,
-                period: getPeriodFromDatesOrToday(
-                  values.times.map((t) => t.date)
-                ),
-                tree: getTreeSelectionAsRecord(attendeeValue)
-              }
-
-              return isBasicInfoValid
+            onClick={() =>
+              isBasicInfoValid
                 ? {
                     id: eventData.id,
                     body: {
-                      ...baseFormValues,
-                      times: null
+                      description: description.value(),
+                      title: title.value(),
+                      times: null,
+                      unitId,
+                      period: eventData.period,
+                      tree: getTreeSelectionAsRecord(attendees.value())
                     }
                   }
                 : cancelMutation
-            }}
+            }
             data-qa="survey-editor-submit-button"
           />
         ) : (
@@ -266,34 +210,29 @@ export default React.memo(function DiscussionSurveyForm({
             primary
             mutation={createCalendarEventMutation}
             text={t.discussionReservation.createSurveyButton}
-            disabled={!isFullyValid}
+            disabled={!form.isValid()}
             onSuccess={(newId) =>
               navigate(
                 `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${newId}`
               )
             }
             onClick={() => {
-              const values = form.value()
-              const attendeeValue = attendees.value()
-              const eventType: CalendarEventType = 'DISCUSSION_SURVEY'
-              const baseFormValues = {
-                ...values,
-                unitId,
-                period: getPeriodFromDatesOrToday(
-                  values.times.map((t) => t.date)
-                ),
-                tree: getTreeSelectionAsRecord(attendeeValue),
-                eventType
-              }
-
-              return isFullyValid
-                ? {
-                    body: {
-                      ...baseFormValues,
-                      times: times.value()
-                    }
+              if (form.isValid()) {
+                const values = form.value()
+                return {
+                  body: {
+                    title: values.title,
+                    description: values.description,
+                    times: values.times,
+                    eventType: 'DISCUSSION_SURVEY' as CalendarEventType,
+                    tree: getTreeSelectionAsRecord(values.attendees),
+                    period: getPeriodFromDatesOrToday(
+                      values.times.map((t) => t.date)
+                    ),
+                    unitId
                   }
-                : cancelMutation
+                }
+              } else return cancelMutation
             }}
             data-qa="survey-editor-submit-button"
           />

@@ -7,7 +7,14 @@ import orderBy from 'lodash/orderBy'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, requiredLocalTimeRange, string } from 'lib-common/form/fields'
-import { array, object, recursive, required, value } from 'lib-common/form/form'
+import {
+  array,
+  object,
+  recursive,
+  required,
+  validated,
+  value
+} from 'lib-common/form/form'
 import { Form } from 'lib-common/form/types'
 import {
   CalendarEvent,
@@ -63,11 +70,18 @@ export const attendeeForm = object({
   attendees: array(recursive(treeNodeInfo))
 })
 
+const nonEmptyStringValidator = (value: string) =>
+  value && value.length > 0 ? undefined : ('required' as const)
+
 export const surveyForm = object({
-  title: required(string()),
-  description: required(string()),
-  times: array(calendarEventTimeForm),
-  attendees: array(recursive(treeNodeInfo))
+  title: validated(required(string()), nonEmptyStringValidator),
+  description: validated(required(string()), nonEmptyStringValidator),
+  times: validated(array(calendarEventTimeForm), (value) =>
+    value && value.length > 0 ? undefined : ('required' as const)
+  ),
+  attendees: validated(array(recursive(treeNodeInfo)), (value) =>
+    value && value.some((a) => a.checked) ? undefined : ('required' as const)
+  )
 })
 
 const isChildSelected = (childId: string, selections: IndividualChild[]) =>
