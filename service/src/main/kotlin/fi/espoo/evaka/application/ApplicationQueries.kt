@@ -1196,7 +1196,8 @@ AND status = ANY('{SENT}')
 AND NOT EXISTS (
     SELECT 1
     FROM placement p
-    WHERE (CASE
+    WHERE p.child_id = application.child_id
+    AND (CASE
         WHEN application.type = 'DAYCARE' THEN NOT p.type = ANY(:notDaycarePlacements::placement_type[])
         WHEN application.type = 'PRESCHOOL' THEN NOT p.type = ANY(:notPreschoolPlacements::placement_type[])
         WHEN application.type = 'CLUB' THEN NOT p.type = ANY(:notClubPlacements::placement_type[])
