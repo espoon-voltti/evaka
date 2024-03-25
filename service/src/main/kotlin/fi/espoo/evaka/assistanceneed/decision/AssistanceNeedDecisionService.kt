@@ -7,7 +7,6 @@ package fi.espoo.evaka.assistanceneed.decision
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
@@ -22,7 +21,6 @@ import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
@@ -239,12 +237,7 @@ class AssistanceNeedDecisionService(
         return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
-    fun generatePdf(
-        sentDate: LocalDate,
-        decision: AssistanceNeedDecision,
-        sendAddress: DecisionSendAddress? = null,
-        guardian: PersonDTO? = null
-    ): ByteArray {
+    fun generatePdf(sentDate: LocalDate, decision: AssistanceNeedDecision): ByteArray {
         return pdfGenerator.render(
             Page(
                 Template(templateProvider.getAssistanceNeedDecisionPath()),
@@ -253,8 +246,6 @@ class AssistanceNeedDecisionService(
                         Locale.Builder().setLanguage(decision.language.name.lowercase()).build()
                     setVariable("decision", decision)
                     setVariable("sentDate", sentDate)
-                    setVariable("sendAddress", sendAddress)
-                    setVariable("guardian", guardian)
                     setVariable(
                         "hasAssistanceServices",
                         decision.assistanceLevels.contains(
