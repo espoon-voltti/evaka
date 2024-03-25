@@ -232,7 +232,7 @@ export const DiscussionReservationModal = React.memo(
                 }
                 getItemValue={(i: ChildBasics) => (i ? i.id : '')}
                 getItemLabel={(i: ChildBasics) =>
-                  i ? `${i.firstName} ${i.lastName}` : ''
+                  i ? `${i.lastName} ${i.firstName}` : ''
                 }
                 placeholder={t.reservationModal.selectPlaceholder}
                 data-qa="reservee-select"

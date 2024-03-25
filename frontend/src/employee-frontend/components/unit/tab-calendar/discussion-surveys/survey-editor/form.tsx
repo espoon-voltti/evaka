@@ -114,10 +114,11 @@ export const filterAttendees = (
 
     const sortedGroupChildren = orderBy(groupChildren, [
       ({ child }) => child.lastName,
-      ({ child }) => child.firstName
+      ({ child }) => child.firstName,
+      ({ child }) => child.id
     ]).map(({ child: c }) => ({
       key: c.id,
-      text: `${c.firstName} ${c.lastName}`,
+      text: `${c.lastName} ${c.firstName}`,
       checked:
         individualChildrenOfSelectedGroup.length === 0 ||
         isChildSelected(c.id, individualChildrenOfSelectedGroup),
