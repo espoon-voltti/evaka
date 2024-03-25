@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import java.time.LocalDate
 
 private fun getAssistanceFactors(predicate: Predicate) =
     QuerySql.of {
@@ -101,6 +102,27 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOneOrNull<AssistanceFactor>()
+
+fun Database.Transaction.endActiveAssistanceFactors(date: LocalDate) =
+    createUpdate {
+            sql(
+                """
+WITH assistance_factor_with_new_end_date AS (
+    SELECT assistance_factor.id, max(placement.end_date) AS new_end_date
+    FROM assistance_factor
+    JOIN placement ON assistance_factor.child_id = placement.child_id
+     AND assistance_factor.valid_during @> placement.end_date
+    GROUP BY assistance_factor.id
+    HAVING max(placement.end_date) < ${bind(date)}
+)
+UPDATE assistance_factor
+SET valid_during = daterange(lower(valid_during), new_end_date, '[]')
+FROM assistance_factor_with_new_end_date
+WHERE assistance_factor_with_new_end_date.id = assistance_factor.id
+"""
+            )
+        }
+        .execute()
 
 fun Database.Read.getDaycareAssistanceByChildId(
     child: ChildId,
