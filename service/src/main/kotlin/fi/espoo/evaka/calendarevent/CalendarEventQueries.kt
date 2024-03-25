@@ -411,6 +411,8 @@ WHERE cp.period && ce.period
   AND ce.period && :range
   AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
   AND daterange(dgp.start_date, dgp.end_date, '[]') && cp.period
+  -- FIXME: discussion surveys hidden from guardians until guardian UI is implemented
+  AND ce.event_type = 'DAYCARE_EVENT'
         """
                 .trimIndent()
         )
