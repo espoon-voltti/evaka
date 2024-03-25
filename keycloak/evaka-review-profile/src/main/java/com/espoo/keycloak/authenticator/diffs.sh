@@ -14,5 +14,5 @@ if test -z "$version"; then
     exit 1
 fi
 
-diff -u "../../../../../../../../update/IdpReviewProfileAuthenticator.java.${version}.orig EvakaReviewProfileAuthenticator.java" > EvakaReviewProfileAuthenticator.java.diff || true
-diff -u "../../../../../../../../update/IdpReviewProfileAuthenticatorFactory.java.${version}.orig EvakaReviewProfileAuthenticatorFactory.java" > EvakaReviewProfileAuthenticatorFactory.java.diff || true
+diff -u "../../../../../../../../update/IdpReviewProfileAuthenticator.java.${version}.orig" EvakaReviewProfileAuthenticator.java > EvakaReviewProfileAuthenticator.java.diff || true
+diff -u "../../../../../../../../update/IdpReviewProfileAuthenticatorFactory.java.${version}.orig" EvakaReviewProfileAuthenticatorFactory.java > EvakaReviewProfileAuthenticatorFactory.java.diff || true

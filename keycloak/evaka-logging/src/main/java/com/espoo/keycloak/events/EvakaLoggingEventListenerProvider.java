@@ -30,10 +30,11 @@ public class EvakaLoggingEventListenerProvider extends JBossLoggingEventListener
     private boolean dropIdentity = false;
 
     public EvakaLoggingEventListenerProvider(KeycloakSession session, Logger logger, Logger.Level successLevel,
-            Logger.Level errorLevel, boolean hashUsername, boolean dropUsername, boolean hashSessionId,
+            Logger.Level errorLevel, Character quotes, boolean sanitize,
+            boolean hashUsername, boolean dropUsername, boolean hashSessionId,
             boolean dropSessionId, boolean hashIpAdderss, boolean dropIpAdderss, boolean hashIdentity,
             boolean dropIdentity) {
-        super(session, logger, successLevel, errorLevel);
+        super(session, logger, successLevel, errorLevel, quotes, sanitize);
         this.hashUsername = hashUsername;
         this.dropUsername = dropUsername;
         this.hashSessionId = hashSessionId;
