@@ -829,7 +829,7 @@ fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
             sql(
                 """
 INSERT INTO assistance_need_preschool_decision (
-    id, decision_number, child_id, status, annulment_reason, language, type, valid_from, 
+    id, decision_number, child_id, status, annulment_reason, language, type, valid_from, valid_to,
     extended_compulsory_education, extended_compulsory_education_info, 
     granted_assistance_service, granted_interpretation_service, 
     granted_assistive_devices, granted_services_basis, selected_unit, primary_group, 
@@ -842,7 +842,7 @@ INSERT INTO assistance_need_preschool_decision (
     sent_for_decision, decision_made, unread_guardian_ids
 ) VALUES (
     ${bind(decision.id)}, ${bind(decision.decisionNumber)}, ${bind(decision.childId)}, ${bind(decision.status)}, ${bind(decision.annulmentReason)},
-    ${bind(decision.form.language)}, ${bind(decision.form.type)}, ${bind(decision.form.validFrom)}, ${bind(decision.form.extendedCompulsoryEducation)},
+    ${bind(decision.form.language)}, ${bind(decision.form.type)}, ${bind(decision.form.validFrom)}, ${bind(decision.form.validTo)}, ${bind(decision.form.extendedCompulsoryEducation)},
     ${bind(decision.form.extendedCompulsoryEducationInfo)}, ${bind(decision.form.grantedAssistanceService)}, ${bind(decision.form.grantedInterpretationService)}, 
     ${bind(decision.form.grantedAssistiveDevices)}, ${bind(decision.form.grantedServicesBasis)}, ${bind(decision.form.selectedUnit)},
     ${bind(decision.form.primaryGroup)}, ${bind(decision.form.decisionBasis)}, ${bind(decision.form.basisDocumentPedagogicalReport)},

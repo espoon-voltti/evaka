@@ -69,6 +69,7 @@ interface ViewTranslations {
   decidedAssistance: string
   type: string
   validFrom: string
+  validTo: string
   extendedCompulsoryEducationSection: string
   extendedCompulsoryEducation: string
   no: string
@@ -161,6 +162,15 @@ export default React.memo(function DecisionFormReadView({
                 {decision.form.validFrom?.format() ?? ''}
               </span>
             </LabeledValue>
+
+            {decision.form.validTo && (
+              <LabeledValue>
+                <Label>{t.validTo}</Label>
+                <span data-qa="valid-to">
+                  {decision.form.validTo?.format() ?? ''}
+                </span>
+              </LabeledValue>
+            )}
 
             <LabeledValue>
               <Label>{t.extendedCompulsoryEducationSection}</Label>

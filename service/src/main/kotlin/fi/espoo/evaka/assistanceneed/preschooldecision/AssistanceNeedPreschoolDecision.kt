@@ -96,6 +96,7 @@ data class AssistanceNeedPreschoolDecisionForm(
     val language: AssistanceNeedDecisionLanguage,
     val type: AssistanceNeedPreschoolDecisionType?,
     val validFrom: LocalDate?,
+    val validTo: LocalDate?,
     val extendedCompulsoryEducation: Boolean,
     val extendedCompulsoryEducationInfo: String,
     val grantedAssistanceService: Boolean,

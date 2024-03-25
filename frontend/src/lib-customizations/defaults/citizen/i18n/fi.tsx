@@ -1519,6 +1519,7 @@ export default {
       decidedAssistance: 'Päätettävä tuki',
       type: 'Erityisen tuen tila',
       validFrom: 'Voimassa alkaen',
+      validTo: 'Voimassa päättyen',
       extendedCompulsoryEducationSection: 'Pidennetty oppivelvollisuus',
       extendedCompulsoryEducation:
         'Kyllä, lapsella on pidennetty oppivelvollisuus',

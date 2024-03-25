@@ -1786,6 +1786,7 @@ export class Fixture {
         language: 'FI',
         type: null,
         validFrom: null,
+        validTo: null,
         extendedCompulsoryEducation: false,
         extendedCompulsoryEducationInfo: '',
         grantedAssistanceService: false,

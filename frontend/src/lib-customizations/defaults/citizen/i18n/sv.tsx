@@ -1521,6 +1521,7 @@ const sv: Translations = {
       decidedAssistance: 'Stöd som avgörs',
       type: 'Status för särskilt stöd',
       validFrom: 'Gäller från och med',
+      validTo: 'Gäller till',
       extendedCompulsoryEducationSection: 'Förlängd läroplikt',
       extendedCompulsoryEducation: 'Ja, barnet har förlängd läroplikt',
       no: 'Nej',

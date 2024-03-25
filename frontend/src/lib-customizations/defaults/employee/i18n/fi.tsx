@@ -888,6 +888,7 @@ export const fi = {
           </li>
         </ul>
       ),
+      validTo: 'Voimassa päättyen',
       extendedCompulsoryEducationSection: 'Pidennetty oppivelvollisuus',
       extendedCompulsoryEducation:
         'Kyllä, lapsella on pidennetty oppivelvollisuus',

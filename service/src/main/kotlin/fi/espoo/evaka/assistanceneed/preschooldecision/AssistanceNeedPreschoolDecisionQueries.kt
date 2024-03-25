@@ -68,6 +68,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionById(
             
             ad.type,
             ad.valid_from,
+            ad.valid_to,
             
             ad.extended_compulsory_education,
             ad.extended_compulsory_education_info,
@@ -252,7 +253,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
     // language=sql
     val sql =
         """
-        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,
+        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from, ad.valid_to,
             ad.selected_unit selected_unit_id, unit.name selected_unit_name,
             ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
         FROM assistance_need_preschool_decision ad
@@ -265,7 +266,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildId(
         @Suppress("DEPRECATION")
         createQuery(sql).bind("childId", childId).toList<AssistanceNeedPreschoolDecisionBasics>()
 
-    return fillInValidToForDecisionResults(decisions)
+    return decisions
 }
 
 fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
@@ -277,7 +278,7 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
         createQuery {
                 sql(
                     """
-        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from,
+        SELECT ad.id, ad.child_id, ad.created, ad.status, ad.type, ad.valid_from, ad.valid_to,
             ad.selected_unit selected_unit_id, unit.name selected_unit_name,
             ad.sent_for_decision, ad.decision_made, ad.annulment_reason, ad.unread_guardian_ids
         FROM assistance_need_preschool_decision ad
@@ -290,31 +291,8 @@ fun Database.Read.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(
             }
             .toList<AssistanceNeedPreschoolDecisionBasics>()
 
-    return fillInValidToForDecisionResults(decisions)
+    return decisions
 }
-
-private fun fillInValidToForDecisionResults(
-    decisions: List<AssistanceNeedPreschoolDecisionBasics>
-) =
-    decisions.map { decision ->
-        if (decision.validFrom == null) return@map decision
-
-        val followingStart =
-            decisions
-                .filter {
-                    (it.id == decision.id || it.status == AssistanceNeedDecisionStatus.ACCEPTED) &&
-                        it.validFrom != null
-                }
-                .sortedWith(
-                    compareByDescending<AssistanceNeedPreschoolDecisionBasics> { it.validFrom }
-                        .thenByDescending { it.created }
-                )
-                .takeWhile { it.id != decision.id }
-                .lastOrNull()
-                ?.validFrom ?: return@map decision
-
-        decision.copy(validTo = maxOf(decision.validFrom, followingStart.minusDays(1)))
-    }
 
 fun Database.Transaction.deleteAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId
@@ -349,7 +327,8 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
     id: AssistanceNeedPreschoolDecisionId,
     status: AssistanceNeedDecisionStatus,
     decisionMade: LocalDate?,
-    unreadGuardianIds: List<PersonId>?
+    unreadGuardianIds: List<PersonId>?,
+    validTo: LocalDate?
 ) {
     // language=sql
     val sql =
@@ -358,7 +337,8 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         SET 
             status = :status,
             decision_made = :decisionMade,
-            unread_guardian_ids = :unreadGuardianIds
+            unread_guardian_ids = :unreadGuardianIds,
+            valid_to = :validTo
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         """
             .trimIndent()
@@ -368,8 +348,78 @@ fun Database.Transaction.decideAssistanceNeedPreschoolDecision(
         .bind("status", status)
         .bind("decisionMade", decisionMade)
         .bind("unreadGuardianIds", unreadGuardianIds)
+        .bind("validTo", validTo)
         .updateExactlyOne()
 }
+
+fun Database.Transaction.endActiveAssistanceNeedPreschoolDecisions(
+    excludingId: AssistanceNeedPreschoolDecisionId,
+    endDate: LocalDate,
+    childId: ChildId
+) =
+    createUpdate {
+            sql(
+                """
+UPDATE assistance_need_preschool_decision
+SET valid_to = ${bind(endDate)}
+WHERE id <> ${bind(excludingId)}
+  AND valid_from <= ${bind(endDate)}
+  AND (valid_to IS NULL OR valid_to > ${bind(endDate)})
+  AND child_id = ${bind(childId)}
+  AND status = 'ACCEPTED'
+"""
+            )
+        }
+        .execute()
+
+fun Database.Transaction.endActivePreschoolAssistanceDecisions(date: LocalDate) =
+    createUpdate {
+            sql(
+                """
+WITH preschool_assistance_decision_with_new_end_date AS (
+    SELECT preschool_assistance_decision.id, max(placement.end_date) AS new_end_date
+    FROM assistance_need_preschool_decision preschool_assistance_decision
+    JOIN placement ON preschool_assistance_decision.child_id = placement.child_id
+     AND preschool_assistance_decision.selected_unit = placement.unit_id
+     AND daterange(preschool_assistance_decision.valid_from, preschool_assistance_decision.valid_to, '[]') @> placement.end_date
+    WHERE preschool_assistance_decision.status = 'ACCEPTED'
+      AND preschool_assistance_decision.valid_to IS NULL
+      AND placement.type IN (
+        'PRESCHOOL',
+        'PRESCHOOL_DAYCARE',
+        'PRESCHOOL_CLUB',
+        'PREPARATORY',
+        'PREPARATORY_DAYCARE')
+    GROUP BY preschool_assistance_decision.id
+    HAVING max(placement.end_date) < ${bind(date)}
+)
+UPDATE assistance_need_preschool_decision
+SET valid_to = new_end_date
+FROM preschool_assistance_decision_with_new_end_date
+WHERE preschool_assistance_decision_with_new_end_date.id = assistance_need_preschool_decision.id
+"""
+                    .trimIndent()
+            )
+        }
+        .execute()
+
+fun Database.Read.getNextAssistanceNeedPreschoolDecisionValidFrom(
+    childId: ChildId,
+    startDate: LocalDate,
+) =
+    createQuery {
+            sql(
+                """
+SELECT min(valid_from)
+FROM assistance_need_preschool_decision
+WHERE child_id = ${bind(childId)}
+  AND valid_from >= ${bind(startDate)}
+  AND status = 'ACCEPTED'
+"""
+            )
+        }
+        .mapTo<LocalDate>()
+        .exactlyOneOrNull()
 
 fun Database.Transaction.updateAssistanceNeedPreschoolDocumentKey(
     id: AssistanceNeedPreschoolDecisionId,

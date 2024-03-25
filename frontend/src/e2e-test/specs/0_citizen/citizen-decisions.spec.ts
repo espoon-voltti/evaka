@@ -464,7 +464,8 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .withForm({
         type: 'NEW',
-        validFrom: LocalDate.of(2020, 1, 3)
+        validFrom: LocalDate.of(2020, 1, 3),
+        validTo: LocalDate.of(2020, 2, 2)
       })
       .save()
 
@@ -484,7 +485,8 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .withForm({
         type: 'CONTINUING',
-        validFrom: LocalDate.of(2020, 2, 3)
+        validFrom: LocalDate.of(2020, 2, 3),
+        validTo: LocalDate.of(2020, 4, 2)
       })
       .save()
 
@@ -624,7 +626,7 @@ describe('Citizen assistance preschool decisions', () => {
       {
         type: 'Erityinen tuki päättyy',
         selectedUnit: fixtures.daycareFixture.name,
-        validityPeriod: `03.03.2020 - 02.04.2020`,
+        validityPeriod: `03.03.2020 -`,
         decisionMade: '02.03.2020',
         status: 'Hylätty'
       }

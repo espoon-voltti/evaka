@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.assistanceneed.decision.endActiveDaycareAssistanceDecisions
+import fi.espoo.evaka.assistanceneed.preschooldecision.endActivePreschoolAssistanceDecisions
 import fi.espoo.evaka.attachment.AttachmentService
 import fi.espoo.evaka.attendance.addMissingStaffAttendanceDepartures
 import fi.espoo.evaka.calendarevent.CalendarEventNotificationService
@@ -58,6 +59,10 @@ enum class ScheduledJob(
     ),
     EndActiveDaycareAssistanceDecisions(
         ScheduledJobs::endActiveDaycareAssistanceDecisions,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
+    ),
+    EndActivePreschoolAssistanceDecisions(
+        ScheduledJobs::endActivePreschoolAssistanceDecisions,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
     ),
     EndOfDayAttendanceUpkeep(
@@ -194,6 +199,10 @@ class ScheduledJobs(
 
     fun endActiveDaycareAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(clock.today()) }
+    }
+
+    fun endActivePreschoolAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(clock.today()) }
     }
 
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {

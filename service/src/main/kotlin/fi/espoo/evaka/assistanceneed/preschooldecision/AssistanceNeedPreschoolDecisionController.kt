@@ -221,6 +221,23 @@ class AssistanceNeedPreschoolDecisionController(
                     if (decision.status.isDecided()) {
                         throw BadRequest("Already-decided decisions cannot be decided again")
                     }
+                    if (decision.form.validFrom == null) {
+                        throw BadRequest("Accepted decision must have a start date")
+                    }
+
+                    val validTo =
+                        if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
+                            tx.endActiveAssistanceNeedPreschoolDecisions(
+                                decision.id,
+                                decision.form.validFrom.minusDays(1),
+                                decision.child.id
+                            )
+                            tx.getNextAssistanceNeedPreschoolDecisionValidFrom(
+                                    decision.child.id,
+                                    decision.form.validFrom
+                                )
+                                ?.minusDays(1)
+                        } else null
 
                     tx.decideAssistanceNeedPreschoolDecision(
                         id = id,
@@ -231,7 +248,8 @@ class AssistanceNeedPreschoolDecisionController(
                                 tx.getChildGuardians(decision.child.id)
                             } else {
                                 null
-                            }
+                            },
+                        validTo = validTo
                     )
 
                     if (decided) {
