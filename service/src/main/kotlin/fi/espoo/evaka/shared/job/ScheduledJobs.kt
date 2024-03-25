@@ -24,6 +24,7 @@ import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
+import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -188,6 +189,7 @@ class ScheduledJobs(
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
+    private val missingHolidayReservationsReminders: MissingHolidayReservationsReminders,
     private val outdatedIncomeNotifications: OutdatedIncomeNotifications,
     private val newCustomerIncomeNotification: NewCustomerIncomeNotification,
     private val calendarEventNotificationService: CalendarEventNotificationService,
@@ -342,6 +344,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction { tx ->
             val count = missingReservationsReminders.scheduleReminders(tx, clock)
             logger.info("Scheduled $count reminders about missing reservations")
+        }
+    }
+
+    fun sendMissingHolidayReservationReminders(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val count = missingHolidayReservationsReminders.scheduleReminders(tx, clock)
+            logger.info("Scheduled $count reminders about missing holiday reservations")
         }
     }
 

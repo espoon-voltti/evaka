@@ -250,6 +250,13 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendMissingHolidayReservationsReminder(
+        val guardian: PersonId,
+        val holidayRange: FiniteDateRange
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class UpdateMessageThreadRecipients(
         val threadId: MessageThreadId,
         val recipientIds: Set<MessageAccountId>,
@@ -351,6 +358,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendChildDocumentNotificationEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
+                    SendMissingHolidayReservationsReminder::class,
                     SendOutdatedIncomeNotificationEmail::class,
                     SendPedagogicalDocumentNotificationEmail::class,
                     SendPendingDecisionEmail::class,
