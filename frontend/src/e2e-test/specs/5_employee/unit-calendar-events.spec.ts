@@ -338,7 +338,10 @@ describe('Discussion surveys', () => {
   })
 
   test('Employee can reserve a time', async () => {
-    const childName = 'Antero Onni Leevi Aatu Högfors'
+    const childData = {
+      lastName: 'Högfors',
+      firstName: 'Antero Onni Leevi Aatu'
+    }
     const testDay = mockedToday.addDays(1)
     await calendarPage.weekModeButton.click()
 
@@ -359,10 +362,16 @@ describe('Discussion surveys', () => {
     })
 
     const reserationModal = await surveyView.openReservationModal(0, testDay)
-    await reserationModal.reserveEventTimeForChild(childName)
+    await reserationModal.reserveEventTimeForChild(
+      `${childData.lastName} ${childData.firstName}`
+    )
     await surveyView.waitUntilLoaded()
 
-    await surveyView.assertReservationExists(testDay, 0, childName)
+    await surveyView.assertReservationExists(
+      testDay,
+      0,
+      `${childData.firstName} ${childData.lastName}`
+    )
     await surveyView.assertReservedAttendeeExists(child1Fixture.id)
   })
 
