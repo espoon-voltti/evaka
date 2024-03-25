@@ -170,7 +170,6 @@ class PdfGeneratorTest {
     ) {
         val decisionPdfByteArray =
             createDecisionPdf(
-                EvakaMessageProvider(),
                 EvakaTemplateProvider(),
                 pdfGenerator,
                 settings,

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pdfgen
 
 import com.lowagie.text.pdf.BaseFont
-import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -112,10 +111,6 @@ class PdfGenerator(
                 (decision.partnerIncome != null &&
                     decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress =
-            DecisionSendAddress.fromPerson(decision.headOfFamily)
-                ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
-
         val isReliefDecision = decision.decisionType != VoucherValueDecisionType.NORMAL
 
         val hasChildIncome = decision.childIncome != null && decision.childIncome.total > 0
@@ -159,7 +154,6 @@ class PdfGenerator(
             "decisionNumber" to decision.decisionNumber,
             "isReliefDecision" to isReliefDecision,
             "decisionType" to decision.decisionType.toString(),
-            "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
             "showValidTo" to
@@ -204,10 +198,6 @@ class PdfGenerator(
 
         val totalIncome =
             listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
-
-        val sendAddress =
-            DecisionSendAddress.fromPerson(decision.headOfFamily)
-                ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val hideTotalIncome =
             (decision.headOfFamilyIncome == null ||
@@ -262,7 +252,6 @@ class PdfGenerator(
                             it.childIncome != null && it.childIncome.total > 0
                         )
                     },
-                "sendAddress" to sendAddress,
                 "totalFee" to formatCents(decision.totalFee),
                 "totalIncome" to formatCents(totalIncome),
                 "showTotalIncome" to !hideTotalIncome,
