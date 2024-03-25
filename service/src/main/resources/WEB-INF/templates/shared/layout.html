@@ -184,7 +184,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </style>
   </head>
   <body
-    th:classappend="${guardian} != null or ${sendAddress} != null ? 'with-guardian' : 'without-guardian'"
+    th:classappend="${guardian} != null ? 'with-guardian' : 'without-guardian'"
   >
     <table class="layout-container-table">
       <thead>
@@ -199,7 +199,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <td>
             <address
               class="address"
-              th:if="${guardian} != null or ${sendAddress} != null"
+              th:if="${guardian} != null"
               layout:fragment="address"
             >
               <th:block th:if="${guardian} != null">
