@@ -467,6 +467,10 @@ sealed interface Action {
             READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPublishedChildDocument(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument()
+            ),
+            DOWNLOAD(
+                IsCitizen(allowWeakLogin = false).guardianOfChildOfPublishedChildDocument(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument()
             );
 
             override fun toString(): String = "${javaClass.name}.$name"

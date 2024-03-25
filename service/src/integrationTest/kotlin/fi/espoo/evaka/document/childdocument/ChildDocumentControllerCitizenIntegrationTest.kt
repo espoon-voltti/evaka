@@ -143,6 +143,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 id = documentId,
                 status = DocumentStatus.DRAFT,
                 publishedAt = clock.now(),
+                downloadable = false,
                 content = documentContent,
                 child =
                     ChildBasics(

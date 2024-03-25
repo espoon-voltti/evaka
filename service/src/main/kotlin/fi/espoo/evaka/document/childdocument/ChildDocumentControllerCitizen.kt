@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -23,7 +24,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/child-documents")
-class ChildDocumentControllerCitizen(private val accessControl: AccessControl) {
+class ChildDocumentControllerCitizen(
+    private val accessControl: AccessControl,
+    private val childDocumentService: ChildDocumentService
+) {
     @GetMapping
     fun getDocuments(
         db: Database,
@@ -68,6 +72,28 @@ class ChildDocumentControllerCitizen(private val accessControl: AccessControl) {
                 }
             }
             .also { Audit.ChildDocumentRead.log(targetId = documentId) }
+    }
+
+    @GetMapping("/{documentId}/pdf")
+    fun downloadChildDocument(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.DOWNLOAD,
+                        documentId
+                    )
+                    childDocumentService.getPdfResponse(tx, documentId)
+                }
+            }
+            .also { Audit.ChildDocumentDownload.log(targetId = documentId) }
     }
 
     @PutMapping("/{documentId}/read")

@@ -4,60 +4,13 @@
 
 package fi.espoo.evaka.document.childdocument
 
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
-import fi.espoo.evaka.pdfgen.PdfGenerator
-import fi.espoo.evaka.s3.Document
-import fi.espoo.evaka.s3.DocumentService
-import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.NotFound
 import java.time.format.DateTimeFormatter
-import org.springframework.stereotype.Service
-
-const val childDocumentBucketPrefix = "child-documents/"
-
-@Service
-class DocumentHtmlGenerator(
-    asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    bucketEnv: BucketEnv,
-    private val documentClient: DocumentService,
-    private val pdfGenerator: PdfGenerator
-) {
-    private val bucket = bucketEnv.data
-
-    init {
-        asyncJobRunner.registerHandler<AsyncJob.CreateChildDocumentPdf> { db, _, msg ->
-            createAndUploadPdf(db, msg.documentId)
-        }
-    }
-
-    fun createAndUploadPdf(db: Database.Connection, documentId: ChildDocumentId) {
-        val document =
-            db.transaction { tx -> tx.getChildDocument(documentId) }
-                ?: throw NotFound("document $documentId not found")
-        val html = generateChildDocumentHtml(document)
-        val pdfBytes = pdfGenerator.render(html)
-        val key =
-            documentClient.upload(
-                bucketName = bucket,
-                document =
-                    Document(
-                        name = "${childDocumentBucketPrefix}child_document_$documentId.pdf",
-                        bytes = pdfBytes,
-                        contentType = "application/pdf"
-                    )
-            )
-        db.transaction { tx -> tx.updateChildDocumentKey(documentId, key.key) }
-    }
-}
 
 // language=css
 private val childDocumentCss =

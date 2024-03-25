@@ -38,6 +38,7 @@ const en: Translations = {
     cancel: 'Cancel',
     return: 'Return',
     download: 'Download',
+    print: 'Print',
     ok: 'Ok',
     save: 'Save',
     discard: 'Discard',

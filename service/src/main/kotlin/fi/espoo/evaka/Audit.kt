@@ -144,6 +144,7 @@ enum class Audit(
     ChildDatePresenceExpectedAbsencesCheck,
     ChildDocumentCreate,
     ChildDocumentDelete,
+    ChildDocumentDownload,
     ChildDocumentMarkRead,
     ChildDocumentNextStatus,
     ChildDocumentPrevStatus,

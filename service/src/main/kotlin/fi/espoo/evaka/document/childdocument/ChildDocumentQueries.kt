@@ -75,6 +75,19 @@ WHERE cd.id = ${bind(id)}
         .exactlyOneOrNull<ChildDocumentDetails>()
 }
 
+fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
+    return createQuery {
+            sql(
+                """
+                SELECT cd.document_key
+                FROM child_document cd
+                WHERE cd.id = ${bind(id)} AND published_at IS NOT NULL
+                """
+            )
+        }
+        .exactlyOneOrNull<String>()
+}
+
 fun Database.Transaction.updateChildDocumentContent(
     id: ChildDocumentId,
     status: DocumentStatus,
