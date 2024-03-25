@@ -254,6 +254,24 @@ $unsubscribeEn
         )
     }
 
+    override fun missingHolidayReservationsNotification(language: Language): EmailContent {
+        return EmailContent.fromHtml(
+            subject =
+                "Loma-ajan ilmoituksia puuttuu / Anmälan om ditt/dina barns frånvaro i semestertider saknas / There are missing holiday notifications",
+            html =
+                """
+<p>Loma-ajan kysely sulkeutuu kahden päivän päästä. Jos lapseltanne/lapsiltanne puuttuu loma-ajan ilmoitus yhdeltä tai useammalta lomapäivältä, teettehän ilmoituksen eVakan kalenterissa mahdollisimman pian: ${calendarLink(Language.fi)}</p>
+$unsubscribeFi
+<hr>
+<p>Förfrågan om barnets frånvaro i semestertider stängs om två dagar. Om ditt/dina barn saknar anmälan för en eller flera helgdagar, vänligen gör anmälan i eVaka-kalendern så snart som möjligt: ${calendarLink(Language.sv)}</p>
+$unsubscribeSv
+<hr>
+<p>Two days left to submit a holiday notification. If you have not submitted a notification for each day, please submit them through the eVaka calendar as soon as possible: ${calendarLink(Language.en)}</p>
+$unsubscribeEn
+"""
+        )
+    }
+
     override fun assistanceNeedDecisionNotification(language: Language): EmailContent =
         EmailContent.fromHtml(
             subject = "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",

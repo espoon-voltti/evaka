@@ -71,6 +71,8 @@ interface IEmailMessageProvider {
         checkedRange: FiniteDateRange
     ): EmailContent
 
+    fun missingHolidayReservationsNotification(language: Language): EmailContent
+
     fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent
 
     fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
