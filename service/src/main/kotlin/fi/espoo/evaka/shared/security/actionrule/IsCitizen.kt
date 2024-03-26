@@ -431,12 +431,31 @@ FROM application a
 JOIN application_other_guardian aog ON a.id = aog.application_id
 WHERE aog.guardian_id = ${bind(citizenId)}
 AND allow_other_guardian_access IS TRUE
-            """
-                    .trimIndent()
+"""
             )
         }
 
-    fun ownerOfApplicationOfSentDecision() =
+    // "other decision guardian" == other guardian a decision has been sent to
+    fun nonBlockedOtherDecisionGuardianOfApplication() =
+        rule<ApplicationId> { citizenId, _ ->
+            sql(
+                // note: this check intentionally uses the other_guardian_id column and not the
+                // application_other_guardian table, because the former contains the other guardian
+                // the decision was sent to, while the latter is saved earlier during the
+                // application process and might be different
+                """
+SELECT a.id
+FROM application a
+WHERE a.other_guardian_id = ${bind(citizenId)}
+AND NOT EXISTS (
+    SELECT FROM guardian_blocklist gb
+    WHERE gb.guardian_id = ${bind(citizenId)} AND gb.child_id = a.child_id
+)
+"""
+            )
+        }
+
+    fun nonBlockedOwnerOfApplicationOfSentDecision() =
         rule<DecisionId> { citizenId, _ ->
             sql(
                 """
@@ -445,8 +464,33 @@ FROM decision
 JOIN application ON decision.application_id = application.id
 WHERE guardian_id = ${bind(citizenId)}
 AND decision.sent_date IS NOT NULL
-            """
-                    .trimIndent()
+AND NOT EXISTS (
+    SELECT FROM guardian_blocklist gb
+    WHERE gb.guardian_id = ${bind(citizenId)} AND gb.child_id = application.child_id
+)
+"""
+            )
+        }
+
+    // "other decision guardian" == other guardian a decision has been sent to
+    fun otherDecisionGuardianOfApplicationOfSentDecision() =
+        rule<DecisionId> { citizenId, _ ->
+            sql(
+                // note: this check intentionally uses the other_guardian_id column and not the
+                // application_other_guardian table, because the former contains the other guardian
+                // the decision was sent to, while the latter is saved earlier during the
+                // application process and might be different
+                """
+SELECT decision.id
+FROM decision
+JOIN application ON decision.application_id = application.id
+WHERE other_guardian_id = ${bind(citizenId)}
+AND decision.sent_date IS NOT NULL
+AND NOT EXISTS (
+    SELECT FROM guardian_blocklist gb
+    WHERE gb.guardian_id = ${bind(citizenId)} AND gb.child_id = application.child_id
+)
+"""
             )
         }
 

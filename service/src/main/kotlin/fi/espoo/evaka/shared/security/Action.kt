@@ -320,7 +320,10 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).ownerOfApplication(),
                 IsCitizen(allowWeakLogin = false).otherGuardianOfApplication()
             ),
-            READ_DECISIONS(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
+            READ_DECISIONS(
+                IsCitizen(allowWeakLogin = false).ownerOfApplication(),
+                IsCitizen(allowWeakLogin = false).nonBlockedOtherDecisionGuardianOfApplication()
+            ),
             DELETE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
             UPDATE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
             UPLOAD_ATTACHMENT(IsCitizen(allowWeakLogin = false).ownerOfApplication());
@@ -480,7 +483,13 @@ sealed interface Action {
 
         enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) :
             ScopedAction<DecisionId> {
-            DOWNLOAD_PDF(IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision())
+            READ(
+                IsCitizen(allowWeakLogin = false).nonBlockedOwnerOfApplicationOfSentDecision(),
+                IsCitizen(allowWeakLogin = false).otherDecisionGuardianOfApplicationOfSentDecision()
+            ),
+            DOWNLOAD_PDF(
+                IsCitizen(allowWeakLogin = false).nonBlockedOwnerOfApplicationOfSentDecision()
+            )
         }
 
         enum class IncomeStatement(
@@ -528,7 +537,6 @@ sealed interface Action {
             READ_CALENDAR_EVENTS(IsCitizen(allowWeakLogin = true).self()),
             READ_CHILDREN(IsCitizen(allowWeakLogin = true).self()),
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_EXPIRED_INCOME_DATES(IsCitizen(allowWeakLogin = true).self()),
             READ_FINANCE_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),

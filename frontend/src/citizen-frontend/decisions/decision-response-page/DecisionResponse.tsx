@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
@@ -40,6 +41,8 @@ interface SingleDecisionProps {
   blocked: boolean
   rejectCascade: boolean
   handleReturnToPreviousPage: () => void
+  permittedActions: Set<Action.Citizen.Decision>
+  canDecide: boolean
 }
 
 export default React.memo(function DecisionResponse({
@@ -47,7 +50,9 @@ export default React.memo(function DecisionResponse({
   validRequestedStartDatePeriod,
   blocked,
   rejectCascade,
-  handleReturnToPreviousPage
+  handleReturnToPreviousPage,
+  permittedActions,
+  canDecide
 }: SingleDecisionProps) {
   const t = useTranslation()
   const [lang] = useLang()
@@ -149,7 +154,9 @@ export default React.memo(function DecisionResponse({
         }`}
       </H2>
       <Gap size="xs" />
-      <PdfLink decisionId={decision.id} />
+      {permittedActions.has('DOWNLOAD_PDF') && (
+        <PdfLink decisionId={decision.id} />
+      )}
       <Gap size="m" />
       <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
         <Label>{t.decisions.applicationDecisions.childName}</Label>
@@ -173,7 +180,7 @@ export default React.memo(function DecisionResponse({
           {t.decisions.applicationDecisions.status[status]}
         </Status>
       </ListGrid>
-      {decision.status === 'PENDING' && (
+      {decision.status === 'PENDING' && canDecide && (
         <>
           <Gap size="s" />
           <H3 fitted>{t.decisions.applicationDecisions.response.title}</H3>
