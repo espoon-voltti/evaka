@@ -257,7 +257,7 @@ $unsubscribeEn
     override fun missingHolidayReservationsNotification(language: Language): EmailContent {
         return EmailContent.fromHtml(
             subject =
-                "Loma-ajan ilmoituksia puuttuu / Anmälan om ditt/dina barns frånvaro i semestertider saknas / There are missing holiday notifications",
+                "Loma-ajan ilmoitus sulkeutuu / Semesteranmälan löper ut / Holiday notification period closing",
             html =
                 """
 <p>Loma-ajan kysely sulkeutuu kahden päivän päästä. Jos lapseltanne/lapsiltanne puuttuu loma-ajan ilmoitus yhdeltä tai useammalta lomapäivältä, teettehän ilmoituksen eVakan kalenterissa mahdollisimman pian: ${calendarLink(Language.fi)}</p>

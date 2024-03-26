@@ -127,14 +127,14 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `Missing holiday reminder is not sent if child is in service voucher unit`() {
+    fun `Missing holiday reminder is not sent if child is in unit with disabled reservations`() {
         db.transaction {
             val voucherDaycare =
                 it.insert(
                     DevDaycare(
                         areaId = areaId,
-                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
+                        // enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        providerType = ProviderType.MUNICIPAL
                     )
                 )
 
