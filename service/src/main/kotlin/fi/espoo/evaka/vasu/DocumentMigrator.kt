@@ -176,16 +176,8 @@ private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
         confidential = true,
         legalBasis =
             when (vasu.type) {
-                CurriculumType.DAYCARE ->
-                    when (vasu.language) {
-                        VasuLanguage.FI -> translations.lawVasu
-                        VasuLanguage.SV -> translations.lawVasu
-                    }
-                CurriculumType.PRESCHOOL ->
-                    when (vasu.language) {
-                        VasuLanguage.FI -> translations.lawLeops
-                        VasuLanguage.SV -> translations.lawLeops
-                    }
+                CurriculumType.DAYCARE -> translations.lawVasu
+                CurriculumType.PRESCHOOL -> translations.lawLeops
             },
         validity = vasu.templateRange.asDateRange()
     )
