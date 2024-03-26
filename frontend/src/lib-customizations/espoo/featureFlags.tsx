@@ -39,7 +39,7 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     timeUsageInfo: true,
-    discussionReservations: true
+    discussionReservations: false
   },
   staging: {
     citizenShiftCareAbsence: true,

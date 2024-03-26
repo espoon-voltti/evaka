@@ -145,6 +145,9 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open({
+    employeeCustomizations: {
+      featureFlags: { discussionReservations: true }
+    },
     mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
   await employeeLogin(page, unitSupervisor)

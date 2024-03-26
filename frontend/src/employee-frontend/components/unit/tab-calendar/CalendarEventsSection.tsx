@@ -46,7 +46,7 @@ import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, fontWeights, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
+import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
 import {

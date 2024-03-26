@@ -231,7 +231,7 @@ interface BaseFeatureFlags {
   /**
    * EXPERIMENTAL: Enable discussion reservation surveys
    */
-  discussionReservations: boolean
+  discussionReservations?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
