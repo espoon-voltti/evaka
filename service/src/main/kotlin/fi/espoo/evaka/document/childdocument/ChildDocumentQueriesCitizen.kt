@@ -29,6 +29,7 @@ fun Database.Read.getChildDocumentCitizenSummaries(
             )
         }
         .toList<ChildDocumentCitizenSummary>()
+        .filter { !it.type.isMigrated() }
 }
 
 fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {
@@ -61,6 +62,7 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
             )
         }
         .exactlyOneOrNull<ChildDocumentCitizenDetails>()
+        ?.takeIf { !it.template.type.isMigrated() }
 }
 
 fun Database.Transaction.markChildDocumentAsRead(

@@ -476,6 +476,7 @@ enum class Audit(
     VasuTemplateDelete,
     VasuTemplateRead,
     VasuTemplateUpdate,
+    VasuTemplateMigrate,
     VoucherValueDecisionHeadOfFamilyCreateRetroactive,
     VoucherValueDecisionHeadOfFamilyRead,
     VoucherValueDecisionIgnore,

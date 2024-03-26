@@ -218,6 +218,22 @@ export async function getTemplates(
 
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuTemplateController.migrateVasuDocuments
+*/
+export async function migrateVasuDocuments(
+  request: {
+    id: UUID
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/vasu/templates/${request.id}/migrate`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.vasu.VasuTemplateController.postTemplate
 */
 export async function postTemplate(

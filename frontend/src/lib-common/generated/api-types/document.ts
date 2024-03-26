@@ -258,7 +258,9 @@ export interface DocumentTemplateSummary {
 export const documentTypes = [
   'PEDAGOGICAL_REPORT',
   'PEDAGOGICAL_ASSESSMENT',
-  'HOJKS'
+  'HOJKS',
+  'MIGRATED_VASU',
+  'MIGRATED_LEOPS'
 ] as const
 
 export type DocumentType = typeof documentTypes[number]

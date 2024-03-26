@@ -302,6 +302,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class MigrateVasuDocument(val documentId: VasuDocumentId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -376,6 +380,12 @@ sealed interface AsyncJob : AsyncJobPayload {
                     ResetVardaChildOld::class,
                     DeleteVardaChildOld::class,
                 )
+            )
+        val vasuMigration =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "vasuMigration"),
+                AsyncJobPool.Config(concurrency = 1),
+                setOf(MigrateVasuDocument::class)
             )
     }
 }

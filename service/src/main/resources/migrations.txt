@@ -386,3 +386,4 @@ V386__async_job_permit.sql
 V387__generate_id_for_incomes.sql
 V388__preschool_assistance_decision_valid_to.sql
 V389__resync_personal_accounts_with_acl.sql
+V390__add_migrated_document_types.sql

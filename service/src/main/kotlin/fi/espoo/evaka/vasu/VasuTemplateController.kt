@@ -26,7 +26,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/vasu/templates")
-class VasuTemplateController(private val accessControl: AccessControl) {
+class VasuTemplateController(
+    private val accessControl: AccessControl,
+    private val vasuMigratorService: VasuMigratorService
+) {
     data class CreateTemplateRequest(
         val name: String,
         val valid: FiniteDateRange,
@@ -194,5 +197,21 @@ class VasuTemplateController(private val accessControl: AccessControl) {
             }
         }
         Audit.VasuTemplateUpdate.log(targetId = id)
+    }
+
+    @PutMapping("/{id}/migrate")
+    fun migrateVasuDocuments(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: VasuTemplateId
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.VasuTemplate.COPY, id)
+                vasuMigratorService.planMigrationJobs(tx, clock.now(), id)
+            }
+        }
+        Audit.VasuTemplateMigrate.log(targetId = id)
     }
 }

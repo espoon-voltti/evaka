@@ -73,11 +73,13 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
 
   const typeOptions = useMemo(
     () =>
-      documentTypes.map((option) => ({
-        domValue: option,
-        value: option,
-        label: i18n.documentTemplates.documentTypes[option]
-      })),
+      documentTypes
+        .filter((type) => !type.startsWith('MIGRATED_'))
+        .map((option) => ({
+          domValue: option,
+          value: option,
+          label: i18n.documentTemplates.documentTypes[option]
+        })),
     [i18n.documentTemplates]
   )
 

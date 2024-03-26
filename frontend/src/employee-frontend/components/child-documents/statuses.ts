@@ -10,7 +10,9 @@ import {
 const statusesByType: Record<DocumentType, DocumentStatus[]> = {
   PEDAGOGICAL_ASSESSMENT: ['DRAFT', 'COMPLETED'],
   PEDAGOGICAL_REPORT: ['DRAFT', 'COMPLETED'],
-  HOJKS: ['DRAFT', 'PREPARED', 'COMPLETED']
+  HOJKS: ['DRAFT', 'PREPARED', 'COMPLETED'],
+  MIGRATED_VASU: ['COMPLETED'],
+  MIGRATED_LEOPS: ['COMPLETED']
 }
 
 export const getNextDocumentStatus = (

@@ -37,7 +37,8 @@ class AsyncJobConfig {
                 AsyncJob.varda,
                 AsyncJob.suomiFi.withThrottleInterval(
                     Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
-                )
+                ),
+                AsyncJob.vasuMigration
             ),
             jdbi,
             tracer
