@@ -36,6 +36,7 @@ import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
+import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.DaycareDecisionCustomization
@@ -124,6 +125,7 @@ import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
@@ -1475,6 +1477,10 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
     fun addCalendarEventAttendee(db: Database, @RequestBody body: DevCalendarEventAttendee) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
+    @PostMapping("/calendar-event-time")
+    fun addCalendarEventTime(db: Database, @RequestBody body: DevCalendarEventTime) =
+        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+
     @PostMapping("/absence")
     fun addAbsence(db: Database, @RequestBody body: DevAbsence) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
@@ -2162,7 +2168,8 @@ data class DevCalendarEvent(
     val title: String,
     val description: String,
     val period: FiniteDateRange,
-    val modifiedAt: HelsinkiDateTime
+    val modifiedAt: HelsinkiDateTime,
+    val eventType: CalendarEventType
 )
 
 data class DevCalendarEventAttendee(
@@ -2171,6 +2178,17 @@ data class DevCalendarEventAttendee(
     val unitId: DaycareId,
     val groupId: GroupId? = null,
     val childId: ChildId? = null,
+)
+
+data class DevCalendarEventTime(
+    val id: CalendarEventTimeId = CalendarEventTimeId(UUID.randomUUID()),
+    val calendarEventId: CalendarEventId,
+    val date: LocalDate,
+    val start: LocalTime,
+    val end: LocalTime,
+    val childId: ChildId? = null,
+    val modifiedBy: EvakaUserId,
+    val modifiedAt: HelsinkiDateTime
 )
 
 data class DevAbsence(

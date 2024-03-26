@@ -29,6 +29,7 @@ import { DevBackupCare } from './api-types'
 import { DevBackupPickup } from './api-types'
 import { DevCalendarEvent } from './api-types'
 import { DevCalendarEventAttendee } from './api-types'
+import { DevCalendarEventTime } from './api-types'
 import { DevCareArea } from './api-types'
 import { DevChild } from './api-types'
 import { DevChildAttendance } from './api-types'
@@ -180,6 +181,27 @@ export async function addCalendarEventAttendee(
       url: uri`/calendar-event-attendee`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevCalendarEventAttendee>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.addCalendarEventTime
+*/
+export async function addCalendarEventTime(
+  request: {
+    body: DevCalendarEventTime
+  }
+): Promise<UUID> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<UUID>>({
+      url: uri`/calendar-event-time`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevCalendarEventTime>
     })
     return json
   } catch (e) {

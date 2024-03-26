@@ -17,6 +17,7 @@ export type QueryKeyPrefix =
   | 'unit'
   | 'vasu'
   | 'personProfile'
+  | 'calendarEvent'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

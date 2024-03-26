@@ -9,7 +9,7 @@ import LocalTime from '../local-time'
 import TimeInterval from '../time-interval'
 import TimeRange from '../time-range'
 
-import { mapped, object, transformed, value } from './form'
+import { mapped, object, required, transformed, value } from './form'
 import {
   AnyForm,
   FieldErrors,
@@ -253,6 +253,31 @@ export const localTimeRange = ({
         return ValidationError.of('timeFormat')
       }
       return ValidationSuccess.of(result)
+    }
+  )
+
+export const requiredLocalTimeRange = () =>
+  transformed(
+    object({
+      startTime: required(localTime()),
+      endTime: required(localTime())
+    }),
+    ({
+      startTime,
+      endTime
+    }): ValidationResult<TimeRange | undefined, 'timeFormat'> => {
+      if (startTime === undefined && endTime === undefined) {
+        return ValidationSuccess.of(undefined)
+      }
+      if (
+        startTime === undefined ||
+        endTime === undefined ||
+        !endTime.isAfter(startTime)
+      ) {
+        return ValidationError.of('timeFormat')
+      } else {
+        return ValidationSuccess.of(TimeRange.tryCreate(startTime, endTime))
+      }
     }
   )
 

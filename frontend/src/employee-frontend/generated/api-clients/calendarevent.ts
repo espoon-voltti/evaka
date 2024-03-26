@@ -7,15 +7,17 @@
 import LocalDate from 'lib-common/local-date'
 import { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventForm } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventTimeEmployeeReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventTimeForm } from 'lib-common/generated/api-types/calendarevent'
-import { CalendarEventTimeReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CalendarEventUpdateForm } from 'lib-common/generated/api-types/calendarevent'
+import { DiscussionReservationDay } from 'lib-common/generated/api-types/calendarevent'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
+import { deserializeJsonDiscussionReservationDay } from 'lib-common/generated/api-types/calendarevent'
 import { uri } from 'lib-common/uri'
 
 
@@ -103,6 +105,47 @@ export async function getCalendarEvent(
 
 
 /**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getGroupDiscussionReservationDays
+*/
+export async function getGroupDiscussionReservationDays(
+  request: {
+    unitId: UUID,
+    groupId: UUID,
+    start: LocalDate,
+    end: LocalDate
+  }
+): Promise<DiscussionReservationDay[]> {
+  const params = createUrlSearchParams(
+    ['start', request.start.formatIso()],
+    ['end', request.end.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<DiscussionReservationDay[]>>({
+    url: uri`/units/${request.unitId}/groups/${request.groupId}/discussion-reservation-days`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonDiscussionReservationDay(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getGroupDiscussionSurveys
+*/
+export async function getGroupDiscussionSurveys(
+  request: {
+    unitId: UUID,
+    groupId: UUID
+  }
+): Promise<CalendarEvent[]> {
+  const { data: json } = await client.request<JsonOf<CalendarEvent[]>>({
+    url: uri`/units/${request.unitId}/groups/${request.groupId}/discussion-surveys`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonCalendarEvent(e))
+}
+
+
+/**
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getUnitCalendarEvents
 */
 export async function getUnitCalendarEvents(
@@ -148,13 +191,13 @@ export async function modifyCalendarEvent(
 */
 export async function setCalendarEventTimeReservation(
   request: {
-    body: CalendarEventTimeReservationForm
+    body: CalendarEventTimeEmployeeReservationForm
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/calendar-event/reservation`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<CalendarEventTimeReservationForm>
+    data: request.body satisfies JsonCompatible<CalendarEventTimeEmployeeReservationForm>
   })
   return json
 }

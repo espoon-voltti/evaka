@@ -227,6 +227,11 @@ interface BaseFeatureFlags {
    * Hide option to create a club application in citizen UI
    */
   hideClubApplication?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable discussion reservation surveys
+   */
+  discussionReservations?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

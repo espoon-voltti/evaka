@@ -46,6 +46,7 @@ import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, fontWeights, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
 import {
@@ -74,7 +75,10 @@ const EventsWeekContainer = styled.div`
   word-wrap: break-word;
 `
 
-const EventDay = styled.div<{ $isToday: boolean; $isOtherMonth: boolean }>`
+export const EventDay = styled.div<{
+  $isToday: boolean
+  $isOtherMonth: boolean
+}>`
   height: 100%;
   border: ${(p) => `1px solid ${p.theme.colors.grayscale.g15}`};
   padding: ${defaultMargins.s} 0;
@@ -138,6 +142,10 @@ const EventLinkContainer = styled.div`
   &.type-partial-group {
     border-color: ${(p) => p.theme.colors.accents.a9pink};
   }
+`
+
+const DiscussionLink = styled(Link)`
+  font-weight: ${fontWeights.semibold};
 `
 
 type SpecifierType = 'daycare' | 'group' | 'partial-group'
@@ -274,7 +282,18 @@ export default React.memo(function CalendarEventsSection({
         />
       )}
 
-      <FlexRow justifyContent="flex-end">
+      <FlexRow justifyContent={groupId ? 'space-between' : 'flex-end'}>
+        {featureFlags.discussionReservations && !!groupId && (
+          <DiscussionLink
+            data-qa="discussion-survey-page-button"
+            to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`}
+          >
+            {
+              i18n.unit.calendar.events.discussionReservation
+                .discussionPageTitle
+            }
+          </DiscussionLink>
+        )}
         <AddButton
           flipped
           text={i18n.unit.calendar.events.createEvent}
@@ -630,6 +649,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
             description: form.description,
             period: form.period,
             tree: getFormTree(form.attendees),
+            eventType: 'DAYCARE_EVENT',
             times: []
           }
         })
@@ -729,7 +749,9 @@ const getLongAttendees = (
   return groups
     .flatMap(
       ({ name, id }) =>
-        childGroupIds[id]?.map((child) => `${name}/${child.name}`) ?? [name]
+        childGroupIds[id]?.map(
+          (child) => `${name}/${child.lastName} ${child.firstName}`
+        ) ?? [name]
     )
     .join(', ')
 }

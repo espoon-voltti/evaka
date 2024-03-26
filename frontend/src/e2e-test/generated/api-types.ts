@@ -22,6 +22,7 @@ import { AssistanceNeedDecisionGuardian } from 'lib-common/generated/api-types/a
 import { AssistanceNeedDecisionLanguage } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
+import { CalendarEventType } from 'lib-common/generated/api-types/calendarevent'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
@@ -288,6 +289,7 @@ export interface DevBackupPickup {
 */
 export interface DevCalendarEvent {
   description: string
+  eventType: CalendarEventType
   id: UUID
   modifiedAt: HelsinkiDateTime
   period: FiniteDateRange
@@ -303,6 +305,20 @@ export interface DevCalendarEventAttendee {
   groupId: UUID | null
   id: UUID
   unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevCalendarEventTime
+*/
+export interface DevCalendarEventTime {
+  calendarEventId: UUID
+  childId: UUID | null
+  date: LocalDate
+  end: LocalTime
+  id: UUID
+  modifiedAt: HelsinkiDateTime
+  modifiedBy: UUID
+  start: LocalTime
 }
 
 /**
@@ -1125,6 +1141,17 @@ export function deserializeJsonDevCalendarEvent(json: JsonOf<DevCalendarEvent>):
     ...json,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     period: FiniteDateRange.parseJson(json.period)
+  }
+}
+
+
+export function deserializeJsonDevCalendarEventTime(json: JsonOf<DevCalendarEventTime>): DevCalendarEventTime {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    end: LocalTime.parseIso(json.end),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    start: LocalTime.parseIso(json.start)
   }
 }
 

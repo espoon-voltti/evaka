@@ -98,6 +98,8 @@ import VardaErrors from './components/reports/VardaErrors'
 import VoucherServiceProviderUnit from './components/reports/VoucherServiceProviderUnit'
 import VoucherServiceProviders from './components/reports/VoucherServiceProviders'
 import TimelinePage from './components/timeline/TimelinePage'
+import DiscussionReservationSurveyWrapper from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveyWrapper'
+import DiscussionReservationSurveysPage from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveysPage'
 import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
 import VasuEditPage from './components/vasu/VasuEditPage'
@@ -240,6 +242,30 @@ export default createBrowserRouter(
               <GroupCaretakers />
             </EmployeeRoute>
           )
+        },
+        {
+          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys',
+          element: featureFlags.discussionReservations ? (
+            <EmployeeRoute>
+              <DiscussionReservationSurveysPage />
+            </EmployeeRoute>
+          ) : null
+        },
+        {
+          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId',
+          element: featureFlags.discussionReservations ? (
+            <EmployeeRoute>
+              <DiscussionReservationSurveyWrapper mode="VIEW" />
+            </EmployeeRoute>
+          ) : null
+        },
+        {
+          path: '/units/:unitId/groups/:groupId/discussion-reservation-surveys/:eventId/edit',
+          element: featureFlags.discussionReservations ? (
+            <EmployeeRoute>
+              <DiscussionReservationSurveyWrapper mode="EDIT" />
+            </EmployeeRoute>
+          ) : null
         },
         {
           path: '/units/:id/*',

@@ -8,6 +8,7 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import TimeRange from '../../time-range'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
@@ -27,6 +28,7 @@ export interface AttendingChild {
 export interface CalendarEvent {
   contentModifiedAt: HelsinkiDateTime
   description: string
+  eventType: CalendarEventType
   groups: GroupInfo[]
   id: UUID
   individualChildren: IndividualChild[]
@@ -41,6 +43,7 @@ export interface CalendarEvent {
 */
 export interface CalendarEventForm {
   description: string
+  eventType: CalendarEventType
   period: FiniteDateRange
   times: CalendarEventTimeForm[] | null
   title: string
@@ -60,21 +63,35 @@ export interface CalendarEventTime {
 }
 
 /**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeCitizenReservationForm
+*/
+export interface CalendarEventTimeCitizenReservationForm {
+  calendarEventTimeId: UUID
+  childId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeEmployeeReservationForm
+*/
+export interface CalendarEventTimeEmployeeReservationForm {
+  calendarEventTimeId: UUID
+  childId: UUID | null
+}
+
+/**
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeForm
 */
 export interface CalendarEventTimeForm {
   date: LocalDate
-  endTime: LocalTime
-  startTime: LocalTime
+  timeRange: TimeRange
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeReservationForm
+* Generated from fi.espoo.evaka.calendarevent.CalendarEventType
 */
-export interface CalendarEventTimeReservationForm {
-  calendarEventTimeId: UUID
-  childId: UUID
-}
+export type CalendarEventType =
+  | 'DAYCARE_EVENT'
+  | 'DISCUSSION_SURVEY'
 
 /**
 * Generated from fi.espoo.evaka.calendarevent.CalendarEventUpdateForm
@@ -96,6 +113,16 @@ export interface CitizenCalendarEvent {
 }
 
 /**
+* Generated from fi.espoo.evaka.calendarevent.DiscussionReservationDay
+*/
+export interface DiscussionReservationDay {
+  date: LocalDate
+  events: CalendarEvent[]
+  isHoliday: boolean
+  isOperationalDay: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.calendarevent.GroupInfo
 */
 export interface GroupInfo {
@@ -107,9 +134,10 @@ export interface GroupInfo {
 * Generated from fi.espoo.evaka.calendarevent.IndividualChild
 */
 export interface IndividualChild {
+  firstName: string
   groupId: UUID
   id: UUID
-  name: string
+  lastName: string
 }
 
 
@@ -154,8 +182,7 @@ export function deserializeJsonCalendarEventTimeForm(json: JsonOf<CalendarEventT
   return {
     ...json,
     date: LocalDate.parseIso(json.date),
-    endTime: LocalTime.parseIso(json.endTime),
-    startTime: LocalTime.parseIso(json.startTime)
+    timeRange: TimeRange.parseJson(json.timeRange)
   }
 }
 
@@ -166,5 +193,14 @@ export function deserializeJsonCitizenCalendarEvent(json: JsonOf<CitizenCalendar
     attendingChildren: Object.fromEntries(Object.entries(json.attendingChildren).map(
       ([k, v]) => [k, v.map(e => deserializeJsonAttendingChild(e))]
     ))
+  }
+}
+
+
+export function deserializeJsonDiscussionReservationDay(json: JsonOf<DiscussionReservationDay>): DiscussionReservationDay {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    events: json.events.map(e => deserializeJsonCalendarEvent(e))
   }
 }

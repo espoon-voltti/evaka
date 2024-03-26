@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.calendarevent.ParentWithEvents
 import fi.espoo.evaka.calendarevent.getParentsWithNewEventsAfter
 import fi.espoo.evaka.daycare.domain.Language
@@ -326,7 +327,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                         title = title,
                         description = description,
                         period = period,
-                        modifiedAt = created
+                        modifiedAt = created,
+                        eventType = CalendarEventType.DAYCARE_EVENT
                     )
                 )
 

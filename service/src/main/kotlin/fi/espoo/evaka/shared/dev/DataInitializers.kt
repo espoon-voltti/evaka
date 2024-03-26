@@ -40,6 +40,7 @@ import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.CalendarEventAttendeeId
 import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildAttendanceId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
@@ -1444,8 +1445,8 @@ fun Database.Transaction.insert(row: DevCalendarEvent): CalendarEventId =
     createUpdate {
             sql(
                 """
-INSERT INTO calendar_event (id, title, description, period, modified_at, content_modified_at)
-VALUES (${bind(row.id)}, ${bind(row.title)}, ${bind(row.description)}, ${bind(row.period)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedAt)})
+INSERT INTO calendar_event (id, title, description, period, modified_at, content_modified_at, event_type)
+VALUES (${bind(row.id)}, ${bind(row.title)}, ${bind(row.description)}, ${bind(row.period)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedAt)}, ${bind(row.eventType)})
 RETURNING id
 """
             )
@@ -1459,6 +1460,21 @@ fun Database.Transaction.insert(row: DevCalendarEventAttendee): CalendarEventAtt
                 """
 INSERT INTO calendar_event_attendee (id, calendar_event_id, unit_id, group_id, child_id)
 VALUES (${bind(row.id)}, ${bind(row.calendarEventId)}, ${bind(row.unitId)}, ${bind(row.groupId)}, ${bind(row.childId)})
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(row: DevCalendarEventTime): CalendarEventTimeId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO calendar_event_time (id, date, calendar_event_id, start_time, end_time, child_id, created_at, created_by, updated_at, modified_at, modified_by)
+VALUES (${bind(row.id)}, ${bind(row.date)}, ${bind(row.calendarEventId)}, ${bind(row.start)}, ${bind(row.end)},
+${bind(row.childId)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.modifiedAt)},
+${bind(row.modifiedAt)}, ${bind(row.modifiedBy)})
 RETURNING id
 """
             )

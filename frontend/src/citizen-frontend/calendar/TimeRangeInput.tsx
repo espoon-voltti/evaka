@@ -38,7 +38,7 @@ export default React.memo(function TimeRangeInputF({
     <div>
       <TimeRangeWrapper>
         <TimeInputF
-          wide
+          size="wide"
           bind={startTime}
           placeholder={i18n.calendar.reservationModal.start}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}
@@ -48,7 +48,7 @@ export default React.memo(function TimeRangeInputF({
         />
         <span>–</span>
         <TimeInputF
-          wide
+          size="wide"
           bind={endTime}
           placeholder={i18n.calendar.reservationModal.end}
           hideErrorsBeforeTouched={hideErrorsBeforeTouched}

@@ -6,7 +6,7 @@
 
 import LocalDate from 'lib-common/local-date'
 import { CalendarEventTime } from 'lib-common/generated/api-types/calendarevent'
-import { CalendarEventTimeReservationForm } from 'lib-common/generated/api-types/calendarevent'
+import { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
@@ -23,13 +23,13 @@ import { uri } from 'lib-common/uri'
 */
 export async function addCalendarEventTimeReservation(
   request: {
-    body: CalendarEventTimeReservationForm
+    body: CalendarEventTimeCitizenReservationForm
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/calendar-event/reservation`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<CalendarEventTimeReservationForm>
+    data: request.body satisfies JsonCompatible<CalendarEventTimeCitizenReservationForm>
   })
   return json
 }
