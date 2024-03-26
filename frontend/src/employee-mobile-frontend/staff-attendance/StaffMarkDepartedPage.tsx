@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -31,8 +31,8 @@ import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
 import { staffAttendanceQuery, staffDepartureMutation } from './queries'
@@ -44,11 +44,11 @@ export default React.memo(function StaffMarkDepartedPage() {
 
   const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
 
-  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
+    refetchOnMount: 'always'
+  })
+
   const { groupRoute } = useSelectedGroup()
-  useEffect(() => {
-    reloadUnitInfo()
-  }, [reloadUnitInfo])
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 

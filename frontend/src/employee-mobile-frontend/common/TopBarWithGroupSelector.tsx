@@ -8,13 +8,16 @@ import { useNavigate } from 'react-router-dom'
 import { UserContext } from 'employee-mobile-frontend/auth/state'
 import { combine } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import useRouteParams from 'lib-common/useRouteParams'
 import { Gap } from 'lib-components/white-space'
+
+import { unitInfoQuery } from '../units/queries'
 
 import { CountInfo } from './GroupSelector'
 import { GroupSelectorBar } from './GroupSelectorBar'
 import TopBar from './TopBar'
-import { UnitContext } from './unit'
 
 export type TopBarWithGroupSelectorProps = {
   selectedGroup: GroupInfo | undefined
@@ -35,7 +38,8 @@ export default React.memo(function TopBarWithGroupSelector({
 }: TopBarWithGroupSelectorProps) {
   const navigate = useNavigate()
   const { user } = useContext(UserContext)
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitId } = useRouteParams(['unitId'])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const topBarProps = useMemo(
     () =>

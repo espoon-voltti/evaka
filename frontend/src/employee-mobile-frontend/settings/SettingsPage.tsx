@@ -6,6 +6,8 @@ import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
+import { useQueryResult } from 'lib-common/query'
+import useRouteParams from 'lib-common/useRouteParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 
@@ -14,14 +16,15 @@ import { UserContext } from '../auth/state'
 import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 import { NotificationSettings } from './NotificationSettings'
 
 export const SettingsPage = React.memo(function SettingsPage() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitId } = useRouteParams(['unitId'])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user: userResponse } = useContext(UserContext)
 
   return (

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -19,7 +19,7 @@ import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'
 import { staffAttendanceQuery } from './queries'
@@ -42,7 +42,7 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
   const { unitId } = useRouteParams(['unitId'])
   const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 

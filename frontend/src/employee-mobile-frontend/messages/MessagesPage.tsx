@@ -28,7 +28,7 @@ import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 import DraftMessagesList from './DraftMessagesList'
 import MessageEditor from './MessageEditor'
@@ -51,7 +51,7 @@ export default function MessagesPage() {
   const navigate = useNavigate()
   const { unitId } = useRouteParams(['unitId'])
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { groupRoute } = useSelectedGroup()
 
   const { groupAccounts, selectedAccount } = useContext(MessageContext)

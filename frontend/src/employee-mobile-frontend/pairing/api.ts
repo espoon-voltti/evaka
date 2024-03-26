@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { UnitInfo, UnitStats } from 'lib-common/generated/api-types/attendance'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -60,25 +59,5 @@ export function authMobile(
     })
     .then((res) => res.data)
     .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
-export function getMobileUnitInfo(unitId: string): Promise<Result<UnitInfo>> {
-  return client
-    .get<JsonOf<UnitInfo>>(`/mobile/units/${unitId}`)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export function getMobileUnitStats(
-  unitIds: string[]
-): Promise<Result<UnitStats[]>> {
-  return client
-    .get<JsonOf<UnitStats[]>>('/mobile/units/stats', {
-      params: {
-        unitIds: unitIds.join(',')
-      }
-    })
-    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

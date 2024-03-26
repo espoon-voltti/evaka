@@ -3,14 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -48,8 +41,8 @@ import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
 import { TallContentArea } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
 import { staffArrivalMutation, staffAttendanceQuery } from './queries'
@@ -356,10 +349,9 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
 
-  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  useEffect(() => {
-    reloadUnitInfo()
-  }, [reloadUnitInfo])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
+    refetchOnMount: 'always'
+  })
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 

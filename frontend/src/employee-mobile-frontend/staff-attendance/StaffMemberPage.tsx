@@ -4,7 +4,7 @@
 
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -23,7 +23,7 @@ import { featureFlags } from 'lib-customizations/employeeMobile'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
@@ -37,7 +37,7 @@ export default React.memo(function StaffMemberPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 

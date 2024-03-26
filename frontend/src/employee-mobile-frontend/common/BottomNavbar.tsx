@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { useQuery } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import {
   FixedSpaceColumn,
@@ -32,10 +32,10 @@ import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import { unreadCountsQuery } from '../messages/queries'
 import { MessageContext } from '../messages/state'
+import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
 import { useSelectedGroup } from './selected-group'
-import { UnitContext } from './unit'
 
 export type NavItem = 'child' | 'staff' | 'messages' | 'settings'
 
@@ -105,7 +105,7 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
   const { unitId } = useRouteParams(['unitId'])
   const { groupRoute } = useSelectedGroup()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId), {
     refetchOnMount: false

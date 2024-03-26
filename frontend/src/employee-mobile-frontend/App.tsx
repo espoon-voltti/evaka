@@ -24,7 +24,6 @@ import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
 
 import RequireAuth from './RequireAuth'
-import UnitList from './UnitList'
 import { UserContext, UserContextProvider } from './auth/state'
 import AttendancePageWrapper from './child-attendance/AttendancePageWrapper'
 import AttendanceTodayWrapper from './child-attendance/AttendanceTodayWrapper'
@@ -43,7 +42,6 @@ import ChildSensitiveInfoPage from './child-info/ChildSensitiveInfoPage'
 import ChildNotes from './child-notes/ChildNotes'
 import { I18nContextProvider, useTranslation } from './common/i18n'
 import { ServiceWorkerContextProvider } from './common/service-worker'
-import { UnitContextProvider } from './common/unit'
 import MessagesPage from './messages/MessagesPage'
 import NewChildMessagePage from './messages/NewChildMessagePage'
 import { UnreadMessagesPage } from './messages/UnreadMessagesPage'
@@ -60,6 +58,7 @@ import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
 import StaffMarkArrivedPage from './staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
 import StaffMemberPage from './staff-attendance/StaffMemberPage'
+import UnitList from './units/UnitList'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -131,16 +130,12 @@ function shouldForwardProp(propName: string, target: unknown) {
 }
 
 function UnitRouter() {
-  const params = useRouteParams(['unitId'])
-
   return (
-    <UnitContextProvider unitId={params.unitId}>
-      <Routes>
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/groups/:groupId/*" element={<GroupRouter />} />
-        <Route index element={<Navigate replace to="groups/all" />} />
-      </Routes>
-    </UnitContextProvider>
+    <Routes>
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/groups/:groupId/*" element={<GroupRouter />} />
+      <Route index element={<Navigate replace to="groups/all" />} />
+    </Routes>
   )
 }
 

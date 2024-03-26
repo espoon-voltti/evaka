@@ -25,7 +25,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { childrenQuery } from '../child-attendance/queries'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 import { pinLogin } from './api'
 import { UserContext } from './state'
@@ -38,7 +38,8 @@ interface EmployeeOption {
 const PinLoginForm = React.memo(function PinLoginForm() {
   const { i18n } = useTranslation()
   const { user, refreshAuthStatus } = useContext(UserContext)
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitId } = useRouteParams(['unitId'])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const employeeId = user.map((u) => u?.employeeId ?? null).getOrElse(null)
   const showEmployeeSelection = employeeId === null
 
@@ -150,8 +151,8 @@ const PinLoginForm = React.memo(function PinLoginForm() {
 })
 
 export const PinLogin = React.memo(function PinLogin() {
-  const { unitInfoResponse } = useContext(UnitContext)
   const { unitId, childId } = useRouteParams(['unitId'], ['childId'])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const navigate = useNavigate()
