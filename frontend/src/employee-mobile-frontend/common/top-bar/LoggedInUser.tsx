@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
-import { useQueryResult } from 'lib-common/query'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -41,8 +41,11 @@ const getUserName = (u: Staff | undefined) => {
 
 export const LoggedInUser = React.memo(function LoggedInUser() {
   const { user, refreshAuthStatus } = useContext(UserContext)
-  const { unitId } = useRouteParams(['unitId'])
-  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
+  const { unitId } = useRouteParams([], ['unitId'])
+
+  const unitInfoResponse = useQueryResult(
+    queryOrDefault(unitInfoQuery, null)(unitId ? { unitId } : null)
+  )
 
   const userNames = useMemo(
     () =>
@@ -54,7 +57,7 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
             return undefined
           }
 
-          return unitInfo.staff.find(({ id }) => id === employeeId)
+          return unitInfo?.staff.find(({ id }) => id === employeeId)
         })
         .map(getUserName)
         .getOrElse(getUserName(undefined)),
