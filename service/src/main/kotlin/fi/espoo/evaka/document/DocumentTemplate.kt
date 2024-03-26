@@ -108,7 +108,9 @@ enum class DocumentType(val statuses: List<DocumentStatus>) {
     PEDAGOGICAL_ASSESSMENT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
     MIGRATED_VASU(listOf(DocumentStatus.COMPLETED)),
-    MIGRATED_LEOPS(listOf(DocumentStatus.COMPLETED))
+    MIGRATED_LEOPS(listOf(DocumentStatus.COMPLETED));
+
+    fun isMigrated() = this in listOf(MIGRATED_VASU, MIGRATED_LEOPS)
 }
 
 enum class DocumentLanguage {

@@ -28,9 +28,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import org.springframework.stereotype.Service
 
-// consider moving to env if we need different settings in different envs
-const val VASU_MIGRATION_COMPLETED = false
-
 @Service
 class VasuMigratorService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     init {

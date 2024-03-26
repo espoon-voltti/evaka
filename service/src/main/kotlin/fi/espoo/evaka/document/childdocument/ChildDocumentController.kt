@@ -6,7 +6,6 @@ package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.document.DocumentTemplateContent
-import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -19,7 +18,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.vasu.VASU_MIGRATION_COMPLETED
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -108,12 +106,7 @@ class ChildDocumentController(
                                 ?.takeIf { it.contains(Action.ChildDocument.READ) }
                                 ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
                         }
-                        .filter {
-                            VASU_MIGRATION_COMPLETED ||
-                                user.isAdmin ||
-                                it.data.type !in
-                                    listOf(DocumentType.MIGRATED_VASU, DocumentType.MIGRATED_LEOPS)
-                        }
+                        .filter { user.isAdmin || !it.data.type.isMigrated() }
                 }
             }
             .also { Audit.ChildDocumentRead.log(targetId = childId) }
@@ -143,10 +136,7 @@ class ChildDocumentController(
 
                     val document =
                         tx.getChildDocument(documentId)?.takeIf {
-                            VASU_MIGRATION_COMPLETED ||
-                                user.isAdmin ||
-                                it.template.type !in
-                                    listOf(DocumentType.MIGRATED_VASU, DocumentType.MIGRATED_LEOPS)
+                            user.isAdmin || !it.template.type.isMigrated()
                         } ?: throw NotFound("Document $documentId not found")
 
                     val permittedActions =
