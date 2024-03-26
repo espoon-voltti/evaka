@@ -2,18 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import { useQueryResult } from 'lib-common/query'
+import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faPen } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 interface Props {
   groupRoute: string
@@ -29,7 +31,8 @@ export default React.memo(function ChildButtons({
   const { i18n } = useTranslation()
   const { colors } = useTheme()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitId } = useRouteParams(['unitId'])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const noteFound =
     child.dailyNote !== null || child.stickyNotes.length > 0 || groupHasNotes
   return renderResult(unitInfoResponse, (unit) => (

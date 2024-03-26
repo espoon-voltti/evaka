@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { useQuery } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontSizesMobile, H1, P } from 'lib-components/typography'
@@ -20,8 +20,8 @@ import BottomNavBar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
 import { WideLinkButton } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import { unreadCountsQuery } from './queries'
 
@@ -29,7 +29,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
   const { unitId } = useRouteParams(['unitId'])
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId))
 

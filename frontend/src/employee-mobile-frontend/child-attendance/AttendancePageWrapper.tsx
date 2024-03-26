@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { animated, useSpring } from '@react-spring/web'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   Outlet,
   useLocation,
@@ -28,8 +28,8 @@ import { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
 import { zIndex } from '../constants'
+import { unitInfoQuery } from '../units/queries'
 
 import ChildList from './ChildList'
 import { attendanceStatusesQuery, childrenQuery } from './queries'
@@ -49,7 +49,7 @@ export default React.memo(function AttendancePageWrapper({
   const navigate = useNavigate()
   const location = useLocation()
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { selectedGroupId } = useSelectedGroup()
 
   const selectedGroup = useMemo(

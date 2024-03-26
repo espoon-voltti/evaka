@@ -30,6 +30,7 @@ import {
 } from 'lib-common/generated/api-types/webpush'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import useRouteParams from 'lib-common/useRouteParams'
 import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -46,7 +47,7 @@ import { Gap } from 'lib-components/white-space'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
 import { ServiceWorkerContext } from '../common/service-worker'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 import { pushSettingsMutation, pushSettingsQuery } from './queries'
 
@@ -62,7 +63,8 @@ export const NotificationSettings = React.memo(function NotificationSettings() {
   const { i18n } = useTranslation()
   const t = i18n.settings.notifications
   const { pushNotifications } = useContext(ServiceWorkerContext)
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { unitId } = useRouteParams(['unitId'])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const [permissionState, setPermissionState] = useState<
     PermissionState | undefined
   >(undefined)

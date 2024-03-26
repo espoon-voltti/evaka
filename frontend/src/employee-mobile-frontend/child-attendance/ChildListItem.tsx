@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -11,7 +11,7 @@ import {
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQuery } from 'lib-common/query'
+import { queryOrDefault, useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -24,7 +24,7 @@ import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { unitInfoQuery } from '../units/queries'
 
 import { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
@@ -107,9 +107,9 @@ export default React.memo(function ChildListItem({
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
-  const { unitInfoResponse } = useContext(UnitContext)
-
   const { unitId } = useRouteParams(['unitId'])
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
+
   const { selectedGroupId } = useSelectedGroup()
 
   const { data: groupNotes = [] } = useQuery(

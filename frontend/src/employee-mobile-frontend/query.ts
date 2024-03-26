@@ -10,8 +10,9 @@ export type QueryKeyPrefix =
   | 'childAttendance'
   | 'messages'
   | 'notes'
-  | 'staffAttendance'
   | 'settings'
+  | 'staffAttendance'
+  | 'units'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

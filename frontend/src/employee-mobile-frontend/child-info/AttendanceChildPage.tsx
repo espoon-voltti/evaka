@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -35,8 +35,8 @@ import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
 import { BackButton, TallContentArea } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import Absences from './Absences'
 import ArrivalAndDeparture from './ArrivalAndDeparture'
@@ -54,7 +54,7 @@ export default React.memo(function AttendanceChildPage() {
 
   const { unitId, childId } = useRouteParams(['unitId', 'childId'])
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { data: groupNotes } = useQuery(
     groupNotesQuery(selectedGroupId.type === 'all' ? '' : selectedGroupId.id),
