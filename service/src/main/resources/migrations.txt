@@ -389,3 +389,4 @@ V389__resync_personal_accounts_with_acl.sql
 V390__add_migrated_document_types.sql
 V391__calendar_event_type.sql
 V392__add_document_key_to_child_document.sql
+V393__jamix_customer_id.sql
