@@ -55,24 +55,32 @@ class MissingHolidayReservationsReminders(
                     "Holiday ${holidayPeriod.id} reservation deadline is due, sending missing reservation reminders"
                 )
 
-                // Get a rough guess of persons with missing holiday reservations, then do an exact
-                // check per person
-                // in a separate job
-                val personsWithMaybeMissingHolidayReservations =
+                val childrenWithMaybeMissingHolidayReservations =
                     holidayPeriod.period
                         .dates()
-                        .map { tx.getPersonsWithChildrenWithMissingReservation(it) }
+                        .map { tx.getChildrenWithWithMissingReservations(it) }
+                        .flatten()
+                        .toSet()
+
+                val personsToBeNotified =
+                    childrenWithMaybeMissingHolidayReservations
+                        .map {
+                            tx.getChildGuardiansToNotify(
+                                clock.today(),
+                                childrenWithMaybeMissingHolidayReservations.toList()
+                            )
+                        }
                         .flatten()
                         .toSet()
 
                 logger.info(
-                    "Got ${personsWithMaybeMissingHolidayReservations.size} persons with maybe missing holiday reservations for holiday ${holidayPeriod.period}"
+                    "Got ${childrenWithMaybeMissingHolidayReservations.size} children with maybe missing holiday reservations and will notify ${personsToBeNotified.size} persons for holiday ${holidayPeriod.period}"
                 )
 
                 asyncJobRunner.plan(
                     tx,
                     payloads =
-                        personsWithMaybeMissingHolidayReservations.map {
+                        personsToBeNotified.map {
                             AsyncJob.SendMissingHolidayReservationsReminder(
                                 it,
                                 holidayPeriod.period
@@ -84,7 +92,7 @@ class MissingHolidayReservationsReminders(
             } ?: 0
     }
 
-    fun Database.Read.getPersonsWithChildrenWithMissingReservation(
+    fun Database.Read.getChildrenWithWithMissingReservations(
         theDate: LocalDate,
         personId: PersonId? = null
     ): List<PersonId> =
@@ -98,11 +106,11 @@ WITH reservable_placements AS
         AND p.type = ANY
             (${bind(PlacementType.requiringAttendanceReservations)})
      )
-SELECT COALESCE(g.guardian_id, fp.id) AS guardian_id -- distinct by storing these in a set in kotlin
+SELECT p.child_id
 FROM reservable_placements p
-     JOIN daycare d ON d.id = p.unit_id AND extract(isodow FROM ${bind(theDate)}) = ANY(d.operation_days) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-     LEFT JOIN guardian g ON g.child_id = p.child_id
-     LEFT JOIN foster_parent fp ON fp.child_id = p.child_id AND fp.valid_during @> ${bind(theDate)}   
+     JOIN daycare d ON d.id = p.unit_id 
+        AND extract(isodow FROM ${bind(theDate)}) = ANY(d.operation_days) 
+        AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 WHERE
     NOT EXISTS (
         SELECT 1
@@ -114,10 +122,27 @@ WHERE
         FROM absence a
         WHERE a.child_id = p.child_id AND a.date = ${bind(theDate)}
     )
-    AND (g.guardian_id IS NOT NULL OR fp.parent_id IS NOT NULL)
-    AND d.provider_type != 'PRIVATE_SERVICE_VOUCHER'
-    ${if (personId == null) "" else "AND guardian_id = ${bind(personId)}"}
+"""
+                )
+            }
+            .mapTo<PersonId>()
+            .toList()
 
+    fun Database.Read.getChildGuardiansToNotify(
+        today: LocalDate,
+        childIds: List<PersonId>
+    ): List<PersonId> =
+        createQuery {
+                sql(
+                    """
+SELECT DISTINCT(COALESCE(g.guardian_id, fp.id)) AS guardian_id
+FROM person p
+     LEFT JOIN guardian g ON g.child_id = p.id
+     LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during @> ${bind(today)}   
+WHERE
+    p.id = ANY(${bind(childIds)})
+    AND ((g.guardian_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM guardian_blocklist block where block.guardian_id = g.guardian_id and block.child_id = p.id)) 
+        OR fp.parent_id IS NOT NULL)
 """
                 )
             }
