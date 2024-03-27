@@ -8,7 +8,7 @@ import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
-import fi.espoo.evaka.assistance.endActiveAssistanceFactors
+import fi.espoo.evaka.assistance.endAssistanceFactorsWhichBelongToPastPlacements
 import fi.espoo.evaka.assistanceneed.decision.endActiveDaycareAssistanceDecisions
 import fi.espoo.evaka.assistanceneed.preschooldecision.endActivePreschoolAssistanceDecisions
 import fi.espoo.evaka.attachment.AttachmentService
@@ -58,8 +58,8 @@ enum class ScheduledJob(
         ScheduledJobs::dvvUpdate,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 0)))
     ),
-    EndActiveAssistanceFactors(
-        ScheduledJobs::endActiveAssistanceFactors,
+    EndAssistanceFactorsWhichBelongToPastPlacements(
+        ScheduledJobs::endAssistanceFactorsWhichBelongToPastPlacements,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
     ),
     EndActiveDaycareAssistanceDecisions(
@@ -202,8 +202,11 @@ class ScheduledJobs(
             ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }
 
-    fun endActiveAssistanceFactors(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx -> tx.endActiveAssistanceFactors(clock.today()) }
+    fun endAssistanceFactorsWhichBelongToPastPlacements(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
+        db.transaction { tx -> tx.endAssistanceFactorsWhichBelongToPastPlacements(clock.today()) }
     }
 
     fun endActiveDaycareAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {

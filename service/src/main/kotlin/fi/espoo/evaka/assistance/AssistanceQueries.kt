@@ -103,7 +103,7 @@ RETURNING id, child_id, valid_during, capacity_factor, modified, (SELECT name FR
         .executeAndReturnGeneratedKeys()
         .exactlyOneOrNull<AssistanceFactor>()
 
-fun Database.Transaction.endActiveAssistanceFactors(date: LocalDate) =
+fun Database.Transaction.endAssistanceFactorsWhichBelongToPastPlacements(date: LocalDate) =
     createUpdate {
             sql(
                 """

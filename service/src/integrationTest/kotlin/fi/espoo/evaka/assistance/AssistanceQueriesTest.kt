@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
-    fun `endActiveAssistanceFactors sets end date from placement`() {
+    fun `endAssistanceFactorsWhichBelongToPastPlacements sets end date from placement`() {
         val placementStart = LocalDate.of(2024, 1, 1)
         val placementEnd = LocalDate.of(2024, 1, 31)
         val today = placementEnd.plusDays(1)
@@ -50,7 +50,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId
             }
 
-        db.transaction { it.endActiveAssistanceFactors(today) }
+        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
         assertThat(db.read { it.getAssistanceFactors(child = childId) })
             .extracting<FiniteDateRange> { it.validDuring }
@@ -58,7 +58,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `endActiveAssistanceFactors works with multiple placements`() {
+    fun `endAssistanceFactorsWhichBelongToPastPlacements works with multiple placements`() {
         val placement1Start = LocalDate.of(2024, 1, 1)
         val placement1End = LocalDate.of(2024, 1, 31)
         val placement2Start = LocalDate.of(2024, 2, 1)
@@ -97,7 +97,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId
             }
 
-        db.transaction { it.endActiveAssistanceFactors(today) }
+        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
         assertThat(db.read { it.getAssistanceFactors(child = childId) })
             .extracting<FiniteDateRange> { it.validDuring }
@@ -105,7 +105,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `endActiveAssistanceFactors works with multiple assistance factors`() {
+    fun `endAssistanceFactorsWhichBelongToPastPlacements works with multiple assistance factors`() {
         val placementStart = LocalDate.of(2024, 1, 1)
         val placementEnd = LocalDate.of(2024, 2, 15)
         val today = placementEnd.plusDays(1)
@@ -142,7 +142,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId
             }
 
-        db.transaction { it.endActiveAssistanceFactors(today) }
+        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
         assertThat(db.read { it.getAssistanceFactors(child = childId) })
             .extracting<FiniteDateRange> { it.validDuring }
@@ -153,7 +153,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `endActiveAssistanceFactors works with placement before assistance factor`() {
+    fun `endAssistanceFactorsWhichBelongToPastPlacements works with placement before assistance factor`() {
         val placementStart = LocalDate.of(2024, 1, 1)
         val placementEnd = LocalDate.of(2024, 1, 31)
         val today = placementEnd.plusDays(1)
@@ -182,7 +182,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId
             }
 
-        db.transaction { it.endActiveAssistanceFactors(today) }
+        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
         assertThat(db.read { it.getAssistanceFactors(child = childId) })
             .extracting<FiniteDateRange> { it.validDuring }
@@ -190,7 +190,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `endActiveAssistanceFactors works with multiple children`() {
+    fun `endAssistanceFactorsWhichBelongToPastPlacements works with multiple children`() {
         val child1PlacementStart = LocalDate.of(2024, 1, 1)
         val child1PlacementEnd = LocalDate.of(2024, 1, 31)
         val child2PlacementStart = LocalDate.of(2024, 1, 1)
@@ -244,7 +244,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId
             }
 
-        db.transaction { it.endActiveAssistanceFactors(today) }
+        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
         assertThat(db.read { it.getAssistanceFactors(child = child1Id) })
             .extracting<FiniteDateRange> { it.validDuring }
