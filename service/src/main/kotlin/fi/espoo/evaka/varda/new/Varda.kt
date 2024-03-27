@@ -13,6 +13,33 @@ import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 
+data class Henkilo(
+    val etunimet: String,
+    val sukunimi: String,
+    val henkilotunnus: String?,
+    val henkilo_oid: String?,
+) {
+    companion object {
+        fun fromEvaka(data: VardaPerson): Henkilo =
+            Henkilo(
+                etunimet = data.firstName,
+                sukunimi = data.lastName,
+                henkilotunnus = data.socialSecurityNumber,
+                henkilo_oid = data.ophPersonOid,
+            )
+    }
+
+    fun toVarda() =
+        VardaWriteClient.CreateHenkiloRequest(
+            etunimet = etunimet,
+            kutsumanimi = etunimet.split(" ").first(),
+            sukunimi = sukunimi,
+            // Avoid sending both henkilotunnus and henkilo_oid (error code HE004)
+            henkilotunnus = henkilotunnus.takeIf { henkilo_oid == null },
+            henkilo_oid = henkilo_oid,
+        )
+}
+
 data class Lapsi(
     val vakatoimija_oid: String?,
     val oma_organisaatio_oid: String?,
@@ -34,7 +61,7 @@ data class Lapsi(
                 )
             }
 
-        fun fromVarda(data: VardaClient.LapsiResponse): Lapsi =
+        fun fromVarda(data: VardaReadClient.LapsiResponse): Lapsi =
             Lapsi(
                 vakatoimija_oid = data.vakatoimija_oid,
                 oma_organisaatio_oid = data.oma_organisaatio_oid,
@@ -43,7 +70,7 @@ data class Lapsi(
     }
 
     fun toVarda(lahdejarjestelma: String, henkilo: URI) =
-        VardaClient.CreateLapsiRequest(
+        VardaWriteClient.CreateLapsiRequest(
             lahdejarjestelma = lahdejarjestelma,
             henkilo = henkilo,
             vakatoimija_oid = vakatoimija_oid,
@@ -80,7 +107,7 @@ data class Varhaiskasvatuspaatos(
                     VardaUnitProviderType.fromEvakaProviderType(data.providerType).vardaCode,
             )
 
-        fun fromVarda(data: VardaClient.VarhaiskasvatuspaatosResponse) =
+        fun fromVarda(data: VardaReadClient.VarhaiskasvatuspaatosResponse) =
             Varhaiskasvatuspaatos(
                 hakemus_pvm = data.hakemus_pvm,
                 alkamis_pvm = data.alkamis_pvm,
@@ -96,7 +123,7 @@ data class Varhaiskasvatuspaatos(
     }
 
     fun toVarda(lahdejarjestelma: String, lapsi: URI) =
-        VardaClient.CreateVarhaiskasvatuspaatosRequest(
+        VardaWriteClient.CreateVarhaiskasvatuspaatosRequest(
             lahdejarjestelma = lahdejarjestelma,
             lapsi = lapsi,
             alkamis_pvm = alkamis_pvm,
@@ -125,7 +152,7 @@ data class Varhaiskasvatussuhde(
                 paattymis_pvm = data.range.end,
             )
 
-        fun fromVarda(data: VardaClient.VarhaiskasvatussuhdeResponse) =
+        fun fromVarda(data: VardaReadClient.VarhaiskasvatussuhdeResponse) =
             Varhaiskasvatussuhde(
                 toimipaikka_oid = data.toimipaikka_oid,
                 alkamis_pvm = data.alkamis_pvm,
@@ -134,7 +161,7 @@ data class Varhaiskasvatussuhde(
     }
 
     fun toVarda(lahdejarjestelma: String, varhaiskasvatuspaatos: URI) =
-        VardaClient.CreateVarhaiskasvatussuhdeRequest(
+        VardaWriteClient.CreateVarhaiskasvatussuhdeRequest(
             lahdejarjestelma = lahdejarjestelma,
             varhaiskasvatuspaatos = varhaiskasvatuspaatos,
             toimipaikka_oid = toimipaikka_oid,
@@ -149,7 +176,7 @@ enum class MaksunPerusteKoodi(val code: String) {
 }
 
 data class Maksutieto(
-    val huoltajat: List<VardaClient.Huoltaja>,
+    val huoltajat: List<Huoltaja>,
     val alkamis_pvm: LocalDate,
     val paattymis_pvm: LocalDate?,
     val perheen_koko: Int?,
@@ -166,7 +193,7 @@ data class Maksutieto(
                             (it.id == data.headOfFamilyId || it.id == data.partnerId)
                     }
                     .map {
-                        VardaClient.Huoltaja(
+                        Huoltaja(
                             henkilotunnus = (it.identity as ExternalIdentifier.SSN).ssn,
                             henkilo_oid = it.ophPersonOid?.takeIf { oid -> oid.isNotBlank() },
                             etunimet = it.firstName,
@@ -198,7 +225,7 @@ data class Maksutieto(
             )
         }
 
-        fun fromVarda(data: VardaClient.MaksutietoResponse): Maksutieto =
+        fun fromVarda(data: VardaReadClient.MaksutietoResponse): Maksutieto =
             Maksutieto(
                 huoltajat = data.huoltajat,
                 alkamis_pvm = data.alkamis_pvm,
@@ -211,7 +238,7 @@ data class Maksutieto(
     }
 
     fun toVarda(lahdejarjestelma: String, lapsi: URI) =
-        VardaClient.CreateMaksutietoRequest(
+        VardaWriteClient.CreateMaksutietoRequest(
             lahdejarjestelma = lahdejarjestelma,
             lapsi = lapsi,
             huoltajat =
