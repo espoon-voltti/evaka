@@ -10,6 +10,7 @@ import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -48,11 +49,15 @@ import AttendanceChildComing from './child-state-pages/AttendanceChildComing'
 import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted'
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
 
-export default React.memo(function AttendanceChildPage() {
+export default React.memo(function AttendanceChildPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
+  const { childId } = useRouteParams(['childId'])
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { selectedGroupId, groupRoute } = useSelectedGroup()
@@ -193,6 +198,7 @@ export default React.memo(function AttendanceChildPage() {
                     </ChildBackground>
 
                     <ChildButtons
+                      unitId={unitId}
                       groupHasNotes={groupHasNotes}
                       groupRoute={groupRoute}
                       child={child}

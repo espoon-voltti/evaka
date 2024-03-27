@@ -37,7 +37,7 @@ export default React.memo(function UnitList() {
 
   return (
     <>
-      <TopBar title={i18n.units.title} />
+      <TopBar title={i18n.units.title} unitId={undefined} />
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
         {renderResult(units, (units) => (

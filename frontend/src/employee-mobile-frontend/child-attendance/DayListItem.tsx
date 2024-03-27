@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { useSelectedGroup } from 'employee-mobile-frontend/common/selected-group'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import colors, { theme } from 'lib-customizations/common'
@@ -19,10 +20,14 @@ import { useTranslation } from '../common/i18n'
 import ChildReservationList from './ChildReservationList'
 
 interface DayListItemProps {
+  unitId: UUID
   dayStats: DayReservationStatisticsResult
 }
 
-export default React.memo(function DayListItem({ dayStats }: DayListItemProps) {
+export default React.memo(function DayListItem({
+  unitId,
+  dayStats
+}: DayListItemProps) {
   const { i18n, lang } = useTranslation()
 
   const [isOpen, setOpen] = useState<boolean>(false)
@@ -87,7 +92,7 @@ export default React.memo(function DayListItem({ dayStats }: DayListItemProps) {
         </DayBoxInfo>
       </DayBox>
       {isOpen && filteredStats.absent + filteredStats.presentCount > 0 && (
-        <ChildReservationList date={dayStats.date} />
+        <ChildReservationList date={dayStats.date} unitId={unitId} />
       )}
     </>
   )

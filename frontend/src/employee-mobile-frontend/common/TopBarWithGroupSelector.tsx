@@ -10,7 +10,6 @@ import { combine } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import { Gap } from 'lib-components/white-space'
 
 import { unitInfoQuery } from '../units/queries'
@@ -20,6 +19,7 @@ import { GroupSelectorBar } from './GroupSelectorBar'
 import TopBar from './TopBar'
 
 export type TopBarWithGroupSelectorProps = {
+  unitId: UUID
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   includeSelectAll?: boolean
@@ -29,6 +29,7 @@ export type TopBarWithGroupSelectorProps = {
 }
 
 export default React.memo(function TopBarWithGroupSelector({
+  unitId,
   onChangeGroup,
   toggleSearch,
   selectedGroup,
@@ -38,7 +39,6 @@ export default React.memo(function TopBarWithGroupSelector({
 }: TopBarWithGroupSelectorProps) {
   const navigate = useNavigate()
   const { user } = useContext(UserContext)
-  const { unitId } = useRouteParams(['unitId'])
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const topBarProps = useMemo(
@@ -71,9 +71,10 @@ export default React.memo(function TopBarWithGroupSelector({
 
   return (
     <>
-      <TopBar {...topBarProps} />
+      <TopBar {...topBarProps} unitId={unitId} />
       <Gap size="xxs" />
       <GroupSelectorBar
+        unitId={unitId}
         selectedGroup={selectedGroup}
         onChangeGroup={onChangeGroup}
         onSearch={toggleSearch}

@@ -11,6 +11,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import { mockNow } from 'lib-common/utils/helpers'
@@ -46,11 +47,15 @@ import { useChild } from '../utils'
 
 import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
 
-export default React.memo(function MarkAbsentBeforehand() {
+export default React.memo(function MarkAbsentBeforehand({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<

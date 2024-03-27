@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { TabLinks } from 'lib-components/molecules/Tabs'
@@ -34,12 +34,15 @@ const StaticIconContainer = styled.div`
 type StatusTab = 'present' | 'absent'
 
 interface Props {
+  unitId: UUID
   tab: StatusTab
 }
 
-export default React.memo(function StaffAttendancesPage({ tab }: Props) {
+export default React.memo(function StaffAttendancesPage({
+  unitId,
+  tab
+}: Props) {
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
   const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -137,6 +140,7 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
 
   return (
     <PageWithNavigation
+      unitId={unitId}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}

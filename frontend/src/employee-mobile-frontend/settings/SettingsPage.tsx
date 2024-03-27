@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 
@@ -20,10 +20,13 @@ import { unitInfoQuery } from '../units/queries'
 
 import { NotificationSettings } from './NotificationSettings'
 
-export const SettingsPage = React.memo(function SettingsPage() {
+export const SettingsPage = React.memo(function SettingsPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const { unitId } = useRouteParams(['unitId'])
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user: userResponse } = useContext(UserContext)
 
@@ -33,6 +36,7 @@ export const SettingsPage = React.memo(function SettingsPage() {
         <>
           <TopBar
             title={unit.name}
+            unitId={unitId}
             onBack={
               user && user.unitIds.length > 1
                 ? () => navigate('/units')
@@ -45,11 +49,11 @@ export const SettingsPage = React.memo(function SettingsPage() {
             paddingHorizontal="s"
           >
             <H1>{i18n.common.settings}</H1>
-            <NotificationSettings />
+            <NotificationSettings unitId={unitId} />
           </ContentArea>
         </>
       ))}
-      <BottomNavbar selected="settings" />
+      <BottomNavbar selected="settings" unitId={unitId} />
     </ContentArea>
   )
 })

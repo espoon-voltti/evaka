@@ -15,6 +15,7 @@ import {
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { useQuery } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import {
   Notifications,
@@ -24,6 +25,7 @@ import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
 
 import RequireAuth from './RequireAuth'
+import { RequirePinAuth } from './RequirePinAuth'
 import { UserContext, UserContextProvider } from './auth/state'
 import AttendancePageWrapper from './child-attendance/AttendancePageWrapper'
 import AttendanceTodayWrapper from './child-attendance/AttendanceTodayWrapper'
@@ -130,34 +132,44 @@ function shouldForwardProp(propName: string, target: unknown) {
 }
 
 function UnitRouter() {
+  const { unitId } = useRouteParams(['unitId'])
+
   return (
     <Routes>
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/groups/:groupId/*" element={<GroupRouter />} />
+      <Route path="/settings" element={<SettingsPage unitId={unitId} />} />
+      <Route
+        path="/groups/:groupId/*"
+        element={<GroupRouter unitId={unitId} />}
+      />
       <Route index element={<Navigate replace to="groups/all" />} />
     </Routes>
   )
 }
 
-function GroupRouter() {
+function GroupRouter({ unitId }: { unitId: UUID }) {
   useGroupIdInLocalStorage()
 
   return (
-    <MessageContextProvider>
+    <MessageContextProvider unitId={unitId}>
       <Routes>
-        <Route path="child-attendance/*" element={<ChildAttendanceRouter />} />
-        <Route path="staff/*" element={<StaffRouter />} />
-        <Route path="staff-attendance/*" element={<StaffAttendanceRouter />} />
-        <Route path="messages/*" element={<MessagesRouter />} />
+        <Route
+          path="child-attendance/*"
+          element={<ChildAttendanceRouter unitId={unitId} />}
+        />
+        <Route path="staff/*" element={<StaffRouter unitId={unitId} />} />
+        <Route
+          path="staff-attendance/*"
+          element={<StaffAttendanceRouter unitId={unitId} />}
+        />
+        <Route path="messages/*" element={<MessagesRouter unitId={unitId} />} />
         <Route index element={<Navigate replace to="child-attendance" />} />
       </Routes>
     </MessageContextProvider>
   )
 }
 
-function ChildAttendanceRouter() {
+function ChildAttendanceRouter({ unitId }: { unitId: UUID }) {
   // Re-fetch child data when navigating to the attendance section
-  const { unitId } = useRouteParams(['unitId'])
   useQuery(childrenQuery(unitId), { refetchOnMount: 'always' })
   useQuery(attendanceStatusesQuery(unitId), { refetchOnMount: 'always' })
 
@@ -176,30 +188,45 @@ function ChildAttendanceRouter() {
         <Route path="list" element={<Navigate replace to="/" />} />
       </Route>
 
-      <Route path=":childId" element={<AttendanceChildPage />} />
-      <Route path=":childId/mark-present" element={<MarkPresent />} />
-      <Route path=":childId/mark-absent" element={<MarkAbsent />} />
-      <Route path=":childId/mark-reservations" element={<MarkReservations />} />
+      <Route
+        path=":childId"
+        element={<AttendanceChildPage unitId={unitId} />}
+      />
+      <Route
+        path=":childId/mark-present"
+        element={<MarkPresent unitId={unitId} />}
+      />
+      <Route
+        path=":childId/mark-absent"
+        element={<MarkAbsent unitId={unitId} />}
+      />
+      <Route
+        path=":childId/mark-reservations"
+        element={<MarkReservations unitId={unitId} />}
+      />
       <Route
         path=":childId/mark-absent-beforehand"
-        element={<MarkAbsentBeforehand />}
+        element={<MarkAbsentBeforehand unitId={unitId} />}
       />
-      <Route path=":childId/mark-departed" element={<MarkDeparted />} />
-      <Route path=":childId/note" element={<ChildNotes />} />
+      <Route
+        path=":childId/mark-departed"
+        element={<MarkDeparted unitId={unitId} />}
+      />
+      <Route path=":childId/note" element={<ChildNotes unitId={unitId} />} />
       <Route
         path=":childId/info"
         element={
-          <RequireAuth strength="PIN">
-            <ChildSensitiveInfoPage />
-          </RequireAuth>
+          <RequirePinAuth unitId={unitId}>
+            <ChildSensitiveInfoPage unitId={unitId} />
+          </RequirePinAuth>
         }
       />
       <Route
         path=":childId/new-message"
         element={
-          <RequireAuth strength="PIN">
-            <NewChildMessagePage />
-          </RequireAuth>
+          <RequirePinAuth unitId={unitId}>
+            <NewChildMessagePage unitId={unitId} />
+          </RequirePinAuth>
         }
       />
       <Route index element={<Navigate replace to="list/coming" />} />
@@ -207,51 +234,66 @@ function ChildAttendanceRouter() {
   )
 }
 
-function StaffRouter() {
+function StaffRouter({ unitId }: { unitId: UUID }) {
   return (
     <Routes>
-      <Route index element={<StaffPage />} />
+      <Route index element={<StaffPage unitId={unitId} />} />
     </Routes>
   )
 }
 
-function StaffAttendanceRouter() {
+function StaffAttendanceRouter({ unitId }: { unitId: UUID }) {
   return (
     <Routes>
-      <Route path="absent" element={<StaffAttendancesPage tab="absent" />} />
-      <Route path="present" element={<StaffAttendancesPage tab="present" />} />
-      <Route path="external" element={<MarkExternalStaffMemberArrivalPage />} />
+      <Route
+        path="absent"
+        element={<StaffAttendancesPage tab="absent" unitId={unitId} />}
+      />
+      <Route
+        path="present"
+        element={<StaffAttendancesPage tab="present" unitId={unitId} />}
+      />
+      <Route
+        path="external"
+        element={<MarkExternalStaffMemberArrivalPage unitId={unitId} />}
+      />
       <Route
         path="external/:attendanceId"
-        element={<ExternalStaffMemberPage />}
+        element={<ExternalStaffMemberPage unitId={unitId} />}
       />
-      <Route path=":employeeId" element={<StaffMemberPage />} />
-      <Route path=":employeeId/edit" element={<StaffAttendanceEditPage />} />
+      <Route path=":employeeId" element={<StaffMemberPage unitId={unitId} />} />
+      <Route
+        path=":employeeId/edit"
+        element={<StaffAttendanceEditPage unitId={unitId} />}
+      />
       <Route
         path=":employeeId/mark-arrived"
-        element={<StaffMarkArrivedPage />}
+        element={<StaffMarkArrivedPage unitId={unitId} />}
       />
       <Route
         path=":employeeId/mark-departed"
-        element={<StaffMarkDepartedPage />}
+        element={<StaffMarkDepartedPage unitId={unitId} />}
       />
       <Route index element={<Navigate replace to="absent" />} />
     </Routes>
   )
 }
 
-function MessagesRouter() {
+function MessagesRouter({ unitId }: { unitId: UUID }) {
   return (
     <Routes>
       <Route
         index
         element={
-          <RequireAuth strength="PIN">
-            <MessagesPage />
-          </RequireAuth>
+          <RequirePinAuth unitId={unitId}>
+            <MessagesPage unitId={unitId} />
+          </RequirePinAuth>
         }
       />
-      <Route path="unread-messages" element={<UnreadMessagesPage />} />
+      <Route
+        path="unread-messages"
+        element={<UnreadMessagesPage unitId={unitId} />}
+      />
     </Routes>
   )
 }

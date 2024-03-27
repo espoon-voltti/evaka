@@ -13,7 +13,7 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -35,10 +35,13 @@ interface EmployeeOption {
   id: string
 }
 
-const PinLoginForm = React.memo(function PinLoginForm() {
+const PinLoginForm = React.memo(function PinLoginForm({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const { i18n } = useTranslation()
   const { user, refreshAuthStatus } = useContext(UserContext)
-  const { unitId } = useRouteParams(['unitId'])
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const employeeId = user.map((u) => u?.employeeId ?? null).getOrElse(null)
   const showEmployeeSelection = employeeId === null
@@ -150,8 +153,13 @@ const PinLoginForm = React.memo(function PinLoginForm() {
   )
 })
 
-export const PinLogin = React.memo(function PinLogin() {
-  const { unitId, childId } = useRouteParams(['unitId'], ['childId'])
+export const PinLogin = React.memo(function PinLogin({
+  unitId,
+  childId
+}: {
+  unitId: UUID
+  childId?: UUID
+}) {
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const unitChildren = useQueryResult(childrenQuery(unitId))
 
@@ -167,13 +175,13 @@ export const PinLogin = React.memo(function PinLogin() {
 
   return (
     <>
-      <TopBar title={title} onClose={onClose} />
+      <TopBar title={title} onClose={onClose} unitId={unitId} />
       <ContentArea
         opaque
         paddingHorizontal={defaultMargins.s}
         paddingVertical={defaultMargins.s}
       >
-        <PinLoginForm />
+        <PinLoginForm unitId={unitId} />
       </ContentArea>
     </>
   )

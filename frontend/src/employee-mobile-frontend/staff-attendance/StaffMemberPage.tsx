@@ -10,6 +10,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -31,8 +32,12 @@ import { TimeInfo } from './components/staff-components'
 import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
-export default React.memo(function StaffMemberPage() {
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+export default React.memo(function StaffMemberPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
+  const { employeeId } = useRouteParams(['employeeId'])
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const navigate = useNavigate()

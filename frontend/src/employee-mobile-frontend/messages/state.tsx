@@ -13,7 +13,6 @@ import React, {
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import { queryOrDefault, useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 
 import { UserContext } from '../auth/state'
 import { useSelectedGroup } from '../common/selected-group'
@@ -38,12 +37,12 @@ export const MessageContext = createContext<MessagesState>(defaultState)
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({
+    unitId,
     children
   }: {
+    unitId: UUID
     children: React.JSX.Element
   }) {
-    const { unitId } = useRouteParams(['unitId'])
-
     const { user } = useContext(UserContext)
     const pinLoggedEmployeeId = user
       .map((u) =>

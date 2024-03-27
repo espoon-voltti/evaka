@@ -12,7 +12,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { queryOrDefault, useQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bold, InformationText } from 'lib-components/typography'
@@ -95,6 +95,7 @@ const GroupName = styled(InformationText)`
 `
 
 interface ChildListItemProps {
+  unitId: UUID
   child: ListItem
   onClick?: () => void
   type?: AttendanceStatus
@@ -102,12 +103,12 @@ interface ChildListItemProps {
 }
 
 export default React.memo(function ChildListItem({
+  unitId,
   child,
   onClick,
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
-  const { unitId } = useRouteParams(['unitId'])
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { selectedGroupId } = useSelectedGroup()

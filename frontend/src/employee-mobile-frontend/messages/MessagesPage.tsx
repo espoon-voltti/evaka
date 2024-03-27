@@ -15,7 +15,6 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Tabs } from 'lib-components/molecules/Tabs'
@@ -46,10 +45,9 @@ type UiState =
   | { type: 'sentMessage'; message: SentMessage }
   | { type: 'newMessage'; draft: DraftContent | undefined }
 
-export default function MessagesPage() {
+export default function MessagesPage({ unitId }: { unitId: UUID }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { groupRoute } = useSelectedGroup()
@@ -112,6 +110,7 @@ export default function MessagesPage() {
           case 'list':
             return (
               <PageWithNavigation
+                unitId={unitId}
                 selected="messages"
                 selectedGroup={
                   selectedAccount?.daycareGroup
@@ -169,12 +168,14 @@ export default function MessagesPage() {
               >
                 {uiState.type === 'receivedThread' ? (
                   <ReceivedThreadView
+                    unitId={unitId}
                     threadId={uiState.threadId}
                     onBack={onBack}
                     accountId={selectedAccount.account.id}
                   />
                 ) : (
                   <SentMessageView
+                    unitId={unitId}
                     account={selectedAccount.account}
                     message={uiState.message}
                     onBack={onBack}
@@ -186,6 +187,7 @@ export default function MessagesPage() {
           case 'newMessage':
             return renderResult(recipients, (availableRecipients) => (
               <MessageEditor
+                unitId={unitId}
                 availableRecipients={availableRecipients}
                 account={selectedAccount.account}
                 draft={uiState.draft}
@@ -201,7 +203,7 @@ export default function MessagesPage() {
           paddingHorizontal="zero"
           data-qa="messages-page-content-area"
         >
-          <TopBar title={unit.name} />
+          <TopBar title={unit.name} unitId={unitId} />
           {groupAccounts.length === 0 ? (
             <NoAccounts data-qa="info-no-account-access">
               {i18n.messages.noAccountAccess}
@@ -209,7 +211,7 @@ export default function MessagesPage() {
           ) : (
             <Navigate to={`${groupRoute}/messages/unread`} replace={true} />
           )}
-          <BottomNavbar selected="messages" />
+          <BottomNavbar selected="messages" unitId={unitId} />
         </ContentArea>
       ))
 }

@@ -10,7 +10,7 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 
@@ -27,9 +27,8 @@ import {
 } from './api'
 import { staffAttendanceForGroupOrUnit } from './utils'
 
-export default React.memo(function StaffPage() {
+export default React.memo(function StaffPage({ unitId }: { unitId: UUID }) {
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
   const { selectedGroupId } = useSelectedGroup()
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -84,6 +83,7 @@ export default React.memo(function StaffPage() {
 
   return (
     <PageWithNavigation
+      unitId={unitId}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}

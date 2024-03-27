@@ -9,7 +9,7 @@ import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
 import { queryOrDefault, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
@@ -39,9 +39,12 @@ const getUserName = (u: Staff | undefined) => {
   }
 }
 
-export const LoggedInUser = React.memo(function LoggedInUser() {
+export const LoggedInUser = React.memo(function LoggedInUser({
+  unitId
+}: {
+  unitId: UUID | undefined
+}) {
   const { user, refreshAuthStatus } = useContext(UserContext)
-  const { unitId } = useRouteParams([], ['unitId'])
 
   const unitInfoResponse = useQueryResult(
     queryOrDefault(unitInfoQuery, null)(unitId ? { unitId } : null)

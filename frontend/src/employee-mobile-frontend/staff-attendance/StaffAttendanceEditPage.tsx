@@ -206,8 +206,12 @@ const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
   pinCode: EMPTY_PIN
 })
 
-export default React.memo(function StaffAttendanceEditPage() {
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+export default React.memo(function StaffAttendanceEditPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
+  const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))

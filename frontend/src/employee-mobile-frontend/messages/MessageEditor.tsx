@@ -96,6 +96,7 @@ const messageForm = mapped(
 )
 
 interface Props {
+  unitId: UUID
   account: MessageAccount
   availableRecipients: MessageReceiversResponse[]
   draft: DraftContent | undefined
@@ -103,6 +104,7 @@ interface Props {
 }
 
 export default React.memo(function MessageEditor({
+  unitId,
   account,
   availableRecipients,
   draft,
@@ -171,6 +173,7 @@ export default React.memo(function MessageEditor({
       <TopBar
         invertedColors
         title={i18n.messages.messageEditor.newMessage}
+        unitId={unitId}
         closeDisabled={isSavingDraft}
         onClose={() => {
           saveDraftImmediately()
