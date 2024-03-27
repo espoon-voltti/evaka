@@ -172,7 +172,8 @@ class VardaUpdateServiceNew(
                 )
             }
 
-        val uniqueEvakaLapset = serviceNeeds.map { Lapsi.fromEvaka(it, omaOrganisaatioOid) }.toSet()
+        val evakaLapsiServiceNeeds =
+            serviceNeeds.groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
         val evakaFeeData =
             feeData
                 .mapNotNull { fee ->
@@ -181,11 +182,11 @@ class VardaUpdateServiceNew(
                 .groupBy({ it.first }, { it.second })
 
         val evakaLapset =
-            uniqueEvakaLapset.map { lapsi ->
+            evakaLapsiServiceNeeds.map { (lapsi, serviceNeedsOfLapsi) ->
                 EvakaLapsiNode(
                     lapsi = lapsi,
                     varhaiskasvatuspaatokset =
-                        serviceNeeds.map { serviceNeed ->
+                        serviceNeedsOfLapsi.map { serviceNeed ->
                             EvakaVarhaiskasvatuspaatosNode(
                                 varhaiskasvatuspaatos =
                                     Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
