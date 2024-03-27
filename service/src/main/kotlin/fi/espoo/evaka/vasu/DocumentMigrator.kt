@@ -269,15 +269,15 @@ private fun migrateTemplateQuestion(
                 } else {
                     Question.TextQuestion(
                         id = id,
-                        label = vasuQuestion.name,
+                        label = vasuQuestion.label,
                         infoText = vasuQuestion.info,
                         multiline = false
                     ) to
                         AnsweredQuestion.TextAnswer(
                             questionId = id,
                             answer =
-                                if (vasuQuestion.value) "$checkboxTrue ${vasuQuestion.label}"
-                                else "$checkboxFalse ${vasuQuestion.label}"
+                                if (vasuQuestion.value) "$checkboxTrue ${vasuQuestion.name}"
+                                else "$checkboxFalse ${vasuQuestion.name}"
                         )
                 }
             listOf(questionAndAnswer)
