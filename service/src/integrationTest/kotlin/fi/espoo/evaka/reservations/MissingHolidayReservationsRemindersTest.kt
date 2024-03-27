@@ -20,7 +20,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -28,6 +30,7 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -150,6 +153,42 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
         }
 
         assertEquals(emptyList(), getHolidayReminderRecipients())
+    }
+
+    @Test
+    fun `Missing holiday reminder is sent to foster parent if child guardian is on a blocklist`() {
+        db.transaction {
+            val voucherDaycare =
+                it.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
+                        providerType = ProviderType.MUNICIPAL
+                    )
+                )
+
+            it.insert(
+                DevPlacement(
+                    childId = child,
+                    unitId = voucherDaycare,
+                    startDate = holidayPeriod.start,
+                    endDate = holidayPeriod.end,
+                    type = PlacementType.DAYCARE
+                )
+            )
+
+            val fosterParentId =
+                it.insert(DevPerson(email = "fosterparent@test.com"), DevPersonType.ADULT)
+            it.insert(
+                DevFosterParent(
+                    childId = child,
+                    parentId = fosterParentId,
+                    validDuring = DateRange(clockToday.today(), clockToday.today())
+                )
+            )
+            it.insert(DevGuardianBlocklistEntry(guardian, child))
+        }
+        assertEquals(listOf("fosterparent@test.com"), getHolidayReminderRecipients())
     }
 
     private fun getHolidayReminderRecipients(): List<String> {
