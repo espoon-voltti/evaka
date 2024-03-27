@@ -5,6 +5,7 @@
 import React, { useMemo } from 'react'
 
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
+import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 
 import { useSelectedGroup } from '../common/selected-group'
@@ -12,10 +13,12 @@ import { useSelectedGroup } from '../common/selected-group'
 import DayList from './DayList'
 
 interface Props {
+  unitId: UUID
   dailyStatistics: DayReservationStatisticsResult[]
 }
 
 export default React.memo(function ConfirmedDaysReservationList({
+  unitId,
   dailyStatistics
 }: Props) {
   const { selectedGroupId } = useSelectedGroup()
@@ -40,7 +43,7 @@ export default React.memo(function ConfirmedDaysReservationList({
         paddingVertical="zero"
         paddingHorizontal="zero"
       >
-        <DayList reservationStatistics={groupReservations} />
+        <DayList reservationStatistics={groupReservations} unitId={unitId} />
       </ContentArea>
     </>
   )

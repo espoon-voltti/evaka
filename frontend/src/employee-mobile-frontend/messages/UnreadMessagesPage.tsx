@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontSizesMobile, H1, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -25,8 +25,11 @@ import { unitInfoQuery } from '../units/queries'
 
 import { unreadCountsQuery } from './queries'
 
-export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
-  const { unitId } = useRouteParams(['unitId'])
+export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -40,7 +43,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      <TopBar title={unit.name} />
+      <TopBar title={unit.name} unitId={unitId} />
       <HeaderContainer>
         <H1 noMargin={true}>{i18n.messages.unreadMessages}</H1>
       </HeaderContainer>
@@ -76,7 +79,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
           </WideLinkButton>
         </ButtonContainer>
       )}
-      <BottomNavBar selected="messages" />
+      <BottomNavBar selected="messages" unitId={unitId} />
     </ContentArea>
   ))
 })

@@ -133,6 +133,7 @@ export default React.memo(function AttendancePageWrapper({
         />
       )}
       <PageWithNavigation
+        unitId={unitId}
         selected="child"
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}

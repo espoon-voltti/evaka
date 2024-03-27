@@ -46,6 +46,7 @@ export default React.memo(function ChildList({ unitId, items, type }: Props) {
           items.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
+                unitId={unitId}
                 type={type}
                 key={ac.id}
                 child={ac}

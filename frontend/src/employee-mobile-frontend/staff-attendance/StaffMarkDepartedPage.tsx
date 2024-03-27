@@ -12,6 +12,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -38,11 +39,15 @@ import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelect
 import { staffAttendanceQuery, staffDepartureMutation } from './queries'
 import { getAttendanceDepartureDifferenceReasons } from './utils'
 
-export default React.memo(function StaffMarkDepartedPage() {
+export default React.memo(function StaffMarkDepartedPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+  const { employeeId } = useRouteParams(['employeeId'])
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
     refetchOnMount: 'always'
@@ -154,6 +159,7 @@ export default React.memo(function StaffMarkDepartedPage() {
       <TopBar
         title={backButtonText}
         onBack={() => navigate(-1)}
+        unitId={unitId}
         invertedColors
       />
       <ContentArea

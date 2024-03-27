@@ -10,7 +10,7 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -43,9 +43,12 @@ interface FormState {
   hasStaffOccupancyEffect: boolean
 }
 
-export default function MarkExternalStaffMemberArrivalPage() {
+export default function MarkExternalStaffMemberArrivalPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
   const { i18n } = useTranslation()
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { selectedGroupId } = useSelectedGroup()

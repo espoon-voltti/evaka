@@ -195,8 +195,8 @@ const JustifyContainer = styled.div`
   justify-content: center;
 `
 
-export default React.memo(function MarkPresent() {
-  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
+export default React.memo(function MarkPresent({ unitId }: { unitId: UUID }) {
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 

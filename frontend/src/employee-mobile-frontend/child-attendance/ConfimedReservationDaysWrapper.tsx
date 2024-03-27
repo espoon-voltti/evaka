@@ -22,7 +22,10 @@ export default React.memo(function ConfirmedReservationsDaysWrapper({
   return (
     <>
       {renderResult(statisticsResult, (dayStatistics) => (
-        <ConfirmedDaysReservationList dailyStatistics={dayStatistics} />
+        <ConfirmedDaysReservationList
+          dailyStatistics={dayStatistics}
+          unitId={unitId}
+        />
       ))}
     </>
   )

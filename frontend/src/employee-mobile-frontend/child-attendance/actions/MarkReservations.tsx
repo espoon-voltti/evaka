@@ -54,7 +54,7 @@ import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
@@ -64,8 +64,8 @@ import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import {
   childrenQuery,
-  getFutureAbsencesByChildQuery,
   getConfirmedRangeQuery,
+  getFutureAbsencesByChildQuery,
   setConfirmedRangeMutation
 } from '../queries'
 import { useChild } from '../utils'
@@ -212,11 +212,15 @@ const initialFormState = (
   )
 })
 
-export default React.memo(function MarkReservations() {
+export default React.memo(function MarkReservations({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const navigate = useNavigate()
   const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
-  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const reservations = useQueryResult(getConfirmedRangeQuery(childId))
   const absences = useQueryResult(getFutureAbsencesByChildQuery(childId))

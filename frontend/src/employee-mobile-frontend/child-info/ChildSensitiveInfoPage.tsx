@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
@@ -20,11 +21,15 @@ import { TallContentArea } from '../pairing/components'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 import { getChildSensitiveInformation } from './api'
 
-export default React.memo(function ChildSensitiveInfoPage() {
+export default React.memo(function ChildSensitiveInfoPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const childName = useMemo(
     () =>
@@ -48,9 +53,10 @@ export default React.memo(function ChildSensitiveInfoPage() {
       <TopBar
         title={childName ?? i18n.common.back}
         onBack={() => navigate(-1)}
+        unitId={unitId}
         invertedColors
       />
-      {renderPinRequiringResult(childSensitiveResult, (child) => (
+      {renderPinRequiringResult(childSensitiveResult, unitId, (child) => (
         <ChildSensitiveInfo child={child} />
       ))}
     </TallContentAreaNoOverflow>

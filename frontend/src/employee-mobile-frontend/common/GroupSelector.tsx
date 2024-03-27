@@ -9,7 +9,6 @@ import styled from 'styled-components'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontSizesMobile, fontWeights } from 'lib-components/typography'
 import colors, { theme } from 'lib-customizations/common'
@@ -21,6 +20,7 @@ import { unitInfoQuery } from '../units/queries'
 import { useTranslation } from './i18n'
 
 interface GroupSelectorProps {
+  unitId: UUID
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   countInfo?: CountInfo
@@ -35,6 +35,7 @@ export interface CountInfo {
 }
 
 export default function GroupSelector({
+  unitId,
   selectedGroup,
   onChangeGroup,
   countInfo,
@@ -43,7 +44,6 @@ export default function GroupSelector({
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
-  const { unitId } = useRouteParams(['unitId'])
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   return renderResult(unitInfoResponse, (unitInfo) => {

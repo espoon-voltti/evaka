@@ -343,11 +343,15 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   )
 })
 
-export default React.memo(function StaffMarkArrivedPage() {
+export default React.memo(function StaffMarkArrivedPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+  const { employeeId } = useRouteParams(['employeeId'])
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
     refetchOnMount: 'always'
@@ -384,6 +388,7 @@ export default React.memo(function StaffMarkArrivedPage() {
       <TopBar
         title={backButtonText}
         onBack={() => navigate(-1)}
+        unitId={unitId}
         invertedColors
       />
       <ContentArea

@@ -10,7 +10,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { UUID } from 'lib-common/types'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -96,13 +96,13 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => (
 )
 
 export type BottomNavbarProps = {
+  unitId: UUID
   selected?: NavItem
 }
 
-export default function BottomNavbar({ selected }: BottomNavbarProps) {
+export default function BottomNavbar({ unitId, selected }: BottomNavbarProps) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
   const { groupRoute } = useSelectedGroup()
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))

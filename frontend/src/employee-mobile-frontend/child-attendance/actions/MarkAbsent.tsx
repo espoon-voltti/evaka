@@ -12,6 +12,7 @@ import {
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -37,11 +38,11 @@ import { useChild } from '../utils'
 
 import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
 
-export default React.memo(function MarkAbsent() {
+export default React.memo(function MarkAbsent({ unitId }: { unitId: UUID }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<

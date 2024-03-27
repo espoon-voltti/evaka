@@ -334,8 +334,8 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   )
 })
 
-export default React.memo(function MarkDeparted() {
-  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
+export default React.memo(function MarkDeparted({ unitId }: { unitId: UUID }) {
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 
