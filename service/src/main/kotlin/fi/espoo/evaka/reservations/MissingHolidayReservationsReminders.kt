@@ -48,7 +48,7 @@ class MissingHolidayReservationsReminders(
             setOf(AsyncJobType(AsyncJob.SendMissingHolidayReservationsReminder::class))
         )
 
-        return tx.getHolidayPeriodsWithReservationDeadline(clock.today().plusDays(1))
+        return tx.getHolidayPeriodsWithReservationDeadline(clock.today().plusDays(2))
             .firstOrNull()
             ?.let { holidayPeriod ->
                 logger.info(
