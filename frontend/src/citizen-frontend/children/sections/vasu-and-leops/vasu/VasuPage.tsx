@@ -119,10 +119,10 @@ export default React.memo(function VasuPage() {
                         <InlineButton
                           onClick={togglePermissionExpanded}
                           text={
-                            permissionExpanded ? t.common.show : t.common.hide
+                            permissionExpanded ? t.common.hide : t.common.show
                           }
                           icon={
-                            permissionExpanded ? faChevronDown : faChevronUp
+                            permissionExpanded ? faChevronUp : faChevronDown
                           }
                         />
                       </FixedSpaceRow>
