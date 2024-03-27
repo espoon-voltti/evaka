@@ -142,7 +142,7 @@ class VardaUpdateServiceNew(
                 }
 
         val henkilo = getOrCreateHenkilo(person)
-        if (person.ophPersonOid == null) {
+        if (person.ophPersonOid != henkilo.henkilo_oid) {
             dbc.transaction { it.updateOphPersonOid(childId, henkilo.henkilo_oid) }
         }
 
