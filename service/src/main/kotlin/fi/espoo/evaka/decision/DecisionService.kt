@@ -140,7 +140,6 @@ class DecisionService(
     ): DocumentLocation {
         val decisionBytes =
             createDecisionPdf(
-                messageProvider,
                 templateProvider,
                 pdfGenerator,
                 settings,
@@ -328,7 +327,6 @@ class DecisionService(
 }
 
 fun createDecisionPdf(
-    messageProvider: IMessageProvider,
     templateProvider: ITemplateProvider,
     pdfService: PdfGenerator,
     settings: Map<SettingType, String>,
@@ -340,7 +338,6 @@ fun createDecisionPdf(
     lang: DocumentLang,
     unitManager: DaycareManager
 ): ByteArray {
-    val sendAddress = getSendAddress(messageProvider, guardian, lang)
     val template = createTemplate(templateProvider, decision, isTransferApplication)
     val isPartTimeDecision: Boolean = decision.type == DecisionType.DAYCARE_PART_TIME
 
@@ -353,7 +350,6 @@ fun createDecisionPdf(
             child,
             guardian,
             unitManager,
-            sendAddress,
             isPartTimeDecision,
             serviceNeed
         )
@@ -369,7 +365,6 @@ private fun generateDecisionPages(
     child: PersonDTO,
     guardian: PersonDTO,
     manager: DaycareManager,
-    sendAddress: DecisionSendAddress,
     isPartTimeDecision: Boolean,
     serviceNeed: ServiceNeed?
 ): Page {
@@ -381,7 +376,6 @@ private fun generateDecisionPages(
             setVariable("child", child)
             setVariable("guardian", guardian)
             setVariable("manager", manager)
-            setVariable("sendAddress", sendAddress)
             setVariable("isPartTimeDecision", isPartTimeDecision)
             setVariable("serviceNeed", serviceNeed)
             setVariable(
