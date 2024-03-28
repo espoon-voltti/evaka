@@ -34,7 +34,10 @@ private constructor(
             traceId: String,
         ): Email? {
             val (toAddress, enabledEmailTypes) =
-                dbc.read { tx -> tx.getEmailAddressAndEnabledTypes(personId) }
+                dbc.read { tx ->
+                    tx.getEmailAddressAndEnabledTypes(personId)
+                        ?: EmailAndEnabledEmailTypes(null, null)
+                }
 
             if (toAddress == null) {
                 logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
@@ -71,9 +74,9 @@ private data class EmailAndEnabledEmailTypes(
 
 private fun Database.Read.getEmailAddressAndEnabledTypes(
     personId: PersonId
-): EmailAndEnabledEmailTypes {
+): EmailAndEnabledEmailTypes? {
     return createQuery {
             sql("""SELECT email, enabled_email_types FROM person WHERE id = ${bind(personId)}""")
         }
-        .exactlyOne<EmailAndEnabledEmailTypes>()
+        .exactlyOneOrNull<EmailAndEnabledEmailTypes>()
 }

@@ -46,7 +46,10 @@ enum class EmailMessageType {
     INFORMAL_DOCUMENT_NOTIFICATION,
 
     /** Reminders about making attendance reservations */
-    MISSING_ATTENDANCE_RESERVATION_NOTIFICATION
+    MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
+
+    /** Reminders about missing holiday attendance reservations */
+    MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION
 }
 
 data class EmailNotificationSettings(

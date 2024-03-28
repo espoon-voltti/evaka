@@ -19,6 +19,16 @@ fun Database.Read.getHolidayPeriodsInRange(
         }
         .toList<HolidayPeriod>()
 
+fun Database.Read.getHolidayPeriodsWithReservationDeadline(
+    reservationDeadline: LocalDate,
+): List<HolidayPeriod> =
+    createQuery {
+            sql(
+                "SELECT id, period, reservation_deadline FROM holiday_period h WHERE ${bind(reservationDeadline)} = h.reservation_deadline"
+            )
+        }
+        .toList<HolidayPeriod>()
+
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
     createQuery {
             sql("SELECT id, period, reservation_deadline FROM holiday_period ORDER BY period")

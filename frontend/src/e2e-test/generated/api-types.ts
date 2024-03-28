@@ -884,6 +884,7 @@ export type EmailMessageType =
   | 'DOCUMENT_NOTIFICATION'
   | 'INFORMAL_DOCUMENT_NOTIFICATION'
   | 'MISSING_ATTENDANCE_RESERVATION_NOTIFICATION'
+  | 'MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION'
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Feature

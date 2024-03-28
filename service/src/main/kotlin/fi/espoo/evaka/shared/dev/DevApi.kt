@@ -1767,6 +1767,13 @@ data class DevChild(
 
 data class DevHoliday(val date: LocalDate, val description: String = "Test Holiday")
 
+data class DevHolidayPeriod(
+    val id: HolidayPeriodId = HolidayPeriodId(UUID.randomUUID()),
+    val period: FiniteDateRange =
+        FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
+    val reservationDeadline: LocalDate = LocalDate.of(2024, 3, 1)
+)
+
 data class DevDaycare(
     val id: DaycareId = DaycareId(UUID.randomUUID()),
     val name: String = "Test Daycare",
