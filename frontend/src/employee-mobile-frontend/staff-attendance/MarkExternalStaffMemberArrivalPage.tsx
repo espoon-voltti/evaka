@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { isValidTime } from 'lib-common/date'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -29,9 +29,9 @@ import { faArrowLeft } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { Actions, BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { SelectedGroupId } from '../common/selected-group'
 import { TallContentArea } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import { externalStaffArrivalMutation } from './queries'
 
@@ -42,12 +42,15 @@ interface FormState {
   hasStaffOccupancyEffect: boolean
 }
 
-export default function MarkExternalStaffMemberArrivalPage() {
+export default function MarkExternalStaffMemberArrivalPage({
+  selectedGroupId
+}: {
+  selectedGroupId: SelectedGroupId
+}) {
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
-  const { selectedGroupId } = useSelectedGroup()
+  const unitId = selectedGroupId.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const [form, setForm] = useState<FormState>(() => ({
     arrived: HelsinkiDateTime.now().toLocalTime().format(),

@@ -7,7 +7,7 @@ import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { useSelectedGroup } from 'employee-mobile-frontend/common/selected-group'
+import { SelectedGroupId } from 'employee-mobile-frontend/common/selected-group'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -19,15 +19,17 @@ import { useTranslation } from '../common/i18n'
 import ChildReservationList from './ChildReservationList'
 
 interface DayListItemProps {
+  selectedGroupId: SelectedGroupId
   dayStats: DayReservationStatisticsResult
 }
 
-export default React.memo(function DayListItem({ dayStats }: DayListItemProps) {
+export default React.memo(function DayListItem({
+  selectedGroupId,
+  dayStats
+}: DayListItemProps) {
   const { i18n, lang } = useTranslation()
 
   const [isOpen, setOpen] = useState<boolean>(false)
-
-  const { selectedGroupId } = useSelectedGroup()
 
   const tomorrow = LocalDate.todayInHelsinkiTz().addDays(1)
 
@@ -87,7 +89,10 @@ export default React.memo(function DayListItem({ dayStats }: DayListItemProps) {
         </DayBoxInfo>
       </DayBox>
       {isOpen && filteredStats.absent + filteredStats.presentCount > 0 && (
-        <ChildReservationList date={dayStats.date} />
+        <ChildReservationList
+          date={dayStats.date}
+          selectedGroupId={selectedGroupId}
+        />
       )}
     </>
   )

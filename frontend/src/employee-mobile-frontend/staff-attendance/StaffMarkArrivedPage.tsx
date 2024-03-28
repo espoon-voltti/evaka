@@ -3,14 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -47,29 +40,29 @@ import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { SelectedGroupId } from '../common/selected-group'
 import { TallContentArea } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
 import { staffArrivalMutation, staffAttendanceQuery } from './queries'
 import { getAttendanceArrivalDifferenceReasons } from './utils'
 
 const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
-  unitId,
+  selectedGroupId,
   employeeId,
   unitInfo,
   staffMember
 }: {
-  unitId: UUID
+  selectedGroupId: SelectedGroupId
   employeeId: UUID
   unitInfo: UnitInfo
   staffMember: StaffMember
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { selectedGroupId } = useSelectedGroup()
 
+  const unitId = selectedGroupId.unitId
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
   const [timeStr, setTimeStr] = useState<string>(() =>
@@ -350,16 +343,20 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   )
 })
 
-export default React.memo(function StaffMarkArrivedPage() {
+export default React.memo(function StaffMarkArrivedPage({
+  selectedGroupId
+}: {
+  selectedGroupId: SelectedGroupId
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+  const { employeeId } = useRouteParams(['employeeId'])
 
-  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  useEffect(() => {
-    reloadUnitInfo()
-  }, [reloadUnitInfo])
+  const unitId = selectedGroupId.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
+    refetchOnMount: 'always'
+  })
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
@@ -392,6 +389,7 @@ export default React.memo(function StaffMarkArrivedPage() {
       <TopBar
         title={backButtonText}
         onBack={() => navigate(-1)}
+        unitId={unitId}
         invertedColors
       />
       <ContentArea
@@ -413,7 +411,7 @@ export default React.memo(function StaffMarkArrivedPage() {
 
             return (
               <StaffMarkArrivedInner
-                unitId={unitId}
+                selectedGroupId={selectedGroupId}
                 employeeId={employeeId}
                 unitInfo={unitInfo}
                 staffMember={staffMember}

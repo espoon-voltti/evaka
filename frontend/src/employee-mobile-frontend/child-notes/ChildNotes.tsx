@@ -24,7 +24,7 @@ import { childrenQuery } from '../child-attendance/queries'
 import { useChild } from '../child-attendance/utils'
 import ChildNameBackButton from '../common/ChildNameBackButton'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 import { TallContentArea } from '../pairing/components'
 
 import { ChildStickyNotesTab } from './ChildStickyNotesTab'
@@ -80,12 +80,16 @@ const childDailyNoteToFormData = ({
   sleepingNote
 })
 
-export default React.memo(function ChildNotes() {
+export default React.memo(function ChildNotes({
+  selectedGroupId
+}: {
+  selectedGroupId: SelectedGroupId
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
-  const { selectedGroupId } = useSelectedGroup()
+  const unitId = selectedGroupId.unitId
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')

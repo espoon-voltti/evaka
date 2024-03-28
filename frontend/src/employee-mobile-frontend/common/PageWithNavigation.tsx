@@ -19,9 +19,12 @@ const FlexibleDiv = styled.div`
 `
 
 type PageWithNavigation = BottomNavbarProps &
-  TopBarWithGroupSelectorProps & { children: React.ReactNode }
+  Omit<TopBarWithGroupSelectorProps, 'unitId'> & {
+    children: React.ReactNode
+  }
 
 export const PageWithNavigation: React.FC<PageWithNavigation> = ({
+  selectedGroupId,
   selected,
   onChangeGroup,
   toggleSearch,
@@ -33,6 +36,7 @@ export const PageWithNavigation: React.FC<PageWithNavigation> = ({
 }) => (
   <FixedSpaceColumn spacing="zero" style={{ height: '100vh' }}>
     <TopBarWithGroupSelector
+      unitId={selectedGroupId.unitId}
       onChangeGroup={onChangeGroup}
       toggleSearch={toggleSearch}
       selectedGroup={selectedGroup}
@@ -41,6 +45,6 @@ export const PageWithNavigation: React.FC<PageWithNavigation> = ({
       allowedGroupIds={allowedGroupIds}
     />
     <FlexibleDiv>{children}</FlexibleDiv>
-    <BottomNavbar selected={selected} />
+    <BottomNavbar selected={selected} selectedGroupId={selectedGroupId} />
   </FixedSpaceColumn>
 )

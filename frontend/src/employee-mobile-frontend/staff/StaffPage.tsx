@@ -2,21 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine, Success } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useQueryResult } from 'lib-common/query'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceEditor from './StaffAttendanceEditor'
 import {
@@ -26,12 +27,15 @@ import {
 } from './api'
 import { staffAttendanceForGroupOrUnit } from './utils'
 
-export default React.memo(function StaffPage() {
+export default React.memo(function StaffPage({
+  selectedGroupId
+}: {
+  selectedGroupId: SelectedGroupId
+}) {
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
-  const { selectedGroupId } = useSelectedGroup()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitId = selectedGroupId.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const selectedGroup = useMemo(
     () =>
@@ -63,8 +67,9 @@ export default React.memo(function StaffPage() {
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      const groupId = group === undefined ? 'all' : group.id
-      navigate(`/units/${unitId}/groups/${groupId}/staff`)
+      navigate(
+        routes.staff(toSelectedGroupId({ unitId, groupId: group?.id })).value
+      )
     },
     [navigate, unitId]
   )
@@ -83,6 +88,7 @@ export default React.memo(function StaffPage() {
 
   return (
     <PageWithNavigation
+      selectedGroupId={selectedGroupId}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}

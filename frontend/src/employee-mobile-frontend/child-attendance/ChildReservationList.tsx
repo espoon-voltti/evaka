@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { getServiceTimeRangeOrNullForDate } from 'employee-mobile-frontend/common/dailyServiceTimes'
-import { useSelectedGroup } from 'employee-mobile-frontend/common/selected-group'
+import { SelectedGroupId } from 'employee-mobile-frontend/common/selected-group'
 import { Result } from 'lib-common/api'
 import {
   ChildReservationInfo,
@@ -19,13 +19,13 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { reservationHasTimes } from 'lib-common/reservations'
-import useRouteParams from 'lib-common/useRouteParams'
 import { theme } from 'lib-customizations/common'
 
 import ChildSubListItem from './ChildSubListItem'
 import { confirmedDayReservationsQuery } from './queries'
 
 interface ChildReservationListProps {
+  selectedGroupId: SelectedGroupId
   date: LocalDate
 }
 
@@ -49,14 +49,11 @@ const ChildSubList = styled.div`
 `
 
 export default React.memo(function ChildReservationList({
+  selectedGroupId,
   date
 }: ChildReservationListProps) {
-  const { unitId } = useRouteParams(['unitId'])
-
-  const { selectedGroupId } = useSelectedGroup()
-
   const confirmedDayReservationsResult = useQueryResult(
-    confirmedDayReservationsQuery(unitId, date)
+    confirmedDayReservationsQuery(selectedGroupId.unitId, date)
   )
 
   const sortStartTimeNullsLast = (o: CategorizedReservationInfo) =>

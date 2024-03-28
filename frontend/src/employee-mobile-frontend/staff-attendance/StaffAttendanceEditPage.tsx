@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -30,10 +30,10 @@ import { StateOf } from 'lib-common/form/types'
 import {
   GroupInfo,
   StaffAttendanceType,
+  staffAttendanceTypes,
   StaffAttendanceUpsert,
   StaffMember,
-  StaffMemberAttendance,
-  staffAttendanceTypes
+  StaffMemberAttendance
 } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -56,15 +56,16 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faLockAlt, faTrash } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { FlexColumn } from '../common/components'
 import { Translations, useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { SelectedGroupId } from '../common/selected-group'
+import { unitInfoQuery } from '../units/queries'
 
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { staffAttendanceMutation, staffAttendanceQuery } from './queries'
@@ -206,10 +207,15 @@ const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
   pinCode: EMPTY_PIN
 })
 
-export default React.memo(function StaffAttendanceEditPage() {
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+export default React.memo(function StaffAttendanceEditPage({
+  selectedGroupId
+}: {
+  selectedGroupId: SelectedGroupId
+}) {
+  const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitId = selectedGroupId.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
   const combinedResult = useMemo(
     () =>
@@ -233,7 +239,7 @@ export default React.memo(function StaffAttendanceEditPage() {
         <ErrorSegment title={i18n.attendances.staff.pinLocked} />
       ) : (
         <StaffAttendancesEditor
-          unitId={unitId}
+          selectedGroupId={selectedGroupId}
           employeeId={employeeId}
           groups={groups}
           staffMember={staffMember}
@@ -244,17 +250,17 @@ export default React.memo(function StaffAttendanceEditPage() {
 })
 
 const StaffAttendancesEditor = ({
-  unitId,
+  selectedGroupId,
   employeeId,
   groups,
   staffMember
 }: {
-  unitId: UUID
+  selectedGroupId: SelectedGroupId
   employeeId: UUID
   groups: GroupInfo[]
   staffMember: StaffMember
 }) => {
-  const { groupRoute } = useSelectedGroup()
+  const unitId = selectedGroupId.unitId
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
   const [date] = useState(LocalDate.todayInHelsinkiTz())
@@ -313,7 +319,10 @@ const StaffAttendancesEditor = ({
               })}
               onSuccess={() =>
                 navigate(
-                  `${groupRoute}/staff-attendance/${staffMember.employeeId}`
+                  routes.staffAttendance(
+                    selectedGroupId,
+                    staffMember.employeeId
+                  ).value
                 )
               }
               onFailure={({ errorCode }) => {
@@ -426,7 +435,8 @@ const StaffAttendancesEditor = ({
             data-qa="cancel"
             onClick={() =>
               navigate(
-                `${groupRoute}/staff-attendance/${staffMember.employeeId}`
+                routes.staffAttendance(selectedGroupId, staffMember.employeeId)
+                  .value
               )
             }
           >

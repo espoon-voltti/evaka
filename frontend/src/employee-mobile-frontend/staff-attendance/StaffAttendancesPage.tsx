@@ -3,23 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { faPlus } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'
 import { staffAttendanceQuery } from './queries'
@@ -34,30 +34,36 @@ const StaticIconContainer = styled.div`
 type StatusTab = 'present' | 'absent'
 
 interface Props {
+  selectedGroupId: SelectedGroupId
   tab: StatusTab
 }
 
-export default React.memo(function StaffAttendancesPage({ tab }: Props) {
+export default React.memo(function StaffAttendancesPage({
+  selectedGroupId,
+  tab
+}: Props) {
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
-  const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitId = selectedGroupId.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       navigate(
-        `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance/${tab}`
+        routes.staffAttendances(
+          toSelectedGroupId({ unitId, groupId: group?.id }),
+          tab
+        ).value
       )
     },
     [navigate, tab, unitId]
   )
 
   const navigateToExternalMemberArrival = useCallback(
-    () => navigate(`${groupRoute}/staff-attendance/external`),
-    [groupRoute, navigate]
+    () => navigate(routes.externalStaffAttendances(selectedGroupId).value),
+    [selectedGroupId, navigate]
   )
 
   const presentStaffCounts = useMemo(
@@ -81,12 +87,12 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
     () => [
       {
         id: 'absent',
-        link: `${groupRoute}/staff-attendance/absent`,
+        link: routes.staffAttendances(selectedGroupId, 'absent'),
         label: i18n.attendances.types.ABSENT
       },
       {
         id: 'present',
-        link: `${groupRoute}/staff-attendance/present`,
+        link: routes.staffAttendances(selectedGroupId, 'present'),
         label: (
           <>
             {i18n.attendances.types.PRESENT}
@@ -95,7 +101,7 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
         )
       }
     ],
-    [groupRoute, i18n, presentStaffCounts]
+    [selectedGroupId, i18n, presentStaffCounts]
   )
 
   const filteredStaff = useMemo(
@@ -137,6 +143,7 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
 
   return (
     <PageWithNavigation
+      selectedGroupId={selectedGroupId}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}
@@ -146,7 +153,13 @@ export default React.memo(function StaffAttendancesPage({ tab }: Props) {
         <FixedSpaceColumn spacing="zero">
           {staff.map((staffMember) => {
             const s = toStaff(staffMember)
-            return <StaffListItem {...s} key={s.id} />
+            return (
+              <StaffListItem
+                {...s}
+                key={s.id}
+                selectedGroupId={selectedGroupId}
+              />
+            )
           })}
         </FixedSpaceColumn>
       ))}
