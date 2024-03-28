@@ -15,7 +15,9 @@ function* uriParts(
   let param = paramIter.next()
   let template = templateIter.next()
   while (!param.done && !template.done) {
-    yield encode(param.value)
+    yield param.value instanceof Uri
+      ? param.value.toString()
+      : encode(param.value)
     yield template.value
     param = paramIter.next()
     template = templateIter.next()
