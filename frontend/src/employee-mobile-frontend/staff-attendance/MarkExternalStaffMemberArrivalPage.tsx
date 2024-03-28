@@ -10,7 +10,6 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -44,14 +43,13 @@ interface FormState {
 }
 
 export default function MarkExternalStaffMemberArrivalPage({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const [form, setForm] = useState<FormState>(() => ({

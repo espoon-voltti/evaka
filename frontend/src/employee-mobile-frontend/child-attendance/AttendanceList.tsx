@@ -8,7 +8,6 @@ import {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 
@@ -20,7 +19,6 @@ import ChildList, { ListItem } from './ChildList'
 import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
 interface Props {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   activeStatus: AttendanceStatus
   unitChildren: AttendanceChild[]
@@ -28,7 +26,6 @@ interface Props {
 }
 
 export default React.memo(function AttendanceList({
-  unitId,
   selectedGroupId,
   activeStatus,
   unitChildren,
@@ -130,7 +127,6 @@ export default React.memo(function AttendanceList({
         paddingHorizontal="zero"
       >
         <ChildList
-          unitId={unitId}
           selectedGroupId={selectedGroupId}
           items={filteredChildren}
           type={activeStatus}

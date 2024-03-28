@@ -10,7 +10,6 @@ import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -51,10 +50,8 @@ import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
 
 export default React.memo(function AttendanceChildPage({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
@@ -62,6 +59,7 @@ export default React.memo(function AttendanceChildPage({
 
   const { childId } = useRouteParams(['childId'])
 
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { data: groupNotes } = useQuery(
     groupNotesQuery(selectedGroupId.type === 'all' ? '' : selectedGroupId.id),
@@ -200,7 +198,6 @@ export default React.memo(function AttendanceChildPage({
                     </ChildBackground>
 
                     <ChildButtons
-                      unitId={unitId}
                       selectedGroupId={selectedGroupId}
                       groupHasNotes={groupHasNotes}
                       child={child}

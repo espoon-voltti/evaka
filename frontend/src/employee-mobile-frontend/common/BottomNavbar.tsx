@@ -10,7 +10,6 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -97,19 +96,18 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => (
 )
 
 export type BottomNavbarProps = {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   selected?: NavItem
 }
 
 export default function BottomNavbar({
-  unitId,
   selectedGroupId,
   selected
 }: BottomNavbarProps) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId), {

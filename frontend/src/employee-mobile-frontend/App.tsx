@@ -136,19 +136,10 @@ function shouldForwardProp(propName: string, target: unknown) {
 
 function UnitRouter() {
   const { unitId } = useRouteParams(['unitId'])
-  const selectedGroupId = useMemo(
-    () => toSelectedGroupId({ unitId, groupId: undefined }),
-    [unitId]
-  )
 
   return (
     <Routes>
-      <Route
-        path="/settings"
-        element={
-          <SettingsPage unitId={unitId} selectedGroupId={selectedGroupId} />
-        }
-      />
+      <Route path="/settings" element={<SettingsPage unitId={unitId} />} />
       <Route
         path="/groups/:groupId/*"
         element={<GroupRouter unitId={unitId} />}
@@ -168,37 +159,23 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
   )
 
   return (
-    <MessageContextProvider unitId={unitId} selectedGroupId={selectedGroupId}>
+    <MessageContextProvider selectedGroupId={selectedGroupId}>
       <Routes>
         <Route
           path="child-attendance/*"
-          element={
-            <ChildAttendanceRouter
-              unitId={unitId}
-              selectedGroupId={selectedGroupId}
-            />
-          }
+          element={<ChildAttendanceRouter selectedGroupId={selectedGroupId} />}
         />
         <Route
           path="staff/*"
-          element={
-            <StaffRouter unitId={unitId} selectedGroupId={selectedGroupId} />
-          }
+          element={<StaffRouter selectedGroupId={selectedGroupId} />}
         />
         <Route
           path="staff-attendance/*"
-          element={
-            <StaffAttendanceRouter
-              unitId={unitId}
-              selectedGroupId={selectedGroupId}
-            />
-          }
+          element={<StaffAttendanceRouter selectedGroupId={selectedGroupId} />}
         />
         <Route
           path="messages/*"
-          element={
-            <MessagesRouter unitId={unitId} selectedGroupId={selectedGroupId} />
-          }
+          element={<MessagesRouter selectedGroupId={selectedGroupId} />}
         />
         <Route index element={<Navigate replace to="child-attendance" />} />
       </Routes>
@@ -207,26 +184,21 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
 }
 
 function ChildAttendanceRouter({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   // Re-fetch child data when navigating to the attendance section
-  useQuery(childrenQuery(unitId), { refetchOnMount: 'always' })
-  useQuery(attendanceStatusesQuery(unitId), { refetchOnMount: 'always' })
+  useQuery(childrenQuery(selectedGroupId.unitId), { refetchOnMount: 'always' })
+  useQuery(attendanceStatusesQuery(selectedGroupId.unitId), {
+    refetchOnMount: 'always'
+  })
 
   return (
     <Routes>
       <Route
         path="/"
-        element={
-          <AttendancePageWrapper
-            unitId={unitId}
-            selectedGroupId={selectedGroupId}
-          />
-        }
+        element={<AttendancePageWrapper selectedGroupId={selectedGroupId} />}
       >
         <Route
           path="list/:attendanceStatus"
@@ -236,10 +208,7 @@ function ChildAttendanceRouter({
           path="daylist"
           id="daylist"
           element={
-            <ConfimedReservationDaysWrapper
-              unitId={unitId}
-              selectedGroupId={selectedGroupId}
-            />
+            <ConfimedReservationDaysWrapper selectedGroupId={selectedGroupId} />
           }
         />
         <Route path="list" element={<Navigate replace to="/" />} />
@@ -247,54 +216,45 @@ function ChildAttendanceRouter({
 
       <Route
         path=":childId"
-        element={
-          <AttendanceChildPage
-            unitId={unitId}
-            selectedGroupId={selectedGroupId}
-          />
-        }
+        element={<AttendanceChildPage selectedGroupId={selectedGroupId} />}
       />
       <Route
         path=":childId/mark-present"
-        element={<MarkPresent unitId={unitId} />}
+        element={<MarkPresent unitId={selectedGroupId.unitId} />}
       />
       <Route
         path=":childId/mark-absent"
-        element={<MarkAbsent unitId={unitId} />}
+        element={<MarkAbsent unitId={selectedGroupId.unitId} />}
       />
       <Route
         path=":childId/mark-reservations"
-        element={
-          <MarkReservations unitId={unitId} selectedGroupId={selectedGroupId} />
-        }
+        element={<MarkReservations selectedGroupId={selectedGroupId} />}
       />
       <Route
         path=":childId/mark-absent-beforehand"
-        element={<MarkAbsentBeforehand unitId={unitId} />}
+        element={<MarkAbsentBeforehand unitId={selectedGroupId.unitId} />}
       />
       <Route
         path=":childId/mark-departed"
-        element={<MarkDeparted unitId={unitId} />}
+        element={<MarkDeparted unitId={selectedGroupId.unitId} />}
       />
       <Route
         path=":childId/note"
-        element={
-          <ChildNotes unitId={unitId} selectedGroupId={selectedGroupId} />
-        }
+        element={<ChildNotes selectedGroupId={selectedGroupId} />}
       />
       <Route
         path=":childId/info"
         element={
-          <RequirePinAuth unitId={unitId}>
-            <ChildSensitiveInfoPage unitId={unitId} />
+          <RequirePinAuth unitId={selectedGroupId.unitId}>
+            <ChildSensitiveInfoPage unitId={selectedGroupId.unitId} />
           </RequirePinAuth>
         }
       />
       <Route
         path=":childId/new-message"
         element={
-          <RequirePinAuth unitId={unitId}>
-            <NewChildMessagePage unitId={unitId} />
+          <RequirePinAuth unitId={selectedGroupId.unitId}>
+            <NewChildMessagePage unitId={selectedGroupId.unitId} />
           </RequirePinAuth>
         }
       />
@@ -304,29 +264,20 @@ function ChildAttendanceRouter({
 }
 
 function StaffRouter({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   return (
     <Routes>
-      <Route
-        index
-        element={
-          <StaffPage unitId={unitId} selectedGroupId={selectedGroupId} />
-        }
-      />
+      <Route index element={<StaffPage selectedGroupId={selectedGroupId} />} />
     </Routes>
   )
 }
 
 function StaffAttendanceRouter({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   return (
@@ -336,7 +287,6 @@ function StaffAttendanceRouter({
         element={
           <StaffAttendancesPage
             tab="absent"
-            unitId={unitId}
             selectedGroupId={selectedGroupId}
           />
         }
@@ -346,7 +296,6 @@ function StaffAttendanceRouter({
         element={
           <StaffAttendancesPage
             tab="present"
-            unitId={unitId}
             selectedGroupId={selectedGroupId}
           />
         }
@@ -355,47 +304,29 @@ function StaffAttendanceRouter({
         path="external"
         element={
           <MarkExternalStaffMemberArrivalPage
-            unitId={unitId}
             selectedGroupId={selectedGroupId}
           />
         }
       />
       <Route
         path="external/:attendanceId"
-        element={<ExternalStaffMemberPage unitId={unitId} />}
+        element={<ExternalStaffMemberPage unitId={selectedGroupId.unitId} />}
       />
       <Route
         path=":employeeId"
-        element={
-          <StaffMemberPage unitId={unitId} selectedGroupId={selectedGroupId} />
-        }
+        element={<StaffMemberPage selectedGroupId={selectedGroupId} />}
       />
       <Route
         path=":employeeId/edit"
-        element={
-          <StaffAttendanceEditPage
-            unitId={unitId}
-            selectedGroupId={selectedGroupId}
-          />
-        }
+        element={<StaffAttendanceEditPage selectedGroupId={selectedGroupId} />}
       />
       <Route
         path=":employeeId/mark-arrived"
-        element={
-          <StaffMarkArrivedPage
-            unitId={unitId}
-            selectedGroupId={selectedGroupId}
-          />
-        }
+        element={<StaffMarkArrivedPage selectedGroupId={selectedGroupId} />}
       />
       <Route
         path=":employeeId/mark-departed"
-        element={
-          <StaffMarkDepartedPage
-            unitId={unitId}
-            selectedGroupId={selectedGroupId}
-          />
-        }
+        element={<StaffMarkDepartedPage selectedGroupId={selectedGroupId} />}
       />
       <Route index element={<Navigate replace to="absent" />} />
     </Routes>
@@ -403,10 +334,8 @@ function StaffAttendanceRouter({
 }
 
 function MessagesRouter({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   return (
@@ -414,19 +343,14 @@ function MessagesRouter({
       <Route
         index
         element={
-          <RequirePinAuth unitId={unitId}>
-            <MessagesPage unitId={unitId} selectedGroupId={selectedGroupId} />
+          <RequirePinAuth unitId={selectedGroupId.unitId}>
+            <MessagesPage selectedGroupId={selectedGroupId} />
           </RequirePinAuth>
         }
       />
       <Route
         path="unread-messages"
-        element={
-          <UnreadMessagesPage
-            unitId={unitId}
-            selectedGroupId={selectedGroupId}
-          />
-        }
+        element={<UnreadMessagesPage selectedGroupId={selectedGroupId} />}
       />
     </Routes>
   )

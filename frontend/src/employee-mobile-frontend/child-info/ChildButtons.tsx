@@ -8,7 +8,6 @@ import styled, { useTheme } from 'styled-components'
 
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faPen } from 'lib-icons'
@@ -20,14 +19,12 @@ import { SelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 interface Props {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   groupHasNotes: boolean
   child: AttendanceChild
 }
 
 export default React.memo(function ChildButtons({
-  unitId,
   selectedGroupId,
   groupHasNotes,
   child
@@ -35,7 +32,9 @@ export default React.memo(function ChildButtons({
   const { i18n } = useTranslation()
   const { colors } = useTheme()
 
-  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
+  const unitInfoResponse = useQueryResult(
+    unitInfoQuery({ unitId: selectedGroupId.unitId })
+  )
   const noteFound =
     child.dailyNote !== null || child.stickyNotes.length > 0 || groupHasNotes
   return renderResult(unitInfoResponse, (unit) => (

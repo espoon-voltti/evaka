@@ -12,7 +12,6 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { queryOrDefault, useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bold, InformationText } from 'lib-components/typography'
@@ -96,7 +95,6 @@ const GroupName = styled(InformationText)`
 `
 
 interface ChildListItemProps {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   child: ListItem
   onClick?: () => void
@@ -105,13 +103,13 @@ interface ChildListItemProps {
 }
 
 export default React.memo(function ChildListItem({
-  unitId,
   selectedGroupId,
   child,
   onClick,
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { data: groupNotes = [] } = useQuery(

@@ -28,7 +28,6 @@ export interface ListItem extends AttendanceChild {
 }
 
 interface Props {
-  unitId: string
   selectedGroupId: SelectedGroupId
   items: ListItem[]
   type?: AttendanceStatus
@@ -40,12 +39,12 @@ const NoChildrenOnList = styled.div`
 `
 
 export default React.memo(function ChildList({
-  unitId,
   selectedGroupId,
   items,
   type
 }: Props) {
   const { i18n } = useTranslation()
+  const unitId = selectedGroupId.unitId
 
   return (
     <FixedSpaceColumn>
@@ -54,7 +53,6 @@ export default React.memo(function ChildList({
           items.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
-                unitId={unitId}
                 selectedGroupId={selectedGroupId}
                 type={type}
                 key={ac.id}

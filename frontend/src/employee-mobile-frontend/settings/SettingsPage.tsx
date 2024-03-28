@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
@@ -16,20 +16,22 @@ import { UserContext } from '../auth/state'
 import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { toSelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { NotificationSettings } from './NotificationSettings'
 
 export const SettingsPage = React.memo(function SettingsPage({
-  unitId,
-  selectedGroupId
+  unitId
 }: {
   unitId: UUID
-  selectedGroupId: SelectedGroupId
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
+  const selectedGroupId = useMemo(
+    () => toSelectedGroupId({ unitId, groupId: undefined }),
+    [unitId]
+  )
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user: userResponse } = useContext(UserContext)
 
@@ -56,11 +58,7 @@ export const SettingsPage = React.memo(function SettingsPage({
           </ContentArea>
         </>
       ))}
-      <BottomNavbar
-        selected="settings"
-        unitId={unitId}
-        selectedGroupId={selectedGroupId}
-      />
+      <BottomNavbar selected="settings" selectedGroupId={selectedGroupId} />
     </ContentArea>
   )
 })

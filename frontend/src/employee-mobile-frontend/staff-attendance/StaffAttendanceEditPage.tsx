@@ -208,14 +208,13 @@ const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
 })
 
 export default React.memo(function StaffAttendanceEditPage({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
   const combinedResult = useMemo(
@@ -240,7 +239,6 @@ export default React.memo(function StaffAttendanceEditPage({
         <ErrorSegment title={i18n.attendances.staff.pinLocked} />
       ) : (
         <StaffAttendancesEditor
-          unitId={unitId}
           selectedGroupId={selectedGroupId}
           employeeId={employeeId}
           groups={groups}
@@ -252,18 +250,17 @@ export default React.memo(function StaffAttendanceEditPage({
 })
 
 const StaffAttendancesEditor = ({
-  unitId,
   selectedGroupId,
   employeeId,
   groups,
   staffMember
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   employeeId: UUID
   groups: GroupInfo[]
   staffMember: StaffMember
 }) => {
+  const unitId = selectedGroupId.unitId
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
   const [date] = useState(LocalDate.todayInHelsinkiTz())

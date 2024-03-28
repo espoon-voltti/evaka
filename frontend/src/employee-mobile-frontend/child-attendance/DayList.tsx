@@ -11,7 +11,6 @@ import {
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
-import { UUID } from 'lib-common/types'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
@@ -24,13 +23,11 @@ export interface ListItem extends AttendanceChild {
 }
 
 interface Props {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   reservationStatistics: DayReservationStatisticsResult[]
 }
 
 export default React.memo(function DayList({
-  unitId,
   selectedGroupId,
   reservationStatistics
 }: Props) {
@@ -57,7 +54,6 @@ export default React.memo(function DayList({
             <DayListItem
               key={`${dr.date.format()}-dli`}
               dayStats={dr}
-              unitId={unitId}
               selectedGroupId={selectedGroupId}
             />
           </Li>
