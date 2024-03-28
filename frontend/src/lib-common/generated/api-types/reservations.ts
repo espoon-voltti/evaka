@@ -386,7 +386,6 @@ export interface UnitDateInfo {
 * Generated from fi.espoo.evaka.reservations.UsedServiceResult
 */
 export interface UsedServiceResult {
-  attendedMinutes: number
   reservedMinutes: number
   usedServiceMinutes: number
   usedServiceRanges: TimeRange[]

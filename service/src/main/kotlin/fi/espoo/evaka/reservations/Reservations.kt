@@ -522,13 +522,13 @@ private fun Database.Transaction.insertReservation(
 
 data class UsedServiceResult(
     val reservedMinutes: Long,
-    val attendedMinutes: Long,
     val usedServiceMinutes: Long,
     val usedServiceRanges: List<TimeRange>
 )
 
 fun computeUsedService(
-    isDateInFuture: Boolean,
+    today: LocalDate,
+    date: LocalDate,
     serviceNeedHours: Int,
     placementType: PlacementType,
     preschoolTime: TimeRange?,
@@ -537,12 +537,19 @@ fun computeUsedService(
     shiftCareType: ShiftCareType,
     absences: List<Pair<AbsenceType, AbsenceCategory>>,
     reservations: List<TimeRange>,
-    attendances: List<TimeRange>
+    attendances: List<TimeInterval>
 ): UsedServiceResult {
+    // Today's date is taken to be "in the future" if child has no attendances today or there's an
+    // ongoing attendance
+    val isDateInFuture =
+        date > today ||
+            date == today && (attendances.isEmpty() || attendances.any { it.end == null })
+
+    val endedAttendances = attendances.mapNotNull { it.asTimeRange() }
+
     if (!isOperationDay && shiftCareType != ShiftCareType.INTERMITTENT) {
         return UsedServiceResult(
             reservedMinutes = 0,
-            attendedMinutes = 0,
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
         )
@@ -556,10 +563,20 @@ fun computeUsedService(
             )
         )
     val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
+
+    // Five-year-olds get 4 hours for free
+    val freeMinutes =
+        when (placementType) {
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> 4 * 60
+            else -> 0
+        }
+    val minutesOf = { timeSet: TimeSet ->
+        maxOf(0, timeSet.ranges().sumOf { it.duration.toMinutes() } - freeMinutes)
+    }
+
     if (isDateInFuture) {
         return UsedServiceResult(
-            reservedMinutes = effectiveReservations.ranges().sumOf { it.duration.toMinutes() },
-            attendedMinutes = 0,
+            reservedMinutes = minutesOf(effectiveReservations),
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
         )
@@ -571,44 +588,30 @@ fun computeUsedService(
         absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
             absenceCategories == placementType.absenceCategories()
     }
-    if (attendances.isEmpty() && isPlannedAbsence) {
+    if (endedAttendances.isEmpty() && isPlannedAbsence) {
         return UsedServiceResult(
             reservedMinutes = 0,
-            attendedMinutes = 0,
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
         )
     }
 
-    // Five-year-olds get 4 hours for free
-    val freeMinutes =
-        when (placementType) {
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> 4 * 60
-            else -> 0
-        }
-
-    if (isOperationDay && reservations.isEmpty() && attendances.isEmpty()) {
+    if (isOperationDay && reservations.isEmpty() && endedAttendances.isEmpty()) {
         val daysInMonth = 21
+        val dailyAverage = serviceNeedHours.toDouble() * 60 / daysInMonth
         return UsedServiceResult(
             reservedMinutes = 0,
-            attendedMinutes = 0,
-            usedServiceMinutes =
-                maxOf(
-                    0,
-                    (serviceNeedHours.toDouble() * 60 / daysInMonth).roundToLong() - freeMinutes
-                ),
+            usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
             usedServiceRanges = emptyList()
         )
     }
 
-    val effectiveAttendances = TimeSet.of(attendances).removeAll(fixedScheduleTimes)
+    val effectiveAttendances = TimeSet.of(endedAttendances).removeAll(fixedScheduleTimes)
     val usedService = effectiveReservations + effectiveAttendances
 
     return UsedServiceResult(
-        reservedMinutes = effectiveReservations.ranges().sumOf { it.duration.toMinutes() },
-        attendedMinutes = effectiveAttendances.ranges().sumOf { it.duration.toMinutes() },
-        usedServiceMinutes =
-            maxOf(0, usedService.ranges().sumOf { it.duration.toMinutes() } - freeMinutes),
+        reservedMinutes = minutesOf(effectiveReservations),
+        usedServiceMinutes = minutesOf(usedService),
         usedServiceRanges = usedService.ranges().toList()
     )
 }

@@ -152,12 +152,11 @@ private fun exceededServiceNeedReport(
                             it.reservation.asTimeRange()
                         }
                     val childAttendances =
-                        (attendances[child.id to date] ?: emptyList()).mapNotNull {
-                            it.endTime?.let { endTime -> TimeRange(it.startTime, endTime) }
-                        }
+                        (attendances[child.id to date] ?: emptyList()).map { it.asTimeInterval() }
                     child.id to
                         computeUsedService(
-                            isDateInFuture = date > today,
+                            today = today,
+                            date = date,
                             serviceNeedHours = serviceNeed.daycareHoursPerMonth,
                             placementType = serviceNeed.placementType,
                             preschoolTime = serviceNeed.dailyPreschoolTime,

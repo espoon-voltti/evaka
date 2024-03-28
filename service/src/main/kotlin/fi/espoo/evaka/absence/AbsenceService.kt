@@ -107,7 +107,8 @@ fun getGroupMonthCalendar(
                                 serviceNeed?.daycareHoursPerMonth?.let { daycareHoursPerMonth ->
                                     val usedService =
                                         computeUsedService(
-                                            isDateInFuture = date > today,
+                                            today = today,
+                                            date = date,
                                             serviceNeedHours = daycareHoursPerMonth,
                                             placementType = placement.type,
                                             preschoolTime = placement.preschoolTime,
@@ -121,11 +122,7 @@ fun getGroupMonthCalendar(
                                                     it.reservation.asTimeRange()
                                                 },
                                             attendances =
-                                                childAttendances.mapNotNull {
-                                                    it.endTime?.let { endTime ->
-                                                        TimeRange(it.startTime, endTime)
-                                                    }
-                                                }
+                                                childAttendances.map { it.asTimeInterval() }
                                         )
                                     usedServiceByChild.updateKey(child.id) {
                                         (it ?: UsedServiceData(daycareHoursPerMonth)).let { totals
