@@ -14,6 +14,7 @@ import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.io.ByteArrayInputStream
 import java.net.URI
+import java.time.LocalDate
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -69,9 +70,12 @@ class VardaClientTest {
                 fuel,
                 jsonMapper,
                 VardaEnv(
-                    url = "https://example.com/mock-integration/varda/api",
+                    url = URI.create("https://example.com/mock-integration/varda/api"),
                     basicAuth = Sensitive(""),
-                    sourceSystem = "SourceSystemVarda"
+                    sourceSystem = "SourceSystemVarda",
+                    startDate = LocalDate.of(2020, 1, 1),
+                    endDate = null,
+                    localDevPort = null
                 )
             )
 

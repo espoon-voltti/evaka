@@ -10,6 +10,7 @@ import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
+import java.net.URI
 import org.junit.jupiter.api.BeforeAll
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -25,7 +26,7 @@ abstract class VardaIntegrationTest(resetDbBeforeEach: Boolean) :
     @BeforeAll
     override fun beforeAll() {
         super.beforeAll()
-        val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
+        val vardaBaseUrl = URI.create("http://localhost:$httpPort/mock-integration/varda/api")
         val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
         vardaTokenProvider = VardaTempTokenProvider(http, jsonMapper, vardaEnv)
         vardaClient = VardaClient(vardaTokenProvider, http, jsonMapper, vardaEnv)
