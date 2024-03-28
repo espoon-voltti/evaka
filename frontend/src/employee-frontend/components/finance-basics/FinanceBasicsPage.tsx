@@ -11,6 +11,7 @@ import { H1 } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 
 import FeesSection from './FeesSection'
+import ServiceNeedsSection from './ServiceNeedsSection'
 
 export default React.memo(function FinanceBasicsPage() {
   const { i18n } = useTranslation()
@@ -22,6 +23,7 @@ export default React.memo(function FinanceBasicsPage() {
           <H1 noMargin>{i18n.titles.financeBasics}</H1>
         </ContentArea>
         <FeesSection />
+        <ServiceNeedsSection />
       </FixedSpaceColumn>
     </Container>
   )

@@ -11,6 +11,7 @@ export type QueryKeyPrefix =
   | 'childInformation'
   | 'documentTemplates'
   | 'employees'
+  | 'financeBasics'
   | 'holidayPeriods'
   | 'reports'
   | 'timeline'
