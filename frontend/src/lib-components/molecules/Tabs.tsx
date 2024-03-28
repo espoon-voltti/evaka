@@ -6,6 +6,8 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
+import { Uri } from 'lib-common/uri'
+
 import { desktopMin } from '../breakpoints'
 import Container from '../layout/Container'
 import { fontWeights, NavLinkText } from '../typography'
@@ -57,7 +59,7 @@ export const Tabs = React.memo(function Tabs({
 
 interface TabLink {
   id: string
-  link: string
+  link: Uri | string
   label: string | React.JSX.Element
   counter?: number
   isTabActive?: () => boolean
@@ -89,7 +91,7 @@ export const TabLinks = React.memo(function TabLinks({
         {tabs.map(({ id, link, label, counter }) => (
           <TabLink
             key={id}
-            to={link}
+            to={typeof link === 'string' ? link : link.value}
             data-qa={`${id}-tab`}
             $maxWidth={maxWidth}
             $mobile={mobile}
