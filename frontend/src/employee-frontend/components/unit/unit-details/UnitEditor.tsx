@@ -12,7 +12,7 @@ import {
 import { DayOfWeek } from 'employee-frontend/types'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { time } from 'lib-common/form-validation'
+import { time, TIME_REGEXP } from 'lib-common/form-validation'
 import {
   CareType,
   Daycare,
@@ -31,6 +31,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -53,7 +54,15 @@ import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type OnlyDaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
 
-interface FormData {
+interface MealtimeData {
+  mealtimeBreakfast: string
+  mealtimeEveningSnack: string
+  mealtimeLunch: string
+  mealtimeSnack: string
+  mealtimeSupper: string
+}
+
+type FormData = {
   name: string
   openingDate: LocalDate | null
   closingDate: LocalDate | null
@@ -92,7 +101,7 @@ interface FormData {
   businessId: string
   iban: string
   providerId: string
-}
+} & MealtimeData
 
 interface UnitDecisionCustomization {
   daycareName: string
@@ -540,6 +549,36 @@ function validateForm(
     })
   }
 
+  function parseMealTime(
+    mealtimeStr: string,
+    errorKey: keyof MealtimeData
+  ): LocalTime | null {
+    const trimmedStr = mealtimeStr.trim()
+    if (!trimmedStr) {
+      return null
+    }
+    if (trimmedStr && !TIME_REGEXP.test(trimmedStr)) {
+      errors.push({
+        text: i18n.unitEditor.error.mealTimes,
+        key: errorKey
+      })
+      return null
+    }
+    return LocalTime.parse(trimmedStr)
+  }
+
+  const mealtimeBreakfast = parseMealTime(
+    form.mealtimeBreakfast,
+    'mealtimeBreakfast'
+  )
+  const mealtimeLunch = parseMealTime(form.mealtimeLunch, 'mealtimeLunch')
+  const mealtimeSnack = parseMealTime(form.mealtimeSnack, 'mealtimeSnack')
+  const mealtimeSupper = parseMealTime(form.mealtimeSupper, 'mealtimeSupper')
+  const mealtimeEveningSnack = parseMealTime(
+    form.mealtimeEveningSnack,
+    'mealtimeEveningSnack'
+  )
+
   const {
     openingDate,
     closingDate,
@@ -616,7 +655,12 @@ function validateForm(
         operationTimes,
         businessId,
         iban,
-        providerId
+        providerId,
+        mealtimeBreakfast,
+        mealtimeEveningSnack,
+        mealtimeLunch,
+        mealtimeSnack,
+        mealtimeSupper
       },
       {
         formErrors: errors,
@@ -725,8 +769,46 @@ function toFormData(unit: Daycare | undefined): FormData {
     ),
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
-    providerId: unit?.providerId ?? ''
+    providerId: unit?.providerId ?? '',
+    mealtimeBreakfast: unit?.mealtimeBreakfast?.format() ?? '',
+    mealtimeLunch: unit?.mealtimeLunch?.format() ?? '',
+    mealtimeSnack: unit?.mealtimeSnack?.format() ?? '',
+    mealtimeSupper: unit?.mealtimeSupper?.format() ?? '',
+    mealtimeEveningSnack: unit?.mealtimeEveningSnack?.format() ?? ''
   }
+}
+
+function MealtimeInput({
+  mealtimeKey,
+  form,
+  updateForm,
+  validationErrors,
+  editable
+}: {
+  mealtimeKey: keyof MealtimeData
+  form: FormData
+  updateForm: (arg0: Partial<FormData>) => void
+  validationErrors: UnitEditorErrors
+  editable: boolean
+}) {
+  const { i18n } = useTranslation()
+
+  return editable ? (
+    <TimeInput
+      value={form[mealtimeKey]}
+      onChange={(value) => updateForm({ [mealtimeKey]: value })}
+      info={
+        validationErrors.formErrors.some((e) => e.key === mealtimeKey)
+          ? {
+              status: 'warning',
+              text: i18n.validationErrors.generic
+            }
+          : undefined
+      }
+    />
+  ) : (
+    <div>{form[mealtimeKey] ? form[mealtimeKey] : '-'}</div>
+  )
 }
 
 export default function UnitEditor(props: Props) {
@@ -1699,6 +1781,68 @@ export default function UnitEditor(props: Props) {
           decisionCustomization.handlerAddress
         )}
       </FormPart>
+      {featureFlags.jamixIntegration && (
+        <>
+          <H3>{i18n.unitEditor.title.mealOrderIntegration}</H3>
+          <FormPart>
+            <div>{i18n.unitEditor.title.mealtime}</div>
+            <FixedSpaceColumn spacing="xs">
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.breakfast}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeBreakfast"
+                  form={form}
+                  updateForm={updateForm}
+                  validationErrors={validationErrors}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.lunch}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeLunch"
+                  form={form}
+                  updateForm={updateForm}
+                  validationErrors={validationErrors}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.snack}</label>
+
+                <MealtimeInput
+                  mealtimeKey="mealtimeSnack"
+                  form={form}
+                  updateForm={updateForm}
+                  validationErrors={validationErrors}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.supper}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeSupper"
+                  form={form}
+                  updateForm={updateForm}
+                  validationErrors={validationErrors}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.eveningSnack}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeEveningSnack"
+                  form={form}
+                  updateForm={updateForm}
+                  validationErrors={validationErrors}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+            </FixedSpaceColumn>
+          </FormPart>
+        </>
+      )}
       {props.editable && (
         <>
           <>

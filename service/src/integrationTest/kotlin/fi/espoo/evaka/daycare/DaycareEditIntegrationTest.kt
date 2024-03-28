@@ -96,7 +96,12 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             roundTheClock = false,
             businessId = "Y-123456789",
             iban = "FI123456789",
-            providerId = "123456789"
+            providerId = "123456789",
+            mealtimeBreakfast = null,
+            mealtimeLunch = null,
+            mealtimeSnack = null,
+            mealtimeSupper = null,
+            mealtimeEveningSnack = null
         )
 
     @BeforeEach
