@@ -15,7 +15,7 @@ sealed class HtmlElement {
         val className: String? = null
     ) : HtmlElement() {
         override fun toHtml(): String {
-            val maybeClass = className?.let { " class=\"$it\"" } ?: ""
+            val maybeClass = className?.let { " class=\"${HtmlEscape.escapeHtml5Xml(it)}\"" } ?: ""
             return if (children.isEmpty()) {
                 "<$tag$maybeClass/>"
             } else {
