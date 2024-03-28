@@ -241,7 +241,8 @@ class DaycareController(
     data class GroupUpdateRequest(
         val name: String,
         val startDate: LocalDate,
-        val endDate: LocalDate?
+        val endDate: LocalDate?,
+        val jamixCustomerId: Int?
     )
 
     @PutMapping("/{daycareId}/groups/{groupId}")
@@ -256,7 +257,13 @@ class DaycareController(
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(it, user, clock, Action.Group.UPDATE, groupId)
-                it.updateGroup(groupId, body.name, body.startDate, body.endDate)
+                it.updateGroup(
+                    groupId,
+                    body.name,
+                    body.startDate,
+                    body.endDate,
+                    body.jamixCustomerId
+                )
             }
         }
         Audit.UnitGroupsUpdate.log(targetId = groupId)

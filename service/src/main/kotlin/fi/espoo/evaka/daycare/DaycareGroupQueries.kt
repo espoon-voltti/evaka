@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 
 private fun Database.Read.createDaycareGroupQuery(
@@ -22,7 +21,7 @@ private fun Database.Read.createDaycareGroupQuery(
             // language=SQL
             """
 SELECT
-  id, daycare_id, name, start_date, end_date,
+  id, daycare_id, name, start_date, end_date, jamix_customer_id,
   (NOT exists(SELECT 1 FROM backup_care WHERE group_id = daycare_group.id) AND
   NOT exists(SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = daycare_group.id)) AS deletable
 FROM daycare_group
@@ -46,7 +45,7 @@ fun Database.Transaction.createDaycareGroup(
             """
 INSERT INTO daycare_group (daycare_id, name, start_date, end_date)
 VALUES (:daycareId, :name, :startDate, NULL)
-RETURNING id, daycare_id, name, start_date, end_date, true AS deletable
+RETURNING id, daycare_id, name, start_date, end_date, true AS deletable, jamix_customer_id
 """
         )
         .bind("daycareId", daycareId)
@@ -59,19 +58,19 @@ fun Database.Transaction.updateGroup(
     groupId: GroupId,
     name: String,
     startDate: LocalDate,
-    endDate: LocalDate?
+    endDate: LocalDate?,
+    jamixCustomerId: Int?
 ) {
-    // language=SQL
-    val sql =
-        "UPDATE daycare_group SET name = :name, start_date = :startDate, end_date = :endDate WHERE id = :id"
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql)
-        .bind("id", groupId)
-        .bind("name", name)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .execute()
-        .let { if (it != 1) throw NotFound("Group $groupId not found") }
+    createUpdate {
+            sql(
+                """
+UPDATE daycare_group
+SET name = ${bind(name)}, start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, jamix_customer_id = ${bind(jamixCustomerId)}
+WHERE id = ${bind(groupId)}
+        """
+            )
+        }
+        .updateExactlyOne(notFoundMsg = "Group $groupId not found")
 }
 
 fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
