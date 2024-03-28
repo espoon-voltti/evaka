@@ -13,8 +13,6 @@ import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
 import java.util.function.Function
-import kotlin.reflect.KClass
-import kotlin.reflect.typeOf
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.array.SqlArrayType
 import org.jdbi.v3.core.generic.GenericTypes
@@ -24,10 +22,8 @@ import org.jdbi.v3.core.mapper.ColumnMapperFactory
 import org.jdbi.v3.core.mapper.ColumnMappers
 import org.jdbi.v3.core.mapper.RowMapperFactory
 import org.jdbi.v3.core.mapper.SingleColumnMapper
-import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.jackson2.Jackson2Config
 import org.jdbi.v3.jackson2.Jackson2Plugin
-import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
 import org.postgresql.util.PGobject
 
@@ -140,34 +136,3 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     }
     return jdbi
 }
-
-/**
- * Maps a row column to a value.
- *
- * This function works with Kotlin better than row.getColumn().
- */
-@Deprecated("Use the new row mapper mechanism instead. See fi.espoo.evaka.shared.db.Row")
-inline fun <reified T> RowView.mapColumn(
-    name: String,
-    vararg annotations: KClass<out Annotation>
-): T {
-    val type = createQualifiedType<T>(*annotations)
-    val value = getColumn(name, type)
-    if (null !is T && value == null) {
-        throw throw IllegalStateException("Non-nullable column $name was null")
-    }
-    return value
-}
-
-/** Maps a row json column to a value. */
-@Deprecated("Use the new row mapper mechanism instead. See fi.espoo.evaka.shared.db.Row")
-inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T =
-    @Suppress("DEPRECATION") mapColumn(name, Json::class)
-
-/**
- * Maps a row to a value.
- *
- * This function works with Kotlin better than row.getRow().
- */
-@Deprecated("Use the new row mapper mechanism instead. See fi.espoo.evaka.shared.db.Row")
-inline fun <reified T> RowView.mapRow(): T = getRow(typeOf<T>().asJdbiJavaType()) as T
