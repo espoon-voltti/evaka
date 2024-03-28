@@ -586,7 +586,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedServiceResult(
                                         reservedMinutes = 420,
-                                        attendedMinutes = 400,
                                         usedServiceMinutes = 420,
                                         usedServiceRanges =
                                             listOf(
@@ -620,7 +619,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedServiceResult(
                                         reservedMinutes = 420,
-                                        attendedMinutes = 455,
                                         usedServiceMinutes = 455,
                                         listOf(TimeRange(LocalTime.of(8, 45), LocalTime.of(16, 20)))
                                     ),
@@ -645,7 +643,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedServiceResult(
                                         reservedMinutes = 0,
-                                        attendedMinutes = 480,
                                         usedServiceMinutes = 480,
                                         listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)))
                                     ),
@@ -664,7 +661,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 usedService =
                                     UsedServiceResult(
                                         reservedMinutes = 0,
-                                        attendedMinutes = 0,
                                         usedServiceMinutes = (120.0 * 60 / 21).roundToLong(),
                                         usedServiceRanges = emptyList()
                                     ),
@@ -1281,7 +1277,6 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                             usedService =
                                 UsedServiceResult(
                                     reservedMinutes = 0,
-                                    attendedMinutes = 0,
                                     usedServiceMinutes = 0,
                                     usedServiceRanges = emptyList()
                                 )
