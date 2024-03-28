@@ -214,16 +214,17 @@ const initialFormState = (
 })
 
 export default React.memo(function MarkReservations({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { childId } = useRouteParams(['childId'])
-  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const child = useChild(
+    useQueryResult(childrenQuery(selectedGroupId.unitId)),
+    childId
+  )
   const reservations = useQueryResult(getConfirmedRangeQuery(childId))
   const absences = useQueryResult(getFutureAbsencesByChildQuery(childId))
   const [mode, setMode] = useState<Mode>('view')

@@ -47,15 +47,14 @@ type UiState =
   | { type: 'newMessage'; draft: DraftContent | undefined }
 
 export default function MessagesPage({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { groupAccounts, selectedAccount } = useContext(MessageContext)
@@ -120,7 +119,6 @@ export default function MessagesPage({
           case 'list':
             return (
               <PageWithNavigation
-                unitId={unitId}
                 selected="messages"
                 selectedGroup={
                   selectedAccount?.daycareGroup
@@ -225,11 +223,7 @@ export default function MessagesPage({
               replace={true}
             />
           )}
-          <BottomNavbar
-            selected="messages"
-            unitId={unitId}
-            selectedGroupId={selectedGroupId}
-          />
+          <BottomNavbar selected="messages" selectedGroupId={selectedGroupId} />
         </ContentArea>
       ))
 }

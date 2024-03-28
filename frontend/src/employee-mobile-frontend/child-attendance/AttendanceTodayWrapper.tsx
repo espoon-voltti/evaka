@@ -22,7 +22,7 @@ export default React.memo(function AttendancePageWrapper({
 }) {
   const { attendanceStatus } = useRouteParams(['attendanceStatus'])
   const attendanceUiState = parseChildAttendanceUiState(attendanceStatus)
-  const { unitId, attendanceStatuses, unitChildren } = useAttendanceContext()
+  const { attendanceStatuses, unitChildren } = useAttendanceContext()
 
   if (!attendanceUiState) {
     throw new Error('Invalid attendance status')
@@ -33,7 +33,6 @@ export default React.memo(function AttendancePageWrapper({
       activeStatus={mapChildAttendanceUIState(attendanceUiState)}
       unitChildren={unitChildren}
       attendanceStatuses={attendanceStatuses}
-      unitId={unitId}
       selectedGroupId={selectedGroupId}
     />
   )

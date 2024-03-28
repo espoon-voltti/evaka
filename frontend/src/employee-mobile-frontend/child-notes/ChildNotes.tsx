@@ -11,7 +11,6 @@ import {
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
@@ -82,15 +81,14 @@ const childDailyNoteToFormData = ({
 })
 
 export default React.memo(function ChildNotes({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
+  const unitId = selectedGroupId.unitId
   const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 

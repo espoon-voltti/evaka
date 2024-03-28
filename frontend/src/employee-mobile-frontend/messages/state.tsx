@@ -37,14 +37,13 @@ export const MessageContext = createContext<MessagesState>(defaultState)
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({
-    unitId,
     selectedGroupId,
     children
   }: {
-    unitId: UUID
     selectedGroupId: SelectedGroupId
     children: React.JSX.Element
   }) {
+    const unitId = selectedGroupId.unitId
     const { user } = useContext(UserContext)
     const pinLoggedEmployeeId = user
       .map((u) =>

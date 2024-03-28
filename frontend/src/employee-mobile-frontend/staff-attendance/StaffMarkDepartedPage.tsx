@@ -12,7 +12,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -41,10 +40,8 @@ import { staffAttendanceQuery, staffDepartureMutation } from './queries'
 import { getAttendanceDepartureDifferenceReasons } from './utils'
 
 export default React.memo(function StaffMarkDepartedPage({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
@@ -52,6 +49,7 @@ export default React.memo(function StaffMarkDepartedPage({
 
   const { employeeId } = useRouteParams(['employeeId'])
 
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
     refetchOnMount: 'always'
   })

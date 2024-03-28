@@ -19,14 +19,12 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { reservationHasTimes } from 'lib-common/reservations'
-import { UUID } from 'lib-common/types'
 import { theme } from 'lib-customizations/common'
 
 import ChildSubListItem from './ChildSubListItem'
 import { confirmedDayReservationsQuery } from './queries'
 
 interface ChildReservationListProps {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   date: LocalDate
 }
@@ -51,12 +49,11 @@ const ChildSubList = styled.div`
 `
 
 export default React.memo(function ChildReservationList({
-  unitId,
   selectedGroupId,
   date
 }: ChildReservationListProps) {
   const confirmedDayReservationsResult = useQueryResult(
-    confirmedDayReservationsQuery(unitId, date)
+    confirmedDayReservationsQuery(selectedGroupId.unitId, date)
   )
 
   const sortStartTimeNullsLast = (o: CategorizedReservationInfo) =>

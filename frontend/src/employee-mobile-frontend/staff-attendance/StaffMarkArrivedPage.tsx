@@ -49,13 +49,11 @@ import { staffArrivalMutation, staffAttendanceQuery } from './queries'
 import { getAttendanceArrivalDifferenceReasons } from './utils'
 
 const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
-  unitId,
   selectedGroupId,
   employeeId,
   unitInfo,
   staffMember
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
   employeeId: UUID
   unitInfo: UnitInfo
@@ -64,6 +62,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
+  const unitId = selectedGroupId.unitId
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
   const [timeStr, setTimeStr] = useState<string>(() =>
@@ -345,10 +344,8 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
 })
 
 export default React.memo(function StaffMarkArrivedPage({
-  unitId,
   selectedGroupId
 }: {
-  unitId: UUID
   selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
@@ -356,6 +353,7 @@ export default React.memo(function StaffMarkArrivedPage({
 
   const { employeeId } = useRouteParams(['employeeId'])
 
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
     refetchOnMount: 'always'
   })
@@ -413,7 +411,6 @@ export default React.memo(function StaffMarkArrivedPage({
 
             return (
               <StaffMarkArrivedInner
-                unitId={unitId}
                 selectedGroupId={selectedGroupId}
                 employeeId={employeeId}
                 unitInfo={unitInfo}

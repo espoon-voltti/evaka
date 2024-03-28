@@ -13,14 +13,12 @@ import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'
 import { confirmedDaysReservationsStatisticsQuery } from './queries'
 
 export default React.memo(function ConfirmedReservationsDaysWrapper({
-  unitId,
   selectedGroupId
 }: {
-  unitId: string
   selectedGroupId: SelectedGroupId
 }) {
   const statisticsResult = useQueryResult(
-    confirmedDaysReservationsStatisticsQuery(unitId)
+    confirmedDaysReservationsStatisticsQuery(selectedGroupId.unitId)
   )
 
   return (
@@ -28,7 +26,6 @@ export default React.memo(function ConfirmedReservationsDaysWrapper({
       {renderResult(statisticsResult, (dayStatistics) => (
         <ConfirmedDaysReservationList
           dailyStatistics={dayStatistics}
-          unitId={unitId}
           selectedGroupId={selectedGroupId}
         />
       ))}

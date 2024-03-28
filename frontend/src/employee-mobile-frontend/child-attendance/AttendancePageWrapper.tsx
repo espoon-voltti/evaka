@@ -43,15 +43,14 @@ export interface TabItem {
 }
 
 export default React.memo(function AttendancePageWrapper({
-  unitId,
   selectedGroupId
 }: {
-  unitId: string
   selectedGroupId: SelectedGroupId
 }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { i18n } = useTranslation()
+  const unitId = selectedGroupId.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const selectedGroup = useMemo(
@@ -125,7 +124,6 @@ export default React.memo(function AttendancePageWrapper({
     <>
       {unitChildren.isSuccess && attendanceStatuses.isSuccess && (
         <ChildSearch
-          unitId={unitId}
           selectedGroupId={selectedGroupId}
           show={showSearch}
           toggleShow={toggleSearch}
@@ -134,7 +132,6 @@ export default React.memo(function AttendancePageWrapper({
         />
       )}
       <PageWithNavigation
-        unitId={unitId}
         selectedGroupId={selectedGroupId}
         selected="child"
         selectedGroup={selectedGroup}
@@ -149,7 +146,6 @@ export default React.memo(function AttendancePageWrapper({
             <Outlet
               context={
                 {
-                  unitId: unitId,
                   unitChildren: children,
                   attendanceStatuses
                 } satisfies AttendanceContext
@@ -163,21 +159,18 @@ export default React.memo(function AttendancePageWrapper({
 })
 
 export type AttendanceContext = {
-  unitId: string
   unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
 }
 export const useAttendanceContext = () => useOutletContext<AttendanceContext>()
 
 const ChildSearch = React.memo(function Search({
-  unitId,
   selectedGroupId,
   show,
   toggleShow,
   unitChildren,
   attendanceStatuses
 }: {
-  unitId: string
   selectedGroupId: SelectedGroupId
   show: boolean
   toggleShow: () => void
@@ -222,11 +215,7 @@ const ChildSearch = React.memo(function Search({
           setShowSearch={toggleShow}
           searchResults={searchResults}
         />
-        <ChildList
-          unitId={unitId}
-          selectedGroupId={selectedGroupId}
-          items={searchResults}
-        />
+        <ChildList selectedGroupId={selectedGroupId} items={searchResults} />
       </ContentArea>
     </SearchContainer>
   )
