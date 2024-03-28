@@ -20,10 +20,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
 
+import { routes } from '../App'
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { ListItem } from './ChildList'
@@ -96,6 +97,7 @@ const GroupName = styled(InformationText)`
 
 interface ChildListItemProps {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   child: ListItem
   onClick?: () => void
   type?: AttendanceStatus
@@ -104,14 +106,13 @@ interface ChildListItemProps {
 
 export default React.memo(function ChildListItem({
   unitId,
+  selectedGroupId,
   child,
   onClick,
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
-
-  const { selectedGroupId } = useSelectedGroup()
 
   const { data: groupNotes = [] } = useQuery(
     queryOrDefault(groupNotesQuery, [])(child.groupId)
@@ -169,9 +170,12 @@ export default React.memo(function ChildListItem({
             <FixedSpaceRowWithLeftMargin alignItems="center">
               {child.dailyNote && (
                 <Link
-                  to={`/units/${unitId}/groups/${
-                    child.groupId ?? 'all'
-                  }/child-attendance/${child.id}/note`}
+                  to={
+                    routes.childNotes(
+                      toSelectedGroupId({ unitId, groupId: child.groupId }),
+                      child.id
+                    ).value
+                  }
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
@@ -183,7 +187,12 @@ export default React.memo(function ChildListItem({
               )}
               {child.groupId && groupNotes.length > 0 ? (
                 <Link
-                  to={`/units/${unitId}/groups/${child.groupId}/child-attendance/${child.id}/note`}
+                  to={
+                    routes.childNotes(
+                      toSelectedGroupId({ unitId, groupId: child.groupId }),
+                      child.id
+                    ).value
+                  }
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon

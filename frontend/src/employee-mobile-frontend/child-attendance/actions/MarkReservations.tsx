@@ -8,7 +8,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
-import { useSelectedGroup } from 'employee-mobile-frontend/common/selected-group'
+import { SelectedGroupId } from 'employee-mobile-frontend/common/selected-group'
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
 import {
@@ -57,6 +57,7 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus, faTrash } from 'lib-icons'
 
+import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, ServiceTime } from '../../common/components'
@@ -213,12 +214,13 @@ const initialFormState = (
 })
 
 export default React.memo(function MarkReservations({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
   const navigate = useNavigate()
-  const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
@@ -261,7 +263,8 @@ export default React.memo(function MarkReservations({
                     onEditReservations={() => setMode('edit')}
                     onMarkAbsence={() =>
                       navigate(
-                        `${groupRoute}/child-attendance/${childId}/mark-absent-beforehand`
+                        routes.markAbsentBeforehand(selectedGroupId, childId)
+                          .value
                       )
                     }
                   />

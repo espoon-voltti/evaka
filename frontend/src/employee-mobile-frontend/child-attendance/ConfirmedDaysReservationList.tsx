@@ -8,21 +8,21 @@ import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/r
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 
 import DayList from './DayList'
 
 interface Props {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   dailyStatistics: DayReservationStatisticsResult[]
 }
 
 export default React.memo(function ConfirmedDaysReservationList({
   unitId,
+  selectedGroupId,
   dailyStatistics
 }: Props) {
-  const { selectedGroupId } = useSelectedGroup()
-
   const groupReservations = useMemo(
     () =>
       selectedGroupId.type === 'all'
@@ -43,7 +43,11 @@ export default React.memo(function ConfirmedDaysReservationList({
         paddingVertical="zero"
         paddingHorizontal="zero"
       >
-        <DayList reservationStatistics={groupReservations} unitId={unitId} />
+        <DayList
+          reservationStatistics={groupReservations}
+          unitId={unitId}
+          selectedGroupId={selectedGroupId}
+        />
       </ContentArea>
     </>
   )

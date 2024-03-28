@@ -8,10 +8,12 @@ import styled from 'styled-components'
 
 import { P } from 'lib-components/typography'
 
+import { routes } from '../App'
 import EvakaLogo from '../assets/EvakaLogo.svg'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import { useTranslation } from '../common/i18n'
+import { toSelectedGroupId } from '../common/selected-group'
 
 import { FullHeightContainer, WideLinkButton } from './components'
 
@@ -33,7 +35,11 @@ export default React.memo(function MobileLander() {
         return (
           <Navigate
             replace
-            to={`/units/${u.unitIds[0]}/groups/all/child-attendance/list/coming`}
+            to={
+              routes.childAttendances(
+                toSelectedGroupId({ unitId: u.unitIds[0], groupId: undefined })
+              ).value
+            }
           />
         )
       }

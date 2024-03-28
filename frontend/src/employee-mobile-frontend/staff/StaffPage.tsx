@@ -14,9 +14,10 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceEditor from './StaffAttendanceEditor'
@@ -27,9 +28,14 @@ import {
 } from './api'
 import { staffAttendanceForGroupOrUnit } from './utils'
 
-export default React.memo(function StaffPage({ unitId }: { unitId: UUID }) {
+export default React.memo(function StaffPage({
+  unitId,
+  selectedGroupId
+}: {
+  unitId: UUID
+  selectedGroupId: SelectedGroupId
+}) {
   const navigate = useNavigate()
-  const { selectedGroupId } = useSelectedGroup()
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
@@ -63,8 +69,9 @@ export default React.memo(function StaffPage({ unitId }: { unitId: UUID }) {
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      const groupId = group === undefined ? 'all' : group.id
-      navigate(`/units/${unitId}/groups/${groupId}/staff`)
+      navigate(
+        routes.staff(toSelectedGroupId({ unitId, groupId: group?.id })).value
+      )
     },
     [navigate, unitId]
   )
@@ -84,6 +91,7 @@ export default React.memo(function StaffPage({ unitId }: { unitId: UUID }) {
   return (
     <PageWithNavigation
       unitId={unitId}
+      selectedGroupId={selectedGroupId}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}

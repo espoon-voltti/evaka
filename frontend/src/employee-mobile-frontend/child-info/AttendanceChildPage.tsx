@@ -22,6 +22,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { IconBox } from '../child-attendance/ChildListItem'
 import {
@@ -35,7 +36,7 @@ import { groupNotesQuery } from '../child-notes/queries'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 import { BackButton, TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -50,9 +51,11 @@ import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
 
 export default React.memo(function AttendanceChildPage({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
@@ -60,7 +63,6 @@ export default React.memo(function AttendanceChildPage({
   const { childId } = useRouteParams(['childId'])
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
-  const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { data: groupNotes } = useQuery(
     groupNotesQuery(selectedGroupId.type === 'all' ? '' : selectedGroupId.id),
     {
@@ -199,8 +201,8 @@ export default React.memo(function AttendanceChildPage({
 
                     <ChildButtons
                       unitId={unitId}
+                      selectedGroupId={selectedGroupId}
                       groupHasNotes={groupHasNotes}
-                      groupRoute={groupRoute}
                       child={child}
                     />
                   </Zindex>
@@ -234,21 +236,21 @@ export default React.memo(function AttendanceChildPage({
                     <Gap size="xs" />
                     {childAttendance.status === 'COMING' && (
                       <AttendanceChildComing
+                        selectedGroupId={selectedGroupId}
                         child={child}
-                        groupRoute={groupRoute}
                         attendances={childAttendance.attendances}
                       />
                     )}
                     {childAttendance.status === 'PRESENT' && (
                       <AttendanceChildPresent
+                        selectedGroupId={selectedGroupId}
                         child={child}
-                        groupRoute={groupRoute}
                       />
                     )}
                     {childAttendance.status === 'DEPARTED' && (
                       <AttendanceChildDeparted
+                        selectedGroupId={selectedGroupId}
                         child={child}
-                        groupRoute={groupRoute}
                       />
                     )}
                     {childAttendance.status === 'ABSENT' &&
@@ -266,7 +268,9 @@ export default React.memo(function AttendanceChildPage({
                     .getOrElse(false) ? (
                     <LinkButtonWithIcon
                       data-qa="mark-reservations"
-                      to={`${groupRoute}/child-attendance/${childId}/mark-reservations`}
+                      to={
+                        routes.markReservations(selectedGroupId, childId).value
+                      }
                     >
                       <RoundIcon
                         size="L"
@@ -280,7 +284,10 @@ export default React.memo(function AttendanceChildPage({
                   ) : (
                     <LinkButtonWithIcon
                       data-qa="mark-absent-beforehand"
-                      to={`${groupRoute}/child-attendance/${childId}/mark-absent-beforehand`}
+                      to={
+                        routes.markAbsentBeforehand(selectedGroupId, childId)
+                          .value
+                      }
                     >
                       <RoundIcon
                         size="L"

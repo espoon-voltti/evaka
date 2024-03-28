@@ -15,10 +15,11 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { faPlus } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'
@@ -35,15 +36,16 @@ type StatusTab = 'present' | 'absent'
 
 interface Props {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   tab: StatusTab
 }
 
 export default React.memo(function StaffAttendancesPage({
   unitId,
+  selectedGroupId,
   tab
 }: Props) {
   const navigate = useNavigate()
-  const { selectedGroupId, groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
@@ -52,15 +54,18 @@ export default React.memo(function StaffAttendancesPage({
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       navigate(
-        `/units/${unitId}/groups/${group?.id ?? 'all'}/staff-attendance/${tab}`
+        routes.staffAttendances(
+          toSelectedGroupId({ unitId, groupId: group?.id }),
+          tab
+        ).value
       )
     },
     [navigate, tab, unitId]
   )
 
   const navigateToExternalMemberArrival = useCallback(
-    () => navigate(`${groupRoute}/staff-attendance/external`),
-    [groupRoute, navigate]
+    () => navigate(routes.externalStaffAttendances(selectedGroupId).value),
+    [selectedGroupId, navigate]
   )
 
   const presentStaffCounts = useMemo(
@@ -84,12 +89,12 @@ export default React.memo(function StaffAttendancesPage({
     () => [
       {
         id: 'absent',
-        link: `${groupRoute}/staff-attendance/absent`,
+        link: routes.staffAttendances(selectedGroupId, 'absent'),
         label: i18n.attendances.types.ABSENT
       },
       {
         id: 'present',
-        link: `${groupRoute}/staff-attendance/present`,
+        link: routes.staffAttendances(selectedGroupId, 'present'),
         label: (
           <>
             {i18n.attendances.types.PRESENT}
@@ -98,7 +103,7 @@ export default React.memo(function StaffAttendancesPage({
         )
       }
     ],
-    [groupRoute, i18n, presentStaffCounts]
+    [selectedGroupId, i18n, presentStaffCounts]
   )
 
   const filteredStaff = useMemo(
@@ -141,6 +146,7 @@ export default React.memo(function StaffAttendancesPage({
   return (
     <PageWithNavigation
       unitId={unitId}
+      selectedGroupId={selectedGroupId}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}
@@ -150,7 +156,13 @@ export default React.memo(function StaffAttendancesPage({
         <FixedSpaceColumn spacing="zero">
           {staff.map((staffMember) => {
             const s = toStaff(staffMember)
-            return <StaffListItem {...s} key={s.id} />
+            return (
+              <StaffListItem
+                {...s}
+                key={s.id}
+                selectedGroupId={selectedGroupId}
+              />
+            )
           })}
         </FixedSpaceColumn>
       ))}

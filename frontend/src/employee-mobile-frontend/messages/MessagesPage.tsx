@@ -21,12 +21,13 @@ import { Tabs } from 'lib-components/molecules/Tabs'
 import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import BottomNavbar, { bottomNavBarHeight } from '../common/BottomNavbar'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import DraftMessagesList from './DraftMessagesList'
@@ -45,12 +46,17 @@ type UiState =
   | { type: 'sentMessage'; message: SentMessage }
   | { type: 'newMessage'; draft: DraftContent | undefined }
 
-export default function MessagesPage({ unitId }: { unitId: UUID }) {
+export default function MessagesPage({
+  unitId,
+  selectedGroupId
+}: {
+  unitId: UUID
+  selectedGroupId: SelectedGroupId
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
-  const { groupRoute } = useSelectedGroup()
 
   const { groupAccounts, selectedAccount } = useContext(MessageContext)
 
@@ -98,7 +104,11 @@ export default function MessagesPage({ unitId }: { unitId: UUID }) {
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      if (group) navigate(`/units/${unitId}/groups/${group.id}/messages`)
+      if (group)
+        navigate(
+          routes.messages(toSelectedGroupId({ unitId, groupId: group.id }))
+            .value
+        )
     },
     [navigate, unitId]
   )
@@ -121,6 +131,7 @@ export default function MessagesPage({ unitId }: { unitId: UUID }) {
                       }
                     : undefined
                 }
+                selectedGroupId={selectedGroupId}
                 onChangeGroup={changeGroup}
                 allowedGroupIds={groupAccounts.flatMap(
                   (ga) => ga.daycareGroup?.id || []
@@ -209,9 +220,16 @@ export default function MessagesPage({ unitId }: { unitId: UUID }) {
               {i18n.messages.noAccountAccess}
             </NoAccounts>
           ) : (
-            <Navigate to={`${groupRoute}/messages/unread`} replace={true} />
+            <Navigate
+              to={routes.unreadMessages(selectedGroupId).value}
+              replace={true}
+            />
           )}
-          <BottomNavbar selected="messages" unitId={unitId} />
+          <BottomNavbar
+            selected="messages"
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
         </ContentArea>
       ))
 }

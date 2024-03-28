@@ -15,7 +15,7 @@ import { queryOrDefault, useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 
 import { messagingAccountsQuery } from './queries'
 
@@ -38,9 +38,11 @@ export const MessageContext = createContext<MessagesState>(defaultState)
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({
     unitId,
+    selectedGroupId,
     children
   }: {
     unitId: UUID
+    selectedGroupId: SelectedGroupId
     children: React.JSX.Element
   }) {
     const { user } = useContext(UserContext)
@@ -49,8 +51,6 @@ export const MessageContextProvider = React.memo(
         u && u.pinLoginActive ? u.employeeId ?? undefined : undefined
       )
       .getOrElse(undefined)
-
-    const { selectedGroupId } = useSelectedGroup()
 
     const { data: groupAccounts = [] } = useQuery(
       queryOrDefault(

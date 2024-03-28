@@ -15,6 +15,7 @@ import { UUID } from 'lib-common/types'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
+import { SelectedGroupId } from '../common/selected-group'
 
 import DayListItem, { ChevronBox, DateBox } from './DayListItem'
 
@@ -24,11 +25,13 @@ export interface ListItem extends AttendanceChild {
 
 interface Props {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   reservationStatistics: DayReservationStatisticsResult[]
 }
 
 export default React.memo(function DayList({
   unitId,
+  selectedGroupId,
   reservationStatistics
 }: Props) {
   const { i18n } = useTranslation()
@@ -55,6 +58,7 @@ export default React.memo(function DayList({
               key={`${dr.date.format()}-dli`}
               dayStats={dr}
               unitId={unitId}
+              selectedGroupId={selectedGroupId}
             />
           </Li>
         ))}

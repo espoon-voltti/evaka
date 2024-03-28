@@ -4,7 +4,7 @@
 
 import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import {
   BrowserRouter as Router,
   Navigate,
@@ -16,6 +16,7 @@ import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import { Uri, uri } from 'lib-common/uri'
 import useRouteParams from 'lib-common/useRouteParams'
 import {
   Notifications,
@@ -43,6 +44,7 @@ import AttendanceChildPage from './child-info/AttendanceChildPage'
 import ChildSensitiveInfoPage from './child-info/ChildSensitiveInfoPage'
 import ChildNotes from './child-notes/ChildNotes'
 import { I18nContextProvider, useTranslation } from './common/i18n'
+import { SelectedGroupId, toSelectedGroupId } from './common/selected-group'
 import { ServiceWorkerContextProvider } from './common/service-worker'
 import MessagesPage from './messages/MessagesPage'
 import NewChildMessagePage from './messages/NewChildMessagePage'
@@ -60,6 +62,7 @@ import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
 import StaffMarkArrivedPage from './staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
 import StaffMemberPage from './staff-attendance/StaffMemberPage'
+import { ChildAttendanceUIState } from './types'
 import UnitList from './units/UnitList'
 
 export default function App() {
@@ -133,10 +136,19 @@ function shouldForwardProp(propName: string, target: unknown) {
 
 function UnitRouter() {
   const { unitId } = useRouteParams(['unitId'])
+  const selectedGroupId = useMemo(
+    () => toSelectedGroupId({ unitId, groupId: undefined }),
+    [unitId]
+  )
 
   return (
     <Routes>
-      <Route path="/settings" element={<SettingsPage unitId={unitId} />} />
+      <Route
+        path="/settings"
+        element={
+          <SettingsPage unitId={unitId} selectedGroupId={selectedGroupId} />
+        }
+      />
       <Route
         path="/groups/:groupId/*"
         element={<GroupRouter unitId={unitId} />}
@@ -149,48 +161,98 @@ function UnitRouter() {
 function GroupRouter({ unitId }: { unitId: UUID }) {
   useGroupIdInLocalStorage()
 
+  const { groupId } = useRouteParams([], ['groupId'])
+  const selectedGroupId: SelectedGroupId = useMemo(
+    () => toSelectedGroupId({ unitId, groupId }),
+    [unitId, groupId]
+  )
+
   return (
-    <MessageContextProvider unitId={unitId}>
+    <MessageContextProvider unitId={unitId} selectedGroupId={selectedGroupId}>
       <Routes>
         <Route
           path="child-attendance/*"
-          element={<ChildAttendanceRouter unitId={unitId} />}
+          element={
+            <ChildAttendanceRouter
+              unitId={unitId}
+              selectedGroupId={selectedGroupId}
+            />
+          }
         />
-        <Route path="staff/*" element={<StaffRouter unitId={unitId} />} />
+        <Route
+          path="staff/*"
+          element={
+            <StaffRouter unitId={unitId} selectedGroupId={selectedGroupId} />
+          }
+        />
         <Route
           path="staff-attendance/*"
-          element={<StaffAttendanceRouter unitId={unitId} />}
+          element={
+            <StaffAttendanceRouter
+              unitId={unitId}
+              selectedGroupId={selectedGroupId}
+            />
+          }
         />
-        <Route path="messages/*" element={<MessagesRouter unitId={unitId} />} />
+        <Route
+          path="messages/*"
+          element={
+            <MessagesRouter unitId={unitId} selectedGroupId={selectedGroupId} />
+          }
+        />
         <Route index element={<Navigate replace to="child-attendance" />} />
       </Routes>
     </MessageContextProvider>
   )
 }
 
-function ChildAttendanceRouter({ unitId }: { unitId: UUID }) {
+function ChildAttendanceRouter({
+  unitId,
+  selectedGroupId
+}: {
+  unitId: UUID
+  selectedGroupId: SelectedGroupId
+}) {
   // Re-fetch child data when navigating to the attendance section
   useQuery(childrenQuery(unitId), { refetchOnMount: 'always' })
   useQuery(attendanceStatusesQuery(unitId), { refetchOnMount: 'always' })
 
   return (
     <Routes>
-      <Route path="/" element={<AttendancePageWrapper unitId={unitId} />}>
+      <Route
+        path="/"
+        element={
+          <AttendancePageWrapper
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
+      >
         <Route
           path="list/:attendanceStatus"
-          element={<AttendanceTodayWrapper />}
+          element={<AttendanceTodayWrapper selectedGroupId={selectedGroupId} />}
         />
         <Route
           path="daylist"
           id="daylist"
-          element={<ConfimedReservationDaysWrapper unitId={unitId} />}
+          element={
+            <ConfimedReservationDaysWrapper
+              unitId={unitId}
+              selectedGroupId={selectedGroupId}
+            />
+          }
         />
         <Route path="list" element={<Navigate replace to="/" />} />
       </Route>
 
       <Route
         path=":childId"
-        element={<AttendanceChildPage unitId={unitId} />}
+        element={
+          <AttendanceChildPage
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
       <Route
         path=":childId/mark-present"
@@ -202,7 +264,9 @@ function ChildAttendanceRouter({ unitId }: { unitId: UUID }) {
       />
       <Route
         path=":childId/mark-reservations"
-        element={<MarkReservations unitId={unitId} />}
+        element={
+          <MarkReservations unitId={unitId} selectedGroupId={selectedGroupId} />
+        }
       />
       <Route
         path=":childId/mark-absent-beforehand"
@@ -212,7 +276,12 @@ function ChildAttendanceRouter({ unitId }: { unitId: UUID }) {
         path=":childId/mark-departed"
         element={<MarkDeparted unitId={unitId} />}
       />
-      <Route path=":childId/note" element={<ChildNotes unitId={unitId} />} />
+      <Route
+        path=":childId/note"
+        element={
+          <ChildNotes unitId={unitId} selectedGroupId={selectedGroupId} />
+        }
+      />
       <Route
         path=":childId/info"
         element={
@@ -234,65 +303,130 @@ function ChildAttendanceRouter({ unitId }: { unitId: UUID }) {
   )
 }
 
-function StaffRouter({ unitId }: { unitId: UUID }) {
+function StaffRouter({
+  unitId,
+  selectedGroupId
+}: {
+  unitId: UUID
+  selectedGroupId: SelectedGroupId
+}) {
   return (
     <Routes>
-      <Route index element={<StaffPage unitId={unitId} />} />
+      <Route
+        index
+        element={
+          <StaffPage unitId={unitId} selectedGroupId={selectedGroupId} />
+        }
+      />
     </Routes>
   )
 }
 
-function StaffAttendanceRouter({ unitId }: { unitId: UUID }) {
+function StaffAttendanceRouter({
+  unitId,
+  selectedGroupId
+}: {
+  unitId: UUID
+  selectedGroupId: SelectedGroupId
+}) {
   return (
     <Routes>
       <Route
         path="absent"
-        element={<StaffAttendancesPage tab="absent" unitId={unitId} />}
+        element={
+          <StaffAttendancesPage
+            tab="absent"
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
       <Route
         path="present"
-        element={<StaffAttendancesPage tab="present" unitId={unitId} />}
+        element={
+          <StaffAttendancesPage
+            tab="present"
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
       <Route
         path="external"
-        element={<MarkExternalStaffMemberArrivalPage unitId={unitId} />}
+        element={
+          <MarkExternalStaffMemberArrivalPage
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
       <Route
         path="external/:attendanceId"
         element={<ExternalStaffMemberPage unitId={unitId} />}
       />
-      <Route path=":employeeId" element={<StaffMemberPage unitId={unitId} />} />
+      <Route
+        path=":employeeId"
+        element={
+          <StaffMemberPage unitId={unitId} selectedGroupId={selectedGroupId} />
+        }
+      />
       <Route
         path=":employeeId/edit"
-        element={<StaffAttendanceEditPage unitId={unitId} />}
+        element={
+          <StaffAttendanceEditPage
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
       <Route
         path=":employeeId/mark-arrived"
-        element={<StaffMarkArrivedPage unitId={unitId} />}
+        element={
+          <StaffMarkArrivedPage
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
       <Route
         path=":employeeId/mark-departed"
-        element={<StaffMarkDepartedPage unitId={unitId} />}
+        element={
+          <StaffMarkDepartedPage
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
       <Route index element={<Navigate replace to="absent" />} />
     </Routes>
   )
 }
 
-function MessagesRouter({ unitId }: { unitId: UUID }) {
+function MessagesRouter({
+  unitId,
+  selectedGroupId
+}: {
+  unitId: UUID
+  selectedGroupId: SelectedGroupId
+}) {
   return (
     <Routes>
       <Route
         index
         element={
           <RequirePinAuth unitId={unitId}>
-            <MessagesPage unitId={unitId} />
+            <MessagesPage unitId={unitId} selectedGroupId={selectedGroupId} />
           </RequirePinAuth>
         }
       />
       <Route
         path="unread-messages"
-        element={<UnreadMessagesPage unitId={unitId} />}
+        element={
+          <UnreadMessagesPage
+            unitId={unitId}
+            selectedGroupId={selectedGroupId}
+          />
+        }
       />
     </Routes>
   )
@@ -330,4 +464,83 @@ function useGroupIdInLocalStorage() {
       // do nothing
     }
   }, [groupId])
+}
+
+export const routes = {
+  group(group: SelectedGroupId): Uri {
+    const id = group.type === 'all' ? 'all' : group.id
+    return uri`/units/${group.unitId}/groups/${id}`
+  },
+  settings(unitId: UUID): Uri {
+    return uri`/units/${unitId}/settings`
+  },
+  childAttendanceList(
+    group: SelectedGroupId,
+    state: ChildAttendanceUIState
+  ): Uri {
+    return uri`${this.group(group)}/child-attendance/list/${state}`
+  },
+  childAttendance(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}`
+  },
+  childAttendances(group: SelectedGroupId): Uri {
+    return uri`${this.group(group)}/child-attendance/`
+  },
+  childAttendanceDaylist(group: SelectedGroupId): Uri {
+    return uri`${this.group(group)}/child-attendance/daylist`
+  },
+  markAbsentBeforehand(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/mark-absent-beforehand`
+  },
+  markPresent(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/mark-present`
+  },
+  markAbsent(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/mark-absent`
+  },
+  markDeparted(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/mark-departed`
+  },
+  markReservations(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/mark-reservations`
+  },
+  childNotes(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/note`
+  },
+  newChildMessage(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/new-message`
+  },
+  childSensitiveInfo(group: SelectedGroupId, child: UUID): Uri {
+    return uri`${this.group(group)}/child-attendance/${child}/info`
+  },
+  staff(group: SelectedGroupId): Uri {
+    return uri`${this.group(group)}/staff`
+  },
+  staffAttendances(group: SelectedGroupId, tab: 'absent' | 'present'): Uri {
+    return uri`${this.group(group)}/staff-attendance/${tab}`
+  },
+  externalStaffAttendances(group: SelectedGroupId): Uri {
+    return uri`${this.group(group)}/staff-attendance/external`
+  },
+  externalStaffAttendance(group: SelectedGroupId, attendanceId: UUID): Uri {
+    return uri`${this.group(group)}/staff-attendance/external/${attendanceId}`
+  },
+  staffAttendance(group: SelectedGroupId, employeeId: UUID): Uri {
+    return uri`${this.group(group)}/staff-attendance/${employeeId}`
+  },
+  staffAttendanceEdit(group: SelectedGroupId, employeeId: UUID): Uri {
+    return uri`${this.group(group)}/staff-attendance/${employeeId}/edit`
+  },
+  staffMarkArrived(group: SelectedGroupId, employeeId: UUID): Uri {
+    return uri`${this.group(group)}/staff-attendance/${employeeId}/mark-arrived`
+  },
+  staffMarkDeparted(group: SelectedGroupId, employeeId: UUID): Uri {
+    return uri`${this.group(group)}/staff-attendance/${employeeId}/mark-departed`
+  },
+  messages(group: SelectedGroupId): Uri {
+    return uri`${this.group(group)}/messages`
+  },
+  unreadMessages(group: SelectedGroupId): Uri {
+    return uri`${this.group(group)}/messages/unread-messages`
+  }
 }

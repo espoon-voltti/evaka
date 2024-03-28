@@ -18,10 +18,12 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronRight } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
+import { toSelectedGroupId } from '../common/selected-group'
 
 import { unitStatsQuery } from './queries'
 
@@ -56,7 +58,11 @@ export default React.memo(function UnitList() {
                 }) => (
                   <UnitContainer
                     key={id}
-                    to={`/units/${id}`}
+                    to={
+                      routes.childAttendances(
+                        toSelectedGroupId({ unitId: id, groupId: undefined })
+                      ).value
+                    }
                     data-qa={`unit-${id}`}
                   >
                     <FixedSpaceColumn spacing="s" fullWidth>

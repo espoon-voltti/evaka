@@ -60,10 +60,11 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faLockAlt, faTrash } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { FlexColumn } from '../common/components'
 import { Translations, useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
@@ -207,9 +208,11 @@ const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
 })
 
 export default React.memo(function StaffAttendanceEditPage({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
   const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
@@ -238,6 +241,7 @@ export default React.memo(function StaffAttendanceEditPage({
       ) : (
         <StaffAttendancesEditor
           unitId={unitId}
+          selectedGroupId={selectedGroupId}
           employeeId={employeeId}
           groups={groups}
           staffMember={staffMember}
@@ -249,16 +253,17 @@ export default React.memo(function StaffAttendanceEditPage({
 
 const StaffAttendancesEditor = ({
   unitId,
+  selectedGroupId,
   employeeId,
   groups,
   staffMember
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   employeeId: UUID
   groups: GroupInfo[]
   staffMember: StaffMember
 }) => {
-  const { groupRoute } = useSelectedGroup()
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
   const [date] = useState(LocalDate.todayInHelsinkiTz())
@@ -317,7 +322,10 @@ const StaffAttendancesEditor = ({
               })}
               onSuccess={() =>
                 navigate(
-                  `${groupRoute}/staff-attendance/${staffMember.employeeId}`
+                  routes.staffAttendance(
+                    selectedGroupId,
+                    staffMember.employeeId
+                  ).value
                 )
               }
               onFailure={({ errorCode }) => {
@@ -430,7 +438,8 @@ const StaffAttendancesEditor = ({
             data-qa="cancel"
             onClick={() =>
               navigate(
-                `${groupRoute}/staff-attendance/${staffMember.employeeId}`
+                routes.staffAttendance(selectedGroupId, staffMember.employeeId)
+                  .value
               )
             }
           >
