@@ -522,7 +522,6 @@ private fun Database.Transaction.insertReservation(
 
 data class UsedServiceResult(
     val reservedMinutes: Long,
-    val attendedMinutes: Long,
     val usedServiceMinutes: Long,
     val usedServiceRanges: List<TimeRange>
 )
@@ -551,7 +550,6 @@ fun computeUsedService(
     if (!isOperationDay && shiftCareType != ShiftCareType.INTERMITTENT) {
         return UsedServiceResult(
             reservedMinutes = 0,
-            attendedMinutes = 0,
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
         )
@@ -579,7 +577,6 @@ fun computeUsedService(
     if (isDateInFuture) {
         return UsedServiceResult(
             reservedMinutes = minutesOf(effectiveReservations),
-            attendedMinutes = 0,
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
         )
@@ -594,7 +591,6 @@ fun computeUsedService(
     if (endedAttendances.isEmpty() && isPlannedAbsence) {
         return UsedServiceResult(
             reservedMinutes = 0,
-            attendedMinutes = 0,
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
         )
@@ -605,7 +601,6 @@ fun computeUsedService(
         val dailyAverage = serviceNeedHours.toDouble() * 60 / daysInMonth
         return UsedServiceResult(
             reservedMinutes = 0,
-            attendedMinutes = 0,
             usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
             usedServiceRanges = emptyList()
         )
@@ -616,7 +611,6 @@ fun computeUsedService(
 
     return UsedServiceResult(
         reservedMinutes = minutesOf(effectiveReservations),
-        attendedMinutes = effectiveAttendances.ranges().sumOf { it.duration.toMinutes() },
         usedServiceMinutes = minutesOf(usedService),
         usedServiceRanges = usedService.ranges().toList()
     )
