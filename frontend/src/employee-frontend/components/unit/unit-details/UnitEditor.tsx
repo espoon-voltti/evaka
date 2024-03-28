@@ -31,6 +31,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import TimeInput, { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -92,6 +93,11 @@ interface FormData {
   businessId: string
   iban: string
   providerId: string
+  mealtimeBreakfast: LocalTime | null
+  mealtimeEveningSnack: LocalTime | null
+  mealtimeLunch: LocalTime | null
+  mealtimeSnack: LocalTime | null
+  mealtimeSupper: LocalTime | null
 }
 
 interface UnitDecisionCustomization {
@@ -560,7 +566,12 @@ function validateForm(
     ophOrganizerOid,
     businessId,
     iban,
-    providerId
+    providerId,
+    mealtimeBreakfast,
+    mealtimeLunch,
+    mealtimeSnack,
+    mealtimeSupper,
+    mealtimeEveningSnack
   } = form
 
   if (
@@ -616,7 +627,12 @@ function validateForm(
         operationTimes,
         businessId,
         iban,
-        providerId
+        providerId,
+        mealtimeBreakfast,
+        mealtimeEveningSnack,
+        mealtimeLunch,
+        mealtimeSnack,
+        mealtimeSupper
       },
       {
         formErrors: errors,
@@ -725,7 +741,12 @@ function toFormData(unit: Daycare | undefined): FormData {
     ),
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
-    providerId: unit?.providerId ?? ''
+    providerId: unit?.providerId ?? '',
+    mealtimeBreakfast: unit?.mealtimeBreakfast ?? null,
+    mealtimeLunch: unit?.mealtimeLunch ?? null,
+    mealtimeSnack: unit?.mealtimeSnack ?? null,
+    mealtimeSupper: unit?.mealtimeSupper ?? null,
+    mealtimeEveningSnack: unit?.mealtimeEveningSnack ?? null
   }
 }
 
@@ -1699,6 +1720,21 @@ export default function UnitEditor(props: Props) {
           decisionCustomization.handlerAddress
         )}
       </FormPart>
+      {featureFlags.jamixIntegration && (
+        <>
+          <H3>Ruokatilausintegraatio</H3>
+          <FormPart>
+            <div>Yksikön ruokailuajat</div>
+            <FixedSpaceColumn spacing="xs">
+              {props.editable ? (
+                <>Aamupala: TODO editor</>
+              ) : (
+                <>Aamupala: {form.mealtimeBreakfast}</>
+              )}
+            </FixedSpaceColumn>
+          </FormPart>
+        </>
+      )}
       {props.editable && (
         <>
           <>

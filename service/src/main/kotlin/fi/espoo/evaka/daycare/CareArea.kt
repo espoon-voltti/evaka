@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
+import java.time.LocalTime
 
 data class VisitingAddress(
     val streetAddress: String = "", // address.street_address not nullable
@@ -72,7 +73,12 @@ data class Daycare(
     val enabledPilotFeatures: List<PilotFeature>,
     val businessId: String,
     val iban: String,
-    val providerId: String
+    val providerId: String,
+    val mealtimeBreakfast: LocalTime?,
+    val mealtimeLunch: LocalTime?,
+    val mealtimeSnack: LocalTime?,
+    val mealtimeSupper: LocalTime?,
+    val mealtimeEveningSnack: LocalTime?
 )
 
 data class FinanceDecisionHandler(
