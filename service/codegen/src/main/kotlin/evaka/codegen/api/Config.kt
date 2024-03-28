@@ -40,6 +40,42 @@ val forceIncludes: Set<KType> =
         typeOf<CurriculumTemplateError>()
     )
 
+// these endpoint paths are deprecated, and API clients should not call them
+private val deprecatedEndpoints =
+    setOf(
+        "/attachments/citizen/{attachmentId}",
+        "/decisions/confirm",
+        "/decisions/head-of-family/{id}",
+        "/decisions/head-of-family/{id}/create-retroactive",
+        "/decisions/{id}",
+        "/decisions/ignore",
+        "/decisions/mark-sent",
+        "/decisions/search",
+        "/decisions/set-type/{id}",
+        "/decisions/unignore",
+        "/person/identity/{personId}",
+        "/units",
+    )
+
+// these endpoint paths are planned, and API clients should not call them *yet*
+private val plannedEndpoints =
+    setOf(
+        "/citizen/public/club-terms",
+        "/citizen/public/preschool-terms",
+        "/citizen/public/service-needs/options",
+        "/citizen/public/units/{applicationType}",
+        "/citizen/units",
+        "/employee-mobile/public/pairings/challenge",
+        "/employee-mobile/public/pairings/{id}/status",
+        "/employee/public/club-terms",
+        "/employee/public/preschool-terms",
+        "/employee/public/service-needs/options",
+        "/employee/public/units/{applicationType}",
+        "/employee/units",
+    )
+
+val endpointExcludes = plannedEndpoints + deprecatedEndpoints
+
 object Imports {
     val localDate = TsImport.Default(LibCommon / "local-date.ts", "LocalDate")
     val localTime = TsImport.Default(LibCommon / "local-time.ts", "LocalTime")

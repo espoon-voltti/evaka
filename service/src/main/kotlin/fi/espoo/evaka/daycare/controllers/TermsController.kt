@@ -42,12 +42,26 @@ private val logger = KotlinLogging.logger {}
 @RestController
 class TermsController(private val accessControl: AccessControl) {
 
-    @GetMapping("/public/club-terms")
+    @GetMapping(
+        path =
+            [
+                "/public/club-terms", // deprecated
+                "/citizen/public/club-terms",
+                "/employee/public/club-terms",
+            ]
+    )
     fun getClubTerms(db: Database): List<ClubTerm> {
         return db.connect { dbc -> dbc.read { it.getClubTerms() } }
     }
 
-    @GetMapping("/public/preschool-terms")
+    @GetMapping(
+        path =
+            [
+                "/public/preschool-terms", // deprecated
+                "/citizen/public/preschool-terms",
+                "/employee/public/preschool-terms",
+            ]
+    )
     fun getPreschoolTerms(db: Database): List<PreschoolTerm> {
         return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
     }
