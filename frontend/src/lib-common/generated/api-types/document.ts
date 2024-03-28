@@ -116,6 +116,7 @@ export interface ChildBasics {
 export interface ChildDocumentCitizenDetails {
   child: ChildBasics
   content: DocumentContent
+  downloadable: boolean
   id: UUID
   publishedAt: HelsinkiDateTime | null
   status: DocumentStatus

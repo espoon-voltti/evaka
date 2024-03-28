@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -12,15 +12,35 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
+import fi.espoo.evaka.document.CheckboxGroupQuestionOption
+import fi.espoo.evaka.document.DocumentLanguage
+import fi.espoo.evaka.document.DocumentTemplate
+import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.DocumentType
+import fi.espoo.evaka.document.Question
+import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
+import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.document.childdocument.AnsweredQuestion
+import fi.espoo.evaka.document.childdocument.CheckboxGroupAnswerContent
+import fi.espoo.evaka.document.childdocument.ChildBasics
+import fi.espoo.evaka.document.childdocument.ChildDocumentDetails
+import fi.espoo.evaka.document.childdocument.DocumentContent
+import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.document.childdocument.generateChildDocumentHtml
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -160,6 +180,224 @@ class PdfGeneratorTest {
         createPDF(preparatoryDecision, false, DocumentLang.SV)
         createPDF(voucherDecision, false, DocumentLang.SV)
         createPDF(clubDecision, false, DocumentLang.SV)
+    }
+
+    @Test
+    fun createChildDocumentPdf() {
+        val content =
+            DocumentContent(
+                answers =
+                    listOf(
+                        AnsweredQuestion.TextAnswer(questionId = "s1q1", answer = "Ihan jees"),
+                        AnsweredQuestion.TextAnswer(
+                            questionId = "s1q2",
+                            answer =
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus euismod turpis leo. \n" +
+                                    "in commodo velit interdum vitae. Vivamus eu felis libero. Aliquam non pellentesque ex. \n" +
+                                    "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
+                                    "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
+                                    "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
+                                    "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
+                        ),
+                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q1", answer = true),
+                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q2", answer = false),
+                        AnsweredQuestion.StaticTextDisplayAnswer(
+                            questionId = "s2q3",
+                            answer = null
+                        ),
+                        AnsweredQuestion.CheckboxGroupAnswer(
+                            questionId = "s2q4",
+                            answer =
+                                listOf(
+                                    CheckboxGroupAnswerContent(optionId = "2"),
+                                    CheckboxGroupAnswerContent(optionId = "3", "Lohikäärme")
+                                )
+                        ),
+                        AnsweredQuestion.RadioButtonGroupAnswer(questionId = "s2q6", answer = "2"),
+                        AnsweredQuestion.DateAnswer(
+                            questionId = "s3q1",
+                            answer = LocalDate.of(2023, 5, 20)
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            questionId = "s3q2",
+                            answer =
+                                listOf(
+                                    listOf(
+                                        "Roope",
+                                        "Ankka",
+                                        "Triljonääri",
+                                        "roope.ankka@ankkalinna.fi",
+                                        "+358 99 765 4321"
+                                    )
+                                )
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            questionId = "s3q3",
+                            answer =
+                                listOf(
+                                    listOf("Aku Kalevi Uolevi", "Ankka", "Isä"),
+                                    listOf("Hilda", "Hanhivaara", "Ilkeä äitipuoli")
+                                )
+                        )
+                    )
+            )
+        val document =
+            ChildDocumentDetails(
+                id = ChildDocumentId(UUID.randomUUID()),
+                status = DocumentStatus.COMPLETED,
+                publishedAt = HelsinkiDateTime.now(),
+                child =
+                    ChildBasics(
+                        id = PersonId(UUID.randomUUID()),
+                        firstName = "Tessa Tiina-Tellervo",
+                        lastName = "Testaaja-Meikäläinen",
+                        dateOfBirth = LocalDate.now().minusYears(4)
+                    ),
+                template =
+                    DocumentTemplate(
+                        id = DocumentTemplateId(UUID.randomUUID()),
+                        type = DocumentType.HOJKS,
+                        name = "Varhaiskasvatussuunnitelma 2023-2024",
+                        language = DocumentLanguage.FI,
+                        confidential = true,
+                        legalBasis =
+                            "§3.2b varhaiskasvatuslaki, varhaiskasvatuslautakunnan päätös ja määräys 11.3.2017",
+                        validity =
+                            DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(1)),
+                        published = true,
+                        content =
+                            DocumentTemplateContent(
+                                sections =
+                                    listOf(
+                                        Section(
+                                            id = "s1",
+                                            label = "Eka osio",
+                                            questions =
+                                                listOf(
+                                                    Question.TextQuestion(
+                                                        id = "s1q1",
+                                                        label = "Mitä kuuluu?"
+                                                    ),
+                                                    Question.TextQuestion(
+                                                        id = "s1q2",
+                                                        label = "Kerro lisää",
+                                                        multiline = true
+                                                    )
+                                                )
+                                        ),
+                                        Section(
+                                            id = "s2",
+                                            label = "Toka osio",
+                                            questions =
+                                                listOf(
+                                                    Question.CheckboxQuestion(
+                                                        id = "s2q1",
+                                                        label = "Hyväksyn käyttöehdot"
+                                                    ),
+                                                    Question.CheckboxQuestion(
+                                                        id = "s2q2",
+                                                        label = "Minulle saa lähettää mainoksia"
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q3",
+                                                        label = "Ylimääräinen väliotsikko"
+                                                    ),
+                                                    Question.CheckboxGroupQuestion(
+                                                        id = "s2q4",
+                                                        label = "Suosikkielämet",
+                                                        options =
+                                                            listOf(
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "1",
+                                                                    label = "Kissa"
+                                                                ),
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "2",
+                                                                    label = "Koira"
+                                                                ),
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "3",
+                                                                    label = "Muu, mikä?",
+                                                                    withText = true
+                                                                )
+                                                            )
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q5",
+                                                        text = "Staattinen tekstikappale."
+                                                    ),
+                                                    Question.RadioButtonGroupQuestion(
+                                                        id = "s2q6",
+                                                        label = "Laskiaispullaan kuuluu?",
+                                                        options =
+                                                            listOf(
+                                                                RadioButtonGroupQuestionOption(
+                                                                    id = "1",
+                                                                    label = "Hillo"
+                                                                ),
+                                                                RadioButtonGroupQuestionOption(
+                                                                    id = "2",
+                                                                    label = "Mantelimassa"
+                                                                )
+                                                            )
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q7",
+                                                        label = "Valitusoikeus",
+                                                        text =
+                                                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus euismod turpis leo. " +
+                                                                "in commodo velit interdum vitae. Vivamus eu felis libero. Aliquam non pellentesque ex. " +
+                                                                "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
+                                                                "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
+                                                                "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
+                                                                "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
+                                                    )
+                                                )
+                                        ),
+                                        Section(
+                                            id = "s3",
+                                            label = "Kolmas osio",
+                                            questions =
+                                                listOf(
+                                                    Question.DateQuestion(
+                                                        id = "s3q1",
+                                                        label = "Keskustelun päivämäärä"
+                                                    ),
+                                                    Question.GroupedTextFieldsQuestion(
+                                                        id = "s3q2",
+                                                        label = "Päätöksen tekijä",
+                                                        fieldLabels =
+                                                            listOf(
+                                                                "Etunimi",
+                                                                "Sukunimi",
+                                                                "Titteli",
+                                                                "Sähköpoti",
+                                                                "Puhelinnumero"
+                                                            ),
+                                                        allowMultipleRows = false
+                                                    ),
+                                                    Question.GroupedTextFieldsQuestion(
+                                                        id = "s3q3",
+                                                        label = "Osallistujat",
+                                                        fieldLabels =
+                                                            listOf("Etunimi", "Sukunimi", "Rooli"),
+                                                        allowMultipleRows = true
+                                                    )
+                                                )
+                                        )
+                                    )
+                            )
+                    ),
+                content = content,
+                publishedContent = content
+            )
+
+        val html = generateChildDocumentHtml(document)
+        val bytes = pdfGenerator.render(html)
+        val file = File.createTempFile("child_document_", ".pdf")
+        FileOutputStream(file).use { it.write(bytes) }
+
+        logger.debug { "Generated child document PDF to ${file.absolutePath}" }
     }
 
     private fun createPDF(

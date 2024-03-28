@@ -35,6 +35,7 @@ export default {
     cancel: 'Peruuta',
     return: 'Palaa',
     download: 'Lataa',
+    print: 'Tulosta',
     ok: 'Ok',
     save: 'Tallenna',
     discard: 'Älä tallenna',

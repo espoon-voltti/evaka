@@ -91,6 +91,7 @@ declare module 'Icons' {
   const faPlay: IconDefinition
   const faPlus: IconDefinition
   const faPlusCircle: IconDefinition
+  const faPrint: IconDefinition
   const faRedo: IconDefinition
   const faQuestion: IconDefinition
   const faQuestionCircle: IconDefinition

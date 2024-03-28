@@ -7,10 +7,26 @@ package fi.espoo.evaka.document
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.document.childdocument.AnsweredQuestion
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.HtmlBuilder
+import fi.espoo.evaka.shared.HtmlElement
 import fi.espoo.evaka.shared.domain.DateRange
+import java.time.format.DateTimeFormatter
 import org.jdbi.v3.json.Json
+
+private data class Translations(val yes: String, val no: String)
+
+private val translationsFi = Translations(yes = "Kyllä", no = "Ei")
+
+private val translationsSv = Translations(yes = "Ja", no = "Nej")
+
+private fun getTranslations(language: DocumentLanguage) =
+    when (language) {
+        DocumentLanguage.FI -> translationsFi
+        DocumentLanguage.SV -> translationsSv
+    }
 
 @ConstList("questionTypes")
 enum class QuestionType {
@@ -31,20 +47,79 @@ enum class QuestionType {
 sealed class Question(val type: QuestionType) {
     abstract val id: String
 
+    abstract fun generateHtml(
+        answeredQuestion: AnsweredQuestion<*>?,
+        language: DocumentLanguage
+    ): HtmlElement
+
+    fun htmlClassName() = "question question-${type.name.lowercase().replace('_', '-')}"
+
     @JsonTypeName("TEXT")
     data class TextQuestion(
         override val id: String,
         val label: String,
         val infoText: String = "",
         val multiline: Boolean = false
-    ) : Question(QuestionType.TEXT)
+    ) : Question(QuestionType.TEXT) {
+        override fun generateHtml(
+            answeredQuestion: AnsweredQuestion<*>?,
+            language: DocumentLanguage
+        ): HtmlElement {
+            if (answeredQuestion == null)
+                return HtmlBuilder.div(className = htmlClassName()) {
+                    listOf(label(label), span("-"))
+                }
+
+            if (
+                answeredQuestion !is AnsweredQuestion.TextAnswer ||
+                    !answeredQuestion.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(
+                    label(label),
+                    if (answeredQuestion.answer.isBlank()) {
+                        span("-")
+                    } else {
+                        div { multilineText(answeredQuestion.answer) }
+                    }
+                )
+            }
+        }
+    }
 
     @JsonTypeName("CHECKBOX")
     data class CheckboxQuestion(
         override val id: String,
         val label: String,
         val infoText: String = ""
-    ) : Question(QuestionType.CHECKBOX)
+    ) : Question(QuestionType.CHECKBOX) {
+        override fun generateHtml(
+            answeredQuestion: AnsweredQuestion<*>?,
+            language: DocumentLanguage
+        ): HtmlElement {
+            if (answeredQuestion == null)
+                return HtmlBuilder.div(className = htmlClassName()) {
+                    listOf(label(label), span("-"))
+                }
+
+            if (
+                answeredQuestion !is AnsweredQuestion.CheckboxAnswer ||
+                    !answeredQuestion.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+            val translations = getTranslations(language)
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(
+                    label(label),
+                    div(if (answeredQuestion.answer) translations.yes else translations.no)
+                )
+            }
+        }
+    }
 
     @JsonTypeName("CHECKBOX_GROUP")
     data class CheckboxGroupQuestion(
@@ -52,7 +127,42 @@ sealed class Question(val type: QuestionType) {
         val label: String,
         val options: List<CheckboxGroupQuestionOption>,
         val infoText: String = ""
-    ) : Question(QuestionType.CHECKBOX_GROUP)
+    ) : Question(QuestionType.CHECKBOX_GROUP) {
+        override fun generateHtml(
+            answeredQuestion: AnsweredQuestion<*>?,
+            language: DocumentLanguage
+        ): HtmlElement {
+            if (answeredQuestion == null)
+                return HtmlBuilder.div(className = htmlClassName()) {
+                    listOf(label(label), span("-"))
+                }
+
+            if (
+                answeredQuestion !is AnsweredQuestion.CheckboxGroupAnswer ||
+                    !answeredQuestion.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(
+                    label(label),
+                    if (answeredQuestion.answer.isEmpty()) {
+                        span("-")
+                    } else {
+                        ul {
+                            answeredQuestion.answer.map { answerOption ->
+                                val option = options.find { it.id == answerOption.optionId }!!
+                                li(
+                                    "${option.label}${if (option.withText) " : ${answerOption.extra}" else ""}"
+                                )
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
 
     @JsonTypeName("RADIO_BUTTON_GROUP")
     data class RadioButtonGroupQuestion(
@@ -60,7 +170,35 @@ sealed class Question(val type: QuestionType) {
         val label: String,
         val options: List<RadioButtonGroupQuestionOption>,
         val infoText: String = ""
-    ) : Question(QuestionType.RADIO_BUTTON_GROUP)
+    ) : Question(QuestionType.RADIO_BUTTON_GROUP) {
+        override fun generateHtml(
+            answeredQuestion: AnsweredQuestion<*>?,
+            language: DocumentLanguage
+        ): HtmlElement {
+            if (answeredQuestion == null)
+                return HtmlBuilder.div(className = htmlClassName()) {
+                    listOf(label(label), span("-"))
+                }
+
+            if (
+                answeredQuestion !is AnsweredQuestion.RadioButtonGroupAnswer ||
+                    !answeredQuestion.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(
+                    label(label),
+                    if (answeredQuestion.answer == null) {
+                        span("-")
+                    } else {
+                        div(options.find { it.id == answeredQuestion.answer }!!.label)
+                    }
+                )
+            }
+        }
+    }
 
     @JsonTypeName("STATIC_TEXT_DISPLAY")
     data class StaticTextDisplayQuestion(
@@ -68,11 +206,50 @@ sealed class Question(val type: QuestionType) {
         val label: String = "",
         val text: String = "",
         val infoText: String = ""
-    ) : Question(QuestionType.STATIC_TEXT_DISPLAY)
+    ) : Question(QuestionType.STATIC_TEXT_DISPLAY) {
+        override fun generateHtml(
+            answeredQuestion: AnsweredQuestion<*>?,
+            language: DocumentLanguage
+        ): HtmlElement {
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOfNotNull(
+                    if (label.isNotBlank()) label(label) else null,
+                    if (text.isNotBlank()) div { multilineText(text) } else null
+                )
+            }
+        }
+    }
 
     @JsonTypeName("DATE")
     data class DateQuestion(override val id: String, val label: String, val infoText: String = "") :
-        Question(QuestionType.DATE)
+        Question(QuestionType.DATE) {
+        override fun generateHtml(
+            answeredQuestion: AnsweredQuestion<*>?,
+            language: DocumentLanguage
+        ): HtmlElement {
+            if (answeredQuestion == null)
+                return HtmlBuilder.div(className = htmlClassName()) {
+                    listOf(label(label), span("-"))
+                }
+
+            if (
+                answeredQuestion !is AnsweredQuestion.DateAnswer ||
+                    !answeredQuestion.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(
+                    label(label),
+                    div(
+                        answeredQuestion.answer?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                            ?: "-"
+                    )
+                )
+            }
+        }
+    }
 
     @JsonTypeName("GROUPED_TEXT_FIELDS")
     data class GroupedTextFieldsQuestion(
@@ -81,7 +258,48 @@ sealed class Question(val type: QuestionType) {
         val fieldLabels: List<String>,
         val infoText: String = "",
         val allowMultipleRows: Boolean
-    ) : Question(QuestionType.GROUPED_TEXT_FIELDS)
+    ) : Question(QuestionType.GROUPED_TEXT_FIELDS) {
+        override fun generateHtml(
+            answeredQuestion: AnsweredQuestion<*>?,
+            language: DocumentLanguage
+        ): HtmlElement {
+            val headerRow = HtmlBuilder.tr { fieldLabels.map { th(it) } }
+            val emptyRow = HtmlBuilder.tr { fieldLabels.map { td("-") } }
+            val emptyAnswer =
+                HtmlBuilder.div(className = htmlClassName()) {
+                    listOf(label(label), table { listOf(headerRow, emptyRow) })
+                }
+
+            if (answeredQuestion == null) return emptyAnswer
+
+            if (
+                answeredQuestion !is AnsweredQuestion.GroupedTextFieldsAnswer ||
+                    !answeredQuestion.isStructurallyValid(this)
+            ) {
+                throw IllegalArgumentException("Invalid answer to question $id")
+            }
+
+            if (answeredQuestion.answer.isEmpty()) return emptyAnswer
+
+            return HtmlBuilder.div(className = htmlClassName()) {
+                listOf(
+                    label(label),
+                    table {
+                        answeredQuestion.answer.flatMap { answerRow ->
+                            listOf(
+                                headerRow,
+                                tr {
+                                    answerRow.map { answer ->
+                                        td(answer.takeIf { it.isNotBlank() } ?: "-")
+                                    }
+                                }
+                            )
+                        }
+                    }
+                )
+            }
+        }
+    }
 }
 
 data class CheckboxGroupQuestionOption(

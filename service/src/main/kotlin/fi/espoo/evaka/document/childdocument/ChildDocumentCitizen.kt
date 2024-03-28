@@ -24,6 +24,7 @@ data class ChildDocumentCitizenDetails(
     val id: ChildDocumentId,
     val status: DocumentStatus,
     val publishedAt: HelsinkiDateTime?,
+    val downloadable: Boolean,
     @Json val content: DocumentContent,
     @Nested("child") val child: ChildBasics,
     @Nested("template") val template: DocumentTemplate

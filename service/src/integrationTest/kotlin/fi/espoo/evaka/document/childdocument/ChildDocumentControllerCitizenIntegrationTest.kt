@@ -14,6 +14,8 @@ import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -41,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ChildDocumentControllerCitizenIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var controller: ChildDocumentControllerCitizen
     @Autowired lateinit var employeeController: ChildDocumentController
 
@@ -121,7 +124,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     @Test
     fun `Published document is shown`() {
-        db.transaction { tx -> tx.publishChildDocument(documentId, clock.now()) }
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
         val template = db.read { it.getTemplate(templateId)!! }
 
         assertEquals(mapOf(testChild_1.id to 1), getUnreadCount())
@@ -143,6 +147,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 id = documentId,
                 status = DocumentStatus.DRAFT,
                 publishedAt = clock.now(),
+                downloadable = true,
                 content = documentContent,
                 child =
                     ChildBasics(
@@ -159,6 +164,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
         putDocumentRead(documentId)
         assertEquals(mapOf(testChild_1.id to 0), getUnreadCount())
         assertFalse(getDocumentsByChild(testChild_1.id).first().unread)
+
+        assertEquals(200, downloadChildDocument(documentId).statusCode.value())
     }
 
     @Test
@@ -192,6 +199,9 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     private fun getDocument(id: ChildDocumentId) =
         controller.getDocument(dbInstance(), citizen, clock, id)
+
+    private fun downloadChildDocument(id: ChildDocumentId) =
+        controller.downloadChildDocument(dbInstance(), citizen, clock, id)
 
     private fun putDocumentRead(id: ChildDocumentId) =
         controller.putDocumentRead(dbInstance(), citizen, clock, id)

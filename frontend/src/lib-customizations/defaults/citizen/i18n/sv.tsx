@@ -36,6 +36,7 @@ const sv: Translations = {
     cancel: 'Gå tillbaka',
     return: 'Tillbaka',
     download: 'Ladda ner',
+    print: 'Skriva ut',
     ok: 'Ok',
     save: 'Spara',
     discard: 'Spar inte',

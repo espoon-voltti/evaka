@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowDownToLine, faPrint } from 'Icons'
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
 
@@ -15,7 +16,7 @@ import {
 } from 'lib-common/generated/api-types/document'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
-import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -41,12 +42,18 @@ const TopButtonRow = styled(FixedSpaceRow)`
   @media (max-width: ${tabletMin}) {
     margin-right: ${defaultMargins.s};
   }
+
+  @media print {
+    display: none;
+  }
 `
 
 export default React.memo(function ChildDocumentPage() {
   const { id } = useRouteParams(['id'])
 
-  const decision = useQueryResult(childDocumentDetailsQuery({ documentId: id }))
+  const childDocument = useQueryResult(
+    childDocumentDetailsQuery({ documentId: id })
+  )
   const i18n = useTranslation()
 
   return (
@@ -55,11 +62,30 @@ export default React.memo(function ChildDocumentPage() {
         <Gap size="s" />
         <TopButtonRow justifyContent="space-between">
           <ReturnButton label={i18n.common.return} />
-          <DownloadButton label={i18n.common.download} />
+          <FixedSpaceRow>
+            <InlineButton
+              onClick={() => window.print()}
+              icon={faPrint}
+              text={i18n.common.print}
+            />
+            {childDocument.map((d) => d.downloadable).getOrElse(false) && (
+              <InlineButton
+                icon={faArrowDownToLine}
+                text={i18n.common.download}
+                onClick={() => {
+                  window.open(
+                    `/api/application/citizen/child-documents/${id}/pdf`,
+                    '_blank',
+                    'noopener,noreferrer'
+                  )
+                }}
+              />
+            )}
+          </FixedSpaceRow>
         </TopButtonRow>
         <Gap size="s" />
 
-        {renderResult(decision, (document) => (
+        {renderResult(childDocument, (document) => (
           <ChildDocumentView document={document} />
         ))}
 

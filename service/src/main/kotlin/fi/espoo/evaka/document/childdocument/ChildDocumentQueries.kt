@@ -75,6 +75,19 @@ WHERE cd.id = ${bind(id)}
         .exactlyOneOrNull<ChildDocumentDetails>()
 }
 
+fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
+    return createQuery {
+            sql(
+                """
+                SELECT cd.document_key
+                FROM child_document cd
+                WHERE cd.id = ${bind(id)} AND published_at IS NOT NULL
+                """
+            )
+        }
+        .exactlyOneOrNull<String>()
+}
+
 fun Database.Transaction.updateChildDocumentContent(
     id: ChildDocumentId,
     status: DocumentStatus,
@@ -224,4 +237,30 @@ fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
             )
         }
         .updateExactlyOne()
+}
+
+fun Database.Transaction.updateChildDocumentKey(id: ChildDocumentId, documentKey: String) {
+    createUpdate {
+            sql(
+                """
+        UPDATE child_document
+        SET document_key = ${bind(documentKey)}
+        WHERE id = ${bind(id)}
+    """
+            )
+        }
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.resetChildDocumentKey(ids: List<ChildDocumentId>) {
+    val batch =
+        this.prepareBatch(
+            """
+        UPDATE child_document
+        SET document_key = NULL
+        WHERE id = :id
+    """
+        )
+    ids.forEach { batch.bind("id", it).add() }
+    batch.execute()
 }

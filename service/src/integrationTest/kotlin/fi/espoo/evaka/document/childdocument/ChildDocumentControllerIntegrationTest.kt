@@ -16,6 +16,8 @@ import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -48,6 +50,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var controller: ChildDocumentController
 
     lateinit var areaId: AreaId
@@ -302,11 +305,29 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 clock,
                 ChildDocumentCreateRequest(testChild_1.id, templateIdPed)
             )
+        assertNull(db.read { it.getChildDocumentKey(documentId) })
+
         controller.publishDocument(dbInstance(), employeeUser, clock, documentId)
         assertEquals(
             clock.now(),
             controller.getDocument(dbInstance(), employeeUser, clock, documentId).data.publishedAt
         )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertNotNull(db.read { it.getChildDocumentKey(documentId) })
+
+        // republishing after edits regenerates pdf
+        controller.updateDocumentContent(
+            dbInstance(),
+            employeeUser,
+            clock,
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
+        )
+        controller.publishDocument(dbInstance(), employeeUser, clock, documentId)
+        assertNull(db.read { it.getChildDocumentKey(documentId) })
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertNotNull(db.read { it.getChildDocumentKey(documentId) })
     }
 
     @Test

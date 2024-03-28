@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/child-documents")
 class ChildDocumentController(
     private val accessControl: AccessControl,
-    private val emailNotificationService: ChildDocumentService
+    private val childDocumentService: ChildDocumentService
 ) {
     @PostMapping
     fun createDocument(
@@ -225,9 +225,14 @@ class ChildDocumentController(
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
                     tx.publishChildDocument(documentId, clock.now())
                     if (!wasUpToDate) {
-                        emailNotificationService.scheduleEmailNotification(
+                        childDocumentService.schedulePdfGeneration(
                             tx,
-                            documentId,
+                            listOf(documentId),
+                            clock.now()
+                        )
+                        childDocumentService.scheduleEmailNotification(
+                            tx,
+                            listOf(documentId),
                             clock.now()
                         )
                     }
@@ -269,9 +274,14 @@ class ChildDocumentController(
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
                     tx.changeStatusAndPublish(documentId, statusTransition, clock.now())
                     if (!wasUpToDate) {
-                        emailNotificationService.scheduleEmailNotification(
+                        childDocumentService.schedulePdfGeneration(
                             tx,
-                            documentId,
+                            listOf(documentId),
+                            clock.now()
+                        )
+                        childDocumentService.scheduleEmailNotification(
+                            tx,
+                            listOf(documentId),
                             clock.now()
                         )
                     }

@@ -53,17 +53,21 @@ class PdfGenerator(
                     templateEngine.process(page.template.name, page.context)
                 }
 
-            val output = ByteArrayOutputStream()
-            tracer.withSpan("render html") {
-                with(ITextRenderer()) {
-                    fontResolver.addFontDirectory(getResourceFile("ttf"), BaseFont.IDENTITY_H, true)
-                    setDocumentFromString(html)
-                    layout()
-                    createPDF(output, true)
-                }
-            }
-            output.toByteArray()
+            render(html)
         }
+
+    fun render(html: String): ByteArray {
+        val output = ByteArrayOutputStream()
+        tracer.withSpan("render html") {
+            with(ITextRenderer()) {
+                fontResolver.addFontDirectory(getResourceFile("ttf"), BaseFont.IDENTITY_H, true)
+                setDocumentFromString(html)
+                layout()
+                createPDF(output, true)
+            }
+        }
+        return output.toByteArray()
+    }
 
     fun generateFeeDecisionPdf(data: FeeDecisionPdfData): ByteArray {
         val template = Template(templateProvider.getFeeDecisionPath())
