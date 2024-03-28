@@ -23,6 +23,7 @@ type PageWithNavigation = BottomNavbarProps &
 
 export const PageWithNavigation: React.FC<PageWithNavigation> = ({
   unitId,
+  selectedGroupId,
   selected,
   onChangeGroup,
   toggleSearch,
@@ -43,6 +44,10 @@ export const PageWithNavigation: React.FC<PageWithNavigation> = ({
       allowedGroupIds={allowedGroupIds}
     />
     <FlexibleDiv>{children}</FlexibleDiv>
-    <BottomNavbar selected={selected} unitId={unitId} />
+    <BottomNavbar
+      selected={selected}
+      unitId={unitId}
+      selectedGroupId={selectedGroupId}
+    />
   </FixedSpaceColumn>
 )

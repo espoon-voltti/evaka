@@ -27,11 +27,12 @@ import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { Gap } from 'lib-components/white-space'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 import { TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -40,9 +41,11 @@ import { staffAttendanceQuery, staffDepartureMutation } from './queries'
 import { getAttendanceDepartureDifferenceReasons } from './utils'
 
 export default React.memo(function StaffMarkDepartedPage({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
@@ -52,8 +55,6 @@ export default React.memo(function StaffMarkDepartedPage({
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
     refetchOnMount: 'always'
   })
-
-  const { groupRoute } = useSelectedGroup()
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
@@ -175,13 +176,18 @@ export default React.memo(function StaffMarkDepartedPage({
             { staffMember, attendanceId, latestCurrentDayArrival }
           ]) => {
             if (staffMember === undefined) {
-              return <Navigate replace to={`${groupRoute}/staff-attendance`} />
+              return (
+                <Navigate
+                  replace
+                  to={routes.staffAttendances(selectedGroupId, 'absent').value}
+                />
+              )
             }
             if (attendanceId === undefined) {
               return (
                 <Navigate
                   replace
-                  to={`${groupRoute}/staff-attendance/${employeeId}`}
+                  to={routes.staffAttendance(selectedGroupId, employeeId).value}
                 />
               )
             }

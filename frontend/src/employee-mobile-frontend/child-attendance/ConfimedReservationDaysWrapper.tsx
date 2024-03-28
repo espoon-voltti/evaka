@@ -7,13 +7,17 @@ import React from 'react'
 import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { useQueryResult } from 'lib-common/query'
 
+import { SelectedGroupId } from '../common/selected-group'
+
 import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'
 import { confirmedDaysReservationsStatisticsQuery } from './queries'
 
 export default React.memo(function ConfirmedReservationsDaysWrapper({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: string
+  selectedGroupId: SelectedGroupId
 }) {
   const statisticsResult = useQueryResult(
     confirmedDaysReservationsStatisticsQuery(unitId)
@@ -25,6 +29,7 @@ export default React.memo(function ConfirmedReservationsDaysWrapper({
         <ConfirmedDaysReservationList
           dailyStatistics={dayStatistics}
           unitId={unitId}
+          selectedGroupId={selectedGroupId}
         />
       ))}
     </>

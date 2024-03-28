@@ -3,24 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from 'lib-common/types'
-import useRouteParams from 'lib-common/useRouteParams'
 
-export type SelectedGroupId = { type: 'all' } | { type: 'one'; id: UUID }
+export type SelectedGroupId =
+  | { type: 'all'; unitId: UUID }
+  | { type: 'one'; unitId: UUID; id: UUID }
 
-interface SelectedGroup {
-  selectedGroupId: SelectedGroupId
-  groupRoute: string
-}
-
-export const useSelectedGroup = (): SelectedGroup => {
-  const { unitId, groupId: rawGroupId } = useRouteParams(
-    ['unitId'],
-    ['groupId']
-  )
-  const selectedGroupId: SelectedGroupId =
-    rawGroupId === undefined || rawGroupId === 'all'
-      ? { type: 'all' }
-      : { type: 'one', id: rawGroupId }
-  const groupRoute = `/units/${unitId}/groups/${rawGroupId}`
-  return { selectedGroupId, groupRoute }
-}
+export const toSelectedGroupId = ({
+  unitId,
+  groupId
+}: {
+  unitId: UUID
+  groupId: UUID | undefined | null
+}): SelectedGroupId =>
+  groupId && groupId !== 'all'
+    ? { type: 'one', unitId, id: groupId }
+    : { type: 'all', unitId }

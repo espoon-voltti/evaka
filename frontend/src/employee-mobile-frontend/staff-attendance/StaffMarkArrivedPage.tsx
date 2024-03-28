@@ -40,7 +40,7 @@ import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 import { TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -50,18 +50,19 @@ import { getAttendanceArrivalDifferenceReasons } from './utils'
 
 const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   unitId,
+  selectedGroupId,
   employeeId,
   unitInfo,
   staffMember
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   employeeId: UUID
   unitInfo: UnitInfo
   staffMember: StaffMember
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { selectedGroupId } = useSelectedGroup()
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
@@ -344,9 +345,11 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
 })
 
 export default React.memo(function StaffMarkArrivedPage({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
@@ -411,6 +414,7 @@ export default React.memo(function StaffMarkArrivedPage({
             return (
               <StaffMarkArrivedInner
                 unitId={unitId}
+                selectedGroupId={selectedGroupId}
                 employeeId={employeeId}
                 unitInfo={unitInfo}
                 staffMember={staffMember}

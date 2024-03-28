@@ -12,16 +12,18 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { routes } from '../../App'
 import { useTranslation } from '../../common/i18n'
+import { SelectedGroupId } from '../../common/selected-group'
 
 interface Props {
+  selectedGroupId: SelectedGroupId
   child: AttendanceChild
-  groupRoute: string
 }
 
 export default React.memo(function AttendanceChildDeparted({
-  child,
-  groupRoute
+  selectedGroupId,
+  child
 }: Props) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
@@ -31,7 +33,7 @@ export default React.memo(function AttendanceChildDeparted({
       icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
       onClick={() =>
-        navigate(`${groupRoute}/child-attendance/${child.id}/mark-present`)
+        navigate(routes.markPresent(selectedGroupId, child.id).value)
       }
       data-qa="return-to-present-btn"
     />

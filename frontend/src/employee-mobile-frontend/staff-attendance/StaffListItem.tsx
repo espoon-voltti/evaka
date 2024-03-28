@@ -12,7 +12,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 
-import { useSelectedGroup } from '../common/selected-group'
+import { routes } from '../App'
+import { SelectedGroupId } from '../common/selected-group'
 
 import { Staff } from './utils'
 
@@ -66,15 +67,17 @@ export const IconBox = styled.div<{ present: boolean }>`
 `
 
 export default React.memo(function StaffListItem({
+  selectedGroupId,
   name,
   id,
   present,
   type
-}: Staff) {
-  const { groupRoute } = useSelectedGroup()
-
-  const base = `${groupRoute}/staff-attendance`
-  const link = type === 'external' ? `${base}/external/${id}` : `${base}/${id}`
+}: Staff & { selectedGroupId: SelectedGroupId }) {
+  const link = (
+    type === 'external'
+      ? routes.externalStaffAttendance(selectedGroupId, id)
+      : routes.staffAttendance(selectedGroupId, id)
+  ).value
 
   return (
     <StaffBox data-qa={`staff-${id}`} key={id}>

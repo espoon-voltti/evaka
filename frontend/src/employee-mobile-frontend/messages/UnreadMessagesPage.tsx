@@ -14,23 +14,25 @@ import { fontSizesMobile, H1, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import BottomNavBar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
 import { WideLinkButton } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
 import { unreadCountsQuery } from './queries'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
-  const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
@@ -52,7 +54,11 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
           <UnreadCountByGroupRow key={group.id}>
             <LinkToGroupMessages
               data-qa={`link-to-group-messages-${group.id}`}
-              to={`/units/${unitId}/groups/${group.id}/messages`}
+              to={
+                routes.messages(
+                  toSelectedGroupId({ unitId, groupId: group.id })
+                ).value
+              }
             >
               {group.name}
             </LinkToGroupMessages>
@@ -73,13 +79,17 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
           <WideLinkButton
             $primary
             data-qa="pin-login-button"
-            to={`${groupRoute}/messages`}
+            to={routes.messages(selectedGroupId).value}
           >
             {i18n.messages.openPinLock}
           </WideLinkButton>
         </ButtonContainer>
       )}
-      <BottomNavBar selected="messages" unitId={unitId} />
+      <BottomNavBar
+        selected="messages"
+        unitId={unitId}
+        selectedGroupId={selectedGroupId}
+      />
     </ContentArea>
   ))
 })

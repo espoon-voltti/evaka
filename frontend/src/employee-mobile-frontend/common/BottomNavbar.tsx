@@ -28,6 +28,7 @@ import {
   faUser
 } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import { unreadCountsQuery } from '../messages/queries'
@@ -35,7 +36,7 @@ import { MessageContext } from '../messages/state'
 import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
-import { useSelectedGroup } from './selected-group'
+import { SelectedGroupId, toSelectedGroupId } from './selected-group'
 
 export type NavItem = 'child' | 'staff' | 'messages' | 'settings'
 
@@ -97,13 +98,17 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => (
 
 export type BottomNavbarProps = {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   selected?: NavItem
 }
 
-export default function BottomNavbar({ unitId, selected }: BottomNavbarProps) {
+export default function BottomNavbar({
+  unitId,
+  selectedGroupId,
+  selected
+}: BottomNavbarProps) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { groupRoute } = useSelectedGroup()
 
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
@@ -124,7 +129,8 @@ export default function BottomNavbar({ unitId, selected }: BottomNavbarProps) {
             text={i18n.common.children}
             selected={selected === 'child'}
             onClick={() =>
-              selected !== 'child' && navigate(`${groupRoute}/child-attendance`)
+              selected !== 'child' &&
+              navigate(routes.childAttendances(selectedGroupId).value)
             }
           >
             <CustomIcon
@@ -140,9 +146,10 @@ export default function BottomNavbar({ unitId, selected }: BottomNavbarProps) {
             onClick={() =>
               selected !== 'staff' &&
               navigate(
-                unit.features.includes('REALTIME_STAFF_ATTENDANCE')
-                  ? `${groupRoute}/staff-attendance`
-                  : `${groupRoute}/staff`
+                (unit.features.includes('REALTIME_STAFF_ATTENDANCE')
+                  ? routes.staffAttendances(selectedGroupId, 'absent')
+                  : routes.staff(selectedGroupId)
+                ).value
               )
             }
           >
@@ -160,9 +167,20 @@ export default function BottomNavbar({ unitId, selected }: BottomNavbarProps) {
               onClick={() =>
                 selected !== 'messages' &&
                 navigate(
-                  user?.pinLoginActive
-                    ? `/units/${unitId}/groups/${unit.groups[0].id}/messages`
-                    : `/units/${unitId}/groups/${unit.groups[0].id}/messages/unread-messages`
+                  (user?.pinLoginActive
+                    ? routes.messages(
+                        toSelectedGroupId({
+                          unitId,
+                          groupId: unit.groups[0]?.id
+                        })
+                      )
+                    : routes.unreadMessages(
+                        toSelectedGroupId({
+                          unitId,
+                          groupId: unit.groups[0]?.id
+                        })
+                      )
+                  ).value
                 )
               }
             >
@@ -187,7 +205,8 @@ export default function BottomNavbar({ unitId, selected }: BottomNavbarProps) {
               text={i18n.common.settings}
               selected={selected === 'settings'}
               onClick={() =>
-                selected !== 'settings' && navigate(`/units/${unitId}/settings`)
+                selected !== 'settings' &&
+                navigate(routes.settings(unitId).value)
               }
             >
               <CustomIcon

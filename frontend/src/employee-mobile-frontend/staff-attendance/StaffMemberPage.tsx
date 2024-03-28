@@ -21,9 +21,10 @@ import { H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { SelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
@@ -33,12 +34,13 @@ import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 export default React.memo(function StaffMemberPage({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
   const { employeeId } = useRouteParams(['employeeId'])
-  const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -60,7 +62,9 @@ export default React.memo(function StaffMemberPage({
   return renderResult(
     employeeResponse,
     ({ isOperationalDate, staffMember }) => (
-      <StaffMemberPageContainer back={`${groupRoute}/staff-attendance/present`}>
+      <StaffMemberPageContainer
+        back={routes.staffAttendances(selectedGroupId, 'present').value}
+      >
         {staffMember === undefined ? (
           <ErrorSegment
             title={i18n.attendances.staff.errors.employeeNotFound}
@@ -97,7 +101,10 @@ export default React.memo(function StaffMemberPage({
                               icon={faEdit}
                               onClick={() =>
                                 navigate(
-                                  `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                                  routes.staffAttendanceEdit(
+                                    selectedGroupId,
+                                    staffMember.employeeId
+                                  ).value
                                 )
                               }
                               aria-label={i18n.common.edit}
@@ -134,7 +141,10 @@ export default React.memo(function StaffMemberPage({
                         icon={faEdit}
                         onClick={() =>
                           navigate(
-                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                            routes.staffAttendanceEdit(
+                              selectedGroupId,
+                              staffMember.employeeId
+                            ).value
                           )
                         }
                         aria-label={i18n.common.edit}
@@ -152,7 +162,10 @@ export default React.memo(function StaffMemberPage({
                       data-qa="mark-departed-btn"
                       onClick={() =>
                         navigate(
-                          `${groupRoute}/staff-attendance/${staffMember.employeeId}/mark-departed`
+                          routes.staffMarkDeparted(
+                            selectedGroupId,
+                            staffMember.employeeId
+                          ).value
                         )
                       }
                     >
@@ -171,7 +184,10 @@ export default React.memo(function StaffMemberPage({
                         disabled={!isOperationalDate}
                         onClick={() =>
                           navigate(
-                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/mark-arrived`
+                            routes.staffMarkArrived(
+                              selectedGroupId,
+                              staffMember.employeeId
+                            ).value
                           )
                         }
                       >

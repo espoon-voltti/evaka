@@ -13,20 +13,22 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faPen } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
+import { SelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 interface Props {
   unitId: UUID
-  groupRoute: string
+  selectedGroupId: SelectedGroupId
   groupHasNotes: boolean
   child: AttendanceChild
 }
 
 export default React.memo(function ChildButtons({
   unitId,
-  groupRoute,
+  selectedGroupId,
   groupHasNotes,
   child
 }: Props) {
@@ -46,7 +48,7 @@ export default React.memo(function ChildButtons({
       >
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
-            to={`${groupRoute}/child-attendance/${child.id}/new-message`}
+            to={routes.newChildMessage(selectedGroupId, child.id).value}
             data-qa="link-new-message"
           >
             <RoundIcon
@@ -60,7 +62,7 @@ export default React.memo(function ChildButtons({
           <></>
         )}
         <Link
-          to={`${groupRoute}/child-attendance/${child.id}/note`}
+          to={routes.childNotes(selectedGroupId, child.id).value}
           data-qa="link-child-daycare-daily-note"
         >
           <RoundIcon
@@ -73,7 +75,7 @@ export default React.memo(function ChildButtons({
           />
         </Link>
         <Link
-          to={`${groupRoute}/child-attendance/${child.id}/info`}
+          to={routes.childSensitiveInfo(selectedGroupId, child.id).value}
           data-qa="link-child-sensitive-info"
         >
           <RoundIcon

@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { getServiceTimeRangeOrNullForDate } from 'employee-mobile-frontend/common/dailyServiceTimes'
-import { useSelectedGroup } from 'employee-mobile-frontend/common/selected-group'
+import { SelectedGroupId } from 'employee-mobile-frontend/common/selected-group'
 import { Result } from 'lib-common/api'
 import {
   ChildReservationInfo,
@@ -27,6 +27,7 @@ import { confirmedDayReservationsQuery } from './queries'
 
 interface ChildReservationListProps {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
   date: LocalDate
 }
 
@@ -51,10 +52,9 @@ const ChildSubList = styled.div`
 
 export default React.memo(function ChildReservationList({
   unitId,
+  selectedGroupId,
   date
 }: ChildReservationListProps) {
-  const { selectedGroupId } = useSelectedGroup()
-
   const confirmedDayReservationsResult = useQueryResult(
     confirmedDayReservationsQuery(unitId, date)
   )

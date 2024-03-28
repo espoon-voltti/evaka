@@ -16,14 +16,17 @@ import { UserContext } from '../auth/state'
 import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
+import { SelectedGroupId } from '../common/selected-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { NotificationSettings } from './NotificationSettings'
 
 export const SettingsPage = React.memo(function SettingsPage({
-  unitId
+  unitId,
+  selectedGroupId
 }: {
   unitId: UUID
+  selectedGroupId: SelectedGroupId
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
@@ -53,7 +56,11 @@ export const SettingsPage = React.memo(function SettingsPage({
           </ContentArea>
         </>
       ))}
-      <BottomNavbar selected="settings" unitId={unitId} />
+      <BottomNavbar
+        selected="settings"
+        unitId={unitId}
+        selectedGroupId={selectedGroupId}
+      />
     </ContentArea>
   )
 })
