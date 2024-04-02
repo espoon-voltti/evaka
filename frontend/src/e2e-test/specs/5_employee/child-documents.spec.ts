@@ -193,4 +193,62 @@ describe('Employee - Child documents', () => {
     await childDocument.goToNextStatus()
     await childDocument.status.assertTextEquals('Valmis')
   })
+
+  test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async () => {
+    await Fixture.documentTemplate()
+      .with({
+        type: 'PEDAGOGICAL_REPORT',
+        published: true
+      })
+      .save()
+
+    // Unit supervisor creates a child document
+    page = await Page.open({ mockedTime: now })
+    await employeeLogin(page, unitSupervisor)
+    await page.goto(
+      `${config.employeeUrl}/child-information/${childFixture.id}`
+    )
+    let childInformationPage = new ChildInformationPage(page)
+    let childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await childDocumentsSection.createDocumentButton.click()
+    await childDocumentsSection.modalOk.click()
+    let childDocument = new ChildDocumentPage(page)
+    await childDocument.editButton.click()
+    await childDocument.status.assertTextEquals('Luonnos')
+    await childDocument.savingIndicator.waitUntilHidden()
+    await page.close()
+
+    // Admin tries to open the document in edit mode too soon
+    page = await Page.open({ mockedTime: now.addMinutes(5) })
+    await employeeLogin(page, admin)
+    await page.goto(
+      `${config.employeeUrl}/child-information/${childFixture.id}`
+    )
+    childInformationPage = new ChildInformationPage(page)
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
+    await childDocumentsSection.childDocuments(0).openLink.click()
+    childDocument = new ChildDocumentPage(page)
+    await childDocument.editButton.click()
+    await childDocument.closeConcurrentEditErrorModal()
+    await childDocument.editButton.waitUntilVisible() // back in read mode
+    await page.close()
+
+    // Admin opens the document in edit mode after lock expires
+    page = await Page.open({ mockedTime: now.addMinutes(20) })
+    await employeeLogin(page, admin)
+    await page.goto(
+      `${config.employeeUrl}/child-information/${childFixture.id}`
+    )
+    childInformationPage = new ChildInformationPage(page)
+    childDocumentsSection =
+      await childInformationPage.openCollapsible('childDocuments')
+    await waitUntilEqual(childDocumentsSection.childDocumentsCount, 1)
+    await childDocumentsSection.childDocuments(0).openLink.click()
+    childDocument = new ChildDocumentPage(page)
+    await childDocument.editButton.click()
+    await childDocument.previewButton.click()
+  })
 })

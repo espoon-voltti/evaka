@@ -138,6 +138,7 @@ const ConcurrentEditWarning = React.memo(function ConcurrentEditWarning({
 
   return (
     <InfoModal
+      data-qa="concurrent-edit-error-modal"
       type="warning"
       title="Asiakirja on tilapäisesti lukittu"
       text={errorText}

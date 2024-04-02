@@ -32,4 +32,11 @@ export class ChildDocumentPage {
     await this.page.findByDataQa('next-status-button').click()
     await this.page.findByDataQa('modal-okBtn').click()
   }
+
+  async closeConcurrentEditErrorModal() {
+    await this.page
+      .findByDataQa('concurrent-edit-error-modal')
+      .findByDataQa('modal-okBtn')
+      .click()
+  }
 }
