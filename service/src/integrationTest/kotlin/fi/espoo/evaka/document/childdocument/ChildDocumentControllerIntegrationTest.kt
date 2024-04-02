@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.Action
@@ -40,10 +41,13 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -544,6 +548,113 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         prevState(documentId, DocumentStatus.DRAFT)
         assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
         assertNotNull(getDocument(documentId).publishedAt)
+    }
+
+    @Test
+    fun `User 1 takes a lock and updates, user 2 cannot do that for 15 minutes`() {
+        // user 1 creates at 10:00
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                MockEvakaClock(2022, 1, 1, 10, 0),
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdPed)
+            )
+
+        // user 1 takes a lock at 11:00
+        var lock =
+            controller.takeDocumentWriteLock(
+                dbInstance(),
+                employeeUser,
+                MockEvakaClock(2022, 1, 1, 11, 0),
+                documentId
+            )
+        assertTrue(lock.lockTakenSuccessfully)
+        assertEquals(employeeUser.id, lock.currentLock.modifiedBy)
+        assertEquals(
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 15)),
+            lock.currentLock.opensAt
+        )
+
+        // user 1 updates document and re-takes a lock at 11:05
+        controller.updateDocumentContent(
+            dbInstance(),
+            employeeUser,
+            MockEvakaClock(2022, 1, 1, 11, 5),
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
+        )
+
+        // user 1 updates document at 11:30, which extends the expired lock as no one else has taken
+        // it in between
+        controller.updateDocumentContent(
+            dbInstance(),
+            employeeUser,
+            MockEvakaClock(2022, 1, 1, 11, 30),
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello2")))
+        )
+
+        // user 2 tries to take a lock at 11:35, which is not yet possible
+        lock =
+            controller.takeDocumentWriteLock(
+                dbInstance(),
+                unitSupervisorUser,
+                MockEvakaClock(2022, 1, 1, 11, 35),
+                documentId
+            )
+        assertFalse(lock.lockTakenSuccessfully)
+        assertEquals(employeeUser.id, lock.currentLock.modifiedBy)
+        assertEquals(
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 45)),
+            lock.currentLock.opensAt
+        )
+
+        // user 2 tries to update the document without owning the lock, which fails
+        assertThrows<Conflict> {
+            controller.updateDocumentContent(
+                dbInstance(),
+                unitSupervisorUser,
+                MockEvakaClock(2022, 1, 1, 11, 37),
+                documentId,
+                DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello3")))
+            )
+        }
+
+        // user 2 takes a lock at 11:50
+        lock =
+            controller.takeDocumentWriteLock(
+                dbInstance(),
+                unitSupervisorUser,
+                MockEvakaClock(2022, 1, 1, 11, 50),
+                documentId
+            )
+        assertTrue(lock.lockTakenSuccessfully)
+        assertEquals(unitSupervisorUser.id, lock.currentLock.modifiedBy)
+        assertEquals(
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(12, 5)),
+            lock.currentLock.opensAt
+        )
+
+        // user 2 updates the document at 11:55
+        controller.updateDocumentContent(
+            dbInstance(),
+            unitSupervisorUser,
+            MockEvakaClock(2022, 1, 1, 11, 55),
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello4")))
+        )
+
+        // user 1 cannot update the document at 12:00
+        assertThrows<Conflict> {
+            controller.updateDocumentContent(
+                dbInstance(),
+                employeeUser,
+                MockEvakaClock(2022, 1, 1, 12, 0),
+                documentId,
+                DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello5")))
+            )
+        }
     }
 
     @Test
