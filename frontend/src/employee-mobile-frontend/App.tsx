@@ -9,8 +9,7 @@ import {
   BrowserRouter as Router,
   Navigate,
   Route,
-  Routes,
-  useNavigate
+  Routes
 } from 'react-router-dom'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
@@ -53,6 +52,7 @@ import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
 import PairingWizard from './pairing/PairingWizard'
 import { queryClient, QueryClientProvider } from './query'
+import { RememberContext, RememberContextProvider } from './remember'
 import { SettingsPage } from './settings/SettingsPage'
 import StaffPage from './staff/StaffPage'
 import ExternalStaffMemberPage from './staff-attendance/ExternalStaffMemberPage'
@@ -86,32 +86,34 @@ export default function App() {
                 <ServiceWorkerContextProvider>
                   <NotificationsContextProvider>
                     <Notifications apiVersion={apiVersion} />
-                    <Router basename="/employee/mobile">
-                      <Routes>
-                        <Route path="/landing" element={<MobileLander />} />
-                        <Route path="/pairing" element={<PairingWizard />} />
-                        <Route
-                          path="/units"
-                          element={
-                            <RequireAuth>
-                              <UnitList />
-                            </RequireAuth>
-                          }
-                        />
-                        <Route
-                          path="/units/:unitId/*"
-                          element={
-                            <RequireAuth>
-                              <UnitRouter />
-                            </RequireAuth>
-                          }
-                        />
-                        <Route
-                          index
-                          element={<Navigate replace to="/landing" />}
-                        />
-                      </Routes>
-                    </Router>
+                    <RememberContextProvider>
+                      <Router basename="/employee/mobile">
+                        <Routes>
+                          <Route path="/landing" element={<MobileLander />} />
+                          <Route path="/pairing" element={<PairingWizard />} />
+                          <Route
+                            path="/units"
+                            element={
+                              <RequireAuth>
+                                <UnitList />
+                              </RequireAuth>
+                            }
+                          />
+                          <Route
+                            path="/units/:unitId/*"
+                            element={
+                              <RequireAuth>
+                                <UnitRouter />
+                              </RequireAuth>
+                            }
+                          />
+                          <Route
+                            index
+                            element={<Navigate replace to="/landing" />}
+                          />
+                        </Routes>
+                      </Router>
+                    </RememberContextProvider>
                   </NotificationsContextProvider>
                 </ServiceWorkerContextProvider>
               </UserContextProvider>
@@ -150,12 +152,19 @@ function UnitRouter() {
 }
 
 function GroupRouter({ unitId }: { unitId: UUID }) {
-  useGroupIdInLocalStorage()
-
   const { groupId } = useRouteParams([], ['groupId'])
   const selectedGroupId: SelectedGroupId = useMemo(
     () => toSelectedGroupId({ unitId, groupId }),
     [unitId, groupId]
+  )
+
+  const { saveGroupId } = useContext(RememberContext)
+  useEffect(
+    () =>
+      saveGroupId(
+        selectedGroupId.type === 'one' ? selectedGroupId.id : undefined
+      ),
+    [saveGroupId, selectedGroupId]
   )
 
   return (
@@ -354,40 +363,6 @@ function MessagesRouter({
       />
     </Routes>
   )
-}
-
-const groupIdKey = 'evakaEmployeeMobileGroupId'
-
-function useGroupIdInLocalStorage() {
-  const navigate = useNavigate()
-  const { unitId, groupId } = useRouteParams(['unitId', 'groupId'])
-
-  useEffect(() => {
-    try {
-      const storedGroupId = window.localStorage?.getItem(groupIdKey)
-
-      if (
-        unitId &&
-        groupId === 'all' &&
-        storedGroupId &&
-        groupId !== storedGroupId
-      ) {
-        navigate(`/units/${unitId}/groups/${storedGroupId}`, {
-          replace: true
-        })
-      }
-    } catch (e) {
-      // do nothing
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    try {
-      window.localStorage?.setItem(groupIdKey, groupId ?? 'all')
-    } catch (e) {
-      // do nothing
-    }
-  }, [groupId])
 }
 
 export const routes = {

@@ -17,6 +17,7 @@ import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { toSelectedGroupId } from '../common/selected-group'
+import { RememberContext } from '../remember'
 import { unitInfoQuery } from '../units/queries'
 
 import { NotificationSettings } from './NotificationSettings'
@@ -28,9 +29,10 @@ export const SettingsPage = React.memo(function SettingsPage({
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
+  const { groupId } = useContext(RememberContext)
   const selectedGroupId = useMemo(
-    () => toSelectedGroupId({ unitId, groupId: undefined }),
-    [unitId]
+    () => toSelectedGroupId({ unitId, groupId }),
+    [unitId, groupId]
   )
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user: userResponse } = useContext(UserContext)
