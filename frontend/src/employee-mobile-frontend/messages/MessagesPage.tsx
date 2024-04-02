@@ -27,7 +27,7 @@ import BottomNavbar, { bottomNavBarHeight } from '../common/BottomNavbar'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import DraftMessagesList from './DraftMessagesList'
@@ -47,14 +47,14 @@ type UiState =
   | { type: 'newMessage'; draft: DraftContent | undefined }
 
 export default function MessagesPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { groupAccounts, selectedAccount } = useContext(MessageContext)
@@ -105,8 +105,7 @@ export default function MessagesPage({
     (group: GroupInfo | undefined) => {
       if (group)
         navigate(
-          routes.messages(toSelectedGroupId({ unitId, groupId: group.id }))
-            .value
+          routes.messages(toUnitOrGroup({ unitId, groupId: group.id })).value
         )
     },
     [navigate, unitId]
@@ -129,7 +128,7 @@ export default function MessagesPage({
                       }
                     : undefined
                 }
-                selectedGroupId={selectedGroupId}
+                unitOrGroup={unitOrGroup}
                 onChangeGroup={changeGroup}
                 allowedGroupIds={groupAccounts.flatMap(
                   (ga) => ga.daycareGroup?.id || []
@@ -219,11 +218,11 @@ export default function MessagesPage({
             </NoAccounts>
           ) : (
             <Navigate
-              to={routes.unreadMessages(selectedGroupId).value}
+              to={routes.unreadMessages(unitOrGroup).value}
               replace={true}
             />
           )}
-          <BottomNavbar selected="messages" selectedGroupId={selectedGroupId} />
+          <BottomNavbar selected="messages" unitOrGroup={unitOrGroup} />
         </ContentArea>
       ))
 }

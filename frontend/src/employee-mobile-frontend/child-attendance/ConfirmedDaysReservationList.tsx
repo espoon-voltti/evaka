@@ -7,30 +7,30 @@ import React, { useMemo } from 'react'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import { ContentArea } from 'lib-components/layout/Container'
 
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import DayList from './DayList'
 
 interface Props {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   dailyStatistics: DayReservationStatisticsResult[]
 }
 
 export default React.memo(function ConfirmedDaysReservationList({
-  selectedGroupId,
+  unitOrGroup,
   dailyStatistics
 }: Props) {
   const groupReservations = useMemo(
     () =>
-      selectedGroupId.type === 'all'
+      unitOrGroup.type === 'unit'
         ? dailyStatistics
         : dailyStatistics.map((day) => ({
             ...day,
             groupStatistics: day.groupStatistics.filter(
-              (i) => i.groupId === selectedGroupId.id
+              (i) => i.groupId === unitOrGroup.id
             )
           })),
-    [selectedGroupId, dailyStatistics]
+    [unitOrGroup, dailyStatistics]
   )
 
   return (
@@ -42,7 +42,7 @@ export default React.memo(function ConfirmedDaysReservationList({
       >
         <DayList
           reservationStatistics={groupReservations}
-          selectedGroupId={selectedGroupId}
+          unitOrGroup={unitOrGroup}
         />
       </ContentArea>
     </>

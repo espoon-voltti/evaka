@@ -29,7 +29,7 @@ import { faArrowLeft } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { Actions, BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -43,23 +43,23 @@ interface FormState {
 }
 
 export default function MarkExternalStaffMemberArrivalPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const [form, setForm] = useState<FormState>(() => ({
     arrived: HelsinkiDateTime.now().toLocalTime().format(),
     group:
-      selectedGroupId.type !== 'all'
+      unitOrGroup.type === 'group'
         ? unitInfoResponse
             .map(
               ({ groups }) =>
-                groups.find(({ id }) => id === selectedGroupId.id) ?? null
+                groups.find(({ id }) => id === unitOrGroup.id) ?? null
             )
             .getOrElse(null)
         : null,

@@ -23,7 +23,7 @@ import { routes } from '../App'
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { ListItem } from './ChildList'
@@ -95,7 +95,7 @@ const GroupName = styled(InformationText)`
 `
 
 interface ChildListItemProps {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   child: ListItem
   onClick?: () => void
   type?: AttendanceStatus
@@ -103,13 +103,13 @@ interface ChildListItemProps {
 }
 
 export default React.memo(function ChildListItem({
-  selectedGroupId,
+  unitOrGroup,
   child,
   onClick,
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { data: groupNotes = [] } = useQuery(
@@ -130,7 +130,7 @@ export default React.memo(function ChildListItem({
   )
 
   const maybeGroupName =
-    type && selectedGroupId.type === 'all' ? groupName : undefined
+    type && unitOrGroup.type === 'unit' ? groupName : undefined
   const today = LocalDate.todayInSystemTz()
   const childAge = today.differenceInYears(child.dateOfBirth)
 
@@ -170,7 +170,7 @@ export default React.memo(function ChildListItem({
                 <Link
                   to={
                     routes.childNotes(
-                      toSelectedGroupId({ unitId, groupId: child.groupId }),
+                      toUnitOrGroup({ unitId, groupId: child.groupId }),
                       child.id
                     ).value
                   }
@@ -187,7 +187,7 @@ export default React.memo(function ChildListItem({
                 <Link
                   to={
                     routes.childNotes(
-                      toSelectedGroupId({ unitId, groupId: child.groupId }),
+                      toUnitOrGroup({ unitId, groupId: child.groupId }),
                       child.id
                     ).value
                   }

@@ -13,7 +13,7 @@ import EvakaLogo from '../assets/EvakaLogo.svg'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import { useTranslation } from '../common/i18n'
-import { toSelectedGroupId } from '../common/selected-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 
 import { FullHeightContainer, WideLinkButton } from './components'
 
@@ -37,7 +37,7 @@ export default React.memo(function MobileLander() {
             replace
             to={
               routes.childAttendances(
-                toSelectedGroupId({ unitId: u.unitIds[0], groupId: undefined })
+                toUnitOrGroup({ unitId: u.unitIds[0], groupId: undefined })
               ).value
             }
           />

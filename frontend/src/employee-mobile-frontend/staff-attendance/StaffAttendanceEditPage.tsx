@@ -64,7 +64,7 @@ import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { FlexColumn } from '../common/components'
 import { Translations, useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
@@ -208,13 +208,13 @@ const initialPinCodeForm = (): StateOf<typeof pinForm> => ({
 })
 
 export default React.memo(function StaffAttendanceEditPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
   const combinedResult = useMemo(
@@ -239,7 +239,7 @@ export default React.memo(function StaffAttendanceEditPage({
         <ErrorSegment title={i18n.attendances.staff.pinLocked} />
       ) : (
         <StaffAttendancesEditor
-          selectedGroupId={selectedGroupId}
+          unitOrGroup={unitOrGroup}
           employeeId={employeeId}
           groups={groups}
           staffMember={staffMember}
@@ -250,17 +250,17 @@ export default React.memo(function StaffAttendanceEditPage({
 })
 
 const StaffAttendancesEditor = ({
-  selectedGroupId,
+  unitOrGroup,
   employeeId,
   groups,
   staffMember
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   employeeId: UUID
   groups: GroupInfo[]
   staffMember: StaffMember
 }) => {
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
   const [date] = useState(LocalDate.todayInHelsinkiTz())
@@ -319,10 +319,8 @@ const StaffAttendancesEditor = ({
               })}
               onSuccess={() =>
                 navigate(
-                  routes.staffAttendance(
-                    selectedGroupId,
-                    staffMember.employeeId
-                  ).value
+                  routes.staffAttendance(unitOrGroup, staffMember.employeeId)
+                    .value
                 )
               }
               onFailure={({ errorCode }) => {
@@ -435,7 +433,7 @@ const StaffAttendancesEditor = ({
             data-qa="cancel"
             onClick={() =>
               navigate(
-                routes.staffAttendance(selectedGroupId, staffMember.employeeId)
+                routes.staffAttendance(unitOrGroup, staffMember.employeeId)
                   .value
               )
             }

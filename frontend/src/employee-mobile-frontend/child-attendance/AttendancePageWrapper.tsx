@@ -28,7 +28,7 @@ import FreeTextSearch from '../common/FreeTextSearch'
 import { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { zIndex } from '../constants'
 import { unitInfoQuery } from '../units/queries'
 
@@ -43,24 +43,24 @@ export interface TabItem {
 }
 
 export default React.memo(function AttendancePageWrapper({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { i18n } = useTranslation()
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const selectedGroup = useMemo(
     () =>
-      selectedGroupId.type === 'all'
+      unitOrGroup.type === 'unit'
         ? undefined
         : unitInfoResponse
-            .map((res) => res.groups.find((g) => g.id === selectedGroupId.id))
+            .map((res) => res.groups.find((g) => g.id === unitOrGroup.id))
             .getOrElse(undefined),
-    [selectedGroupId, unitInfoResponse]
+    [unitOrGroup, unitInfoResponse]
   )
 
   const unitChildren = useQueryResult(childrenQuery(unitId))
@@ -81,16 +81,16 @@ export default React.memo(function AttendancePageWrapper({
     () => [
       {
         id: 'today',
-        link: routes.childAttendances(selectedGroupId),
+        link: routes.childAttendances(unitOrGroup),
         label: i18n.attendances.views.TODAY
       },
       {
         id: 'confirmed-days',
-        link: routes.childAttendanceDaylist(selectedGroupId),
+        link: routes.childAttendanceDaylist(unitOrGroup),
         label: i18n.attendances.views.NEXT_DAYS
       }
     ],
-    [i18n, selectedGroupId]
+    [i18n, unitOrGroup]
   )
 
   const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])
@@ -124,7 +124,7 @@ export default React.memo(function AttendancePageWrapper({
     <>
       {unitChildren.isSuccess && attendanceStatuses.isSuccess && (
         <ChildSearch
-          selectedGroupId={selectedGroupId}
+          unitOrGroup={unitOrGroup}
           show={showSearch}
           toggleShow={toggleSearch}
           unitChildren={unitChildren.value}
@@ -132,7 +132,7 @@ export default React.memo(function AttendancePageWrapper({
         />
       )}
       <PageWithNavigation
-        selectedGroupId={selectedGroupId}
+        unitOrGroup={unitOrGroup}
         selected="child"
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
@@ -165,13 +165,13 @@ export type AttendanceContext = {
 export const useAttendanceContext = () => useOutletContext<AttendanceContext>()
 
 const ChildSearch = React.memo(function Search({
-  selectedGroupId,
+  unitOrGroup,
   show,
   toggleShow,
   unitChildren,
   attendanceStatuses
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   show: boolean
   toggleShow: () => void
   unitChildren: AttendanceChild[]
@@ -215,7 +215,7 @@ const ChildSearch = React.memo(function Search({
           setShowSearch={toggleShow}
           searchResults={searchResults}
         />
-        <ChildList selectedGroupId={selectedGroupId} items={searchResults} />
+        <ChildList unitOrGroup={unitOrGroup} items={searchResults} />
       </ContentArea>
     </SearchContainer>
   )

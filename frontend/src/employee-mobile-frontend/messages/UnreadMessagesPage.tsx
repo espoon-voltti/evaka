@@ -19,19 +19,19 @@ import { UserContext } from '../auth/state'
 import BottomNavBar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 import { WideLinkButton } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
 import { unreadCountsQuery } from './queries'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const { i18n } = useTranslation()
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId))
@@ -53,9 +53,8 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
             <LinkToGroupMessages
               data-qa={`link-to-group-messages-${group.id}`}
               to={
-                routes.messages(
-                  toSelectedGroupId({ unitId, groupId: group.id })
-                ).value
+                routes.messages(toUnitOrGroup({ unitId, groupId: group.id }))
+                  .value
               }
             >
               {group.name}
@@ -77,13 +76,13 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
           <WideLinkButton
             $primary
             data-qa="pin-login-button"
-            to={routes.messages(selectedGroupId).value}
+            to={routes.messages(unitOrGroup).value}
           >
             {i18n.messages.openPinLock}
           </WideLinkButton>
         </ButtonContainer>
       )}
-      <BottomNavBar selected="messages" selectedGroupId={selectedGroupId} />
+      <BottomNavBar selected="messages" unitOrGroup={unitOrGroup} />
     </ContentArea>
   ))
 })

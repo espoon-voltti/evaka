@@ -16,7 +16,7 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
-import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceEditor from './StaffAttendanceEditor'
@@ -28,23 +28,23 @@ import {
 import { staffAttendanceForGroupOrUnit } from './utils'
 
 export default React.memo(function StaffPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const navigate = useNavigate()
 
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const selectedGroup = useMemo(
     () =>
-      selectedGroupId.type === 'all'
+      unitOrGroup.type === 'unit'
         ? undefined
         : unitInfoResponse
-            .map((res) => res.groups.find((g) => g.id === selectedGroupId.id))
+            .map((res) => res.groups.find((g) => g.id === unitOrGroup.id))
             .getOrElse(undefined),
-    [selectedGroupId, unitInfoResponse]
+    [unitOrGroup, unitInfoResponse]
   )
 
   const [staffResponse, reloadStaff] = useApiState(
@@ -68,7 +68,7 @@ export default React.memo(function StaffPage({
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       navigate(
-        routes.staff(toSelectedGroupId({ unitId, groupId: group?.id })).value
+        routes.staff(toUnitOrGroup({ unitId, groupId: group?.id })).value
       )
     },
     [navigate, unitId]
@@ -88,7 +88,7 @@ export default React.memo(function StaffPage({
 
   return (
     <PageWithNavigation
-      selectedGroupId={selectedGroupId}
+      unitOrGroup={unitOrGroup}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}

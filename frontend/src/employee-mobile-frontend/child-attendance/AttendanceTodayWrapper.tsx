@@ -6,7 +6,7 @@ import React from 'react'
 
 import useRouteParams from 'lib-common/useRouteParams'
 
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import {
   mapChildAttendanceUIState,
   parseChildAttendanceUiState
@@ -16,9 +16,9 @@ import AttendanceList from './AttendanceList'
 import { useAttendanceContext } from './AttendancePageWrapper'
 
 export default React.memo(function AttendancePageWrapper({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const { attendanceStatus } = useRouteParams(['attendanceStatus'])
   const attendanceUiState = parseChildAttendanceUiState(attendanceStatus)
@@ -33,7 +33,7 @@ export default React.memo(function AttendancePageWrapper({
       activeStatus={mapChildAttendanceUIState(attendanceUiState)}
       unitChildren={unitChildren}
       attendanceStatuses={attendanceStatuses}
-      selectedGroupId={selectedGroupId}
+      unitOrGroup={unitOrGroup}
     />
   )
 })

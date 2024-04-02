@@ -16,7 +16,7 @@ import { UserContext } from '../auth/state'
 import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { toSelectedGroupId } from '../common/selected-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 import { RememberContext } from '../remember'
 import { unitInfoQuery } from '../units/queries'
 
@@ -30,8 +30,8 @@ export const SettingsPage = React.memo(function SettingsPage({
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { groupId } = useContext(RememberContext)
-  const selectedGroupId = useMemo(
-    () => toSelectedGroupId({ unitId, groupId }),
+  const unitOrGroup = useMemo(
+    () => toUnitOrGroup({ unitId, groupId }),
     [unitId, groupId]
   )
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -60,7 +60,7 @@ export const SettingsPage = React.memo(function SettingsPage({
           </ContentArea>
         </>
       ))}
-      <BottomNavbar selected="settings" selectedGroupId={selectedGroupId} />
+      <BottomNavbar selected="settings" unitOrGroup={unitOrGroup} />
     </ContentArea>
   )
 })

@@ -18,7 +18,7 @@ import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'
@@ -34,17 +34,17 @@ const StaticIconContainer = styled.div`
 type StatusTab = 'present' | 'absent'
 
 interface Props {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   tab: StatusTab
 }
 
 export default React.memo(function StaffAttendancesPage({
-  selectedGroupId,
+  unitOrGroup,
   tab
 }: Props) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
@@ -53,7 +53,7 @@ export default React.memo(function StaffAttendancesPage({
     (group: GroupInfo | undefined) => {
       navigate(
         routes.staffAttendances(
-          toSelectedGroupId({ unitId, groupId: group?.id }),
+          toUnitOrGroup({ unitId, groupId: group?.id }),
           tab
         ).value
       )
@@ -62,8 +62,8 @@ export default React.memo(function StaffAttendancesPage({
   )
 
   const navigateToExternalMemberArrival = useCallback(
-    () => navigate(routes.externalStaffAttendances(selectedGroupId).value),
-    [selectedGroupId, navigate]
+    () => navigate(routes.externalStaffAttendances(unitOrGroup).value),
+    [unitOrGroup, navigate]
   )
 
   const presentStaffCounts = useMemo(
@@ -71,28 +71,27 @@ export default React.memo(function StaffAttendancesPage({
       staffAttendanceResponse.map(
         (res) =>
           res.staff.filter((s) =>
-            selectedGroupId.type === 'all'
+            unitOrGroup.type === 'unit'
               ? s.present
-              : s.present === selectedGroupId.id
+              : s.present === unitOrGroup.id
           ).length +
           res.extraAttendances.filter(
-            (s) =>
-              selectedGroupId.type === 'all' || s.groupId === selectedGroupId.id
+            (s) => unitOrGroup.type === 'unit' || s.groupId === unitOrGroup.id
           ).length
       ),
-    [selectedGroupId, staffAttendanceResponse]
+    [unitOrGroup, staffAttendanceResponse]
   )
 
   const tabs = useMemo(
     () => [
       {
         id: 'absent',
-        link: routes.staffAttendances(selectedGroupId, 'absent'),
+        link: routes.staffAttendances(unitOrGroup, 'absent'),
         label: i18n.attendances.types.ABSENT
       },
       {
         id: 'present',
-        link: routes.staffAttendances(selectedGroupId, 'present'),
+        link: routes.staffAttendances(unitOrGroup, 'present'),
         label: (
           <>
             {i18n.attendances.types.PRESENT}
@@ -101,49 +100,49 @@ export default React.memo(function StaffAttendancesPage({
         )
       }
     ],
-    [selectedGroupId, i18n, presentStaffCounts]
+    [unitOrGroup, i18n, presentStaffCounts]
   )
 
   const filteredStaff = useMemo(
     () =>
       staffAttendanceResponse.map((res) =>
         tab === 'present'
-          ? selectedGroupId.type === 'all'
+          ? unitOrGroup.type === 'unit'
             ? [
                 ...res.staff.filter((s) => s.present !== null),
                 ...res.extraAttendances
               ]
             : [
-                ...res.staff.filter((s) => s.present === selectedGroupId.id),
+                ...res.staff.filter((s) => s.present === unitOrGroup.id),
                 ...res.extraAttendances.filter(
-                  (s) => s.groupId === selectedGroupId.id
+                  (s) => s.groupId === unitOrGroup.id
                 )
               ]
           : res.staff.filter(
               (s) =>
                 s.present === null &&
-                (selectedGroupId.type === 'all' ||
-                  s.groupIds.includes(selectedGroupId.id))
+                (unitOrGroup.type === 'unit' ||
+                  s.groupIds.includes(unitOrGroup.id))
             )
       ),
-    [selectedGroupId, tab, staffAttendanceResponse]
+    [unitOrGroup, tab, staffAttendanceResponse]
   )
 
   const selectedGroup = useMemo(
     () =>
       unitInfoResponse
         .map(({ groups }) =>
-          selectedGroupId.type === 'all'
+          unitOrGroup.type === 'unit'
             ? undefined
-            : groups.find((g) => g.id === selectedGroupId.id)
+            : groups.find((g) => g.id === unitOrGroup.id)
         )
         .getOrElse(undefined),
-    [selectedGroupId, unitInfoResponse]
+    [unitOrGroup, unitInfoResponse]
   )
 
   return (
     <PageWithNavigation
-      selectedGroupId={selectedGroupId}
+      unitOrGroup={unitOrGroup}
       selected="staff"
       selectedGroup={selectedGroup}
       onChangeGroup={changeGroup}
@@ -153,13 +152,7 @@ export default React.memo(function StaffAttendancesPage({
         <FixedSpaceColumn spacing="zero">
           {staff.map((staffMember) => {
             const s = toStaff(staffMember)
-            return (
-              <StaffListItem
-                {...s}
-                key={s.id}
-                selectedGroupId={selectedGroupId}
-              />
-            )
+            return <StaffListItem {...s} key={s.id} unitOrGroup={unitOrGroup} />
           })}
         </FixedSpaceColumn>
       ))}

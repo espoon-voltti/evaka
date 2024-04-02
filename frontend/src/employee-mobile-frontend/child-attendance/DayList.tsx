@@ -14,7 +14,7 @@ import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/r
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import DayListItem, { ChevronBox, DateBox } from './DayListItem'
 
@@ -23,12 +23,12 @@ export interface ListItem extends AttendanceChild {
 }
 
 interface Props {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   reservationStatistics: DayReservationStatisticsResult[]
 }
 
 export default React.memo(function DayList({
-  selectedGroupId,
+  unitOrGroup,
   reservationStatistics
 }: Props) {
   const { i18n } = useTranslation()
@@ -54,7 +54,7 @@ export default React.memo(function DayList({
             <DayListItem
               key={`${dr.date.format()}-dli`}
               dayStats={dr}
-              selectedGroupId={selectedGroupId}
+              unitOrGroup={unitOrGroup}
             />
           </Li>
         ))}

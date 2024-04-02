@@ -15,17 +15,17 @@ import { faChild, faComments, faPen } from 'lib-icons'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 interface Props {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   groupHasNotes: boolean
   child: AttendanceChild
 }
 
 export default React.memo(function ChildButtons({
-  selectedGroupId,
+  unitOrGroup,
   groupHasNotes,
   child
 }: Props) {
@@ -33,7 +33,7 @@ export default React.memo(function ChildButtons({
   const { colors } = useTheme()
 
   const unitInfoResponse = useQueryResult(
-    unitInfoQuery({ unitId: selectedGroupId.unitId })
+    unitInfoQuery({ unitId: unitOrGroup.unitId })
   )
   const noteFound =
     child.dailyNote !== null || child.stickyNotes.length > 0 || groupHasNotes
@@ -47,7 +47,7 @@ export default React.memo(function ChildButtons({
       >
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
-            to={routes.newChildMessage(selectedGroupId, child.id).value}
+            to={routes.newChildMessage(unitOrGroup, child.id).value}
             data-qa="link-new-message"
           >
             <RoundIcon
@@ -61,7 +61,7 @@ export default React.memo(function ChildButtons({
           <></>
         )}
         <Link
-          to={routes.childNotes(selectedGroupId, child.id).value}
+          to={routes.childNotes(unitOrGroup, child.id).value}
           data-qa="link-child-daycare-daily-note"
         >
           <RoundIcon
@@ -74,7 +74,7 @@ export default React.memo(function ChildButtons({
           />
         </Link>
         <Link
-          to={routes.childSensitiveInfo(selectedGroupId, child.id).value}
+          to={routes.childSensitiveInfo(unitOrGroup, child.id).value}
           data-qa="link-child-sensitive-info"
         >
           <RoundIcon

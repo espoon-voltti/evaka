@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { getServiceTimeRangeOrNullForDate } from 'employee-mobile-frontend/common/dailyServiceTimes'
-import { SelectedGroupId } from 'employee-mobile-frontend/common/selected-group'
+import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
 import { Result } from 'lib-common/api'
 import {
   ChildReservationInfo,
@@ -25,7 +25,7 @@ import ChildSubListItem from './ChildSubListItem'
 import { confirmedDayReservationsQuery } from './queries'
 
 interface ChildReservationListProps {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   date: LocalDate
 }
 
@@ -49,11 +49,11 @@ const ChildSubList = styled.div`
 `
 
 export default React.memo(function ChildReservationList({
-  selectedGroupId,
+  unitOrGroup,
   date
 }: ChildReservationListProps) {
   const confirmedDayReservationsResult = useQueryResult(
-    confirmedDayReservationsQuery(selectedGroupId.unitId, date)
+    confirmedDayReservationsQuery(unitOrGroup.unitId, date)
   )
 
   const sortStartTimeNullsLast = (o: CategorizedReservationInfo) =>
@@ -66,10 +66,10 @@ export default React.memo(function ChildReservationList({
       () =>
         confirmedDayReservationsResult.map((result) => {
           const groupReservations =
-            selectedGroupId.type === 'all'
+            unitOrGroup.type === 'unit'
               ? result.childReservations
               : result.childReservations.filter(
-                  (res) => res.groupId === selectedGroupId.id
+                  (res) => res.groupId === unitOrGroup.id
                 )
 
           const childMap = result.children
@@ -133,7 +133,7 @@ export default React.memo(function ChildReservationList({
             []
           )
         }),
-      [confirmedDayReservationsResult, selectedGroupId, date]
+      [confirmedDayReservationsResult, unitOrGroup, date]
     )
 
   return (

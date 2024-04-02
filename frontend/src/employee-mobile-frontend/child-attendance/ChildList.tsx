@@ -19,7 +19,7 @@ import colors from 'lib-customizations/common'
 
 import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId, toSelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 
 import ChildListItem from './ChildListItem'
 
@@ -28,7 +28,7 @@ export interface ListItem extends AttendanceChild {
 }
 
 interface Props {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   items: ListItem[]
   type?: AttendanceStatus
 }
@@ -39,12 +39,12 @@ const NoChildrenOnList = styled.div`
 `
 
 export default React.memo(function ChildList({
-  selectedGroupId,
+  unitOrGroup,
   items,
   type
 }: Props) {
   const { i18n } = useTranslation()
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
 
   return (
     <FixedSpaceColumn>
@@ -53,13 +53,13 @@ export default React.memo(function ChildList({
           items.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
-                selectedGroupId={selectedGroupId}
+                unitOrGroup={unitOrGroup}
                 type={type}
                 key={ac.id}
                 child={ac}
                 childAttendanceUrl={
                   routes.childAttendance(
-                    toSelectedGroupId({ unitId, groupId: ac.groupId }),
+                    toUnitOrGroup({ unitId, groupId: ac.groupId }),
                     ac.id
                   ).value
                 }

@@ -35,7 +35,7 @@ import { groupNotesQuery } from '../child-notes/queries'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { BackButton, TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -50,25 +50,25 @@ import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
 
 export default React.memo(function AttendanceChildPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
   const { childId } = useRouteParams(['childId'])
 
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { data: groupNotes } = useQuery(
-    groupNotesQuery(selectedGroupId.type === 'all' ? '' : selectedGroupId.id),
+    groupNotesQuery(unitOrGroup.type === 'group' ? unitOrGroup.id : ''),
     {
-      enabled: selectedGroupId.type !== 'all'
+      enabled: unitOrGroup.type === 'group'
     }
   )
   const groupHasNotes =
-    selectedGroupId.type === 'all'
+    unitOrGroup.type === 'unit'
       ? false
       : !!(groupNotes && groupNotes.length > 1)
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
@@ -198,7 +198,7 @@ export default React.memo(function AttendanceChildPage({
                     </ChildBackground>
 
                     <ChildButtons
-                      selectedGroupId={selectedGroupId}
+                      unitOrGroup={unitOrGroup}
                       groupHasNotes={groupHasNotes}
                       child={child}
                     />
@@ -233,20 +233,20 @@ export default React.memo(function AttendanceChildPage({
                     <Gap size="xs" />
                     {childAttendance.status === 'COMING' && (
                       <AttendanceChildComing
-                        selectedGroupId={selectedGroupId}
+                        unitOrGroup={unitOrGroup}
                         child={child}
                         attendances={childAttendance.attendances}
                       />
                     )}
                     {childAttendance.status === 'PRESENT' && (
                       <AttendanceChildPresent
-                        selectedGroupId={selectedGroupId}
+                        unitOrGroup={unitOrGroup}
                         child={child}
                       />
                     )}
                     {childAttendance.status === 'DEPARTED' && (
                       <AttendanceChildDeparted
-                        selectedGroupId={selectedGroupId}
+                        unitOrGroup={unitOrGroup}
                         child={child}
                       />
                     )}
@@ -265,9 +265,7 @@ export default React.memo(function AttendanceChildPage({
                     .getOrElse(false) ? (
                     <LinkButtonWithIcon
                       data-qa="mark-reservations"
-                      to={
-                        routes.markReservations(selectedGroupId, childId).value
-                      }
+                      to={routes.markReservations(unitOrGroup, childId).value}
                     >
                       <RoundIcon
                         size="L"
@@ -282,8 +280,7 @@ export default React.memo(function AttendanceChildPage({
                     <LinkButtonWithIcon
                       data-qa="mark-absent-beforehand"
                       to={
-                        routes.markAbsentBeforehand(selectedGroupId, childId)
-                          .value
+                        routes.markAbsentBeforehand(unitOrGroup, childId).value
                       }
                     >
                       <RoundIcon

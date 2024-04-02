@@ -31,7 +31,7 @@ import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { TallContentArea } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
@@ -40,16 +40,16 @@ import { staffAttendanceQuery, staffDepartureMutation } from './queries'
 import { getAttendanceDepartureDifferenceReasons } from './utils'
 
 export default React.memo(function StaffMarkDepartedPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
   const { employeeId } = useRouteParams(['employeeId'])
 
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
     refetchOnMount: 'always'
   })
@@ -177,7 +177,7 @@ export default React.memo(function StaffMarkDepartedPage({
               return (
                 <Navigate
                   replace
-                  to={routes.staffAttendances(selectedGroupId, 'absent').value}
+                  to={routes.staffAttendances(unitOrGroup, 'absent').value}
                 />
               )
             }
@@ -185,7 +185,7 @@ export default React.memo(function StaffMarkDepartedPage({
               return (
                 <Navigate
                   replace
-                  to={routes.staffAttendance(selectedGroupId, employeeId).value}
+                  to={routes.staffAttendance(unitOrGroup, employeeId).value}
                 />
               )
             }

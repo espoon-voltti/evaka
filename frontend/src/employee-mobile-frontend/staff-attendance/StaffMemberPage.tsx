@@ -23,7 +23,7 @@ import { featureFlags } from 'lib-customizations/employeeMobile'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { unitInfoQuery } from '../units/queries'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
@@ -33,15 +33,15 @@ import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 export default React.memo(function StaffMemberPage({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
@@ -61,7 +61,7 @@ export default React.memo(function StaffMemberPage({
     employeeResponse,
     ({ isOperationalDate, staffMember }) => (
       <StaffMemberPageContainer
-        back={routes.staffAttendances(selectedGroupId, 'present').value}
+        back={routes.staffAttendances(unitOrGroup, 'present').value}
       >
         {staffMember === undefined ? (
           <ErrorSegment
@@ -100,7 +100,7 @@ export default React.memo(function StaffMemberPage({
                               onClick={() =>
                                 navigate(
                                   routes.staffAttendanceEdit(
-                                    selectedGroupId,
+                                    unitOrGroup,
                                     staffMember.employeeId
                                   ).value
                                 )
@@ -140,7 +140,7 @@ export default React.memo(function StaffMemberPage({
                         onClick={() =>
                           navigate(
                             routes.staffAttendanceEdit(
-                              selectedGroupId,
+                              unitOrGroup,
                               staffMember.employeeId
                             ).value
                           )
@@ -161,7 +161,7 @@ export default React.memo(function StaffMemberPage({
                       onClick={() =>
                         navigate(
                           routes.staffMarkDeparted(
-                            selectedGroupId,
+                            unitOrGroup,
                             staffMember.employeeId
                           ).value
                         )
@@ -183,7 +183,7 @@ export default React.memo(function StaffMemberPage({
                         onClick={() =>
                           navigate(
                             routes.staffMarkArrived(
-                              selectedGroupId,
+                              unitOrGroup,
                               staffMember.employeeId
                             ).value
                           )

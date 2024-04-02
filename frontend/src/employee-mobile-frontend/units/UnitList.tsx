@@ -23,7 +23,7 @@ import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { toSelectedGroupId } from '../common/selected-group'
+import { toUnitOrGroup } from '../common/unit-or-group'
 
 import { unitStatsQuery } from './queries'
 
@@ -60,7 +60,7 @@ export default React.memo(function UnitList() {
                     key={id}
                     to={
                       routes.childAttendances(
-                        toSelectedGroupId({ unitId: id, groupId: undefined })
+                        toUnitOrGroup({ unitId: id, groupId: undefined })
                       ).value
                     }
                     data-qa={`unit-${id}`}

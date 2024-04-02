@@ -13,7 +13,7 @@ import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 
 import { routes } from '../App'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import { Staff } from './utils'
 
@@ -67,16 +67,16 @@ export const IconBox = styled.div<{ present: boolean }>`
 `
 
 export default React.memo(function StaffListItem({
-  selectedGroupId,
+  unitOrGroup,
   name,
   id,
   present,
   type
-}: Staff & { selectedGroupId: SelectedGroupId }) {
+}: Staff & { unitOrGroup: UnitOrGroup }) {
   const link = (
     type === 'external'
-      ? routes.externalStaffAttendance(selectedGroupId, id)
-      : routes.staffAttendance(selectedGroupId, id)
+      ? routes.externalStaffAttendance(unitOrGroup, id)
+      : routes.staffAttendance(unitOrGroup, id)
   ).value
 
   return (

@@ -13,17 +13,17 @@ import { Gap } from 'lib-components/white-space'
 
 import { routes } from '../../App'
 import { useTranslation } from '../../common/i18n'
-import { SelectedGroupId } from '../../common/selected-group'
+import { UnitOrGroup } from '../../common/unit-or-group'
 import { WideLinkButton } from '../../pairing/components'
 
 interface Props {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   child: AttendanceChild
   attendances: AttendanceTimes[]
 }
 
 export default React.memo(function AttendanceChildComing({
-  selectedGroupId,
+  unitOrGroup,
   child,
   attendances
 }: Props) {
@@ -42,7 +42,7 @@ export default React.memo(function AttendanceChildComing({
         <WideLinkButton
           $primary
           data-qa="mark-present-link"
-          to={routes.markPresent(selectedGroupId, child.id).value}
+          to={routes.markPresent(unitOrGroup, child.id).value}
         >
           {i18n.attendances.actions.markPresent}
         </WideLinkButton>
@@ -50,7 +50,7 @@ export default React.memo(function AttendanceChildComing({
         {!hasBeenPresentToday && (
           <WideLinkButton
             data-qa="mark-absent-link"
-            to={routes.markAbsent(selectedGroupId, child.id).value}
+            to={routes.markAbsent(unitOrGroup, child.id).value}
           >
             {i18n.attendances.actions.markAbsent}
           </WideLinkButton>

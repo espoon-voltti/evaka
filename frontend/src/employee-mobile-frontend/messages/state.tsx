@@ -15,7 +15,7 @@ import { queryOrDefault, useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
-import { SelectedGroupId } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import { messagingAccountsQuery } from './queries'
 
@@ -37,13 +37,13 @@ export const MessageContext = createContext<MessagesState>(defaultState)
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({
-    selectedGroupId,
+    unitOrGroup,
     children
   }: {
-    selectedGroupId: SelectedGroupId
+    unitOrGroup: UnitOrGroup
     children: React.JSX.Element
   }) {
-    const unitId = selectedGroupId.unitId
+    const unitId = unitOrGroup.unitId
     const { user } = useContext(UserContext)
     const pinLoggedEmployeeId = user
       .map((u) =>
@@ -64,12 +64,12 @@ export const MessageContextProvider = React.memo(
 
     const selectedAccount: AuthorizedMessageAccount | undefined = useMemo(
       () =>
-        (selectedGroupId.type === 'all'
+        (unitOrGroup.type === 'unit'
           ? undefined
           : groupAccounts.find(
-              ({ daycareGroup }) => daycareGroup?.id === selectedGroupId.id
+              ({ daycareGroup }) => daycareGroup?.id === unitOrGroup.id
             )) ?? groupAccounts[0],
-      [groupAccounts, selectedGroupId]
+      [groupAccounts, unitOrGroup]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})

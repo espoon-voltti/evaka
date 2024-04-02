@@ -4,17 +4,17 @@
 
 import { UUID } from 'lib-common/types'
 
-export type SelectedGroupId =
-  | { type: 'all'; unitId: UUID }
-  | { type: 'one'; unitId: UUID; id: UUID }
+export type UnitOrGroup =
+  | { type: 'unit'; unitId: UUID }
+  | { type: 'group'; unitId: UUID; id: UUID }
 
-export const toSelectedGroupId = ({
+export const toUnitOrGroup = ({
   unitId,
   groupId
 }: {
   unitId: UUID
   groupId: UUID | undefined | null
-}): SelectedGroupId =>
+}): UnitOrGroup =>
   groupId && groupId !== 'all'
-    ? { type: 'one', unitId, id: groupId }
-    : { type: 'all', unitId }
+    ? { type: 'group', unitId, id: groupId }
+    : { type: 'unit', unitId }

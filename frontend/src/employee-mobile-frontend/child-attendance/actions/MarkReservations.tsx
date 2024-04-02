@@ -8,7 +8,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
-import { SelectedGroupId } from 'employee-mobile-frontend/common/selected-group'
+import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
 import {
@@ -214,15 +214,15 @@ const initialFormState = (
 })
 
 export default React.memo(function MarkReservations({
-  selectedGroupId
+  unitOrGroup
 }: {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
 }) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { childId } = useRouteParams(['childId'])
   const child = useChild(
-    useQueryResult(childrenQuery(selectedGroupId.unitId)),
+    useQueryResult(childrenQuery(unitOrGroup.unitId)),
     childId
   )
   const reservations = useQueryResult(getConfirmedRangeQuery(childId))
@@ -264,8 +264,7 @@ export default React.memo(function MarkReservations({
                     onEditReservations={() => setMode('edit')}
                     onMarkAbsence={() =>
                       navigate(
-                        routes.markAbsentBeforehand(selectedGroupId, childId)
-                          .value
+                        routes.markAbsentBeforehand(unitOrGroup, childId).value
                       )
                     }
                   />

@@ -35,7 +35,7 @@ import { MessageContext } from '../messages/state'
 import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
-import { SelectedGroupId, toSelectedGroupId } from './selected-group'
+import { UnitOrGroup, toUnitOrGroup } from './unit-or-group'
 
 export type NavItem = 'child' | 'staff' | 'messages' | 'settings'
 
@@ -96,18 +96,18 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => (
 )
 
 export type BottomNavbarProps = {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   selected?: NavItem
 }
 
 export default function BottomNavbar({
-  selectedGroupId,
+  unitOrGroup,
   selected
 }: BottomNavbarProps) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const unitId = selectedGroupId.unitId
+  const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId), {
@@ -128,7 +128,7 @@ export default function BottomNavbar({
             selected={selected === 'child'}
             onClick={() =>
               selected !== 'child' &&
-              navigate(routes.childAttendances(selectedGroupId).value)
+              navigate(routes.childAttendances(unitOrGroup).value)
             }
           >
             <CustomIcon
@@ -145,8 +145,8 @@ export default function BottomNavbar({
               selected !== 'staff' &&
               navigate(
                 (unit.features.includes('REALTIME_STAFF_ATTENDANCE')
-                  ? routes.staffAttendances(selectedGroupId, 'absent')
-                  : routes.staff(selectedGroupId)
+                  ? routes.staffAttendances(unitOrGroup, 'absent')
+                  : routes.staff(unitOrGroup)
                 ).value
               )
             }
@@ -167,13 +167,13 @@ export default function BottomNavbar({
                 navigate(
                   (user?.pinLoginActive
                     ? routes.messages(
-                        toSelectedGroupId({
+                        toUnitOrGroup({
                           unitId,
                           groupId: unit.groups[0]?.id
                         })
                       )
                     : routes.unreadMessages(
-                        toSelectedGroupId({
+                        toUnitOrGroup({
                           unitId,
                           groupId: unit.groups[0]?.id
                         })

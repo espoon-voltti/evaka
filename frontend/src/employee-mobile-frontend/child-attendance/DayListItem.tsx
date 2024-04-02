@@ -7,7 +7,7 @@ import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { SelectedGroupId } from 'employee-mobile-frontend/common/selected-group'
+import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -19,12 +19,12 @@ import { useTranslation } from '../common/i18n'
 import ChildReservationList from './ChildReservationList'
 
 interface DayListItemProps {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   dayStats: DayReservationStatisticsResult
 }
 
 export default React.memo(function DayListItem({
-  selectedGroupId,
+  unitOrGroup,
   dayStats
 }: DayListItemProps) {
   const { i18n, lang } = useTranslation()
@@ -35,12 +35,12 @@ export default React.memo(function DayListItem({
 
   const filteredStats = useMemo(() => {
     const relevantGroupStats =
-      selectedGroupId.type === 'all'
+      unitOrGroup.type === 'unit'
         ? dayStats.groupStatistics
         : dayStats.groupStatistics.map((day) => ({
             ...day,
             reservationInfos: dayStats.groupStatistics.filter(
-              (i) => i.groupId === selectedGroupId.id
+              (i) => i.groupId === unitOrGroup.id
             )
           }))
 
@@ -52,7 +52,7 @@ export default React.memo(function DayListItem({
       }),
       { presentCount: 0, calculatedPresent: 0, absent: 0 }
     )
-  }, [dayStats, selectedGroupId])
+  }, [dayStats, unitOrGroup])
 
   return (
     <>
@@ -89,10 +89,7 @@ export default React.memo(function DayListItem({
         </DayBoxInfo>
       </DayBox>
       {isOpen && filteredStats.absent + filteredStats.presentCount > 0 && (
-        <ChildReservationList
-          date={dayStats.date}
-          selectedGroupId={selectedGroupId}
-        />
+        <ChildReservationList date={dayStats.date} unitOrGroup={unitOrGroup} />
       )}
     </>
   )

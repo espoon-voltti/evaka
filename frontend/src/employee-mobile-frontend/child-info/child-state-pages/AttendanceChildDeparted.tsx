@@ -14,15 +14,15 @@ import colors from 'lib-customizations/common'
 
 import { routes } from '../../App'
 import { useTranslation } from '../../common/i18n'
-import { SelectedGroupId } from '../../common/selected-group'
+import { UnitOrGroup } from '../../common/unit-or-group'
 
 interface Props {
-  selectedGroupId: SelectedGroupId
+  unitOrGroup: UnitOrGroup
   child: AttendanceChild
 }
 
 export default React.memo(function AttendanceChildDeparted({
-  selectedGroupId,
+  unitOrGroup,
   child
 }: Props) {
   const { i18n } = useTranslation()
@@ -32,9 +32,7 @@ export default React.memo(function AttendanceChildDeparted({
     <ReturnToPresentButton
       icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
-      onClick={() =>
-        navigate(routes.markPresent(selectedGroupId, child.id).value)
-      }
+      onClick={() => navigate(routes.markPresent(unitOrGroup, child.id).value)}
       data-qa="return-to-present-btn"
     />
   )
