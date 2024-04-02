@@ -43,7 +43,7 @@ export function createSamlConfig(
     audience: config.issuer,
     cacheProvider,
     callbackUrl: config.callbackUrl,
-    cert: publicCert,
+    idpCert: publicCert,
     disableRequestedAuthnContext: true,
     decryptionPvk: config.decryptAssertions ? privateCert : undefined,
     entryPoint: config.entryPoint,
@@ -55,7 +55,6 @@ export function createSamlConfig(
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.validateInResponseTo,
-    passReqToCallback: true,
     // When *both* wantXXXXSigned settings are false, passport-saml still
     // requires at least the whole response *or* the assertion to be signed, so
     // these settings don't introduce a security problem
