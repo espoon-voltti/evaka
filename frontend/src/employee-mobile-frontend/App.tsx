@@ -9,11 +9,12 @@ import {
   BrowserRouter as Router,
   Navigate,
   Route,
-  Routes
+  Routes,
+  useNavigate
 } from 'react-router-dom'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
-import { useQuery } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Uri, uri } from 'lib-common/uri'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -64,6 +65,7 @@ import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
 import StaffMemberPage from './staff-attendance/StaffMemberPage'
 import { ChildAttendanceUIState } from './types'
 import UnitList from './units/UnitList'
+import { unitInfoQuery } from './units/queries'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -166,6 +168,31 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
       ),
     [saveGroupId, selectedGroupId]
   )
+
+  const unitInfoResponse = useQueryResult(
+    unitInfoQuery({ unitId: selectedGroupId.unitId })
+  )
+
+  const navigate = useNavigate()
+  useEffect(() => {
+    // If we somehow end up with a groupId that doesn't exist in the current unit,
+    // just navigate to some "default page" instead of allowing things to break
+    if (selectedGroupId.type === 'one' && unitInfoResponse.isSuccess) {
+      const validGroupId = unitInfoResponse.value.groups.some(
+        (group) => group.id === selectedGroupId.id
+      )
+      if (!validGroupId) {
+        navigate(
+          routes.childAttendances(
+            toSelectedGroupId({
+              unitId: selectedGroupId.unitId,
+              groupId: undefined
+            })
+          ).value
+        )
+      }
+    }
+  }, [navigate, selectedGroupId, unitInfoResponse])
 
   return (
     <MessageContextProvider selectedGroupId={selectedGroupId}>
