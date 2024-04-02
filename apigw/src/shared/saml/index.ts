@@ -24,7 +24,7 @@ import { fromCallback } from '../promise-utils.js'
 export function createSamlConfig(
   config: EvakaSamlConfig,
   cacheProvider?: CacheProvider
-): SamlConfig {
+): SamlConfig & { passReqToCallback: boolean } {
   const privateCert = readFileSync(config.privateCert, {
     encoding: 'utf8'
   })
@@ -43,7 +43,7 @@ export function createSamlConfig(
     audience: config.issuer,
     cacheProvider,
     callbackUrl: config.callbackUrl,
-    cert: publicCert,
+    idpCert: publicCert,
     disableRequestedAuthnContext: true,
     decryptionPvk: config.decryptAssertions ? privateCert : undefined,
     entryPoint: config.entryPoint,
