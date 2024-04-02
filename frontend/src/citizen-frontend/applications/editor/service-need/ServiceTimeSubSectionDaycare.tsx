@@ -21,6 +21,7 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 import { H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
+import { placementTypes } from 'lib-customizations/employee'
 
 import {
   getAttachmentUrl,
@@ -124,18 +125,20 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   function renderServiceNeedSelection() {
     return (
       <FixedSpaceColumn>
-        <Radio
-          id="service-need-part-time-true"
-          label={t.applications.editor.serviceNeed.partTime.true}
-          checked={formData.partTime}
-          data-qa="partTime-input-true"
-          onChange={() =>
-            updateFormData({
-              partTime: true,
-              serviceNeedOption: partTimeOptions[0] ?? null
-            })
-          }
-        />
+        {placementTypes.includes('DAYCARE_PART_TIME') && (
+          <Radio
+            id="service-need-part-time-true"
+            label={t.applications.editor.serviceNeed.partTime.true}
+            checked={formData.partTime}
+            data-qa="partTime-input-true"
+            onChange={() =>
+              updateFormData({
+                partTime: true,
+                serviceNeedOption: partTimeOptions[0] ?? null
+              })
+            }
+          />
+        )}
         {formData.partTime && partTimeOptions.length > 0 && (
           <SubRadios>
             <FixedSpaceColumn spacing="xs">
