@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeInterval
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -59,7 +60,9 @@ data class ChildAttendanceRow(
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime?
-)
+) {
+    fun asTimeInterval(): TimeInterval = TimeInterval(startTime, endTime)
+}
 
 data class AttendanceTimes(val arrived: HelsinkiDateTime, val departed: HelsinkiDateTime?)
 

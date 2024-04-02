@@ -159,17 +159,12 @@ class ReservationControllerCitizen(
                                                         val childAttendances =
                                                             attendances[key] ?: listOf()
 
-                                                        val isFuture =
-                                                            date > today ||
-                                                                date == today &&
-                                                                    childAttendances.all {
-                                                                        it.end == null
-                                                                    }
                                                         val usedServiceResult =
                                                             placementDay.daycareHoursPerMonth
                                                                 ?.let { daycareHoursPerMonth ->
                                                                     computeUsedService(
-                                                                        isFuture,
+                                                                        today = today,
+                                                                        date = date,
                                                                         daycareHoursPerMonth,
                                                                         placementDay.placementType,
                                                                         placementDay.preschoolTime,
@@ -186,9 +181,6 @@ class ReservationControllerCitizen(
                                                                                 it.asTimeRange()
                                                                             },
                                                                         childAttendances
-                                                                            .mapNotNull {
-                                                                                it.asTimeRange()
-                                                                            }
                                                                     )
                                                                 }
                                                         ReservationResponseDayChild(

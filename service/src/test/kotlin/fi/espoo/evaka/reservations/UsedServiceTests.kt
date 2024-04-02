@@ -8,7 +8,9 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
+import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.math.roundToLong
 import kotlin.test.Test
@@ -17,10 +19,16 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 class UsedServiceTests {
+    private val today = LocalDate.of(2021, 1, 1)
+
     private fun range(h1: Int, h2: Int) = TimeRange(LocalTime.of(h1, 0), LocalTime.of(h2, 0))
 
+    private fun interval(h1: Int, h2: Int?) =
+        TimeInterval(LocalTime.of(h1, 0), h2?.let { LocalTime.of(it, 0) })
+
     private fun compute(
-        isFuture: Boolean = false,
+        today: LocalDate = this.today,
+        date: LocalDate = this.today.minusDays(1),
         serviceNeedHours: Int = 120,
         placementType: PlacementType = PlacementType.DAYCARE,
         dailyPreschoolTimes: TimeRange? = null,
@@ -29,10 +37,11 @@ class UsedServiceTests {
         shiftCareType: ShiftCareType = ShiftCareType.NONE,
         absences: List<Pair<AbsenceType, AbsenceCategory>> = listOf(),
         reservations: List<TimeRange> = listOf(),
-        attendances: List<TimeRange> = listOf()
+        attendances: List<TimeInterval> = listOf()
     ) =
         computeUsedService(
-            isFuture,
+            today,
+            date,
             serviceNeedHours,
             placementType,
             dailyPreschoolTimes,
@@ -46,11 +55,45 @@ class UsedServiceTests {
 
     @Test
     fun `computes only reserved minutes for future days`() {
-        compute(isFuture = true, reservations = listOf(range(9, 12))).also {
+        val today = LocalDate.of(2021, 1, 1)
+
+        compute(today = today, date = today.plusDays(1), reservations = listOf(range(9, 12))).also {
             assertEquals(180, it.reservedMinutes)
             assertEquals(0, it.usedServiceMinutes)
             assertEquals(emptyList(), it.usedServiceRanges)
         }
+
+        // "in the future" because there's no attendances
+        compute(today = today, date = today, reservations = listOf(range(9, 12))).also {
+            assertEquals(180, it.reservedMinutes)
+            assertEquals(0, it.usedServiceMinutes)
+            assertEquals(emptyList(), it.usedServiceRanges)
+        }
+
+        // "in the future" because there's an open attendance
+        compute(
+                today = today,
+                date = today,
+                reservations = listOf(range(9, 12)),
+                attendances = listOf(interval(8, 12), interval(15, null))
+            )
+            .also {
+                assertEquals(180, it.reservedMinutes)
+                assertEquals(0, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
+            }
+
+        // "in the past" because attendance has ended
+        compute(
+                today = today,
+                date = today,
+                reservations = listOf(range(9, 12)),
+                attendances = listOf(interval(9, 12))
+            )
+            .also {
+                assertEquals(180, it.reservedMinutes)
+                assertEquals(180, it.usedServiceMinutes)
+            }
     }
 
     @Test
@@ -82,7 +125,7 @@ class UsedServiceTests {
 
     @Test
     fun `uses attendances if no reservations exist`() {
-        compute(attendances = listOf(range(9, 12))).also {
+        compute(attendances = listOf(interval(9, 12))).also {
             assertEquals(it.usedServiceRanges, listOf(range(9, 12)))
         }
     }
@@ -92,10 +135,10 @@ class UsedServiceTests {
         compute(reservations = listOf(range(9, 12), range(17, 20))).also {
             assertEquals(it.usedServiceRanges, listOf(range(9, 12), range(17, 20)))
         }
-        compute(reservations = listOf(range(9, 12)), attendances = listOf(range(17, 20))).also {
+        compute(reservations = listOf(range(9, 12)), attendances = listOf(interval(17, 20))).also {
             assertEquals(it.usedServiceRanges, listOf(range(9, 12), range(17, 20)))
         }
-        compute(attendances = listOf(range(9, 12), range(17, 20))).also {
+        compute(attendances = listOf(interval(9, 12), interval(17, 20))).also {
             assertEquals(it.usedServiceRanges, listOf(range(9, 12), range(17, 20)))
         }
     }
@@ -104,7 +147,7 @@ class UsedServiceTests {
     fun `merges adjacent and overlapping ranges`() {
         compute(
                 reservations = listOf(range(9, 12)),
-                attendances = listOf(range(11, 14), range(14, 15))
+                attendances = listOf(interval(11, 14), interval(14, 15))
             )
             .also { assertEquals(it.usedServiceRanges, listOf(range(9, 15))) }
     }
@@ -158,9 +201,12 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(range(9, 17))
+                attendances = listOf(interval(9, 17))
             )
-            .also { assertEquals(it.usedServiceRanges, listOf(range(8, 9), range(13, 17))) }
+            .also {
+                assertEquals(it.reservedMinutes, 4 * 60)
+                assertEquals(it.usedServiceRanges, listOf(range(8, 9), range(13, 17)))
+            }
     }
 
     @ParameterizedTest(name = "preparatory times should be excluded when placement type is {0}")
@@ -174,9 +220,12 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(range(9, 17))
+                attendances = listOf(interval(9, 17))
             )
-            .also { assertEquals(it.usedServiceRanges, listOf(range(8, 9), range(14, 17))) }
+            .also {
+                assertEquals(it.reservedMinutes, 3 * 60)
+                assertEquals(it.usedServiceRanges, listOf(range(8, 9), range(14, 17)))
+            }
     }
 
     @Test
@@ -187,7 +236,7 @@ class UsedServiceTests {
                 dailyPreparatoryTimes = range(9, 14),
                 absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE),
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(range(9, 13)),
+                attendances = listOf(interval(9, 13)),
             )
             .also { assertEquals(it.usedServiceRanges, listOf(range(8, 9), range(13, 16))) }
     }
@@ -200,7 +249,7 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = emptyList(),
-                attendances = listOf(range(9, 13))
+                attendances = listOf(interval(9, 13))
             )
             .also { assertEquals(it.usedServiceRanges, emptyList()) }
 
@@ -211,7 +260,7 @@ class UsedServiceTests {
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = emptyList(),
                 absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE),
-                attendances = listOf(range(9, 13)),
+                attendances = listOf(interval(9, 13)),
             )
             .also { assertEquals(it.usedServiceRanges, emptyList()) }
     }
@@ -223,7 +272,7 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(range(9, 17))
+                attendances = listOf(interval(9, 17))
             )
             .also { assertEquals(it.usedServiceRanges, listOf(range(8, 17))) }
     }
@@ -233,16 +282,17 @@ class UsedServiceTests {
         compute(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(range(9, 17))
+                attendances = listOf(interval(9, 17))
             )
             .also {
+                assertEquals(4 * 60, it.reservedMinutes) // 8 hours - 4 hours = 4 hours
                 assertEquals(5 * 60, it.usedServiceMinutes) // 9 hours - 4 hours = 5 hours
                 assertEquals(listOf(range(8, 17)), it.usedServiceRanges)
             }
 
         compute(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                attendances = listOf(range(10, 13))
+                attendances = listOf(interval(10, 13))
             )
             .also {
                 assertEquals(0, it.usedServiceMinutes) // Will not be negative
@@ -255,7 +305,7 @@ class UsedServiceTests {
         compute(
                 placementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(range(9, 17))
+                attendances = listOf(interval(9, 17))
             )
             .also {
                 assertEquals(9 * 60, it.usedServiceMinutes)
@@ -270,7 +320,7 @@ class UsedServiceTests {
                     isOperationDay = false,
                     shiftCareType = shiftCareType,
                     reservations = listOf(range(8, 16)),
-                    attendances = listOf(range(9, 17))
+                    attendances = listOf(interval(9, 17))
                 )
                 .also {
                     assertEquals(0, it.reservedMinutes)
@@ -286,7 +336,7 @@ class UsedServiceTests {
                 isOperationDay = false,
                 shiftCareType = ShiftCareType.INTERMITTENT,
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(range(9, 17))
+                attendances = listOf(interval(9, 17))
             )
             .also {
                 assertEquals(8 * 60, it.reservedMinutes)
