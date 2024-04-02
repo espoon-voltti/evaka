@@ -5,10 +5,6 @@
 // GENERATED FILE: no manual modifications
 
 import DateRange from 'lib-common/date-range'
-import { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/document'
-import { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
-import { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
-import { DocumentContent } from 'lib-common/generated/api-types/document'
 import { DocumentTemplate } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
@@ -20,8 +16,6 @@ import { StatusChangeRequest } from 'lib-common/generated/api-types/document'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
-import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplateSummary } from 'lib-common/generated/api-types/document'
 import { deserializeJsonExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
@@ -231,23 +225,6 @@ export async function updateTemplateValidity(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDocument
-*/
-export async function createDocument(
-  request: {
-    body: ChildDocumentCreateRequest
-  }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/child-documents`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ChildDocumentCreateRequest>
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.deleteDraftDocument
 */
 export async function deleteDraftDocument(
@@ -260,42 +237,6 @@ export async function deleteDraftDocument(
     method: 'DELETE'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getDocument
-*/
-export async function getDocument(
-  request: {
-    documentId: UUID
-  }
-): Promise<ChildDocumentWithPermittedActions> {
-  const { data: json } = await client.request<JsonOf<ChildDocumentWithPermittedActions>>({
-    url: uri`/child-documents/${request.documentId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonChildDocumentWithPermittedActions(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getDocuments
-*/
-export async function getDocuments(
-  request: {
-    childId: UUID
-  }
-): Promise<ChildDocumentSummaryWithPermittedActions[]> {
-  const params = createUrlSearchParams(
-    ['childId', request.childId]
-  )
-  const { data: json } = await client.request<JsonOf<ChildDocumentSummaryWithPermittedActions[]>>({
-    url: uri`/child-documents`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonChildDocumentSummaryWithPermittedActions(e))
 }
 
 
@@ -346,24 +287,6 @@ export async function publishDocument(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/child-documents/${request.documentId}/publish`.toString(),
     method: 'PUT'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.updateDocumentContent
-*/
-export async function updateDocumentContent(
-  request: {
-    documentId: UUID,
-    body: DocumentContent
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-documents/${request.documentId}/content`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<DocumentContent>
   })
   return json
 }

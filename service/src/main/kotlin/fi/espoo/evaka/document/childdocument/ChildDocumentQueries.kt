@@ -5,6 +5,7 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -12,15 +13,18 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
+const val lockMinutes = 15
+
 fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
+    userId: EmployeeId
 ): ChildDocumentId {
     return createQuery {
             sql(
                 """
-INSERT INTO child_document(child_id, template_id, status, content, modified_at)
-VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)})
+INSERT INTO child_document(child_id, template_id, status, content, modified_at, content_modified_at, content_modified_by)
+VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)})
 RETURNING id
 """
             )
@@ -88,18 +92,76 @@ fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
         .exactlyOneOrNull<String>()
 }
 
+data class DocumentWriteLock(
+    val modifiedBy: EmployeeId,
+    val modifiedByName: String,
+    val opensAt: HelsinkiDateTime
+)
+
+fun Database.Read.getCurrentWriteLock(
+    id: ChildDocumentId,
+    now: HelsinkiDateTime
+): DocumentWriteLock? =
+    createQuery {
+            sql(
+                """
+    SELECT 
+        content_modified_by AS modified_by,
+        (
+            SELECT coalesce(e.preferred_first_name, e.first_name) || ' ' || e.last_name 
+            FROM employee e WHERE e.id = cd.content_modified_by
+        ) AS modified_by_name,
+        content_modified_at + interval '$lockMinutes minutes' AS opens_at
+    FROM child_document cd
+    WHERE id = ${bind(id)} AND 
+        content_modified_by IS NOT NULL AND 
+        content_modified_at >= ${bind(now.minusMinutes(lockMinutes.toLong()))}
+"""
+            )
+        }
+        .exactlyOneOrNull()
+
+fun Database.Transaction.tryTakeWriteLock(
+    id: ChildDocumentId,
+    now: HelsinkiDateTime,
+    userId: EmployeeId
+): Boolean =
+    createUpdate {
+            sql(
+                """
+        UPDATE child_document SET content_modified_at = ${bind(now)}, content_modified_by = ${bind(userId)}
+        WHERE id = ${bind(id)} AND (
+            content_modified_by IS NULL OR
+            content_modified_by = ${bind(userId)} OR
+            content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
+        )
+    """
+            )
+        }
+        .execute()
+        .let { it > 0 }
+
 fun Database.Transaction.updateChildDocumentContent(
     id: ChildDocumentId,
     status: DocumentStatus,
     content: DocumentContent,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
+    userId: EmployeeId
 ) {
     createUpdate {
             sql(
                 """
                 UPDATE child_document
-                SET content = ${bind(content)}, modified_at = ${bind(now)}
-                WHERE id = ${bind(id)} AND status = ${bind(status)}
+                SET 
+                    content = ${bind(content)}, 
+                    modified_at = ${bind(now)}, 
+                    content_modified_at = ${bind(now)}, 
+                    content_modified_by = ${bind(userId)}
+                WHERE id = ${bind(id)} AND status = ${bind(status)} AND (
+                    content_modified_by IS NULL OR 
+                    content_modified_by = ${bind(userId)} OR 
+                    content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
+                )
                 """
             )
         }

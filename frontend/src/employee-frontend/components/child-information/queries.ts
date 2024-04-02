@@ -44,6 +44,7 @@ import {
   nextDocumentStatus,
   prevDocumentStatus,
   publishDocument,
+  takeDocumentWriteLock,
   updateDocumentContent
 } from '../../generated/api-clients/document'
 import { createQueryKeys } from '../../query'
@@ -51,6 +52,7 @@ import { createQueryKeys } from '../../query'
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id],
+  childDocumentWriteLock: (id: UUID) => ['childDocument', id, 'lock'],
   assistance: (childId: UUID) => ['assistance', childId],
   assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
     'assistanceNeedPreschoolDecisionBasics',
@@ -76,6 +78,11 @@ export const childDocumentsQuery = query({
 export const childDocumentQuery = query({
   api: getDocument,
   queryKey: ({ documentId }) => queryKeys.childDocument(documentId)
+})
+
+export const childDocumentWriteLockQuery = query({
+  api: takeDocumentWriteLock,
+  queryKey: ({ documentId }) => queryKeys.childDocumentWriteLock(documentId)
 })
 
 export const createChildDocumentMutation = mutation({

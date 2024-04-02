@@ -54,8 +54,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Autowired lateinit var controller: ChildDocumentController
 
     lateinit var areaId: AreaId
-    lateinit var employeeUser: AuthenticatedUser
-    lateinit var unitSupervisorUser: AuthenticatedUser
+    lateinit var employeeUser: AuthenticatedUser.Employee
+    lateinit var unitSupervisorUser: AuthenticatedUser.Employee
 
     final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 

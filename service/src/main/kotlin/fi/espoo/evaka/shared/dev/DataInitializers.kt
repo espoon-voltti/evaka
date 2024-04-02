@@ -1549,8 +1549,8 @@ fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId =
     createUpdate {
             sql(
                 """
-INSERT INTO child_document (id, status, child_id, template_id, content, published_content, modified_at, published_at)
-VALUES (${bind(row.id)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.publishedAt)})
+INSERT INTO child_document (id, status, child_id, template_id, content, published_content, modified_at, content_modified_at, content_modified_by, published_at)
+VALUES (${bind(row.id)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.publishedContent)}, ${bind(row.modifiedAt)}, ${bind(row.contentModifiedAt)}, ${bind(row.contentModifiedBy)}, ${bind(row.publishedAt)})
 """
             )
         }
