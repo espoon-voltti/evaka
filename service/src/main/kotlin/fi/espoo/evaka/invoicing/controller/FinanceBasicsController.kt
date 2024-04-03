@@ -7,7 +7,10 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.roundToEuros
+import fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
+import fi.espoo.evaka.invoicing.service.generator.getVoucherValuesByServiceNeedOption
 import fi.espoo.evaka.shared.FeeThresholdsId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -130,6 +133,26 @@ class FinanceBasicsController(
             }
         }
         Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
+    }
+
+    @GetMapping("/voucher-values")
+    fun getVoucherValues(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRange>> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_VOUCHER_VALUES
+                    )
+                    tx.getVoucherValuesByServiceNeedOption()
+                }
+            }
+            .also { Audit.FinanceBasicsVoucherValuesRead.log() }
     }
 }
 

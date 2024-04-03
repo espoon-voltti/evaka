@@ -936,6 +936,21 @@ export interface SendPaymentsRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
+*/
+export interface ServiceNeedOptionVoucherValueRange {
+  baseValue: number
+  baseValueUnder3y: number
+  coefficient: number
+  coefficientUnder3y: number
+  id: UUID
+  range: DateRange
+  serviceNeedOptionId: UUID
+  value: number
+  valueUnder3y: number
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.SortDirection
 */
 export type SortDirection =
@@ -1477,6 +1492,14 @@ export function deserializeJsonSendPaymentsRequest(json: JsonOf<SendPaymentsRequ
     ...json,
     dueDate: LocalDate.parseIso(json.dueDate),
     paymentDate: LocalDate.parseIso(json.paymentDate)
+  }
+}
+
+
+export function deserializeJsonServiceNeedOptionVoucherValueRange(json: JsonOf<ServiceNeedOptionVoucherValueRange>): ServiceNeedOptionVoucherValueRange {
+  return {
+    ...json,
+    range: DateRange.parseJson(json.range)
   }
 }
 

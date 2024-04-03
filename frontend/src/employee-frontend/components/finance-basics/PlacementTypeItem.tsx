@@ -5,6 +5,7 @@
 import React from 'react'
 
 import { useBoolean } from 'lib-common/form/hooks'
+import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -17,11 +18,13 @@ import ServiceNeedItem from './ServiceNeedItem'
 export type PlacementTypeItemProps = {
   placementType: PlacementType
   serviceNeedsList: ServiceNeedOption[]
+  voucherValuesMap: Record<string, ServiceNeedOptionVoucherValueRange[]>
 }
 
 export default React.memo(function PlacementTypeItem({
   placementType,
-  serviceNeedsList
+  serviceNeedsList,
+  voucherValuesMap
 }: PlacementTypeItemProps) {
   const { i18n } = useTranslation()
 
@@ -44,6 +47,7 @@ export default React.memo(function PlacementTypeItem({
           <ServiceNeedItem
             key={serviceNeed.id}
             serviceNeed={serviceNeed.nameFi + ' (oletus)'}
+            voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
           />
         ))}
       {serviceNeedsList
@@ -55,6 +59,7 @@ export default React.memo(function PlacementTypeItem({
           <ServiceNeedItem
             key={serviceNeed.id}
             serviceNeed={serviceNeed.nameFi}
+            voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
           />
         ))}
     </CollapsibleContentArea>

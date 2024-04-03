@@ -38,6 +38,7 @@ import { SearchInvoicesRequest } from 'lib-common/generated/api-types/invoicing'
 import { SearchPaymentsRequest } from 'lib-common/generated/api-types/invoicing'
 import { SearchVoucherValueDecisionRequest } from 'lib-common/generated/api-types/invoicing'
 import { SendPaymentsRequest } from 'lib-common/generated/api-types/invoicing'
+import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
@@ -58,6 +59,7 @@ import { deserializeJsonPagedFeeDecisionSummaries } from 'lib-common/generated/a
 import { deserializeJsonPagedInvoiceSummaryResponses } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedPayments } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonPagedVoucherValueDecisionSummaries } from 'lib-common/generated/api-types/invoicing'
+import { deserializeJsonServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonVoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
 import { deserializeJsonVoucherValueDecisionSummary } from 'lib-common/generated/api-types/invoicing'
 import { uri } from 'lib-common/uri'
@@ -335,6 +337,20 @@ export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
     method: 'GET'
   })
   return json.map(e => deserializeJsonFeeThresholdsWithId(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getVoucherValues
+*/
+export async function getVoucherValues(): Promise<Record<UUID, ServiceNeedOptionVoucherValueRange[]>> {
+  const { data: json } = await client.request<JsonOf<Record<UUID, ServiceNeedOptionVoucherValueRange[]>>>({
+    url: uri`/finance-basics/voucher-values`.toString(),
+    method: 'GET'
+  })
+  return Object.fromEntries(Object.entries(json).map(
+    ([k, v]) => [k, v.map(e => deserializeJsonServiceNeedOptionVoucherValueRange(e))]
+  ))
 }
 
 
