@@ -20,5 +20,8 @@ export const unitStatsQuery = query({
 
 export const unitInfoQuery = query({
   api: getUnitInfo,
-  queryKey: ({ unitId }) => queryKeys.info(unitId)
+  queryKey: ({ unitId }) => queryKeys.info(unitId),
+  options: {
+    staleTime: 5 * 60 * 1000
+  }
 })
