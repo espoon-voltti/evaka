@@ -1632,7 +1632,6 @@ const en: Translations = {
       CLUB: 'Club application'
     },
     transferApplication: 'Transfer application',
-    unit: 'Unit',
     period: 'Period',
     created: 'Created',
     modified: 'Modified',

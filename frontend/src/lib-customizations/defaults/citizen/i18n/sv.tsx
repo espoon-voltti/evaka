@@ -1870,7 +1870,6 @@ const sv: Translations = {
       CLUB: 'Ansökan till klubbverksamhet'
     },
     transferApplication: 'Ansökan om överföring',
-    unit: 'Enhet',
     period: 'För tiden',
     created: 'Ansökan skapad',
     modified: 'Redigerad/uppdaterad',

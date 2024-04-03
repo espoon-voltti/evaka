@@ -181,7 +181,6 @@ export default React.memo(function ChildApplicationsBlock({
             {
               applicationId,
               type,
-              preferredUnitName,
               startDate,
               createdDate,
               modifiedDate,
@@ -199,15 +198,6 @@ export default React.memo(function ChildApplicationsBlock({
               </H3>
               <Gap size="m" />
               <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
-                {preferredUnitName !== null && (
-                  <>
-                    <Label>{t.applicationsList.unit}</Label>
-                    <span data-qa={`application-unit-${applicationId}`}>
-                      {preferredUnitName}
-                    </span>
-                  </>
-                )}
-
                 {startDate !== null && (
                   <>
                     <Label>{t.applicationsList.period}</Label>

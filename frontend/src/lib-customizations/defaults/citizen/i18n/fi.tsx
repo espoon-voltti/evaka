@@ -1871,7 +1871,6 @@ export default {
       CLUB: 'Kerhohakemus'
     },
     transferApplication: 'Siirtohakemus',
-    unit: 'Yksikkö',
     period: 'Ajalle',
     created: 'Luotu',
     modified: 'Muokattu',
