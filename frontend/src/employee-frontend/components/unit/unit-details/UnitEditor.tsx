@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import {
@@ -795,6 +795,7 @@ function MealtimeInput({
 
   return editable ? (
     <TimeInput
+      data-qa={`${mealtimeKey}-input`}
       value={form[mealtimeKey]}
       onChange={(value) => updateForm({ [mealtimeKey]: value })}
       info={
@@ -807,7 +808,9 @@ function MealtimeInput({
       }
     />
   ) : (
-    <div>{form[mealtimeKey] ? form[mealtimeKey] : '-'}</div>
+    <div data-qa={`${mealtimeKey}-value-display`}>
+      {form[mealtimeKey] ? form[mealtimeKey] : '-'}
+    </div>
   )
 }
 
@@ -818,6 +821,12 @@ export default function UnitEditor(props: Props) {
     [props.unit]
   )
   const [form, setForm] = useState<FormData>(initialData)
+
+  // recompute form state after when it has been fetched from API. e.g. on form submit
+  useEffect(() => {
+    setForm(initialData)
+  }, [initialData])
+
   const [validationErrors, setValidationErrors] = useState<UnitEditorErrors>({
     rangeErrors: {
       dailyPreparatoryTime: {},

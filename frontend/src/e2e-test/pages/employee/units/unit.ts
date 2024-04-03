@@ -35,6 +35,14 @@ type UnitProviderType =
   | 'PRIVATE_SERVICE_VOUCHER'
   | 'EXTERNAL_PURCHASED'
 
+export type MealTimes = {
+  mealtimeEveningSnack?: string
+  mealtimeBreakfast?: string
+  mealtimeSnack?: string
+  mealtimeLunch?: string
+  mealtimeSupper?: string
+}
+
 export class UnitPage {
   constructor(private readonly page: Page) {}
 
@@ -189,6 +197,14 @@ export class UnitDetailsPage {
   async edit() {
     await this.#editUnitButton.click()
     return new UnitEditor(this.page)
+  }
+
+  async assertMealTimes(mealTimes: MealTimes) {
+    for (const [key, value] of Object.entries(mealTimes)) {
+      await this.page
+        .find(`[data-qa="${key}-value-display"]`)
+        .assertTextEquals(value)
+    }
   }
 }
 
@@ -389,6 +405,13 @@ export class UnitEditor {
   async submit() {
     await this.saveButton.click()
     return new UnitDetailsPage(this.page)
+  }
+
+  async fillMealTimes(mealTimes: MealTimes) {
+    for (const [key, value] of Object.entries(mealTimes)) {
+      const input = new TextInput(this.page.find(`[data-qa="${key}-input"]`))
+      await input.fill(value)
+    }
   }
 }
 
