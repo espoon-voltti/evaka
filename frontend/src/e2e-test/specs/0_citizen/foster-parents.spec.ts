@@ -108,7 +108,6 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   await applicationsPage.assertApplicationIsListed(
     applicationId,
     'Varhaiskasvatushakemus',
-    applicationForm.unitPreference?.preferredUnits?.[0].name ?? '',
     applicationForm.serviceNeed?.preferredStartDate ?? '',
     'Lähetetty'
   )
@@ -182,7 +181,6 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   await applicationsPage.assertApplicationIsListed(
     applicationId,
     'Varhaiskasvatushakemus',
-    applicationForm.unitPreference?.preferredUnits?.[0].name ?? '',
     applicationForm.serviceNeed?.preferredStartDate ?? '',
     'Lähetetty'
   )

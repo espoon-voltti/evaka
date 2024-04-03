@@ -59,7 +59,6 @@ describe('Citizen applications list', () => {
     await applicationsPage.assertApplicationIsListed(
       application.id,
       'Esiopetushakemus',
-      fixtures.daycareFixture.name,
       application.form.preferences.preferredStartDate?.format() ?? '',
       'Lähetetty'
     )
@@ -91,7 +90,6 @@ describe('Citizen applications list', () => {
     await applicationsPage.assertApplicationIsListed(
       application.id,
       'Varhaiskasvatushakemus',
-      fixtures.daycareFixture.name,
       application.form.preferences.preferredStartDate?.format() ?? '',
       'Vahvistettavana huoltajalla'
     )
