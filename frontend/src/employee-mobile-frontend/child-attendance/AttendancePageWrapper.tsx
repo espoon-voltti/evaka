@@ -4,12 +4,7 @@
 
 import { animated, useSpring } from '@react-spring/web'
 import React, { useCallback, useMemo, useState } from 'react'
-import {
-  Outlet,
-  useLocation,
-  useNavigate,
-  useOutletContext
-} from 'react-router-dom'
+import { Outlet, useNavigate, useOutletContext } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -28,7 +23,7 @@ import FreeTextSearch from '../common/FreeTextSearch'
 import { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
 import { zIndex } from '../constants'
 import { unitInfoQuery } from '../units/queries'
 
@@ -48,7 +43,6 @@ export default React.memo(function AttendancePageWrapper({
   unitOrGroup: UnitOrGroup
 }) {
   const navigate = useNavigate()
-  const location = useLocation()
   const { i18n } = useTranslation()
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -70,12 +64,12 @@ export default React.memo(function AttendancePageWrapper({
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      const newGroupRoute = location.pathname.split('/')
-      newGroupRoute[4] = `${group?.id ?? 'all'}`
-
-      navigate(newGroupRoute.join('/'))
+      navigate(
+        routes.childAttendances(toUnitOrGroup({ unitId, groupId: group?.id }))
+          .value
+      )
     },
-    [navigate, location.pathname]
+    [navigate, unitId]
   )
   const tabs = useMemo(
     () => [
