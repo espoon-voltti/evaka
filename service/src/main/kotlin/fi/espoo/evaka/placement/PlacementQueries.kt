@@ -361,7 +361,7 @@ fun Database.Read.getDaycarePlacements(
             sql(
                 """
         SELECT
-            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.termination_requested_date, pl.updated,
+            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.termination_requested_date,
             terminated_by.id AS terminated_by_id,
             terminated_by.name AS terminated_by_name,
             terminated_by.type AS terminated_by_type,

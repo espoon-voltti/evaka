@@ -5,7 +5,6 @@
 // GENERATED FILE: no manual modifications
 
 import FiniteDateRange from '../../finite-date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { EvakaUser } from './user'
@@ -93,7 +92,6 @@ export interface DaycarePlacementWithDetails {
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
-  updated: HelsinkiDateTime | null
 }
 
 /**
@@ -384,8 +382,7 @@ export function deserializeJsonDaycarePlacementWithDetails(json: JsonOf<DaycareP
     groupPlacements: json.groupPlacements.map(e => deserializeJsonDaycareGroupPlacement(e)),
     serviceNeeds: json.serviceNeeds.map(e => deserializeJsonServiceNeed(e)),
     startDate: LocalDate.parseIso(json.startDate),
-    terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null,
-    updated: (json.updated != null) ? HelsinkiDateTime.parseIso(json.updated) : null
+    terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null
   }
 }
 

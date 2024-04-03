@@ -520,7 +520,6 @@ fun Database.Read.getDetailedDaycarePlacements(
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
-                updated = daycarePlacement.updated,
                 placeGuarantee = daycarePlacement.placeGuarantee
             )
         }
@@ -682,7 +681,6 @@ data class DaycarePlacementWithDetails(
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
-    val updated: HelsinkiDateTime?,
     val placeGuarantee: Boolean
 )
 

@@ -1166,7 +1166,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
                     terminationRequestedDate = null,
-                    updated = placements.first().updated,
                     placeGuarantee = false
                 )
             ),
@@ -1327,7 +1326,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
                     terminationRequestedDate = null,
-                    updated = placements.first().updated,
                     placeGuarantee = false
                 )
             ),
