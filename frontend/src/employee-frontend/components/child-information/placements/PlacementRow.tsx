@@ -461,12 +461,6 @@ export default React.memo(function PlacementRow({
             {i18n.common.providerType[placement.daycare.providerType]}
           </DataValue>
         </DataRow>
-        <DataRow>
-          <DataLabel>{i18n.childInformation.placements.updatedAt}</DataLabel>
-          <DataValue data-qa="placement-details-updated-at">
-            {placement.updated?.format() ?? ''}
-          </DataValue>
-        </DataRow>
         <Gap size="s" />
         {editing && (
           <ActionRow>

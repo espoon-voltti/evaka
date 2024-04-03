@@ -1429,7 +1429,6 @@ export const fi = {
       daycareGroupMissing: 'Ei ryhmitetty',
       type: 'Toimintamuoto',
       providerType: 'Järjestämismuoto',
-      updatedAt: 'Päivitetty viimeksi',
       serviceNeedMissing1: 'Sijoitukselta puuttuu palveluntarve',
       serviceNeedMissing2:
         'päivältä. Merkitse palveluntarve koko sijoituksen ajalle.',
