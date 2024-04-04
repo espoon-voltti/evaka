@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faArrowRotateLeft } from 'Icons'
+import reverse from 'lodash/reverse'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -35,7 +36,7 @@ export default React.memo(function ArrivalAndDeparture({
 
   return (
     <ArrivalTimeContainer>
-      {attendances.reverse().map(({ arrived, departed }) => (
+      {reverse(attendances).map(({ arrived, departed }) => (
         <AttendanceRowContainer key={arrived.toSystemTzDate().toISOString()}>
           {arrived ? (
             <FixedSpaceRow justifyContent="center" alignItems="center">
