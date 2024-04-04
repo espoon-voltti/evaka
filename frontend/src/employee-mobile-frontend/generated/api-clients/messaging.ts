@@ -15,6 +15,8 @@ import { PagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { PagedSentMessages } from 'lib-common/generated/api-types/messaging'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
+import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messaging'
+import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
@@ -98,6 +100,24 @@ export async function createMessage(
     url: uri`/messages/${request.accountId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostMessageBody>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageController.createMessagePreflightCheck
+*/
+export async function createMessagePreflightCheck(
+  request: {
+    accountId: UUID,
+    body: PostMessagePreflightBody
+  }
+): Promise<PostMessagePreflightResponse> {
+  const { data: json } = await client.request<JsonOf<PostMessagePreflightResponse>>({
+    url: uri`/messages/${request.accountId}/preflight-check`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<PostMessagePreflightBody>
   })
   return json
 }

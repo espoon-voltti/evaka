@@ -272,6 +272,20 @@ export interface PostMessageBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.PostMessagePreflightBody
+*/
+export interface PostMessagePreflightBody {
+  recipients: MessageRecipient[]
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageController.PostMessagePreflightResponse
+*/
+export interface PostMessagePreflightResponse {
+  numberOfRecipientAccounts: number
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.Recipient
 */
 export interface Recipient {
