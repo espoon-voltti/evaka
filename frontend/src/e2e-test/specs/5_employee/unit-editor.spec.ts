@@ -91,9 +91,9 @@ describe('Employee - unit details', () => {
     )
 
     const mealTimes = {
-      mealtimeBreakfast: '08:00',
-      mealtimeLunch: '11:00',
-      mealtimeSnack: '14:00'
+      mealtimeBreakfast: { start: '08:00', end: '08:30' },
+      mealtimeLunch: { start: '11:00', end: '11:30' },
+      mealtimeSnack: { start: '13:00', end: '13:30' }
     }
     await unitEditorPage.fillMealTimes(mealTimes)
 

@@ -8,7 +8,6 @@ import DateRange from '../../date-range'
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
-import LocalTime from '../../local-time'
 import TimeRange from '../../time-range'
 import { Action } from '../action'
 import { Coordinate } from './shared'
@@ -191,11 +190,11 @@ export interface Daycare {
   language: Language
   location: Coordinate | null
   mailingAddress: MailingAddress
-  mealtimeBreakfast: LocalTime | null
-  mealtimeEveningSnack: LocalTime | null
-  mealtimeLunch: LocalTime | null
-  mealtimeSnack: LocalTime | null
-  mealtimeSupper: LocalTime | null
+  mealtimeBreakfast: TimeRange | null
+  mealtimeEveningSnack: TimeRange | null
+  mealtimeLunch: TimeRange | null
+  mealtimeSnack: TimeRange | null
+  mealtimeSupper: TimeRange | null
   name: string
   openingDate: LocalDate | null
   operationDays: number[]
@@ -259,11 +258,11 @@ export interface DaycareFields {
   language: Language
   location: Coordinate | null
   mailingAddress: MailingAddress
-  mealtimeBreakfast: LocalTime | null
-  mealtimeEveningSnack: LocalTime | null
-  mealtimeLunch: LocalTime | null
-  mealtimeSnack: LocalTime | null
-  mealtimeSupper: LocalTime | null
+  mealtimeBreakfast: TimeRange | null
+  mealtimeEveningSnack: TimeRange | null
+  mealtimeLunch: TimeRange | null
+  mealtimeSnack: TimeRange | null
+  mealtimeSupper: TimeRange | null
   name: string
   openingDate: LocalDate | null
   operationTimes: (TimeRange | null)[]
@@ -620,11 +619,11 @@ export function deserializeJsonDaycare(json: JsonOf<Daycare>): Daycare {
     dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? TimeRange.parseJson(json.dailyPreparatoryTime) : null,
     dailyPreschoolTime: (json.dailyPreschoolTime != null) ? TimeRange.parseJson(json.dailyPreschoolTime) : null,
     daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
-    mealtimeBreakfast: (json.mealtimeBreakfast != null) ? LocalTime.parseIso(json.mealtimeBreakfast) : null,
-    mealtimeEveningSnack: (json.mealtimeEveningSnack != null) ? LocalTime.parseIso(json.mealtimeEveningSnack) : null,
-    mealtimeLunch: (json.mealtimeLunch != null) ? LocalTime.parseIso(json.mealtimeLunch) : null,
-    mealtimeSnack: (json.mealtimeSnack != null) ? LocalTime.parseIso(json.mealtimeSnack) : null,
-    mealtimeSupper: (json.mealtimeSupper != null) ? LocalTime.parseIso(json.mealtimeSupper) : null,
+    mealtimeBreakfast: (json.mealtimeBreakfast != null) ? TimeRange.parseJson(json.mealtimeBreakfast) : null,
+    mealtimeEveningSnack: (json.mealtimeEveningSnack != null) ? TimeRange.parseJson(json.mealtimeEveningSnack) : null,
+    mealtimeLunch: (json.mealtimeLunch != null) ? TimeRange.parseJson(json.mealtimeLunch) : null,
+    mealtimeSnack: (json.mealtimeSnack != null) ? TimeRange.parseJson(json.mealtimeSnack) : null,
+    mealtimeSupper: (json.mealtimeSupper != null) ? TimeRange.parseJson(json.mealtimeSupper) : null,
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
@@ -640,11 +639,11 @@ export function deserializeJsonDaycareFields(json: JsonOf<DaycareFields>): Dayca
     dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? TimeRange.parseJson(json.dailyPreparatoryTime) : null,
     dailyPreschoolTime: (json.dailyPreschoolTime != null) ? TimeRange.parseJson(json.dailyPreschoolTime) : null,
     daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
-    mealtimeBreakfast: (json.mealtimeBreakfast != null) ? LocalTime.parseIso(json.mealtimeBreakfast) : null,
-    mealtimeEveningSnack: (json.mealtimeEveningSnack != null) ? LocalTime.parseIso(json.mealtimeEveningSnack) : null,
-    mealtimeLunch: (json.mealtimeLunch != null) ? LocalTime.parseIso(json.mealtimeLunch) : null,
-    mealtimeSnack: (json.mealtimeSnack != null) ? LocalTime.parseIso(json.mealtimeSnack) : null,
-    mealtimeSupper: (json.mealtimeSupper != null) ? LocalTime.parseIso(json.mealtimeSupper) : null,
+    mealtimeBreakfast: (json.mealtimeBreakfast != null) ? TimeRange.parseJson(json.mealtimeBreakfast) : null,
+    mealtimeEveningSnack: (json.mealtimeEveningSnack != null) ? TimeRange.parseJson(json.mealtimeEveningSnack) : null,
+    mealtimeLunch: (json.mealtimeLunch != null) ? TimeRange.parseJson(json.mealtimeLunch) : null,
+    mealtimeSnack: (json.mealtimeSnack != null) ? TimeRange.parseJson(json.mealtimeSnack) : null,
+    mealtimeSupper: (json.mealtimeSupper != null) ? TimeRange.parseJson(json.mealtimeSupper) : null,
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null

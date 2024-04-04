@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalTime
 
 data class DaycareFields(
     val name: String,
@@ -68,11 +67,11 @@ data class DaycareFields(
     val businessId: String,
     val iban: String,
     val providerId: String,
-    val mealtimeBreakfast: LocalTime?,
-    val mealtimeLunch: LocalTime?,
-    val mealtimeSnack: LocalTime?,
-    val mealtimeSupper: LocalTime?,
-    val mealtimeEveningSnack: LocalTime?
+    val mealtimeBreakfast: TimeRange?,
+    val mealtimeLunch: TimeRange?,
+    val mealtimeSnack: TimeRange?,
+    val mealtimeSupper: TimeRange?,
+    val mealtimeEveningSnack: TimeRange?
 ) {
     fun validate() {
         if (name.isBlank()) {

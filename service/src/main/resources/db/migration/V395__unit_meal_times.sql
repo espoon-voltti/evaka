@@ -1,6 +1,6 @@
 alter table daycare
-    add mealtime_breakfast time without time zone,
-    add mealtime_lunch time without time zone,
-    add mealtime_snack time without time zone,
-    add mealtime_supper time without time zone,
-    add mealtime_evening_snack time without time zone;
+    add mealtime_breakfast timerange_non_nullable_range,
+    add mealtime_lunch timerange_non_nullable_range,
+    add mealtime_snack timerange_non_nullable_range,
+    add mealtime_supper timerange_non_nullable_range,
+    add mealtime_evening_snack timerange_non_nullable_range;

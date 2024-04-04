@@ -36,11 +36,11 @@ type UnitProviderType =
   | 'EXTERNAL_PURCHASED'
 
 export type MealTimes = {
-  mealtimeEveningSnack?: string
-  mealtimeBreakfast?: string
-  mealtimeSnack?: string
-  mealtimeLunch?: string
-  mealtimeSupper?: string
+  mealtimeEveningSnack?: { start: string; end: string }
+  mealtimeBreakfast?: { start: string; end: string }
+  mealtimeSnack?: { start: string; end: string }
+  mealtimeLunch?: { start: string; end: string }
+  mealtimeSupper?: { start: string; end: string }
 }
 
 export class UnitPage {
@@ -203,7 +203,7 @@ export class UnitDetailsPage {
     for (const [key, value] of Object.entries(mealTimes)) {
       await this.page
         .find(`[data-qa="${key}-value-display"]`)
-        .assertTextEquals(value)
+        .assertTextEquals(`${value.start} - ${value.end}`)
     }
   }
 }
@@ -409,8 +409,14 @@ export class UnitEditor {
 
   async fillMealTimes(mealTimes: MealTimes) {
     for (const [key, value] of Object.entries(mealTimes)) {
-      const input = new TextInput(this.page.find(`[data-qa="${key}-input"]`))
-      await input.fill(value)
+      const inputStart = new TextInput(
+        this.page.find(`[data-qa="${key}-input-start"]`)
+      )
+      await inputStart.fill(value.start)
+      const inputEnd = new TextInput(
+        this.page.find(`[data-qa="${key}-input-end"]`)
+      )
+      await inputEnd.fill(value.end)
     }
   }
 }

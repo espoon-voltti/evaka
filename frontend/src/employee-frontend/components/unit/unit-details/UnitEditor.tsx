@@ -12,7 +12,7 @@ import {
 import { DayOfWeek } from 'employee-frontend/types'
 import DateRange from 'lib-common/date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { time, TIME_REGEXP } from 'lib-common/form-validation'
+import { time } from 'lib-common/form-validation'
 import {
   CareType,
   Daycare,
@@ -31,7 +31,6 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
-import TimeInput from 'lib-components/atoms/form/TimeInput'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -55,11 +54,11 @@ type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type OnlyDaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
 
 interface MealtimeData {
-  mealtimeBreakfast: string
-  mealtimeEveningSnack: string
-  mealtimeLunch: string
-  mealtimeSnack: string
-  mealtimeSupper: string
+  mealtimeBreakfast: EditableTimeRange
+  mealtimeEveningSnack: EditableTimeRange
+  mealtimeLunch: EditableTimeRange
+  mealtimeSnack: EditableTimeRange
+  mealtimeSupper: EditableTimeRange
 }
 
 type FormData = {
@@ -549,32 +548,38 @@ function validateForm(
     })
   }
 
-  function parseMealTime(
-    mealtimeStr: string,
+  function parseMealTimeRange(
+    timeRange: EditableTimeRange,
     errorKey: keyof MealtimeData
-  ): LocalTime | null {
-    const trimmedStr = mealtimeStr.trim()
-    if (!trimmedStr) {
+  ): TimeRange | null {
+    const validationErrors = validateTimeRange(timeRange)
+    if (
+      validationErrors.start === 'timeRequired' &&
+      validationErrors.end === 'timeRequired'
+    ) {
       return null
     }
-    if (trimmedStr && !TIME_REGEXP.test(trimmedStr)) {
+    if (validationErrors.start || validationErrors.end) {
       errors.push({
         text: i18n.unitEditor.error.mealTimes,
         key: errorKey
       })
       return null
     }
-    return LocalTime.parse(trimmedStr)
+    return TimeRange.parse(timeRange)
   }
 
-  const mealtimeBreakfast = parseMealTime(
+  const mealtimeBreakfast = parseMealTimeRange(
     form.mealtimeBreakfast,
     'mealtimeBreakfast'
   )
-  const mealtimeLunch = parseMealTime(form.mealtimeLunch, 'mealtimeLunch')
-  const mealtimeSnack = parseMealTime(form.mealtimeSnack, 'mealtimeSnack')
-  const mealtimeSupper = parseMealTime(form.mealtimeSupper, 'mealtimeSupper')
-  const mealtimeEveningSnack = parseMealTime(
+  const mealtimeLunch = parseMealTimeRange(form.mealtimeLunch, 'mealtimeLunch')
+  const mealtimeSnack = parseMealTimeRange(form.mealtimeSnack, 'mealtimeSnack')
+  const mealtimeSupper = parseMealTimeRange(
+    form.mealtimeSupper,
+    'mealtimeSupper'
+  )
+  const mealtimeEveningSnack = parseMealTimeRange(
     form.mealtimeEveningSnack,
     'mealtimeEveningSnack'
   )
@@ -686,6 +691,15 @@ function validateForm(
   }
 }
 
+function formatTimeRange(timeRange: TimeRange | null | undefined) {
+  return timeRange
+    ? {
+        start: timeRange.formatStart(),
+        end: timeRange.formatEnd()
+      }
+    : emptyTimeRange
+}
+
 function toFormData(unit: Daycare | undefined): FormData {
   const type = unit?.type
   return {
@@ -709,18 +723,8 @@ function toFormData(unit: Daycare | undefined): FormData {
         : type?.includes('CENTRE')
           ? 'CENTRE'
           : undefined,
-    dailyPreschoolTime: unit?.dailyPreschoolTime
-      ? {
-          start: unit.dailyPreschoolTime.formatStart(),
-          end: unit.dailyPreschoolTime.formatEnd()
-        }
-      : emptyTimeRange,
-    dailyPreparatoryTime: unit?.dailyPreparatoryTime
-      ? {
-          start: unit.dailyPreparatoryTime.formatStart(),
-          end: unit.dailyPreparatoryTime.formatEnd()
-        }
-      : emptyTimeRange,
+    dailyPreschoolTime: formatTimeRange(unit?.dailyPreschoolTime),
+    dailyPreparatoryTime: formatTimeRange(unit?.dailyPreparatoryTime),
     daycareApplyPeriod: unit?.daycareApplyPeriod ?? null,
     preschoolApplyPeriod: unit?.preschoolApplyPeriod ?? null,
     clubApplyPeriod: unit?.clubApplyPeriod ?? null,
@@ -770,11 +774,11 @@ function toFormData(unit: Daycare | undefined): FormData {
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
     providerId: unit?.providerId ?? '',
-    mealtimeBreakfast: unit?.mealtimeBreakfast?.format() ?? '',
-    mealtimeLunch: unit?.mealtimeLunch?.format() ?? '',
-    mealtimeSnack: unit?.mealtimeSnack?.format() ?? '',
-    mealtimeSupper: unit?.mealtimeSupper?.format() ?? '',
-    mealtimeEveningSnack: unit?.mealtimeEveningSnack?.format() ?? ''
+    mealtimeBreakfast: formatTimeRange(unit?.mealtimeBreakfast),
+    mealtimeLunch: formatTimeRange(unit?.mealtimeLunch),
+    mealtimeSnack: formatTimeRange(unit?.mealtimeSnack),
+    mealtimeSupper: formatTimeRange(unit?.mealtimeSupper),
+    mealtimeEveningSnack: formatTimeRange(unit?.mealtimeEveningSnack)
   }
 }
 
@@ -782,34 +786,23 @@ function MealtimeInput({
   mealtimeKey,
   form,
   updateForm,
-  validationErrors,
   editable
 }: {
   mealtimeKey: keyof MealtimeData
-  form: FormData
+  form: MealtimeData
   updateForm: (arg0: Partial<FormData>) => void
-  validationErrors: UnitEditorErrors
   editable: boolean
 }) {
-  const { i18n } = useTranslation()
-
   return editable ? (
-    <TimeInput
-      data-qa={`${mealtimeKey}-input`}
+    <TimeRangeInput
+      dataQaPrefix={`${mealtimeKey}-input`}
       value={form[mealtimeKey]}
       onChange={(value) => updateForm({ [mealtimeKey]: value })}
-      info={
-        validationErrors.formErrors.some((e) => e.key === mealtimeKey)
-          ? {
-              status: 'warning',
-              text: i18n.validationErrors.generic
-            }
-          : undefined
-      }
+      error={undefined}
     />
   ) : (
     <div data-qa={`${mealtimeKey}-value-display`}>
-      {form[mealtimeKey] ? form[mealtimeKey] : '-'}
+      {form[mealtimeKey].start} - {form[mealtimeKey].end}
     </div>
   )
 }
@@ -1802,7 +1795,6 @@ export default function UnitEditor(props: Props) {
                   mealtimeKey="mealtimeBreakfast"
                   form={form}
                   updateForm={updateForm}
-                  validationErrors={validationErrors}
                   editable={props.editable}
                 />
               </FixedSpaceRow>
@@ -1812,7 +1804,6 @@ export default function UnitEditor(props: Props) {
                   mealtimeKey="mealtimeLunch"
                   form={form}
                   updateForm={updateForm}
-                  validationErrors={validationErrors}
                   editable={props.editable}
                 />
               </FixedSpaceRow>
@@ -1824,7 +1815,6 @@ export default function UnitEditor(props: Props) {
                   mealtimeKey="mealtimeSnack"
                   form={form}
                   updateForm={updateForm}
-                  validationErrors={validationErrors}
                   editable={props.editable}
                 />
               </FixedSpaceRow>
@@ -1834,7 +1824,6 @@ export default function UnitEditor(props: Props) {
                   mealtimeKey="mealtimeSupper"
                   form={form}
                   updateForm={updateForm}
-                  validationErrors={validationErrors}
                   editable={props.editable}
                 />
               </FixedSpaceRow>
@@ -1844,7 +1833,6 @@ export default function UnitEditor(props: Props) {
                   mealtimeKey="mealtimeEveningSnack"
                   form={form}
                   updateForm={updateForm}
-                  validationErrors={validationErrors}
                   editable={props.editable}
                 />
               </FixedSpaceRow>

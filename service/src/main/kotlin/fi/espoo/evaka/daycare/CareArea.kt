@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import java.time.LocalDate
-import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -74,11 +73,11 @@ data class Daycare(
     val businessId: String,
     val iban: String,
     val providerId: String,
-    val mealtimeBreakfast: LocalTime?,
-    val mealtimeLunch: LocalTime?,
-    val mealtimeSnack: LocalTime?,
-    val mealtimeSupper: LocalTime?,
-    val mealtimeEveningSnack: LocalTime?
+    val mealtimeBreakfast: TimeRange?,
+    val mealtimeLunch: TimeRange?,
+    val mealtimeSnack: TimeRange?,
+    val mealtimeSupper: TimeRange?,
+    val mealtimeEveningSnack: TimeRange?
 )
 
 data class FinanceDecisionHandler(
