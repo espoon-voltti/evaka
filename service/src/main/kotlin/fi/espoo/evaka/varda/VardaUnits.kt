@@ -5,6 +5,7 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
@@ -135,6 +136,18 @@ enum class VardaUnitProviderType(val vardaCode: String) : DatabaseEnum {
     PRIVATE("jm04");
 
     override val sqlType: String = "unit_provider_type"
+
+    companion object {
+        fun fromEvakaProviderType(providerType: ProviderType) =
+            when (providerType) {
+                ProviderType.MUNICIPAL -> MUNICIPAL
+                ProviderType.MUNICIPAL_SCHOOL -> MUNICIPAL_SCHOOL
+                ProviderType.PURCHASED -> PURCHASED
+                ProviderType.EXTERNAL_PURCHASED -> EXTERNAL_PURCHASED
+                ProviderType.PRIVATE_SERVICE_VOUCHER -> PRIVATE_SERVICE_VOUCHER
+                ProviderType.PRIVATE -> PRIVATE
+            }
+    }
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardatoimintamuoto/koodi
