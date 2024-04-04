@@ -11,8 +11,8 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsWithReservationDeadline
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class MissingHolidayReservationsReminders(
-    private val featureConfig: FeatureConfig,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
@@ -63,14 +62,10 @@ class MissingHolidayReservationsReminders(
                         .toSet()
 
                 val personsToBeNotified =
-                    childrenWithMaybeMissingHolidayReservations
-                        .map {
-                            tx.getChildGuardiansToNotify(
-                                clock.today(),
-                                childrenWithMaybeMissingHolidayReservations.toList()
-                            )
-                        }
-                        .flatten()
+                    tx.getChildGuardiansToNotify(
+                            clock.today(),
+                            childrenWithMaybeMissingHolidayReservations.toList()
+                        )
                         .toSet()
 
                 logger.info(
@@ -88,7 +83,7 @@ class MissingHolidayReservationsReminders(
                         },
                     runAt = clock.now()
                 )
-                1
+                personsToBeNotified.size
             } ?: 0
     }
 
@@ -153,7 +148,15 @@ WHERE p.id = ANY(${bind(childIds)})
         msg: AsyncJob.SendMissingHolidayReservationsReminder,
         clock: EvakaClock
     ) {
-        val language = db.read { tx -> getLanguage(tx, msg.guardian) }
+        val receiver = db.read { tx -> tx.getPersonById(msg.guardian) }
+
+        if (receiver == null) {
+            logger.warn("Person ${msg.guardian} not found when sending email!")
+            return
+        }
+
+        if (receiver.email.isNullOrBlank()) return
+        val language = receiver.language?.lowercase()?.let(Language::tryValueOf) ?: Language.fi
 
         Email.create(
                 dbc = db,
@@ -164,23 +167,5 @@ WHERE p.id = ANY(${bind(childIds)})
                 traceId = msg.guardian.toString(),
             )
             ?.also { emailClient.send(it) }
-    }
-
-    private fun getLanguage(tx: Database.Read, personId: PersonId): Language {
-        return tx.createQuery {
-                sql(
-                    """
-SELECT language
-FROM person p
-WHERE p.id = ${bind(personId)}
-AND email IS NOT NULL
-LIMIT 1
-        """
-                        .trimIndent()
-                )
-            }
-            .exactlyOneOrNull {
-                column<String?>("language")?.lowercase()?.let(Language::tryValueOf) ?: Language.fi
-            } ?: Language.fi
     }
 }
