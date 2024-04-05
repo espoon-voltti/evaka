@@ -276,6 +276,17 @@ WITH min_voucher_decision_date AS (
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[]) AND lower(p.period) = ${bind(reportDate)}
+), previous_payments AS (
+    -- For each possible realized_period, find the latest (rank=1) ORIGINAL/CORRECTION snapshot row matching it.
+    SELECT
+        sn_decision.decision_id,
+        sn_decision.realized_period,
+        rank() OVER (PARTITION BY decision.child_id, sn_decision.realized_period ORDER BY sn.year DESC, sn.month DESC) AS rank
+    FROM month_periods p
+    JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
+    JOIN voucher_value_report_snapshot sn ON sn.id = sn_decision.voucher_value_report_snapshot_id
+    JOIN voucher_value_decision decision on decision.id = sn_decision.decision_id
+    WHERE sn_decision.type <> 'REFUND' AND lower(p.period) < ${bind(reportDate)}
 ), correction_targets AS (
     -- Validity updated after last freeze to be different in this period, or to not intersect with this period at all
     SELECT
@@ -285,10 +296,9 @@ WITH min_voucher_decision_date AS (
         p.operational_days,
         p.operational_days_count
     FROM month_periods p
-    JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
+    JOIN previous_payments sn_decision ON sn_decision.realized_period && p.period AND sn_decision.rank = 1
     JOIN voucher_value_decision decision on decision.id = sn_decision.decision_id
-    WHERE lower(p.period) < ${bind(reportDate)}
-        AND (decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[]) OR decision.status = 'ANNULLED')
+    WHERE (decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[]) OR decision.status = 'ANNULLED')
         AND decision.validity_updated_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
         AND (daterange(decision.valid_from, decision.valid_to, '[]') * p.period) <> sn_decision.realized_period
 
@@ -302,10 +312,9 @@ WITH min_voucher_decision_date AS (
         p.operational_days,
         p.operational_days_count
     FROM month_periods p
-    JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
+    JOIN previous_payments sn_decision ON sn_decision.realized_period && p.period AND sn_decision.rank = 1
     JOIN voucher_value_decision decision ON decision.id = sn_decision.decision_id AND daterange(decision.valid_from,decision.valid_to,'[]') && sn_decision.realized_period
-    WHERE lower(p.period) < ${bind(reportDate)}
-        AND decision.status = 'ANNULLED'::voucher_value_decision_status
+    WHERE decision.status = 'ANNULLED'::voucher_value_decision_status
         AND decision.annulled_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
 ), corrections AS (
     -- New decision created for the past
@@ -338,8 +347,7 @@ WITH min_voucher_decision_date AS (
     JOIN month_periods p ON ct.period && p.period
     JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = ct.decision_id AND sn_decision.realized_period && p.period
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && sn_decision.realized_period AND decision.child_id = ct.child_id
-    LEFT JOIN voucher_value_report_decision sn_decision2 ON decision.id = sn_decision2.decision_id AND sn_decision2.realized_period = sn_decision.realized_period AND sn_decision2.type = 'CORRECTION'
-    WHERE decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[]) and sn_decision2.decision_id IS NULL
+    WHERE decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[])
 ), refunds AS (
     SELECT
         p.period,
