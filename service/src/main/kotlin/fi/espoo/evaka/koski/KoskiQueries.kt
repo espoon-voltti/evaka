@@ -63,29 +63,28 @@ private fun Database.Transaction.refreshStudyRight(
     key: KoskiStudyRightKey,
     today: LocalDate
 ): Pair<KoskiStudyRightId, Boolean> {
-    val studyRightQuery =
-        QuerySql.of {
-            when (key.type) {
-                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
-                    sql(
-                        """
+    val studyRightQuery = QuerySql {
+        when (key.type) {
+            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+                sql(
+                    """
 SELECT
     child_id, unit_id, type,
     input_data AS preschool_input_data, NULL::koski_preparatory_input_data AS preparatory_input_data
 FROM koski_active_preschool_study_right(${bind(today)}) kasr
 """
-                    )
-                OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
-                    sql(
-                        """
+                )
+            OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                sql(
+                    """
 SELECT
     child_id, unit_id, type,
     NULL::koski_preschool_input_data AS preschool_input_data, input_data AS preparatory_input_data
 FROM koski_active_preparatory_study_right(${bind(today)}) kasr
 """
-                    )
-            }
+                )
         }
+    }
     return createQuery {
             sql(
                 """

@@ -643,7 +643,7 @@ open class SqlBuilder {
         return Binding
     }
 
-    fun subquery(f: QuerySql.Builder.() -> QuerySql): QuerySqlString = subquery(QuerySql.of { f() })
+    fun subquery(f: QuerySql.Builder.() -> QuerySql): QuerySqlString = subquery(QuerySql { f() })
 
     fun subquery(fragment: QuerySql): QuerySqlString {
         this.bindings += fragment.bindings
@@ -664,6 +664,9 @@ open class SqlBuilder {
 /** A builder for SQL, including bound parameter values. */
 data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out Any?>>) {
     companion object {
+        operator fun invoke(f: Builder.() -> QuerySql): QuerySql = Builder().run { f(this) }
+
+        @Deprecated("use QuerySql {} instead (drop the .of call)")
         fun of(f: Builder.() -> QuerySql): QuerySql = Builder().run { f(this) }
     }
 

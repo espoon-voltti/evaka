@@ -82,10 +82,9 @@ data class DaycareFields(
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
-fun daycaresQuery(predicate: Predicate) =
-    QuerySql.of {
-        sql(
-            """
+fun daycaresQuery(predicate: Predicate) = QuerySql {
+    sql(
+        """
 SELECT
   daycare.id,
   daycare.name,
@@ -149,9 +148,9 @@ LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = day
 JOIN care_area ca ON daycare.care_area_id = ca.id
 WHERE ${predicate(predicate.forTable("daycare"))}
         """
-                .trimIndent()
-        )
-    }
+            .trimIndent()
+    )
+}
 
 fun Database.Read.getDaycares(
     clock: EvakaClock,

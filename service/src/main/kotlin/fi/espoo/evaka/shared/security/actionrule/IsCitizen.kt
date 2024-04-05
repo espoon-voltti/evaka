@@ -50,7 +50,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
         DatabaseActionRule.Scoped.Query<T, IsCitizen> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
-                is AuthenticatedUser.Citizen -> QuerySql.of { filter(user.id, now) }
+                is AuthenticatedUser.Citizen -> QuerySql { filter(user.id, now) }
                 else -> Pair(user, now)
             }
 
@@ -89,7 +89,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
             when (ctx.user) {
                 is AuthenticatedUser.Citizen ->
                     if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                        QuerySql.of { filter(ctx.user.id, ctx.now) }
+                        QuerySql { filter(ctx.user.id, ctx.now) }
                     } else {
                         null
                     }
@@ -143,7 +143,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                     ): QuerySql? =
                         when (ctx.user) {
                             is AuthenticatedUser.Citizen ->
-                                QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }
+                                QuerySql { sql("SELECT ${bind(ctx.user.id)} AS id") }
                             else -> null
                         }
                 }

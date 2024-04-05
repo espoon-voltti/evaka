@@ -36,10 +36,9 @@ import java.util.UUID
 fun feeDecisionQuery(
     predicate: Predicate = Predicate.alwaysTrue(),
     lockForUpdate: Boolean = false
-) =
-    QuerySql.of {
-        sql(
-            """
+) = QuerySql {
+    sql(
+        """
 SELECT
     decision.id,
     decision.created,
@@ -91,13 +90,12 @@ FROM fee_decision as decision
 WHERE ${predicate(predicate.forTable("decision"))}
 ${if (lockForUpdate) "FOR UPDATE" else ""}
 """
-        )
-    }
+    )
+}
 
-private fun feeDecisionDetailedQuery(predicate: Predicate) =
-    QuerySql.of {
-        sql(
-            """
+private fun feeDecisionDetailedQuery(predicate: Predicate) = QuerySql {
+    sql(
+        """
 SELECT
     decision.id,
     decision.created,
@@ -183,8 +181,8 @@ LEFT JOIN employee as approved_by ON decision.approved_by_id = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler_id
 WHERE ${predicate(predicate.forTable("decision"))}
 """
-        )
-    }
+    )
+}
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
 

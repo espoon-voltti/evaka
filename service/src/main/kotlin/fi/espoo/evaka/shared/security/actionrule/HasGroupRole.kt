@@ -76,7 +76,7 @@ SELECT EXISTS (
         DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
-                is AuthenticatedUser.Employee -> QuerySql.of { getGroupRoles(user, now) }
+                is AuthenticatedUser.Employee -> QuerySql { getGroupRoles(user, now) }
                 else -> Pair(user, now)
             }
 
@@ -120,7 +120,7 @@ SELECT EXISTS (
         ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
-                    QuerySql.of {
+                    QuerySql {
                         sql(
                             """
                     SELECT id

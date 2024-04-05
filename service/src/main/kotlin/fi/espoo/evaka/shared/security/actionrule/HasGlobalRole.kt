@@ -51,7 +51,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
         DatabaseActionRule.Scoped.Query<T, HasGlobalRole> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
-                is AuthenticatedUser.Employee -> QuerySql.of { filter(user, now) }
+                is AuthenticatedUser.Employee -> QuerySql { filter(user, now) }
                 else -> Pair(user, now)
             }
 
@@ -90,7 +90,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
                     if (ctx.user.globalRoles.any { params.oneOf.contains(it) }) {
-                        QuerySql.of { filter(ctx.user, ctx.now) }
+                        QuerySql { filter(ctx.user, ctx.now) }
                     } else {
                         null
                     }

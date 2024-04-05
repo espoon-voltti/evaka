@@ -41,10 +41,9 @@ class MessagePushNotifications(
 
     private val logger = KotlinLogging.logger {}
 
-    private fun getPendingPushNotifications() =
-        QuerySql.of {
-            sql(
-                """
+    private fun getPendingPushNotifications() = QuerySql {
+        sql(
+            """
 SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
@@ -74,8 +73,8 @@ AND CASE
     )
 END
 """
-            )
-        }
+        )
+    }
 
     fun getAsyncJobs(
         tx: Database.Read,

@@ -37,7 +37,7 @@ data object IsEmployee : DatabaseActionRule.Params {
         DatabaseActionRule.Scoped.Query<T, IsEmployee> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
-                is AuthenticatedUser.Employee -> QuerySql.of { filter(user, now) }
+                is AuthenticatedUser.Employee -> QuerySql { filter(user, now) }
                 else -> Pair(user, now)
             }
 
@@ -74,7 +74,7 @@ data object IsEmployee : DatabaseActionRule.Params {
             params: IsEmployee
         ): QuerySql? =
             when (ctx.user) {
-                is AuthenticatedUser.Employee -> QuerySql.of { filter(ctx.user, ctx.now) }
+                is AuthenticatedUser.Employee -> QuerySql { filter(ctx.user, ctx.now) }
                 else -> null
             }
     }
@@ -114,7 +114,7 @@ data object IsEmployee : DatabaseActionRule.Params {
                     ): QuerySql? =
                         when (ctx.user) {
                             is AuthenticatedUser.Employee ->
-                                QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }
+                                QuerySql { sql("SELECT ${bind(ctx.user.id)} AS id") }
                             else -> null
                         }
                 }
