@@ -2429,9 +2429,9 @@ __metadata:
   linkType: hard
 
 "colorette@npm:^2.0.7":
-  version: 2.0.16
-  resolution: "colorette@npm:2.0.16"
-  checksum: 8501db5750d3b8f0935bdc9e999cbd6b6420b5c127a8c0bd41aaf252fe3f6636ff3a5c51e6dc8e12692e0b96ee3d28a4dfd0f89a86ef167a5728d4c926b67f31
+  version: 2.0.20
+  resolution: "colorette@npm:2.0.20"
+  checksum: 0b8de48bfa5d10afc160b8eaa2b9938f34a892530b2f7d7897e0458d9535a066e3998b49da9d21161c78225b272df19ae3a64d6df28b4c9734c0e55bbd02406f
   languageName: node
   linkType: hard
 
@@ -3158,7 +3158,7 @@ __metadata:
     passport: "npm:^0.7.0"
     pino: "npm:^8.19.0"
     pino-http: "npm:^9.0.0"
-    pino-pretty: "npm:^10.3.0"
+    pino-pretty: "npm:^11.0.0"
     prettier: "npm:^3.2.2"
     pump: "npm:^3.0.0"
     query-string: "npm:^9.0.0"
@@ -5616,9 +5616,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-pretty@npm:*, pino-pretty@npm:^10.3.0":
-  version: 10.3.0
-  resolution: "pino-pretty@npm:10.3.0"
+"pino-pretty@npm:*, pino-pretty@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "pino-pretty@npm:11.0.0"
   dependencies:
     colorette: "npm:^2.0.7"
     dateformat: "npm:^4.6.3"
@@ -5636,7 +5636,7 @@ __metadata:
     strip-json-comments: "npm:^3.1.1"
   bin:
     pino-pretty: bin.js
-  checksum: 2cbcb440b03e220b69720278ff28625417dd6ca851a7a5b8fc73978fb36e4438b9ac33f287a94fe779cf893bf47b585b44d91f3693527f766ac22b760028ef48
+  checksum: 0d63dd92b3bd0c5ac85ded7fa5667c72998efd6b431f4ee89d27ec37758c1e44c5d458ad65e09757926bfef618b3ac51cb1126a3d9c0a1aaa4e4f1d34a97856b
   languageName: node
   linkType: hard
 
