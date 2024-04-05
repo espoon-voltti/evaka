@@ -32,8 +32,8 @@ class VardaUpdateServiceNew(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     globalFuel: FuelManager,
     mapper: JsonMapper,
-    ophEnv: OphEnv,
-    vardaEnv: VardaEnv
+    private val ophEnv: OphEnv,
+    private val vardaEnv: VardaEnv
 ) {
     // To test against Varda QA environment from your local machine:
     //
@@ -85,9 +85,6 @@ class VardaUpdateServiceNew(
             vardaEnv.endDate
         )
 
-    private val omaOrganisaatioOid = ophEnv.organizerOid
-    private val lahdejarjestelma = vardaEnv.sourceSystem
-
     init {
         asyncJobRunner.registerHandler(::updateChildJob)
     }
@@ -97,9 +94,28 @@ class VardaUpdateServiceNew(
         clock: EvakaClock,
         job: AsyncJob.VardaUpdateChild
     ) {
+        // Varda's validation rules can be deduced from the list of error codes:
+        // https://virkailija.opintopolku.fi/varda/julkinen/koodistot/vardavirheviestit
+
+        val service = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+
+        val evakaState = dbc.read { service.getEvakaState(it, job.childId) }
+        val vardaState =
+            service.getVardaState(
+                vardaClient,
+                evakaState.henkilo.henkilotunnus,
+                evakaState.henkilo.henkilo_oid
+            )
+
+        logger.info(
+            mapOf("varda" to vardaState?.toPrettyString(), "evaka" to evakaState.toPrettyString())
+        ) {
+            "Varda update state for ${job.childId} (see the meta.varda and meta.evaka fields)"
+        }
+
         if (job.dryRun) {
             val dryRunClient = DryRunClient()
-            updateChild(dbc, job.childId, vardaRead = vardaClient, vardaWrite = dryRunClient)
+            service.updateChild(dryRunClient, vardaState, evakaState)
 
             dryRunClient.operations.also { ops ->
                 logger.info(
@@ -109,26 +125,28 @@ class VardaUpdateServiceNew(
                 }
             }
         } else {
-            updateChild(dbc, job.childId, vardaRead = vardaClient, vardaWrite = vardaClient)
+            service.updateChild(vardaClient, vardaState, evakaState) { henkiloOidInVarda ->
+                if (evakaState.henkilo.henkilo_oid != henkiloOidInVarda) {
+                    dbc.transaction { it.updateOphPersonOid(job.childId, henkiloOidInVarda) }
+                }
+            }
         }
     }
+}
 
-    fun updateChild(
-        dbc: Database.Connection,
-        childId: ChildId,
-        vardaRead: VardaReadClient,
-        vardaWrite: VardaWriteClient
-    ) {
-        // Varda's validation rules can be deduced from the list of error codes:
-        // https://virkailija.opintopolku.fi/varda/julkinen/koodistot/vardavirheviestit
-
-        val person = dbc.read { it.getVardaPerson(childId) }
+class VardaUpdater(
+    private val vardaEnabledRange: DateRange,
+    private val omaOrganisaatioOid: String,
+    private val lahdejarjestelma: String
+) {
+    fun getEvakaState(tx: Database.Read, childId: ChildId): EvakaHenkiloNode {
+        val person = tx.getVardaPerson(childId)
         if (person.ophPersonOid == null && person.socialSecurityNumber == null) {
             throw IllegalStateException("Child $childId has no ophOid or ssn")
         }
 
-        val guardians = dbc.read { it.getDependantGuardians(childId) }
-        val serviceNeeds = dbc.read { it.getVardaServiceNeeds(childId, vardaEnabledRange) }
+        val guardians = tx.getDependantGuardians(childId)
+        val serviceNeeds = tx.getVardaServiceNeeds(childId, vardaEnabledRange)
 
         // Only fee data after 2019-09-01 can be sent to Varda (error code MA019)
         val vardaFeeDataRange = DateRange(LocalDate.of(2019, 9, 1), null)
@@ -148,7 +166,7 @@ class VardaUpdateServiceNew(
                             .intersection(vardaFeeDataRange)
                             ?.intersection(serviceNeedRange)
                     if (feeDataRange != null) {
-                        dbc.read { it.getVardaFeeData(childId, feeDataRange) }
+                        tx.getVardaFeeData(childId, feeDataRange)
                     } else {
                         emptyList()
                     }
@@ -169,93 +187,95 @@ class VardaUpdateServiceNew(
                 }
                 .groupBy({ it.first }, { it.second })
 
-        val evakaHenkilo =
-            EvakaHenkiloNode(
-                henkilo = Henkilo.fromEvaka(person),
-                lapset =
-                    evakaLapsiServiceNeeds.map { (lapsi, serviceNeedsOfLapsi) ->
-                        EvakaLapsiNode(
-                            lapsi = lapsi,
-                            varhaiskasvatuspaatokset =
-                                serviceNeedsOfLapsi.map { serviceNeed ->
-                                    EvakaVarhaiskasvatuspaatosNode(
-                                        varhaiskasvatuspaatos =
-                                            Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
-                                        varhaiskasvatussuhteet =
-                                            listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
-                                    )
-                                },
-                            maksutiedot = evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
-                        )
-                    }
-            )
-
-        val vardaHenkilo =
-            vardaRead
-                .haeHenkilo(
-                    if (person.ophPersonOid != null) {
-                        VardaReadClient.HaeHenkiloRequest(
-                            henkilotunnus = null,
-                            henkilo_oid = person.ophPersonOid
-                        )
-                    } else {
-                        VardaReadClient.HaeHenkiloRequest(
-                            henkilotunnus = person.socialSecurityNumber,
-                            henkilo_oid = null
-                        )
-                    }
-                )
-                ?.let { henkilo ->
-                    VardaHenkilo(
-                        henkilo = henkilo,
-                        lapset =
-                            henkilo.lapsi.map { lapsiUrl ->
-                                val lapsiResponse = vardaRead.getLapsi(lapsiUrl)
-                                val maksutiedotResponse = vardaRead.getMaksutiedotByLapsi(lapsiUrl)
-                                val paatoksetResponse =
-                                    vardaRead.getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl)
-                                val varhaiskasvatussuhteetResponse =
-                                    vardaRead.getVarhaiskasvatussuhteetByLapsi(lapsiUrl)
-
-                                VardaLapsiNode(
-                                    lapsi = lapsiResponse,
-                                    varhaiskasvatuspaatokset =
-                                        paatoksetResponse.map { paatos ->
-                                            VardaVarhaiskasvatuspaatosNode(
-                                                varhaiskasvatuspaatos = paatos,
-                                                varhaiskasvatussuhteet =
-                                                    varhaiskasvatussuhteetResponse.filter {
-                                                        it.varhaiskasvatuspaatos == paatos.url
-                                                    }
-                                            )
-                                        },
-                                    maksutiedot = maksutiedotResponse
+        return EvakaHenkiloNode(
+            henkilo = Henkilo.fromEvaka(person),
+            lapset =
+                evakaLapsiServiceNeeds.map { (lapsi, serviceNeedsOfLapsi) ->
+                    EvakaLapsiNode(
+                        lapsi = lapsi,
+                        varhaiskasvatuspaatokset =
+                            serviceNeedsOfLapsi.map { serviceNeed ->
+                                EvakaVarhaiskasvatuspaatosNode(
+                                    varhaiskasvatuspaatos =
+                                        Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
+                                    varhaiskasvatussuhteet =
+                                        listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                                 )
-                            }
+                            },
+                        maksutiedot = evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
                     )
                 }
+        )
+    }
 
-        logger.info(
-            mapOf(
-                "varda" to vardaHenkilo?.toPrettyString(),
-                "evaka" to evakaHenkilo.toPrettyString()
+    fun getVardaState(
+        client: VardaReadClient,
+        socialSecurityNumber: String?,
+        ophPersonOid: String?
+    ): VardaHenkiloNode? {
+        return client
+            .haeHenkilo(
+                if (ophPersonOid != null) {
+                    VardaReadClient.HaeHenkiloRequest(
+                        henkilotunnus = null,
+                        henkilo_oid = ophPersonOid
+                    )
+                } else {
+                    VardaReadClient.HaeHenkiloRequest(
+                        henkilotunnus = socialSecurityNumber,
+                        henkilo_oid = null
+                    )
+                }
             )
-        ) {
-            "Varda update state for $childId (see the meta.varda and meta.evaka fields)"
-        }
+            ?.let { henkilo ->
+                VardaHenkiloNode(
+                    henkilo = henkilo,
+                    lapset =
+                        henkilo.lapsi.map { lapsiUrl ->
+                            val lapsiResponse = client.getLapsi(lapsiUrl)
+                            val maksutiedotResponse = client.getMaksutiedotByLapsi(lapsiUrl)
+                            val paatoksetResponse =
+                                client.getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl)
+                            val varhaiskasvatussuhteetResponse =
+                                client.getVarhaiskasvatussuhteetByLapsi(lapsiUrl)
 
-        val henkilo =
-            vardaHenkilo?.henkilo ?: vardaWrite.createHenkilo(evakaHenkilo.henkilo.toVarda())
-        if (henkilo.henkilo_oid != null && person.ophPersonOid != henkilo.henkilo_oid) {
-            dbc.transaction { it.updateOphPersonOid(childId, henkilo.henkilo_oid) }
+                            VardaLapsiNode(
+                                lapsi = lapsiResponse,
+                                varhaiskasvatuspaatokset =
+                                    paatoksetResponse.map { paatos ->
+                                        VardaVarhaiskasvatuspaatosNode(
+                                            varhaiskasvatuspaatos = paatos,
+                                            varhaiskasvatussuhteet =
+                                                varhaiskasvatussuhteetResponse.filter {
+                                                    it.varhaiskasvatuspaatos == paatos.url
+                                                }
+                                        )
+                                    },
+                                maksutiedot = maksutiedotResponse
+                            )
+                        }
+                )
+            }
+    }
+
+    fun updateChild(
+        client: VardaWriteClient,
+        vardaHenkilo: VardaHenkiloNode?,
+        evakaHenkilo: EvakaHenkiloNode,
+        /** Called as soon as the Varda henkilo OID is known */
+        onOid: ((oid: String) -> Unit)? = null
+    ) {
+        val henkilo = vardaHenkilo?.henkilo ?: client.createHenkilo(evakaHenkilo.henkilo.toVarda())
+        if (onOid != null && henkilo.henkilo_oid != null) {
+            onOid(henkilo.henkilo_oid)
         }
 
         diff(
             old = vardaHenkilo?.lapset ?: emptyList(),
             new = evakaHenkilo.lapset,
             eq = { vardaNode, evakaNode -> Lapsi.fromVarda(vardaNode.lapsi) == evakaNode.lapsi },
-            onRemoved = { vardaWrite.deleteLapsiDeep(it) },
-            onAdded = { vardaWrite.createLapsiDeep(henkilo.url, it) },
+            onRemoved = { client.deleteLapsiDeep(it) },
+            onAdded = { client.createLapsiDeep(henkilo.url, it) },
             onUnchanged = { vardaLapsi, evakaLapsi ->
                 // Maksutieto must be *removed first* and *added last* to avoid validation
                 // errors
@@ -263,7 +283,7 @@ class VardaUpdateServiceNew(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
                     eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
-                    onRemoved = { vardaWrite.deleteMaksutieto(it) },
+                    onRemoved = { client.deleteMaksutieto(it) },
                 )
                 diff(
                     old = vardaLapsi.varhaiskasvatuspaatokset,
@@ -272,18 +292,16 @@ class VardaUpdateServiceNew(
                         Varhaiskasvatuspaatos.fromVarda(vardaNode.varhaiskasvatuspaatos) ==
                             evakaNode.varhaiskasvatuspaatos
                     },
-                    onRemoved = { vardaWrite.deleteVarhaiskasvatuspaatosDeep(it) },
-                    onAdded = {
-                        vardaWrite.createVarhaiskasvatuspaatosDeep(vardaLapsi.lapsi.url, it)
-                    },
+                    onRemoved = { client.deleteVarhaiskasvatuspaatosDeep(it) },
+                    onAdded = { client.createVarhaiskasvatuspaatosDeep(vardaLapsi.lapsi.url, it) },
                     onUnchanged = { vardaPaatos, evakaPaatos ->
                         diff(
                             old = vardaPaatos.varhaiskasvatussuhteet,
                             new = evakaPaatos.varhaiskasvatussuhteet,
                             eq = { varda, evaka -> Varhaiskasvatussuhde.fromVarda(varda) == evaka },
-                            onRemoved = { vardaWrite.deleteVarhaiskasvatussuhde(it) },
+                            onRemoved = { client.deleteVarhaiskasvatussuhde(it) },
                             onAdded = {
-                                vardaWrite.createVarhaiskasvatussuhde(
+                                client.createVarhaiskasvatussuhde(
                                     vardaPaatos.varhaiskasvatuspaatos.url,
                                     it
                                 )
@@ -295,12 +313,13 @@ class VardaUpdateServiceNew(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
                     eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
-                    onAdded = { vardaWrite.createMaksutieto(vardaLapsi.lapsi.url, it) },
+                    onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
                 )
             }
         )
     }
 
+    /** Like Iterable.all, but runs all the side effects regardless of what they return */
     private fun <T> Iterable<T>.allSucceed(sideEffect: (T) -> Boolean): Boolean {
         var result = true
         for (e in this) {
@@ -422,25 +441,25 @@ class VardaUpdateServiceNew(
         createMaksutieto(evakaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
     }
 
-    private data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>) {
+    data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>) {
         fun toPrettyString(): String =
             "Henkilo(\n  $henkilo,\n  lapset = [\n" +
                 lapset.joinToString(",\n") { "    $it" } +
                 "  ]\n)"
     }
 
-    private data class EvakaLapsiNode(
+    data class EvakaLapsiNode(
         val lapsi: Lapsi,
         val varhaiskasvatuspaatokset: List<EvakaVarhaiskasvatuspaatosNode>,
         val maksutiedot: List<Maksutieto>
     )
 
-    private data class EvakaVarhaiskasvatuspaatosNode(
+    data class EvakaVarhaiskasvatuspaatosNode(
         val varhaiskasvatuspaatos: Varhaiskasvatuspaatos,
         val varhaiskasvatussuhteet: List<Varhaiskasvatussuhde>,
     )
 
-    private data class VardaHenkilo(
+    data class VardaHenkiloNode(
         val henkilo: VardaReadClient.HenkiloResponse,
         val lapset: List<VardaLapsiNode>
     ) {
@@ -453,13 +472,13 @@ class VardaUpdateServiceNew(
                 ")"
     }
 
-    private data class VardaLapsiNode(
+    data class VardaLapsiNode(
         val lapsi: VardaReadClient.LapsiResponse,
         val varhaiskasvatuspaatokset: List<VardaVarhaiskasvatuspaatosNode>,
         val maksutiedot: List<VardaReadClient.MaksutietoResponse>
     )
 
-    private data class VardaVarhaiskasvatuspaatosNode(
+    data class VardaVarhaiskasvatuspaatosNode(
         val varhaiskasvatuspaatos: VardaReadClient.VarhaiskasvatuspaatosResponse,
         val varhaiskasvatussuhteet: List<VardaReadClient.VarhaiskasvatussuhdeResponse>,
     )
