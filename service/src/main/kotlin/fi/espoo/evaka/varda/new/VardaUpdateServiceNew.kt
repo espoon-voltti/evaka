@@ -280,8 +280,7 @@ class VardaUpdater(
             old = vardaHenkilo?.lapset ?: emptyList(),
             new = evakaHenkilo.lapset,
             eq = { vardaNode, evakaNode -> Lapsi.fromVarda(vardaNode.lapsi) == evakaNode.lapsi },
-            onRemoved = { client.deleteLapsiDeep(it) },
-            onAdded = { client.createLapsiDeep(henkilo.url, it) },
+            onDeleted = { client.deleteLapsiDeep(it) },
             onUnchanged = { vardaLapsi, evakaLapsi ->
                 // Maksutieto must be *removed first* and *added last* to avoid validation
                 // errors
@@ -289,7 +288,7 @@ class VardaUpdater(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
                     eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
-                    onRemoved = { client.deleteMaksutieto(it) },
+                    onDeleted = { client.deleteMaksutieto(it) },
                 )
                 diff(
                     old = vardaLapsi.varhaiskasvatuspaatokset,
@@ -298,14 +297,13 @@ class VardaUpdater(
                         Varhaiskasvatuspaatos.fromVarda(vardaNode.varhaiskasvatuspaatos) ==
                             evakaNode.varhaiskasvatuspaatos
                     },
-                    onRemoved = { client.deleteVarhaiskasvatuspaatosDeep(it) },
-                    onAdded = { client.createVarhaiskasvatuspaatosDeep(vardaLapsi.lapsi.url, it) },
+                    onDeleted = { client.deleteVarhaiskasvatuspaatosDeep(it) },
                     onUnchanged = { vardaPaatos, evakaPaatos ->
                         diff(
                             old = vardaPaatos.varhaiskasvatussuhteet,
                             new = evakaPaatos.varhaiskasvatussuhteet,
                             eq = { varda, evaka -> Varhaiskasvatussuhde.fromVarda(varda) == evaka },
-                            onRemoved = { client.deleteVarhaiskasvatussuhde(it) },
+                            onDeleted = { client.deleteVarhaiskasvatussuhde(it) },
                             onAdded = {
                                 client.createVarhaiskasvatussuhde(
                                     vardaPaatos.varhaiskasvatuspaatos.url,
@@ -313,7 +311,8 @@ class VardaUpdater(
                                 )
                             },
                         )
-                    }
+                    },
+                    onAdded = { client.createVarhaiskasvatuspaatosDeep(vardaLapsi.lapsi.url, it) },
                 )
                 diff(
                     old = vardaLapsi.maksutiedot,
@@ -321,7 +320,8 @@ class VardaUpdater(
                     eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
                     onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
                 )
-            }
+            },
+            onAdded = { client.createLapsiDeep(henkilo.url, it) },
         )
     }
 
@@ -494,17 +494,13 @@ private fun <Old, New> diff(
     old: List<Old>,
     new: List<New>,
     eq: (Old, New) -> Boolean,
-    onRemoved: ((Old) -> Unit)? = null,
+    onDeleted: ((Old) -> Unit)? = null,
     onAdded: ((New) -> Unit)? = null,
     onUnchanged: ((Old, New) -> Unit)? = null
 ) {
-    if (onRemoved != null) {
+    if (onDeleted != null) {
         old.filter { oldItem -> new.none { newItem -> eq(oldItem, newItem) } }
-            .forEach { onRemoved(it) }
-    }
-    if (onAdded != null) {
-        new.filter { newItem -> old.none { oldItem -> eq(oldItem, newItem) } }
-            .forEach { onAdded(it) }
+            .forEach { onDeleted(it) }
     }
     if (onUnchanged != null) {
         old.forEach { oldItem ->
@@ -513,6 +509,10 @@ private fun <Old, New> diff(
                 onUnchanged(oldItem, newItem)
             }
         }
+    }
+    if (onAdded != null) {
+        new.filter { newItem -> old.none { oldItem -> eq(oldItem, newItem) } }
+            .forEach { onAdded(it) }
     }
 }
 
