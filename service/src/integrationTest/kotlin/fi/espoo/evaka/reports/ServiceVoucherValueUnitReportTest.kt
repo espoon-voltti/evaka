@@ -965,7 +965,13 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 marFreeze.plusWeeks(2)
             )
         }
-        createVoucherDecision(marFirst, unitId = testDaycare.id, value = 86000, coPayment = 0)
+        createVoucherDecision(
+            marFirst,
+            approvedAt = marFreeze.plusWeeks(2),
+            unitId = testDaycare.id,
+            value = 86000,
+            coPayment = 0
+        )
 
         db.transaction {
             freezeVoucherValueReportRows(it, aprFirst.year, aprFirst.monthValue, aprFreeze)
@@ -980,6 +986,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         }
         createVoucherDecision(
             febFirst,
+            approvedAt = aprFreeze.plusWeeks(2),
             unitId = testDaycare.id,
             value = 85000,
             coPayment = 0,
