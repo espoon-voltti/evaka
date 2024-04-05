@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
+import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -16,12 +17,15 @@ import {
   PostMessageBody,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
@@ -37,7 +41,12 @@ import {
 } from 'lib-components/messages/SelectorNode'
 import { SaveDraftParams } from 'lib-components/messages/types'
 import { Draft, useDraft } from 'lib-components/messages/useDraft'
+import {
+  ExpandingInfoBox,
+  InlineInfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -48,11 +57,9 @@ import {
   faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
 
-import Combobox from '../atoms/dropdowns/Combobox'
-import Checkbox from '../atoms/form/Checkbox'
-import { useTranslations } from '../i18n'
-import { ExpandingInfoBox, InlineInfoButton } from '../molecules/ExpandingInfo'
-import { InfoBox } from '../molecules/MessageBoxes'
+import { useTranslation } from '../../state/i18n'
+
+import { createMessagePreflightCheckQuery } from './queries'
 
 type Message = Omit<
   UpdatableDraftContent,
@@ -123,19 +130,20 @@ const FlagsInfoContent = React.memo(function FlagsInfoContent({
   urgent,
   sensitive
 }: FlagProps) {
-  const i18n = useTranslations()
+  const { i18n } = useTranslation()
   // If only one of the flags is present
   if (urgent !== sensitive) {
-    if (urgent) return <>{i18n.messageEditor.flags.urgent.info}</>
-    if (sensitive) return <>{i18n.messageEditor.flags.sensitive.info}</>
+    if (urgent) return <>{i18n.messages.messageEditor.flags.urgent.info}</>
+    if (sensitive)
+      return <>{i18n.messages.messageEditor.flags.sensitive.info}</>
     return null
   }
 
   // If both flags are present
   return (
     <UlNoMargin>
-      <li>{i18n.messageEditor.flags.urgent.info}</li>
-      <li>{i18n.messageEditor.flags.sensitive.info}</li>
+      <li>{i18n.messages.messageEditor.flags.urgent.info}</li>
+      <li>{i18n.messages.messageEditor.flags.sensitive.info}</li>
     </UlNoMargin>
   )
 })
@@ -177,7 +185,7 @@ export default React.memo(function MessageEditor({
   sending,
   defaultTitle = ''
 }: Props) {
-  const i18n = useTranslations()
+  const { i18n } = useTranslation()
 
   const [receiverTree, setReceiverTree] = useState<SelectorNode[]>(
     receiversAsSelectorNode(
@@ -228,6 +236,13 @@ export default React.memo(function MessageEditor({
   const selectedReceivers = useMemo(
     () => (receiverTree ? getSelected(receiverTree) : []),
     [receiverTree]
+  )
+  const debouncedReceivers = useDebounce(selectedReceivers, 500)
+  const preflightResult = useQueryResult(
+    createMessagePreflightCheckQuery({
+      accountId: message.sender.value,
+      body: { recipients: debouncedReceivers.map((r) => r.messageRecipient) }
+    })
   )
 
   const sensitiveCheckboxEnabled = shouldSensitiveCheckboxBeEnabled(
@@ -313,7 +328,9 @@ export default React.memo(function MessageEditor({
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
   const title =
-    debouncedSaveStatus || message.title || i18n.messageEditor.newMessage
+    debouncedSaveStatus ||
+    message.title ||
+    i18n.messages.messageEditor.newMessage
 
   const sendHandler = useCallback(() => {
     const {
@@ -388,12 +405,14 @@ export default React.memo(function MessageEditor({
   const sendEnabled =
     !sending &&
     draftState === 'clean' &&
-    areRequiredFieldsFilled(message, selectedReceivers)
+    areRequiredFieldsFilled(message, selectedReceivers) &&
+    isEqual(debouncedReceivers, selectedReceivers) &&
+    preflightResult.isSuccess
 
   const urgent = (
     <Checkbox
       data-qa="checkbox-urgent"
-      label={i18n.messageEditor.flags.urgent.label}
+      label={i18n.messages.messageEditor.flags.urgent.label}
       checked={message.urgent}
       onChange={(urgent) => updateMessage({ urgent })}
     />
@@ -409,7 +428,7 @@ export default React.memo(function MessageEditor({
     <FixedSpaceRow spacing="xs" alignItems="center">
       <Checkbox
         data-qa="checkbox-sensitive"
-        label={i18n.messageEditor.flags.sensitive.label}
+        label={i18n.messages.messageEditor.flags.sensitive.label}
         checked={message.sensitive}
         disabled={!sensitiveCheckboxEnabled}
         onChange={(sensitive) => updateMessage({ sensitive })}
@@ -429,7 +448,7 @@ export default React.memo(function MessageEditor({
   const messageType =
     senderAccountType === 'MUNICIPAL' ? (
       <Radio
-        label={i18n.messageEditor.type.bulletin}
+        label={i18n.messages.messageEditor.type.bulletin}
         checked={message.type === 'BULLETIN'}
         onChange={() => updateMessage({ type: 'BULLETIN' })}
         data-qa="radio-message-type-bulletin"
@@ -437,13 +456,13 @@ export default React.memo(function MessageEditor({
     ) : (
       <>
         <Radio
-          label={i18n.messageEditor.type.message}
+          label={i18n.messages.messageEditor.type.message}
           checked={message.type === 'MESSAGE'}
           onChange={() => updateMessage({ type: 'MESSAGE' })}
           data-qa="radio-message-type-message"
         />
         <Radio
-          label={i18n.messageEditor.type.bulletin}
+          label={i18n.messages.messageEditor.type.bulletin}
           checked={message.type === 'BULLETIN'}
           onChange={() => updateMessage({ type: 'BULLETIN', sensitive: false })}
           data-qa="radio-message-type-bulletin"
@@ -511,7 +530,7 @@ export default React.memo(function MessageEditor({
           <ExpandableLayout expandedView={expandedView}>
             <Dropdowns expandedView={expandedView}>
               <HorizontalField>
-                <Bold>{i18n.messageEditor.sender}</Bold>
+                <Bold>{i18n.messages.messageEditor.sender}</Bold>
                 <Combobox
                   items={senderOptions}
                   onChange={handleSenderChange}
@@ -523,11 +542,13 @@ export default React.memo(function MessageEditor({
               </HorizontalField>
               <Gap size="s" />
               <HorizontalField>
-                <Bold>{i18n.messages.recipients}</Bold>
+                <Bold>{i18n.messages.messageEditor.recipients}</Bold>
                 <TreeDropdown
                   tree={receiverTree}
                   onChange={handleRecipientChange}
-                  placeholder={i18n.messageEditor.recipientsPlaceholder}
+                  placeholder={
+                    i18n.messages.messageEditor.recipientsPlaceholder
+                  }
                   data-qa="select-receiver"
                 />
               </HorizontalField>
@@ -535,12 +556,12 @@ export default React.memo(function MessageEditor({
             {expandedView && !simpleMode && (
               <ExpandedRightPane>
                 <ExpandedHorizontalField>
-                  <Bold>{i18n.messageEditor.type.label}</Bold>
+                  <Bold>{i18n.messages.messageEditor.type.label}</Bold>
                   {messageType}
                 </ExpandedHorizontalField>
                 <Gap size="s" />
                 <ExpandedHorizontalField>
-                  <Bold>{i18n.messageEditor.flags.heading}</Bold>
+                  <Bold>{i18n.messages.messageEditor.flags.heading}</Bold>
                   {urgent}
                   {sensitiveCheckbox}
                 </ExpandedHorizontalField>
@@ -548,7 +569,9 @@ export default React.memo(function MessageEditor({
                   <FixedSpaceRow fullWidth>
                     <ExpandingInfoBox
                       width="auto"
-                      info={i18n.messageEditor.flags.sensitive.whyDisabled}
+                      info={
+                        i18n.messages.messageEditor.flags.sensitive.whyDisabled
+                      }
                       close={onSensitiveInfoClick}
                     />
                   </FixedSpaceRow>
@@ -559,7 +582,7 @@ export default React.memo(function MessageEditor({
           </ExpandableLayout>
           <Gap size="s" />
           <HorizontalField>
-            <Bold>{i18n.messageEditor.title}</Bold>
+            <Bold>{i18n.messages.messageEditor.title}</Bold>
             <InputField
               value={message.title ?? ''}
               onChange={(title) => updateMessage({ title })}
@@ -571,11 +594,11 @@ export default React.memo(function MessageEditor({
               <Gap size="s" />
               <FixedSpaceRow>
                 <HalfWidthColumn>
-                  <Bold>{i18n.messageEditor.type.label}</Bold>
+                  <Bold>{i18n.messages.messageEditor.type.label}</Bold>
                   {messageType}
                 </HalfWidthColumn>
                 <HalfWidthColumn>
-                  <Bold>{i18n.messageEditor.flags.heading}</Bold>
+                  <Bold>{i18n.messages.messageEditor.flags.heading}</Bold>
                   {urgent}
                   {sensitiveCheckbox}
                 </HalfWidthColumn>
@@ -584,7 +607,9 @@ export default React.memo(function MessageEditor({
                 <InfoBoxContainer>
                   <ExpandingInfoBox
                     width="full"
-                    info={i18n.messageEditor.flags.sensitive.whyDisabled}
+                    info={
+                      i18n.messages.messageEditor.flags.sensitive.whyDisabled
+                    }
                     close={onSensitiveInfoClick}
                   />
                 </InfoBoxContainer>
@@ -593,7 +618,7 @@ export default React.memo(function MessageEditor({
             </>
           )}
           <Gap size="m" />
-          <Bold>{i18n.messages.message}</Bold>
+          <Bold>{i18n.messages.messageEditor.message}</Bold>
           <Gap size="xs" />
           <StyledTextArea
             value={message.content}
@@ -617,20 +642,32 @@ export default React.memo(function MessageEditor({
           {draftId ? (
             <InlineButton
               onClick={() => onDiscard(message.sender.value, draftId)}
-              text={i18n.messageEditor.deleteDraft}
+              text={i18n.messages.messageEditor.deleteDraft}
               icon={faTrash}
               data-qa="discard-draft-btn"
             />
           ) : (
             <Gap horizontal />
           )}
-          <Button
-            text={sending ? i18n.messages.sending : i18n.messages.send}
-            primary
-            disabled={!sendEnabled}
-            onClick={sendHandler}
-            data-qa="send-message-btn"
-          />
+          <FixedSpaceRow alignItems="center">
+            <div>
+              Vastaanottajia:{' '}
+              {preflightResult
+                .map((r) => r.numberOfRecipientAccounts)
+                .getOrElse('')}
+            </div>
+            <Button
+              text={
+                sending
+                  ? i18n.messages.messageEditor.sending
+                  : i18n.messages.messageEditor.send
+              }
+              primary
+              disabled={!sendEnabled}
+              onClick={sendHandler}
+              data-qa="send-message-btn"
+            />
+          </FixedSpaceRow>
         </BottomBar>
       </Container>
     </FullScreenContainer>

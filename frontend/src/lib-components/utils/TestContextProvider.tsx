@@ -96,35 +96,6 @@ export const testTranslations: Translations = {
       urgent: ''
     }
   },
-  messageEditor: {
-    newMessage: '',
-    to: {
-      label: '',
-      placeholder: '',
-      noOptions: ''
-    },
-    type: {
-      label: '',
-      message: '',
-      bulletin: ''
-    },
-    flags: {
-      heading: '',
-      urgent: {
-        info: '',
-        label: ''
-      },
-      sensitive: {
-        info: '',
-        label: '',
-        whyDisabled: ''
-      }
-    },
-    sender: '',
-    recipientsPlaceholder: '',
-    title: '',
-    deleteDraft: ''
-  },
   messageReplyEditor: {
     discard: '',
     messagePlaceholder: undefined,

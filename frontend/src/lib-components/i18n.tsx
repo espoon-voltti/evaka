@@ -91,35 +91,6 @@ export interface Translations {
       urgent: string
     }
   }
-  messageEditor: {
-    newMessage: string
-    to: {
-      label: string
-      placeholder: string
-      noOptions: string
-    }
-    type: {
-      label: string
-      message: string
-      bulletin: string
-    }
-    flags: {
-      heading: string
-      urgent: {
-        info: string
-        label: string
-      }
-      sensitive: {
-        info: string
-        label: string
-        whyDisabled: string
-      }
-    }
-    sender: string
-    recipientsPlaceholder: string
-    title: string
-    deleteDraft: string
-  }
   messageReplyEditor: {
     messagePlaceholder: string | undefined
     discard: string

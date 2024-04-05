@@ -339,22 +339,22 @@ class MessageController(
         @RequestBody body: PostMessagePreflightBody
     ): PostMessagePreflightResponse {
         return db.connect { dbc ->
-                dbc.read { tx ->
-                    requireMessageAccountAccess(dbc, user, clock, accountId)
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.read { tx ->
 
-                    val numberOfRecipientAccounts = if(body.recipients.isEmpty()) {
-                        0
-                    } else {
-                        tx.getMessageAccountsForRecipients(
-                            accountId = accountId,
-                            recipients = body.recipients,
-                            date = clock.today()
-                        ).size
-                    }
-
-                    PostMessagePreflightResponse(numberOfRecipientAccounts)
+                val numberOfRecipientAccounts = if(body.recipients.isEmpty()) {
+                    0
+                } else {
+                    tx.getMessageAccountsForRecipients(
+                        accountId = accountId,
+                        recipients = body.recipients,
+                        date = clock.today()
+                    ).size
                 }
+
+                PostMessagePreflightResponse(numberOfRecipientAccounts)
             }
+        }
             .also { Audit.MessagingNewMessagePreflightCheck.log(targetId = accountId) }
     }
 

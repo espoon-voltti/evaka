@@ -4242,7 +4242,41 @@ export const fi = {
       secondsLeft: (s: number) =>
         s === 1 ? '1 sekunti aikaa' : `${s} sekuntia aikaa`
     },
-    sensitive: 'arkaluontoinen'
+    sensitive: 'arkaluontoinen',
+    messageEditor: {
+      message: 'Viesti',
+      newMessage: 'Uusi viesti',
+      to: {
+        label: 'Vastaanottaja',
+        placeholder: 'Valitse ryhmä',
+        noOptions: 'Ei ryhmiä'
+      },
+      recipients: 'Vastaanottajat',
+      type: {
+        label: 'Viestin tyyppi',
+        message: 'Viesti',
+        bulletin: 'Tiedote (ei voi vastata)'
+      },
+      flags: {
+        heading: 'Viestin lisämerkinnät',
+        urgent: {
+          info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
+          label: 'Kiireellinen'
+        },
+        sensitive: {
+          info: 'Arkaluontoisen viestin avaaminen vaatii kuntalaiselta vahvan tunnistautumisen.',
+          label: 'Arkaluontoinen',
+          whyDisabled:
+            'Arkaluontoisen viestin voi lähettää vain henkilökohtaisesta käyttäjätilistä yksittäisen lapsen huoltajille.'
+        }
+      },
+      sender: 'Lähettäjä',
+      recipientsPlaceholder: 'Valitse...',
+      title: 'Otsikko',
+      deleteDraft: 'Hylkää luonnos',
+      send: 'Lähetä',
+      sending: 'Lähetetään'
+    }
   },
   pinCode: {
     title: 'eVaka-mobiilin PIN-koodi',
