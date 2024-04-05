@@ -140,7 +140,7 @@ const ConcurrentEditWarning = React.memo(function ConcurrentEditWarning({
     <InfoModal
       data-qa="concurrent-edit-error-modal"
       type="warning"
-      title="Asiakirja on tilapäisesti lukittu"
+      title={i18n.childInformation.childDocuments.editor.lockedErrorTitle}
       text={errorText}
       close={onClose}
       closeLabel={i18n.common.close}
@@ -185,7 +185,7 @@ const ChildDocumentEditViewInner = React.memo(
     const { mutateAsync: updateChildDocumentContent, isPending: submitting } =
       useMutationResult(updateChildDocumentContentMutation)
 
-    // invalidate cached document on onmount
+    // invalidate cached document on unmount
     const queryClient = useQueryClient()
     useEffect(
       () => () => {

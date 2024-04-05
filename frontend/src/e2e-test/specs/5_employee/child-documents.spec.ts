@@ -220,7 +220,7 @@ describe('Employee - Child documents', () => {
     await page.close()
 
     // Admin tries to open the document in edit mode too soon
-    page = await Page.open({ mockedTime: now.addMinutes(5) })
+    page = await Page.open({ mockedTime: now.addMinutes(3) })
     await employeeLogin(page, admin)
     await page.goto(
       `${config.employeeUrl}/child-information/${childFixture.id}`
@@ -237,7 +237,7 @@ describe('Employee - Child documents', () => {
     await page.close()
 
     // Admin opens the document in edit mode after lock expires
-    page = await Page.open({ mockedTime: now.addMinutes(20) })
+    page = await Page.open({ mockedTime: now.addMinutes(6) })
     await employeeLogin(page, admin)
     await page.goto(
       `${config.employeeUrl}/child-information/${childFixture.id}`

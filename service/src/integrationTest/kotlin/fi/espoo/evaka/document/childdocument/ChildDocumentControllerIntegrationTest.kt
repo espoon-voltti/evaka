@@ -572,85 +572,85 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertTrue(lock.lockTakenSuccessfully)
         assertEquals(employeeUser.id, lock.currentLock.modifiedBy)
         assertEquals(
-            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 15)),
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 5)),
             lock.currentLock.opensAt
         )
 
-        // user 1 updates document and re-takes a lock at 11:05
+        // user 1 updates document and re-takes a lock at 11:02
         controller.updateDocumentContent(
             dbInstance(),
             employeeUser,
-            MockEvakaClock(2022, 1, 1, 11, 5),
+            MockEvakaClock(2022, 1, 1, 11, 2),
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
         )
 
-        // user 1 updates document at 11:30, which extends the expired lock as no one else has taken
+        // user 1 updates document at 11:20, which extends the expired lock as no one else has taken
         // it in between
         controller.updateDocumentContent(
             dbInstance(),
             employeeUser,
-            MockEvakaClock(2022, 1, 1, 11, 30),
+            MockEvakaClock(2022, 1, 1, 11, 20),
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello2")))
         )
 
-        // user 2 tries to take a lock at 11:35, which is not yet possible
+        // user 2 tries to take a lock at 11:22, which is not yet possible
         lock =
             controller.takeDocumentWriteLock(
                 dbInstance(),
                 unitSupervisorUser,
-                MockEvakaClock(2022, 1, 1, 11, 35),
+                MockEvakaClock(2022, 1, 1, 11, 22),
                 documentId
             )
         assertFalse(lock.lockTakenSuccessfully)
         assertEquals(employeeUser.id, lock.currentLock.modifiedBy)
         assertEquals(
-            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 45)),
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 25)),
             lock.currentLock.opensAt
         )
 
-        // user 2 tries to update the document without owning the lock, which fails
+        // user 2 tries to update the document at 11:22 without owning the lock, which fails
         assertThrows<Conflict> {
             controller.updateDocumentContent(
                 dbInstance(),
                 unitSupervisorUser,
-                MockEvakaClock(2022, 1, 1, 11, 37),
+                MockEvakaClock(2022, 1, 1, 11, 22),
                 documentId,
                 DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello3")))
             )
         }
 
-        // user 2 takes a lock at 11:50
+        // user 2 takes a lock at 11:27
         lock =
             controller.takeDocumentWriteLock(
                 dbInstance(),
                 unitSupervisorUser,
-                MockEvakaClock(2022, 1, 1, 11, 50),
+                MockEvakaClock(2022, 1, 1, 11, 27),
                 documentId
             )
         assertTrue(lock.lockTakenSuccessfully)
         assertEquals(unitSupervisorUser.id, lock.currentLock.modifiedBy)
         assertEquals(
-            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(12, 5)),
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 32)),
             lock.currentLock.opensAt
         )
 
-        // user 2 updates the document at 11:55
+        // user 2 updates the document at 11:28
         controller.updateDocumentContent(
             dbInstance(),
             unitSupervisorUser,
-            MockEvakaClock(2022, 1, 1, 11, 55),
+            MockEvakaClock(2022, 1, 1, 11, 28),
             documentId,
             DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello4")))
         )
 
-        // user 1 cannot update the document at 12:00
+        // user 1 cannot update the document at 11:30
         assertThrows<Conflict> {
             controller.updateDocumentContent(
                 dbInstance(),
                 employeeUser,
-                MockEvakaClock(2022, 1, 1, 12, 0),
+                MockEvakaClock(2022, 1, 1, 11, 30),
                 documentId,
                 DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello5")))
             )

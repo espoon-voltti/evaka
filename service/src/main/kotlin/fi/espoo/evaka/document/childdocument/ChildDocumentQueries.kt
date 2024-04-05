@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
-const val lockMinutes = 15
+const val lockMinutes = 5
 
 fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest,

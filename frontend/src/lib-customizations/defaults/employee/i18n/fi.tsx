@@ -826,6 +826,7 @@ export const fi = {
         COMPLETED: 'Valmis'
       },
       editor: {
+        lockedErrorTitle: 'Asiakirja on tilapäisesti lukittu',
         lockedError:
           'Toinen käyttäjä muokkaa asiakirjaa. Yritä myöhemmin uudelleen.',
         lockedErrorDetailed: (modifiedByName: string, opensAt: string) =>
