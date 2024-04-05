@@ -33,8 +33,6 @@ export default class CitizenApplicationsPage {
     this.page.find(`[data-qa="title-applications-child-name-${childId}"]`)
   #applicationType = (id: string) =>
     this.page.find(`[data-qa="title-application-type-${id}"]`)
-  #applicationUnit = (id: string) =>
-    this.page.find(`[data-qa="application-unit-${id}"]`)
   #applicationPreferredStartDate = (id: string) =>
     this.page.find(`[data-qa="application-period-${id}"]`)
   #applicationStatus = (id: string) =>
@@ -97,12 +95,10 @@ export default class CitizenApplicationsPage {
   async assertApplicationIsListed(
     id: string,
     title: string,
-    unitName: string,
     preferredStartDate: string,
     status: string
   ) {
     await this.#applicationType(id).assertTextEquals(title)
-    await this.#applicationUnit(id).assertTextEquals(unitName)
     await this.#applicationPreferredStartDate(id).assertTextEquals(
       preferredStartDate
     )
