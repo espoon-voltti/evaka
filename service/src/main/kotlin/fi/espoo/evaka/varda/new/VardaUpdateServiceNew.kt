@@ -202,7 +202,10 @@ class VardaUpdater(
                                         listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                                 )
                             },
-                        maksutiedot = evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
+                        maksutiedot =
+                            // If lapsi.paos_organisaatio_oid is null, we'll get the fee data for
+                            // municipal daycare
+                            evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
                     )
                 }
         )
