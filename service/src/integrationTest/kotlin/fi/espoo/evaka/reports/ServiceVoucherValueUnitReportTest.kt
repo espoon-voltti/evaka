@@ -1315,8 +1315,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             )
 
         // 25.3. lock report
-        // TODO: Should be something else
         // refund 6.-31. -1213,36
+        // correction 6.-20. 674,09
         // correction 21.-31. 539,27
         db.transaction {
             freezeVoucherValueReportRows(
@@ -1327,7 +1327,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             )
         }
         val marReport = getUnitReport(testDaycare.id, 2024, 3)
-        assertEquals(2, marReport.count { it.realizedPeriod.overlaps(range) })
+        assertEquals(3, marReport.count { it.realizedPeriod.overlaps(range) })
         marReport.assertContainsRow(
             type = REFUND,
             periodStart = LocalDate.of(2024, 1, 6),
@@ -1335,6 +1335,14 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             value = 148300,
             finalCoPayment = 0,
             realizedValue = -121336
+        )
+        marReport.assertContainsRow(
+            type = CORRECTION,
+            periodStart = LocalDate.of(2024, 1, 6),
+            periodEnd = LocalDate.of(2024, 1, 20),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = 67409
         )
         marReport.assertContainsRow(
             type = CORRECTION,
