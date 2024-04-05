@@ -134,7 +134,7 @@ WHERE
 UNION ALL
 
 SELECT
-    daterange(vvd.valid_from, vvd.valid_to) * ${bind(range)} AS valid_during,
+    daterange(vvd.valid_from, vvd.valid_to, '[]') * ${bind(range)} AS valid_during,
     vvd.head_of_family_id,
     vvd.partner_id,
     vvd.placement_type,
