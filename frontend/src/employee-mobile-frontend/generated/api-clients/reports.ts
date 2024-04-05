@@ -26,6 +26,7 @@ import { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import { JsonOf } from 'lib-common/json'
 import { ManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { ManualDuplicationReportViewMode } from 'lib-common/generated/api-types/reports'
+import { MealReportData } from 'lib-common/generated/api-types/reports'
 import { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import { MissingServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import { NonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
@@ -55,6 +56,7 @@ import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/genera
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonNonSsnChildrenReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonPlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
@@ -409,6 +411,27 @@ export async function getManualDuplicationReport(
     params
   })
   return json.map(e => deserializeJsonManualDuplicationReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.MealReportController.getMealReportByUnit
+*/
+export async function getMealReportByUnit(
+  request: {
+    unitId: UUID,
+    date: LocalDate
+  }
+): Promise<MealReportData> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<MealReportData>>({
+    url: uri`/reports/meal/${request.unitId}`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonMealReportData(json)
 }
 
 

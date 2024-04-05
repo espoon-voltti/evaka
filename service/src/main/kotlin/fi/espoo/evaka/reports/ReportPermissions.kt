@@ -44,7 +44,8 @@ enum class Report {
     STARTING_PLACEMENTS,
     UNITS,
     VARDA_ERRORS,
-    FUTURE_PRESCHOOLERS
+    FUTURE_PRESCHOOLERS,
+    MEALS
 }
 
 @RestController
@@ -194,6 +195,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     },
                     Report.FUTURE_PRESCHOOLERS.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_FUTURE_PRESCHOOLERS)
+                    },
+                    Report.MEALS.takeIf {
+                        permittedActionsForSomeUnit.contains(Action.Unit.READ_MEAL_REPORT)
                     }
                 )
             }

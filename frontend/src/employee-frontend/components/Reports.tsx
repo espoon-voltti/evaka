@@ -32,7 +32,8 @@ import {
   faMoneyBillWave,
   faPercentage,
   faUserAltSlash,
-  faUsers
+  faUsers,
+  faUtensils
 } from 'lib-icons'
 
 import { getPermittedReports } from '../generated/api-clients/reports'
@@ -303,6 +304,15 @@ export default React.memo(function Reports() {
                 icon={faCar}
                 i18n={i18n.reports.attendanceReservationByChild}
                 data-qa="report-attendance-reservation-by-child"
+              />
+            )}
+            {reports.has('MEALS') && (
+              <Report
+                path="/reports/meals"
+                color={colors.main.m2}
+                icon={faUtensils}
+                i18n={i18n.reports.meals}
+                data-qa="report-attendance-reservation"
               />
             )}
             {reports.has('SEXTET') && (

@@ -11,6 +11,7 @@ import {
   getFamilyContactsReport,
   getFuturePreschoolersGroupsReport,
   getFuturePreschoolersReport,
+  getMealReportByUnit,
   getMissingHeadOfFamilyReport,
   getNonSsnChildrenReportRows,
   getOccupancyGroupReport,
@@ -55,7 +56,11 @@ const queryKeys = createQueryKeys('reports', {
   vardaErrors: () => ['vardaErrors'],
   futurePreschoolers: () => ['futurePreschoolers'],
   futurePreschoolersGroups: () => ['futurePreschoolersGroups'],
-  units: () => ['units']
+  units: () => ['units'],
+  mealReportByUnit: (filters: Arg0<typeof getMealReportByUnit>) => [
+    'mealReportByUnit',
+    filters
+  ]
 })
 
 export const exceededServiceNeedReportUnitsQuery = query({
@@ -136,4 +141,9 @@ export const preschoolGroupsQuery = query({
 export const unitsReportQuery = query({
   api: getUnitsReport,
   queryKey: queryKeys.units
+})
+
+export const mealReportByUnitQuery = query({
+  api: getMealReportByUnit,
+  queryKey: queryKeys.mealReportByUnit
 })

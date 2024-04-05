@@ -445,6 +445,37 @@ export type ManualDuplicationReportViewMode =
   | 'NONDUPLICATED'
 
 /**
+* Generated from fi.espoo.evaka.reports.MealReportData
+*/
+export interface MealReportData {
+  date: LocalDate
+  meals: MealReportRow[]
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.MealReportRow
+*/
+export interface MealReportRow {
+  additionalInfo: string | null
+  dietId: number | null
+  mealCount: number
+  mealId: number
+  mealType: MealType
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.MealType
+*/
+export type MealType =
+  | 'BREAKFAST'
+  | 'LUNCH'
+  | 'LUNCH_PRESCHOOL'
+  | 'SNACK'
+  | 'SUPPER'
+  | 'EVENING_SNACK'
+
+/**
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
@@ -720,6 +751,7 @@ export type Report =
   | 'UNITS'
   | 'VARDA_ERRORS'
   | 'FUTURE_PRESCHOOLERS'
+  | 'MEALS'
 
 /**
 * Generated from fi.espoo.evaka.reports.ServiceNeedReportRow
@@ -936,6 +968,14 @@ export function deserializeJsonManualDuplicationReportRow(json: JsonOf<ManualDup
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     preschoolEndDate: LocalDate.parseIso(json.preschoolEndDate),
     preschoolStartDate: LocalDate.parseIso(json.preschoolStartDate)
+  }
+}
+
+
+export function deserializeJsonMealReportData(json: JsonOf<MealReportData>): MealReportData {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
   }
 }
 
