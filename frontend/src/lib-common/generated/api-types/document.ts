@@ -200,6 +200,14 @@ export type DocumentLanguage =
   | 'SV'
 
 /**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.DocumentLockResponse
+*/
+export interface DocumentLockResponse {
+  currentLock: DocumentWriteLock
+  lockTakenSuccessfully: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.document.childdocument.DocumentStatus
 */
 export type DocumentStatus =
@@ -265,6 +273,15 @@ export const documentTypes = [
 ] as const
 
 export type DocumentType = typeof documentTypes[number]
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.DocumentWriteLock
+*/
+export interface DocumentWriteLock {
+  modifiedBy: UUID
+  modifiedByName: string
+  opensAt: HelsinkiDateTime
+}
 
 /**
 * Generated from fi.espoo.evaka.document.ExportedDocumentTemplate
@@ -492,6 +509,14 @@ export function deserializeJsonDocumentContent(json: JsonOf<DocumentContent>): D
 }
 
 
+export function deserializeJsonDocumentLockResponse(json: JsonOf<DocumentLockResponse>): DocumentLockResponse {
+  return {
+    ...json,
+    currentLock: deserializeJsonDocumentWriteLock(json.currentLock)
+  }
+}
+
+
 export function deserializeJsonDocumentTemplate(json: JsonOf<DocumentTemplate>): DocumentTemplate {
   return {
     ...json,
@@ -512,6 +537,14 @@ export function deserializeJsonDocumentTemplateSummary(json: JsonOf<DocumentTemp
   return {
     ...json,
     validity: DateRange.parseJson(json.validity)
+  }
+}
+
+
+export function deserializeJsonDocumentWriteLock(json: JsonOf<DocumentWriteLock>): DocumentWriteLock {
+  return {
+    ...json,
+    opensAt: HelsinkiDateTime.parseIso(json.opensAt)
   }
 }
 

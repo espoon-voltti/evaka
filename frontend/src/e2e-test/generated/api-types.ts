@@ -362,6 +362,8 @@ export interface DevChildAttendance {
 export interface DevChildDocument {
   childId: UUID
   content: DocumentContent
+  contentModifiedAt: HelsinkiDateTime
+  contentModifiedBy: UUID | null
   id: UUID
   modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
@@ -1171,6 +1173,7 @@ export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>):
   return {
     ...json,
     content: deserializeJsonDocumentContent(json.content),
+    contentModifiedAt: HelsinkiDateTime.parseIso(json.contentModifiedAt),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
     publishedContent: (json.publishedContent != null) ? deserializeJsonDocumentContent(json.publishedContent) : null

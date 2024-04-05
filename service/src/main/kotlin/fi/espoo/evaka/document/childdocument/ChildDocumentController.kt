@@ -37,7 +37,7 @@ class ChildDocumentController(
     @PostMapping
     fun createDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ChildDocumentCreateRequest
     ): ChildDocumentId {
@@ -66,7 +66,7 @@ class ChildDocumentController(
                         throw Conflict("Child already has incomplete document of the same template")
                     }
 
-                    tx.insertChildDocument(body, clock.now())
+                    tx.insertChildDocument(body, clock.now(), user.id)
                 }
             }
             .also { Audit.ChildDocumentCreate.log(targetId = it) }
@@ -75,7 +75,7 @@ class ChildDocumentController(
     @GetMapping
     fun getDocuments(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam childId: PersonId
     ): List<ChildDocumentSummaryWithPermittedActions> {
@@ -120,7 +120,7 @@ class ChildDocumentController(
     @GetMapping("/{documentId}")
     fun getDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ): ChildDocumentWithPermittedActions {
@@ -159,7 +159,7 @@ class ChildDocumentController(
     @PutMapping("/{documentId}/content")
     fun updateDocumentContent(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: DocumentContent
@@ -182,10 +182,59 @@ class ChildDocumentController(
 
                     validateContentAgainstTemplate(body, document.template.content)
 
-                    tx.updateChildDocumentContent(documentId, document.status, body, clock.now())
+                    tx.getCurrentWriteLock(documentId, clock.now())?.also { lock ->
+                        if (lock.modifiedBy != user.id) {
+                            throw Conflict(
+                                message = "Did not own the lock on the document",
+                                errorCode = "invalid-lock"
+                            )
+                        }
+                    }
+
+                    tx.updateChildDocumentContent(
+                        documentId,
+                        document.status,
+                        body,
+                        clock.now(),
+                        user.id
+                    )
                 }
                 .also { Audit.ChildDocumentUpdateContent.log(targetId = documentId) }
         }
+    }
+
+    data class DocumentLockResponse(
+        val lockTakenSuccessfully: Boolean,
+        val currentLock: DocumentWriteLock
+    )
+
+    @PutMapping("/{documentId}/lock")
+    fun takeDocumentWriteLock(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId
+    ): DocumentLockResponse {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.UPDATE,
+                        documentId
+                    )
+                    val success = tx.tryTakeWriteLock(documentId, clock.now(), user.id)
+                    val currentLock =
+                        tx.getCurrentWriteLock(documentId, clock.now())
+                            ?: throw IllegalStateException("lock should exist now")
+                    DocumentLockResponse(
+                        lockTakenSuccessfully = success && currentLock.modifiedBy == user.id,
+                        currentLock = currentLock
+                    )
+                }
+            }
+            .also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = documentId) }
     }
 
     private fun validateContentAgainstTemplate(
@@ -321,7 +370,7 @@ class ChildDocumentController(
                 }
             }
             .also {
-                Audit.ChildDocumentNextStatus.log(targetId = documentId, objectId = body.newStatus)
+                Audit.ChildDocumentPrevStatus.log(targetId = documentId, objectId = body.newStatus)
             }
     }
 

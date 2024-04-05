@@ -826,6 +826,11 @@ export const fi = {
         COMPLETED: 'Valmis'
       },
       editor: {
+        lockedErrorTitle: 'Asiakirja on tilapäisesti lukittu',
+        lockedError:
+          'Toinen käyttäjä muokkaa asiakirjaa. Yritä myöhemmin uudelleen.',
+        lockedErrorDetailed: (modifiedByName: string, opensAt: string) =>
+          `Käyttäjä ${modifiedByName} on muokkaamassa asiakirjaa. Asiakirjan lukitus vapautuu ${opensAt} mikäli muokkaamista ei jatketa. Yritä myöhemmin uudelleen.`,
         preview: 'Esikatsele',
         publish: 'Julkaise huoltajalle',
         publishConfirmTitle: 'Haluatko varmasti julkaista huoltajalle?',

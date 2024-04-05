@@ -9,6 +9,7 @@ import { ChildDocumentCreateRequest } from 'lib-common/generated/api-types/docum
 import { ChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { ChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
+import { DocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { DocumentTemplate } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateBasicsRequest } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
@@ -22,6 +23,7 @@ import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildDocumentSummaryWithPermittedActions } from 'lib-common/generated/api-types/document'
 import { deserializeJsonChildDocumentWithPermittedActions } from 'lib-common/generated/api-types/document'
+import { deserializeJsonDocumentLockResponse } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { deserializeJsonDocumentTemplateSummary } from 'lib-common/generated/api-types/document'
 import { deserializeJsonExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
@@ -348,6 +350,22 @@ export async function publishDocument(
     method: 'PUT'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.takeDocumentWriteLock
+*/
+export async function takeDocumentWriteLock(
+  request: {
+    documentId: UUID
+  }
+): Promise<DocumentLockResponse> {
+  const { data: json } = await client.request<JsonOf<DocumentLockResponse>>({
+    url: uri`/child-documents/${request.documentId}/lock`.toString(),
+    method: 'PUT'
+  })
+  return deserializeJsonDocumentLockResponse(json)
 }
 
 

@@ -2239,6 +2239,8 @@ data class DevChildDocument(
     @Json val content: DocumentContent,
     @Json val publishedContent: DocumentContent?,
     val modifiedAt: HelsinkiDateTime,
+    val contentModifiedAt: HelsinkiDateTime,
+    val contentModifiedBy: EmployeeId?,
     val publishedAt: HelsinkiDateTime?
 )
 

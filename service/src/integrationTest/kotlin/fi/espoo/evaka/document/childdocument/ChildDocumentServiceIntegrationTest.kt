@@ -118,6 +118,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = null,
                     modifiedAt = clock.now(),
+                    contentModifiedAt = clock.now(),
+                    contentModifiedBy = null,
                     publishedAt = null
                 )
             )
@@ -130,6 +132,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = updatedContent,
                     modifiedAt = clock.now(),
+                    contentModifiedAt = clock.now(),
+                    contentModifiedBy = null,
                     publishedAt =
                         HelsinkiDateTime.Companion.of(
                             clock.today().minusMonths(1),
@@ -146,6 +150,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = updatedContent,
                     modifiedAt = clock.now().minusMonths(1),
+                    contentModifiedAt = clock.now().minusMonths(1),
+                    contentModifiedBy = null,
                     publishedAt = clock.now().minusMonths(1)
                 )
             )
@@ -189,6 +195,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     content = content,
                     publishedContent = content,
                     modifiedAt = clock.now(),
+                    contentModifiedAt = clock.now(),
+                    contentModifiedBy = null,
                     publishedAt =
                         HelsinkiDateTime.Companion.of(
                             clock.today().minusMonths(1),

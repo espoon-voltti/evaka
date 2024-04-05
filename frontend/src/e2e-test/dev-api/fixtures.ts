@@ -2187,6 +2187,8 @@ export class Fixture {
       templateId: 'not_set',
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),
+      contentModifiedAt: HelsinkiDateTime.now(),
+      contentModifiedBy: null,
       publishedAt: null,
       content: {
         answers: [

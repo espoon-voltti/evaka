@@ -34,7 +34,10 @@ import UnitPage from './components/UnitPage'
 import Units from './components/Units'
 import WelcomePage from './components/WelcomePage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
-import ChildDocumentEditor from './components/child-documents/ChildDocumentEditor'
+import {
+  ChildDocumentEditView,
+  ChildDocumentReadView
+} from './components/child-documents/ChildDocumentEditor'
 import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
 import AssistanceNeedPreschoolDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedPreschoolDecisionEditPage'
@@ -887,7 +890,15 @@ export default createBrowserRouter(
           path: '/child-documents/:documentId',
           element: (
             <EmployeeRoute>
-              <ChildDocumentEditor />
+              <ChildDocumentReadView />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/child-documents/:documentId/edit',
+          element: (
+            <EmployeeRoute>
+              <ChildDocumentEditView />
             </EmployeeRoute>
           )
         },

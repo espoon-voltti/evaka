@@ -109,6 +109,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     content = documentContent,
                     publishedContent = null,
                     modifiedAt = clock.now(),
+                    contentModifiedAt = clock.now(),
+                    contentModifiedBy = employeeUser.id,
                     publishedAt = null
                 )
             )

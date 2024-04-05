@@ -17,10 +17,13 @@ import React, {
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { combine } from 'lib-common/api'
 import { useForm } from 'lib-common/form/hooks'
 import {
+  ChildDocumentDetails,
   ChildDocumentWithPermittedActions,
-  DocumentContent
+  DocumentContent,
+  DocumentWriteLock
 } from 'lib-common/generated/api-types/document'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
@@ -41,6 +44,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -52,6 +56,7 @@ import {
   childDocumentNextStatusMutation,
   childDocumentPrevStatusMutation,
   childDocumentQuery,
+  childDocumentWriteLockQuery,
   deleteChildDocumentMutation,
   publishChildDocumentMutation,
   queryKeys,
@@ -71,189 +76,203 @@ const ActionBar = styled.div`
   padding: ${defaultMargins.s} 0;
 `
 
-const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
-  documentAndPermissions,
+const DocumentBasics = React.memo(function DocumentBasics({
+  document
+}: {
+  document: ChildDocumentDetails
+}) {
+  const { i18n } = useTranslation()
+
+  return (
+    <FixedSpaceRow justifyContent="space-between" alignItems="center">
+      <FixedSpaceColumn>
+        <H1 noMargin>{document.template.name}</H1>
+        <H2 noMargin>
+          {document.child.firstName} {document.child.lastName} (
+          {document.child.dateOfBirth?.format()})
+        </H2>
+      </FixedSpaceColumn>
+      <FixedSpaceColumn
+        spacing="xxs"
+        justifyContent="start"
+        alignItems="flex-end"
+      >
+        <ChildDocumentStateChip status={document.status} />
+        {document.template.confidential && (
+          <strong>{i18n.documentTemplates.templateEditor.confidential}</strong>
+        )}
+        {!!document.template.legalBasis && (
+          <span>{document.template.legalBasis}</span>
+        )}
+      </FixedSpaceColumn>
+    </FixedSpaceRow>
+  )
+})
+
+const ConcurrentEditWarning = React.memo(function ConcurrentEditWarning({
+  currentLock,
+  documentId,
   childIdFromUrl
 }: {
-  documentAndPermissions: ChildDocumentWithPermittedActions
+  currentLock?: DocumentWriteLock
+  documentId: UUID
   childIdFromUrl: UUID | null
 }) {
-  const { data: document, permittedActions } = documentAndPermissions
   const { i18n } = useTranslation()
-  const { setTitle } = useContext<TitleState>(TitleContext)
-  useEffect(
-    () => setTitle(document.template.name, true),
-    [document.template.name, setTitle]
-  )
   const navigate = useNavigate()
-  const bind = useForm(
-    documentForm,
+
+  const errorText = currentLock
+    ? i18n.childInformation.childDocuments.editor.lockedErrorDetailed(
+        currentLock.modifiedByName,
+        currentLock.opensAt.toLocalTime().format()
+      )
+    : i18n.childInformation.childDocuments.editor.lockedError
+
+  const onClose = useCallback(
     () =>
-      getDocumentFormInitialState(document.template.content, document.content),
-    i18n.validationErrors
-  )
-  const [editMode, setEditMode] = useState(false)
-  const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
-  const [lastSavedContent, setLastSavedContent] = useState(document.content)
-  const { mutateAsync: updateChildDocumentContent, isPending: submitting } =
-    useMutationResult(updateChildDocumentContentMutation)
-
-  // invalidate cached document on onmount
-  const queryClient = useQueryClient()
-  useEffect(
-    () => () => {
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.childDocument(document.id),
-        type: 'all'
-      })
-    },
-    [queryClient, document.id]
-  )
-
-  const save = useCallback(
-    async (content: DocumentContent) => {
-      const result = await updateChildDocumentContent({
-        documentId: document.id,
-        body: content
-      })
-      if (result.isSuccess) {
-        setLastSaved(HelsinkiDateTime.now())
-        setLastSavedContent(content)
-      }
-    },
-    [updateChildDocumentContent, document.id]
-  )
-
-  const saved = useMemo(
-    () => bind.isValid() && isEqual(lastSavedContent, bind.value()),
-    [bind, lastSavedContent]
-  )
-
-  const debouncedValidContent = useDebounce(
-    bind.isValid() ? bind.value() : null,
-    1000
-  )
-
-  useEffect(() => {
-    if (
-      editMode &&
-      debouncedValidContent !== null &&
-      !isEqual(lastSavedContent, debouncedValidContent) &&
-      !submitting
-    ) {
-      void save(debouncedValidContent)
-    }
-  }, [editMode, debouncedValidContent, lastSavedContent, save, submitting])
-
-  const goBack = () =>
-    navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
-
-  const nextStatus = useMemo(
-    () => getNextDocumentStatus(document.template.type, document.status),
-    [document.template.type, document.status]
-  )
-  const prevStatus = useMemo(
-    () => getPrevDocumentStatus(document.template.type, document.status),
-    [document.template.type, document.status]
-  )
-
-  const publishedUpToDate = useMemo(
-    () =>
-      document.publishedContent !== null &&
-      isEqual(document.publishedContent, lastSavedContent),
-    [document.publishedContent, lastSavedContent]
+      navigate(
+        `/child-documents/${documentId}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+      ),
+    [navigate, documentId, childIdFromUrl]
   )
 
   return (
-    <div>
-      <Container>
-        <ContentArea opaque>
-          <FixedSpaceRow justifyContent="space-between" alignItems="center">
-            <FixedSpaceColumn>
-              <H1 noMargin>{document.template.name}</H1>
-              <H2 noMargin>
-                {document.child.firstName} {document.child.lastName} (
-                {document.child.dateOfBirth?.format()})
-              </H2>
-            </FixedSpaceColumn>
-            <FixedSpaceColumn
-              spacing="xxs"
-              justifyContent="start"
-              alignItems="flex-end"
-            >
-              <ChildDocumentStateChip status={document.status} />
-              {document.template.confidential && (
-                <strong>
-                  {i18n.documentTemplates.templateEditor.confidential}
-                </strong>
-              )}
-              {!!document.template.legalBasis && (
-                <span>{document.template.legalBasis}</span>
-              )}
-            </FixedSpaceColumn>
-          </FixedSpaceRow>
-          <Gap size="XXL" />
-          <DocumentView bind={bind} readOnly={!editMode} />
-        </ContentArea>
-      </Container>
+    <InfoModal
+      data-qa="concurrent-edit-error-modal"
+      type="warning"
+      title={i18n.childInformation.childDocuments.editor.lockedErrorTitle}
+      text={errorText}
+      close={onClose}
+      closeLabel={i18n.common.close}
+      resolve={{
+        action: onClose,
+        label: i18n.common.close
+      }}
+    />
+  )
+})
 
-      <ActionBar>
+const ChildDocumentEditViewInner = React.memo(
+  function ChildDocumentEditViewInner({
+    document,
+    childIdFromUrl
+  }: {
+    document: ChildDocumentDetails
+    childIdFromUrl: UUID | null
+  }) {
+    const { i18n } = useTranslation()
+    const navigate = useNavigate()
+    const { setTitle } = useContext<TitleState>(TitleContext)
+    useEffect(
+      () => setTitle(document.template.name, true),
+      [document.template.name, setTitle]
+    )
+
+    const bind = useForm(
+      documentForm,
+      () =>
+        getDocumentFormInitialState(
+          document.template.content,
+          document.content
+        ),
+      i18n.validationErrors
+    )
+
+    const [lastSaved, setLastSaved] = useState(HelsinkiDateTime.now())
+    const [lastSavedContent, setLastSavedContent] = useState(document.content)
+    const [lockError, setLockError] = useState(false)
+
+    const { mutateAsync: updateChildDocumentContent, isPending: submitting } =
+      useMutationResult(updateChildDocumentContentMutation)
+
+    // invalidate cached document on unmount
+    const queryClient = useQueryClient()
+    useEffect(
+      () => () => {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.childDocument(document.id),
+          type: 'all'
+        })
+      },
+      [queryClient, document.id]
+    )
+
+    const save = useCallback(
+      async (content: DocumentContent) => {
+        const result = await updateChildDocumentContent({
+          documentId: document.id,
+          body: content
+        })
+        if (result.isSuccess) {
+          setLastSaved(HelsinkiDateTime.now())
+          setLastSavedContent(content)
+        } else {
+          if (result.isFailure && result.errorCode === 'invalid-lock') {
+            setLockError(true)
+          }
+        }
+      },
+      [updateChildDocumentContent, document.id]
+    )
+
+    const saved = useMemo(
+      () => bind.isValid() && isEqual(lastSavedContent, bind.value()),
+      [bind, lastSavedContent]
+    )
+
+    const debouncedValidContent = useDebounce(
+      bind.isValid() ? bind.value() : null,
+      1000
+    )
+
+    useEffect(() => {
+      if (
+        !lockError &&
+        debouncedValidContent !== null &&
+        !isEqual(lastSavedContent, debouncedValidContent) &&
+        !submitting
+      ) {
+        void save(debouncedValidContent)
+      }
+    }, [lockError, debouncedValidContent, lastSavedContent, save, submitting])
+
+    const goBack = () =>
+      navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
+
+    if (lockError) {
+      return (
+        <ConcurrentEditWarning
+          documentId={document.id}
+          childIdFromUrl={childIdFromUrl}
+        />
+      )
+    }
+
+    return (
+      <div>
         <Container>
-          <FixedSpaceRow justifyContent="space-between" alignItems="center">
-            <FixedSpaceRow alignItems="center">
-              <Button
-                text={i18n.common.goBack}
-                onClick={goBack}
-                // disable while debounce is pending to avoid leaving before saving
-                disabled={
-                  bind.isValid() &&
-                  !isEqual(bind.value(), debouncedValidContent)
-                }
-                data-qa="return-button"
-              />
+          <ContentArea opaque>
+            <DocumentBasics document={document} />
+            <Gap size="XXL" />
+            <DocumentView bind={bind} readOnly={false} />
+          </ContentArea>
+        </Container>
 
-              {!editMode &&
-                permittedActions.includes('DELETE') &&
-                document.status === 'DRAFT' && (
-                  <ConfirmedMutation
-                    buttonText={
-                      i18n.childInformation.childDocuments.editor.deleteDraft
-                    }
-                    mutation={deleteChildDocumentMutation}
-                    onClick={() => ({
-                      documentId: document.id,
-                      childId: document.child.id
-                    })}
-                    onSuccess={goBack}
-                    confirmationTitle={
-                      i18n.childInformation.childDocuments.editor
-                        .deleteDraftConfirmTitle
-                    }
-                  />
-                )}
-              {!editMode &&
-                permittedActions.includes('PREV_STATUS') &&
-                prevStatus != null && (
-                  <ConfirmedMutation
-                    buttonText={
-                      i18n.childInformation.childDocuments.editor
-                        .goToPrevStatus[prevStatus]
-                    }
-                    mutation={childDocumentPrevStatusMutation}
-                    onClick={() => ({
-                      documentId: document.id,
-                      childId: document.child.id,
-                      body: {
-                        newStatus: prevStatus
-                      }
-                    })}
-                    confirmationTitle={
-                      i18n.childInformation.childDocuments.editor
-                        .goToPrevStatusConfirmTitle[prevStatus]
-                    }
-                  />
-                )}
-              {editMode && (
+        <ActionBar>
+          <Container>
+            <FixedSpaceRow justifyContent="space-between" alignItems="center">
+              <FixedSpaceRow alignItems="center">
+                <Button
+                  text={i18n.common.goBack}
+                  onClick={goBack}
+                  // disable while debounce is pending to avoid leaving before saving
+                  disabled={
+                    bind.isValid() &&
+                    !isEqual(bind.value(), debouncedValidContent)
+                  }
+                  data-qa="return-button"
+                />
+
                 <FixedSpaceRow alignItems="center" spacing="xs">
                   <span>
                     {i18n.common.saved}{' '}
@@ -267,136 +286,299 @@ const ChildDocumentEditorView = React.memo(function ChildDocumentEditorView({
                     <Spinner size={defaultMargins.m} data-qa="saving-spinner" />
                   )}
                 </FixedSpaceRow>
-              )}
-            </FixedSpaceRow>
-
-            <FixedSpaceRow>
-              {!editMode &&
-                permittedActions.includes('UPDATE') &&
-                document.status !== 'COMPLETED' && (
-                  <Button
-                    text={i18n.common.edit}
-                    onClick={() => setEditMode(true)}
-                    data-qa="edit-button"
-                  />
-                )}
-              {editMode && (
-                <Button
-                  text={i18n.childInformation.childDocuments.editor.preview}
-                  primary
-                  onClick={() => setEditMode(false)}
-                  disabled={!saved}
-                  data-qa="preview-button"
-                />
-              )}
-              {!editMode &&
-                permittedActions.includes('PUBLISH') &&
-                document.status !== 'COMPLETED' && (
-                  <ConfirmedMutation
-                    buttonText={
-                      i18n.childInformation.childDocuments.editor.publish
-                    }
-                    mutation={publishChildDocumentMutation}
-                    onClick={() => ({
-                      documentId: document.id,
-                      childId: document.child.id
-                    })}
-                    confirmationTitle={
-                      i18n.childInformation.childDocuments.editor
-                        .publishConfirmTitle
-                    }
-                    confirmationText={
-                      i18n.childInformation.childDocuments.editor
-                        .publishConfirmText
-                    }
-                    data-qa="publish-button"
-                  />
-                )}
-              {!editMode &&
-                permittedActions.includes('NEXT_STATUS') &&
-                nextStatus != null && (
-                  <ConfirmedMutation
-                    buttonText={
-                      i18n.childInformation.childDocuments.editor
-                        .goToNextStatus[nextStatus]
-                    }
-                    primary
-                    mutation={childDocumentNextStatusMutation}
-                    onClick={() => ({
-                      documentId: document.id,
-                      childId: document.child.id,
-                      body: {
-                        newStatus: nextStatus
-                      }
-                    })}
-                    confirmationTitle={
-                      i18n.childInformation.childDocuments.editor
-                        .goToNextStatusConfirmTitle[nextStatus]
-                    }
-                    confirmationText={
-                      nextStatus === 'COMPLETED'
-                        ? i18n.childInformation.childDocuments.editor
-                            .goToCompletedConfirmText
-                        : i18n.childInformation.childDocuments.editor
-                            .publishConfirmText
-                    }
-                    data-qa="next-status-button"
-                  />
-                )}
-            </FixedSpaceRow>
-          </FixedSpaceRow>
-          {!editMode && (
-            <>
-              <Gap size="s" />
-              <FixedSpaceRow alignItems="center" justifyContent="flex-end">
-                <FixedSpaceRow alignItems="center" spacing="xs">
-                  {publishedUpToDate ? (
-                    <>
-                      <FontAwesomeIcon
-                        icon={fasCheckCircle}
-                        color={colors.status.success}
-                        size="lg"
-                      />
-                      <span>
-                        {
-                          i18n.childInformation.childDocuments.editor
-                            .fullyPublished
-                        }
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <FontAwesomeIcon
-                        icon={fasExclamationTriangle}
-                        color={colors.status.warning}
-                        size="lg"
-                      />
-                      <span>
-                        {i18n.childInformation.childDocuments.editor.notFullyPublished(
-                          document.publishedAt
-                        )}
-                      </span>
-                    </>
-                  )}
-                </FixedSpaceRow>
               </FixedSpaceRow>
-            </>
-          )}
+
+              <Button
+                text={i18n.childInformation.childDocuments.editor.preview}
+                primary
+                onClick={() =>
+                  navigate(
+                    `/child-documents/${document.id}${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+                  )
+                }
+                disabled={!saved}
+                data-qa="preview-button"
+              />
+            </FixedSpaceRow>
+          </Container>
+        </ActionBar>
+      </div>
+    )
+  }
+)
+
+export const ChildDocumentEditView = React.memo(
+  function ChildDocumentEditView() {
+    const { documentId } = useRouteParams(['documentId'])
+    const [searchParams] = useSearchParams()
+    const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
+
+    const documentResult = useQueryResult(childDocumentQuery({ documentId }))
+    const lockResult = useQueryResult(
+      childDocumentWriteLockQuery({ documentId })
+    )
+
+    return renderResult(
+      combine(documentResult, lockResult),
+      ([documentAndPermissions, lock], isReloading) => {
+        // do not initialize form with possibly stale data
+        if (isReloading) return null
+
+        if (!lock.lockTakenSuccessfully) {
+          return (
+            <ConcurrentEditWarning
+              documentId={documentId}
+              childIdFromUrl={childIdFromUrl}
+              currentLock={lock.currentLock}
+            />
+          )
+        }
+
+        return (
+          <ChildDocumentEditViewInner
+            document={documentAndPermissions.data}
+            childIdFromUrl={childIdFromUrl}
+          />
+        )
+      }
+    )
+  }
+)
+
+const ChildDocumentReadViewInner = React.memo(
+  function ChildDocumentReadViewInner({
+    documentAndPermissions,
+    childIdFromUrl
+  }: {
+    documentAndPermissions: ChildDocumentWithPermittedActions
+    childIdFromUrl: UUID | null
+  }) {
+    const { data: document, permittedActions } = documentAndPermissions
+    const { i18n } = useTranslation()
+    const navigate = useNavigate()
+    const { setTitle } = useContext<TitleState>(TitleContext)
+    useEffect(
+      () => setTitle(document.template.name, true),
+      [document.template.name, setTitle]
+    )
+
+    const bind = useForm(
+      documentForm,
+      () =>
+        getDocumentFormInitialState(
+          document.template.content,
+          document.content
+        ),
+      i18n.validationErrors
+    )
+
+    const goBack = () =>
+      navigate(`/child-information/${childIdFromUrl ?? document.child.id}`)
+
+    const nextStatus = useMemo(
+      () => getNextDocumentStatus(document.template.type, document.status),
+      [document.template.type, document.status]
+    )
+    const prevStatus = useMemo(
+      () => getPrevDocumentStatus(document.template.type, document.status),
+      [document.template.type, document.status]
+    )
+
+    const publishedUpToDate = useMemo(
+      () =>
+        document.publishedContent !== null &&
+        isEqual(document.publishedContent, document.content),
+      [document]
+    )
+
+    return (
+      <div>
+        <Container>
+          <ContentArea opaque>
+            <DocumentBasics document={document} />
+            <Gap size="XXL" />
+            <DocumentView bind={bind} readOnly={true} />
+          </ContentArea>
         </Container>
-      </ActionBar>
-    </div>
-  )
-})
 
-export default React.memo(function ChildDocumentEditor() {
-  const { documentId } = useRouteParams(['documentId'])
-  const [searchParams] = useSearchParams()
-  const documentResult = useQueryResult(childDocumentQuery({ documentId }))
+        <ActionBar>
+          <Container>
+            <FixedSpaceRow justifyContent="space-between" alignItems="center">
+              <FixedSpaceRow alignItems="center">
+                <Button
+                  text={i18n.common.goBack}
+                  onClick={goBack}
+                  data-qa="return-button"
+                />
+                {permittedActions.includes('DELETE') &&
+                  document.status === 'DRAFT' && (
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.editor.deleteDraft
+                      }
+                      mutation={deleteChildDocumentMutation}
+                      onClick={() => ({
+                        documentId: document.id,
+                        childId: document.child.id
+                      })}
+                      onSuccess={goBack}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.editor
+                          .deleteDraftConfirmTitle
+                      }
+                    />
+                  )}
+                {permittedActions.includes('PREV_STATUS') &&
+                  prevStatus != null && (
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.editor
+                          .goToPrevStatus[prevStatus]
+                      }
+                      mutation={childDocumentPrevStatusMutation}
+                      onClick={() => ({
+                        documentId: document.id,
+                        childId: document.child.id,
+                        body: {
+                          newStatus: prevStatus
+                        }
+                      })}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.editor
+                          .goToPrevStatusConfirmTitle[prevStatus]
+                      }
+                    />
+                  )}
+              </FixedSpaceRow>
 
-  return renderResult(documentResult, (documentAndPermissions) => (
-    <ChildDocumentEditorView
-      documentAndPermissions={documentAndPermissions}
-      childIdFromUrl={searchParams.get('childId')}
-    />
-  ))
-})
+              <FixedSpaceRow>
+                {permittedActions.includes('UPDATE') &&
+                  document.status !== 'COMPLETED' && (
+                    <Button
+                      text={i18n.common.edit}
+                      onClick={() =>
+                        navigate(
+                          `/child-documents/${document.id}/edit${childIdFromUrl ? `?childId=${childIdFromUrl}` : ''}`
+                        )
+                      }
+                      data-qa="edit-button"
+                    />
+                  )}
+                {permittedActions.includes('PUBLISH') &&
+                  document.status !== 'COMPLETED' && (
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.editor.publish
+                      }
+                      mutation={publishChildDocumentMutation}
+                      onClick={() => ({
+                        documentId: document.id,
+                        childId: document.child.id
+                      })}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.editor
+                          .publishConfirmTitle
+                      }
+                      confirmationText={
+                        i18n.childInformation.childDocuments.editor
+                          .publishConfirmText
+                      }
+                      data-qa="publish-button"
+                    />
+                  )}
+                {permittedActions.includes('NEXT_STATUS') &&
+                  nextStatus != null && (
+                    <ConfirmedMutation
+                      buttonText={
+                        i18n.childInformation.childDocuments.editor
+                          .goToNextStatus[nextStatus]
+                      }
+                      primary
+                      mutation={childDocumentNextStatusMutation}
+                      onClick={() => ({
+                        documentId: document.id,
+                        childId: document.child.id,
+                        body: {
+                          newStatus: nextStatus
+                        }
+                      })}
+                      confirmationTitle={
+                        i18n.childInformation.childDocuments.editor
+                          .goToNextStatusConfirmTitle[nextStatus]
+                      }
+                      confirmationText={
+                        nextStatus === 'COMPLETED'
+                          ? i18n.childInformation.childDocuments.editor
+                              .goToCompletedConfirmText
+                          : i18n.childInformation.childDocuments.editor
+                              .publishConfirmText
+                      }
+                      data-qa="next-status-button"
+                    />
+                  )}
+              </FixedSpaceRow>
+            </FixedSpaceRow>
+            <Gap size="s" />
+            <FixedSpaceRow alignItems="center" justifyContent="flex-end">
+              <FixedSpaceRow alignItems="center" spacing="xs">
+                {publishedUpToDate ? (
+                  <>
+                    <FontAwesomeIcon
+                      icon={fasCheckCircle}
+                      color={colors.status.success}
+                      size="lg"
+                    />
+                    <span>
+                      {
+                        i18n.childInformation.childDocuments.editor
+                          .fullyPublished
+                      }
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon
+                      icon={fasExclamationTriangle}
+                      color={colors.status.warning}
+                      size="lg"
+                    />
+                    <span>
+                      {i18n.childInformation.childDocuments.editor.notFullyPublished(
+                        document.publishedAt
+                      )}
+                    </span>
+                  </>
+                )}
+              </FixedSpaceRow>
+            </FixedSpaceRow>
+          </Container>
+        </ActionBar>
+      </div>
+    )
+  }
+)
+
+export const ChildDocumentReadView = React.memo(
+  function ChildDocumentReadView() {
+    const { documentId } = useRouteParams(['documentId'])
+    const [searchParams] = useSearchParams()
+    const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
+
+    const documentResult = useQueryResult(childDocumentQuery({ documentId }))
+
+    return renderResult(
+      documentResult,
+      (documentAndPermissions, isReloading) => {
+        // do not initialize form with possibly stale data
+        if (isReloading) return null
+
+        return (
+          <ChildDocumentReadViewInner
+            documentAndPermissions={documentAndPermissions}
+            childIdFromUrl={childIdFromUrl}
+          />
+        )
+      }
+    )
+  }
+)
