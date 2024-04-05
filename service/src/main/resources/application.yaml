@@ -35,6 +35,9 @@ spring:
     init:
       continue-on-error: false
       encoding: "UTF-8"
+  web:
+    resources:
+      add-mappings: false
 server:
   port: 8888
   tomcat:
