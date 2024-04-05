@@ -27,6 +27,9 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
@@ -1194,5 +1197,152 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         return db.read { it.getValueDecisionsByIds(listOf(id)).first() }
+    }
+
+    @Test
+    fun `production scenario 1`() {
+        db.transaction {
+            it.insert(DevHoliday(LocalDate.of(2024, 1, 1), "New Year"))
+            it.insert(DevHoliday(LocalDate.of(2024, 1, 6), "Epiphany"))
+        }
+        val range = FiniteDateRange(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
+
+        // value decision, value 1483, copay 0
+        val decision1 =
+            createVoucherDecision(
+                unitId = testDaycare.id,
+                validFrom = LocalDate.of(2023, 11, 1),
+                validTo = LocalDate.of(2024, 4, 1),
+                value = 148300,
+                coPayment = 0,
+                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2023, 11, 1, 12, 0))
+            )
+
+        // 25.1. lock report
+        // original 1.-31. 1483
+        db.transaction {
+            freezeVoucherValueReportRows(
+                tx = it,
+                year = 2024,
+                month = 1,
+                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 25, 22, 0))
+            )
+        }
+        val janReport = getUnitReport(testDaycare.id, 2024, 1)
+        janReport.assertContainsRow(
+            type = ORIGINAL,
+            periodStart = LocalDate.of(2024, 1, 1),
+            periodEnd = LocalDate.of(2024, 1, 31),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = 148300
+        )
+        assertEquals(1, janReport.count { it.realizedPeriod.overlaps(range) })
+
+        // 29.1. value decision created and sent, 6.1. - , value 1483, copay 0, ends decision1 on
+        // 5.1.
+        db.transaction { tx ->
+            tx.updateVoucherValueDecisionEndDates(
+                listOf(decision1.copy(validTo = LocalDate.of(2024, 1, 5))),
+                now = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 29, 12, 0))
+            )
+        }
+        val decision2 =
+            createVoucherDecision(
+                unitId = testDaycare.id,
+                validFrom = LocalDate.of(2024, 1, 6),
+                validTo = LocalDate.of(2024, 4, 1),
+                value = 148300,
+                coPayment = 0,
+                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 29, 12, 0))
+            )
+
+        // 25.2. lock report
+        // refund 1.-31. -1483
+        // correction 1.-5. 269,64
+        // correction 6.-31. 1213,36
+        db.transaction {
+            freezeVoucherValueReportRows(
+                tx = it,
+                year = 2024,
+                month = 2,
+                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 2, 25, 22, 0))
+            )
+        }
+        val febReport = getUnitReport(testDaycare.id, 2024, 2)
+        febReport.assertContainsRow(
+            type = REFUND,
+            periodStart = LocalDate.of(2024, 1, 1),
+            periodEnd = LocalDate.of(2024, 1, 31),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = -148300
+        )
+        febReport.assertContainsRow(
+            type = CORRECTION,
+            periodStart = LocalDate.of(2024, 1, 1),
+            periodEnd = LocalDate.of(2024, 1, 5),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = 26964
+        )
+        febReport.assertContainsRow(
+            type = CORRECTION,
+            periodStart = LocalDate.of(2024, 1, 6),
+            periodEnd = LocalDate.of(2024, 1, 31),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = 121336
+        )
+        assertEquals(3, febReport.count { it.realizedPeriod.overlaps(range) })
+
+        // 6.3. value decision created and sent, 21.1. - , value 1483, copay 0,  ends decision2 on
+        // 20.1.
+        db.transaction { tx ->
+            tx.updateVoucherValueDecisionEndDates(
+                listOf(decision2.copy(validTo = LocalDate.of(2024, 1, 20))),
+                now = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0))
+            )
+        }
+        val decision3 =
+            createVoucherDecision(
+                unitId = testDaycare.id,
+                validFrom = LocalDate.of(2024, 1, 21),
+                validTo = LocalDate.of(2024, 4, 1),
+                value = 148300,
+                coPayment = 0,
+                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0))
+            )
+
+        // 25.3. lock report
+        // TODO: Should be something else
+        // refund 6.-31. -1213,36
+        // correction 21.-31. 539,27
+        db.transaction {
+            freezeVoucherValueReportRows(
+                tx = it,
+                year = 2024,
+                month = 3,
+                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 25, 22, 0))
+            )
+        }
+        val marReport = getUnitReport(testDaycare.id, 2024, 3)
+        assertEquals(2, marReport.count { it.realizedPeriod.overlaps(range) })
+        marReport.assertContainsRow(
+            type = REFUND,
+            periodStart = LocalDate.of(2024, 1, 6),
+            periodEnd = LocalDate.of(2024, 1, 31),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = -121336
+        )
+        marReport.assertContainsRow(
+            type = CORRECTION,
+            periodStart = LocalDate.of(2024, 1, 21),
+            periodEnd = LocalDate.of(2024, 1, 31),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = 53927
+        )
     }
 }
