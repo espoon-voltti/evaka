@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faArrowRotateLeft } from 'Icons'
-import reverse from 'lodash/reverse'
-import React from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
@@ -34,9 +34,14 @@ export default React.memo(function ArrivalAndDeparture({
         ? i18n.common.yesterday
         : date.format('d.M.')
 
+  const sortedAttendances = useMemo(
+    () => sortBy(attendances, ({ arrived }) => arrived.formatIso()),
+    [attendances]
+  )
+
   return (
     <ArrivalTimeContainer>
-      {reverse(attendances).map(({ arrived, departed }) => (
+      {sortedAttendances.map(({ arrived, departed }) => (
         <AttendanceRowContainer key={arrived.toSystemTzDate().toISOString()}>
           {arrived ? (
             <FixedSpaceRow justifyContent="center" alignItems="center">
