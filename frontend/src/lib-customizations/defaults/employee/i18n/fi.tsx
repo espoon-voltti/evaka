@@ -4252,6 +4252,12 @@ export const fi = {
         noOptions: 'Ei ryhmiä'
       },
       recipients: 'Vastaanottajat',
+      recipientCount: 'Vastaanottajia',
+      manyRecipientsWarning: {
+        title: 'Viestillä on suuri määrä vastaanottajia.',
+        text: (count: number) =>
+          `Tämä viesti on lähdössä ${count} vastaanottajalle. Oletko varma, että haluat lähettää viestin?`
+      },
       type: {
         label: 'Viestin tyyppi',
         message: 'Viesti',

@@ -48,13 +48,15 @@ import {
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { SelectOption } from 'lib-components/molecules/Select'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faDownLeftAndUpRightToCenter,
   faTimes,
   faTrash,
-  faUpRightAndDownLeftFromCenter
+  faUpRightAndDownLeftFromCenter,
+  faQuestion
 } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -331,6 +333,8 @@ export default React.memo(function MessageEditor({
     debouncedSaveStatus ||
     message.title ||
     i18n.messages.messageEditor.newMessage
+
+  const [confirmLargeSend, setConfirmLargeSend] = useState(false)
 
   const sendHandler = useCallback(() => {
     const {
@@ -651,7 +655,7 @@ export default React.memo(function MessageEditor({
           )}
           <FixedSpaceRow alignItems="center">
             <div>
-              Vastaanottajia:{' '}
+              {i18n.messages.messageEditor.recipientCount}:{' '}
               {preflightResult
                 .map((r) => r.numberOfRecipientAccounts)
                 .getOrElse('')}
@@ -664,12 +668,41 @@ export default React.memo(function MessageEditor({
               }
               primary
               disabled={!sendEnabled}
-              onClick={sendHandler}
+              onClick={
+                preflightResult
+                  .map((r) => r.numberOfRecipientAccounts > 2)
+                  .getOrElse(false)
+                  ? () => setConfirmLargeSend(true)
+                  : sendHandler
+              }
               data-qa="send-message-btn"
             />
           </FixedSpaceRow>
         </BottomBar>
       </Container>
+      {confirmLargeSend && preflightResult.isSuccess && (
+        <InfoModal
+          type="warning"
+          icon={faQuestion}
+          title={i18n.messages.messageEditor.manyRecipientsWarning.title}
+          text={i18n.messages.messageEditor.manyRecipientsWarning.text(
+            preflightResult.value.numberOfRecipientAccounts
+          )}
+          close={() => setConfirmLargeSend(false)}
+          closeLabel={i18n.common.cancel}
+          resolve={{
+            label: i18n.messages.messageEditor.send,
+            action: () => {
+              sendHandler()
+              setConfirmLargeSend(false)
+            }
+          }}
+          reject={{
+            label: i18n.common.cancel,
+            action: () => setConfirmLargeSend(false)
+          }}
+        />
+      )}
     </FullScreenContainer>
   )
 })
