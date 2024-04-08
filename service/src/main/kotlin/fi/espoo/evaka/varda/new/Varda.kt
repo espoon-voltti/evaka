@@ -98,11 +98,16 @@ data class Varhaiskasvatuspaatos(
                 paattymis_pvm = data.range.end,
                 tuntimaara_viikossa = data.hoursPerWeek,
                 tilapainen_vaka_kytkin = data.temporary,
-                paivittainen_vaka_kytkin = data.daily,
-                kokopaivainen_vaka_kytkin = data.hoursPerWeek >= 25,
-                vuorohoito_kytkin = data.shiftCare,
                 jarjestamismuoto_koodi =
                     VardaUnitProviderType.fromEvakaProviderType(data.providerType).vardaCode,
+                vuorohoito_kytkin = data.shiftCare,
+
+                // Varda seems to set these two to false under the hood if vuorohoito_kytkin is
+                // true, regardless of what whe send in the CreateVarhaiskasvatuspaatosRequest. We
+                // must match this behavior to be able to compare the Varda state to the eVaka
+                // state.
+                paivittainen_vaka_kytkin = if (data.shiftCare) false else data.daily,
+                kokopaivainen_vaka_kytkin = if (data.shiftCare) false else data.hoursPerWeek >= 25,
             )
 
         fun fromVarda(data: VardaReadClient.VarhaiskasvatuspaatosResponse) =
