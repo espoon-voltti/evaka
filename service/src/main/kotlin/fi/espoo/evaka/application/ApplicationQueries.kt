@@ -1106,31 +1106,23 @@ fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId) {
     createUpdate {
             sql(
                 """
-            INSERT INTO application_other_guardian (application_id, guardian_id)
-            SELECT application.id, other_citizen.id
-            FROM application
-            JOIN LATERAL (
-                SELECT guardian_id AS id
-                FROM guardian
-                WHERE application.child_id = guardian.child_id AND application.guardian_id != guardian.guardian_id
-                AND EXISTS (
-                    SELECT 1
-                    FROM guardian WHERE application.child_id = guardian.child_id AND guardian.guardian_id = application.guardian_id
-                )
+INSERT INTO application_other_guardian (application_id, guardian_id)
+SELECT application.id, other_citizen.id
+FROM application
+JOIN LATERAL (
+    SELECT guardian_id AS id
+    FROM guardian
+    WHERE application.child_id = guardian.child_id
 
-                UNION
+    UNION
 
-                SELECT parent_id AS id
-                FROM foster_parent
-                WHERE application.child_id = foster_parent.child_id AND application.guardian_id != foster_parent.parent_id
-                AND EXISTS (
-                    SELECT 1
-                    FROM foster_parent WHERE application.child_id = foster_parent.child_id AND foster_parent.parent_id = application.guardian_id
-                )
-            ) other_citizen ON true
-            WHERE application.id = ${bind(id)}
-        """
-                    .trimIndent()
+    SELECT parent_id AS id
+    FROM foster_parent
+    WHERE application.child_id = foster_parent.child_id
+) other_citizen ON true
+WHERE application.id = ${bind(id)}
+AND other_citizen.id != application.guardian_id
+"""
             )
         }
         .execute()
