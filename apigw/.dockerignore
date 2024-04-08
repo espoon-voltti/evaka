@@ -15,3 +15,4 @@
 !.yarnrc.yml
 !tsconfig.json
 !tsconfig.test.json
+!eslint.config.js
