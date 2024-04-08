@@ -153,7 +153,7 @@ enum class ScheduledJob(
             schedule = JobSchedule.cron("0 0 18 * * 0") // Sunday 18:00
         )
     ),
-    SendMissingHolidayNotificationReminders(
+    SendMissingHolidayReservationReminders(
         ScheduledJobs::sendMissingHolidayReservationReminders,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(2, 45)))
     ),
