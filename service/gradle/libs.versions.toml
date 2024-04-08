@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [versions]
-bouncycastle = "1.77"
+bouncycastle = "1.78"
 flyingsaucer = "9.4.0"
 flyway = "10.11.0"
 fuel = "2.3.1"
