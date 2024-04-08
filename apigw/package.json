@@ -8,7 +8,7 @@
   "scripts": {
     "clean": "rm -rf ./build ./dist",
     "build": "yarn clean && yarn install && tsc --build src",
-    "lint": "eslint --ext .ts,.tsx --max-warnings 0 .",
+    "lint": "eslint --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
     "pretest": "tsc --build src/pino-cli",
     "test": "yarn lint:fix && NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
@@ -69,10 +69,8 @@
     "@types/tough-cookie": "^4.0.2",
     "@types/uuid": "^9.0.2",
     "@types/xml2js": "^0.4.11",
-    "@typescript-eslint/eslint-plugin": "^7.4.0",
-    "@typescript-eslint/parser": "^7.4.0",
     "concurrently": "^8.2.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.2",
     "jest": "^29.7.0",
@@ -85,6 +83,7 @@
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.4.2",
+    "typescript-eslint": "^7.5.0",
     "xml-crypto": "^6.0.0",
     "xml2js": "^0.6.0"
   },
@@ -129,35 +128,6 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "none"
-  },
-  "eslintConfig": {
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:@typescript-eslint/stylistic",
-      "plugin:prettier/recommended"
-    ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "ecmaVersion": 2018,
-      "sourceType": "module",
-      "project": "./tsconfig.json",
-      "ecmaFeatures": {
-        "modules": true
-      }
-    },
-    "plugins": [
-      "@typescript-eslint"
-    ],
-    "rules": {
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_"
-        }
-      ]
-    }
   },
   "engines": {
     "node": ">= 20.9.0"
