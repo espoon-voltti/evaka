@@ -204,10 +204,8 @@ export const expected: Expected = {
     logLevel: validPinoMiscLogMessage.level,
     message: validPinoMiscLogMessage.message,
     meta: {
-      /* eslint-disable @typescript-eslint/no-non-null-assertion */
       customField1: validPinoMiscLogMessage.meta!.customField1,
       customField2: validPinoMiscLogMessage.meta!.customField2
-      /* eslint-enable @typescript-eslint/no-non-null-assertion */
     },
     type: validPinoMiscLogMessage.type,
     parentSpanId: validPinoAppAuditLogMessage.parentSpanId,
@@ -227,10 +225,8 @@ export const expected: Expected = {
     logLevel: validPinoMiscLogMessage.level,
     message: validPinoMiscLogMessageWithError.message,
     meta: {
-      /* eslint-disable @typescript-eslint/no-non-null-assertion */
       customField1: validPinoMiscLogMessage.meta!.customField1,
       customField2: validPinoMiscLogMessage.meta!.customField2
-      /* eslint-enable @typescript-eslint/no-non-null-assertion */
     },
     stackTrace: validPinoMiscLogMessageWithError.stackTrace,
     type: validPinoMiscLogMessage.type,
