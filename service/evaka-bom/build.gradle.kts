@@ -22,7 +22,7 @@ dependencies {
         api("io.github.microutils:kotlin-logging-jvm:3.0.5")
         api(libs.opentracing.api)
         api(libs.opentracing.util)
-        api("jakarta.annotation:jakarta.annotation-api:2.1.1")
+        api("jakarta.annotation:jakarta.annotation-api:3.0.0")
         api("jakarta.jws:jakarta.jws-api:3.0.0")
         api("jakarta.xml.ws:jakarta.xml.ws-api:4.0.0")
         api("net.logstash.logback:logstash-logback-encoder:7.4")
