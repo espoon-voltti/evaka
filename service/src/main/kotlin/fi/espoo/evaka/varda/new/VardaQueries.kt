@@ -33,7 +33,6 @@ data class VardaServiceNeed(
     val childId: ChildId,
     val applicationDate: LocalDate,
     val range: FiniteDateRange,
-    val urgent: Boolean,
     val hoursPerWeek: Double,
     val temporary: Boolean,
     val daily: Boolean,
@@ -56,7 +55,6 @@ SELECT
     -- The default application date is set to be 15 days before the start because it's the minimum
     -- for Varda to not deduce the application as urgent
     LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date - interval '15 days') AS application_date,
-    COALESCE((application_match.document ->> 'urgent') :: BOOLEAN, false) AS urgent,
     sno.daycare_hours_per_week AS hours_per_week,
     CASE 
         WHEN sno.valid_placement_type = ANY(${bind(vardaTemporaryPlacementTypes)}::placement_type[]) THEN true
@@ -134,7 +132,7 @@ WHERE
 UNION ALL
 
 SELECT
-    daterange(vvd.valid_from, vvd.valid_to) * ${bind(range)} AS valid_during,
+    daterange(vvd.valid_from, vvd.valid_to, '[]') * ${bind(range)} AS valid_during,
     vvd.head_of_family_id,
     vvd.partner_id,
     vvd.placement_type,
