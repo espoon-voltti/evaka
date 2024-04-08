@@ -3782,16 +3782,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
-  version: 20.11.0
-  resolution: "@types/node@npm:20.11.0"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 8da60a8ccb65181c3d6f7686ddc5f1b1616cafa14d9e520a866adff82c17cc99336a78dd7ce7bee8f54e2332946f678b0e3aa377fbaaf751d3c05b64600872c6
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^20.12.5":
+"@types/node@npm:*, @types/node@npm:^20.12.5":
   version: 20.12.5
   resolution: "@types/node@npm:20.12.5"
   dependencies:
@@ -6235,9 +6226,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"downshift@npm:^8.5.0":
-  version: 8.5.0
-  resolution: "downshift@npm:8.5.0"
+"downshift@npm:^9.0.4":
+  version: 9.0.4
+  resolution: "downshift@npm:9.0.4"
   dependencies:
     "@babel/runtime": "npm:^7.22.15"
     compute-scroll-into-view: "npm:^3.0.3"
@@ -6246,7 +6237,7 @@ __metadata:
     tslib: "npm:^2.6.2"
   peerDependencies:
     react: ">=16.12.0"
-  checksum: 275f2b6868bf61aae276780c54e7511b2e4b3966c568ad9760df00bf306fef3a8aa76eae56a66d09526b062d8747a17358d21d9d8f60107f87e9f7398c85c92d
+  checksum: a06e5184aa428fea5d19c84e7f40afffdc4cd9c279fe963ce114eaa307a1eb87e3d0e4a959794993ff34f52804b4f91b8cfa021ea39078a14527b938559920b5
   languageName: node
   linkType: hard
 
@@ -7002,7 +6993,7 @@ __metadata:
     csstype: "npm:^3.1.2"
     date-fns: "npm:^3.6.0"
     date-fns-tz: "npm:^3.0.0"
-    downshift: "npm:^8.5.0"
+    downshift: "npm:^9.0.4"
     esbuild: "npm:^0.20.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
