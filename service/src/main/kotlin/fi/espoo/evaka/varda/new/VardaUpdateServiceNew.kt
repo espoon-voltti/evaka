@@ -97,9 +97,10 @@ class VardaUpdateServiceNew(
         // Varda's validation rules can be deduced from the list of error codes:
         // https://virkailija.opintopolku.fi/varda/julkinen/koodistot/vardavirheviestit
 
+        val today = clock.today()
         val service = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
-        val evakaState = dbc.read { service.getEvakaState(it, job.childId) }
+        val evakaState = dbc.read { service.getEvakaState(it, today, job.childId) }
         val vardaState =
             service.getVardaState(
                 vardaClient,
@@ -139,7 +140,7 @@ class VardaUpdater(
     private val omaOrganisaatioOid: String,
     private val lahdejarjestelma: String
 ) {
-    fun getEvakaState(tx: Database.Read, childId: ChildId): EvakaHenkiloNode {
+    fun getEvakaState(tx: Database.Read, today: LocalDate, childId: ChildId): EvakaHenkiloNode {
         val person = tx.getVardaPerson(childId)
         if (person.ophPersonOid == null && person.socialSecurityNumber == null) {
             throw IllegalStateException("Child $childId has no ophOid or ssn")
@@ -194,14 +195,16 @@ class VardaUpdater(
                     EvakaLapsiNode(
                         lapsi = lapsi,
                         varhaiskasvatuspaatokset =
-                            serviceNeedsOfLapsi.map { serviceNeed ->
-                                EvakaVarhaiskasvatuspaatosNode(
-                                    varhaiskasvatuspaatos =
-                                        Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
-                                    varhaiskasvatussuhteet =
-                                        listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
-                                )
-                            },
+                            serviceNeedsOfLapsi
+                                .filter { it.range.start <= today }
+                                .map { serviceNeed ->
+                                    EvakaVarhaiskasvatuspaatosNode(
+                                        varhaiskasvatuspaatos =
+                                            Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
+                                        varhaiskasvatussuhteet =
+                                            listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
+                                    )
+                                },
                         maksutiedot =
                             // If lapsi.paos_organisaatio_oid is null, we'll get the fee data for
                             // municipal daycare
