@@ -81,9 +81,9 @@ updates:
           - "jest-junit"
       lint:
         patterns:
-          - "@typescript-eslint/*"
           - "eslint*"
           - "prettier"
+          - "typescript-eslint"
       node-saml:
         patterns:
           - "@node-saml/*"
