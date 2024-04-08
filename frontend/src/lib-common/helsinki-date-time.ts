@@ -10,7 +10,7 @@ import {
   parseJSON,
   set
 } from 'date-fns'
-import { formatInTimeZone, utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
+import { formatInTimeZone, toZonedTime, fromZonedTime } from 'date-fns-tz'
 
 import LocalDate from './local-date'
 import LocalTime from './local-time'
@@ -23,30 +23,30 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
   private constructor(readonly timestamp: number) {}
 
   get year(): number {
-    return utcToZonedTime(this.timestamp, EUROPE_HELSINKI).getFullYear()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getFullYear()
   }
   get month(): number {
-    return utcToZonedTime(this.timestamp, EUROPE_HELSINKI).getMonth() + 1
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getMonth() + 1
   }
   get date(): number {
-    return utcToZonedTime(this.timestamp, EUROPE_HELSINKI).getDate()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getDate()
   }
   get hour(): number {
-    return utcToZonedTime(this.timestamp, EUROPE_HELSINKI).getHours()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getHours()
   }
   get minute(): number {
-    return utcToZonedTime(this.timestamp, EUROPE_HELSINKI).getMinutes()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getMinutes()
   }
   get second(): number {
-    return utcToZonedTime(this.timestamp, EUROPE_HELSINKI).getSeconds()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getSeconds()
   }
   get millisecond(): number {
-    return utcToZonedTime(this.timestamp, EUROPE_HELSINKI).getMilliseconds()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getMilliseconds()
   }
   private mapZoned(f: (timestamp: Date) => Date): HelsinkiDateTime {
     return HelsinkiDateTime.fromSystemTzDate(
-      zonedTimeToUtc(
-        f(utcToZonedTime(this.timestamp, EUROPE_HELSINKI)),
+      fromZonedTime(
+        f(toZonedTime(this.timestamp, EUROPE_HELSINKI)),
         EUROPE_HELSINKI
       )
     )
@@ -226,7 +226,7 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
     if (!LocalTime.tryCreate(hour, minute, second, millisToNanos(millisecond)))
       return undefined
     return HelsinkiDateTime.tryFromDate(
-      zonedTimeToUtc(
+      fromZonedTime(
         new Date(year, month - 1, date, hour, minute, second, millisecond),
         EUROPE_HELSINKI
       )

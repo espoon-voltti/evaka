@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import fi from 'date-fns/locale/fi'
+import { fi } from 'date-fns/locale/fi'
 import React from 'react'
 import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker'
 import styled from 'styled-components'
