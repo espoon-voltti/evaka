@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import differenceInSeconds from 'date-fns/differenceInSeconds'
+import { differenceInSeconds } from 'date-fns'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'

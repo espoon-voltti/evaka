@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Locale, Month, Day } from 'date-fns'
 import { fi, sv, enGB } from 'date-fns/locale'
 import React, { useMemo, useState } from 'react'
 import { DayPicker, DayModifiers } from 'react-day-picker'
@@ -64,17 +65,15 @@ function useLocaleWithCapitalizedNames(locale: 'fi' | 'sv' | 'en'): Locale {
   return useMemo(
     () => ({
       ...localeData,
-      localize: localeData.localize
-        ? {
-            ...localeData.localize,
-            month: (m: unknown) =>
-              capitalizeFirstLetter(localeData.localize?.month(m) ?? ''), // eslint-disable-line @typescript-eslint/no-unsafe-argument
-            day: (d: unknown) =>
-              capitalizeFirstLetter(
-                localeData.localize?.day(d, { width: 'short' }) ?? '' // eslint-disable-line @typescript-eslint/no-unsafe-argument
-              )
-          }
-        : undefined
+      localize: {
+        ...localeData.localize,
+        month: (m: Month) =>
+          capitalizeFirstLetter(localeData.localize?.month(m) ?? ''), // eslint-disable-line @typescript-eslint/no-unsafe-argument
+        day: (d: Day) =>
+          capitalizeFirstLetter(
+            localeData.localize?.day(d, { width: 'short' }) ?? '' // eslint-disable-line @typescript-eslint/no-unsafe-argument
+          )
+      }
     }),
     [localeData]
   )
