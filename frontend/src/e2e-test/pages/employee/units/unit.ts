@@ -35,6 +35,14 @@ type UnitProviderType =
   | 'PRIVATE_SERVICE_VOUCHER'
   | 'EXTERNAL_PURCHASED'
 
+export type MealTimes = {
+  mealtimeEveningSnack?: { start: string; end: string }
+  mealtimeBreakfast?: { start: string; end: string }
+  mealtimeSnack?: { start: string; end: string }
+  mealtimeLunch?: { start: string; end: string }
+  mealtimeSupper?: { start: string; end: string }
+}
+
 export class UnitPage {
   constructor(private readonly page: Page) {}
 
@@ -189,6 +197,14 @@ export class UnitDetailsPage {
   async edit() {
     await this.#editUnitButton.click()
     return new UnitEditor(this.page)
+  }
+
+  async assertMealTimes(mealTimes: MealTimes) {
+    for (const [key, value] of Object.entries(mealTimes)) {
+      await this.page
+        .find(`[data-qa="${key}-value-display"]`)
+        .assertTextEquals(`${value.start} - ${value.end}`)
+    }
   }
 }
 
@@ -389,6 +405,19 @@ export class UnitEditor {
   async submit() {
     await this.saveButton.click()
     return new UnitDetailsPage(this.page)
+  }
+
+  async fillMealTimes(mealTimes: MealTimes) {
+    for (const [key, value] of Object.entries(mealTimes)) {
+      const inputStart = new TextInput(
+        this.page.find(`[data-qa="${key}-input-start"]`)
+      )
+      await inputStart.fill(value.start)
+      const inputEnd = new TextInput(
+        this.page.find(`[data-qa="${key}-input-end"]`)
+      )
+      await inputEnd.fill(value.end)
+    }
   }
 }
 

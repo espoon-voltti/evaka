@@ -4024,7 +4024,9 @@ export const fi = {
       contact: 'Yksikön yhteystiedot',
       unitManager: 'Varhaiskasvatusyksikön johtajan yhteystiedot',
       decisionCustomization:
-        'Yksikön nimi päätöksellä ja ilmoitus paikan vastaanottamisesta'
+        'Yksikön nimi päätöksellä ja ilmoitus paikan vastaanottamisesta',
+      mealOrderIntegration: 'Ruokatilausintegraatio',
+      mealtime: 'Yksikön ruokailuajat'
     },
     label: {
       name: 'Yksikön nimi',
@@ -4076,7 +4078,14 @@ export const fi = {
       },
       businessId: 'Y-tunnus',
       iban: 'Tilinumero',
-      providerId: 'Toimittajanumero'
+      providerId: 'Toimittajanumero',
+      mealTime: {
+        breakfast: 'Aamupala',
+        lunch: 'Lounas',
+        snack: 'Välipala',
+        supper: 'Päivällinen',
+        eveningSnack: 'Iltapala'
+      }
     },
     field: {
       applyPeriod: 'Kun toivottu alkamispäivä aikavälillä',
@@ -4155,7 +4164,8 @@ export const fi = {
       businessId: 'Y-tunnus puuttuu',
       iban: 'Tilinumero puuttuu',
       providerId: 'Toimittajanumero puuttuu',
-      operationTimes: 'Virheellinen merkintä yksikön toiminta-ajoissa'
+      operationTimes: 'Virheellinen merkintä yksikön toiminta-ajoissa',
+      mealTimes: 'Virheellinen merkintä yksikön ruokailuajoissa'
     },
     warning: {
       placementsShouldBeEndedIfUnitIsClosed:

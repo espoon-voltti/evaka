@@ -66,7 +66,12 @@ data class DaycareFields(
     val roundTheClock: Boolean,
     val businessId: String,
     val iban: String,
-    val providerId: String
+    val providerId: String,
+    val mealtimeBreakfast: TimeRange?,
+    val mealtimeLunch: TimeRange?,
+    val mealtimeSnack: TimeRange?,
+    val mealtimeSupper: TimeRange?,
+    val mealtimeEveningSnack: TimeRange?
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -133,7 +138,12 @@ SELECT
   finance_decision_handler.created AS finance_decision_handler_created,
   unit_manager_name, unit_manager_email, unit_manager_phone,
   ca.name AS care_area_name, ca.short_name AS care_area_short_name,
-  daycare.operation_times
+  daycare.operation_times,
+  daycare.mealtime_breakfast,
+  daycare.mealtime_lunch,
+  daycare.mealtime_snack,
+  daycare.mealtime_supper,
+  daycare.mealtime_evening_snack
 FROM daycare
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
 JOIN care_area ca ON daycare.care_area_id = ca.id
@@ -288,7 +298,12 @@ SET
   business_id = :businessId,
   iban = :iban,
   provider_id = :providerId,
-  operation_times = :operationTimes
+  operation_times = :operationTimes,
+  mealtime_breakfast = :mealtimeBreakfast,
+  mealtime_lunch = :mealtimeLunch,
+  mealtime_snack = :mealtimeSnack,
+  mealtime_supper = :mealtimeSupper,
+  mealtime_evening_snack = :mealtimeEveningSnack
 WHERE id = :id
 """
         )

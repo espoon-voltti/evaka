@@ -72,7 +72,12 @@ data class Daycare(
     val enabledPilotFeatures: List<PilotFeature>,
     val businessId: String,
     val iban: String,
-    val providerId: String
+    val providerId: String,
+    val mealtimeBreakfast: TimeRange?,
+    val mealtimeLunch: TimeRange?,
+    val mealtimeSnack: TimeRange?,
+    val mealtimeSupper: TimeRange?,
+    val mealtimeEveningSnack: TimeRange?
 )
 
 data class FinanceDecisionHandler(

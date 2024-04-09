@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import {
@@ -53,7 +53,15 @@ import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 type OnlyCareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type OnlyDaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
 
-interface FormData {
+interface MealtimeData {
+  mealtimeBreakfast: EditableTimeRange
+  mealtimeEveningSnack: EditableTimeRange
+  mealtimeLunch: EditableTimeRange
+  mealtimeSnack: EditableTimeRange
+  mealtimeSupper: EditableTimeRange
+}
+
+type FormData = {
   name: string
   openingDate: LocalDate | null
   closingDate: LocalDate | null
@@ -92,7 +100,7 @@ interface FormData {
   businessId: string
   iban: string
   providerId: string
-}
+} & MealtimeData
 
 interface UnitDecisionCustomization {
   daycareName: string
@@ -540,6 +548,42 @@ function validateForm(
     })
   }
 
+  function parseMealTimeRange(
+    timeRange: EditableTimeRange,
+    errorKey: keyof MealtimeData
+  ): TimeRange | null {
+    const validationErrors = validateTimeRange(timeRange)
+    if (
+      validationErrors.start === 'timeRequired' &&
+      validationErrors.end === 'timeRequired'
+    ) {
+      return null
+    }
+    if (validationErrors.start || validationErrors.end) {
+      errors.push({
+        text: i18n.unitEditor.error.mealTimes,
+        key: errorKey
+      })
+      return null
+    }
+    return TimeRange.parse(timeRange)
+  }
+
+  const mealtimeBreakfast = parseMealTimeRange(
+    form.mealtimeBreakfast,
+    'mealtimeBreakfast'
+  )
+  const mealtimeLunch = parseMealTimeRange(form.mealtimeLunch, 'mealtimeLunch')
+  const mealtimeSnack = parseMealTimeRange(form.mealtimeSnack, 'mealtimeSnack')
+  const mealtimeSupper = parseMealTimeRange(
+    form.mealtimeSupper,
+    'mealtimeSupper'
+  )
+  const mealtimeEveningSnack = parseMealTimeRange(
+    form.mealtimeEveningSnack,
+    'mealtimeEveningSnack'
+  )
+
   const {
     openingDate,
     closingDate,
@@ -616,7 +660,12 @@ function validateForm(
         operationTimes,
         businessId,
         iban,
-        providerId
+        providerId,
+        mealtimeBreakfast,
+        mealtimeEveningSnack,
+        mealtimeLunch,
+        mealtimeSnack,
+        mealtimeSupper
       },
       {
         formErrors: errors,
@@ -642,6 +691,15 @@ function validateForm(
   }
 }
 
+function formatTimeRange(timeRange: TimeRange | null | undefined) {
+  return timeRange
+    ? {
+        start: timeRange.formatStart(),
+        end: timeRange.formatEnd()
+      }
+    : emptyTimeRange
+}
+
 function toFormData(unit: Daycare | undefined): FormData {
   const type = unit?.type
   return {
@@ -665,18 +723,8 @@ function toFormData(unit: Daycare | undefined): FormData {
         : type?.includes('CENTRE')
           ? 'CENTRE'
           : undefined,
-    dailyPreschoolTime: unit?.dailyPreschoolTime
-      ? {
-          start: unit.dailyPreschoolTime.formatStart(),
-          end: unit.dailyPreschoolTime.formatEnd()
-        }
-      : emptyTimeRange,
-    dailyPreparatoryTime: unit?.dailyPreparatoryTime
-      ? {
-          start: unit.dailyPreparatoryTime.formatStart(),
-          end: unit.dailyPreparatoryTime.formatEnd()
-        }
-      : emptyTimeRange,
+    dailyPreschoolTime: formatTimeRange(unit?.dailyPreschoolTime),
+    dailyPreparatoryTime: formatTimeRange(unit?.dailyPreparatoryTime),
     daycareApplyPeriod: unit?.daycareApplyPeriod ?? null,
     preschoolApplyPeriod: unit?.preschoolApplyPeriod ?? null,
     clubApplyPeriod: unit?.clubApplyPeriod ?? null,
@@ -725,8 +773,38 @@ function toFormData(unit: Daycare | undefined): FormData {
     ),
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
-    providerId: unit?.providerId ?? ''
+    providerId: unit?.providerId ?? '',
+    mealtimeBreakfast: formatTimeRange(unit?.mealtimeBreakfast),
+    mealtimeLunch: formatTimeRange(unit?.mealtimeLunch),
+    mealtimeSnack: formatTimeRange(unit?.mealtimeSnack),
+    mealtimeSupper: formatTimeRange(unit?.mealtimeSupper),
+    mealtimeEveningSnack: formatTimeRange(unit?.mealtimeEveningSnack)
   }
+}
+
+function MealtimeInput({
+  mealtimeKey,
+  form,
+  updateForm,
+  editable
+}: {
+  mealtimeKey: keyof MealtimeData
+  form: MealtimeData
+  updateForm: (arg0: Partial<FormData>) => void
+  editable: boolean
+}) {
+  return editable ? (
+    <TimeRangeInput
+      dataQaPrefix={`${mealtimeKey}-input`}
+      value={form[mealtimeKey]}
+      onChange={(value) => updateForm({ [mealtimeKey]: value })}
+      error={undefined}
+    />
+  ) : (
+    <div data-qa={`${mealtimeKey}-value-display`}>
+      {form[mealtimeKey].start} - {form[mealtimeKey].end}
+    </div>
+  )
 }
 
 export default function UnitEditor(props: Props) {
@@ -736,6 +814,12 @@ export default function UnitEditor(props: Props) {
     [props.unit]
   )
   const [form, setForm] = useState<FormData>(initialData)
+
+  // recompute form state after when it has been fetched from API. e.g. on form submit
+  useEffect(() => {
+    setForm(initialData)
+  }, [initialData])
+
   const [validationErrors, setValidationErrors] = useState<UnitEditorErrors>({
     rangeErrors: {
       dailyPreparatoryTime: {},
@@ -1699,6 +1783,63 @@ export default function UnitEditor(props: Props) {
           decisionCustomization.handlerAddress
         )}
       </FormPart>
+      {featureFlags.jamixIntegration && (
+        <>
+          <H3>{i18n.unitEditor.title.mealOrderIntegration}</H3>
+          <FormPart>
+            <div>{i18n.unitEditor.title.mealtime}</div>
+            <FixedSpaceColumn spacing="xs">
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.breakfast}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeBreakfast"
+                  form={form}
+                  updateForm={updateForm}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.lunch}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeLunch"
+                  form={form}
+                  updateForm={updateForm}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.snack}</label>
+
+                <MealtimeInput
+                  mealtimeKey="mealtimeSnack"
+                  form={form}
+                  updateForm={updateForm}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.supper}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeSupper"
+                  form={form}
+                  updateForm={updateForm}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+              <FixedSpaceRow alignItems="center">
+                <label>{i18n.unitEditor.label.mealTime.eveningSnack}</label>
+                <MealtimeInput
+                  mealtimeKey="mealtimeEveningSnack"
+                  form={form}
+                  updateForm={updateForm}
+                  editable={props.editable}
+                />
+              </FixedSpaceRow>
+            </FixedSpaceColumn>
+          </FormPart>
+        </>
+      )}
       {props.editable && (
         <>
           <>

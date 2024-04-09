@@ -79,6 +79,27 @@ describe('Employee - unit details', () => {
       'manager@example.com'
     )
   })
+
+  test('Admin can edit meal times', async () => {
+    const unitEditorPage = await UnitEditor.openById(page, daycare1.id)
+
+    // fill required fields not filled by daycare fixture
+    await unitEditorPage.fillManagerData(
+      'Päiväkodin Johtaja',
+      '01234567',
+      'manager@example.com'
+    )
+
+    const mealTimes = {
+      mealtimeBreakfast: { start: '08:00', end: '08:30' },
+      mealtimeLunch: { start: '11:00', end: '11:30' },
+      mealtimeSnack: { start: '13:00', end: '13:30' }
+    }
+    await unitEditorPage.fillMealTimes(mealTimes)
+
+    const unitDetailsPage = await unitEditorPage.submit()
+    await unitDetailsPage.assertMealTimes(mealTimes)
+  })
 })
 
 describe('Employee - unit editor validations and warnings', () => {
