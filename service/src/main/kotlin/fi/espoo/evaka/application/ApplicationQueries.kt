@@ -1097,7 +1097,7 @@ fun Database.Transaction.updateApplicationOtherGuardian(
         .execute()
 }
 
-fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId) {
+fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId, today: LocalDate) {
     createUpdate {
             sql("DELETE FROM application_other_guardian WHERE application_id = ${bind(id)}")
         }
@@ -1118,7 +1118,7 @@ JOIN LATERAL (
 
     SELECT parent_id AS id
     FROM foster_parent
-    WHERE application.child_id = foster_parent.child_id
+    WHERE application.child_id = foster_parent.child_id AND valid_during @> ${bind(today)}
 ) other_citizen ON true
 WHERE application.id = ${bind(id)}
 AND other_citizen.id != application.guardian_id

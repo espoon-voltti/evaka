@@ -154,7 +154,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     guardianId = applicationOwner,
                     childId = child
                 )
-            tx.syncApplicationOtherGuardians(application)
+            tx.syncApplicationOtherGuardians(application, testDate)
             tx.deleteGuardianRelationship(childId = child, guardianId = otherGuardian)
         }
         assertCleanedUpPeople(testDate, setOf())

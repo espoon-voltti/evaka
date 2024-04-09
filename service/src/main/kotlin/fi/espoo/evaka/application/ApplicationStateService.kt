@@ -219,7 +219,7 @@ class ApplicationStateService(
         )
 
         personService.getGuardians(tx, user, application.childId)
-        tx.syncApplicationOtherGuardians(application.id)
+        tx.syncApplicationOtherGuardians(application.id, clock.today())
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags)
@@ -851,7 +851,7 @@ class ApplicationStateService(
                         }
                     }
                 }
-                tx.syncApplicationOtherGuardians(applicationId)
+                tx.syncApplicationOtherGuardians(applicationId, now.toLocalDate())
             }
         }
 
