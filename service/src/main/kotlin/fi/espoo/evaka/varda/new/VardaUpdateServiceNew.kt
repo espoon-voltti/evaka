@@ -86,6 +86,9 @@ class VardaUpdateServiceNew(
         )
 
     init {
+        check(vardaEnabledRange.start >= LocalDate.of(2019, 1, 1)) {
+            "Varda enabled range must start after 2019-01-01"
+        }
         asyncJobRunner.registerHandler(::updateChildJob)
     }
 
