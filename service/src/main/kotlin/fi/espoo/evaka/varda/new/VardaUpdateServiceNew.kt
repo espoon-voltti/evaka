@@ -194,25 +194,26 @@ class VardaUpdater(
         return EvakaHenkiloNode(
             henkilo = Henkilo.fromEvaka(person),
             lapset =
-                evakaLapsiServiceNeeds.map { (lapsi, serviceNeedsOfLapsi) ->
+                evakaLapsiServiceNeeds.mapNotNull { (lapsi, serviceNeedsOfLapsi) ->
                     EvakaLapsiNode(
-                        lapsi = lapsi,
-                        varhaiskasvatuspaatokset =
-                            serviceNeedsOfLapsi
-                                .filter { it.range.start <= today }
-                                .map { serviceNeed ->
-                                    EvakaVarhaiskasvatuspaatosNode(
-                                        varhaiskasvatuspaatos =
-                                            Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
-                                        varhaiskasvatussuhteet =
-                                            listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
-                                    )
-                                },
-                        maksutiedot =
-                            // If lapsi.paos_organisaatio_oid is null, we'll get the fee data for
-                            // municipal daycare
-                            evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
-                    )
+                            lapsi = lapsi,
+                            varhaiskasvatuspaatokset =
+                                serviceNeedsOfLapsi
+                                    .filter { it.range.start <= today }
+                                    .map { serviceNeed ->
+                                        EvakaVarhaiskasvatuspaatosNode(
+                                            varhaiskasvatuspaatos =
+                                                Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
+                                            varhaiskasvatussuhteet =
+                                                listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
+                                        )
+                                    },
+                            maksutiedot =
+                                // If lapsi.paos_organisaatio_oid is null, we'll get the fee data
+                                // for municipal daycare
+                                evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
+                        )
+                        .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
                 }
         )
     }
