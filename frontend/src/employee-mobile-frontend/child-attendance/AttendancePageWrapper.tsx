@@ -3,13 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { animated, useSpring } from '@react-spring/web'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
-import {
-  Outlet,
-  useLocation,
-  useNavigate,
-  useOutletContext
-} from 'react-router-dom'
+import React, { useCallback, useMemo, useState } from 'react'
+import { Outlet, useNavigate, useOutletContext } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -22,14 +17,15 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import colors from 'lib-customizations/common'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import FreeTextSearch from '../common/FreeTextSearch'
 import { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
 import { zIndex } from '../constants'
+import { unitInfoQuery } from '../units/queries'
 
 import ChildList from './ChildList'
 import { attendanceStatusesQuery, childrenQuery } from './queries'
@@ -42,24 +38,23 @@ export interface TabItem {
 }
 
 export default React.memo(function AttendancePageWrapper({
-  unitId
+  unitOrGroup
 }: {
-  unitId: string
+  unitOrGroup: UnitOrGroup
 }) {
   const navigate = useNavigate()
-  const location = useLocation()
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
-  const { selectedGroupId } = useSelectedGroup()
+  const unitId = unitOrGroup.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const selectedGroup = useMemo(
     () =>
-      selectedGroupId.type === 'all'
+      unitOrGroup.type === 'unit'
         ? undefined
         : unitInfoResponse
-            .map((res) => res.groups.find((g) => g.id === selectedGroupId.id))
+            .map((res) => res.groups.find((g) => g.id === unitOrGroup.id))
             .getOrElse(undefined),
-    [selectedGroupId, unitInfoResponse]
+    [unitOrGroup, unitInfoResponse]
   )
 
   const unitChildren = useQueryResult(childrenQuery(unitId))
@@ -69,30 +64,28 @@ export default React.memo(function AttendancePageWrapper({
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
-      const newGroupRoute = location.pathname.split('/')
-      newGroupRoute[4] = `${group?.id ?? 'all'}`
-
-      navigate(newGroupRoute.join('/'))
+      navigate(
+        routes.childAttendances(toUnitOrGroup({ unitId, groupId: group?.id }))
+          .value
+      )
     },
-    [navigate, location.pathname]
+    [navigate, unitId]
   )
-  const { groupRoute } = useSelectedGroup()
-  const tabs = useMemo(() => {
-    const url = `${groupRoute}/child-attendance`
-
-    return [
+  const tabs = useMemo(
+    () => [
       {
         id: 'today',
-        link: `${url}/list`,
+        link: routes.childAttendances(unitOrGroup),
         label: i18n.attendances.views.TODAY
       },
       {
         id: 'confirmed-days',
-        link: `${url}/daylist`,
+        link: routes.childAttendanceDaylist(unitOrGroup),
         label: i18n.attendances.views.NEXT_DAYS
       }
-    ]
-  }, [i18n, groupRoute])
+    ],
+    [i18n, unitOrGroup]
+  )
 
   const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])
 
@@ -125,7 +118,7 @@ export default React.memo(function AttendancePageWrapper({
     <>
       {unitChildren.isSuccess && attendanceStatuses.isSuccess && (
         <ChildSearch
-          unitId={unitId}
+          unitOrGroup={unitOrGroup}
           show={showSearch}
           toggleShow={toggleSearch}
           unitChildren={unitChildren.value}
@@ -133,6 +126,7 @@ export default React.memo(function AttendancePageWrapper({
         />
       )}
       <PageWithNavigation
+        unitOrGroup={unitOrGroup}
         selected="child"
         selectedGroup={selectedGroup}
         onChangeGroup={changeGroup}
@@ -146,7 +140,6 @@ export default React.memo(function AttendancePageWrapper({
             <Outlet
               context={
                 {
-                  unitId: unitId,
                   unitChildren: children,
                   attendanceStatuses
                 } satisfies AttendanceContext
@@ -160,20 +153,19 @@ export default React.memo(function AttendancePageWrapper({
 })
 
 export type AttendanceContext = {
-  unitId: string
   unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
 }
 export const useAttendanceContext = () => useOutletContext<AttendanceContext>()
 
 const ChildSearch = React.memo(function Search({
-  unitId,
+  unitOrGroup,
   show,
   toggleShow,
   unitChildren,
   attendanceStatuses
 }: {
-  unitId: string
+  unitOrGroup: UnitOrGroup
   show: boolean
   toggleShow: () => void
   unitChildren: AttendanceChild[]
@@ -217,7 +209,7 @@ const ChildSearch = React.memo(function Search({
           setShowSearch={toggleShow}
           searchResults={searchResults}
         />
-        <ChildList unitId={unitId} items={searchResults} />
+        <ChildList unitOrGroup={unitOrGroup} items={searchResults} />
       </ContentArea>
     </SearchContainer>
   )

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -26,29 +26,33 @@ import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { Gap } from 'lib-components/white-space'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { Actions, CustomTitle, TimeWrapper } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { TallContentArea } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceTypeSelection from './components/StaffAttendanceTypeSelection'
 import { staffAttendanceQuery, staffDepartureMutation } from './queries'
 import { getAttendanceDepartureDifferenceReasons } from './utils'
 
-export default React.memo(function StaffMarkDepartedPage() {
+export default React.memo(function StaffMarkDepartedPage({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
+  const { employeeId } = useRouteParams(['employeeId'])
 
-  const { unitInfoResponse, reloadUnitInfo } = useContext(UnitContext)
-  const { groupRoute } = useSelectedGroup()
-  useEffect(() => {
-    reloadUnitInfo()
-  }, [reloadUnitInfo])
+  const unitId = unitOrGroup.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }), {
+    refetchOnMount: 'always'
+  })
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
@@ -154,6 +158,7 @@ export default React.memo(function StaffMarkDepartedPage() {
       <TopBar
         title={backButtonText}
         onBack={() => navigate(-1)}
+        unitId={unitId}
         invertedColors
       />
       <ContentArea
@@ -169,13 +174,18 @@ export default React.memo(function StaffMarkDepartedPage() {
             { staffMember, attendanceId, latestCurrentDayArrival }
           ]) => {
             if (staffMember === undefined) {
-              return <Navigate replace to={`${groupRoute}/staff-attendance`} />
+              return (
+                <Navigate
+                  replace
+                  to={routes.staffAttendances(unitOrGroup, 'absent').value}
+                />
+              )
             }
             if (attendanceId === undefined) {
               return (
                 <Navigate
                   replace
-                  to={`${groupRoute}/staff-attendance/${employeeId}`}
+                  to={routes.staffAttendance(unitOrGroup, employeeId).value}
                 />
               )
             }

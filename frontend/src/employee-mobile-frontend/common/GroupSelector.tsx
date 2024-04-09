@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontSizesMobile, fontWeights } from 'lib-components/typography'
@@ -14,11 +15,12 @@ import colors, { theme } from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
+import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
-import { UnitContext } from './unit'
 
 interface GroupSelectorProps {
+  unitId: UUID
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   countInfo?: CountInfo
@@ -33,6 +35,7 @@ export interface CountInfo {
 }
 
 export default function GroupSelector({
+  unitId,
   selectedGroup,
   onChangeGroup,
   countInfo,
@@ -41,7 +44,7 @@ export default function GroupSelector({
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   return renderResult(unitInfoResponse, (unitInfo) => {
     const realtimeStaffAttendanceEnabled = unitInfo.features.includes(

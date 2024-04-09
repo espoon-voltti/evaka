@@ -7,17 +7,19 @@ import React from 'react'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
+import { routes } from '../../App'
 import { useTranslation } from '../../common/i18n'
+import { UnitOrGroup } from '../../common/unit-or-group'
 import { WideLinkButton } from '../../pairing/components'
 
 interface Props {
+  unitOrGroup: UnitOrGroup
   child: AttendanceChild
-  groupRoute: string
 }
 
 export default React.memo(function AttendanceChildPresent({
-  child,
-  groupRoute
+  unitOrGroup,
+  child
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -26,7 +28,7 @@ export default React.memo(function AttendanceChildPresent({
       <WideLinkButton
         $primary
         data-qa="mark-departed-link"
-        to={`${groupRoute}/child-attendance/${child.id}/mark-departed`}
+        to={routes.markDeparted(unitOrGroup, child.id).value}
       >
         {i18n.attendances.actions.markDeparted}
       </WideLinkButton>

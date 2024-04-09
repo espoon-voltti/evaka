@@ -6,8 +6,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 import {
-  AttendanceStatus,
-  AttendanceChild
+  AttendanceChild,
+  AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
@@ -17,7 +17,9 @@ import {
 } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 
 import ChildListItem from './ChildListItem'
 
@@ -26,7 +28,7 @@ export interface ListItem extends AttendanceChild {
 }
 
 interface Props {
-  unitId: string
+  unitOrGroup: UnitOrGroup
   items: ListItem[]
   type?: AttendanceStatus
 }
@@ -36,8 +38,13 @@ const NoChildrenOnList = styled.div`
   margin-top: 40px;
 `
 
-export default React.memo(function ChildList({ unitId, items, type }: Props) {
+export default React.memo(function ChildList({
+  unitOrGroup,
+  items,
+  type
+}: Props) {
   const { i18n } = useTranslation()
+  const unitId = unitOrGroup.unitId
 
   return (
     <FixedSpaceColumn>
@@ -46,12 +53,16 @@ export default React.memo(function ChildList({ unitId, items, type }: Props) {
           items.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
+                unitOrGroup={unitOrGroup}
                 type={type}
                 key={ac.id}
                 child={ac}
-                childAttendanceUrl={`/units/${unitId}/groups/${
-                  ac.groupId ?? 'all'
-                }/child-attendance/${ac.id}`}
+                childAttendanceUrl={
+                  routes.childAttendance(
+                    toUnitOrGroup({ unitId, groupId: ac.groupId }),
+                    ac.id
+                  ).value
+                }
               />
             </Li>
           ))

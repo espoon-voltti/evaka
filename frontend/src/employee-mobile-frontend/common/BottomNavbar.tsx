@@ -9,8 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { useQuery } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -28,14 +27,15 @@ import {
   faUser
 } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import { unreadCountsQuery } from '../messages/queries'
 import { MessageContext } from '../messages/state'
+import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
-import { useSelectedGroup } from './selected-group'
-import { UnitContext } from './unit'
+import { UnitOrGroup, toUnitOrGroup } from './unit-or-group'
 
 export type NavItem = 'child' | 'staff' | 'messages' | 'settings'
 
@@ -96,16 +96,19 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => (
 )
 
 export type BottomNavbarProps = {
+  unitOrGroup: UnitOrGroup
   selected?: NavItem
 }
 
-export default function BottomNavbar({ selected }: BottomNavbarProps) {
+export default function BottomNavbar({
+  unitOrGroup,
+  selected
+}: BottomNavbarProps) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { unitId } = useRouteParams(['unitId'])
-  const { groupRoute } = useSelectedGroup()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitId = unitOrGroup.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId), {
     refetchOnMount: false
@@ -124,7 +127,8 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             text={i18n.common.children}
             selected={selected === 'child'}
             onClick={() =>
-              selected !== 'child' && navigate(`${groupRoute}/child-attendance`)
+              selected !== 'child' &&
+              navigate(routes.childAttendances(unitOrGroup).value)
             }
           >
             <CustomIcon
@@ -140,9 +144,10 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
             onClick={() =>
               selected !== 'staff' &&
               navigate(
-                unit.features.includes('REALTIME_STAFF_ATTENDANCE')
-                  ? `${groupRoute}/staff-attendance`
-                  : `${groupRoute}/staff`
+                (unit.features.includes('REALTIME_STAFF_ATTENDANCE')
+                  ? routes.staffAttendances(unitOrGroup, 'absent')
+                  : routes.staff(unitOrGroup)
+                ).value
               )
             }
           >
@@ -160,9 +165,20 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               onClick={() =>
                 selected !== 'messages' &&
                 navigate(
-                  user?.pinLoginActive
-                    ? `/units/${unitId}/groups/${unit.groups[0].id}/messages`
-                    : `/units/${unitId}/groups/${unit.groups[0].id}/messages/unread-messages`
+                  (user?.pinLoginActive
+                    ? routes.messages(
+                        toUnitOrGroup({
+                          unitId,
+                          groupId: unit.groups[0]?.id
+                        })
+                      )
+                    : routes.unreadMessages(
+                        toUnitOrGroup({
+                          unitId,
+                          groupId: unit.groups[0]?.id
+                        })
+                      )
+                  ).value
                 )
               }
             >
@@ -187,7 +203,8 @@ export default function BottomNavbar({ selected }: BottomNavbarProps) {
               text={i18n.common.settings}
               selected={selected === 'settings'}
               onClick={() =>
-                selected !== 'settings' && navigate(`/units/${unitId}/settings`)
+                selected !== 'settings' &&
+                navigate(routes.settings(unitId).value)
               }
             >
               <CustomIcon

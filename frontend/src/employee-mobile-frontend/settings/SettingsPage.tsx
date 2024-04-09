@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
+import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H1 } from 'lib-components/typography'
 
@@ -14,14 +16,25 @@ import { UserContext } from '../auth/state'
 import BottomNavbar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { UnitContext } from '../common/unit'
+import { toUnitOrGroup } from '../common/unit-or-group'
+import { RememberContext } from '../remember'
+import { unitInfoQuery } from '../units/queries'
 
 import { NotificationSettings } from './NotificationSettings'
 
-export const SettingsPage = React.memo(function SettingsPage() {
+export const SettingsPage = React.memo(function SettingsPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const { groupId } = useContext(RememberContext)
+  const unitOrGroup = useMemo(
+    () => toUnitOrGroup({ unitId, groupId }),
+    [unitId, groupId]
+  )
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user: userResponse } = useContext(UserContext)
 
   return (
@@ -30,6 +43,7 @@ export const SettingsPage = React.memo(function SettingsPage() {
         <>
           <TopBar
             title={unit.name}
+            unitId={unitId}
             onBack={
               user && user.unitIds.length > 1
                 ? () => navigate('/units')
@@ -42,11 +56,11 @@ export const SettingsPage = React.memo(function SettingsPage() {
             paddingHorizontal="s"
           >
             <H1>{i18n.common.settings}</H1>
-            <NotificationSettings />
+            <NotificationSettings unitId={unitId} />
           </ContentArea>
         </>
       ))}
-      <BottomNavbar selected="settings" />
+      <BottomNavbar selected="settings" unitOrGroup={unitOrGroup} />
     </ContentArea>
   )
 })

@@ -7,29 +7,32 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { useQuery } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
 import { fontSizesMobile, H1, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { UserContext } from '../auth/state'
 import BottomNavBar from '../common/BottomNavbar'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
 import { WideLinkButton } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import { unreadCountsQuery } from './queries'
 
-export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
-  const { unitId } = useRouteParams(['unitId'])
-  const { groupRoute } = useSelectedGroup()
+export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
   const { i18n } = useTranslation()
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitId = unitOrGroup.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId))
 
@@ -40,7 +43,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      <TopBar title={unit.name} />
+      <TopBar title={unit.name} unitId={unitId} />
       <HeaderContainer>
         <H1 noMargin={true}>{i18n.messages.unreadMessages}</H1>
       </HeaderContainer>
@@ -49,7 +52,10 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
           <UnreadCountByGroupRow key={group.id}>
             <LinkToGroupMessages
               data-qa={`link-to-group-messages-${group.id}`}
-              to={`/units/${unitId}/groups/${group.id}/messages`}
+              to={
+                routes.messages(toUnitOrGroup({ unitId, groupId: group.id }))
+                  .value
+              }
             >
               {group.name}
             </LinkToGroupMessages>
@@ -70,13 +76,13 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage() {
           <WideLinkButton
             $primary
             data-qa="pin-login-button"
-            to={`${groupRoute}/messages`}
+            to={routes.messages(unitOrGroup).value}
           >
             {i18n.messages.openPinLock}
           </WideLinkButton>
         </ButtonContainer>
       )}
-      <BottomNavBar selected="messages" />
+      <BottomNavBar selected="messages" unitOrGroup={unitOrGroup} />
     </ContentArea>
   ))
 })

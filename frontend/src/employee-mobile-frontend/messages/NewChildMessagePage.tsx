@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { MessageReceiver } from 'lib-common/api-types/messaging'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
@@ -26,10 +27,12 @@ import { recipientsQuery } from './queries'
 import { MessageContext } from './state'
 
 interface Props {
+  unitId: UUID
   child: AttendanceChild
 }
 
 const NewChildMessagePage = React.memo(function NewChildMessagePage({
+  unitId,
   child
 }: Props) {
   const { i18n } = useTranslation()
@@ -75,6 +78,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
   return renderResult(receivers, (receivers) =>
     childGroupAccount !== undefined && receivers.length > 0 ? (
       <MessageEditor
+        unitId={unitId}
         account={childGroupAccount.account}
         availableRecipients={receivers}
         draft={undefined}
@@ -88,7 +92,7 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
         fullHeight={true}
         data-qa="messages-editor-content-area"
       >
-        <TopBar title={i18n.messages.newMessage} />
+        <TopBar title={i18n.messages.newMessage} unitId={unitId} />
         <PaddedContainer>
           {receivers.length === 0 ? (
             <span data-qa="info-no-receivers">{i18n.messages.noReceivers}</span>
@@ -108,10 +112,16 @@ const NewChildMessagePage = React.memo(function NewChildMessagePage({
   )
 })
 
-export default React.memo(function MessageEditorPageWrapper() {
-  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
+export default React.memo(function MessageEditorPageWrapper({
+  unitId
+}: {
+  unitId: UUID
+}) {
+  const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  return renderResult(child, (child) => <NewChildMessagePage child={child} />)
+  return renderResult(child, (child) => (
+    <NewChildMessagePage unitId={unitId} child={child} />
+  ))
 })
 
 const PaddedContainer = styled.div`

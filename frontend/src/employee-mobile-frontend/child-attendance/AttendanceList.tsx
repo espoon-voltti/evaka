@@ -8,38 +8,37 @@ import {
   AttendanceChild,
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
-import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 
+import { routes } from '../App'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import ChildList, { ListItem } from './ChildList'
 import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
 interface Props {
-  unitId: UUID
+  unitOrGroup: UnitOrGroup
   activeStatus: AttendanceStatus
   unitChildren: AttendanceChild[]
   attendanceStatuses: AttendanceStatuses
 }
 
 export default React.memo(function AttendanceList({
-  unitId,
+  unitOrGroup,
   activeStatus,
   unitChildren,
   attendanceStatuses
 }: Props) {
   const { i18n } = useTranslation()
-  const { groupRoute, selectedGroupId } = useSelectedGroup()
 
   const groupChildren = useMemo(
     () =>
-      selectedGroupId.type === 'all'
+      unitOrGroup.type === 'unit'
         ? unitChildren
-        : unitChildren.filter((c) => c.groupId === selectedGroupId.id),
-    [selectedGroupId, unitChildren]
+        : unitChildren.filter((c) => c.groupId === unitOrGroup.id),
+    [unitOrGroup, unitChildren]
   )
 
   const childrenWithStatus = useCallback(
@@ -69,8 +68,6 @@ export default React.memo(function AttendanceList({
   )
 
   const tabs = useMemo(() => {
-    const url = `${groupRoute}/child-attendance/list`
-
     const getLabel = (title: string, count: number) => (
       <>
         {title}
@@ -83,27 +80,27 @@ export default React.memo(function AttendanceList({
     return [
       {
         id: 'coming',
-        link: `${url}/coming`,
+        link: routes.childAttendanceList(unitOrGroup, 'coming'),
         label: getLabel(i18n.attendances.types.COMING, totalComing)
       },
       {
         id: 'present',
-        link: `${url}/present`,
+        link: routes.childAttendanceList(unitOrGroup, 'present'),
         label: getLabel(i18n.attendances.types.PRESENT, totalPresent)
       },
       {
         id: 'departed',
-        link: `${url}/departed`,
+        link: routes.childAttendanceList(unitOrGroup, 'departed'),
         label: getLabel(i18n.attendances.types.DEPARTED, totalDeparted)
       },
       {
         id: 'absent',
-        link: `${url}/absent`,
+        link: routes.childAttendanceList(unitOrGroup, 'absent'),
         label: getLabel(i18n.attendances.types.ABSENT, totalAbsent)
       }
     ]
   }, [
-    groupRoute,
+    unitOrGroup,
     i18n,
     totalComing,
     totalAttendances,
@@ -130,7 +127,7 @@ export default React.memo(function AttendanceList({
         paddingHorizontal="zero"
       >
         <ChildList
-          unitId={unitId}
+          unitOrGroup={unitOrGroup}
           items={filteredChildren}
           type={activeStatus}
         />

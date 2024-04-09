@@ -8,7 +8,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AttendanceDailyServiceTimes from 'employee-mobile-frontend/child-info/AttendanceDailyServiceTimes'
-import { useSelectedGroup } from 'employee-mobile-frontend/common/selected-group'
+import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
 import { combine } from 'lib-common/api'
 import { localTime } from 'lib-common/form/fields'
 import {
@@ -54,9 +54,10 @@ import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus, faTrash } from 'lib-icons'
 
+import { routes } from '../../App'
 import { renderResult } from '../../async-rendering'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, ServiceTime } from '../../common/components'
@@ -64,8 +65,8 @@ import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import {
   childrenQuery,
-  getFutureAbsencesByChildQuery,
   getConfirmedRangeQuery,
+  getFutureAbsencesByChildQuery,
   setConfirmedRangeMutation
 } from '../queries'
 import { useChild } from '../utils'
@@ -212,12 +213,18 @@ const initialFormState = (
   )
 })
 
-export default React.memo(function MarkReservations() {
+export default React.memo(function MarkReservations({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
   const navigate = useNavigate()
-  const { groupRoute } = useSelectedGroup()
   const { i18n } = useTranslation()
-  const { childId, unitId } = useRouteParams(['childId', 'unitId'])
-  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const { childId } = useRouteParams(['childId'])
+  const child = useChild(
+    useQueryResult(childrenQuery(unitOrGroup.unitId)),
+    childId
+  )
   const reservations = useQueryResult(getConfirmedRangeQuery(childId))
   const absences = useQueryResult(getFutureAbsencesByChildQuery(childId))
   const [mode, setMode] = useState<Mode>('view')
@@ -257,7 +264,7 @@ export default React.memo(function MarkReservations() {
                     onEditReservations={() => setMode('edit')}
                     onMarkAbsence={() =>
                       navigate(
-                        `${groupRoute}/child-attendance/${childId}/mark-absent-beforehand`
+                        routes.markAbsentBeforehand(unitOrGroup, childId).value
                       )
                     }
                   />

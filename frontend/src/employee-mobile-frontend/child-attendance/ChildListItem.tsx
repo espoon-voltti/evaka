@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -11,8 +11,7 @@ import {
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQuery } from 'lib-common/query'
-import useRouteParams from 'lib-common/useRouteParams'
+import { queryOrDefault, useQuery, useQueryResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bold, InformationText } from 'lib-components/typography'
@@ -20,11 +19,12 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
 
+import { routes } from '../App'
 import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
+import { unitInfoQuery } from '../units/queries'
 
 import { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
@@ -95,6 +95,7 @@ const GroupName = styled(InformationText)`
 `
 
 interface ChildListItemProps {
+  unitOrGroup: UnitOrGroup
   child: ListItem
   onClick?: () => void
   type?: AttendanceStatus
@@ -102,15 +103,14 @@ interface ChildListItemProps {
 }
 
 export default React.memo(function ChildListItem({
+  unitOrGroup,
   child,
   onClick,
   type,
   childAttendanceUrl
 }: ChildListItemProps) {
-  const { unitInfoResponse } = useContext(UnitContext)
-
-  const { unitId } = useRouteParams(['unitId'])
-  const { selectedGroupId } = useSelectedGroup()
+  const unitId = unitOrGroup.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { data: groupNotes = [] } = useQuery(
     queryOrDefault(groupNotesQuery, [])(child.groupId)
@@ -130,7 +130,7 @@ export default React.memo(function ChildListItem({
   )
 
   const maybeGroupName =
-    type && selectedGroupId.type === 'all' ? groupName : undefined
+    type && unitOrGroup.type === 'unit' ? groupName : undefined
   const today = LocalDate.todayInSystemTz()
   const childAge = today.differenceInYears(child.dateOfBirth)
 
@@ -168,9 +168,12 @@ export default React.memo(function ChildListItem({
             <FixedSpaceRowWithLeftMargin alignItems="center">
               {child.dailyNote && (
                 <Link
-                  to={`/units/${unitId}/groups/${
-                    child.groupId ?? 'all'
-                  }/child-attendance/${child.id}/note`}
+                  to={
+                    routes.childNotes(
+                      toUnitOrGroup({ unitId, groupId: child.groupId }),
+                      child.id
+                    ).value
+                  }
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
@@ -182,7 +185,12 @@ export default React.memo(function ChildListItem({
               )}
               {child.groupId && groupNotes.length > 0 ? (
                 <Link
-                  to={`/units/${unitId}/groups/${child.groupId}/child-attendance/${child.id}/note`}
+                  to={
+                    routes.childNotes(
+                      toUnitOrGroup({ unitId, groupId: child.groupId }),
+                      child.id
+                    ).value
+                  }
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon

@@ -8,6 +8,8 @@ import styled from 'styled-components'
 import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
@@ -15,7 +17,7 @@ import { faLockOpenAlt, faTimes } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
 import { UserContext } from '../../auth/state'
-import { UnitContext } from '../unit'
+import { unitInfoQuery } from '../../units/queries'
 
 import { TopBarIconContainer } from './TopBarIconContainer'
 import { UserMenu } from './UserMenu'
@@ -37,9 +39,16 @@ const getUserName = (u: Staff | undefined) => {
   }
 }
 
-export const LoggedInUser = React.memo(function LoggedInUser() {
+export const LoggedInUser = React.memo(function LoggedInUser({
+  unitId
+}: {
+  unitId: UUID | undefined
+}) {
   const { user, refreshAuthStatus } = useContext(UserContext)
-  const { unitInfoResponse } = useContext(UnitContext)
+
+  const unitInfoResponse = useQueryResult(
+    queryOrDefault(unitInfoQuery, null)(unitId ? { unitId } : null)
+  )
 
   const userNames = useMemo(
     () =>
@@ -51,7 +60,7 @@ export const LoggedInUser = React.memo(function LoggedInUser() {
             return undefined
           }
 
-          return unitInfo.staff.find(({ id }) => id === employeeId)
+          return unitInfo?.staff.find(({ id }) => id === employeeId)
         })
         .map(getUserName)
         .getOrElse(getUserName(undefined)),

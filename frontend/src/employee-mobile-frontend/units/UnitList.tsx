@@ -7,9 +7,7 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading } from 'lib-common/api'
-import { UnitStats } from 'lib-common/generated/api-types/attendance'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -20,27 +18,28 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronRight } from 'lib-icons'
 
-import { renderResult } from './async-rendering'
-import { UserContext } from './auth/state'
-import TopBar from './common/TopBar'
-import { useTranslation } from './common/i18n'
-import { getMobileUnitStats } from './pairing/api'
+import { routes } from '../App'
+import { renderResult } from '../async-rendering'
+import { UserContext } from '../auth/state'
+import TopBar from '../common/TopBar'
+import { useTranslation } from '../common/i18n'
+import { toUnitOrGroup } from '../common/unit-or-group'
+
+import { unitStatsQuery } from './queries'
 
 export default React.memo(function UnitList() {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
 
-  const [units] = useApiState(() => {
-    const unitIds = user.map((user) => user?.unitIds).getOrElse(undefined)
-    if (unitIds) {
-      return getMobileUnitStats(unitIds)
-    }
-    return Promise.resolve(Loading.of<UnitStats[]>())
-  }, [user])
+  const unitIds = user.map((user) => user?.unitIds).getOrElse(undefined)
+  const units = useQueryResult(unitStatsQuery({ unitIds: unitIds ?? [] }), {
+    enabled: !!unitIds,
+    refetchOnMount: 'always'
+  })
 
   return (
     <>
-      <TopBar title={i18n.units.title} />
+      <TopBar title={i18n.units.title} unitId={undefined} />
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
         {renderResult(units, (units) => (
@@ -59,7 +58,11 @@ export default React.memo(function UnitList() {
                 }) => (
                   <UnitContainer
                     key={id}
-                    to={`/units/${id}`}
+                    to={
+                      routes.childAttendances(
+                        toUnitOrGroup({ unitId: id, groupId: undefined })
+                      ).value
+                    }
                     data-qa={`unit-${id}`}
                   >
                     <FixedSpaceColumn spacing="s" fullWidth>

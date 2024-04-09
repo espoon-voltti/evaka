@@ -7,13 +7,14 @@ import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import {
-  AttendanceStatus,
-  AttendanceChild
+  AttendanceChild,
+  AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../common/i18n'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import DayListItem, { ChevronBox, DateBox } from './DayListItem'
 
@@ -22,10 +23,14 @@ export interface ListItem extends AttendanceChild {
 }
 
 interface Props {
+  unitOrGroup: UnitOrGroup
   reservationStatistics: DayReservationStatisticsResult[]
 }
 
-export default React.memo(function DayList({ reservationStatistics }: Props) {
+export default React.memo(function DayList({
+  unitOrGroup,
+  reservationStatistics
+}: Props) {
   const { i18n } = useTranslation()
 
   const sortedDays = useMemo(
@@ -46,7 +51,11 @@ export default React.memo(function DayList({ reservationStatistics }: Props) {
             key={`${dr.date.format()}-li`}
             data-qa={`day-item-${dr.date.formatIso()}`}
           >
-            <DayListItem key={`${dr.date.format()}-dli`} dayStats={dr} />
+            <DayListItem
+              key={`${dr.date.format()}-dli`}
+              dayStats={dr}
+              unitOrGroup={unitOrGroup}
+            />
           </Li>
         ))}
       </NoMarginList>

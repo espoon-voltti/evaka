@@ -6,6 +6,7 @@ import React from 'react'
 
 import useRouteParams from 'lib-common/useRouteParams'
 
+import { UnitOrGroup } from '../common/unit-or-group'
 import {
   mapChildAttendanceUIState,
   parseChildAttendanceUiState
@@ -14,10 +15,14 @@ import {
 import AttendanceList from './AttendanceList'
 import { useAttendanceContext } from './AttendancePageWrapper'
 
-export default React.memo(function AttendancePageWrapper() {
+export default React.memo(function AttendancePageWrapper({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
   const { attendanceStatus } = useRouteParams(['attendanceStatus'])
   const attendanceUiState = parseChildAttendanceUiState(attendanceStatus)
-  const { unitId, attendanceStatuses, unitChildren } = useAttendanceContext()
+  const { attendanceStatuses, unitChildren } = useAttendanceContext()
 
   if (!attendanceUiState) {
     throw new Error('Invalid attendance status')
@@ -28,7 +33,7 @@ export default React.memo(function AttendancePageWrapper() {
       activeStatus={mapChildAttendanceUIState(attendanceUiState)}
       unitChildren={unitChildren}
       attendanceStatuses={attendanceStatuses}
-      unitId={unitId}
+      unitOrGroup={unitOrGroup}
     />
   )
 })

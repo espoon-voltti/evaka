@@ -5,29 +5,14 @@
 import React, { useContext } from 'react'
 import { Navigate } from 'react-router-dom'
 
-import { PinLogin } from './auth/PinLogin'
 import { UserContext } from './auth/state'
 
 interface Props {
-  strength?: 'PAIRING' | 'PIN'
   children?: React.ReactNode
 }
 
-export default React.memo(function RequireAuth({
-  strength = 'PAIRING',
-  children
-}: Props) {
-  const { loggedIn, user } = useContext(UserContext)
+export default React.memo(function RequireAuth({ children }: Props) {
+  const { loggedIn } = useContext(UserContext)
 
-  if (strength === 'PAIRING') {
-    return loggedIn ? <>{children}</> : <Navigate replace to="/" />
-  } else {
-    if (!user.isSuccess || !user.value) {
-      return <Navigate replace to="/" />
-    }
-    if (!user.value.pinLoginActive) {
-      return <PinLogin />
-    }
-    return <>{children}</>
-  }
+  return loggedIn ? <>{children}</> : <Navigate replace to="/" />
 })

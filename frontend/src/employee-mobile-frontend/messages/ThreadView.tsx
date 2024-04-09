@@ -48,29 +48,38 @@ import { replyToThreadMutation, threadQuery } from './queries'
 import { MessageContext } from './state'
 
 interface ReceivedThreadViewProps {
+  unitId: UUID
   accountId: UUID
   threadId: UUID
   onBack: () => void
 }
 
 export const ReceivedThreadView = React.memo(function ReceivedThreadView({
+  unitId,
   accountId,
   threadId,
   onBack
 }: ReceivedThreadViewProps) {
   const thread = useQueryResult(threadQuery(accountId, threadId))
   return renderResult(thread, (thread) => (
-    <ReceivedThread accountId={accountId} thread={thread} onBack={onBack} />
+    <ReceivedThread
+      accountId={accountId}
+      thread={thread}
+      onBack={onBack}
+      unitId={unitId}
+    />
   ))
 })
 
 interface ReceivedThreadProps {
+  unitId: UUID
   accountId: UUID
   thread: MessageThread
   onBack: () => void
 }
 
 const ReceivedThread = React.memo(function ReceivedThread({
+  unitId,
   accountId,
   thread: { id: threadId, messages, title, type, children },
   onBack
@@ -107,7 +116,7 @@ const ReceivedThread = React.memo(function ReceivedThread({
 
   return (
     <MobileThreadContainer data-qa="thread-reader">
-      <TopBar title={title} onBack={onBack} invertedColors />
+      <TopBar title={title} onBack={onBack} invertedColors unitId={unitId} />
       <Gap size="s" />
       <MessageList>
         {messages.map((message, i) => (
@@ -220,19 +229,26 @@ const SingleMessage = React.memo(
 )
 
 interface SentMessageViewProps {
+  unitId: UUID
   account: MessageAccount
   message: SentMessage
   onBack: () => void
 }
 
 export const SentMessageView = React.memo(function SentMessageView({
+  unitId,
   account,
   message,
   onBack
 }: SentMessageViewProps) {
   return (
     <MobileThreadContainer data-qa="thread-reader">
-      <TopBar title={message.threadTitle} onBack={onBack} invertedColors />
+      <TopBar
+        title={message.threadTitle}
+        onBack={onBack}
+        invertedColors
+        unitId={unitId}
+      />
       <Gap size="s" />
       <MessageList>
         <MessageContainer>

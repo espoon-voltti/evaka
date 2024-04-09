@@ -7,22 +7,27 @@ import React from 'react'
 import { renderResult } from 'employee-mobile-frontend/async-rendering'
 import { useQueryResult } from 'lib-common/query'
 
+import { UnitOrGroup } from '../common/unit-or-group'
+
 import ConfirmedDaysReservationList from './ConfirmedDaysReservationList'
 import { confirmedDaysReservationsStatisticsQuery } from './queries'
 
 export default React.memo(function ConfirmedReservationsDaysWrapper({
-  unitId
+  unitOrGroup
 }: {
-  unitId: string
+  unitOrGroup: UnitOrGroup
 }) {
   const statisticsResult = useQueryResult(
-    confirmedDaysReservationsStatisticsQuery(unitId)
+    confirmedDaysReservationsStatisticsQuery(unitOrGroup.unitId)
   )
 
   return (
     <>
       {renderResult(statisticsResult, (dayStatistics) => (
-        <ConfirmedDaysReservationList dailyStatistics={dayStatistics} />
+        <ConfirmedDaysReservationList
+          dailyStatistics={dayStatistics}
+          unitOrGroup={unitOrGroup}
+        />
       ))}
     </>
   )

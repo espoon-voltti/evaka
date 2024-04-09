@@ -15,8 +15,7 @@ import { queryOrDefault, useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import { messagingAccountsQuery } from './queries'
 
@@ -38,22 +37,19 @@ export const MessageContext = createContext<MessagesState>(defaultState)
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({
+    unitOrGroup,
     children
   }: {
+    unitOrGroup: UnitOrGroup
     children: React.JSX.Element
   }) {
-    const { unitInfoResponse } = useContext(UnitContext)
-
+    const unitId = unitOrGroup.unitId
     const { user } = useContext(UserContext)
     const pinLoggedEmployeeId = user
       .map((u) =>
         u && u.pinLoginActive ? u.employeeId ?? undefined : undefined
       )
       .getOrElse(undefined)
-
-    const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
-
-    const { selectedGroupId } = useSelectedGroup()
 
     const { data: groupAccounts = [] } = useQuery(
       queryOrDefault(
@@ -68,12 +64,12 @@ export const MessageContextProvider = React.memo(
 
     const selectedAccount: AuthorizedMessageAccount | undefined = useMemo(
       () =>
-        (selectedGroupId.type === 'all'
+        (unitOrGroup.type === 'unit'
           ? undefined
           : groupAccounts.find(
-              ({ daycareGroup }) => daycareGroup?.id === selectedGroupId.id
+              ({ daycareGroup }) => daycareGroup?.id === unitOrGroup.id
             )) ?? groupAccounts[0],
-      [groupAccounts, selectedGroupId]
+      [groupAccounts, unitOrGroup]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})

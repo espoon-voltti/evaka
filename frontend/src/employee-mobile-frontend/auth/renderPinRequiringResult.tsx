@@ -5,6 +5,7 @@
 import React from 'react'
 
 import { Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 
 import { renderResult, RenderResultFn } from '../async-rendering'
 
@@ -17,7 +18,12 @@ function isResultT<T>(res: Result<T | PinLoginRequired>): res is Result<T> {
 
 export function renderPinRequiringResult<T>(
   result: Result<T | PinLoginRequired>,
+  unitId: UUID,
   renderer: RenderResultFn<T>
 ) {
-  return isResultT(result) ? renderResult(result, renderer) : <PinLogin />
+  return isResultT(result) ? (
+    renderResult(result, renderer)
+  ) : (
+    <PinLogin unitId={unitId} />
+  )
 }

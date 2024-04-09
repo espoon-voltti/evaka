@@ -4,7 +4,7 @@
 
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -20,10 +20,11 @@ import { H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { UnitOrGroup } from '../common/unit-or-group'
+import { unitInfoQuery } from '../units/queries'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
@@ -31,13 +32,17 @@ import { TimeInfo } from './components/staff-components'
 import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
-export default React.memo(function StaffMemberPage() {
-  const { unitId, employeeId } = useRouteParams(['unitId', 'employeeId'])
-  const { groupRoute } = useSelectedGroup()
+export default React.memo(function StaffMemberPage({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
+  const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitInfoResponse } = useContext(UnitContext)
+  const unitId = unitOrGroup.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
 
@@ -55,7 +60,9 @@ export default React.memo(function StaffMemberPage() {
   return renderResult(
     employeeResponse,
     ({ isOperationalDate, staffMember }) => (
-      <StaffMemberPageContainer back={`${groupRoute}/staff-attendance/present`}>
+      <StaffMemberPageContainer
+        back={routes.staffAttendances(unitOrGroup, 'present').value}
+      >
         {staffMember === undefined ? (
           <ErrorSegment
             title={i18n.attendances.staff.errors.employeeNotFound}
@@ -92,7 +99,10 @@ export default React.memo(function StaffMemberPage() {
                               icon={faEdit}
                               onClick={() =>
                                 navigate(
-                                  `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                                  routes.staffAttendanceEdit(
+                                    unitOrGroup,
+                                    staffMember.employeeId
+                                  ).value
                                 )
                               }
                               aria-label={i18n.common.edit}
@@ -129,7 +139,10 @@ export default React.memo(function StaffMemberPage() {
                         icon={faEdit}
                         onClick={() =>
                           navigate(
-                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/edit`
+                            routes.staffAttendanceEdit(
+                              unitOrGroup,
+                              staffMember.employeeId
+                            ).value
                           )
                         }
                         aria-label={i18n.common.edit}
@@ -147,7 +160,10 @@ export default React.memo(function StaffMemberPage() {
                       data-qa="mark-departed-btn"
                       onClick={() =>
                         navigate(
-                          `${groupRoute}/staff-attendance/${staffMember.employeeId}/mark-departed`
+                          routes.staffMarkDeparted(
+                            unitOrGroup,
+                            staffMember.employeeId
+                          ).value
                         )
                       }
                     >
@@ -166,7 +182,10 @@ export default React.memo(function StaffMemberPage() {
                         disabled={!isOperationalDate}
                         onClick={() =>
                           navigate(
-                            `${groupRoute}/staff-attendance/${staffMember.employeeId}/mark-arrived`
+                            routes.staffMarkArrived(
+                              unitOrGroup,
+                              staffMember.employeeId
+                            ).value
                           )
                         }
                       >

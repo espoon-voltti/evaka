@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -21,6 +21,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
+import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { IconBox } from '../child-attendance/ChildListItem'
 import {
@@ -34,9 +35,9 @@ import { groupNotesQuery } from '../child-notes/queries'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
-import { useSelectedGroup } from '../common/selected-group'
-import { UnitContext } from '../common/unit'
+import { UnitOrGroup } from '../common/unit-or-group'
 import { BackButton, TallContentArea } from '../pairing/components'
+import { unitInfoQuery } from '../units/queries'
 
 import Absences from './Absences'
 import ArrivalAndDeparture from './ArrivalAndDeparture'
@@ -48,22 +49,26 @@ import AttendanceChildComing from './child-state-pages/AttendanceChildComing'
 import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted'
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
 
-export default React.memo(function AttendanceChildPage() {
+export default React.memo(function AttendanceChildPage({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitId, childId } = useRouteParams(['unitId', 'childId'])
+  const { childId } = useRouteParams(['childId'])
 
-  const { unitInfoResponse } = useContext(UnitContext)
-  const { selectedGroupId, groupRoute } = useSelectedGroup()
+  const unitId = unitOrGroup.unitId
+  const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { data: groupNotes } = useQuery(
-    groupNotesQuery(selectedGroupId.type === 'all' ? '' : selectedGroupId.id),
+    groupNotesQuery(unitOrGroup.type === 'group' ? unitOrGroup.id : ''),
     {
-      enabled: selectedGroupId.type !== 'all'
+      enabled: unitOrGroup.type === 'group'
     }
   )
   const groupHasNotes =
-    selectedGroupId.type === 'all'
+    unitOrGroup.type === 'unit'
       ? false
       : !!(groupNotes && groupNotes.length > 1)
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
@@ -193,8 +198,8 @@ export default React.memo(function AttendanceChildPage() {
                     </ChildBackground>
 
                     <ChildButtons
+                      unitOrGroup={unitOrGroup}
                       groupHasNotes={groupHasNotes}
-                      groupRoute={groupRoute}
                       child={child}
                     />
                   </Zindex>
@@ -228,21 +233,21 @@ export default React.memo(function AttendanceChildPage() {
                     <Gap size="xs" />
                     {childAttendance.status === 'COMING' && (
                       <AttendanceChildComing
+                        unitOrGroup={unitOrGroup}
                         child={child}
-                        groupRoute={groupRoute}
                         attendances={childAttendance.attendances}
                       />
                     )}
                     {childAttendance.status === 'PRESENT' && (
                       <AttendanceChildPresent
+                        unitOrGroup={unitOrGroup}
                         child={child}
-                        groupRoute={groupRoute}
                       />
                     )}
                     {childAttendance.status === 'DEPARTED' && (
                       <AttendanceChildDeparted
+                        unitOrGroup={unitOrGroup}
                         child={child}
-                        groupRoute={groupRoute}
                       />
                     )}
                     {childAttendance.status === 'ABSENT' &&
@@ -260,7 +265,7 @@ export default React.memo(function AttendanceChildPage() {
                     .getOrElse(false) ? (
                     <LinkButtonWithIcon
                       data-qa="mark-reservations"
-                      to={`${groupRoute}/child-attendance/${childId}/mark-reservations`}
+                      to={routes.markReservations(unitOrGroup, childId).value}
                     >
                       <RoundIcon
                         size="L"
@@ -274,7 +279,9 @@ export default React.memo(function AttendanceChildPage() {
                   ) : (
                     <LinkButtonWithIcon
                       data-qa="mark-absent-beforehand"
-                      to={`${groupRoute}/child-attendance/${childId}/mark-absent-beforehand`}
+                      to={
+                        routes.markAbsentBeforehand(unitOrGroup, childId).value
+                      }
                     >
                       <RoundIcon
                         size="L"

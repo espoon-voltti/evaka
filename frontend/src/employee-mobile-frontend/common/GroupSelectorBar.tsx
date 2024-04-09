@@ -7,6 +7,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -54,6 +55,7 @@ const GroupSelectorWrapper = animated(styled.div`
 `)
 
 export interface Props {
+  unitId: UUID
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
   onSearch?: () => void
@@ -63,6 +65,7 @@ export interface Props {
 }
 
 export const GroupSelectorBar = React.memo(function GroupSelectorBar({
+  unitId,
   selectedGroup,
   onChangeGroup,
   onSearch,
@@ -109,6 +112,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
           </GroupSelectorButtonRow>
         )}
         <GroupSelector
+          unitId={unitId}
           selectedGroup={selectedGroup}
           onChangeGroup={(group) => {
             onChangeGroup(group)

@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -49,6 +50,7 @@ const Title = styled.div`
 `
 
 interface Props {
+  unitId: UUID | undefined
   title: string
   onBack?: () => void
   onClose?: () => void
@@ -57,6 +59,7 @@ interface Props {
 }
 
 export default React.memo(function TopBar({
+  unitId,
   title,
   onBack,
   onClose,
@@ -97,7 +100,7 @@ export default React.memo(function TopBar({
           />
         </TopBarIconContainer>
       ) : (
-        <LoggedInUser />
+        <LoggedInUser unitId={unitId} />
       )}
     </StickyTopBar>
   )

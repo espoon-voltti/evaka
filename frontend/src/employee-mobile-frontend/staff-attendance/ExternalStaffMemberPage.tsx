@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import MutateButton, {
   cancelMutation
@@ -28,9 +29,13 @@ import { TimeInfo } from './components/staff-components'
 import { externalStaffDepartureMutation, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
-export default React.memo(function ExternalStaffMemberPage() {
+export default React.memo(function ExternalStaffMemberPage({
+  unitId
+}: {
+  unitId: UUID
+}) {
   const navigate = useNavigate()
-  const { unitId, attendanceId } = useRouteParams(['unitId', 'attendanceId'])
+  const { attendanceId } = useRouteParams(['attendanceId'])
   const { i18n } = useTranslation()
 
   const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
