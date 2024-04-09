@@ -879,9 +879,9 @@ export interface VardaErrorReportRow {
 * Generated from fi.espoo.evaka.reports.VoucherReportRowType
 */
 export type VoucherReportRowType =
-  | 'ORIGINAL'
   | 'REFUND'
   | 'CORRECTION'
+  | 'ORIGINAL'
 
 
 export function deserializeJsonAssistanceNeedDecisionsReportRow(json: JsonOf<AssistanceNeedDecisionsReportRow>): AssistanceNeedDecisionsReportRow {

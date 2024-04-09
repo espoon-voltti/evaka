@@ -1360,4 +1360,52 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             realizedValue = 53927
         )
     }
+
+    @Test
+    fun `months without actual changes do not cause corrections even though changed decision spans them`() {
+        val decision =
+            createVoucherDecision(
+                unitId = testDaycare.id,
+                validFrom = janFirst,
+                validTo = marFirst.plusDays(20),
+                value = 148300,
+                coPayment = 0
+            )
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+        db.transaction {
+            freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
+        }
+        db.transaction {
+            freezeVoucherValueReportRows(it, marFirst.year, marFirst.monthValue, marFreeze)
+        }
+
+        // decision is shortened by 10 days
+        db.transaction { tx ->
+            tx.updateVoucherValueDecisionEndDates(
+                listOf(decision.copy(validTo = marFirst.plusDays(10))),
+                now = marFreeze.plusDays(1)
+            )
+        }
+
+        val aprReport = getUnitReport(testDaycare.id, aprFirst.year, aprFirst.monthValue)
+        assertEquals(2, aprReport.size)
+        aprReport.assertContainsRow(
+            type = REFUND,
+            periodStart = marFirst,
+            periodEnd = marFirst.plusDays(20),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = -101114
+        )
+        aprReport.assertContainsRow(
+            type = CORRECTION,
+            periodStart = marFirst,
+            periodEnd = marFirst.plusDays(10),
+            value = 148300,
+            finalCoPayment = 0,
+            realizedValue = 53927
+        )
+    }
 }
