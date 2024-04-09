@@ -78,7 +78,6 @@ export const testTranslations: Translations = {
   loginErrorModal: {
     header: '',
     message: '',
-    inactiveUserMessage: '',
     returnMessage: ''
   },
   messages: {

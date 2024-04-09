@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.AccessControlCitizen
@@ -125,9 +124,6 @@ class SystemController(
                         )
                     }
                     val inserted = it.loginEmployee(clock, request.toNewEmployee())
-                    if (!inserted.active) {
-                        throw Forbidden("User is not active", errorCode = "inactiveUser")
-                    }
                     val roles = it.getEmployeeRoles(inserted.id)
                     val employee =
                         EmployeeUser(

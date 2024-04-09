@@ -73,7 +73,6 @@ export interface Translations {
   loginErrorModal: {
     header: string
     message: string
-    inactiveUserMessage: string
     returnMessage: string
   }
   messages: {
