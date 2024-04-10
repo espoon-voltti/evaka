@@ -86,6 +86,9 @@ class VardaUpdateServiceNew(
         )
 
     init {
+        check(vardaEnabledRange.start >= LocalDate.of(2019, 1, 1)) {
+            "Varda enabled range must start after 2019-01-01"
+        }
         asyncJobRunner.registerHandler(::updateChildJob)
     }
 
@@ -191,25 +194,26 @@ class VardaUpdater(
         return EvakaHenkiloNode(
             henkilo = Henkilo.fromEvaka(person),
             lapset =
-                evakaLapsiServiceNeeds.map { (lapsi, serviceNeedsOfLapsi) ->
+                evakaLapsiServiceNeeds.mapNotNull { (lapsi, serviceNeedsOfLapsi) ->
                     EvakaLapsiNode(
-                        lapsi = lapsi,
-                        varhaiskasvatuspaatokset =
-                            serviceNeedsOfLapsi
-                                .filter { it.range.start <= today }
-                                .map { serviceNeed ->
-                                    EvakaVarhaiskasvatuspaatosNode(
-                                        varhaiskasvatuspaatos =
-                                            Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
-                                        varhaiskasvatussuhteet =
-                                            listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
-                                    )
-                                },
-                        maksutiedot =
-                            // If lapsi.paos_organisaatio_oid is null, we'll get the fee data for
-                            // municipal daycare
-                            evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
-                    )
+                            lapsi = lapsi,
+                            varhaiskasvatuspaatokset =
+                                serviceNeedsOfLapsi
+                                    .filter { it.range.start <= today }
+                                    .map { serviceNeed ->
+                                        EvakaVarhaiskasvatuspaatosNode(
+                                            varhaiskasvatuspaatos =
+                                                Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
+                                            varhaiskasvatussuhteet =
+                                                listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
+                                        )
+                                    },
+                            maksutiedot =
+                                // If lapsi.paos_organisaatio_oid is null, we'll get the fee data
+                                // for municipal daycare
+                                evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
+                        )
+                        .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
                 }
         )
     }
@@ -282,12 +286,19 @@ class VardaUpdater(
             eq = { vardaNode, evakaNode -> Lapsi.fromVarda(vardaNode.lapsi) == evakaNode.lapsi },
             onDeleted = { client.deleteLapsiDeep(it) },
             onUnchanged = { vardaLapsi, evakaLapsi ->
-                // Maksutieto must be *removed first* and *added last* to avoid validation
-                // errors
+                // - Maksutieto must be *removed first* and *added last* to avoid validation
+                //   errors.
+                // - Neither Varda nor eVaka track children's guardian history, so only the current
+                //   state of guardians is recorded to the maksutieto. Ignore guardians when
+                //   comparing maksutiedot to not trigger an update if nothing else than guardians
+                //   have changed.
                 diff(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
-                    eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
+                    eq = { varda, evaka ->
+                        Maksutieto.fromVarda(varda).copy(huoltajat = emptyList()) ==
+                            evaka.copy(huoltajat = emptyList())
+                    },
                     onDeleted = { client.deleteMaksutieto(it) },
                 )
                 diff(
@@ -317,7 +328,10 @@ class VardaUpdater(
                 diff(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
-                    eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
+                    eq = { varda, evaka ->
+                        Maksutieto.fromVarda(varda).copy(huoltajat = emptyList()) ==
+                            evaka.copy(huoltajat = emptyList())
+                    },
                     onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
                 )
             },
