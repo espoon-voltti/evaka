@@ -286,12 +286,19 @@ class VardaUpdater(
             eq = { vardaNode, evakaNode -> Lapsi.fromVarda(vardaNode.lapsi) == evakaNode.lapsi },
             onDeleted = { client.deleteLapsiDeep(it) },
             onUnchanged = { vardaLapsi, evakaLapsi ->
-                // Maksutieto must be *removed first* and *added last* to avoid validation
-                // errors
+                // - Maksutieto must be *removed first* and *added last* to avoid validation
+                //   errors.
+                // - Neither Varda nor eVaka track children's guardian history, so only the current
+                //   state of guardians is recorded to the maksutieto. Ignore guardians when
+                //   comparing maksutiedot to not trigger an update if nothing else than guardians
+                //   have changed.
                 diff(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
-                    eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
+                    eq = { varda, evaka ->
+                        Maksutieto.fromVarda(varda).copy(huoltajat = emptyList()) ==
+                            evaka.copy(huoltajat = emptyList())
+                    },
                     onDeleted = { client.deleteMaksutieto(it) },
                 )
                 diff(
@@ -321,7 +328,10 @@ class VardaUpdater(
                 diff(
                     old = vardaLapsi.maksutiedot,
                     new = evakaLapsi.maksutiedot,
-                    eq = { varda, evaka -> Maksutieto.fromVarda(varda) == evaka },
+                    eq = { varda, evaka ->
+                        Maksutieto.fromVarda(varda).copy(huoltajat = emptyList()) ==
+                            evaka.copy(huoltajat = emptyList())
+                    },
                     onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
                 )
             },
