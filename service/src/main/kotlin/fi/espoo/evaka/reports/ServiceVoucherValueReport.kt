@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -205,9 +205,10 @@ data class ServiceVoucherValueUnitAggregate(
 }
 
 enum class VoucherReportRowType {
-    ORIGINAL,
+    // note: order is meaningful when sorting
     REFUND,
-    CORRECTION
+    CORRECTION,
+    ORIGINAL
 }
 
 data class ServiceVoucherValueRow(
@@ -232,6 +233,55 @@ data class ServiceVoucherValueRow(
     val type: VoucherReportRowType,
     @get:JsonProperty("isNew") val isNew: Boolean
 )
+
+private data class RowGrouping(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val realizedPeriod: FiniteDateRange
+)
+
+fun removeRefundsAndCorrectionsThatCancelEachOthersOut(
+    rows: List<ServiceVoucherValueRow>
+): List<ServiceVoucherValueRow> {
+    return rows
+        .groupBy {
+            RowGrouping(
+                childId = it.childId,
+                unitId = it.unitId,
+                realizedPeriod = it.realizedPeriod
+            )
+        }
+        .values
+        .flatMap { groupedRows ->
+            // groupedRows all have same child, unit and period
+            // from those try to find pairs of non-original rows which cancel each other out and can
+            // be ignored
+            val rowIndexesToSkip = mutableSetOf<Int>()
+            val sortedByType = groupedRows.sortedBy { it.type }
+
+            sortedByType.filterIndexed { i, row ->
+                if (row.type == VoucherReportRowType.ORIGINAL) {
+                    true
+                } else if (rowIndexesToSkip.contains(i)) {
+                    false
+                } else {
+                    // check if the remaining part of the list has an opposite row that
+                    // could be skipped together with this
+                    sortedByType
+                        .withIndex()
+                        .indexOfFirst { (j, skipCandidate) ->
+                            j > i &&
+                                !rowIndexesToSkip.contains(j) &&
+                                skipCandidate.type != VoucherReportRowType.ORIGINAL &&
+                                skipCandidate.realizedAmount == -row.realizedAmount
+                        }
+                        .takeIf { it >= 0 } // not found = -1
+                        ?.also { indexToSkip -> rowIndexesToSkip.add(indexToSkip) }
+                        .let { indexToSkip -> indexToSkip == null }
+                }
+            }
+        }
+}
 
 private fun Database.Read.getServiceVoucherValues(
     year: Int,
@@ -268,147 +318,129 @@ WITH min_voucher_decision_date AS (
     ) op ON true
 ), original AS (
     SELECT
+        decision.child_id,
         p.period,
-        daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period,
-        decision.id AS decision_id,
         p.operational_days,
-        p.operational_days_count
+        p.operational_days_count,
+        daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period,
+        round(
+            (decision.voucher_value - decision.final_co_payment) *
+            ((CASE
+                  WHEN p.period = daterange(decision.valid_from, decision.valid_to, '[]') * p.period
+                      THEN operational_days_count
+                  ELSE (
+                      SELECT COUNT(*)
+                      FROM unnest(operational_days) dates
+                      WHERE daterange(decision.valid_from, decision.valid_to, '[]') * p.period @> dates
+                  )
+            END)::numeric(10, 8) /
+            p.operational_days_count::numeric(10, 8))
+        ) AS realized_amount,
+        decision.id AS decision_id
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[]) AND lower(p.period) = ${bind(reportDate)}
-), previous_payments AS (
-    -- For each possible realized_period, find the latest (rank=1) ORIGINAL/CORRECTION snapshot row matching it.
-    SELECT
-        sn_decision.decision_id,
-        sn_decision.realized_period,
-        rank() OVER (PARTITION BY decision.child_id, sn_decision.realized_period ORDER BY sn.year DESC, sn.month DESC) AS rank
+), correction_targets AS (
+    -- child-month pairs where there is some retroactive change.
+    -- these should be refunded and paid again with new info
+
+    -- Decision validity changed or annulled after last freeze
+    SELECT decision.child_id, p.period, p.operational_days, p.operational_days_count
     FROM month_periods p
     JOIN voucher_value_report_decision sn_decision ON sn_decision.realized_period && p.period
-    JOIN voucher_value_report_snapshot sn ON sn.id = sn_decision.voucher_value_report_snapshot_id
     JOIN voucher_value_decision decision on decision.id = sn_decision.decision_id
-    WHERE sn_decision.type <> 'REFUND' AND lower(p.period) < ${bind(reportDate)}
-), correction_targets AS (
-    -- Validity updated after last freeze to be different in this period, or to not intersect with this period at all
-    SELECT
-        decision.id AS decision_id,
-        decision.child_id,
-        p.period,
-        p.operational_days,
-        p.operational_days_count
-    FROM month_periods p
-    JOIN previous_payments sn_decision ON sn_decision.realized_period && p.period AND sn_decision.rank = 1
-    JOIN voucher_value_decision decision on decision.id = sn_decision.decision_id
-    WHERE (decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[]) OR decision.status = 'ANNULLED')
-        AND decision.validity_updated_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
-        AND (daterange(decision.valid_from, decision.valid_to, '[]') * p.period) <> sn_decision.realized_period
+    WHERE lower(p.period) < ${bind(reportDate)} AND (
+        (
+            decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[])
+            AND decision.validity_updated_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
+        ) OR (
+            decision.status = 'ANNULLED'
+            AND decision.annulled_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
+        )
+    )
 
     UNION
 
-    -- Annulled after last freeze
-    SELECT
-        decision.id AS decision_id,
-        decision.child_id,
-        p.period,
-        p.operational_days,
-        p.operational_days_count
-    FROM month_periods p
-    JOIN previous_payments sn_decision ON sn_decision.realized_period && p.period AND sn_decision.rank = 1
-    JOIN voucher_value_decision decision ON decision.id = sn_decision.decision_id AND daterange(decision.valid_from,decision.valid_to,'[]') && sn_decision.realized_period
-    WHERE decision.status = 'ANNULLED'::voucher_value_decision_status
-        AND decision.annulled_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
-), corrections AS (
-    -- New decision created for the past
-    SELECT
-        decision.id AS decision_id,
-        p.period,
-        daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period,
-        p.operational_days,
-        p.operational_days_count
+    -- New decision approved after last freeze
+    SELECT decision.child_id, p.period, p.operational_days, p.operational_days_count
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE lower(p.period) < ${bind(reportDate)}
         AND decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[])
-        AND NOT EXISTS (
-            SELECT 1 FROM voucher_value_report_decision sn_decision
-            WHERE sn_decision.decision_id = decision.id
-                AND sn_decision.realized_period && p.period
-        )
-
-    UNION
-
-    -- Replaced with another decision for which there is no already reported correction for the same period
-    SELECT
-        decision.id AS decision_id,
-        p.period,
-        daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period,
-        p.operational_days,
-        p.operational_days_count
-    FROM correction_targets ct
-    JOIN month_periods p ON ct.period && p.period
-    JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = ct.decision_id AND sn_decision.realized_period && p.period
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && sn_decision.realized_period AND decision.child_id = ct.child_id
-    WHERE decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[])
+        AND decision.approved_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
 ), refunds AS (
     SELECT
+        p.child_id,
         p.period,
         p.operational_days,
         p.operational_days_count,
-        ct.decision_id,
-        sn_decision.realized_amount,
         sn_decision.realized_period,
-        sn_decision.type,
-        rank() OVER (PARTITION BY ct.child_id, p.period, ct.decision_id ORDER BY sn.year DESC, sn.month DESC) AS rank
-    FROM correction_targets ct
-    JOIN month_periods p ON ct.period && p.period
-    JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = ct.decision_id AND sn_decision.realized_period && p.period
-    JOIN voucher_value_report_snapshot sn ON sn.id = sn_decision.voucher_value_report_snapshot_id
+        -sn_decision.realized_amount AS realized_amount,
+        sn_decision.decision_id
+    FROM correction_targets p
+    JOIN voucher_value_decision decision ON decision.child_id = p.child_id
+    JOIN voucher_value_report_decision sn_decision ON sn_decision.decision_id = decision.id AND sn_decision.realized_period && p.period
+), corrections AS (
+    SELECT
+        p.child_id,
+        p.period,
+        p.operational_days,
+        p.operational_days_count,
+        daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period,
+        round(
+            (decision.voucher_value - decision.final_co_payment) *
+            ((CASE
+                  WHEN p.period = daterange(decision.valid_from, decision.valid_to, '[]') * p.period
+                      THEN operational_days_count
+                  ELSE (
+                      SELECT COUNT(*)
+                      FROM unnest(operational_days) dates
+                      WHERE daterange(decision.valid_from, decision.valid_to, '[]') * p.period @> dates
+                  )
+            END)::numeric(10, 8) /
+            p.operational_days_count::numeric(10, 8))
+        )                                                                  AS realized_amount,
+        decision.id AS decision_id
+    FROM correction_targets p
+    JOIN voucher_value_decision decision ON decision.child_id = p.child_id AND daterange(decision.valid_from, decision.valid_to, '[]') && p.period
+    WHERE decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[])
 ), report_rows AS (
     SELECT
-        decision_id,
+        child_id,
         period,
-        realized_period,
-        (CASE
-            WHEN period = realized_period THEN operational_days_count
-            ELSE (SELECT COUNT(*) FROM unnest(operational_days) dates WHERE realized_period @> dates)
-        END) AS number_of_days,
+        operational_days,
         operational_days_count,
-        -realized_amount AS realized_amount,
-        'REFUND' AS type,
-        1 AS type_sort
-    FROM refunds
-    WHERE rank = 1 AND type != 'REFUND'::voucher_report_row_type
-
-    UNION ALL
-
-    SELECT
-        decision_id,
-        period,
         realized_period,
-        (CASE
-            WHEN period = realized_period THEN operational_days_count
-            ELSE (SELECT COUNT(*) FROM unnest(operational_days) dates WHERE realized_period @> dates)
-        END) AS number_of_days,
-        operational_days_count,
-        NULL AS realized_amount,
-        'CORRECTION' AS type,
-        2 AS type_sort
-    FROM corrections
-
-    UNION ALL
-
-    SELECT
-        decision_id,
-        period,
-        realized_period,
-        (CASE
-            WHEN period = realized_period THEN operational_days_count
-            ELSE (SELECT COUNT(*) FROM unnest(operational_days) dates WHERE realized_period @> dates)
-        END) AS number_of_days,
-        operational_days_count,
-        NULL AS realized_amount,
+        realized_amount,
         'ORIGINAL' AS type,
-        3 AS type_sort
+        decision_id
     FROM original
+
+    UNION ALL
+
+    SELECT
+        child_id,
+        period,
+        operational_days,
+        operational_days_count,
+        realized_period,
+        realized_amount,
+        'REFUND' AS type,
+        decision_id
+    FROM refunds
+
+    UNION ALL
+
+    SELECT
+        child_id,
+        period,
+        operational_days,
+        operational_days_count,
+        realized_period,
+        realized_amount,
+        'CORRECTION' AS type,
+        decision_id
+    FROM corrections
 )
 SELECT
     child.id AS child_id,
@@ -426,12 +458,17 @@ SELECT
     decision.final_co_payment AS service_voucher_final_co_payment,
     decision.service_need_voucher_value_description_fi AS service_need_description,
     decision.assistance_need_coefficient AS assistance_need_coefficient,
-    coalesce(
-        row.realized_amount,
-        round((decision.voucher_value - decision.final_co_payment) * (row.number_of_days::numeric(10, 8) / row.operational_days_count::numeric(10, 8)))
-    ) AS realized_amount,
+    row.realized_amount,
     row.realized_period,
-    row.number_of_days,
+    (CASE
+         WHEN row.period = daterange(decision.valid_from, decision.valid_to, '[]') * row.period
+             THEN operational_days_count
+         ELSE (
+             SELECT COUNT(*)
+             FROM unnest(operational_days) dates
+             WHERE daterange(decision.valid_from, decision.valid_to, '[]') * row.period @> dates
+         )
+    END) AS number_of_days,
     row.type,
     NOT EXISTS (
         SELECT 1 FROM voucher_value_report_decision old_snapshot_decision
@@ -453,11 +490,21 @@ LEFT JOIN LATERAL (
     GROUP BY p.child_id
 ) child_group ON true
 WHERE (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)}) AND (${bind(unitIds)}::uuid[] IS NULL OR unit.id = ANY(${bind(unitIds)}))
-ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 """
             )
         }
         .toList<ServiceVoucherValueRow>()
+        .let(::removeRefundsAndCorrectionsThatCancelEachOthersOut)
+        .sortedWith(
+            compareBy(
+                { it.childLastName },
+                { it.childFirstName },
+                { it.childId },
+                { it.type },
+                { it.realizedPeriod.start },
+                { it.realizedPeriod.end }
+            )
+        )
 }
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
