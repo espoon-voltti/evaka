@@ -342,7 +342,7 @@ class PlacementController(
         }
         Audit.PlacementUpdate.log(targetId = placementId)
     }
-
+    // TODO
     @DeleteMapping("/placements/{placementId}")
     fun deletePlacement(
         db: Database,
