@@ -183,7 +183,7 @@ data class Maksutieto(
     val perheen_koko: Int?,
     val maksun_peruste_koodi: String,
     val asiakasmaksu: BigDecimal,
-    val palveluseteli_arvo: BigDecimal?
+    val palveluseteli_arvo: BigDecimal
 ) {
     companion object {
         fun fromEvaka(guardians: List<PersonDTO>, data: VardaFeeData): Maksutieto? {
@@ -222,7 +222,7 @@ data class Maksutieto(
                 perheen_koko = data.familySize,
                 asiakasmaksu = BigDecimal(data.totalFee).divide(BigDecimal(100)),
                 palveluseteli_arvo =
-                    data.voucherValue?.let { BigDecimal(it).divide(BigDecimal(100)) },
+                    (data.voucherValue ?: 0).let { BigDecimal(it).divide(BigDecimal(100)) }
             )
         }
 
@@ -234,7 +234,7 @@ data class Maksutieto(
                 perheen_koko = data.perheen_koko,
                 maksun_peruste_koodi = data.maksun_peruste_koodi,
                 asiakasmaksu = data.asiakasmaksu,
-                palveluseteli_arvo = data.palveluseteli_arvo,
+                palveluseteli_arvo = data.palveluseteli_arvo ?: BigDecimal(0),
             )
     }
 
