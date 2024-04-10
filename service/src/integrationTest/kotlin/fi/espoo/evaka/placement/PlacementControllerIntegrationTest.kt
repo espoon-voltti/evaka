@@ -811,7 +811,6 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertContains(activePlacement.type.absenceCategories(), updatedAbsences[1].category)
     }
 
-    // TODO
     @Test
     fun `Delete future placement should delete future attendance reservations that are in range of deleted placement period`() {
         val activePlacementStart = mockClock.today().minusMonths(3)
