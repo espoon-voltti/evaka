@@ -109,36 +109,6 @@ const components: Translations = {
       urgent: 'Kiireellinen'
     }
   },
-  messageEditor: {
-    newMessage: 'Uusi viesti',
-    to: {
-      label: 'Vastaanottaja',
-      placeholder: 'Valitse ryhmä',
-      noOptions: 'Ei ryhmiä'
-    },
-    type: {
-      label: 'Viestin tyyppi',
-      message: 'Viesti',
-      bulletin: 'Tiedote (ei voi vastata)'
-    },
-    flags: {
-      heading: 'Viestin lisämerkinnät',
-      urgent: {
-        info: 'Lähetä viesti kiireellisenä vain, jos haluat että huoltaja lukee sen työpäivän aikana.',
-        label: 'Kiireellinen'
-      },
-      sensitive: {
-        info: 'Arkaluontoisen viestin avaaminen vaatii kuntalaiselta vahvan tunnistautumisen.',
-        label: 'Arkaluontoinen',
-        whyDisabled:
-          'Arkaluontoisen viestin voi lähettää vain henkilökohtaisesta käyttäjätilistä yksittäisen lapsen huoltajille.'
-      }
-    },
-    sender: 'Lähettäjä',
-    recipientsPlaceholder: 'Valitse...',
-    title: 'Otsikko',
-    deleteDraft: 'Hylkää luonnos'
-  },
   messageReplyEditor: {
     messagePlaceholder: undefined,
     discard: 'Hylkää',

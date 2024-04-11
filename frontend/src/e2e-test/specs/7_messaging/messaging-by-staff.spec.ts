@@ -231,7 +231,7 @@ describe('Sending and receiving sensitive messages', () => {
     const sensitiveMessage = {
       ...defaultMessage,
       sensitive: true,
-      receiver: enduserChildFixtureKaarina.id
+      receivers: [enduserChildFixtureKaarina.id]
     }
 
     await initStaffPage(mockedDateAt10)
@@ -263,7 +263,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiver: fixtures.daycareFixture.id
+      receivers: [fixtures.daycareFixture.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -285,7 +285,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiver: fixtures.enduserChildFixtureKaarina.id
+      receivers: [fixtures.enduserChildFixtureKaarina.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -305,7 +305,7 @@ describe('Staff copies', () => {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
       sender: `${fixtures.daycareFixture.name} - ${daycareGroupFixture.name}`,
-      receiver: daycareGroupFixture.id
+      receivers: [daycareGroupFixture.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage

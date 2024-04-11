@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
+import MessageEditor from 'employee-frontend/components/messages/MessageEditor'
 import { Failure, Result, wrapResult } from 'lib-common/api'
 import {
   MessageReceiversResponse,
@@ -21,7 +22,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
-import MessageEditor from 'lib-components/messages/MessageEditor'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl, saveMessageAttachment } from '../../api/attachments'

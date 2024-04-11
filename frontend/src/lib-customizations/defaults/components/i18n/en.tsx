@@ -110,36 +110,6 @@ const components: Translations = {
       urgent: 'Urgent'
     }
   },
-  messageEditor: {
-    // Currently only used for Finnish frontends
-    newMessage: '',
-    to: {
-      label: '',
-      placeholder: '',
-      noOptions: ''
-    },
-    type: {
-      label: '',
-      message: '',
-      bulletin: ''
-    },
-    flags: {
-      heading: '',
-      urgent: {
-        info: '',
-        label: ''
-      },
-      sensitive: {
-        info: '',
-        label: '',
-        whyDisabled: ''
-      }
-    },
-    sender: '',
-    recipientsPlaceholder: '',
-    title: '',
-    deleteDraft: ''
-  },
   messageReplyEditor: {
     // Currently only used for Finnish frontends
     discard: '',

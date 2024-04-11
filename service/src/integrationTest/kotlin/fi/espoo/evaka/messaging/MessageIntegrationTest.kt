@@ -8,6 +8,7 @@ import fi.espoo.evaka.*
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.messaging.MessageController.PostMessagePreflightResponse
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
@@ -1075,6 +1076,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `create messages preflight check returns recipient count`() {
+        val response =
+            postNewThreadPreflightCheck(
+                user = employee1,
+                sender = employee1Account,
+                recipients =
+                    listOf(
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id)
+                    )
+            )
+        assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 3), response)
+    }
+
+    @Test
     fun `citizen can send a new messages to multiple accounts if they are related to all selected children`() {
         val groupId3 = GroupId(UUID.randomUUID())
         val group3Account =
@@ -1169,6 +1185,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             draftId,
             MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes())
         )
+
+    private fun postNewThreadPreflightCheck(
+        sender: MessageAccountId,
+        recipients: List<MessageRecipient>,
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = sendTime
+    ): PostMessagePreflightResponse {
+        return messageController.createMessagePreflightCheck(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            sender,
+            MessageController.PostMessagePreflightBody(recipients = recipients.toSet())
+        )
+    }
 
     private fun postNewThread(
         title: String,

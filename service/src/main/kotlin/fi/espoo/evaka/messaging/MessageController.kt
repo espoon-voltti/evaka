@@ -326,6 +326,41 @@ class MessageController(
             }
     }
 
+    data class PostMessagePreflightBody(val recipients: Set<MessageRecipient>)
+
+    data class PostMessagePreflightResponse(val numberOfRecipientAccounts: Int)
+
+    @PostMapping("/{accountId}/preflight-check")
+    fun createMessagePreflightCheck(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestBody body: PostMessagePreflightBody
+    ): PostMessagePreflightResponse {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read { tx ->
+                    val numberOfRecipientAccounts =
+                        if (body.recipients.isEmpty()) {
+                            0
+                        } else {
+                            tx.getMessageAccountsForRecipients(
+                                    accountId = accountId,
+                                    recipients = body.recipients,
+                                    date = clock.today()
+                                )
+                                .map { it.first }
+                                .toSet()
+                                .size
+                        }
+
+                    PostMessagePreflightResponse(numberOfRecipientAccounts)
+                }
+            }
+            .also { Audit.MessagingNewMessagePreflightCheck.log(targetId = accountId) }
+    }
+
     data class PostMessageBody(
         val title: String,
         val content: String,

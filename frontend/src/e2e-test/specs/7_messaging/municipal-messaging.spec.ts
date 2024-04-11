@@ -100,19 +100,23 @@ beforeEach(async () => {
         })
         .save()
     )
+  const guardian2 = Fixture.person().with({ ssn: undefined })
+  await guardian2.save()
+  const guardian3 = Fixture.person().with({ ssn: undefined })
+  await guardian3.save()
   await insertGuardians({
     body: [
       {
         childId: childInAreaA.id,
         guardianId: fixtures.enduserGuardianFixture.id
-      }
-    ]
-  })
-  await insertGuardians({
-    body: [
+      },
       {
         childId: childInAreaB.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: guardian2.data.id
+      },
+      {
+        childId: childInAreaB.id,
+        guardianId: guardian3.data.id
       }
     ]
   })
@@ -151,7 +155,11 @@ describe('Municipal messaging -', () => {
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
     const messageEditor = await messagesPage.openMessageEditor()
-    await messageEditor.sendNewMessage(defaultMessage)
+    await messageEditor.sendNewMessage({
+      ...defaultMessage,
+      receivers: [fixtures.careAreaFixture.id, careArea2Fixture.id],
+      confirmManyRecipients: true
+    })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 
     await openCitizenPage(messageReadTime)
@@ -167,7 +175,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receiver: fixtures.careAreaFixture.id
+      receivers: [fixtures.careAreaFixture.id]
     })
 
     const sentMessagesPage = await messagesPage.openSentMessages()
@@ -187,7 +195,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receiver: fixtures.careAreaFixture.id
+      receivers: [fixtures.careAreaFixture.id]
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 
