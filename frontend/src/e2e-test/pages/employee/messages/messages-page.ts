@@ -191,7 +191,8 @@ export class MessageEditor extends Element {
     sensitive?: boolean
     attachmentCount?: number
     sender?: string
-    receiver?: string
+    receivers?: string[]
+    confirmManyRecipients?: boolean
   }) {
     const attachmentCount = message.attachmentCount ?? 0
 
@@ -202,10 +203,12 @@ export class MessageEditor extends Element {
       await this.senderSelection.fillAndSelectFirst(message.sender)
     }
 
-    if (message.receiver) {
+    if (message.receivers) {
       await this.receiverSelection.open()
       await this.receiverSelection.expandAll()
-      await this.receiverSelection.option(message.receiver).check()
+      for (const receiver of message.receivers) {
+        await this.receiverSelection.option(receiver).check()
+      }
       await this.receiverSelection.close()
     } else {
       await this.receiverSelection.open()
@@ -228,7 +231,11 @@ export class MessageEditor extends Element {
         )
       }
     }
+
     await this.sendButton.click()
+    if (message.confirmManyRecipients) {
+      await this.findByDataQa('modal-okBtn').click()
+    }
     await this.waitUntilHidden()
   }
 

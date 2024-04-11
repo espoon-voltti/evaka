@@ -679,30 +679,31 @@ export default React.memo(function MessageEditor({
             />
           </FixedSpaceRow>
         </BottomBar>
+
+        {confirmLargeSend && preflightResult.isSuccess && (
+          <InfoModal
+            type="warning"
+            icon={faQuestion}
+            title={i18n.messages.messageEditor.manyRecipientsWarning.title}
+            text={i18n.messages.messageEditor.manyRecipientsWarning.text(
+              preflightResult.value.numberOfRecipientAccounts
+            )}
+            close={() => setConfirmLargeSend(false)}
+            closeLabel={i18n.common.cancel}
+            resolve={{
+              label: i18n.messages.messageEditor.send,
+              action: () => {
+                sendHandler()
+                setConfirmLargeSend(false)
+              }
+            }}
+            reject={{
+              label: i18n.common.cancel,
+              action: () => setConfirmLargeSend(false)
+            }}
+          />
+        )}
       </Container>
-      {confirmLargeSend && preflightResult.isSuccess && (
-        <InfoModal
-          type="warning"
-          icon={faQuestion}
-          title={i18n.messages.messageEditor.manyRecipientsWarning.title}
-          text={i18n.messages.messageEditor.manyRecipientsWarning.text(
-            preflightResult.value.numberOfRecipientAccounts
-          )}
-          close={() => setConfirmLargeSend(false)}
-          closeLabel={i18n.common.cancel}
-          resolve={{
-            label: i18n.messages.messageEditor.send,
-            action: () => {
-              sendHandler()
-              setConfirmLargeSend(false)
-            }
-          }}
-          reject={{
-            label: i18n.common.cancel,
-            action: () => setConfirmLargeSend(false)
-          }}
-        />
-      )}
     </FullScreenContainer>
   )
 })

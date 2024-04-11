@@ -221,7 +221,7 @@ describe('Sending and receiving messages', () => {
         const messageEditor = await messagesPage.openMessageEditor()
         await messageEditor.sendNewMessage({
           ...defaultMessage,
-          receiver: enduserChildFixtureKaarina.id
+          receivers: [enduserChildFixtureKaarina.id]
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
