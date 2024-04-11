@@ -664,6 +664,62 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
+    fun `calendar does not show missing holiday reservations for placement in a unit with reservations not in use`() {
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        "UPDATE daycare SET enabled_pilot_features='{}' WHERE id = ${bind(testDaycare.id)}"
+                    )
+                }
+                .execute()
+        }
+        insertGroupPlacement(testChild_1.id, placementType = PlacementType.DAYCARE)
+        val isInHolidayPeriod =
+            FiniteDateRange(placementStart, placementStart.plusMonths(1).minusDays(1))
+
+        db.transaction { tx ->
+            tx.insertHolidayPeriod(
+                period = isInHolidayPeriod,
+                reservationDeadline = placementStart // doesn't matter for group month calendar
+            )
+        }
+
+        val result =
+            db.read {
+                getGroupMonthCalendar(
+                    it,
+                    placementStart,
+                    testDaycareGroup.id,
+                    placementStart.year,
+                    placementStart.monthValue
+                )
+            }
+
+        assertEquals(
+            FiniteDateRange(placementStart, placementStart.plusMonths(1).minusDays(1))
+                .dates()
+                .map { date ->
+                    GroupMonthCalendarDay(
+                        date = date,
+                        isOperationDay = !date.isWeekend(),
+                        isInHolidayPeriod = true,
+                        children =
+                            listOf(
+                                emptyDayChild.copy(
+                                    childId = testChild_1.id,
+                                    missingHolidayReservation = false,
+                                    absenceCategories = setOf(AbsenceCategory.BILLABLE),
+                                    scheduleType = ScheduleType.RESERVATION_REQUIRED
+                                )
+                            )
+                    )
+                }
+                .toList(),
+            result.days
+        )
+    }
+
+    @Test
     fun `calendar does not show missing holiday reservations for placement type that does not need reservations`() {
         insertGroupPlacement(testChild_1.id, placementType = PlacementType.CLUB)
         val isInHolidayPeriod =

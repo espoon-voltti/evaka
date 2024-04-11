@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.isOperationalDate
+import fi.espoo.evaka.shared.security.PilotFeature
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -147,7 +148,10 @@ fun getGroupMonthCalendar(
                                     scheduleType = scheduleType,
                                     shiftCare = shiftCare,
                                     missingHolidayReservation =
-                                        scheduleType == ScheduleType.RESERVATION_REQUIRED &&
+                                        daycare.enabledPilotFeatures.contains(
+                                            PilotFeature.RESERVATIONS
+                                        ) &&
+                                            scheduleType == ScheduleType.RESERVATION_REQUIRED &&
                                             isHolidayPeriodDate &&
                                             childReservations.isEmpty() &&
                                             childAbsences.isEmpty(),
