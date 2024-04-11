@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import { isLoading } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { useQueryResult } from 'lib-common/query'
@@ -15,14 +15,15 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import PlacementTypeItem from './PlacementTypeItem'
-import { serviceNeedsQuery } from './queries'
+import { serviceNeedsQuery, voucherValuesQuery } from './queries'
 
 export default React.memo(function ServiceNeedsSection() {
   const { i18n } = useTranslation()
 
   const [open, useOpen] = useBoolean(false)
 
-  const data = useQueryResult(serviceNeedsQuery())
+  const serviceNeedData = useQueryResult(serviceNeedsQuery())
+  const vouchervalueData = useQueryResult(voucherValuesQuery())
 
   const stableDistinct = (
     value: PlacementType,
@@ -37,22 +38,26 @@ export default React.memo(function ServiceNeedsSection() {
       open={open}
       toggleOpen={useOpen.toggle}
       data-qa="service-needs-section"
-      data-isloading={isLoading(data)}
+      data-isloading={isLoading(serviceNeedData) || isLoading(vouchervalueData)}
     >
-      {renderResult(data, (serviceNeedsList) => (
-        <>
-          {serviceNeedsList
-            .map((serviceNeed) => serviceNeed.validPlacementType)
-            .filter(stableDistinct)
-            .map((placementType, i) => (
-              <PlacementTypeItem
-                placementType={placementType}
-                serviceNeedsList={serviceNeedsList}
-                key={i}
-              />
-            ))}
-        </>
-      ))}
+      {renderResult(
+        combine(serviceNeedData, vouchervalueData),
+        ([serviceNeedsList, voucherValuesMap]) => (
+          <>
+            {serviceNeedsList
+              .map((serviceNeed) => serviceNeed.validPlacementType)
+              .filter(stableDistinct)
+              .map((placementType, i) => (
+                <PlacementTypeItem
+                  placementType={placementType}
+                  serviceNeedsList={serviceNeedsList}
+                  voucherValuesMap={voucherValuesMap}
+                  key={i}
+                />
+              ))}
+          </>
+        )
+      )}
     </CollapsibleContentArea>
   )
 })

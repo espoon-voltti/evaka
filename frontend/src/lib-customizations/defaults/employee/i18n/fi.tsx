@@ -1434,6 +1434,7 @@ export const fi = {
       daycareGroupMissing: 'Ei ryhmitetty',
       type: 'Toimintamuoto',
       providerType: 'Järjestämismuoto',
+      updatedAt: 'Päivitetty viimeksi',
       serviceNeedMissing1: 'Sijoitukselta puuttuu palveluntarve',
       serviceNeedMissing2:
         'päivältä. Merkitse palveluntarve koko sijoituksen ajalle.',
@@ -4334,7 +4335,51 @@ export const fi = {
       }
     },
     serviceNeeds: {
-      title: 'Palveluntarpeet'
+      title: 'Palveluntarpeet',
+      voucherValues: 'Palvelusetelien arvot',
+      validity: 'Voimassaoloaika',
+      baseValue: (
+        <>
+          Enimmäisarvo,
+          <br />
+          3v tai yli (€)
+        </>
+      ),
+      coefficient: (
+        <>
+          Kerroin,
+          <br />
+          3v tai yli
+        </>
+      ),
+      value: (
+        <>
+          Enimmäisarvo,
+          <br />
+          3v tai yli (€)
+        </>
+      ),
+      baseValueUnder3y: (
+        <>
+          Perusarvo,
+          <br />
+          alle 3v
+        </>
+      ),
+      coefficientUnder3y: (
+        <>
+          Kerroin,
+          <br />
+          alle 3v
+        </>
+      ),
+      valueUnder3y: (
+        <>
+          Enimmäisarvo,
+          <br />
+          alle 3v (€)
+        </>
+      )
     }
   },
   documentTemplates: {
