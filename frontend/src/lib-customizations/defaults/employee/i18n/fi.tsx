@@ -4429,7 +4429,9 @@ export const fi = {
       PEDAGOGICAL_ASSESSMENT: 'Pedagoginen arvio',
       HOJKS: 'HOJKS',
       MIGRATED_VASU: 'Varhaiskasvatussuunnitelma',
-      MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma'
+      MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma',
+      VASU: 'Varhaiskasvatussuunnitelma',
+      LEOPS: 'Esiopetuksen oppimissuunnitelma'
     },
     languages: {
       FI: 'Suomenkielinen',
