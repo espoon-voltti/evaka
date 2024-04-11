@@ -369,7 +369,10 @@ class PlacementController(
                         // Clear future absences and reservations that are in range of placement
                         // period
                         if (placement.endDate.isAfter(now.toLocalDate())) {
-                            val range = DateRange(now.toLocalDate().plusDays(1), placement.endDate)
+                            val startDate =
+                                if (placement.startDate.isAfter(clock.today())) placement.startDate
+                                else clock.today().plusDays(1)
+                            val range = DateRange(startDate, placement.endDate)
                             deleteFutureNonGeneratedAbsencesByCategoryInRange(
                                 tx,
                                 clock,

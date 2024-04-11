@@ -812,6 +812,83 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     }
 
     @Test
+    fun `Delete future placement should delete future attendance reservations that are in range of deleted placement period`() {
+        val activePlacementStart = mockClock.today().minusMonths(3)
+        val activePlacementEnd = mockClock.today().plusMonths(7)
+
+        val activePlacement =
+            createPlacementAndGroupPlacement(
+                activePlacementStart,
+                activePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        val futurePlacementStart = activePlacementEnd.plusDays(1)
+        val futurePlacementEnd = futurePlacementStart.plusMonths(1)
+
+        val futurePlacement =
+            createPlacementAndGroupPlacement(
+                futurePlacementStart,
+                futurePlacementEnd,
+                childId,
+                daycareId,
+                groupId
+            )
+
+        // Create reservations
+        val reservationTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val firstReservation = activePlacementEnd
+        val secondReservation = futurePlacementStart
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
+                unitSupervisor,
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = firstReservation,
+                        reservation = reservationTime
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = childId,
+                        date = secondReservation,
+                        reservation = reservationTime
+                    ),
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        val reservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, futurePlacementEnd)
+                )
+            }
+        assertEquals(2, reservations.size)
+        assertTrue(reservations.containsKey(firstReservation))
+        assertTrue(reservations.containsKey(secondReservation))
+
+        placementController.deletePlacement(dbInstance(), admin, mockClock, futurePlacement.id)
+        assertNull(db.read { r -> r.getPlacement(futurePlacement.id) })
+
+        // Verify that the future reservations in new placement period has been deleted
+        val updatedReservations =
+            db.read {
+                it.getReservationsForChildInRange(
+                    childId,
+                    FiniteDateRange(activePlacementStart, futurePlacementEnd)
+                )
+            }
+        assertEquals(1, updatedReservations.size)
+        assertTrue(updatedReservations.containsKey(firstReservation))
+    }
+
+    @Test
     fun `Delete placement, should delete future attendance reservations that are in range of placement period`() {
         val activePlacementStart = mockClock.today().minusMonths(3)
         val activePlacementEnd = mockClock.today().plusMonths(6)
