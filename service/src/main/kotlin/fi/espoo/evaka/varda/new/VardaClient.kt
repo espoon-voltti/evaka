@@ -63,7 +63,9 @@ interface VardaReadClient {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class LapsiResponse(
         override val url: URI,
-        val lahdejarjestelma: String,
+        // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
+        // sometimes doesn't include it.
+        val lahdejarjestelma: String?,
         val vakatoimija_oid: String?,
         val oma_organisaatio_oid: String?,
         val paos_organisaatio_oid: String?,
