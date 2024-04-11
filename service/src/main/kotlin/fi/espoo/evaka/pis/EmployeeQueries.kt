@@ -110,7 +110,7 @@ VALUES (${bind(employee.firstName)}, ${bind(employee.lastName)}, ${bind(employee
                 )
             }, ${bind(employee.roles)}::user_role[], ${bind(employee.active)}, ${bind(now)})
 ON CONFLICT (external_id) DO UPDATE
-SET last_login = ${bind(now)}, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number
+SET last_login = ${bind(now)}, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, email = EXCLUDED.email, employee_number = EXCLUDED.employee_number, active = TRUE
 RETURNING id, preferred_first_name, first_name, last_name, email, external_id, created, updated, roles, active
 """
             )
@@ -427,6 +427,10 @@ ON CONFLICT (user_id) DO UPDATE SET
     if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
 
+fun Database.Transaction.removePinCode(userId: EmployeeId) {
+    createUpdate { sql("DELETE FROM employee_pin WHERE user_id = ${bind(userId)}") }.execute()
+}
+
 fun Database.Read.getPinCode(userId: EmployeeId): PinCode? =
     createQuery { sql("SELECT pin FROM employee_pin WHERE user_id = ${bind(userId)}") }
         .exactlyOneOrNull<PinCode>()
@@ -485,27 +489,31 @@ fun Database.Read.isPinLocked(employeeId: EmployeeId): Boolean =
     createQuery { sql("SELECT locked FROM employee_pin WHERE user_id = ${bind(employeeId)}") }
         .exactlyOneOrNull<Boolean>() ?: false
 
-fun Database.Transaction.clearRolesForInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
+fun Database.Transaction.deactivateInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
+    val inactiveEmployees = getInactiveEmployees(now)
+    inactiveEmployees.forEach { employeeId -> deactivateEmployeeRemoveRolesAndPin(employeeId) }
+    return inactiveEmployees
+}
+
+fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
+    updateEmployeeActive(id = id, active = false)
+    updateEmployeeGlobalRoles(id = id, globalRoles = emptyList())
+    deleteEmployeeDaycareRoles(id = id, daycareId = null)
+    removePinCode(userId = id)
+}
+
+fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {
     return createQuery {
             sql(
                 """
-WITH employees_to_reset AS (
     SELECT e.id
     FROM employee e
     LEFT JOIN daycare_acl d ON d.employee_id = e.id
     LEFT JOIN daycare_group_acl dg ON dg.employee_id = e.id
-    WHERE (e.roles != '{}' OR d.employee_id IS NOT NULL OR dg.employee_id IS NOT NULL) AND (e.last_login IS NULL OR (
+    WHERE (
         SELECT max(ts)
         FROM unnest(ARRAY[e.last_login, d.updated, dg.updated]) ts
-    ) < ${bind(now)} - interval '3 months')
-), delete_daycare_acl AS (
-    DELETE FROM daycare_acl WHERE employee_id = ANY(SELECT id FROM employees_to_reset)
-), delete_daycare_group_acl AS (
-    DELETE FROM daycare_group_acl WHERE employee_id = ANY(SELECT id FROM employees_to_reset)
-)
-UPDATE employee SET roles = '{}', active = FALSE
-WHERE id = ANY (SELECT id FROM employees_to_reset)
-RETURNING id
+    ) < ${bind(now)} - interval '45 days'
 """
             )
         }

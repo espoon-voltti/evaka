@@ -10,8 +10,8 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attendance.getOccupancyCoefficientsByUnit
 import fi.espoo.evaka.pis.TemporaryEmployee
-import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.pis.controllers.PinCode
+import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -305,7 +305,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             .isEqualTo(createdTemporary)
         assertThrows<NotFound> { getTemporaryEmployee(clock, testDaycare2.id, temporaryEmployeeId) }
         dbInstance().connect { dbc ->
-            dbc.transaction { tx -> tx.clearRolesForInactiveEmployees(dateTime.plusMonths(1)) }
+            dbc.transaction { tx -> tx.deactivateInactiveEmployees(dateTime.plusMonths(1)) }
         }
         assertThat(getTemporaryEmployee(clock, testDaycare.id, temporaryEmployeeId))
             .isEqualTo(createdTemporary)
@@ -343,7 +343,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertThat(getTemporaryEmployee(clock, testDaycare.id, temporaryEmployeeId))
             .isEqualTo(updatedTemporary)
         dbInstance().connect { dbc ->
-            dbc.transaction { tx -> tx.clearRolesForInactiveEmployees(dateTime.plusMonths(1)) }
+            dbc.transaction { tx -> tx.deactivateInactiveEmployees(dateTime.plusMonths(1)) }
         }
         assertThat(getTemporaryEmployee(clock, testDaycare.id, temporaryEmployeeId))
             .isEqualTo(updatedTemporary)

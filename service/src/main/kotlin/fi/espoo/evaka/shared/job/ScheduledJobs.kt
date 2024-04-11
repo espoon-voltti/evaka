@@ -22,7 +22,7 @@ import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
-import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
+import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
@@ -339,7 +339,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun inactiveEmployeesRoleReset(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
-            val ids = it.clearRolesForInactiveEmployees(clock.now())
+            val ids = it.deactivateInactiveEmployees(clock.now())
             logger.info { "Roles cleared for ${ids.size} inactive employees: $ids" }
         }
     }

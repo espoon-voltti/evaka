@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.EmployeeWithDaycareRoles
 import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.PagedEmployeesWithDaycareRoles
 import fi.espoo.evaka.pis.createEmployee
+import fi.espoo.evaka.pis.deactivateEmployeeRemoveRolesAndPin
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.deleteEmployeeDaycareRoles
 import fi.espoo.evaka.pis.getEmployee
@@ -222,10 +223,10 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable id: EmployeeId
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Employee.DEACTIVATE, id)
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Employee.DEACTIVATE, id)
 
-                it.updateEmployeeActive(id = id, active = false)
+                tx.deactivateEmployeeRemoveRolesAndPin(id)
             }
         }
         Audit.EmployeeDeactivate.log(targetId = id)
