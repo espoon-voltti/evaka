@@ -219,7 +219,7 @@ data class Maksutieto(
                         }
                         .code,
                 perheen_koko = data.familySize,
-                asiakasmaksu = data.totalFee.toDouble() / 100,
+                asiakasmaksu = data.childFee.toDouble() / 100,
                 palveluseteli_arvo = (data.voucherValue ?: 0).toDouble() / 100
             )
         }

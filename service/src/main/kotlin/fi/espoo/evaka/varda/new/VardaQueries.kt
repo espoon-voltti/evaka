@@ -104,7 +104,7 @@ data class VardaFeeData(
     val partnerId: PersonId?,
     val placementType: PlacementType?,
     val familySize: Int,
-    val totalFee: Int,
+    val childFee: Int,
     val voucherValue: Int?,
     val voucherUnitOrganizerOid: String?
 )
@@ -119,7 +119,7 @@ SELECT
     fd.partner_id,
     fdc.placement_type,
     fd.family_size,
-    fd.total_fee,
+    fdc.final_fee AS child_fee,
     NULL AS voucher_value,
     NULL AS voucher_unit_organizer_oid
 FROM fee_decision fd
@@ -137,7 +137,7 @@ SELECT
     vvd.partner_id,
     vvd.placement_type,
     vvd.family_size,
-    vvd.final_co_payment AS total_fee,
+    vvd.final_co_payment AS child_fee,
     vvd.voucher_value,
     u.oph_organizer_oid AS voucher_unit_organizer_oid
 FROM voucher_value_decision vvd
