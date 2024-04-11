@@ -69,27 +69,19 @@ fun Database.Transaction.insertApplication(
     origin: ApplicationOrigin,
     hideFromGuardian: Boolean = false,
     sentDate: LocalDate? = null,
-): ApplicationId {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access)
-        VALUES (:type, 'CREATED'::application_status_type, :guardianId, :childId, :origin::application_origin_type, :hideFromGuardian, :sentDate, false)
-        RETURNING id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createUpdate(sql)
-        .bind("type", type)
-        .bind("guardianId", guardianId)
-        .bind("childId", childId)
-        .bind("origin", origin)
-        .bind("hideFromGuardian", hideFromGuardian)
-        .bind("sentDate", sentDate)
+    allowOtherGuardianAccess: Boolean = false,
+): ApplicationId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)})
+RETURNING id
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ApplicationId>()
-}
 
 fun Database.Read.duplicateApplicationExists(
     childId: ChildId,

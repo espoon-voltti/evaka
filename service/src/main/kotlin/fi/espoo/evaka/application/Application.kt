@@ -165,9 +165,11 @@ enum class ApplicationStatus {
     CANCELLED
 }
 
-enum class ApplicationOrigin {
+enum class ApplicationOrigin : DatabaseEnum {
     ELECTRONIC,
-    PAPER
+    PAPER;
+
+    override val sqlType: String = "application_origin_type"
 }
 
 data class PreferredUnit(val id: DaycareId, val name: String)

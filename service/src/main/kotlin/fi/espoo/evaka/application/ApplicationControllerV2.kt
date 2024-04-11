@@ -181,6 +181,7 @@ class ApplicationControllerV2(
                             origin = ApplicationOrigin.PAPER,
                             hideFromGuardian = body.hideFromGuardian,
                             sentDate = body.sentDate,
+                            allowOtherGuardianAccess = true
                         )
                     applicationStateService.initializeApplicationForm(
                         tx,
