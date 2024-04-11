@@ -9,7 +9,6 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.varda.VardaUnitProviderType
-import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 
@@ -182,8 +181,8 @@ data class Maksutieto(
     val paattymis_pvm: LocalDate?,
     val perheen_koko: Int?,
     val maksun_peruste_koodi: String,
-    val asiakasmaksu: BigDecimal,
-    val palveluseteli_arvo: BigDecimal
+    val asiakasmaksu: Double,
+    val palveluseteli_arvo: Double
 ) {
     companion object {
         fun fromEvaka(guardians: List<PersonDTO>, data: VardaFeeData): Maksutieto? {
@@ -220,9 +219,8 @@ data class Maksutieto(
                         }
                         .code,
                 perheen_koko = data.familySize,
-                asiakasmaksu = BigDecimal(data.totalFee).divide(BigDecimal(100)),
-                palveluseteli_arvo =
-                    (data.voucherValue ?: 0).let { BigDecimal(it).divide(BigDecimal(100)) }
+                asiakasmaksu = data.totalFee.toDouble() / 100,
+                palveluseteli_arvo = (data.voucherValue ?: 0).toDouble() / 100
             )
         }
 
@@ -234,7 +232,7 @@ data class Maksutieto(
                 perheen_koko = data.perheen_koko,
                 maksun_peruste_koodi = data.maksun_peruste_koodi,
                 asiakasmaksu = data.asiakasmaksu,
-                palveluseteli_arvo = data.palveluseteli_arvo ?: BigDecimal(0),
+                palveluseteli_arvo = data.palveluseteli_arvo ?: 0.0,
             )
     }
 

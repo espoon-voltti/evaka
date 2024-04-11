@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import fi.espoo.evaka.shared.utils.token
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import fi.espoo.voltti.logging.loggers.error
-import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 import mu.KotlinLogging
@@ -111,8 +110,8 @@ interface VardaReadClient {
         val alkamis_pvm: LocalDate,
         val paattymis_pvm: LocalDate?,
         val maksun_peruste_koodi: String,
-        val palveluseteli_arvo: BigDecimal?,
-        val asiakasmaksu: BigDecimal,
+        val palveluseteli_arvo: Double?,
+        val asiakasmaksu: Double,
         val perheen_koko: Int?,
     ) : VardaEntity
 
@@ -189,8 +188,8 @@ interface VardaWriteClient {
         val alkamis_pvm: LocalDate,
         val paattymis_pvm: LocalDate?,
         val maksun_peruste_koodi: String,
-        val palveluseteli_arvo: BigDecimal?,
-        val asiakasmaksu: BigDecimal,
+        val palveluseteli_arvo: Double?,
+        val asiakasmaksu: Double,
         val perheen_koko: Int?,
     )
 
