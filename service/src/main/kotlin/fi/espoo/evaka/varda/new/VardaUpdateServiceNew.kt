@@ -111,9 +111,7 @@ class VardaUpdateServiceNew(
                 evakaState.henkilo.henkilo_oid
             )
 
-        logger.info(
-            mapOf("varda" to vardaState?.toPrettyString(), "evaka" to evakaState.toPrettyString())
-        ) {
+        logger.info(mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())) {
             "Varda update state for ${job.childId} (see the meta.varda and meta.evaka fields)"
         }
 
@@ -461,12 +459,7 @@ class VardaUpdater(
         createMaksutieto(evakaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
     }
 
-    data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>) {
-        fun toPrettyString(): String =
-            "Henkilo(\n  $henkilo,\n  lapset = [\n" +
-                lapset.joinToString(",\n") { "    $it" } +
-                "  ]\n)"
-    }
+    data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>)
 
     data class EvakaLapsiNode(
         val lapsi: Lapsi,
@@ -482,15 +475,7 @@ class VardaUpdater(
     data class VardaHenkiloNode(
         val henkilo: VardaReadClient.HenkiloResponse,
         val lapset: List<VardaLapsiNode>
-    ) {
-        fun toPrettyString(): String =
-            "HenkiloResponse(\n" +
-                "  henkilo = $henkilo,\n" +
-                "  lapset = [\n" +
-                lapset.joinToString(",\n") { "    $it" } +
-                "  ]\n" +
-                ")"
-    }
+    )
 
     data class VardaLapsiNode(
         val lapsi: VardaReadClient.LapsiResponse,
