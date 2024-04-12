@@ -39,8 +39,7 @@ data class VardaServiceNeed(
     val shiftCare: Boolean,
     val providerType: ProviderType,
     val ophOrganizerOid: String,
-    val ophUnitOid: String,
-    val unitInvoicedByMunicipality: Boolean,
+    val ophUnitOid: String
 )
 
 fun Database.Read.getVardaServiceNeeds(childId: ChildId, range: DateRange): List<VardaServiceNeed> {
@@ -64,8 +63,7 @@ SELECT
     sn.shift_care = 'FULL' as shift_care,
     d.provider_type,
     d.oph_organizer_oid,
-    d.oph_unit_oid,
-    d.invoiced_by_municipality AS unit_invoiced_by_municipality
+    d.oph_unit_oid
 FROM service_need sn
 JOIN service_need_option sno on sn.option_id = sno.id
 JOIN placement p ON p.id = sn.placement_id
@@ -83,7 +81,7 @@ LEFT JOIN LATERAL (
         )
     ORDER BY a.sentdate, a.id
     LIMIT 1
-    ) application_match ON true
+) application_match ON true
 WHERE
     p.child_id = ${bind(childId)} AND
     daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)} AND

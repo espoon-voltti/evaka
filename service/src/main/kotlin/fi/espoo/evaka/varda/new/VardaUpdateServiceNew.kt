@@ -175,10 +175,7 @@ class VardaUpdater(
                 } else {
                     emptyList()
                 }
-                .filter { fee ->
-                    val serviceNeed = serviceNeeds.find { it.range.overlaps(fee.validDuring) }
-                    serviceNeed != null && serviceNeed.unitInvoicedByMunicipality
-                }
+                .filter { fee -> serviceNeeds.any { it.range.overlaps(fee.validDuring) } }
 
         val evakaLapsiServiceNeeds =
             serviceNeeds.groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
