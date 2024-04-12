@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.varda.new
 
-import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.placement.PlacementType
@@ -46,7 +45,9 @@ data class Lapsi(
 ) {
     companion object {
         fun fromEvaka(data: VardaServiceNeed, omaOrganisaatioOid: String): Lapsi =
-            if (data.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
+            if (data.ophOrganizerOid != omaOrganisaatioOid) {
+                // Unit's organizer is not the municipal organizer, so the child is in PAOS
+                // (Palvelusetelillä järjestetty ja ostopalveluna hankittu varhaiskasvatus)
                 Lapsi(
                     vakatoimija_oid = null,
                     oma_organisaatio_oid = omaOrganisaatioOid,
@@ -54,7 +55,7 @@ data class Lapsi(
                 )
             } else {
                 Lapsi(
-                    vakatoimija_oid = data.ophOrganizerOid,
+                    vakatoimija_oid = omaOrganisaatioOid,
                     oma_organisaatio_oid = null,
                     paos_organisaatio_oid = null
                 )
@@ -76,6 +77,12 @@ data class Lapsi(
             oma_organisaatio_oid = oma_organisaatio_oid,
             paos_organisaatio_oid = paos_organisaatio_oid
         )
+
+    val effectiveOrganizerOid: String
+        get() =
+            paos_organisaatio_oid
+                ?: vakatoimija_oid
+                ?: throw IllegalStateException("No organizer OID found")
 }
 
 data class Varhaiskasvatuspaatos(

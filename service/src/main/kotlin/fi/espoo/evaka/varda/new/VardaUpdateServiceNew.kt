@@ -182,7 +182,7 @@ class VardaUpdater(
         val evakaFeeData =
             feeData
                 .mapNotNull { fee ->
-                    Maksutieto.fromEvaka(guardians, fee)?.let { fee.voucherUnitOrganizerOid to it }
+                    Maksutieto.fromEvaka(guardians, fee)?.let { fee.ophOrganizerOid to it }
                 }
                 .groupBy({ it.first }, { it.second })
 
@@ -203,10 +203,7 @@ class VardaUpdater(
                                                 listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                                         )
                                     },
-                            maksutiedot =
-                                // If lapsi.paos_organisaatio_oid is null, we'll get the fee data
-                                // for municipal daycare
-                                evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
+                            maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid] ?: emptyList()
                         )
                         .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
                 }

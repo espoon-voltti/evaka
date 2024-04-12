@@ -106,8 +106,8 @@ data class VardaFeeData(
     val placementType: PlacementType?,
     val familySize: Int,
     val childFee: Int,
-    val voucherValue: Int?,
-    val voucherUnitOrganizerOid: String?
+    val ophOrganizerOid: String,
+    val voucherValue: Int?
 )
 
 fun Database.Read.getVardaFeeData(childId: ChildId, range: FiniteDateRange): List<VardaFeeData> =
@@ -121,10 +121,11 @@ SELECT
     fdc.placement_type,
     fd.family_size,
     fdc.final_fee AS child_fee,
-    NULL AS voucher_value,
-    NULL AS voucher_unit_organizer_oid
+    u.oph_organizer_oid,
+    NULL AS voucher_value
 FROM fee_decision fd
 JOIN fee_decision_child fdc ON fdc.fee_decision_id = fd.id
+JOIN daycare u ON u.id = fdc.placement_unit_id
 WHERE
     fd.status = 'SENT' AND
     fd.valid_during && ${bind(range)} AND
@@ -139,8 +140,8 @@ SELECT
     vvd.placement_type,
     vvd.family_size,
     vvd.final_co_payment AS child_fee,
-    vvd.voucher_value,
-    u.oph_organizer_oid AS voucher_unit_organizer_oid
+    u.oph_organizer_oid,
+    vvd.voucher_value
 FROM voucher_value_decision vvd
 JOIN daycare u ON u.id = vvd.placement_unit_id
 WHERE
