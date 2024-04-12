@@ -92,6 +92,7 @@ WHERE
     u.upload_children_to_varda AND
     u.oph_organizer_oid IS NOT NULL AND
     u.oph_unit_oid IS NOT NULL
+ORDER BY sn.start_date
 """
             )
         }
@@ -147,6 +148,8 @@ WHERE
     daterange(vvd.valid_from, vvd.valid_to, '[]') && ${bind(range)} AND
     vvd.child_id = ${bind(childId)} AND
     placement_type IS NOT NULL
+
+ORDER BY valid_during
 """
             )
         }
