@@ -357,10 +357,10 @@ class VardaUpdater(
 
     /** Returns true if the lapsi and associated data were deleted */
     private fun VardaWriteClient.deleteLapsiDeep(vardaLapsi: VardaLapsiNode): Boolean {
+        val maksutiedotDeleted = vardaLapsi.maksutiedot.allSucceed { deleteMaksutieto(it) }
         val varhaiskasvatuspaatoksetDeleted =
             vardaLapsi.varhaiskasvatuspaatokset.allSucceed { deleteVarhaiskasvatuspaatosDeep(it) }
-        val maksutiedotDeleted = vardaLapsi.maksutiedot.allSucceed { deleteMaksutieto(it) }
-        return if (varhaiskasvatuspaatoksetDeleted && maksutiedotDeleted) {
+        return if (maksutiedotDeleted && varhaiskasvatuspaatoksetDeleted) {
             delete(vardaLapsi.lapsi)
             true
         } else {
