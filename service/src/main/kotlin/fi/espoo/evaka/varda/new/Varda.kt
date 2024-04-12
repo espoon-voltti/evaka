@@ -92,7 +92,9 @@ data class Varhaiskasvatuspaatos(
     companion object {
         fun fromEvaka(data: VardaServiceNeed): Varhaiskasvatuspaatos =
             Varhaiskasvatuspaatos(
-                hakemus_pvm = data.applicationDate,
+                // If there's no matching application, set hakemus_pvm to be 15 days before the
+                // start because it's the minimum for Varda to not deduce the application as urgent
+                hakemus_pvm = data.applicationDate ?: data.range.start.minusDays(15),
                 alkamis_pvm = data.range.start,
                 paattymis_pvm = data.range.end,
                 tuntimaara_viikossa = data.hoursPerWeek,
