@@ -316,11 +316,12 @@ class VardaClient(
                 }
             }
             is Result.Failure -> {
-                val message = "failed to request $method $url"
-                if (null !is R) {
-                    vardaError(request, result.error) { err -> "$message: $err" }
+                if (null !is R || result.error.response.statusCode != 404) {
+                    vardaError(request, result.error) { err ->
+                        "failed to request $method $url: ${err.toString().trim()}"
+                    }
                 } else {
-                    logger.warn { "$message: ${result.error}" }
+                    logger.info("successfully requested $method $url: not found")
                     null as R
                 }
             }
