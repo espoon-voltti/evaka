@@ -44,7 +44,6 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
         origin = ApplicationOrigin.ELECTRONIC,
         childId = testChild_1.id,
         guardianId = testAdult_1.id,
-        otherGuardianId = null,
         otherGuardianLivesInSameAddress = null,
         childRestricted = false,
         guardianRestricted = false,
@@ -60,6 +59,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
         hideFromGuardian = false,
         allowOtherGuardianAccess = true,
         attachments = listOf(),
+        hasOtherGuardian = false,
         form =
             ApplicationForm(
                 child =
@@ -137,7 +137,6 @@ val validPreschoolApplication =
         origin = ApplicationOrigin.ELECTRONIC,
         childId = testChild_1.id,
         guardianId = testAdult_1.id,
-        otherGuardianId = null,
         otherGuardianLivesInSameAddress = null,
         childRestricted = false,
         guardianRestricted = false,
@@ -153,6 +152,7 @@ val validPreschoolApplication =
         hideFromGuardian = false,
         allowOtherGuardianAccess = true,
         attachments = listOf(),
+        hasOtherGuardian = false,
         form =
             ApplicationForm(
                 child =
@@ -231,7 +231,6 @@ val validClubApplication =
         origin = ApplicationOrigin.ELECTRONIC,
         childId = testChild_1.id,
         guardianId = testAdult_1.id,
-        otherGuardianId = null,
         otherGuardianLivesInSameAddress = null,
         childRestricted = false,
         guardianRestricted = false,
@@ -247,6 +246,7 @@ val validClubApplication =
         hideFromGuardian = false,
         allowOtherGuardianAccess = true,
         attachments = listOf(),
+        hasOtherGuardian = false,
         form =
             ApplicationForm(
                 child =

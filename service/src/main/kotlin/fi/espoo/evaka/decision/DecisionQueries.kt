@@ -29,7 +29,7 @@ private fun Database.Read.createDecisionQuery(
     sql(
         """
         SELECT
-            d.id, d.type, d.start_date, d.end_date, d.document_key, d.other_guardian_document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved, 
+            d.id, d.type, d.start_date, d.end_date, d.document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved, d.document_contains_contact_info,
             u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
             u.street_address, u.postal_code, u.post_office,
             u.phone,
@@ -58,7 +58,6 @@ private fun Row.decisionFromResultSet(): Decision =
         startDate = column("start_date"),
         endDate = column("end_date"),
         documentKey = column("document_key"),
-        otherGuardianDocumentKey = column("other_guardian_document_key"),
         decisionNumber = column("number"),
         sentDate = column("sent_date"),
         status = column("status"),
@@ -82,7 +81,8 @@ private fun Row.decisionFromResultSet(): Decision =
             ),
         applicationId = column("application_id"),
         childId = column("child_id"),
-        childName = "${column<String>("child_last_name")} ${column<String>("child_first_name")}"
+        childName = "${column<String>("child_last_name")} ${column<String>("child_first_name")}",
+        documentContainsContactInfo = column("document_contains_contact_info"),
     )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
@@ -154,7 +154,14 @@ fun Database.Read.getDecisionsByGuardian(
             application =
                 Predicate {
                     where(
-                        "$it.guardian_id = ${bind(guardianId)} OR $it.other_guardian_id = ${bind(guardianId)}"
+                        """
+                $it.guardian_id = ${bind(guardianId)} OR
+                EXISTS (
+                    SELECT FROM application_other_guardian
+                    WHERE application_other_guardian.application_id = $it.id
+                    AND guardian_id = ${bind(guardianId)}
+                )
+"""
                     )
                 }
         )
@@ -287,18 +294,6 @@ fun Database.Transaction.updateDecisionGuardianDocumentKey(
     // language=SQL
     @Suppress("DEPRECATION")
     createUpdate("UPDATE decision SET document_key = :documentKey WHERE id = :id")
-        .bind("id", decisionId)
-        .bind("documentKey", documentKey)
-        .execute()
-}
-
-fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(
-    decisionId: DecisionId,
-    documentKey: String
-) {
-    // language=SQL
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE decision SET other_guardian_document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
         .bind("documentKey", documentKey)
         .execute()

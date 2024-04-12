@@ -1038,7 +1038,7 @@ export const applicationFixture = (
   type: type,
   childId: child.id,
   guardianId: guardian.id,
-  otherGuardianId: otherGuardian?.id,
+  otherGuardians: otherGuardian ? [otherGuardian.id] : [],
   form: applicationForm(
     type,
     child,

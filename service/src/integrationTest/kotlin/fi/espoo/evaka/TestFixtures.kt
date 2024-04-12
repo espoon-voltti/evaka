@@ -885,12 +885,12 @@ fun Database.Transaction.insertApplication(
             dueDateSetManuallyAt = null,
             transferApplication = transferApplication,
             additionalDaycareApplication = false,
-            otherGuardianId = null,
             otherGuardianLivesInSameAddress = null,
             checkedByAdmin = false,
             hideFromGuardian = false,
             allowOtherGuardianAccess = true,
-            attachments = listOf()
+            attachments = listOf(),
+            hasOtherGuardian = false,
         )
     insertTestApplicationForm(
         applicationId = applicationId,

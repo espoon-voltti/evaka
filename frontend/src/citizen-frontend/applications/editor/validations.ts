@@ -197,20 +197,20 @@ export const validateApplication = (
         : undefined,
       otherGuardianAgreementStatus:
         apiData.type !== 'CLUB' &&
-        apiData.otherGuardianId &&
+        apiData.hasOtherGuardian &&
         apiData.otherGuardianLivesInSameAddress === false
           ? requiredSelection(form.contactInfo.otherGuardianAgreementStatus)
           : undefined,
       otherGuardianPhone:
         apiData.type !== 'CLUB' &&
-        apiData.otherGuardianId &&
+        apiData.hasOtherGuardian &&
         apiData.otherGuardianLivesInSameAddress === false &&
         form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
           ? phone(form.contactInfo.otherGuardianPhone)
           : undefined,
       otherGuardianEmail:
         apiData.type !== 'CLUB' &&
-        apiData.otherGuardianId &&
+        apiData.hasOtherGuardian &&
         apiData.otherGuardianLivesInSameAddress === false &&
         form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
           ? email(form.contactInfo.otherGuardianEmail)

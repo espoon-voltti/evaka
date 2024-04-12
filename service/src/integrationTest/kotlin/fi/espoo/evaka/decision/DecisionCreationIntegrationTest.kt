@@ -20,6 +20,7 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.addToGuardianBlocklist
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
@@ -66,6 +67,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var applicationStateService: ApplicationStateService
+    @Autowired private lateinit var personService: PersonService
 
     private val decisionId = DecisionId(UUID.randomUUID())
 
@@ -510,6 +512,9 @@ WHERE id = :unitId
         preparatoryEducation: Boolean = false
     ): ApplicationId =
         db.transaction { tx ->
+            // make sure guardians are up-to-date
+            personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, child.id)
+
             val applicationId =
                 tx.insertTestApplication(
                     status = ApplicationStatus.WAITING_PLACEMENT,
@@ -537,6 +542,7 @@ WHERE id = :unitId
             applicationStateService.createPlacementPlan(
                 tx,
                 serviceWorker,
+                RealEvakaClock(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = unit.id,

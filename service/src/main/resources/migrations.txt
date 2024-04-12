@@ -394,3 +394,4 @@ V394__child_document_content_modification_info.sql
 V395__unit_meal_times.sql
 V396__vasu_leops_types.sql
 V397__document_contains_contact_info.sql
+V398__application_other_guardian.sql

@@ -30,10 +30,9 @@ class DecisionMessageProcessor(
         msg: AsyncJob.NotifyDecisionCreated
     ) =
         db.transaction { tx ->
-            val user = msg.user
             val decisionId = msg.decisionId
 
-            decisionService.createDecisionPdfs(tx, user, decisionId)
+            decisionService.createDecisionPdf(tx, decisionId)
 
             logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
             if (msg.sendAsMessage) {

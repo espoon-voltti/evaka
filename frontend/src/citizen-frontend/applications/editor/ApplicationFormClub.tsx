@@ -95,7 +95,7 @@ export default React.memo(function ApplicationFormClub({
         verificationRequested={verificationRequested}
         fullFamily={false}
         otherGuardianStatus={
-          application.otherGuardianId
+          application.hasOtherGuardian
             ? application.otherGuardianLivesInSameAddress
               ? 'SAME_ADDRESS'
               : 'DIFFERENT_ADDRESS'

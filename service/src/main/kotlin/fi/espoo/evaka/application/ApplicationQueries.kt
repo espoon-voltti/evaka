@@ -751,7 +751,6 @@ fun Database.Read.fetchApplicationDetails(
             a.origin,
             a.child_id,
             a.guardian_id,
-            a.other_guardian_id,
             c.restricted_details_enabled AS child_restricted,
             g1.restricted_details_enabled AS guardian_restricted,
             g1.residence_code AS guardian_residence_code,
@@ -766,6 +765,7 @@ fun Database.Read.fetchApplicationDetails(
             a.duedate_set_manually_at,
             a.checkedbyadmin,
             a.allow_other_guardian_access,
+            EXISTS (SELECT FROM application_other_guardian WHERE application_id = a.id) AS has_other_guardian,
             coalesce(att.json, '[]'::jsonb) attachments
         FROM application a
         LEFT JOIN person c ON c.id = a.child_id
@@ -813,7 +813,6 @@ fun Database.Read.fetchApplicationDetails(
                 origin = column("origin"),
                 childId = column("child_id"),
                 guardianId = column("guardian_id"),
-                otherGuardianId = column("other_guardian_id"),
                 otherGuardianLivesInSameAddress = null,
                 childRestricted = childRestricted,
                 guardianRestricted = guardianRestricted,
@@ -828,7 +827,8 @@ fun Database.Read.fetchApplicationDetails(
                 checkedByAdmin = column("checkedbyadmin"),
                 hideFromGuardian = column("hidefromguardian"),
                 allowOtherGuardianAccess = column("allow_other_guardian_access"),
-                attachments = jsonColumn("attachments")
+                attachments = jsonColumn("attachments"),
+                hasOtherGuardian = column("has_other_guardian")
             )
         }
 
@@ -1074,20 +1074,17 @@ fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
         }
         .execute()
 
-fun Database.Transaction.updateApplicationOtherGuardian(
-    applicationId: ApplicationId,
-    otherGuardianId: PersonId?
-) {
-    // language=SQL
-    val sql =
-        "UPDATE application SET other_guardian_id = :otherGuardianId WHERE id = :applicationId"
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("applicationId", applicationId)
-        .bind("otherGuardianId", otherGuardianId)
-        .execute()
-}
+fun Database.Read.getApplicationOtherGuardians(id: ApplicationId): Set<PersonId> =
+    createQuery {
+            sql(
+                """
+SELECT guardian_id
+FROM application_other_guardian
+WHERE application_id = ${bind(id)}
+"""
+            )
+        }
+        .toSet()
 
 fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId, today: LocalDate) {
     createUpdate {

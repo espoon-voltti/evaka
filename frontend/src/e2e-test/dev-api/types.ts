@@ -108,8 +108,8 @@ export interface Application {
   checkedByAdmin: boolean
   hideFromGuardian: boolean
   transferApplication: boolean
-  otherGuardianId?: UUID
   form: ApplicationForm
+  otherGuardians: UUID[]
 }
 
 export interface PlacementPlan {

@@ -99,7 +99,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         assertEquals(applicationId, data.application.id)
         assertEquals(testChild_1.id, data.application.childId)
         assertEquals(testAdult_1.id, data.application.guardianId)
-        assertEquals(null, data.application.otherGuardianId)
+        assertEquals(emptySet(), db.read { tx -> tx.getApplicationOtherGuardians(applicationId) })
 
         assertEquals(ApplicationType.DAYCARE, data.application.type)
         assertEquals(ApplicationStatus.SENT, data.application.status)
@@ -284,7 +284,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
                     type = ApplicationType.DAYCARE,
-                    otherGuardianId = testAdult_2.id,
+                    otherGuardians = setOf(testAdult_2.id),
                     allowOtherGuardianAccess = true,
                 )
             }
@@ -405,6 +405,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             stateService.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = unitId,

@@ -18,10 +18,10 @@ export interface Decision {
   childName: string
   createdBy: string
   decisionNumber: number
+  documentContainsContactInfo: boolean
   documentKey: string | null
   endDate: LocalDate
   id: UUID
-  otherGuardianDocumentKey: string | null
   requestedStartDate: LocalDate | null
   resolved: LocalDate | null
   resolvedByName: string | null

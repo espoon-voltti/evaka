@@ -8,6 +8,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.application.getApplicationOtherGuardians
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getUnitManager
 import fi.espoo.evaka.daycare.service.DaycareManager
@@ -19,6 +20,7 @@ import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
@@ -27,6 +29,7 @@ import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -71,11 +74,7 @@ class DecisionService(
         return decisionIds
     }
 
-    fun createDecisionPdfs(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        decisionId: DecisionId
-    ) {
+    fun createDecisionPdf(tx: Database.Transaction, decisionId: DecisionId) {
         val settings = tx.getSettings()
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
@@ -83,9 +82,6 @@ class DecisionService(
         val application =
             tx.fetchApplicationDetails(decision.applicationId)
                 ?: throw NotFound("Application ${decision.applicationId} was not found")
-        val guardian =
-            tx.getPersonById(application.guardianId)
-                ?: error("Guardian not found with id: ${application.guardianId}")
         val child =
             tx.getPersonById(application.childId)
                 ?: error("Child not found with id: ${application.childId}")
@@ -97,43 +93,18 @@ class DecisionService(
                 settings,
                 decision,
                 application,
-                guardian,
                 child,
                 decisionLanguage,
                 unitManager
             )
 
         tx.updateDecisionGuardianDocumentKey(decisionId, guardianDecisionLocation.key)
-
-        if (
-            application.otherGuardianId != null &&
-                isDecisionForSecondGuardianRequired(decision, application, tx)
-        ) {
-            val otherGuardian =
-                tx.getPersonById(application.otherGuardianId)
-                    ?: throw NotFound(
-                        "Other guardian not found with id: ${application.otherGuardianId}"
-                    )
-
-            val otherGuardianDecisionLocation =
-                createAndUploadDecision(
-                    settings,
-                    decision,
-                    application,
-                    otherGuardian,
-                    child,
-                    decisionLanguage,
-                    unitManager
-                )
-            tx.updateDecisionOtherGuardianDocumentKey(decisionId, otherGuardianDecisionLocation.key)
-        }
     }
 
     private fun createAndUploadDecision(
         settings: Map<SettingType, String>,
         decision: Decision,
         application: ApplicationDetails,
-        guardian: PersonDTO,
         child: PersonDTO,
         decisionLanguage: DocumentLang,
         unitManager: DaycareManager
@@ -153,23 +124,18 @@ class DecisionService(
 
         return uploadPdfToS3(
             decisionBucket,
-            constructObjectKey(decision, guardian, decisionLanguage),
+            constructObjectKey(decision, decisionLanguage),
             decisionBytes
         )
     }
 
-    private fun isDecisionForSecondGuardianRequired(
+    private fun Database.Read.isDecisionForSecondGuardianRequired(
         decision: Decision,
         application: ApplicationDetails,
-        tx: Database.Transaction
+        otherGuardian: PersonId,
     ) =
         decision.type != DecisionType.CLUB &&
-            application.otherGuardianId != null &&
-            !personService.personsLiveInTheSameAddress(
-                tx,
-                application.guardianId,
-                application.otherGuardianId
-            )
+            !personService.personsLiveInTheSameAddress(this, application.guardianId, otherGuardian)
 
     private fun determineDecisionLanguage(
         decision: Decision,
@@ -182,11 +148,7 @@ class DecisionService(
         }
     }
 
-    private fun constructObjectKey(
-        decision: Decision,
-        guardian: PersonDTO,
-        lang: DocumentLang
-    ): String {
+    private fun constructObjectKey(decision: Decision, lang: DocumentLang): String {
         return when (decision.type) {
             DecisionType.CLUB -> "clubdecision"
             DecisionType.DAYCARE,
@@ -195,7 +157,7 @@ class DecisionService(
             DecisionType.PRESCHOOL_DAYCARE,
             DecisionType.PRESCHOOL_CLUB -> "connectingdaycaredecision"
             DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
-        }.let { "${it}_${decision.id}_${guardian.id}_$lang" }
+        }.let { "${it}_${decision.id}_$lang" }
     }
 
     private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
@@ -211,55 +173,62 @@ class DecisionService(
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
+        // make sure VTJ guardians are up-to-date
+        personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, decision.childId)
+
         val applicationId = decision.applicationId
         val application =
             tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
 
-        val currentVtjGuardianIds =
-            personService
-                .getGuardians(tx, AuthenticatedUser.SystemInternalUser, decision.childId)
-                .map { person -> person.id }
+        requireNotNull(decision.documentKey) {
+            "Decision ${decision.id} PDF has not been generated"
+        }
+
+        val currentGuardians =
+            tx.getChildGuardiansAndFosterParents(decision.childId, clock.today()).toSet()
 
         val applicationGuardian =
             tx.getPersonById(application.guardianId)
                 ?: error("Guardian not found with id: ${application.guardianId}")
-
-        if (currentVtjGuardianIds.contains(applicationGuardian.id)) {
+        if (currentGuardians.contains(applicationGuardian.id)) {
             deliverDecisionToGuardian(
                 tx,
                 clock,
                 decision,
                 applicationGuardian,
-                decision.documentKey!!
+                decision.documentKey
             )
         } else {
             logger.warn(
-                "Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current VTJ guardian"
+                "Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current guardian or foster parent"
             )
         }
 
         if (
-            application.otherGuardianId != null &&
-                !decision.otherGuardianDocumentKey.isNullOrBlank() &&
-                !applicationGuardian.restrictedDetailsEnabled
+            !applicationGuardian.restrictedDetailsEnabled && !decision.documentContainsContactInfo
         ) {
-            val otherGuardian =
-                tx.getPersonById(application.otherGuardianId)
-                    ?: error("Other guardian not found with id: ${application.otherGuardianId}")
+            val otherGuardians = tx.getApplicationOtherGuardians(applicationId)
+            for (guardianId in otherGuardians) {
+                val otherGuardian =
+                    tx.getPersonById(guardianId)
+                        ?: error("Other guardian not found with id: $guardianId")
 
-            if (currentVtjGuardianIds.contains(application.otherGuardianId)) {
-                deliverDecisionToGuardian(
-                    tx,
-                    clock,
-                    decision,
-                    otherGuardian,
-                    decision.otherGuardianDocumentKey
-                )
-            } else {
-                logger.warn(
-                    "Skipping sending decision $decisionId to application other guardian ${application.otherGuardianId} - not a current VTJ guardian"
-                )
+                if (tx.isDecisionForSecondGuardianRequired(decision, application, guardianId)) {
+                    if (currentGuardians.contains(guardianId)) {
+                        deliverDecisionToGuardian(
+                            tx,
+                            clock,
+                            decision,
+                            otherGuardian,
+                            decision.documentKey
+                        )
+                    } else {
+                        logger.warn(
+                            "Skipping sending decision $decisionId to application other guardian $guardianId - not a current guardian or foster parent"
+                        )
+                    }
+                }
             }
         }
         tx.markDecisionSent(decisionId, clock.today())

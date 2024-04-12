@@ -306,6 +306,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             applicationStateService.createPlacementPlan(
                 it,
                 serviceWorker,
+                RealEvakaClock(),
                 applicationId,
                 DaycarePlacementPlan(
                     testDaycare.id,
