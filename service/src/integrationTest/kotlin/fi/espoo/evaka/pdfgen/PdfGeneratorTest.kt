@@ -412,7 +412,6 @@ class PdfGeneratorTest {
                 pdfGenerator,
                 settings,
                 decision,
-                guardian,
                 child,
                 isTransferApplication,
                 serviceNeed,

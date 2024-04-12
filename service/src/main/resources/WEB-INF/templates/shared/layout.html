@@ -183,9 +183,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     </style>
   </head>
-  <body
-    th:classappend="${guardian} != null ? 'with-guardian' : 'without-guardian'"
-  >
+  <body class="without-guardian">
     <table class="layout-container-table">
       <thead>
         <tr>
@@ -197,17 +195,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <tbody>
         <tr>
           <td>
-            <address
-              class="address"
-              th:if="${guardian} != null"
-              layout:fragment="address"
-            >
-              <th:block th:if="${guardian} != null">
-                <div th:text="${guardian.lastName}"></div>
-                <div th:text="${guardian.firstName}"></div>
-              </th:block>
-            </address>
-
             <div class="layout-content" layout:fragment="content"></div>
           </td>
         </tr>

@@ -144,7 +144,6 @@ class DecisionService(
                 pdfGenerator,
                 settings,
                 decision,
-                guardian,
                 child,
                 application.transferApplication,
                 application.form.preferences.serviceNeed,
@@ -331,7 +330,6 @@ fun createDecisionPdf(
     pdfService: PdfGenerator,
     settings: Map<SettingType, String>,
     decision: Decision,
-    guardian: PersonDTO,
     child: PersonDTO,
     isTransferApplication: Boolean,
     serviceNeed: ServiceNeed?,
@@ -348,7 +346,6 @@ fun createDecisionPdf(
             settings,
             decision,
             child,
-            guardian,
             unitManager,
             isPartTimeDecision,
             serviceNeed
@@ -363,7 +360,6 @@ private fun generateDecisionPages(
     settings: Map<SettingType, String>,
     decision: Decision,
     child: PersonDTO,
-    guardian: PersonDTO,
     manager: DaycareManager,
     isPartTimeDecision: Boolean,
     serviceNeed: ServiceNeed?
@@ -374,7 +370,6 @@ private fun generateDecisionPages(
             locale = Locale.Builder().setLanguage(lang.langCode).build()
             setVariable("decision", decision)
             setVariable("child", child)
-            setVariable("guardian", guardian)
             setVariable("manager", manager)
             setVariable("isPartTimeDecision", isPartTimeDecision)
             setVariable("serviceNeed", serviceNeed)
