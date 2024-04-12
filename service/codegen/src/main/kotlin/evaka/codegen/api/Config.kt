@@ -255,10 +255,10 @@ val defaultMetadata =
                 "LocalDate",
                 keyRepresentation = null,
                 deserializeJson = { error("YearMonth in JSON is not supported") },
-                serializePathVariable = { value -> value + ".formatExotic('YYYY-MM')" },
+                serializePathVariable = { value -> value + ".formatExotic('yyyy-MM')" },
                 serializeRequestParam = { value, nullable ->
                     value +
-                        if (nullable) "?.formatExotic('YYYY-MM')" else ".formatExotic('YYYY-MM')"
+                        if (nullable) "?.formatExotic('yyyy-MM')" else ".formatExotic('yyyy-MM')"
                 },
                 Imports.localDate
             )

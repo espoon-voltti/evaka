@@ -27,7 +27,7 @@ export async function getChildAttendanceSummary(
   }
 ): Promise<AttendanceSummary> {
   const { data: json } = await client.request<JsonOf<AttendanceSummary>>({
-    url: uri`/citizen/children/${request.childId}/attendance-summary/${request.yearMonth.formatExotic('YYYY-MM')}`.toString(),
+    url: uri`/citizen/children/${request.childId}/attendance-summary/${request.yearMonth.formatExotic('yyyy-MM')}`.toString(),
     method: 'GET'
   })
   return json
