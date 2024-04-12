@@ -270,8 +270,14 @@ class VardaUpdater(
         /** Called as soon as the Varda henkilo OID is known */
         onOid: ((oid: String) -> Unit)? = null
     ) {
-        val henkilo = vardaHenkilo?.henkilo ?: client.createHenkilo(evakaHenkilo.henkilo.toVarda())
-        if (onOid != null && henkilo.henkilo_oid != null) {
+        val henkilo =
+            // Create a henkilo if it doesn't exist yet and there are lapsi entries
+            if (vardaHenkilo == null && evakaHenkilo.lapset.isNotEmpty()) {
+                client.createHenkilo(evakaHenkilo.henkilo.toVarda())
+            } else {
+                vardaHenkilo?.henkilo
+            }
+        if (henkilo != null && onOid != null && henkilo.henkilo_oid != null) {
             onOid(henkilo.henkilo_oid)
         }
 
@@ -330,7 +336,10 @@ class VardaUpdater(
                     onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
                 )
             },
-            onAdded = { client.createLapsiDeep(henkilo.url, it) },
+            onAdded = {
+                // If we get here, henkilo has lapsi entries and thus must be non-null
+                client.createLapsiDeep(henkilo!!.url, it)
+            },
         )
     }
 
