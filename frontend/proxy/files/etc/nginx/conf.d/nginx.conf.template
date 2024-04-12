@@ -67,18 +67,33 @@ geo $limit {
 # If $limit matched to a whitelisted CIDR,
 # $limit_key will be set to and empty string,
 # otherwise $limit_key key will be the client's IP address in binary format.
-map $limit $limit_key {
-  0 "";
-  1 $binary_remote_addr;
-}
-
+#
 # When $limit_key is an empty string (whitelisted CIDR), the first limit_req_zone
 # WON'T be applied. That means all whitelisted CIDR(s) are handled by the second
 # limit_req_zone with a higher limit, as $binary_remote_addr is always defined.
 # The more restrictive limit is applied, so even though all clients will match
 # the second limit_req_zone, the first will be applied to non-whitelisted clients.
+#
+map $limit $limit_key {
+  0 "";
+  1 $binary_remote_addr;
+}
+
+# rate=Rr/s : allow a request every 1/R seconds
+# burst=B   : allow B requests to be queued, each gets a 1/R second slot
+# ==> a user can make B requests in a B/R second window
+#
+# This is explained more verbosely in https://www.nginx.com/blog/rate-limiting-nginx/#Queueing-with-No-Delay
+
+# Normal: rate=10, burst=50 => 50 requests in a 5 second window
 limit_req_zone $limit_key zone=req_zone:10m rate=10r/s;
+limit_req      zone=req_zone burst=50 nodelay;
+
+# Whitelisted: rate=100, burst=100 => 100 requests in a 1 second window
 limit_req_zone $binary_remote_addr zone=req_zone_wl:1m rate=100r/s;
+limit_req      zone=req_zone_wl burst=100 nodelay;
+
+limit_req_status  429;
 
 # Logging
 
@@ -182,18 +197,6 @@ server {
   gzip          on;
   gzip_vary     on;
   gzip_types    text/plain text/css application/javascript text/xml application/xml image/svg+xml;
-
-  # Rate limiting
-  # for whole server block
-
-  # Bursting allows for, well... bursting:
-  # it allows requests to temporarily go over their rate limit
-  # and be placed into a queue.
-  # For nodelay, see: https://www.nginx.com/blog/rate-limiting-nginx/#Queueing-with-No-Delay
-  # Also allow higher burst limit for whitelisted zone.
-  limit_req         zone=req_zone burst=20 nodelay;
-  limit_req         zone=req_zone_wl burst=50 nodelay;
-  limit_req_status  429;
 
   <% if ENV.key?("LIMIT_CONFIGURATION") && ENV["LIMIT_CONFIGURATION"] != "" %>
   <%= ENV["LIMIT_CONFIGURATION"] %>
@@ -355,8 +358,6 @@ server {
     <% if ENV["BASIC_AUTH_ENABLED"] == "true" %>
     auth_basic "off";
     <% end %>
-
-    limit_req  zone=req_zone burst=100 nodelay;
 
     add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self'; form-action 'self' ${formActionUrl}";
 
