@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: 2017-2024 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: 'Create a release'
+on:
+  schedule:
+    - cron: '0 23 * * 0'  # Sunday at 23:00
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: "Create a draft release (true/false)"
+        required: true
+      git-tag:
+        description: "Git tag for the release"
+        required: true
+      start-date:
+        description: "Include PRs starting from date, YYYY-MM-DD"
+        required: true
+      end-date:
+        description: "Include PRs up to date (inclusive), YYYY-MM-DD"
+        required: true
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ""
+        id: config
+        run: |
+          echo "start-date=${{ inputs.start-date || '$(date -v -6d ''+%Y-%V'')' }}" >> "$GITHUB_OUTPUT"
+          echo "end-date=${{ inputs.start-date || '$(date ''+%Y-%V'')' }}" >> "$GITHUB_OUTPUT"
+          echo "draft=${{ inputs.draft && 'false' }}" >> "$GITHUB_OUTPUT"
+          echo "tag=${{ inputs.git-tag || 'v$( date ''+%Y%m%d'')' }}" >> "$GITHUB_OUTPUT"
+    outputs:
+      changelog-options: ${{ steps.config.outputs.start-date }} ${{ steps.config.outputs.end-date }}
+      gh-options: ${{ steps.config.outputs.draft == 'true' && '--draft' || '' }} ${{ steps.config.outputs.tag }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs:
+      - config
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          gh pr list \
+                  --base master \
+                  --state merged \
+                  --limit 100 \
+                  --json title,labels,closedAt,number,url |\
+              bin/changelog.js ${{ needs.config.changelog-options }} |\
+              gh release create --notes-file - ${{ needs.config.gh-options }}
