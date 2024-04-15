@@ -43,6 +43,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - config
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - run: |
