@@ -73,6 +73,8 @@ SELECT
     sno.name_sv AS option_name_sv,
     sno.name_en AS option_name_en,
     sno.valid_placement_type AS option_valid_placement_type,
+    sno.valid_from AS option_valid_from,
+    sno.valid_to AS option_valid_to,
     sno.contract_days_per_month,
     u.name AS unit_name
 FROM service_need sn
@@ -213,7 +215,8 @@ SELECT
     fee_description_sv,
     voucher_value_description_fi,
     voucher_value_description_sv,
-    active,
+    valid_from,
+    valid_to,
     updated
 FROM service_need_option
 ORDER BY display_order, part_week, daycare_hours_per_week DESC, part_day, name_fi
@@ -248,7 +251,8 @@ SELECT
     fee_description_sv,
     voucher_value_description_fi,
     voucher_value_description_sv,
-    active,
+    valid_from,
+    valid_to,
     updated
 FROM service_need_option
 WHERE id = ${bind(id)}

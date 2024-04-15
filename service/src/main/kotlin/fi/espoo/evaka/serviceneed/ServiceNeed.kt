@@ -123,7 +123,8 @@ data class ServiceNeedOption(
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
     val voucherValueDescriptionSv: String,
-    val active: Boolean,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
     val updated: HelsinkiDateTime = HelsinkiDateTime.now()
 ) {
     fun daycareMinutesPerMonth(): Long? = daycareHoursPerMonth?.let { it * 60L }

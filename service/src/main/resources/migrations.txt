@@ -395,3 +395,4 @@ V395__unit_meal_times.sql
 V396__vasu_leops_types.sql
 V397__document_contains_contact_info.sql
 V398__application_other_guardian.sql
+V399__service_need_option_validity_period.sql
