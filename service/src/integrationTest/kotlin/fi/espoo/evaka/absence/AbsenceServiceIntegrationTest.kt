@@ -190,6 +190,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                             placementStart.plusWeeks(2).minusDays(1)
                                         ),
                                     shiftCare = ShiftCareType.NONE,
+                                    partWeek = false,
                                     optionName = snDefaultDaycare.nameFi,
                                     hasContractDays = false,
                                     daycareHoursPerMonth = null,
@@ -199,6 +200,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     validDuring =
                                         FiniteDateRange(placementStart.plusWeeks(2), placementEnd),
                                     shiftCare = ShiftCareType.NONE,
+                                    partWeek = false,
                                     optionName = snDaycareContractDays15.nameFi,
                                     hasContractDays = true,
                                     daycareHoursPerMonth = null,
@@ -1801,6 +1803,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 endDate = placementEnd,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -1831,6 +1834,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     optionName = snDaycareContractDays15.nameFi,
                     validDuring = FiniteDateRange(placementStart, placementEnd),
                     shiftCare = ShiftCareType.NONE,
+                    partWeek = false
                 )
             ),
             result.children.find { it.id == testChild_1.id }?.actualServiceNeeds!!

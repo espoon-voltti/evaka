@@ -530,7 +530,8 @@ data class ChildServiceNeedInfo(
     val daycareHoursPerMonth: Int?,
     val optionName: String,
     val validDuring: FiniteDateRange,
-    val shiftCare: ShiftCareType
+    val shiftCare: ShiftCareType,
+    val partWeek: Boolean
 )
 
 data class AbsencePlacement(

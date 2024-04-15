@@ -65,8 +65,8 @@ private fun Database.Read.getServiceNeedRows(
         
                 count(DISTINCT p.id) FILTER ( WHERE sno.part_day = false ) as full_day,
                 count(DISTINCT p.id) FILTER ( WHERE sno.part_day = true ) as part_day,
-                count(DISTINCT p.id) FILTER ( WHERE sno.part_week = false ) as full_week,
-                count(DISTINCT p.id) FILTER ( WHERE sno.part_week = true ) as part_week,
+                count(DISTINCT p.id) FILTER ( WHERE sn.part_week = false ) as full_week,
+                count(DISTINCT p.id) FILTER ( WHERE sn.part_week = true ) as part_week,
                 count(DISTINCT p.id) FILTER ( WHERE sn.shift_care = 'FULL') as shift_care,
                 count(DISTINCT p.id) FILTER ( WHERE sn is null ) as missing_service_need,
                 count(DISTINCT p.id) as total

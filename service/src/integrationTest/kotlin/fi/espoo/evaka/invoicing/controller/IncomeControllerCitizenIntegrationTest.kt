@@ -92,6 +92,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                 endDate = placementEnd,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )

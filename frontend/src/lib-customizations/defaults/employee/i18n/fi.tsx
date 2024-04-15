@@ -647,16 +647,6 @@ export const fi = {
           'Viikottainen palveluntarve ei vastaa sijoituksen toimintamuotoa.',
         autoCutWarning:
           'Aiemmat päällekkäiset palveluntarpeet katkaistaan automaattisesti.'
-      },
-      services: {
-        partDay: 'Osapäiväinen varhaiskasvatus (max. 5 h / päivä)',
-        partDayShort: 'Osapäiväinen varhaiskasvatus',
-        partWeek: 'Osaviikkoinen varhaiskasvatus (alle 5 arkipäivää / viikko)',
-        partWeekShort: 'Osaviikkoinen varhaiskasvatus',
-        shiftCare:
-          'Ilta- ja vuorohoito (kello 18-06 arkisin ja / tai viikonloppuisin)',
-        shiftCareShort: 'Ilta- ja vuorohoito',
-        preparatoryEducation: 'Valmistava opetus'
       }
     },
     dailyServiceTimes: {

@@ -575,14 +575,15 @@ fun Database.Transaction.insertTestServiceNeed(
     period: FiniteDateRange,
     optionId: ServiceNeedOptionId,
     shiftCare: ShiftCareType = ShiftCareType.NONE,
+    partWeek: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     id: ServiceNeedId = ServiceNeedId(UUID.randomUUID())
 ): ServiceNeedId {
     createUpdate {
             sql(
                 """
-INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at)
-VALUES (${bind(id)}, ${bind(placementId)}, ${bind(period.start)}, ${bind(period.end)}, ${bind(optionId)}, ${bind(shiftCare)}, ${bind(confirmedBy)}, ${bind(confirmedAt)})
+INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, part_week, confirmed_by, confirmed_at)
+VALUES (${bind(id)}, ${bind(placementId)}, ${bind(period.start)}, ${bind(period.end)}, ${bind(optionId)}, ${bind(shiftCare)}, ${bind(partWeek)}, ${bind(confirmedBy)}, ${bind(confirmedAt)})
 """
             )
         }
@@ -1618,8 +1619,8 @@ fun Database.Transaction.insert(row: DevServiceNeed): ServiceNeedId =
     createUpdate {
             sql(
                 """
-INSERT INTO service_need (id, option_id, placement_id, start_date, end_date, shift_care, confirmed_by, confirmed_at)
-VALUES (${bind(row.id)}, ${bind(row.optionId)}, ${bind(row.placementId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.shiftCare)}, ${bind(row.confirmedBy)}, ${bind(row.confirmedAt)})
+INSERT INTO service_need (id, option_id, placement_id, start_date, end_date, shift_care, part_week, confirmed_by, confirmed_at)
+VALUES (${bind(row.id)}, ${bind(row.optionId)}, ${bind(row.placementId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.shiftCare)}, ${bind(row.partWeek)}, ${bind(row.confirmedBy)}, ${bind(row.confirmedAt)})
 """
             )
         }

@@ -82,7 +82,7 @@ export default React.memo(function ServiceNeeds() {
                 { label: 'Kokopäiväinen', key: 'fullDay' },
                 { label: 'Osapäiväinen', key: 'partDay' },
                 { label: 'Kokoviikkoinen', key: 'fullWeek' },
-                { label: 'Osaviikkoinne', key: 'partWeek' },
+                { label: 'Osaviikkoinen', key: 'partWeek' },
                 { label: 'Vuorohoito', key: 'shiftCare' },
                 { label: 'Palveluntarve puuttuu', key: 'missingServiceNeed' },
                 { label: 'Lapsia yhteensä', key: 'total' }

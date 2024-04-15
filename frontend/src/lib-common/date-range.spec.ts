@@ -78,7 +78,7 @@ describe('DateRange', () => {
   })
 
   describe('contains', () => {
-    it('returns complement', () => {
+    it('returns if range fully contains another range', () => {
       const r = range(10, 20)
       expect(r.contains(range(9, 19))).toEqual(false)
       expect(r.contains(range(9, 20))).toEqual(false)

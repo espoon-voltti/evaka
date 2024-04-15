@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -27,6 +28,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -70,7 +72,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(1),
                 endDate = testDate(30),
                 optionId = snDefaultDaycare.id,
-                shiftCare = ShiftCareType.NONE
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false,
             )
         )
 
@@ -98,7 +101,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     startDate = testDate(5),
                     endDate = testDate(3),
                     optionId = snDefaultDaycare.id,
-                    shiftCare = ShiftCareType.NONE
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = false
                 ),
             )
         }
@@ -116,7 +120,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     startDate = testDate(1),
                     endDate = testDate(31),
                     optionId = snDefaultDaycare.id,
-                    shiftCare = ShiftCareType.NONE
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = false
                 )
             )
         }
@@ -145,7 +150,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     startDate = testDate(1),
                     endDate = testDate(30),
                     optionId = snDefaultDaycare.id,
-                    shiftCare = ShiftCareType.NONE
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = false
                 )
             )
         }
@@ -163,7 +169,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     startDate = testDate(1),
                     endDate = testDate(31),
                     optionId = snPreschoolDaycare45.id,
-                    shiftCare = ShiftCareType.NONE
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = false
                 ),
             )
         }
@@ -182,7 +189,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(16),
                 endDate = testDate(30),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = ShiftCareType.NONE
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false
             )
         )
 
@@ -210,7 +218,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(1),
                 endDate = testDate(30),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = ShiftCareType.NONE
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false
             )
         )
 
@@ -239,7 +248,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(16),
                 endDate = testDate(30),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = ShiftCareType.NONE
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false
             )
         )
 
@@ -267,7 +277,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(1),
                 endDate = testDate(20),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = ShiftCareType.NONE
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false
             )
         )
 
@@ -295,7 +306,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(10),
                 endDate = testDate(20),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = ShiftCareType.NONE
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false
             )
         )
 
@@ -328,7 +340,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(5),
                 endDate = testDate(25),
                 optionId = snDaycareFullDay35.id,
-                shiftCare = ShiftCareType.NONE
+                shiftCare = ShiftCareType.NONE,
+                partWeek = false
             )
         )
 
@@ -380,7 +393,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 startDate = testDate(5),
                 endDate = testDate(25),
                 optionId = snDaycareFullDay25to35.id,
-                shiftCare = ShiftCareType.FULL
+                shiftCare = ShiftCareType.FULL,
+                partWeek = false
             )
         )
 
@@ -394,12 +408,63 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     it.startDate == testDate(5) &&
                         it.endDate == testDate(25) &&
                         it.shiftCare == ShiftCareType.FULL &&
+                        it.partWeek == false &&
                         it.option.id == snDaycareFullDay25to35.id
                 }
             )
             assertTrue(
                 serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) }
             )
+        }
+    }
+
+    @Test
+    fun `cannot update service need with non-matching partWeek`() {
+        val idToUpdate = givenServiceNeed(1, 30, placementId)
+
+        assertThrows<BadRequest> {
+            serviceNeedController.putServiceNeed(
+                dbInstance(),
+                unitSupervisor,
+                clock,
+                idToUpdate,
+                ServiceNeedController.ServiceNeedUpdateRequest(
+                    startDate = testDate(1),
+                    endDate = testDate(30),
+                    optionId = snDaycareFullDay25to35.id,
+                    shiftCare = ShiftCareType.FULL,
+                    partWeek = true
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `update service need without partWeek default`() {
+        val optionId = ServiceNeedOptionId(UUID.randomUUID())
+        db.transaction {
+            it.insertServiceNeedOption(snDaycareFullDay35.copy(id = optionId, partWeek = null))
+        }
+        val idToUpdate = givenServiceNeed(1, 30, placementId, optionId)
+        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+            assertEquals(false, serviceNeeds.first().partWeek)
+        }
+
+        serviceNeedController.putServiceNeed(
+            dbInstance(),
+            unitSupervisor,
+            clock,
+            idToUpdate,
+            ServiceNeedController.ServiceNeedUpdateRequest(
+                startDate = testDate(1),
+                endDate = testDate(30),
+                optionId = optionId,
+                shiftCare = ShiftCareType.FULL,
+                partWeek = true
+            )
+        )
+        getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
+            assertEquals(true, serviceNeeds.first().partWeek)
         }
     }
 

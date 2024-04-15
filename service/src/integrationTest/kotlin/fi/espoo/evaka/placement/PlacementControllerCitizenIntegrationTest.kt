@@ -269,6 +269,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 endPreschool.minusDays(10),
                 snPreschoolDaycare45.id,
                 ShiftCareType.NONE,
+                false,
                 null,
                 null
             )
@@ -278,6 +279,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 endPreschool,
                 snPreschoolDaycarePartDay35.id,
                 ShiftCareType.NONE,
+                false,
                 null,
                 null
             )
@@ -615,6 +617,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         endPreschool.minusDays(10),
                         snPreschoolDaycare45.id,
                         ShiftCareType.NONE,
+                        false,
                         null,
                         null
                     )
@@ -624,6 +627,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         endPreschool,
                         snPreschoolDaycarePartDay35.id,
                         ShiftCareType.NONE,
+                        false,
                         null,
                         null
                     )
