@@ -75,37 +75,68 @@ function ServiceNeedEditorRow({
   const { i18n, lang } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
 
+  const getOptions = (range: FiniteDateRange) =>
+    options
+      .filter((opt) =>
+        range.overlaps(new DateRange(opt.validFrom, opt.validTo))
+      )
+      .map((opt) => ({
+        label: opt.nameFi,
+        value: opt.id,
+        domValue: opt.id
+      }))
+
   const bind = useForm(
     serviceNeedForm,
-    () => ({
-      range: localDateRange.fromDates(
+    () => {
+      const range = new FiniteDateRange(
         editedServiceNeed?.startDate ??
           initialRange?.start ??
           placement.startDate,
-        editedServiceNeed?.endDate ?? initialRange?.end ?? placement.endDate,
-        {
+        editedServiceNeed?.endDate ?? initialRange?.end ?? placement.endDate
+      )
+      return {
+        range: localDateRange.fromRange(range, {
           minDate: placement.startDate,
           maxDate: placement.endDate
+        }),
+        option: {
+          options: getOptions(range),
+          domValue: editedServiceNeed?.option?.id ?? ''
+        },
+        shiftCare: {
+          options: shiftCareType.map((type) => ({
+            label: t.shiftCareTypes[type],
+            value: type,
+            domValue: type
+          })),
+          domValue: editedServiceNeed?.shiftCare ?? 'NONE'
         }
-      ),
-      option: {
-        options: options.map((opt) => ({
-          label: opt.nameFi,
-          value: opt.id,
-          domValue: opt.id
-        })),
-        domValue: editedServiceNeed?.option?.id ?? ''
-      },
-      shiftCare: {
-        options: shiftCareType.map((type) => ({
-          label: t.shiftCareTypes[type],
-          value: type,
-          domValue: type
-        })),
-        domValue: editedServiceNeed?.shiftCare ?? 'NONE'
       }
-    }),
-    i18n.validationErrors
+    },
+    i18n.validationErrors,
+    {
+      onUpdate: (_, nextState, form) => {
+        const shape = form.shape()
+        const range = shape.range.validate(nextState.range)
+        if (range.isValid) {
+          const newOptions = getOptions(range.value)
+          return {
+            ...nextState,
+            option: {
+              options: newOptions,
+              domValue: newOptions.some(
+                (o) => o.domValue === nextState.option.domValue
+              )
+                ? nextState.option.domValue
+                : ''
+            }
+          }
+        } else {
+          return nextState
+        }
+      }
+    }
   )
   const { range, option, shiftCare } = useFormFields(bind)
 
