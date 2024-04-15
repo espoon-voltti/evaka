@@ -7042,7 +7042,7 @@ __metadata:
     react-router-dom: "npm:^6.22.0"
     react-select: "npm:^5.8.0"
     seamless-scroll-polyfill: "npm:2.3.4"
-    style-loader: "npm:^3.3.3"
+    style-loader: "npm:^4.0.0"
     styled-components: "npm:6.1.0"
     ts-jest: "npm:^29.1.1"
     ts-loader: "npm:^9.5.0"
@@ -12074,12 +12074,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"style-loader@npm:^3.3.3":
-  version: 3.3.3
-  resolution: "style-loader@npm:3.3.3"
+"style-loader@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "style-loader@npm:4.0.0"
   peerDependencies:
-    webpack: ^5.0.0
-  checksum: 10/6c13d5075b5a5d69602215a242ef157460766e6e8a2e48276eb5da5b9852716910b48b3f120d492bbc7cd825dfa940b35fc84e1a9ab2a8792fd8d568b6b3e87a
+    webpack: ^5.27.0
+  checksum: 10/93f25b7e70cfca9d1d8427170384262b59a5b0e84e7191a5a26636a77799caeed46d9a3e45ee7b9afa0f69176e3b98d5a6c5e81593ff1fd0946f1c5682fd2a68
   languageName: node
   linkType: hard
 
