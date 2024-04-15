@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -25,6 +28,9 @@ let placement: PlacementBuilder
 let activeServiceNeedOption: ServiceNeedOptionBuilder
 let inactiveServiceNeedOption: ServiceNeedOptionBuilder
 
+const mockToday = LocalDate.of(2024, 3, 1)
+const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
+
 beforeEach(async () => {
   await resetDatabase()
   const fixtures = await initializeAreaAndPersonData()
@@ -43,12 +49,15 @@ beforeEach(async () => {
     .with({ validPlacementType: placement.data.type })
     .save()
   inactiveServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type, active: false })
+    .with({
+      validPlacementType: placement.data.type,
+      validTo: mockToday.subDays(1)
+    })
     .save()
 
   admin = await Fixture.employeeAdmin().save()
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime })
   await employeeLogin(page, admin.data)
 })
 
