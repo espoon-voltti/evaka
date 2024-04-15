@@ -31,7 +31,7 @@ data class VardaServiceNeed(
     val id: ServiceNeedId,
     val serviceNeedUpdated: HelsinkiDateTime,
     val childId: ChildId,
-    val applicationDate: LocalDate,
+    val applicationDate: LocalDate?,
     val range: FiniteDateRange,
     val hoursPerWeek: Double,
     val temporary: Boolean,
@@ -39,8 +39,7 @@ data class VardaServiceNeed(
     val shiftCare: Boolean,
     val providerType: ProviderType,
     val ophOrganizerOid: String,
-    val ophUnitOid: String,
-    val unitInvoicedByMunicipality: Boolean,
+    val ophUnitOid: String
 )
 
 fun Database.Read.getVardaServiceNeeds(childId: ChildId, range: DateRange): List<VardaServiceNeed> {
@@ -52,9 +51,7 @@ SELECT
     sn.updated AS service_need_updated,
     p.child_id AS child_id,
     daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)} AS range,
-    -- The default application date is set to be 15 days before the start because it's the minimum
-    -- for Varda to not deduce the application as urgent
-    LEAST(COALESCE(application_match.sentdate, application_match.created::date), sn.start_date - interval '15 days') AS application_date,
+    application_match.sentdate AS application_date,
     sno.daycare_hours_per_week AS hours_per_week,
     CASE 
         WHEN sno.valid_placement_type = ANY(${bind(vardaTemporaryPlacementTypes)}::placement_type[]) THEN true
@@ -62,36 +59,40 @@ SELECT
     END AS temporary,
     NOT sno.part_week AS daily,
     sn.shift_care = 'FULL' as shift_care,
-    d.provider_type,
-    d.oph_organizer_oid,
-    d.oph_unit_oid,
-    d.invoiced_by_municipality AS unit_invoiced_by_municipality
+    u.provider_type,
+    u.oph_organizer_oid,
+    u.oph_unit_oid
 FROM service_need sn
 JOIN service_need_option sno on sn.option_id = sno.id
 JOIN placement p ON p.id = sn.placement_id
-JOIN daycare d ON p.unit_id = d.id
+JOIN daycare u ON u.id = p.unit_id
 LEFT JOIN LATERAL (
-    SELECT a.id, a.sentdate, a.created, a.document
+    -- Find the newest application, with sent date before the service need's start date, whose decision points to
+    -- the same unit and overlaps with the service need's date range.
+    --
+    -- This is an approximation, because there's really no mapping from service needs to applications, but even still
+    -- Varda requires us to provide an application date.
+    --
+    -- It's possible that no application is found, in which case application_date is null.
+    SELECT a.sentdate
     FROM application a
-    WHERE child_id = p.child_id
-      AND a.status IN ('ACTIVE')
-      AND EXISTS (
-            SELECT 1
-            FROM placement_plan pp
-            WHERE pp.unit_id = p.unit_id AND pp.application_id = a.id
-              AND daterange(pp.start_date, pp.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
-        )
-    ORDER BY a.sentdate, a.id
+    JOIN decision d ON d.application_id = a.id
+    WHERE
+        a.child_id = p.child_id AND a.status = 'ACTIVE' AND a.sentdate < sn.start_date AND
+        d.unit_id = p.unit_id AND d.status = 'ACCEPTED' AND
+        daterange(d.start_date, d.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+    ORDER BY a.sentdate DESC
     LIMIT 1
-    ) application_match ON true
+) application_match ON true
 WHERE
     p.child_id = ${bind(childId)} AND
     daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)} AND
     p.type = ANY(${bind(vardaPlacementTypes)}::placement_type[]) AND
     sno.daycare_hours_per_week >= 1 AND
-    d.upload_children_to_varda = true AND
-    d.oph_organizer_oid IS NOT NULL AND
-    d.oph_unit_oid IS NOT NULL
+    u.upload_children_to_varda AND
+    u.oph_organizer_oid IS NOT NULL AND
+    u.oph_unit_oid IS NOT NULL
+ORDER BY sn.start_date
 """
             )
         }
@@ -104,9 +105,9 @@ data class VardaFeeData(
     val partnerId: PersonId?,
     val placementType: PlacementType?,
     val familySize: Int,
-    val totalFee: Int,
-    val voucherValue: Int?,
-    val voucherUnitOrganizerOid: String?
+    val childFee: Int,
+    val ophOrganizerOid: String,
+    val voucherValue: Int?
 )
 
 fun Database.Read.getVardaFeeData(childId: ChildId, range: FiniteDateRange): List<VardaFeeData> =
@@ -119,11 +120,12 @@ SELECT
     fd.partner_id,
     fdc.placement_type,
     fd.family_size,
-    fd.total_fee,
-    NULL AS voucher_value,
-    NULL AS voucher_unit_organizer_oid
+    fdc.final_fee AS child_fee,
+    u.oph_organizer_oid,
+    NULL AS voucher_value
 FROM fee_decision fd
 JOIN fee_decision_child fdc ON fdc.fee_decision_id = fd.id
+JOIN daycare u ON u.id = fdc.placement_unit_id
 WHERE
     fd.status = 'SENT' AND
     fd.valid_during && ${bind(range)} AND
@@ -137,9 +139,9 @@ SELECT
     vvd.partner_id,
     vvd.placement_type,
     vvd.family_size,
-    vvd.final_co_payment AS total_fee,
-    vvd.voucher_value,
-    u.oph_organizer_oid AS voucher_unit_organizer_oid
+    vvd.final_co_payment AS child_fee,
+    u.oph_organizer_oid,
+    vvd.voucher_value
 FROM voucher_value_decision vvd
 JOIN daycare u ON u.id = vvd.placement_unit_id
 WHERE
@@ -147,6 +149,8 @@ WHERE
     daterange(vvd.valid_from, vvd.valid_to, '[]') && ${bind(range)} AND
     vvd.child_id = ${bind(childId)} AND
     placement_type IS NOT NULL
+
+ORDER BY valid_during
 """
             )
         }

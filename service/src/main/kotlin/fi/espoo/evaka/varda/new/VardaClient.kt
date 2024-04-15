@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import fi.espoo.evaka.shared.utils.token
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import fi.espoo.voltti.logging.loggers.error
-import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 import mu.KotlinLogging
@@ -64,7 +63,9 @@ interface VardaReadClient {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class LapsiResponse(
         override val url: URI,
-        val lahdejarjestelma: String,
+        // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
+        // sometimes doesn't include it.
+        val lahdejarjestelma: String?,
         val vakatoimija_oid: String?,
         val oma_organisaatio_oid: String?,
         val paos_organisaatio_oid: String?,
@@ -111,8 +112,8 @@ interface VardaReadClient {
         val alkamis_pvm: LocalDate,
         val paattymis_pvm: LocalDate?,
         val maksun_peruste_koodi: String,
-        val palveluseteli_arvo: BigDecimal?,
-        val asiakasmaksu: BigDecimal,
+        val palveluseteli_arvo: Double?,
+        val asiakasmaksu: Double,
         val perheen_koko: Int?,
     ) : VardaEntity
 
@@ -189,8 +190,8 @@ interface VardaWriteClient {
         val alkamis_pvm: LocalDate,
         val paattymis_pvm: LocalDate?,
         val maksun_peruste_koodi: String,
-        val palveluseteli_arvo: BigDecimal?,
-        val asiakasmaksu: BigDecimal,
+        val palveluseteli_arvo: Double?,
+        val asiakasmaksu: Double,
         val perheen_koko: Int?,
     )
 
@@ -315,11 +316,12 @@ class VardaClient(
                 }
             }
             is Result.Failure -> {
-                val message = "failed to request $method $url"
-                if (null !is R) {
-                    vardaError(request, result.error) { err -> "$message: $err" }
+                if (null !is R || result.error.response.statusCode != 404) {
+                    vardaError(request, result.error) { err ->
+                        "failed to request $method $url: ${err.toString().trim()}"
+                    }
                 } else {
-                    logger.warn { "$message: ${result.error}" }
+                    logger.info("successfully requested $method $url: not found")
                     null as R
                 }
             }

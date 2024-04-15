@@ -4,12 +4,10 @@
 
 package fi.espoo.evaka.varda.new
 
-import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.varda.VardaUnitProviderType
-import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 
@@ -47,7 +45,9 @@ data class Lapsi(
 ) {
     companion object {
         fun fromEvaka(data: VardaServiceNeed, omaOrganisaatioOid: String): Lapsi =
-            if (data.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
+            if (data.ophOrganizerOid != omaOrganisaatioOid) {
+                // Unit's organizer is not the municipal organizer, so the child is in PAOS
+                // (Palvelusetelillä järjestetty ja ostopalveluna hankittu varhaiskasvatus)
                 Lapsi(
                     vakatoimija_oid = null,
                     oma_organisaatio_oid = omaOrganisaatioOid,
@@ -55,7 +55,7 @@ data class Lapsi(
                 )
             } else {
                 Lapsi(
-                    vakatoimija_oid = data.ophOrganizerOid,
+                    vakatoimija_oid = omaOrganisaatioOid,
                     oma_organisaatio_oid = null,
                     paos_organisaatio_oid = null
                 )
@@ -77,6 +77,12 @@ data class Lapsi(
             oma_organisaatio_oid = oma_organisaatio_oid,
             paos_organisaatio_oid = paos_organisaatio_oid
         )
+
+    val effectiveOrganizerOid: String
+        get() =
+            paos_organisaatio_oid
+                ?: vakatoimija_oid
+                ?: throw IllegalStateException("No organizer OID found")
 }
 
 data class Varhaiskasvatuspaatos(
@@ -93,7 +99,9 @@ data class Varhaiskasvatuspaatos(
     companion object {
         fun fromEvaka(data: VardaServiceNeed): Varhaiskasvatuspaatos =
             Varhaiskasvatuspaatos(
-                hakemus_pvm = data.applicationDate,
+                // If there's no matching application, set hakemus_pvm to be 15 days before the
+                // start because it's the minimum for Varda to not deduce the application as urgent
+                hakemus_pvm = data.applicationDate ?: data.range.start.minusDays(15),
                 alkamis_pvm = data.range.start,
                 paattymis_pvm = data.range.end,
                 tuntimaara_viikossa = data.hoursPerWeek,
@@ -182,8 +190,8 @@ data class Maksutieto(
     val paattymis_pvm: LocalDate?,
     val perheen_koko: Int?,
     val maksun_peruste_koodi: String,
-    val asiakasmaksu: BigDecimal,
-    val palveluseteli_arvo: BigDecimal
+    val asiakasmaksu: Double,
+    val palveluseteli_arvo: Double
 ) {
     companion object {
         fun fromEvaka(guardians: List<PersonDTO>, data: VardaFeeData): Maksutieto? {
@@ -220,9 +228,8 @@ data class Maksutieto(
                         }
                         .code,
                 perheen_koko = data.familySize,
-                asiakasmaksu = BigDecimal(data.totalFee).divide(BigDecimal(100)),
-                palveluseteli_arvo =
-                    (data.voucherValue ?: 0).let { BigDecimal(it).divide(BigDecimal(100)) }
+                asiakasmaksu = data.childFee.toDouble() / 100,
+                palveluseteli_arvo = (data.voucherValue ?: 0).toDouble() / 100
             )
         }
 
@@ -234,7 +241,7 @@ data class Maksutieto(
                 perheen_koko = data.perheen_koko,
                 maksun_peruste_koodi = data.maksun_peruste_koodi,
                 asiakasmaksu = data.asiakasmaksu,
-                palveluseteli_arvo = data.palveluseteli_arvo ?: BigDecimal(0),
+                palveluseteli_arvo = data.palveluseteli_arvo ?: 0.0,
             )
     }
 

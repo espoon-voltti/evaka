@@ -111,9 +111,7 @@ class VardaUpdateServiceNew(
                 evakaState.henkilo.henkilo_oid
             )
 
-        logger.info(
-            mapOf("varda" to vardaState?.toPrettyString(), "evaka" to evakaState.toPrettyString())
-        ) {
+        logger.info(mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())) {
             "Varda update state for ${job.childId} (see the meta.varda and meta.evaka fields)"
         }
 
@@ -177,17 +175,14 @@ class VardaUpdater(
                 } else {
                     emptyList()
                 }
-                .filter { fee ->
-                    val serviceNeed = serviceNeeds.find { it.range.overlaps(fee.validDuring) }
-                    serviceNeed != null && serviceNeed.unitInvoicedByMunicipality
-                }
+                .filter { fee -> serviceNeeds.any { it.range.overlaps(fee.validDuring) } }
 
         val evakaLapsiServiceNeeds =
             serviceNeeds.groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
         val evakaFeeData =
             feeData
                 .mapNotNull { fee ->
-                    Maksutieto.fromEvaka(guardians, fee)?.let { fee.voucherUnitOrganizerOid to it }
+                    Maksutieto.fromEvaka(guardians, fee)?.let { fee.ophOrganizerOid to it }
                 }
                 .groupBy({ it.first }, { it.second })
 
@@ -208,10 +203,7 @@ class VardaUpdater(
                                                 listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                                         )
                                     },
-                            maksutiedot =
-                                // If lapsi.paos_organisaatio_oid is null, we'll get the fee data
-                                // for municipal daycare
-                                evakaFeeData[lapsi.paos_organisaatio_oid] ?: emptyList()
+                            maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid] ?: emptyList()
                         )
                         .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
                 }
@@ -275,8 +267,14 @@ class VardaUpdater(
         /** Called as soon as the Varda henkilo OID is known */
         onOid: ((oid: String) -> Unit)? = null
     ) {
-        val henkilo = vardaHenkilo?.henkilo ?: client.createHenkilo(evakaHenkilo.henkilo.toVarda())
-        if (onOid != null && henkilo.henkilo_oid != null) {
+        val henkilo =
+            // Create a henkilo if it doesn't exist yet and there are lapsi entries
+            if (vardaHenkilo == null && evakaHenkilo.lapset.isNotEmpty()) {
+                client.createHenkilo(evakaHenkilo.henkilo.toVarda())
+            } else {
+                vardaHenkilo?.henkilo
+            }
+        if (henkilo != null && onOid != null && henkilo.henkilo_oid != null) {
             onOid(henkilo.henkilo_oid)
         }
 
@@ -335,7 +333,10 @@ class VardaUpdater(
                     onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
                 )
             },
-            onAdded = { client.createLapsiDeep(henkilo.url, it) },
+            onAdded = {
+                // If we get here, henkilo has lapsi entries and thus must be non-null
+                client.createLapsiDeep(henkilo!!.url, it)
+            },
         )
     }
 
@@ -353,10 +354,10 @@ class VardaUpdater(
 
     /** Returns true if the lapsi and associated data were deleted */
     private fun VardaWriteClient.deleteLapsiDeep(vardaLapsi: VardaLapsiNode): Boolean {
+        val maksutiedotDeleted = vardaLapsi.maksutiedot.allSucceed { deleteMaksutieto(it) }
         val varhaiskasvatuspaatoksetDeleted =
             vardaLapsi.varhaiskasvatuspaatokset.allSucceed { deleteVarhaiskasvatuspaatosDeep(it) }
-        val maksutiedotDeleted = vardaLapsi.maksutiedot.allSucceed { deleteMaksutieto(it) }
-        return if (varhaiskasvatuspaatoksetDeleted && maksutiedotDeleted) {
+        return if (maksutiedotDeleted && varhaiskasvatuspaatoksetDeleted) {
             delete(vardaLapsi.lapsi)
             true
         } else {
@@ -461,12 +462,7 @@ class VardaUpdater(
         createMaksutieto(evakaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
     }
 
-    data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>) {
-        fun toPrettyString(): String =
-            "Henkilo(\n  $henkilo,\n  lapset = [\n" +
-                lapset.joinToString(",\n") { "    $it" } +
-                "  ]\n)"
-    }
+    data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>)
 
     data class EvakaLapsiNode(
         val lapsi: Lapsi,
@@ -482,15 +478,7 @@ class VardaUpdater(
     data class VardaHenkiloNode(
         val henkilo: VardaReadClient.HenkiloResponse,
         val lapset: List<VardaLapsiNode>
-    ) {
-        fun toPrettyString(): String =
-            "HenkiloResponse(\n" +
-                "  henkilo = $henkilo,\n" +
-                "  lapset = [\n" +
-                lapset.joinToString(",\n") { "    $it" } +
-                "  ]\n" +
-                ")"
-    }
+    )
 
     data class VardaLapsiNode(
         val lapsi: VardaReadClient.LapsiResponse,
