@@ -7,11 +7,7 @@ on:
   pull_request:
   push:
     branches:
-    - master
-  schedule:
-    # Build every Monday at 01:00. With the cache-bust mechanism, this
-    # effectively updates all operating system packages.
-    - cron: "0 1 * * 1"
+      - master
   workflow_dispatch:
     inputs:
       push:
