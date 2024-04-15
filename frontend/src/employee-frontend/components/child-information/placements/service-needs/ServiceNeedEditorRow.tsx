@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,8 +7,13 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { localDateRange } from 'lib-common/form/fields'
+import { object, oneOf, required } from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
+  ServiceNeed,
   ServiceNeedOption,
   ShiftCareType,
   shiftCareType
@@ -16,7 +21,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Select from 'lib-components/atoms/dropdowns/Select'
+import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -24,7 +29,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { featureFlags } from 'lib-customizations/employee'
 import { faExclamation } from 'lib-icons'
@@ -42,10 +47,17 @@ import RetroactiveConfirmation, {
 const postServiceNeedResult = wrapResult(postServiceNeed)
 const putServiceNeedResult = wrapResult(putServiceNeed)
 
+const serviceNeedForm = object({
+  range: required(localDateRange()),
+  option: required(oneOf<UUID>()),
+  shiftCare: required(oneOf<ShiftCareType>())
+})
+
 interface ServiceNeedCreateRowProps {
   placement: DaycarePlacementWithDetails
   options: ServiceNeedOption[]
-  initialForm: FormData
+  editedServiceNeed?: ServiceNeed
+  initialRange?: FiniteDateRange
   onSuccess: () => void
   onCancel: () => void
   editingId?: string
@@ -54,138 +66,144 @@ interface ServiceNeedCreateRowProps {
 function ServiceNeedEditorRow({
   placement,
   options,
-  initialForm,
+  editedServiceNeed,
+  initialRange,
   onSuccess,
   onCancel,
   editingId
 }: ServiceNeedCreateRowProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
 
+  const bind = useForm(
+    serviceNeedForm,
+    () => ({
+      range: localDateRange.fromDates(
+        editedServiceNeed?.startDate ??
+          initialRange?.start ??
+          placement.startDate,
+        editedServiceNeed?.endDate ?? initialRange?.end ?? placement.endDate,
+        {
+          minDate: placement.startDate,
+          maxDate: placement.endDate
+        }
+      ),
+      option: {
+        options: options.map((opt) => ({
+          label: opt.nameFi,
+          value: opt.id,
+          domValue: opt.id
+        })),
+        domValue: editedServiceNeed?.option?.id ?? ''
+      },
+      shiftCare: {
+        options: shiftCareType.map((type) => ({
+          label: t.shiftCareTypes[type],
+          value: type,
+          domValue: type
+        })),
+        domValue: editedServiceNeed?.shiftCare ?? 'NONE'
+      }
+    }),
+    i18n.validationErrors
+  )
+  const { range, option, shiftCare } = useFormFields(bind)
+
   const { setErrorMessage } = useContext(UIContext)
-  const [form, setForm] = useState<FormData>(initialForm)
   const [overlapWarning, setOverlapWarning] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const retroactive = useMemo(
-    () =>
-      isChangeRetroactive(
-        form.startDate &&
-          (form.endDate === undefined ||
-            form.endDate.isEqualOrAfter(form.startDate))
-          ? new DateRange(form.startDate, form.endDate ?? null)
-          : null,
-        initialForm.startDate
-          ? new DateRange(initialForm.startDate, initialForm.endDate ?? null)
-          : null,
-        form.optionId !== initialForm.optionId ||
-          form.shiftCare !== initialForm.shiftCare,
-        LocalDate.todayInHelsinkiTz()
-      ),
-    [form, initialForm]
-  )
+
+  const retroactive = useMemo(() => {
+    if (!bind.isValid()) return false
+
+    const newRange = range.value()
+    const prevRange = editedServiceNeed
+      ? new DateRange(
+          editedServiceNeed.startDate,
+          editedServiceNeed.endDate ?? null
+        )
+      : null
+    const contentChanged = editedServiceNeed
+      ? option.value() !== editedServiceNeed.option.id ||
+        shiftCare.value() !== editedServiceNeed.shiftCare
+      : true
+    return isChangeRetroactive(
+      newRange,
+      prevRange,
+      contentChanged,
+      LocalDate.todayInHelsinkiTz()
+    )
+  }, [bind, range, option, shiftCare, editedServiceNeed])
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
-  const formIsValid =
-    form.startDate &&
-    form.endDate &&
-    form.optionId &&
-    !form.endDate.isBefore(form.startDate) &&
-    (!retroactive || confirmedRetroactive)
-
-  const optionIds = useMemo(() => options.map(({ id }) => id), [options])
+  const formIsValid = bind.isValid() && (!retroactive || confirmedRetroactive)
 
   const onSubmit = () => {
-    const startDate = form.startDate
-    const endDate = form.endDate
-    if (startDate !== undefined && endDate !== undefined && form.optionId) {
-      if (
-        placement.serviceNeeds.find(
-          (sn) =>
-            sn.id !== editingId &&
-            sn.startDate.isEqualOrBefore(endDate) &&
-            sn.endDate.isEqualOrAfter(startDate)
-        ) !== undefined
-      ) {
-        setOverlapWarning(true)
-      } else {
-        onConfirmSave()
-      }
+    if (!formIsValid) return
+
+    if (
+      placement.serviceNeeds.some(
+        (sn) =>
+          sn.id !== editingId &&
+          new FiniteDateRange(sn.startDate, sn.endDate).overlaps(range.value())
+      )
+    ) {
+      setOverlapWarning(true)
+    } else {
+      onConfirmSave()
     }
   }
 
   const onConfirmSave = () => {
-    if (form.startDate && form.endDate && form.optionId) {
-      setSubmitting(true)
+    if (!formIsValid) return
 
-      const request = editingId
-        ? putServiceNeedResult({
-            id: editingId,
-            body: {
-              startDate: form.startDate,
-              endDate: form.endDate,
-              optionId: form.optionId,
-              shiftCare: form.shiftCare
-            }
-          })
-        : postServiceNeedResult({
-            body: {
-              placementId: placement.id,
-              startDate: form.startDate,
-              endDate: form.endDate,
-              optionId: form.optionId,
-              shiftCare: form.shiftCare
-            }
-          })
+    setSubmitting(true)
 
-      void request
-        .then((res) => {
-          if (res.isSuccess) {
-            onSuccess()
-          } else {
-            setErrorMessage({
-              type: 'error',
-              title: i18n.common.error.unknown,
-              text: i18n.common.error.saveFailed,
-              resolveLabel: i18n.common.ok
-            })
+    const request = editingId
+      ? putServiceNeedResult({
+          id: editingId,
+          body: {
+            startDate: range.value().start,
+            endDate: range.value().end,
+            optionId: option.value(),
+            shiftCare: shiftCare.value()
           }
         })
-        .finally(() => setSubmitting(false))
-    }
+      : postServiceNeedResult({
+          body: {
+            placementId: placement.id,
+            startDate: range.value().start,
+            endDate: range.value().end,
+            optionId: option.value(),
+            shiftCare: shiftCare.value()
+          }
+        })
+
+    void request
+      .then((res) => {
+        if (res.isSuccess) {
+          onSuccess()
+        } else {
+          setErrorMessage({
+            type: 'error',
+            title: i18n.common.error.unknown,
+            text: i18n.common.error.saveFailed,
+            resolveLabel: i18n.common.ok
+          })
+        }
+      })
+      .finally(() => setSubmitting(false))
   }
 
   return (
     <>
       <StyledTr hideBottomBorder={retroactive}>
         <Td>
-          <FixedSpaceRow spacing="xs" alignItems="center">
-            <DatePickerDeprecated
-              date={form.startDate}
-              onChange={(date) => setForm({ ...form, startDate: date })}
-              minDate={placement.startDate}
-              maxDate={placement.endDate}
-              type="short"
-            />
-            <span>-</span>
-            <DatePickerDeprecated
-              date={form.endDate}
-              onChange={(date) => setForm({ ...form, endDate: date })}
-              minDate={placement.startDate}
-              maxDate={placement.endDate}
-              type="short"
-            />
-          </FixedSpaceRow>
+          <DateRangePickerF bind={range} locale={lang} />
         </Td>
         <Td>
-          <Select
-            items={optionIds}
-            selectedItem={form.optionId}
-            getItemLabel={(optionId) =>
-              options.find(({ id }) => id === optionId)?.nameFi ?? ''
-            }
-            onChange={(optionId) =>
-              setForm({ ...form, optionId: optionId ?? undefined })
-            }
+          <SelectF
+            bind={option}
             placeholder={t.optionPlaceholder}
             data-qa="service-need-option-select"
           />
@@ -198,8 +216,13 @@ function ServiceNeedEditorRow({
                   key={type}
                   data-qa={`shift-care-type-radio-${type}`}
                   label={t.shiftCareTypes[type]}
-                  checked={form.shiftCare === type}
-                  onChange={() => setForm({ ...form, shiftCare: type })}
+                  checked={shiftCare.value() === type}
+                  onChange={() =>
+                    shiftCare.update((s) => ({
+                      ...s,
+                      domValue: type
+                    }))
+                  }
                 />
               ))}
             </FixedSpaceColumn>
@@ -208,9 +231,12 @@ function ServiceNeedEditorRow({
               label={t.shiftCare}
               data-qa="shift-care-toggle"
               hiddenLabel
-              checked={form.shiftCare === 'FULL'}
+              checked={shiftCare.value() === 'FULL'}
               onChange={(checked) =>
-                setForm({ ...form, shiftCare: checked ? 'FULL' : 'NONE' })
+                shiftCare.update((s) => ({
+                  ...s,
+                  domValue: checked ? 'FULL' : 'NONE'
+                }))
               }
             />
           )}
@@ -266,13 +292,6 @@ function ServiceNeedEditorRow({
       )}
     </>
   )
-}
-
-interface FormData {
-  startDate: LocalDate | undefined
-  endDate: LocalDate | undefined
-  optionId: UUID | undefined
-  shiftCare: ShiftCareType
 }
 
 const StyledTr = styled(Tr)<{
