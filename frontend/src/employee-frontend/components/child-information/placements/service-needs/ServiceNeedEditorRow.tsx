@@ -29,6 +29,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { featureFlags } from 'lib-customizations/employee'
@@ -167,7 +168,24 @@ function ServiceNeedEditorRow({
   }, [bind, range, option, shiftCare, editedServiceNeed])
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
-  const formIsValid = bind.isValid() && (!retroactive || confirmedRetroactive)
+  const partiallyInvalidOptionValidity = useMemo(() => {
+    if (!bind.isValid()) return null
+
+    const optionDetails = options.find((opt) => opt.id === option.value())
+    if (!optionDetails) return null
+
+    const optionValidity = new DateRange(
+      optionDetails.validFrom,
+      optionDetails.validTo
+    )
+    const serviceNeedRange = range.value()
+    return optionValidity.contains(serviceNeedRange) ? null : optionValidity
+  }, [bind, range, option, options])
+
+  const formIsValid =
+    bind.isValid() &&
+    !partiallyInvalidOptionValidity &&
+    (!retroactive || confirmedRetroactive)
 
   const onSubmit = () => {
     if (!formIsValid) return
@@ -291,7 +309,24 @@ function ServiceNeedEditorRow({
         </Td>
       </StyledTr>
 
-      {retroactive && (
+      {partiallyInvalidOptionValidity ? (
+        <StyledTr hideTopBorder>
+          <Td colSpan={2}>
+            <AlertBox
+              wide
+              title={t.notFullyValidOptionWarningTitle(
+                partiallyInvalidOptionValidity.start.format(),
+                partiallyInvalidOptionValidity.end?.format()
+              )}
+              message={t.notFullyValidOptionWarning}
+              noMargin
+            />
+          </Td>
+          <Td />
+          <Td />
+          <Td />
+        </StyledTr>
+      ) : retroactive ? (
         <StyledTr hideTopBorder>
           <Td colSpan={2}>
             <RetroactiveConfirmation
@@ -303,7 +338,7 @@ function ServiceNeedEditorRow({
           <Td />
           <Td />
         </StyledTr>
-      )}
+      ) : null}
 
       {overlapWarning && (
         <InfoModal

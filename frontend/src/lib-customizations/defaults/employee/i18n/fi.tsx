@@ -1495,7 +1495,16 @@ export const fi = {
           title: 'Palveluntarpeet menevät päällekkäin',
           message:
             'Merkitsemäsi palveluntarve menee päällekkäin aiemmin ilmoitetun kanssa. Mikäli vahvistat nyt merkitsemäsi palveluntarpeen, aiemmin merkitty palveluntarve katkaistaan automaattisesti päällekkäin menevältä ajalta.'
-        }
+        },
+        notFullyValidOptionWarningTitle: (
+          validFrom: string,
+          validTo: string | undefined
+        ) =>
+          validTo
+            ? `Valittu palveluntarvetyyppi on käytettävissä ajalla ${validFrom} - ${validTo}`
+            : `Valittu palveluntarvetyyppi on käytettävissä vasta ${validFrom} alkaen`,
+        notFullyValidOptionWarning:
+          'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.'
       }
     },
     fridgeParents: {

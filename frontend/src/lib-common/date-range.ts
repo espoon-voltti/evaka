@@ -66,6 +66,13 @@ export default class DateRange {
     return !this.start.isAfter(date)
   }
 
+  contains(other: DateRange | FiniteDateRange): boolean {
+    if (this.end !== null) {
+      if (other.end === null || other.end.isAfter(this.end)) return false
+    }
+    return !this.start.isAfter(other.start)
+  }
+
   intersection(other: DateRange): DateRange | undefined {
     const start = maxOf(this.start, other.start)
     const end = !this.end || !other.end ? null : minOf(this.end, other.end)
