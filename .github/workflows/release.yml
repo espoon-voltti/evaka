@@ -21,6 +21,9 @@ on:
         description: "Include PRs up to date (inclusive), YYYY-MM-DD"
         required: true
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   config:
     runs-on: ubuntu-latest
