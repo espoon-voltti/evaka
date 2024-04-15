@@ -269,7 +269,9 @@ export const documentTypes = [
   'PEDAGOGICAL_ASSESSMENT',
   'HOJKS',
   'MIGRATED_VASU',
-  'MIGRATED_LEOPS'
+  'MIGRATED_LEOPS',
+  'VASU',
+  'LEOPS'
 ] as const
 
 export type DocumentType = typeof documentTypes[number]
