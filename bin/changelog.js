@@ -59,6 +59,8 @@ function parseArgs() {
   return {startDate, endDate}
 }
 
+const ignoreLabels = ['no-changelog']
+
 const labels = {
   breaking: 'Rikkovat muutokset',
   enhancement: 'Uudet ominaisuudet ja parannukset',
@@ -68,15 +70,18 @@ const labels = {
   dependencies: 'Riippuvuuksien päivitykset',
 }
 
-function processPrs(json, startDate, endDate) {
+function processPrs(prs, startDate, endDate) {
   const min = startDate
   const maxExclusive = new Date(endDate + 24 * 60 * 60 * 1000)
-  const prsInRange = json.filter((pr) => min <= new Date(pr.closedAt) && new Date(pr.closedAt) < maxExclusive)
+
+  const prsToInclude = prs
+    .filter((pr) => min <= new Date(pr.closedAt) && new Date(pr.closedAt) < maxExclusive)
+    .filter((pr) => !ignoreLabels.some((ignore) => hasLabel(pr, ignore)))
 
   // Sort by closedAt descending
-  prsInRange.sort((a, b) => a.closedAt < b.closedAt ? 1 : -1);
+  prsToInclude.sort((a, b) => a.closedAt < b.closedAt ? 1 : -1);
 
-  const grouped = groupBy(prsInRange, (pr) => {
+  const grouped = groupBy(prsToInclude, (pr) => {
     for (const label of Object.keys(labels)) {
       if (hasLabel(pr, label)) return label
     }
