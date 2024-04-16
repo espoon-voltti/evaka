@@ -248,7 +248,11 @@ function ServiceNeedEditorRow({
     <>
       <StyledTr hideBottomBorder={retroactive}>
         <Td>
-          <DateRangePickerF bind={range} locale={lang} />
+          <DateRangePickerF
+            bind={range}
+            locale={lang}
+            data-qa="service-need-range"
+          />
         </Td>
         <Td>
           <SelectF
@@ -320,6 +324,7 @@ function ServiceNeedEditorRow({
               )}
               message={t.notFullyValidOptionWarning}
               noMargin
+              data-qa="partially-invalid-warning"
             />
           </Td>
           <Td />

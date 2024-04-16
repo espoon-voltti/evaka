@@ -702,10 +702,16 @@ export class PlacementsSection extends Section {
     this.findAll('[data-qa="service-need-row"]').nth(index)
   #serviceNeedRowOptionName = (index: number) =>
     this.#serviceNeedRow(index).find('[data-qa="service-need-name"]')
-  #addMissingServiceNeedButton = this.find(
+  addMissingServiceNeedButton = this.find(
     '[data-qa="add-new-missing-service-need"]'
   )
-  #serviceNeedOptionSelect = new Select(
+  serviceNeedStartDate = new DatePicker(
+    this.findByDataQa('service-need-range').findByDataQa('start-date')
+  )
+  serviceNeedEndDate = new DatePicker(
+    this.findByDataQa('service-need-range').findByDataQa('end-date')
+  )
+  serviceNeedOptionSelect = new Select(
     this.find('[data-qa="service-need-option-select"]')
   )
 
@@ -720,9 +726,10 @@ export class PlacementsSection extends Section {
     (type) => new Radio(this.findByDataQa(`shift-care-type-radio-${type}`))
   )
 
-  #serviceNeedSaveButton = this.find('[data-qa="service-need-save"]')
+  serviceNeedSaveButton = this.find('[data-qa="service-need-save"]')
   #terminatedByGuardian = (placementId: string) =>
     this.#placementRow(placementId).find('[data-qa="placement-terminated"]')
+  partiallyInvalidWarning = this.findByDataQa('partially-invalid-warning')
 
   async assertPlacementRows(
     rows: { unitName: string; period: string; status: string }[]
@@ -759,8 +766,8 @@ export class PlacementsSection extends Section {
     intermittentShiftCare = false
   ) {
     await this.openPlacement(placementId)
-    await this.#addMissingServiceNeedButton.click()
-    await this.#serviceNeedOptionSelect.selectOption({ label: optionName })
+    await this.addMissingServiceNeedButton.click()
+    await this.serviceNeedOptionSelect.selectOption({ label: optionName })
 
     if (intermittentShiftCare) {
       const indexOfType = shiftCareType.indexOf(shiftCare)
@@ -770,7 +777,7 @@ export class PlacementsSection extends Section {
         await this.#serviceNeedShiftCareCheckBox.check()
       }
     }
-    await this.#serviceNeedSaveButton.click()
+    await this.serviceNeedSaveButton.click()
   }
 
   async assertNthServiceNeedName(index: number, optionName: string) {
@@ -787,9 +794,9 @@ export class PlacementsSection extends Section {
   }
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
     await this.openPlacement(placementId)
-    await this.#addMissingServiceNeedButton.click()
+    await this.addMissingServiceNeedButton.click()
     await waitUntilTrue(async () => {
-      const selectableOptions = await this.#serviceNeedOptionSelect
+      const selectableOptions = await this.serviceNeedOptionSelect
         .findAll('option')
         .evaluateAll((elements) =>
           elements
@@ -858,7 +865,7 @@ export class PlacementsSection extends Section {
     await this.#nthServiceNeedEditButton(index).click()
     const indexOfType = shiftCareType.indexOf(shiftCare)
     await this.#serviceNeedShiftCareRadios[indexOfType].check()
-    await this.#serviceNeedSaveButton.click()
+    await this.serviceNeedSaveButton.click()
   }
 }
 

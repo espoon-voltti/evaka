@@ -27,6 +27,7 @@ let employee: EmployeeBuilder
 let placement: PlacementBuilder
 let activeServiceNeedOption: ServiceNeedOptionBuilder
 let inactiveServiceNeedOption: ServiceNeedOptionBuilder
+let partiallyInactiveServiceNeedOption: ServiceNeedOptionBuilder
 
 const mockToday = LocalDate.of(2024, 3, 1)
 const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
@@ -42,7 +43,9 @@ beforeEach(async () => {
   placement = await Fixture.placement()
     .with({
       childId,
-      unitId
+      unitId,
+      startDate: mockToday,
+      endDate: mockToday.addDays(10)
     })
     .save()
   activeServiceNeedOption = await Fixture.serviceNeedOption()
@@ -52,6 +55,12 @@ beforeEach(async () => {
     .with({
       validPlacementType: placement.data.type,
       validTo: mockToday.subDays(1)
+    })
+    .save()
+  partiallyInactiveServiceNeedOption = await Fixture.serviceNeedOption()
+    .with({
+      validPlacementType: placement.data.type,
+      validTo: mockToday.addDays(5)
     })
     .save()
 
@@ -85,8 +94,29 @@ describe('Service need', () => {
     const section = await openCollapsible()
 
     await section.assertServiceNeedOptions(placement.data.id, [
-      activeServiceNeedOption.data.id
+      activeServiceNeedOption.data.id,
+      partiallyInactiveServiceNeedOption.data.id
     ])
+  })
+
+  test('selecting partially inactive option shows validation error', async () => {
+    const section = await openCollapsible()
+    await section.openPlacement(placement.data.id)
+    await section.addMissingServiceNeedButton.click()
+    await section.serviceNeedOptionSelect.selectOption(
+      partiallyInactiveServiceNeedOption.data.id
+    )
+    await section.serviceNeedSaveButton.assertDisabled(true)
+    await section.partiallyInvalidWarning.waitUntilVisible()
+
+    await section.serviceNeedEndDate.fill(mockToday.addDays(5).format())
+    await section.serviceNeedSaveButton.assertDisabled(false)
+    await section.partiallyInvalidWarning.waitUntilHidden()
+    await section.serviceNeedSaveButton.click()
+    await section.assertNthServiceNeedName(
+      0,
+      partiallyInactiveServiceNeedOption.data.nameFi
+    )
   })
 
   test('inactive service need name is shown on placement', async () => {
