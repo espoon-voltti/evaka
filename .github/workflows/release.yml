@@ -8,18 +8,23 @@ on:
     - cron: '0 23 * * 0'  # Sunday at 23:00
   workflow_dispatch:
     inputs:
-      draft:
-        description: "Create a draft release (true/false)"
-        required: true
       git-tag:
         description: "Git tag for the release"
         required: true
+      target:
+        description: "Branch name or commit id to create the tag on"
+        required: true
+        default: "master"
       start-date:
         description: "Include PRs starting from date, YYYY-MM-DD"
         required: true
       end-date:
         description: "Include PRs up to date (inclusive), YYYY-MM-DD"
         required: true
+      draft:
+        description: "Create a draft release (true/false)"
+        required: true
+        default: "false"
 
 env:
   GH_TOKEN: ${{ github.token }}
@@ -28,16 +33,16 @@ jobs:
   config:
     runs-on: ubuntu-latest
     steps:
-      - name: ""
-        id: config
+      - id: config
         run: |
+          echo "tag=${{ inputs.git-tag || 'v$( date ''+%Y%m%d'')' }}" >> "$GITHUB_OUTPUT"
+          echo "target=${{ inputs.target || 'master' }}" >> "$GITHUB_OUTPUT"
           echo "start-date=${{ inputs.start-date || '$(date -v -6d ''+%Y-%V'')' }}" >> "$GITHUB_OUTPUT"
           echo "end-date=${{ inputs.end-date || '$(date ''+%Y-%V'')' }}" >> "$GITHUB_OUTPUT"
-          echo "draft=${{ inputs.draft }}" >> "$GITHUB_OUTPUT"
-          echo "tag=${{ inputs.git-tag || 'v$( date ''+%Y%m%d'')' }}" >> "$GITHUB_OUTPUT"
+          echo "draft=${{ inputs.draft || 'false' }}" >> "$GITHUB_OUTPUT"
     outputs:
-      changelog-options: ${{ steps.config.outputs.start-date }} ${{ steps.config.outputs.end-date }}
-      gh-options: ${{ steps.config.outputs.draft == 'true' && '--draft' || '' }} ${{ steps.config.outputs.tag }}
+      changelog-args: ${{ steps.config.outputs.start-date }} ${{ steps.config.outputs.end-date }}
+      gh-args: ${{ steps.config.outputs.draft == 'true' && '--draft' || '' }} --target ${{ steps.config.outputs.target }} --title ${{ steps.config.outputs.tag }} ${{ steps.config.outputs.tag }}
 
   release:
     runs-on: ubuntu-latest
@@ -53,5 +58,5 @@ jobs:
                   --state merged \
                   --limit 100 \
                   --json title,labels,closedAt,number,url |\
-              bin/changelog.js ${{ needs.config.outputs.changelog-options }} |\
-              gh release create --notes-file - ${{ needs.config.outputs.gh-options }}
+              bin/changelog.js ${{ needs.config.outputs.changelog-args }} |\
+              gh release create --notes-file - ${{ needs.config.outputs.gh-args }}
