@@ -906,6 +906,7 @@ const en: Translations = {
             PRESCHOOL: 'Start date',
             CLUB: 'Start date'
           },
+          missing: 'To select service need first set the preferred start date',
           info: {
             DAYCARE: [],
             PRESCHOOL: [

@@ -885,6 +885,8 @@ const sv: Translations = {
             PRESCHOOL: 'Inledningsdatum för förskoleundervisning',
             CLUB: 'Inledningsdatum'
           },
+          missing:
+            'För att kunna välja dagvårdsbehov, välj först det önskade startdatumet',
           info: {
             DAYCARE: [],
             PRESCHOOL: [

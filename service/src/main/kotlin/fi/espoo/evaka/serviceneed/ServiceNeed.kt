@@ -88,7 +88,9 @@ data class ServiceNeedOptionPublicInfo(
     val nameFi: String,
     val nameSv: String,
     val nameEn: String,
-    val validPlacementType: PlacementType
+    val validPlacementType: PlacementType,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?
 ) {
     companion object {
         fun of(option: ServiceNeedOption) =
@@ -97,7 +99,9 @@ data class ServiceNeedOptionPublicInfo(
                 option.nameFi,
                 option.nameSv,
                 option.nameEn,
-                option.validPlacementType
+                option.validPlacementType,
+                option.validFrom,
+                option.validTo
             )
     }
 }

@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -22,6 +23,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -64,17 +66,20 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
   const { applicationId } = useRouteParams(['applicationId'])
   const labelId = useUniqueId()
 
-  const serviceNeedOptionsByType =
-    serviceNeedOptions?.reduce<
-      Map<PlacementType, ServiceNeedOptionPublicInfo[]>
-    >((map, item) => {
-      const key = item.validPlacementType
-      const list = map.get(key) ?? []
-      list.push(item)
-      map.set(key, list)
-      return map
-    }, new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()) ??
-    new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()
+  const serviceNeedOptionsByType = useMemo(
+    () =>
+      serviceNeedOptions?.reduce<
+        Map<PlacementType, ServiceNeedOptionPublicInfo[]>
+      >((map, item) => {
+        const key = item.validPlacementType
+        const list = map.get(key) ?? []
+        list.push(item)
+        map.set(key, list)
+        return map
+      }, new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()) ??
+      new Map<PlacementType, ServiceNeedOptionPublicInfo[]>(),
+    [serviceNeedOptions]
+  )
 
   const uploadExtendedCareAttachment = (
     file: File,
@@ -115,6 +120,39 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
         })
       return result
     })
+
+  const preferredStartDate = featureFlags.preschoolApplication
+    .connectedDaycarePreferredStartDate
+    ? formData.connectedDaycarePreferredStartDate
+    : formData.preferredStartDate
+
+  useEffect(() => {
+    if (
+      featureFlags.preschoolApplication.serviceNeedOption &&
+      preferredStartDate &&
+      formData.placementType &&
+      formData.serviceNeedOption
+    ) {
+      const validSelectedType = serviceNeedOptionsByType
+        .get(formData.placementType)
+        ?.find(
+          (opt) =>
+            opt.id === formData.serviceNeedOption?.id &&
+            new DateRange(opt.validFrom, opt.validTo).includes(
+              preferredStartDate
+            )
+        )
+      if (!validSelectedType) {
+        updateFormData({ serviceNeedOption: null })
+      }
+    }
+  }, [
+    preferredStartDate,
+    formData.placementType,
+    formData.serviceNeedOption,
+    serviceNeedOptionsByType,
+    updateFormData
+  ])
 
   return (
     <>
@@ -182,47 +220,62 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
           ) : null}
 
           {featureFlags.preschoolApplication.serviceNeedOption ? (
-            <>
-              <FixedSpaceColumn>
-                {[...serviceNeedOptionsByType].map(([type, options]) => (
-                  <React.Fragment key={type}>
-                    <Radio
-                      label={t.placement.type[type]}
-                      checked={formData.placementType === type}
-                      onChange={() => {
-                        updateFormData({
-                          placementType: type,
-                          serviceNeedOption: null
-                        })
-                      }}
-                    />
-                    {formData.placementType === type && (
-                      <SubRadios>
-                        <FixedSpaceColumn spacing="xs">
-                          {options.map((opt) => (
-                            <Radio
-                              key={opt.id}
-                              label={
-                                (lang === 'fi' && opt.nameFi) ||
-                                (lang === 'sv' && opt.nameSv) ||
-                                (lang === 'en' && opt.nameEn) ||
-                                opt.id
-                              }
-                              checked={
-                                formData.serviceNeedOption?.id === opt.id
-                              }
-                              onChange={() =>
-                                updateFormData({ serviceNeedOption: opt })
-                              }
-                            />
-                          ))}
-                        </FixedSpaceColumn>
-                      </SubRadios>
-                    )}
-                  </React.Fragment>
-                ))}
-              </FixedSpaceColumn>
-            </>
+            preferredStartDate ? (
+              <>
+                <FixedSpaceColumn>
+                  {[...serviceNeedOptionsByType].map(([type, options]) => (
+                    <React.Fragment key={type}>
+                      <Radio
+                        label={t.placement.type[type]}
+                        checked={formData.placementType === type}
+                        onChange={() => {
+                          updateFormData({
+                            placementType: type,
+                            serviceNeedOption: null
+                          })
+                        }}
+                      />
+                      {formData.placementType === type && (
+                        <SubRadios>
+                          <FixedSpaceColumn spacing="xs">
+                            {options
+                              .filter((opt) =>
+                                new DateRange(
+                                  opt.validFrom,
+                                  opt.validTo
+                                ).includes(preferredStartDate)
+                              )
+                              .map((opt) => (
+                                <Radio
+                                  key={opt.id}
+                                  label={
+                                    (lang === 'fi' && opt.nameFi) ||
+                                    (lang === 'sv' && opt.nameSv) ||
+                                    (lang === 'en' && opt.nameEn) ||
+                                    opt.id
+                                  }
+                                  checked={
+                                    formData.serviceNeedOption?.id === opt.id
+                                  }
+                                  onChange={() =>
+                                    updateFormData({ serviceNeedOption: opt })
+                                  }
+                                />
+                              ))}
+                          </FixedSpaceColumn>
+                        </SubRadios>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </FixedSpaceColumn>
+              </>
+            ) : (
+              <div>
+                <AlertBox
+                  message={t.applications.editor.serviceNeed.startDate.missing}
+                />
+              </div>
+            )
           ) : (
             <>
               <ExpandingInfo

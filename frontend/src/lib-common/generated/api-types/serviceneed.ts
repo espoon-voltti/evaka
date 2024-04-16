@@ -81,7 +81,9 @@ export interface ServiceNeedOptionPublicInfo {
   nameEn: string
   nameFi: string
   nameSv: string
+  validFrom: LocalDate
   validPlacementType: PlacementType
+  validTo: LocalDate | null
 }
 
 /**
@@ -167,6 +169,15 @@ export function deserializeJsonServiceNeedOption(json: JsonOf<ServiceNeedOption>
 }
 
 
+export function deserializeJsonServiceNeedOptionPublicInfo(json: JsonOf<ServiceNeedOptionPublicInfo>): ServiceNeedOptionPublicInfo {
+  return {
+    ...json,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
 export function deserializeJsonServiceNeedOptionSummary(json: JsonOf<ServiceNeedOptionSummary>): ServiceNeedOptionSummary {
   return {
     ...json,
@@ -179,6 +190,7 @@ export function deserializeJsonServiceNeedSummary(json: JsonOf<ServiceNeedSummar
   return {
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
+    option: (json.option != null) ? deserializeJsonServiceNeedOptionPublicInfo(json.option) : null,
     startDate: LocalDate.parseIso(json.startDate)
   }
 }

@@ -271,7 +271,8 @@ fun Database.Read.getServiceNeedOptionPublicInfos(
 SELECT
     id,
     name_fi, name_sv, name_en,
-    valid_placement_type
+    valid_placement_type,
+    valid_from, valid_to
 FROM service_need_option
 WHERE default_option IS FALSE AND show_for_citizen IS TRUE AND valid_placement_type = ANY(${bind(placementTypes)}::placement_type[])
 ORDER BY display_order
