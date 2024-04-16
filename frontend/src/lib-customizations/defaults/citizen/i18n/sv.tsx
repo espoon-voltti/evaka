@@ -362,7 +362,7 @@ const sv: Translations = {
       holidayPeriod: (period: FiniteDateRange) =>
         `Semesterperioden: ${period.start.format('dd.MM.')}-${period.end.format(
           'dd.MM.'
-        )}`,
+        )}. Anmäl semesternärvaro innan deadline. Exakta tiderna kan fyllas i för närvarodagar när frågeformuläret har stängts.`,
       dateRange: 'Närvarotid',
       dateRangeLabel: 'Anmäl närvaro för perioden',
       dateRangeInfo: (date: LocalDate) =>

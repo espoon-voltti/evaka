@@ -366,7 +366,7 @@ const en: Translations = {
       holidayPeriod: (period: FiniteDateRange) =>
         `Holiday period: ${period.start.format('dd.MM.')}-${period.end.format(
           'dd.MM.'
-        )}`,
+        )}. Mark holiday attendances and absences by the deadline. The exact times of attendances will be marked after the questionnaire has closed.`,
       dateRange: 'Validity',
       dateRangeLabel: 'Enter period of attendance',
       dateRangeInfo: (date: LocalDate) =>
