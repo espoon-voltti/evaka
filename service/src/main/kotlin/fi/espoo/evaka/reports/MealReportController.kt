@@ -131,16 +131,16 @@ private fun childMeals(
     return meals.asSequence()
 }
 
-private fun getMealReport(db: Database.Read, date: LocalDate, unitId: DaycareId): MealReportData {
-    val daycare = db.getDaycare(unitId) ?: throw BadRequest("Daycare not found for $unitId")
+private fun getMealReport(tx: Database.Read, date: LocalDate, unitId: DaycareId): MealReportData? {
+    val daycare = tx.getDaycare(unitId) ?: return null
     if (!daycare.operationDays.contains(date.dayOfWeek.value))
         return MealReportData(date, daycare.name, emptyList())
 
-    val preschoolTerms = db.getPreschoolTerms()
+    val preschoolTerms = tx.getPreschoolTerms()
 
-    val childrenToPlacementTypeMap = db.childPlacementsForDay(unitId, date)
+    val childrenToPlacementTypeMap = tx.childPlacementsForDay(unitId, date)
     val childrenReservationsAndAttendances =
-        db.getChildData(unitId, childrenToPlacementTypeMap.keys, date.toFiniteDateRange())
+        tx.getChildData(unitId, childrenToPlacementTypeMap.keys, date.toFiniteDateRange())
 
     val mealInfoMap =
         childrenToPlacementTypeMap
@@ -183,13 +183,13 @@ class MealReportController(private val accessControl: AccessControl) {
 
     @GetMapping("/reports/meal/{unitId}")
     fun getMealReportByUnit(
-        db: Database,
+        tx: Database,
         clock: EvakaClock,
         user: AuthenticatedUser,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): MealReportData {
-        return db.connect { dbc ->
+        return tx.connect { dbc ->
             dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -199,7 +199,7 @@ class MealReportController(private val accessControl: AccessControl) {
                         unitId
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    getMealReport(it, date, unitId)
+                    getMealReport(it, date, unitId) ?: throw BadRequest("Daycare not found for $unitId")
                 }
                 .also {
                     Audit.MealReportRead.log(
