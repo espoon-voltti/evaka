@@ -267,6 +267,15 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                       )}
                     </React.Fragment>
                   ))}
+                  {errors.serviceNeedOption && verificationRequested && (
+                    <div>
+                      <AlertBox
+                        message={t.validationErrors[errors.serviceNeedOption]}
+                        thin
+                        noMargin
+                      />
+                    </div>
+                  )}
                 </FixedSpaceColumn>
               </>
             ) : (

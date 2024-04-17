@@ -230,6 +230,15 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             </FixedSpaceColumn>
           </SubRadios>
         )}
+        {errors.serviceNeedOption && verificationRequested && (
+          <div>
+            <AlertBox
+              message={t.validationErrors[errors.serviceNeedOption]}
+              thin
+              noMargin
+            />
+          </div>
+        )}
       </FixedSpaceColumn>
     )
   }
