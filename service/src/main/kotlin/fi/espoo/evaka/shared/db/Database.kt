@@ -204,6 +204,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         fun prepareBatch(@Language("sql") sql: String): PreparedBatch =
             PreparedBatch(handle.prepareBatch(sql))
 
+        @Deprecated("Use new query API instead: execute { sql(...) }")
         fun execute(@Language("sql") sql: String, vararg args: Any): Int =
             handle.execute(sql, *args)
 

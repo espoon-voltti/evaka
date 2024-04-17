@@ -113,7 +113,11 @@ class ApplicationAccessControlTest : AccessControlTest() {
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication())
         val daycareId =
             db.transaction { tx ->
-                tx.execute("UPDATE application SET status = 'ACTIVE' WHERE id = ?", applicationId)
+                tx.execute {
+                    sql(
+                        "UPDATE application SET status = 'ACTIVE' WHERE id = ${bind(applicationId)}"
+                    )
+                }
                 tx.insertTestPlacementPlan(applicationId, daycareId)
                 daycareId
             }

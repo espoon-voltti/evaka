@@ -843,11 +843,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft)) }
         db.transaction {
-            it.execute(
-                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
-                testDecisionMaker_2.id,
-                draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId
-            )
+            it.execute {
+                sql(
+                    """
+                    UPDATE daycare
+                    SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
+                    WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
+                """
+                )
+            }
         }
 
         confirmDrafts(listOf(draft.id))
@@ -872,11 +876,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType == FeeDecisionType.RELIEF_ACCEPTED }!!
         db.transaction {
-            it.execute(
-                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
-                testDecisionMaker_2.id,
-                draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId
-            )
+            it.execute {
+                sql(
+                    """
+                    UPDATE daycare
+                    SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
+                    WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
+                    """
+                )
+            }
         }
 
         confirmDrafts(listOf(draft.id))
@@ -907,11 +915,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision)) }
 
         db.transaction {
-            it.execute(
-                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
-                testDecisionMaker_2.id,
-                oldDecision.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId
-            )
+            it.execute {
+                sql(
+                    """
+                    UPDATE daycare
+                    SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
+                    WHERE id = ${bind(oldDecision.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
+                """
+                )
+            }
         }
 
         confirmDrafts(listOf(oldDecision.id))

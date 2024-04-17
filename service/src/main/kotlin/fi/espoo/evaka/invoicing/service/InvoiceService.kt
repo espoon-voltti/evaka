@@ -153,8 +153,9 @@ RETURNING id
 }
 
 fun Database.Transaction.markInvoicedCorrectionsAsComplete() {
-    execute(
-        """
+    execute {
+        sql(
+            """
 WITH applied_corrections AS (
     SELECT c.id
     FROM invoice_correction c
@@ -166,5 +167,6 @@ WITH applied_corrections AS (
 UPDATE invoice_correction SET applied_completely = true
 WHERE id IN (SELECT id FROM applied_corrections)
 """
-    )
+        )
+    }
 }

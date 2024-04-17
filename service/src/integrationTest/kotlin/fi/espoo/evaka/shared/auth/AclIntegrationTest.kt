@@ -111,7 +111,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.execute("TRUNCATE daycare_acl") }
+        db.transaction { it.execute { sql("TRUNCATE daycare_acl") } }
     }
 
     @ParameterizedTest(name = "{0}")

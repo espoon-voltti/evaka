@@ -113,11 +113,11 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `adult with no family that has logged in recently is not cleaned up`() {
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
-            tx.execute(
-                "UPDATE person SET last_login = ? WHERE id = ?",
-                testDate.minusMonths(2),
-                testAdult_1.id
-            )
+            tx.execute {
+                sql(
+                    "UPDATE person SET last_login = ${bind(testDate.minusMonths(2))} WHERE id = ${bind(testAdult_1.id)}"
+                )
+            }
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -129,11 +129,11 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
-            tx.execute(
-                "UPDATE person SET last_login = ? WHERE id = ?",
-                testDate.minusDays(14),
-                testAdult_1.id
-            )
+            tx.execute {
+                sql(
+                    "UPDATE person SET last_login = ${bind(testDate.minusDays(14))} WHERE id = ${bind(testAdult_1.id)}"
+                )
+            }
         }
 
         assertCleanedUpPeople(testDate, setOf())

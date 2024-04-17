@@ -152,7 +152,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         koskiEndpoint.clearData()
 
-        db.transaction { it.execute("DELETE FROM placement WHERE id = ?", placementId) }
+        db.transaction {
+            it.execute { sql("DELETE FROM placement WHERE id = ${bind(placementId)}") }
+        }
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
         assertEquals(0, koskiEndpoint.getStudyRights().values.size)
         assertEquals(0, countActiveStudyRights())

@@ -89,17 +89,22 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.execute(
-                "INSERT INTO holiday (date) VALUES (?), (?), (?), (?), (?), (?), (?), (?)",
-                LocalDate.of(2019, 1, 1),
-                LocalDate.of(2019, 1, 6),
-                LocalDate.of(2020, 1, 1),
-                LocalDate.of(2020, 1, 6),
-                LocalDate.of(2021, 1, 1),
-                LocalDate.of(2021, 1, 6),
-                LocalDate.of(2021, 12, 6),
-                LocalDate.of(2021, 12, 24)
-            )
+            tx.execute {
+                sql(
+                    """
+                    INSERT INTO holiday (date)
+                    VALUES
+                        (${bind(LocalDate.of(2019, 1, 1))}),
+                        (${bind(LocalDate.of(2019, 1, 6))}),
+                        (${bind(LocalDate.of(2020, 1, 1))}),
+                        (${bind(LocalDate.of(2020, 1, 6))}),
+                        (${bind(LocalDate.of(2021, 1, 1))}),
+                        (${bind(LocalDate.of(2021, 1, 6))}),
+                        (${bind(LocalDate.of(2021, 12, 6))}),
+                        (${bind(LocalDate.of(2021, 12, 24))})
+                    """
+                )
+            }
         }
     }
 
@@ -4326,11 +4331,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with daily fee divisor 20 and only 19 operational days`() {
         // Easter
         db.transaction { tx ->
-            tx.execute(
-                "INSERT INTO holiday (date) VALUES (?), (?)",
-                LocalDate.of(2022, 4, 15),
-                LocalDate.of(2022, 4, 18)
-            )
+            tx.execute {
+                sql(
+                    """
+                    INSERT INTO holiday (date)
+                    VALUES
+                        (${bind(LocalDate.of(2022, 4, 15))}),
+                        (${bind(LocalDate.of(2022, 4, 18))})
+                    """
+                )
+            }
         }
 
         // 19 operational days
@@ -4366,11 +4376,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with daily fee divisor 20 and only 19 operational days with a force majeure absences`() {
         // Easter
         db.transaction { tx ->
-            tx.execute(
-                "INSERT INTO holiday (date) VALUES (?), (?)",
-                LocalDate.of(2022, 4, 15),
-                LocalDate.of(2022, 4, 18)
-            )
+            tx.execute {
+                sql(
+                    """
+                    INSERT INTO holiday (date)
+                    VALUES
+                        (${bind(LocalDate.of(2022, 4, 15))}),
+                        (${bind(LocalDate.of(2022, 4, 18))})
+                    """
+                )
+            }
         }
 
         // 19 operational days

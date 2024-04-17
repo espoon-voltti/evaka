@@ -106,15 +106,17 @@ fun Database.Transaction.runDevScript(devScriptName: String) {
     val path = "dev-data/$devScriptName"
     logger.info("Running SQL script: $path")
     ClassPathResource(path).inputStream.use {
-        it.bufferedReader().readText().let { content -> execute(content) }
+        it.bufferedReader().readText().let { content -> execute { sql(content) } }
     }
 }
 
 fun Database.Transaction.resetDatabase() {
-    execute("SELECT reset_database()")
-    execute(
-        "INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')"
-    )
+    execute { sql("SELECT reset_database()") }
+    execute {
+        sql(
+            "INSERT INTO evaka_user (id, type, name) VALUES ('00000000-0000-0000-0000-000000000000', 'SYSTEM', 'eVaka')"
+        )
+    }
 }
 
 fun Database.Transaction.ensureDevData() {

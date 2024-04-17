@@ -1114,7 +1114,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val epiphany2020 = LocalDate.of(2020, 1, 6)
 
         db.transaction {
-            it.execute("INSERT INTO holiday (date) VALUES (?)", epiphany2020)
+            it.execute { sql("INSERT INTO holiday (date) VALUES (${bind(epiphany2020)})") }
             it.updateDaycareOperationTimes(testDaycare.id, allWeekOpTimes)
         }
         val result =
