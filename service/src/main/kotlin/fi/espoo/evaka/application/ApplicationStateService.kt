@@ -49,6 +49,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
+import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -60,6 +61,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -1040,6 +1042,24 @@ class ApplicationStateService(
                 tx.getClubTerms().any { it.term.includes(preferredStartDate) }
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to club on $preferredStartDate")
+            }
+        }
+
+        if (application.preferences.serviceNeed?.serviceNeedOption != null) {
+            val serviceNeedStartDate =
+                application.preferences.connectedDaycarePreferredStartDate
+                    ?: application.preferences.preferredStartDate
+            if (serviceNeedStartDate != null) {
+                val serviceNeedOptionId = application.preferences.serviceNeed.serviceNeedOption.id
+                tx.getServiceNeedOptionPublicInfos(PlacementType.entries)
+                    .find { it.id == serviceNeedOptionId }
+                    ?.also {
+                        if (!DateRange(it.validFrom, it.validTo).includes(serviceNeedStartDate)) {
+                            throw BadRequest(
+                                "Service need option $serviceNeedOptionId is not valid at $serviceNeedStartDate"
+                            )
+                        }
+                    }
             }
         }
 
