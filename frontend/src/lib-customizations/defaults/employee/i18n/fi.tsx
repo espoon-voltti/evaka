@@ -1496,13 +1496,15 @@ export const fi = {
           message:
             'Merkitsemäsi palveluntarve menee päällekkäin aiemmin ilmoitetun kanssa. Mikäli vahvistat nyt merkitsemäsi palveluntarpeen, aiemmin merkitty palveluntarve katkaistaan automaattisesti päällekkäin menevältä ajalta.'
         },
-        notFullyValidOptionWarningTitle: (
+        optionStartNotValidWarningTitle: (validFrom: string) =>
+          `Valittu palveluntarvetyyppi on käytettävissä vasta ${validFrom} alkaen`,
+        optionEndNotValidWarningTitle: (validTo: string) =>
+          `Valittu palveluntarvetyyppi on käytettävissä vain ${validTo} asti`,
+        optionStartEndNotValidWarningTitle: (
           validFrom: string,
-          validTo: string | undefined
+          validTo: string
         ) =>
-          validTo
-            ? `Valittu palveluntarvetyyppi on käytettävissä ajalla ${validFrom} - ${validTo}`
-            : `Valittu palveluntarvetyyppi on käytettävissä vasta ${validFrom} alkaen`,
+          `Valittu palveluntarvetyyppi on käytettävissä ajalla ${validFrom} - ${validTo}`,
         notFullyValidOptionWarning:
           'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.'
       }

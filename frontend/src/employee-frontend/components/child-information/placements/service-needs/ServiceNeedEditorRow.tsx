@@ -168,23 +168,36 @@ function ServiceNeedEditorRow({
   }, [bind, range, option, shiftCare, editedServiceNeed])
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
-  const partiallyInvalidOptionValidity = useMemo(() => {
+  const partiallyInvalidOptionError = useMemo(() => {
     if (!bind.isValid()) return null
 
     const optionDetails = options.find((opt) => opt.id === option.value())
     if (!optionDetails) return null
 
-    const optionValidity = new DateRange(
-      optionDetails.validFrom,
-      optionDetails.validTo
-    )
-    const serviceNeedRange = range.value()
-    return optionValidity.contains(serviceNeedRange) ? null : optionValidity
-  }, [bind, range, option, options])
+    const { start, end } = range.value()
+    if (optionDetails.validTo && optionDetails.validTo.isBefore(end)) {
+      if (optionDetails.validFrom.isAfter(start)) {
+        return t.optionStartEndNotValidWarningTitle(
+          optionDetails.validFrom.format(),
+          optionDetails.validTo.format()
+        )
+      } else {
+        return t.optionEndNotValidWarningTitle(optionDetails.validTo.format())
+      }
+    } else {
+      if (optionDetails.validFrom.isAfter(start)) {
+        return t.optionStartNotValidWarningTitle(
+          optionDetails.validFrom.format()
+        )
+      } else {
+        return null
+      }
+    }
+  }, [bind, range, option, options, t])
 
   const formIsValid =
     bind.isValid() &&
-    !partiallyInvalidOptionValidity &&
+    !partiallyInvalidOptionError &&
     (!retroactive || confirmedRetroactive)
 
   const onSubmit = () => {
@@ -313,15 +326,12 @@ function ServiceNeedEditorRow({
         </Td>
       </StyledTr>
 
-      {partiallyInvalidOptionValidity ? (
+      {partiallyInvalidOptionError ? (
         <StyledTr hideTopBorder>
           <Td colSpan={2}>
             <AlertBox
               wide
-              title={t.notFullyValidOptionWarningTitle(
-                partiallyInvalidOptionValidity.start.format(),
-                partiallyInvalidOptionValidity.end?.format()
-              )}
+              title={partiallyInvalidOptionError}
               message={t.notFullyValidOptionWarning}
               noMargin
               data-qa="partially-invalid-warning"
