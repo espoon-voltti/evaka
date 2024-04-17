@@ -59,7 +59,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   const preferredStartDate = formData.preferredStartDate
   const optionsValidAtTime = useMemo(
     () =>
-      preferredStartDate
+      featureFlags.daycareApplication.serviceNeedOption && preferredStartDate
         ? serviceNeedOptions.filter((opt) =>
             new DateRange(opt.validFrom, opt.validTo).includes(
               preferredStartDate
@@ -82,7 +82,11 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   )
 
   useEffect(() => {
-    if (preferredStartDate && formData.serviceNeedOption) {
+    if (
+      featureFlags.daycareApplication.serviceNeedOption &&
+      preferredStartDate &&
+      formData.serviceNeedOption
+    ) {
       const validSelectedType = optionsValidAtTime?.find(
         (opt) =>
           opt.id === formData.serviceNeedOption?.id &&

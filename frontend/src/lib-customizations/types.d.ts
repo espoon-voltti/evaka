@@ -118,6 +118,10 @@ interface BaseFeatureFlags {
      * Citizen must specify daily daycare start and end times the daycare application
      */
     dailyTimes: boolean
+    /**
+     * Citizen must select a service need option on daycare application
+     */
+    serviceNeedOption: boolean
   }
   preschoolApplication: {
     /**

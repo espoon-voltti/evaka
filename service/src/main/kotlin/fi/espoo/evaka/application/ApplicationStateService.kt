@@ -49,8 +49,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
-import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
-import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
@@ -94,7 +92,6 @@ class ApplicationStateService(
             ApplicationForm.initForm(type, guardian, child)
                 .let { form -> withDefaultStartDate(tx, today, type, form) }
                 .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
-                .let { form -> withDefaultServiceNeedOption(tx, type, form) }
 
         tx.updateForm(
             applicationId,
@@ -161,40 +158,6 @@ class ApplicationStateService(
                     }
             }
         return form.copy(otherChildren = vtjOtherChildren)
-    }
-
-    private fun withDefaultServiceNeedOption(
-        tx: Database.Transaction,
-        type: ApplicationType,
-        form: ApplicationForm
-    ): ApplicationForm {
-        var defaultServiceNeedOption: ServiceNeedOptionPublicInfo? = null
-        if (
-            ApplicationType.DAYCARE == type &&
-                featureConfig.daycareApplicationServiceNeedOptionsEnabled
-        ) {
-            defaultServiceNeedOption =
-                tx.getServiceNeedOptionPublicInfos(listOf(PlacementType.DAYCARE)).firstOrNull()
-        }
-
-        return form.copy(
-            preferences =
-                form.preferences.copy(
-                    serviceNeed =
-                        form.preferences.serviceNeed?.copy(
-                            serviceNeedOption =
-                                defaultServiceNeedOption?.let {
-                                    ServiceNeedOption(
-                                        id = it.id,
-                                        nameFi = it.nameFi,
-                                        nameSv = it.nameSv,
-                                        nameEn = it.nameEn,
-                                        validPlacementType = it.validPlacementType
-                                    )
-                                }
-                        )
-                )
-        )
     }
 
     // STATE TRANSITIONS

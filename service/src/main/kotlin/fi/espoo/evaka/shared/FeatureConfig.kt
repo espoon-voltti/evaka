@@ -15,9 +15,6 @@ data class FeatureConfig(
      */
     val valueDecisionCapacityFactorEnabled: Boolean,
 
-    /** Whether to show service needs on application form */
-    val daycareApplicationServiceNeedOptionsEnabled: Boolean,
-
     /**
      * How many hours before the start of monday the week's reservations are locked
      *
