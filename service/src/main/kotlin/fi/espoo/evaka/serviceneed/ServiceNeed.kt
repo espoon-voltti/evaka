@@ -178,7 +178,8 @@ fun validateServiceNeed(
                 SELECT 1
                 FROM placement pl
                 JOIN service_need_option sno ON sno.valid_placement_type = pl.type
-                WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)}
+                WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)} 
+                    AND daterange(sno.valid_from, sno.valid_to, '[]') @> ${bind(FiniteDateRange(startDate, endDate))}
                 """
             )
         }
