@@ -198,6 +198,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             return Update(raw)
         }
 
+        fun execute(f: QuerySql.Builder.() -> QuerySql): Int =
+            createUpdate(QuerySql.Builder().run { f(this) }).execute()
+
         fun prepareBatch(@Language("sql") sql: String): PreparedBatch =
             PreparedBatch(handle.prepareBatch(sql))
 
