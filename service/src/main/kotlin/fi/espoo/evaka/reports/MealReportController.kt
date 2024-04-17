@@ -16,10 +16,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.shared.domain.toFiniteDateRange
+import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -133,8 +130,17 @@ private fun childMeals(
 
 private fun getMealReport(tx: Database.Read, date: LocalDate, unitId: DaycareId): MealReportData? {
     val daycare = tx.getDaycare(unitId) ?: return null
+
     if (!daycare.operationDays.contains(date.dayOfWeek.value))
         return MealReportData(date, daycare.name, emptyList())
+
+    val isRoundTheClockUnit = daycare.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+    if (!isRoundTheClockUnit) {
+        val holidays = tx.getHolidays(FiniteDateRange(date, date))
+        if (holidays.contains(date)) {
+            return MealReportData(date, daycare.name, emptyList())
+        }
+    }
 
     val preschoolTerms = tx.getPreschoolTerms()
 
@@ -199,7 +205,8 @@ class MealReportController(private val accessControl: AccessControl) {
                         unitId
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    getMealReport(it, date, unitId) ?: throw BadRequest("Daycare not found for $unitId")
+                    getMealReport(it, date, unitId)
+                        ?: throw BadRequest("Daycare not found for $unitId")
                 }
                 .also {
                     Audit.MealReportRead.log(
