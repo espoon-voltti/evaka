@@ -56,6 +56,7 @@ export default React.memo(function ApplicationFormClub({
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
         terms={terms}
+        serviceNeedOptions={[]}
       />
 
       <UnitPreferenceSection
