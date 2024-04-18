@@ -17,19 +17,12 @@ fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
         }
         .execute()
 
-    // language=SQL
-    val insertSql =
+    executeBatch(settings.entries) {
+        sql(
+            """
+INSERT INTO setting (key, value) VALUES (${bind { it.key }}, ${bind { it.value }})
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value WHERE setting.value != EXCLUDED.value
         """
-        INSERT INTO setting (key, value) VALUES (:key, :value)
-        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value WHERE setting.value != EXCLUDED.value
-    """
-            .trimIndent()
-
-    val batch = prepareBatch(insertSql)
-    settings.forEach { (key, value) ->
-        batch.bind("key", key)
-        batch.bind("value", value)
-        batch.add()
+        )
     }
-    batch.execute()
 }

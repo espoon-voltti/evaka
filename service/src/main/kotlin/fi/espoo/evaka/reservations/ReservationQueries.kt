@@ -43,18 +43,18 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
 
 fun Database.Transaction.clearOldReservations(
     reservations: List<Pair<ChildId, LocalDate>>
-): List<AttendanceReservationId> {
-    val batch =
-        prepareBatch(
-            "DELETE FROM attendance_reservation WHERE child_id = :childId AND date = :date RETURNING id"
-        )
-
-    reservations.forEach { (childId, date) ->
-        batch.bind("childId", childId).bind("date", date).add()
-    }
-
-    return batch.executeAndReturn().toList<AttendanceReservationId>()
-}
+): List<AttendanceReservationId> =
+    prepareBatch(reservations) {
+            sql(
+                """
+DELETE FROM attendance_reservation
+WHERE child_id = ${bind { (childId, _) -> childId }} AND date = ${bind { (_, date) -> date }}
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
     childId: ChildId,
@@ -84,20 +84,20 @@ fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRa
 
 fun Database.Transaction.deleteReservationsFromHolidayPeriodDates(
     deletions: List<Pair<ChildId, LocalDate>>
-): List<AttendanceReservationId> {
-    val batch =
-        prepareBatch(
-            """
-        DELETE FROM attendance_reservation
-        WHERE child_id = :childId
-        AND date = :date
-        AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
-        RETURNING id
-    """
-        )
-    deletions.forEach { batch.bind("childId", it.first).bind("date", it.second).add() }
-    return batch.executeAndReturn().toList<AttendanceReservationId>()
-}
+): List<AttendanceReservationId> =
+    prepareBatch(deletions) {
+            sql(
+                """
+DELETE FROM attendance_reservation
+WHERE child_id = ${bind { (childId, _) -> childId }}
+AND date = ${bind { (_, date) -> date }}
+AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 data class ReservationInsert(val childId: ChildId, val date: LocalDate, val range: TimeRange?)
 

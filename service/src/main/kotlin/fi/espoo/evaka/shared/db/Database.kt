@@ -227,6 +227,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             f: BatchSql.Builder<R>.() -> BatchSql<R>
         ): IntArray = prepareBatch(f).addAll(rows).execute()
 
+        @Deprecated(
+            "Use new query API instead: executeBatch(rows) { sql(...) } or prepareBatch(rows) { sql(...) }"
+        )
         fun prepareBatch(@Language("sql") sql: String): LegacyPreparedBatch =
             LegacyPreparedBatch(handle.prepareBatch(sql))
 

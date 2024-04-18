@@ -201,18 +201,16 @@ fun Database.Transaction.updateAssistanceNeedPreschoolDecision(
         .bind("decisionMakerHasOpened", decisionMakerHasOpened)
         .updateExactlyOne()
 
-    // language=sql
-    val guardianSql =
-        """
+    executeBatch(data.guardianInfo) {
+        sql(
+            """
         UPDATE assistance_need_preschool_decision_guardian SET 
-            is_heard = :isHeard,
-            details = :details
-        WHERE id = :id
+            is_heard = ${bind { it.isHeard }},
+            details = ${bind { it.details }}
+        WHERE id = ${bind { it.id }}
         """
-
-    val batch = prepareBatch(guardianSql)
-    data.guardianInfo.forEach { guardian -> batch.bindKotlin(guardian).add() }
-    batch.execute()
+        )
+    }
 }
 
 fun Database.Transaction.updateAssistanceNeedPreschoolDecisionToSent(

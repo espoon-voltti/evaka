@@ -15,7 +15,6 @@ import fi.espoo.evaka.application.PersonBasics
 import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
-import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
@@ -23,12 +22,9 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.insertClubTerm
 import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.invoicing.domain.EmployeeWithName
-import fi.espoo.evaka.invoicing.domain.FeeThresholds
-import fi.espoo.evaka.invoicing.domain.PersonBasic
-import fi.espoo.evaka.invoicing.domain.PersonDetailed
-import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.invoicing.domain.*
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -718,40 +714,36 @@ fun Database.Transaction.insertClubTerms() {
 }
 
 fun Database.Transaction.insertServiceNeedOptions() {
-    val batch =
-        prepareBatch(
-            // language=sql
+    executeBatch(serviceNeedTestFixtures) {
+        sql(
             """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to)
-VALUES (:id, :nameFi, :nameSv, :nameEn, :validPlacementType, :defaultOption, :feeCoefficient, :occupancyCoefficient, :occupancyCoefficientUnder3y, :realizedOccupancyCoefficient, :realizedOccupancyCoefficientUnder3y, :daycareHoursPerWeek, :contractDaysPerMonth, :daycareHoursPerMonth, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :validFrom, :validTo)
+VALUES (${bind { it.id }}, ${bind { it.nameFi }}, ${bind { it.nameSv }}, ${bind { it.nameEn }}, ${bind { it.validPlacementType }}, ${bind { it.defaultOption }}, ${bind { it.feeCoefficient }}, ${bind { it.occupancyCoefficient }}, ${bind { it.occupancyCoefficientUnder3y }}, ${bind { it.realizedOccupancyCoefficient }}, ${bind { it.realizedOccupancyCoefficientUnder3y }}, ${bind { it.daycareHoursPerWeek }}, ${bind { it.contractDaysPerMonth }}, ${bind { it.daycareHoursPerMonth }}, ${bind { it.partDay }}, ${bind { it.partWeek }}, ${bind { it.feeDescriptionFi }}, ${bind { it.feeDescriptionSv }}, ${bind { it.voucherValueDescriptionFi }}, ${bind { it.voucherValueDescriptionSv }}, ${bind { it.validFrom }}, ${bind { it.validTo }})
 """
         )
-    serviceNeedTestFixtures.forEach { fixture -> batch.bindKotlin(fixture).add() }
-    batch.execute()
+    }
 }
 
 fun Database.Transaction.insertServiceNeedOptionFees() {
-    val batch =
-        prepareBatch(
+    executeBatch(serviceNeedOptionFeeTestFixtures) {
+        sql(
             """
 INSERT INTO service_need_option_fee (service_need_option_id, validity, base_fee, sibling_discount_2, sibling_fee_2, sibling_discount_2_plus, sibling_fee_2_plus)
-VALUES (:serviceNeedOptionId, :validity, :baseFee, :siblingDiscount2, :siblingFee2, :siblingDiscount2Plus, :siblingFee2Plus)
+VALUES (${bind { it.serviceNeedOptionId }}, ${bind { it.validity }}, ${bind { it.baseFee }}, ${bind { it.siblingDiscount2 }}, ${bind { it.siblingFee2 }}, ${bind { it.siblingDiscount2Plus }}, ${bind { it.siblingFee2Plus }})
 """
         )
-    serviceNeedOptionFeeTestFixtures.forEach { fixture -> batch.bindKotlin(fixture).add() }
-    batch.execute()
+    }
 }
 
 fun Database.Transaction.insertServiceNeedOptionVoucherValues() {
-    val batch =
-        prepareBatch(
+    executeBatch(serviceNeedOptionVoucherValueTestFixtures) {
+        sql(
             """
 INSERT INTO service_need_option_voucher_value (service_need_option_id, validity, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y)
-VALUES (:serviceNeedOptionId, :validity, :baseValue, :coefficient, :value, :baseValueUnder3y, :coefficientUnder3y, :valueUnder3y)
+VALUES (${bind { it.serviceNeedOptionId }}, ${bind { it.validity }}, ${bind { it.baseValue }}, ${bind { it.coefficient }}, ${bind { it.value }}, ${bind { it.baseValueUnder3y }}, ${bind { it.coefficientUnder3y }}, ${bind { it.valueUnder3y }})
 """
         )
-    serviceNeedOptionVoucherValueTestFixtures.forEach { fixture -> batch.bindKotlin(fixture).add() }
-    batch.execute()
+    }
 }
 
 fun Database.Transaction.insertAssistanceActionOptions() {
@@ -784,7 +776,7 @@ fun Database.Transaction.insertApplication(
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi",
-    serviceNeedOption: ServiceNeedOption? = null,
+    serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
     transferApplication: Boolean = false
 ): ApplicationDetails {
     insertTestApplication(

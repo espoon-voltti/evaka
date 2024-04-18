@@ -42,72 +42,57 @@ fun Database.Transaction.insertAbsences(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
     absences: List<AbsenceUpsert>
-): List<AbsenceId> {
-    val sql =
-        """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
-        VALUES (:childId, :date, :category, :absenceType, :userId, :now)
-        RETURNING id
-        """
-
-    val batch = prepareBatch(sql)
-    for (absence in absences) {
-        batch.bindKotlin(absence).bind("userId", userId).bind("now", now).add()
-    }
-
-    return batch.executeAndReturn().toList()
-}
+): List<AbsenceId> =
+    prepareBatch(absences) {
+            sql(
+                """
+INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
+VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(userId)}, ${bind(now)})
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 /** Updates the details if an absence already exists */
 fun Database.Transaction.upsertAbsences(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
     absences: List<AbsenceUpsert>
-): List<AbsenceId> {
-    val sql =
-        """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
-        VALUES (:childId, :date, :category, :absenceType, :userId, :now)
-        ON CONFLICT (child_id, date, category)
-        DO UPDATE SET absence_type = :absenceType, modified_by = :userId, modified_at = :now
-        RETURNING id
-        """
-            .trimIndent()
-
-    val batch = prepareBatch(sql)
-    for (absence in absences) {
-        batch.bindKotlin(absence).bind("userId", userId).bind("now", now).add()
-    }
-
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
+): List<AbsenceId> =
+    prepareBatch(absences) {
+            sql(
+                """
+INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
+VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(userId)}, ${bind(now)})
+ON CONFLICT (child_id, date, category)
+DO UPDATE SET absence_type = ${bind { it.absenceType }}, modified_by = ${bind(userId)}, modified_at = ${bind(now)}
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 /** If the absence already exists, updates only if was generated */
 fun Database.Transaction.upsertGeneratedAbsences(
     now: HelsinkiDateTime,
     absences: List<AbsenceUpsert>
-): List<AbsenceId> {
-    val sql =
-        """
-        INSERT INTO absence AS a (child_id, date, category, absence_type, modified_by, modified_at)
-        VALUES (:childId, :date, :category, :absenceType, :userId, :now)
-        ON CONFLICT (child_id, date, category)
-        DO UPDATE SET absence_type = :absenceType, modified_at = :now WHERE a.modified_by = :userId
-        RETURNING id
-        """
-            .trimIndent()
-
-    val batch = prepareBatch(sql)
-    for (absence in absences) {
-        batch
-            .bindKotlin(absence)
-            .bind("userId", AuthenticatedUser.SystemInternalUser.evakaUserId)
-            .bind("now", now)
-            .add()
-    }
-
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
+): List<AbsenceId> =
+    prepareBatch(absences) {
+            sql(
+                """
+INSERT INTO absence AS a (child_id, date, category, absence_type, modified_by, modified_at)
+VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}, ${bind(now)})
+ON CONFLICT (child_id, date, category)
+DO UPDATE SET absence_type = ${bind { it.absenceType }}, modified_at = ${bind(now)} WHERE a.modified_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 data class FullDayAbsenseUpsert(
     val childId: ChildId,
@@ -124,76 +109,63 @@ fun Database.Transaction.upsertFullDayAbsences(
     userId: EvakaUserId,
     now: HelsinkiDateTime,
     absenceInserts: List<FullDayAbsenseUpsert>
-): List<AbsenceId> {
-    val batch =
-        prepareBatch(
-            """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_at, modified_by, questionnaire_id)
-        SELECT
-            :childId,
-            :date,
-            category,
-            :absenceType,
-            :now,
-            :userId,
-            :questionnaireId
-        FROM (
-            SELECT unnest(absence_categories(type)) AS category
-            FROM placement
-            WHERE child_id = :childId AND :date BETWEEN start_date AND end_date
-        ) care_type
-        ON CONFLICT DO NOTHING
-        RETURNING id
-        """
-                .trimIndent()
-        )
-
-    absenceInserts.forEach { (childId, date, absenceType, questionnaireId) ->
-        batch
-            .bind("now", now)
-            .bind("userId", userId)
-            .bind("childId", childId)
-            .bind("date", date)
-            .bind("absenceType", absenceType)
-            .bind("questionnaireId", questionnaireId)
-            .add()
-    }
-
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
+): List<AbsenceId> =
+    prepareBatch(absenceInserts) {
+            sql(
+                """
+INSERT INTO absence (child_id, date, category, absence_type, modified_at, modified_by, questionnaire_id)
+SELECT
+    ${bind { it.childId }},
+    ${bind { it.date }},
+    category,
+    ${bind { it.absenceType }},
+    ${bind(now)},
+    ${bind(userId)},
+    ${bind { it.questionnaireId }}
+FROM (
+    SELECT unnest(absence_categories(type)) AS category
+    FROM placement
+    WHERE child_id = ${bind { it.childId }} AND ${bind { it.date }} BETWEEN start_date AND end_date
+) care_type
+ON CONFLICT DO NOTHING
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 data class Presence(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)
 
-fun Database.Transaction.batchDeleteAbsences(deletions: List<Presence>): List<AbsenceId> {
-    val sql =
-        """
-        DELETE FROM absence
-        WHERE category = :category AND date = :date AND child_id = :childId
-        RETURNING id
-        """
-            .trimIndent()
-
-    val batch = prepareBatch(sql)
-    deletions.forEach { batch.bindKotlin(it).add() }
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
+fun Database.Transaction.batchDeleteAbsences(deletions: List<Presence>): List<AbsenceId> =
+    prepareBatch(deletions) {
+            sql(
+                """
+DELETE FROM absence
+WHERE category = ${bind { it.category }} AND date = ${bind { it.date }} AND child_id = ${bind { it.childId }}
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 fun Database.Transaction.deleteAbsencesFromHolidayPeriodDates(
     deletions: List<Pair<ChildId, LocalDate>>
-): List<AbsenceId> {
-    val batch =
-        prepareBatch(
-            """
-        DELETE FROM absence
-        WHERE child_id = :childId
-        AND date = :date
-        AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
-        RETURNING id
-    """
-        )
-    deletions.forEach { batch.bind("childId", it.first).bind("date", it.second).add() }
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
+): List<AbsenceId> =
+    prepareBatch(deletions) {
+            sql(
+                """
+DELETE FROM absence
+WHERE child_id = ${bind { (childId, _) -> childId }}
+AND date = ${bind { (_, date) -> date }}
+AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 data class HolidayReservationCreate(
     val childId: ChildId,
@@ -204,20 +176,17 @@ fun Database.Transaction.addMissingHolidayReservations(
     createdBy: EvakaUserId,
     additions: List<HolidayReservationCreate>
 ) {
-    val batch =
-        prepareBatch(
+    executeBatch(additions) {
+        sql(
             """
-        INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
-        SELECT :childId, :date, NULL, NULL, :createdBy
-        WHERE
-            EXISTS (SELECT 1 FROM holiday_period WHERE period @> :date) AND
-            NOT EXISTS (SELECT 1 FROM attendance_reservation WHERE child_id = :childId AND date = :date)
-        """
+INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
+SELECT ${bind { it.childId }}, ${bind { it.date }}, NULL, NULL, ${bind(createdBy)}
+WHERE
+    EXISTS (SELECT 1 FROM holiday_period WHERE period @> ${bind { it.date }}) AND
+    NOT EXISTS (SELECT 1 FROM attendance_reservation WHERE child_id = ${bind { it.childId }} AND date = ${bind { it.date }})
+"""
         )
-    additions.forEach {
-        batch.bind("childId", it.childId).bind("date", it.date).bind("createdBy", createdBy).add()
     }
-    batch.execute()
 }
 
 fun Database.Transaction.deleteChildAbsences(
@@ -285,16 +254,16 @@ RETURNING id
 fun Database.Transaction.clearOldCitizenEditableAbsences(
     childDatePairs: List<Pair<ChildId, LocalDate>>,
     reservableRange: FiniteDateRange
-): List<AbsenceId> {
-    val batch =
-        prepareBatch(
-            """
+): List<AbsenceId> =
+    prepareBatch(childDatePairs) {
+            sql(
+                """
 DELETE FROM absence a
-WHERE child_id = :childId
-AND date = :date
+WHERE child_id = ${bind { (childId, _) -> childId }}
+AND date = ${bind { (_, date) -> date }}
 AND absence_type <> 'FREE_ABSENCE'::absence_type
 -- Planned absences cannot be deleted from confirmed range if the child has a contract days service need
-AND (:reservableRange @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE' OR NOT EXISTS (
+AND (${bind(reservableRange)} @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type OR category = 'NONBILLABLE' OR NOT EXISTS (
     SELECT
     FROM service_need_option sno
     JOIN service_need sn ON sn.option_id = sno.id AND a.date BETWEEN sn.start_date AND sn.end_date
@@ -304,38 +273,26 @@ AND (:reservableRange @> date OR absence_type <> 'PLANNED_ABSENCE'::absence_type
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
 """
-        )
-
-    childDatePairs.forEach { (childId, date) ->
-        batch
-            .bind("childId", childId)
-            .bind("date", date)
-            .bind("reservableRange", reservableRange)
-            .add()
-    }
-
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 fun Database.Transaction.clearOldAbsences(
     childDatePairs: List<Pair<ChildId, LocalDate>>
-): List<AbsenceId> {
-    val batch =
-        prepareBatch(
-            """
+): List<AbsenceId> =
+    prepareBatch(childDatePairs) {
+            sql(
+                """
 DELETE FROM absence a
-WHERE child_id = :childId
-AND date = :date
+WHERE child_id = ${bind { (childId, _) -> childId }}
+AND date = ${bind { (_, date) -> date }}
 RETURNING id
 """
-        )
-
-    childDatePairs.forEach { (childId, date) ->
-        batch.bind("childId", childId).bind("date", date).add()
-    }
-
-    return batch.executeAndReturn().toList<AbsenceId>()
-}
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 fun Database.Transaction.deleteAllCitizenEditableAbsencesInRange(range: FiniteDateRange) {
     createUpdate {

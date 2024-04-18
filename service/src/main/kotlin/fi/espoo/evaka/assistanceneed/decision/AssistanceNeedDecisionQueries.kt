@@ -121,29 +121,23 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             .bind("selectedUnit", data.selectedUnit?.id)
             .exactlyOne<AssistanceNeedDecisionId>()
 
-    // language=sql
-    val guardianSql =
-        """
+    executeBatch(data.guardianInfo) {
+        sql(
+            """
         INSERT INTO assistance_need_decision_guardian (
             assistance_need_decision_id,
             person_id,
             is_heard,
             details
         ) VALUES (
-            :assistanceNeedDecisionId,
-            :personId,
-            :isHeard,
-            :details
+            ${bind(id)},
+            ${bind { it.personId }},
+            ${bind { it.isHeard }},
+            ${bind { it.details }}
         )
-            
-        """
-            .trimIndent()
-
-    val batch = prepareBatch(guardianSql)
-    data.guardianInfo.forEach { guardian ->
-        batch.bindKotlin(guardian).bind("assistanceNeedDecisionId", id).add()
+"""
+        )
     }
-    batch.execute()
 
     return getAssistanceNeedDecisionById(id)
 }
@@ -282,18 +276,16 @@ fun Database.Transaction.updateAssistanceNeedDecision(
         .bind("decisionMakerHasOpened", decisionMakerHasOpened)
         .updateExactlyOne()
 
-    // language=sql
-    val guardianSql =
-        """
+    executeBatch(data.guardianInfo) {
+        sql(
+            """
         UPDATE assistance_need_decision_guardian SET 
-            is_heard = :isHeard,
-            details = :details
-        WHERE id = :id
-        """
-            .trimIndent()
-    val batch = prepareBatch(guardianSql)
-    data.guardianInfo.forEach { guardian -> batch.bindKotlin(guardian).add() }
-    batch.execute()
+            is_heard = ${bind { it.isHeard }},
+            details = ${bind { it.details }}
+        WHERE id = ${bind { it.id }}
+"""
+        )
+    }
 }
 
 fun Database.Read.getAssistanceNeedDecisionsByChildId(

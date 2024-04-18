@@ -70,12 +70,14 @@ fun Database.Transaction.deleteGuardianRelationship(childId: ChildId, guardianId
 }
 
 private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<GuardianChildPair>) {
-    val batch =
-        prepareBatch("INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId)")
-    guardianIdChildIdPairs.forEach {
-        batch.bind("guardianId", it.guardianId).bind("childId", it.childId).add()
+    executeBatch(guardianIdChildIdPairs) {
+        sql(
+            """
+INSERT INTO guardian (guardian_id, child_id)
+VALUES (${bind { it.guardianId }}, ${bind { it.childId }}) 
+"""
+        )
     }
-    batch.execute()
 }
 
 fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {

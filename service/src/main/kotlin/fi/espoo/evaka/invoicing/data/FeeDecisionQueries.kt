@@ -192,100 +192,98 @@ fun Database.Transaction.upsertFeeDecisions(decisions: List<FeeDecision>) {
 }
 
 fun Database.Transaction.insertFeeDecisions(decisions: List<FeeDecision>) {
-    val sql =
-        """
-        INSERT INTO fee_decision (
-            id,
-            status,
-            decision_number,
-            decision_type,
-            valid_during,
-            head_of_family_id,
-            partner_id,
-            head_of_family_income,
-            partner_income,
-            family_size,
-            fee_thresholds,
-            difference,
-            total_fee,
-            created
-        ) VALUES (
-            :id,
-            :status::fee_decision_status,
-            :decisionNumber,
-            :decisionType::fee_decision_type,
-            :validDuring,
-            :headOfFamilyId,
-            :partnerId,
-            :headOfFamilyIncome,
-            :partnerIncome,
-            :familySize,
-            :feeThresholds,
-            :difference,
-            :totalFee,
-            :created
+    executeBatch(decisions) {
+        sql(
+            """
+INSERT INTO fee_decision (
+    id,
+    status,
+    decision_number,
+    decision_type,
+    valid_during,
+    head_of_family_id,
+    partner_id,
+    head_of_family_income,
+    partner_income,
+    family_size,
+    fee_thresholds,
+    difference,
+    total_fee,
+    created
+) VALUES (
+    ${bind { it.id }},
+    ${bind { it.status }},
+    ${bind { it.decisionNumber }},
+    ${bind { it.decisionType }},
+    ${bind { it.validDuring }},
+    ${bind { it.headOfFamilyId }},
+    ${bind { it.partnerId }},
+    ${bindJson { it.headOfFamilyIncome }},
+    ${bindJson { it.partnerIncome }},
+    ${bind { it.familySize }},
+    ${bindJson { it.feeThresholds }},
+    ${bind { it.difference }},
+    ${bind { it.totalFee }},
+    ${bind { it.created }}
+)
+"""
         )
-    """
-
-    val batch = prepareBatch(sql)
-    decisions.forEach { decision -> batch.bindKotlin(decision).add() }
-    batch.execute()
+    }
 
     insertChildren(decisions.map { it.id to it.children })
 }
 
 private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
-    val sql =
-        """
-        INSERT INTO fee_decision (
-            id,
-            status,
-            decision_number,
-            decision_type,
-            valid_during,
-            head_of_family_id,
-            partner_id,
-            head_of_family_income,
-            partner_income,
-            family_size,
-            fee_thresholds,
-            difference,
-            total_fee,
-            created
-        ) VALUES (
-            :id,
-            :status::fee_decision_status,
-            :decisionNumber,
-            :decisionType::fee_decision_type,
-            :validDuring,
-            :headOfFamilyId,
-            :partnerId,
-            :headOfFamilyIncome,
-            :partnerIncome,
-            :familySize,
-            :feeThresholds,
-            :difference,
-            :totalFee,
-            :created
-        ) ON CONFLICT (id) DO UPDATE SET
-            status = :status::fee_decision_status,
-            decision_number = :decisionNumber,
-            decision_type = :decisionType::fee_decision_type,
-            valid_during = :validDuring,
-            head_of_family_id = :headOfFamilyId,
-            partner_id = :partnerId,
-            head_of_family_income = :headOfFamilyIncome,
-            partner_income = :partnerIncome,
-            family_size = :familySize,
-            fee_thresholds = :feeThresholds,
-            difference = :difference,
-            total_fee = :totalFee,
-            created = :created
-    """
-
-    val batch = prepareBatch(sql)
-    decisions.forEach { decision -> batch.bindKotlin(decision).add() }
-    batch.execute()
+    executeBatch(decisions) {
+        sql(
+            """
+INSERT INTO fee_decision (
+    id,
+    status,
+    decision_number,
+    decision_type,
+    valid_during,
+    head_of_family_id,
+    partner_id,
+    head_of_family_income,
+    partner_income,
+    family_size,
+    fee_thresholds,
+    difference,
+    total_fee,
+    created
+) VALUES (
+    ${bind { it.id }},
+    ${bind { it.status }},
+    ${bind { it.decisionNumber }},
+    ${bind { it.decisionType }},
+    ${bind { it.validDuring }},
+    ${bind { it.headOfFamilyId }},
+    ${bind { it.partnerId }},
+    ${bindJson { it.headOfFamilyIncome }},
+    ${bindJson { it.partnerIncome }},
+    ${bind { it.familySize }},
+    ${bindJson { it.feeThresholds }},
+    ${bind { it.difference }},
+    ${bind { it.totalFee }},
+    ${bind { it.created }}
+) ON CONFLICT (id) DO UPDATE SET
+    status = ${bind { it.status }},
+    decision_number = ${bind { it.decisionNumber }},
+    decision_type = ${bind { it.decisionType }},
+    valid_during = ${bind { it.validDuring }},
+    head_of_family_id = ${bind { it.headOfFamilyId }},
+    partner_id = ${bind { it.partnerId }},
+    head_of_family_income = ${bindJson { it.headOfFamilyIncome }},
+    partner_income = ${bindJson { it.partnerIncome }},
+    family_size = ${bind { it.familySize }},
+    fee_thresholds = ${bindJson { it.feeThresholds }},
+    difference = ${bind { it.difference }},
+    total_fee = ${bind { it.totalFee }},
+    created = ${bind { it.created }}
+"""
+        )
+    }
 }
 
 private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
@@ -297,70 +295,55 @@ private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
 private fun Database.Transaction.insertChildren(
     decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>
 ) {
-    val sql =
-        """
-        INSERT INTO fee_decision_child (
-            id,
-            fee_decision_id,
-            child_id,
-            child_date_of_birth,
-            placement_unit_id,
-            placement_type,
-            service_need_option_id,
-            service_need_fee_coefficient,
-            service_need_contract_days_per_month,
-            service_need_description_fi,
-            service_need_description_sv,
-            service_need_missing,
-            base_fee,
-            sibling_discount,
-            fee,
-            fee_alterations,
-            final_fee,
-            child_income
-        ) VALUES (
-            :id,
-            :feeDecisionId,
-            :childId,
-            :childDateOfBirth,
-            :placementUnitId,
-            :placementType,
-            :serviceNeedOptionId,
-            :serviceNeedFeeCoefficient,
-            :serviceNeedContractDaysPerMonth,
-            :serviceNeedDescriptionFi,
-            :serviceNeedDescriptionSv,
-            :serviceNeedMissing,
-            :baseFee,
-            :siblingDiscount,
-            :fee,
-            :feeAlterations,
-            :finalFee,
-            :childIncome
-        )
-    """
-
-    val batch = prepareBatch(sql)
-    decisions.forEach { (decisionId, children) ->
-        children.forEach { child ->
-            batch
-                .bindKotlin(child)
-                .bind("id", UUID.randomUUID())
-                .bind("feeDecisionId", decisionId)
-                .bind("childId", child.child.id)
-                .bind("childDateOfBirth", child.child.dateOfBirth)
-                .bind("placementUnitId", child.placement.unitId)
-                .bind("placementType", child.placement.type)
-                .bind("serviceNeedOptionId", child.serviceNeed.optionId)
-                .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
-                .bind("serviceNeedContractDaysPerMonth", child.serviceNeed.contractDaysPerMonth)
-                .bind("serviceNeedDescriptionFi", child.serviceNeed.descriptionFi)
-                .bind("serviceNeedDescriptionSv", child.serviceNeed.descriptionSv)
-                .bind("serviceNeedMissing", child.serviceNeed.missing)
-                .add()
+    val rows: Sequence<Pair<FeeDecisionId, FeeDecisionChild>> =
+        decisions.asSequence().flatMap { (decisionId, children) ->
+            children.map { child -> Pair(decisionId, child) }
         }
+    executeBatch(rows) {
+        sql(
+            """
+INSERT INTO fee_decision_child (
+    id,
+    fee_decision_id,
+    child_id,
+    child_date_of_birth,
+    placement_unit_id,
+    placement_type,
+    service_need_option_id,
+    service_need_fee_coefficient,
+    service_need_contract_days_per_month,
+    service_need_description_fi,
+    service_need_description_sv,
+    service_need_missing,
+    base_fee,
+    sibling_discount,
+    fee,
+    fee_alterations,
+    final_fee,
+    child_income
+) VALUES (
+    ${bind { UUID.randomUUID() }},
+    ${bind { (decisionId, _) -> decisionId }},
+    ${bind { (_, child) -> child.child.id }},
+    ${bind { (_, child) -> child.child.dateOfBirth }},
+    ${bind { (_, child) -> child.placement.unitId }},
+    ${bind { (_, child) -> child.placement.type }},
+    ${bind { (_, child) -> child.serviceNeed.optionId }},
+    ${bind { (_, child) -> child.serviceNeed.feeCoefficient }},
+    ${bind { (_, child) -> child.serviceNeed.contractDaysPerMonth }},
+    ${bind { (_, child) -> child.serviceNeed.descriptionFi }},
+    ${bind { (_, child) -> child.serviceNeed.descriptionSv }},
+    ${bind { (_, child) -> child.serviceNeed.missing }},
+    ${bind { (_, child) -> child.baseFee }},
+    ${bind { (_, child) -> child.siblingDiscount }},
+    ${bind { (_, child) -> child.fee }},
+    ${bindJson { (_, child) -> child.feeAlterations }},
+    ${bind { (_, child) -> child.finalFee }},
+    ${bindJson { (_, child) -> child.childIncome }}
+)
+"""
+        )
     }
-    batch.execute()
 }
 
 fun Database.Transaction.deleteFeeDecisionChildren(decisionIds: List<FeeDecisionId>) {
@@ -668,49 +651,38 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
     isRetroactive: Boolean = false,
     alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
-    val sql =
-        """
-        WITH youngest_child AS (
-            SELECT
-                fee_decision_child.fee_decision_id AS decision_id,
-                daycare.finance_decision_handler AS finance_decision_handler_id,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount, child_id) AS rownum
-            FROM fee_decision_child
-            LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
+    executeBatch(ids) {
+        sql(
+            """
+WITH youngest_child AS (
+    SELECT
+        fee_decision_child.fee_decision_id AS decision_id,
+        daycare.finance_decision_handler AS finance_decision_handler_id,
+        row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC, sibling_discount, child_id) AS rownum
+    FROM fee_decision_child
+    LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
+)
+UPDATE fee_decision
+SET
+    status = ${bind(FeeDecisionStatus.WAITING_FOR_SENDING)},
+    decision_number = nextval('fee_decision_number_sequence'),
+    approved_by_id = ${bind(approvedBy)},
+    decision_handler_id = CASE
+        WHEN ${bind(decisionHandlerId)} IS NOT NULL THEN ${bind(decisionHandlerId)}
+        WHEN ${bind(alwaysUseDaycareFinanceDecisionHandler)} = true AND youngest_child.finance_decision_handler_id IS NOT NULL 
+            THEN youngest_child.finance_decision_handler_id
+        WHEN ${bind(isRetroactive)} = true THEN ${bind(approvedBy)}
+        WHEN youngest_child.finance_decision_handler_id IS NOT NULL AND fd.decision_type = 'NORMAL'
+            THEN youngest_child.finance_decision_handler_id
+        ELSE ${bind(approvedBy)}
+    END,
+    approved_at = ${bind(approvedAt)}
+FROM fee_decision AS fd
+LEFT JOIN youngest_child ON youngest_child.decision_id = ${bind { id -> id }} AND rownum = 1
+WHERE fd.id = ${bind { id -> id }} AND fee_decision.id = fd.id
+"""
         )
-        UPDATE fee_decision
-        SET
-            status = :status::fee_decision_status,
-            decision_number = nextval('fee_decision_number_sequence'),
-            approved_by_id = :approvedBy,
-            decision_handler_id = CASE
-                WHEN :decisionHandlerId IS NOT NULL THEN :decisionHandlerId
-                WHEN :alwaysUseDaycareFinanceDecisionHandler = true AND youngest_child.finance_decision_handler_id IS NOT NULL 
-                    THEN youngest_child.finance_decision_handler_id
-                WHEN :isRetroactive = true THEN :approvedBy
-                WHEN youngest_child.finance_decision_handler_id IS NOT NULL AND fd.decision_type = 'NORMAL'
-                    THEN youngest_child.finance_decision_handler_id
-                ELSE :approvedBy
-            END,
-            approved_at = :approvedAt
-        FROM fee_decision AS fd
-        LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
-        WHERE fd.id = :id AND fee_decision.id = fd.id
-        """
-
-    val batch = prepareBatch(sql)
-    ids.map { id ->
-        batch
-            .bind("id", id)
-            .bind("status", FeeDecisionStatus.WAITING_FOR_SENDING.toString())
-            .bind("approvedBy", approvedBy)
-            .bind("isRetroactive", isRetroactive)
-            .bind("approvedAt", approvedAt)
-            .bind("decisionHandlerId", decisionHandlerId)
-            .bind("alwaysUseDaycareFinanceDecisionHandler", alwaysUseDaycareFinanceDecisionHandler)
-            .add()
     }
-    batch.execute()
 }
 
 fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: FeeDecisionId) {
@@ -728,40 +700,31 @@ AND status = ${bind(FeeDecisionStatus.WAITING_FOR_SENDING.toString())}::fee_deci
 }
 
 fun Database.Transaction.setFeeDecisionSent(clock: EvakaClock, ids: List<FeeDecisionId>) {
-    val sql =
-        """
-        UPDATE fee_decision
-        SET
-            status = :status::fee_decision_status,
-            sent_at = :now
-        WHERE id = :id
-    """
-
-    val batch = prepareBatch(sql)
-    ids.forEach { id ->
-        batch
-            .bind("now", clock.now())
-            .bind("id", id)
-            .bind("status", FeeDecisionStatus.SENT.toString())
-            .add()
+    executeBatch(ids) {
+        sql(
+            """
+UPDATE fee_decision
+SET
+    status = ${bind(FeeDecisionStatus.SENT)},
+    sent_at = ${bind { clock.now() }}
+WHERE id = ${bind { id -> id }}
+"""
+        )
     }
-    batch.execute()
 }
 
 fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<FeeDecision>) {
-    prepareBatch(
-            "UPDATE fee_decision SET status = :status::fee_decision_status, valid_during = :validDuring WHERE id = :id"
+    executeBatch(updatedDecisions) {
+        sql(
+            """
+UPDATE fee_decision
+SET 
+    status = ${bind { it.status }},
+    valid_during = ${bind { it.validDuring }}
+WHERE id = ${bind { it.id }}
+"""
         )
-        .also { batch ->
-            updatedDecisions.forEach { decision ->
-                batch
-                    .bind("id", decision.id)
-                    .bind("status", decision.status)
-                    .bind("validDuring", decision.validDuring)
-                    .add()
-            }
-        }
-        .execute()
+    }
 }
 
 fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: String) {

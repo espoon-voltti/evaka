@@ -929,27 +929,23 @@ RETURNING id
             }
             .exactlyOne<AssistanceNeedDecisionId>()
 
-    val guardianSql =
-        """
+    executeBatch(data.guardianInfo) {
+        sql(
+            """
         INSERT INTO assistance_need_decision_guardian (
             assistance_need_decision_id,
             person_id,
             is_heard,
             details
         ) VALUES (
-            :assistanceNeedDecisionId,
-            :personId,
-            :isHeard,
-            :details
+            ${bind(id)},
+            ${bind { it.personId }},
+            ${bind { it.isHeard }},
+            ${bind { it.details }}
         )
-            
-        """
-
-    val batch = prepareBatch(guardianSql)
-    data.guardianInfo.forEach { guardian ->
-        batch.bindKotlin(guardian).bind("assistanceNeedDecisionId", id).add()
+"""
+        )
     }
-    batch.execute()
 
     return id
 }
@@ -1049,25 +1045,14 @@ fun Database.Transaction.insertTestChildAttendance(
                 .toList()
         }
 
-    prepareBatch(
+    executeBatch(attendances) {
+        sql(
             """
-        INSERT INTO child_attendance (id, child_id, unit_id, date, start_time, end_time)
-        VALUES (:id, :childId, :unitId, :date, :startTime, :endTime)
-        """
+INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
+VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${bind { (_, startTime, _) -> startTime.withSecond(0).withNano(0) }}, ${bind { (_, _, endTime) -> endTime?.withSecond(0)?.withNano(0) }})
+"""
         )
-        .also { batch ->
-            attendances.forEach { (date, startTime, endTime) ->
-                batch
-                    .bind("id", ChildAttendanceId(UUID.randomUUID()))
-                    .bind("childId", childId)
-                    .bind("unitId", unitId)
-                    .bind("date", date)
-                    .bind("startTime", startTime.withSecond(0).withNano(0))
-                    .bind("endTime", endTime?.withSecond(0)?.withNano(0))
-                    .add()
-            }
-            batch.execute()
-        }
+    }
 }
 
 fun Database.Transaction.insertTestBackUpCare(

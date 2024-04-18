@@ -379,32 +379,21 @@ fun Database.Transaction.setDraftsSent(
 ) {
     if (invoices.isEmpty()) return
 
-    val batch =
-        prepareBatch(
+    executeBatch(invoices) {
+        sql(
             """
 UPDATE invoice
 SET
-    number = :number,
-    invoice_date = :invoiceDate,
-    due_date = :dueDate,
-    sent_at = :now,
-    sent_by = :sentBy,
-    status = :status::invoice_status
-WHERE id = :id
+    number = ${bind { it.number }},
+    invoice_date = ${bind { it.invoiceDate }},
+    due_date = ${bind { it.dueDate }},
+    sent_at = ${bind { clock.now() }},
+    sent_by = ${bind(sentBy)},
+    status = ${bind(InvoiceStatus.SENT)}
+WHERE id = ${bind { it.id }}
 """
         )
-    invoices.forEach {
-        batch
-            .bind("id", it.id)
-            .bind("now", clock.now())
-            .bind("invoiceDate", it.invoiceDate)
-            .bind("dueDate", it.dueDate)
-            .bind("number", it.number)
-            .bind("status", InvoiceStatus.SENT)
-            .bind("sentBy", sentBy)
-            .add()
     }
-    batch.execute()
 }
 
 fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) =
@@ -424,24 +413,19 @@ AND invoice_id = ANY(${bind(invoiceIds)})
 fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
     if (invoices.isEmpty()) return
 
-    val batch =
-        prepareBatch(
+    executeBatch(invoices) {
+        sql(
             """
 UPDATE invoice
-SET status = :status::invoice_status, number = :number, invoice_date = :invoiceDate, due_date = :dueDate
-WHERE id = :id
+SET
+    status = ${bind(InvoiceStatus.WAITING_FOR_SENDING)},
+    number = ${bind { it.number }},
+    invoice_date = ${bind { it.invoiceDate }},
+    due_date = ${bind { it.dueDate }}
+WHERE id = ${bind { it.id }}
 """
         )
-    invoices.forEach {
-        batch
-            .bind("id", it.id)
-            .bind("number", it.number)
-            .bind("invoiceDate", it.invoiceDate)
-            .bind("dueDate", it.dueDate)
-            .bind("status", InvoiceStatus.WAITING_FOR_SENDING)
-            .add()
     }
-    batch.execute()
 }
 
 fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {
@@ -470,39 +454,35 @@ fun Database.Transaction.upsertInvoices(invoices: List<Invoice>) {
 }
 
 private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoice>) {
-    val sql =
-        """
-        INSERT INTO invoice (
-            id,
-            number,
-            status,
-            period_start,
-            period_end,
-            due_date,
-            invoice_date,
-            area_id,
-            head_of_family,
-            codebtor
-        ) VALUES (
-            :id,
-            :number,
-            :status::invoice_status,
-            :periodStart,
-            :periodEnd,
-            :dueDate,
-            :invoiceDate,
-            :areaId,
-            :headOfFamily,
-            :codebtor
-        ) ON CONFLICT (id) DO NOTHING
-    """
-
-    val batch =
-        prepareBatch(sql).also { batch ->
-            invoices.forEach { invoice -> batch.bindKotlin(invoice).add() }
-        }
-
-    batch.execute()
+    executeBatch(invoices) {
+        sql(
+            """
+INSERT INTO invoice (
+    id,
+    number,
+    status,
+    period_start,
+    period_end,
+    due_date,
+    invoice_date,
+    area_id,
+    head_of_family,
+    codebtor
+) VALUES (
+    ${bind { it.id }},
+    ${bind { it.number }},
+    ${bind { it.status }},
+    ${bind { it.periodStart }},
+    ${bind { it.periodEnd }},
+    ${bind { it.dueDate }},
+    ${bind { it.invoiceDate }},
+    ${bind { it.areaId }},
+    ${bind { it.headOfFamily }},
+    ${bind { it.codebtor }}
+) ON CONFLICT (id) DO NOTHING
+"""
+        )
+    }
 }
 
 private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) {
@@ -515,46 +495,43 @@ private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) 
 private fun Database.Transaction.insertInvoiceRows(
     invoiceRows: List<Pair<InvoiceId, List<InvoiceRow>>>
 ) {
-    val sql =
-        """
-            INSERT INTO invoice_row (
-                invoice_id,
-                idx,
-                id,
-                child,
-                amount,
-                unit_price,
-                period_start,
-                period_end,
-                product,
-                unit_id,
-                description,
-                correction_id
-            ) VALUES (
-                :invoice_id,
-                :idx,
-                :id,
-                :child,
-                :amount,
-                :unitPrice,
-                :periodStart,
-                :periodEnd,
-                :product,
-                :unitId,
-                :description,
-                :correctionId
-            )
-        """
-
-    prepareBatch(sql)
-        .also { batch ->
-            invoiceRows.forEach { (invoiceId, rows) ->
-                rows.withIndex().forEach { (idx, row) ->
-                    batch.bind("invoice_id", invoiceId).bind("idx", idx).bindKotlin(row).add()
-                }
-            }
+    val batchRows: Sequence<Triple<InvoiceId, Int, InvoiceRow>> =
+        invoiceRows.asSequence().flatMap { (invoiceId, rows) ->
+            rows.withIndex().map { (idx, row) -> Triple(invoiceId, idx, row) }
         }
-        .execute()
+    executeBatch(batchRows) {
+        sql(
+            """
+INSERT INTO invoice_row (
+    invoice_id,
+    idx,
+    id,
+    child,
+    amount,
+    unit_price,
+    period_start,
+    period_end,
+    product,
+    unit_id,
+    description,
+    correction_id
+) VALUES (
+    ${bind { (invoiceId, _, _) -> invoiceId }},
+    ${bind { (_, idx, _) -> idx }},
+    ${bind { (_, _, row) -> row.id }},
+    ${bind { (_, _, row) -> row.child }},
+    ${bind { (_, _, row) -> row.amount }},
+    ${bind { (_, _, row) -> row.unitPrice }},
+    ${bind { (_, _, row) -> row.periodStart }},
+    ${bind { (_, _, row) -> row.periodEnd }},
+    ${bind { (_, _, row) -> row.product }},
+    ${bind { (_, _, row) -> row.unitId }},
+    ${bind { (_, _, row) -> row.description }},
+    ${bind { (_, _, row) -> row.correctionId }}
+)
+"""
+        )
+    }
 }
 
 fun Row.toInvoice() =
