@@ -744,7 +744,11 @@ class ApplicationStateService(
         Audit.DecisionAccept.log(
             targetId = decisionId,
             meta =
-                mapOf("applicationId" to applicationId, "requestedStartDate" to requestedStartDate)
+                mapOf(
+                    "applicationId" to applicationId,
+                    "requestedStartDate" to requestedStartDate,
+                    "childId" to decision.childId
+                )
         )
     }
 
@@ -796,7 +800,7 @@ class ApplicationStateService(
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, REJECTED)
         }
-        Audit.DecisionReject.log(targetId = decisionId)
+        Audit.DecisionReject.log(targetId = decisionId, meta = mapOf("childId" to decision.childId))
     }
 
     // CONTENT UPDATE
