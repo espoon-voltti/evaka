@@ -17,6 +17,7 @@ import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
+import { SpecialDiet } from './specialdiet'
 import { TerminatedPlacement } from './placement'
 import { UUID } from '../../types'
 import { UnitBackupCare } from './backupcare'
@@ -48,6 +49,7 @@ export interface AdditionalInformation {
   languageAtHomeDetails: string
   medication: string
   preferredName: string
+  specialDiet: SpecialDiet | null
 }
 
 /**

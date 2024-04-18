@@ -20,6 +20,7 @@ export type QueryKeyPrefix =
   | 'personProfile'
   | 'calendarEvent'
   | 'messaging'
+  | 'personDetails'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
