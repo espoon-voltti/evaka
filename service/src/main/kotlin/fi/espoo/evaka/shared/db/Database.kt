@@ -201,8 +201,34 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         fun execute(f: QuerySql.Builder.() -> QuerySql): Int =
             createUpdate(QuerySql.Builder().run { f(this) }).execute()
 
-        fun prepareBatch(@Language("sql") sql: String): PreparedBatch =
-            PreparedBatch(handle.prepareBatch(sql))
+        fun <R> prepareBatch(f: BatchSql.Builder<R>.() -> BatchSql<R>): PreparedBatch<R> {
+            val batch = BatchSql.Builder<R>().run { f(this) }
+            val raw = handle.prepareBatch(batch.sql.toString())
+            return PreparedBatch(raw, batch.bindings)
+        }
+
+        fun <R> prepareBatch(
+            rows: Iterable<R>,
+            f: BatchSql.Builder<R>.() -> BatchSql<R>
+        ): PreparedBatch<R> = prepareBatch(f).addAll(rows)
+
+        fun <R> prepareBatch(
+            rows: Sequence<R>,
+            f: BatchSql.Builder<R>.() -> BatchSql<R>
+        ): PreparedBatch<R> = prepareBatch(f).addAll(rows)
+
+        fun <R> executeBatch(
+            rows: Iterable<R>,
+            f: BatchSql.Builder<R>.() -> BatchSql<R>
+        ): IntArray = prepareBatch(f).addAll(rows).execute()
+
+        fun <R> executeBatch(
+            rows: Sequence<R>,
+            f: BatchSql.Builder<R>.() -> BatchSql<R>
+        ): IntArray = prepareBatch(f).addAll(rows).execute()
+
+        fun prepareBatch(@Language("sql") sql: String): LegacyPreparedBatch =
+            LegacyPreparedBatch(handle.prepareBatch(sql))
 
         @Deprecated("Use new query API instead: execute { sql(...) }")
         fun execute(@Language("sql") sql: String, vararg args: Any): Int =
@@ -441,10 +467,10 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         }
     }
 
-    class PreparedBatch
+    class LegacyPreparedBatch
     internal constructor(private val raw: org.jdbi.v3.core.statement.PreparedBatch) {
 
-        fun add(): PreparedBatch {
+        fun add(): LegacyPreparedBatch {
             raw.add()
             return this
         }
@@ -456,57 +482,114 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         inline fun <reified T> bind(
             name: String,
             value: T,
-        ): PreparedBatch = bindByType(name, value, createQualifiedType(*defaultQualifiers<T>()))
+        ): LegacyPreparedBatch =
+            bindByType(name, value, createQualifiedType(*defaultQualifiers<T>()))
 
-        inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): PreparedBatch =
+        inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): LegacyPreparedBatch =
             registerColumnMapper(createQualifiedType(), mapper)
 
         fun <T> registerColumnMapper(
             type: QualifiedType<T>,
             mapper: ColumnMapper<T>
-        ): PreparedBatch {
+        ): LegacyPreparedBatch {
             raw.registerColumnMapper(type, mapper)
             return this
         }
 
-        fun addBinding(binding: Binding<*>): PreparedBatch {
+        fun addBinding(binding: Binding<*>): LegacyPreparedBatch {
             raw.bindByType(binding.name, binding.value, binding.type)
             return this
         }
 
-        fun addBindings(bindings: Iterable<Binding<*>>): PreparedBatch {
+        fun addBindings(bindings: Iterable<Binding<*>>): LegacyPreparedBatch {
             for (binding in bindings) {
                 raw.bindByType(binding.name, binding.value, binding.type)
             }
             return this
         }
 
-        fun addBindings(bindings: Sequence<Binding<*>>): PreparedBatch {
+        fun addBindings(bindings: Sequence<Binding<*>>): LegacyPreparedBatch {
             for (binding in bindings) {
                 raw.bindByType(binding.name, binding.value, binding.type)
             }
             return this
         }
 
-        fun bindJson(name: String, value: Any): PreparedBatch =
+        fun bindJson(name: String, value: Any): LegacyPreparedBatch =
             bindByType(
                 name,
                 value,
                 QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java))
             )
 
-        fun <T> bindByType(name: String, value: T, type: QualifiedType<T>): PreparedBatch {
+        fun <T> bindByType(name: String, value: T, type: QualifiedType<T>): LegacyPreparedBatch {
             raw.bindByType(name, value, type)
             return this
         }
 
-        fun bindKotlin(value: Any): PreparedBatch {
+        fun bindKotlin(value: Any): LegacyPreparedBatch {
             raw.bindKotlin(value)
             return this
         }
 
-        fun bindKotlin(name: String, value: Any): PreparedBatch {
+        fun bindKotlin(name: String, value: Any): LegacyPreparedBatch {
             raw.bindKotlin(name, value)
+            return this
+        }
+    }
+
+    class PreparedBatch<R>
+    internal constructor(
+        private val raw: org.jdbi.v3.core.statement.PreparedBatch,
+        private val bindings: List<BatchBinding<R, *>>
+    ) {
+        fun execute(): IntArray = raw.execute()
+
+        fun executeAndReturn(): UpdateResult = UpdateResult(raw.executePreparedBatch())
+
+        inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): PreparedBatch<R> =
+            registerColumnMapper(createQualifiedType(), mapper)
+
+        fun <T> registerColumnMapper(
+            type: QualifiedType<T>,
+            mapper: ColumnMapper<T>
+        ): PreparedBatch<R> {
+            raw.registerColumnMapper(type, mapper)
+            return this
+        }
+
+        private fun bindAll(row: R) {
+            for ((idx, binding) in bindings.withIndex()) {
+                when (binding) {
+                    is ValueBinding<*> -> {
+                        raw.bindByType(idx, binding.value, binding.type)
+                    }
+                    is LazyBinding<R, *> -> {
+                        raw.bindByType(idx, binding.getValue(row), binding.getType(row))
+                    }
+                }
+            }
+        }
+
+        fun add(row: R): PreparedBatch<R> {
+            bindAll(row)
+            raw.add()
+            return this
+        }
+
+        fun addAll(rows: Iterable<R>): PreparedBatch<R> {
+            for (row in rows) {
+                bindAll(row)
+                raw.add()
+            }
+            return this
+        }
+
+        fun addAll(rows: Sequence<R>): PreparedBatch<R> {
+            for (row in rows) {
+                bindAll(row)
+                raw.add()
+            }
             return this
         }
     }
@@ -595,7 +678,23 @@ data class Binding<T>(val name: String, val value: T, val type: QualifiedType<T>
     }
 }
 
-data class ValueBinding<T>(val value: T, val type: QualifiedType<T>) {
+sealed interface BatchBinding<out R, T>
+
+data class LazyBinding<R, T>(
+    val getValue: (row: R) -> T,
+    val getType: (row: R) -> QualifiedType<T>
+) : BatchBinding<R, T> {
+    companion object {
+        inline fun <R, reified T> of(
+            noinline getValue: (row: R) -> T,
+            noinline getQualifiers: (value: T) -> Array<KClass<out Annotation>> = {
+                defaultQualifiers<T>()
+            }
+        ) = LazyBinding(getValue) { createQualifiedType(*getQualifiers(getValue(it))) }
+    }
+}
+
+data class ValueBinding<T>(val value: T, val type: QualifiedType<T>) : BatchBinding<Nothing, T> {
     companion object {
         inline fun <reified T> of(
             value: T,
@@ -609,8 +708,8 @@ value class QuerySqlString(@Language("sql") private val sql: String) {
     override fun toString(): String = sql
 }
 
-open class SqlBuilder {
-    protected var bindings: List<ValueBinding<out Any?>> = listOf()
+abstract class SqlBuilder {
+    protected abstract fun addBinding(binding: ValueBinding<*>)
 
     /**
      * Binds the given value as a query parameter using the default serialization for the value's
@@ -643,19 +742,19 @@ open class SqlBuilder {
         )
 
     fun bind(binding: ValueBinding<*>): Binding {
-        this.bindings += binding
+        addBinding(binding)
         return Binding
     }
 
     fun subquery(f: QuerySql.Builder.() -> QuerySql): QuerySqlString = subquery(QuerySql { f() })
 
     fun subquery(fragment: QuerySql): QuerySqlString {
-        this.bindings += fragment.bindings
+        fragment.bindings.forEach(this::addBinding)
         return fragment.sql
     }
 
     fun predicate(predicate: PredicateSql): PredicateSqlString {
-        this.bindings += predicate.bindings
+        predicate.bindings.forEach(this::addBinding)
         return predicate.sql
     }
 
@@ -675,7 +774,12 @@ data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out
     }
 
     class Builder : SqlBuilder() {
+        private var bindings: List<ValueBinding<out Any?>> = listOf()
         private var used: Boolean = false
+
+        override fun addBinding(binding: ValueBinding<*>) {
+            this.bindings += binding
+        }
 
         private fun combine(separator: String, queries: Iterable<QuerySql>): QuerySql {
             check(!used) { "builder has already been used" }
@@ -696,6 +800,55 @@ data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out
             check(!used) { "builder has already been used" }
             this.used = true
             return QuerySql(QuerySqlString(sql), bindings)
+        }
+    }
+}
+
+data class BatchSql<R>(val sql: QuerySqlString, val bindings: List<BatchBinding<R, out Any?>>) {
+    companion object {
+        fun <R> of(f: Builder<R>.() -> BatchSql<R>): BatchSql<R> = Builder<R>().run { f(this) }
+    }
+
+    class Builder<R> : SqlBuilder() {
+        private var bindings: List<BatchBinding<R, out Any?>> = emptyList()
+        private var used: Boolean = false
+
+        override fun addBinding(binding: ValueBinding<*>) {
+            this.bindings += binding
+        }
+
+        fun bind(binding: LazyBinding<R, *>): Binding {
+            this.bindings += binding
+            return Binding
+        }
+
+        inline fun <reified T> bind(noinline getValue: (row: R) -> T): Binding =
+            bind(LazyBinding.of(getValue))
+
+        /**
+         * Binds a value returned by the given getter as a query parameter using JSON serialization.
+         *
+         * This function ignores default qualifiers specified on the type, and explicitly chooses
+         * JSON serialization.
+         */
+        inline fun <reified T> bindJson(noinline getValue: (row: R) -> T): Binding =
+            bind(
+                LazyBinding(getValue) { row ->
+                    val value = getValue(row)
+                    // Use runtime type information for non-null values with inheritance
+                    // Otherwise Jackson will serialize only the fields in T which might be a
+                    // superclass while the runtime value might be a concrete subclass
+                    if (value is Any && value.javaClass != T::class.java)
+                        QualifiedType.of(value.javaClass).with(Json::class.java)
+                    // Use compile-time type information for other values, including nulls
+                    else createQualifiedType(Json::class)
+                }
+            )
+
+        fun sql(@Language("sql") sql: String): BatchSql<R> {
+            check(!used) { "builder has already been used" }
+            this.used = true
+            return BatchSql(QuerySqlString(sql), bindings)
         }
     }
 }
