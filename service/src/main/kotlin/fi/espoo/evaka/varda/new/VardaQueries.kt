@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.varda.new
 
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -176,3 +178,72 @@ fun Database.Read.getVardaPerson(childId: ChildId): VardaPerson =
             )
         }
         .exactlyOne()
+
+fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0) {
+    if (migrationSpeed > 0) {
+        // Move children from varda_reset_child (old integration) to varda_state (new integration)
+        createUpdate {
+                sql(
+                    """
+                    INSERT INTO varda_state (child_id, state)
+                    SELECT evaka_child_id, null
+                    FROM varda_reset_child
+                    WHERE NOT EXISTS (SELECT FROM varda_state WHERE child_id = evaka_child_id)
+                    LIMIT ${bind(migrationSpeed)}
+                    """
+                )
+            }
+            .execute()
+    }
+
+    // Insert newly placed children to varda_state
+    createUpdate {
+            sql(
+                """
+                    INSERT INTO varda_state (child_id, state)
+                    SELECT child_id, null
+                    FROM placement pl
+                    WHERE
+                        NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = pl.child_id) AND
+                        NOT EXISTS (SELECT FROM varda_reset_child vrc WHERE vrc.evaka_child_id = pl.child_id)
+                    ON CONFLICT (child_id) DO NOTHING
+                    """
+            )
+        }
+        .execute()
+}
+
+fun Database.Read.getVardaUpdateChildIds(): List<ChildId> =
+    createQuery { sql("SELECT child_id FROM varda_state") }.toList()
+
+/**
+ * In addition to returning `null` if `state` is `NULL`, also returns `null` if the state cannot be
+ * deserialized as `T`. This can happen if the Kotlin data structures that represent the state have
+ * been changed. Because there's no "previous state" to compare against, the Varda update should be
+ * performed in this case.
+ */
+inline fun <reified T> Database.Read.getVardaUpdateState(
+    jsonMapper: JsonMapper,
+    childId: ChildId
+): T? =
+    createQuery { sql("SELECT state::text FROM varda_state WHERE child_id = ${bind(childId)}") }
+        .exactlyOne<String?>()
+        ?.let {
+            try {
+                jsonMapper.readValue<T>(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+fun Database.Transaction.setVardaUpdateState(childId: ChildId, state: Any?) {
+    createUpdate {
+            sql(
+                """
+                UPDATE varda_state SET state = ${bindJson(state)}
+                WHERE child_id = ${bind(childId)}
+                """
+            )
+        }
+        .execute()
+}

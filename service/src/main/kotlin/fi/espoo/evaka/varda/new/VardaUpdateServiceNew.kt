@@ -29,9 +29,9 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class VardaUpdateServiceNew(
-    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     globalFuel: FuelManager,
-    mapper: JsonMapper,
+    private val jsonMapper: JsonMapper,
     private val ophEnv: OphEnv,
     private val vardaEnv: VardaEnv
 ) {
@@ -76,7 +76,12 @@ class VardaUpdateServiceNew(
         }
 
     private val vardaClient =
-        VardaClient(VardaTempTokenProvider(fuel, mapper, vardaEnv), fuel, mapper, vardaEnv.url)
+        VardaClient(
+            VardaTempTokenProvider(fuel, jsonMapper, vardaEnv),
+            fuel,
+            jsonMapper,
+            vardaEnv.url
+        )
 
     private val vardaEnabledRange =
         DateRange(
@@ -92,18 +97,38 @@ class VardaUpdateServiceNew(
         asyncJobRunner.registerHandler(::updateChildJob)
     }
 
+    fun planUpdate(dbc: Database.Connection, clock: EvakaClock, migrationSpeed: Int = 0) {
+        dbc.transaction { tx ->
+            tx.addNewChildrenForVardaUpdate(migrationSpeed)
+            val childIds = tx.getVardaUpdateChildIds()
+            asyncJobRunner.plan(
+                tx,
+                payloads = childIds.map { AsyncJob.VardaUpdateChild(it, dryRun = false) },
+                runAt = clock.now(),
+                retryCount = 1
+            )
+        }
+    }
+
     fun updateChildJob(
         dbc: Database.Connection,
         clock: EvakaClock,
         job: AsyncJob.VardaUpdateChild
     ) {
-        // Varda's validation rules can be deduced from the list of error codes:
-        // https://virkailija.opintopolku.fi/varda/julkinen/koodistot/vardavirheviestit
-
         val today = clock.today()
         val service = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
         val evakaState = dbc.read { service.getEvakaState(it, today, job.childId) }
+        val previousEvakaState =
+            dbc.read {
+                it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(jsonMapper, job.childId)
+            }
+
+        if (previousEvakaState == evakaState) {
+            logger.info { "No changes for ${job.childId}" }
+            return
+        }
+
         val vardaState =
             service.getVardaState(
                 vardaClient,
@@ -132,6 +157,7 @@ class VardaUpdateServiceNew(
                     dbc.transaction { it.updateOphPersonOid(job.childId, henkiloOidInVarda) }
                 }
             }
+            dbc.transaction { tx -> tx.setVardaUpdateState(job.childId, evakaState) }
         }
     }
 }
@@ -141,6 +167,9 @@ class VardaUpdater(
     private val omaOrganisaatioOid: String,
     private val lahdejarjestelma: String
 ) {
+    // Varda's validation rules can be deduced from the list of error codes:
+    // https://virkailija.opintopolku.fi/varda/julkinen/koodistot/vardavirheviestit
+
     fun getEvakaState(tx: Database.Read, today: LocalDate, childId: ChildId): EvakaHenkiloNode {
         val person = tx.getVardaPerson(childId)
         if (person.ophPersonOid == null && person.socialSecurityNumber == null) {
