@@ -129,7 +129,8 @@ JOIN daycare u ON u.id = fdc.placement_unit_id
 WHERE
     fd.status = 'SENT' AND
     fd.valid_during && ${bind(range)} AND
-    fdc.child_id = ${bind(childId)}
+    fdc.child_id = ${bind(childId)} AND
+    u.oph_organizer_oid IS NOT NULL
 
 UNION ALL
 
@@ -148,7 +149,8 @@ WHERE
     vvd.status = 'SENT' AND
     daterange(vvd.valid_from, vvd.valid_to, '[]') && ${bind(range)} AND
     vvd.child_id = ${bind(childId)} AND
-    placement_type IS NOT NULL
+    vvd.placement_type IS NOT NULL AND
+    u.oph_organizer_oid IS NOT NULL
 
 ORDER BY valid_during
 """
