@@ -884,7 +884,7 @@ WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterang
         .toList<ChildBackupPlacement>()
         .groupBy { it.childId }
 
-private data class ChildData(
+data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<ReservationResponse>>,
     val attendances: Map<LocalDate, List<TimeInterval>>,
@@ -929,7 +929,7 @@ private data class AbsenceForDate(
     val category: AbsenceCategory
 )
 
-private fun Database.Read.getChildData(
+fun Database.Read.getChildData(
     unitId: DaycareId,
     childIds: Set<ChildId>,
     dateRange: FiniteDateRange

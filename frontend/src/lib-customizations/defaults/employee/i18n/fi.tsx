@@ -4017,6 +4017,26 @@ export const fi = {
         count === 1
           ? `${count} ryhmä esiopetusta antavissa palveluseteliyksiköissä`
           : `${count} ryhmää esiopetusta antavissa palveluseteliyksiköissä`
+    },
+    meals: {
+      title: 'Ruokailijamäärät',
+      description:
+        'Laskee varauksiin perustuvat ruokailijamäärät yksikkökohtaisesti.',
+      mealName: {
+        BREAKFAST: 'Aamupala',
+        LUNCH: 'Lounas',
+        LUNCH_PRESCHOOL: 'Lounas (esiopetus)',
+        SNACK: 'Välipala',
+        SUPPER: 'Päivällinen',
+        EVENING_SNACK: 'Iltapala'
+      },
+      headings: {
+        mealName: 'Ateria',
+        mealId: 'Aterian tunniste',
+        mealCount: 'kpl-määrä',
+        dietId: 'Erityisruokavalion tunniste',
+        additionalInfo: 'Lisätieto'
+      }
     }
   },
   unitEditor: {
