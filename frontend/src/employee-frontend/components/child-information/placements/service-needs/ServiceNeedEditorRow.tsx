@@ -178,17 +178,14 @@ function ServiceNeedEditorRow({
     if (optionDetails.validTo && optionDetails.validTo.isBefore(end)) {
       if (optionDetails.validFrom.isAfter(start)) {
         return t.optionStartEndNotValidWarningTitle(
-          optionDetails.validFrom.format(),
-          optionDetails.validTo.format()
+          new FiniteDateRange(optionDetails.validFrom, optionDetails.validTo)
         )
       } else {
-        return t.optionEndNotValidWarningTitle(optionDetails.validTo.format())
+        return t.optionEndNotValidWarningTitle(optionDetails.validTo)
       }
     } else {
       if (optionDetails.validFrom.isAfter(start)) {
-        return t.optionStartNotValidWarningTitle(
-          optionDetails.validFrom.format()
-        )
+        return t.optionStartNotValidWarningTitle(optionDetails.validFrom)
       } else {
         return null
       }

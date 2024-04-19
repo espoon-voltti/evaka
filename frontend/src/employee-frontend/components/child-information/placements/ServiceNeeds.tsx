@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import sortBy from 'lodash/sortBy'
+import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -116,59 +116,59 @@ export default React.memo(function ServiceNeeds({
             />
           )}
 
-          {sortBy(rows, (row) =>
-            isServiceNeed(row) ? row.startDate : row.start
-          )
-            .reverse()
-            .map((sn) =>
-              isServiceNeed(sn) ? (
-                editingId === sn.id ? (
-                  <ServiceNeedEditorRow
-                    key={sn.id}
-                    placement={placement}
-                    options={options}
-                    editedServiceNeed={sn}
-                    onSuccess={() => {
-                      setEditingId(null)
-                      reload()
-                    }}
-                    onCancel={() => setEditingId(null)}
-                    editingId={editingId}
-                  />
-                ) : (
-                  <ServiceNeedReadRow
-                    key={sn.id}
-                    serviceNeed={sn}
-                    permittedActions={permittedServiceNeedActions[sn.id] ?? []}
-                    onEdit={() => setEditingId(sn.id)}
-                    onDelete={() => setDeletingId(sn.id)}
-                    disabled={creatingNew !== false || editingId !== null}
-                  />
-                )
-              ) : creatingNew instanceof LocalDate &&
-                sn.start.isEqual(creatingNew) ? (
+          {orderBy(
+            rows,
+            (row) => (isServiceNeed(row) ? row.startDate : row.start),
+            ['desc']
+          ).map((sn) =>
+            isServiceNeed(sn) ? (
+              editingId === sn.id ? (
                 <ServiceNeedEditorRow
-                  key={sn.start.toJSON()}
+                  key={sn.id}
                   placement={placement}
                   options={options}
-                  initialRange={sn}
+                  editedServiceNeed={sn}
                   onSuccess={() => {
-                    setCreatingNew(false)
+                    setEditingId(null)
                     reload()
                   }}
-                  onCancel={() => setCreatingNew(false)}
+                  onCancel={() => setEditingId(null)}
+                  editingId={editingId}
                 />
               ) : (
-                <MissingServiceNeedRow
-                  createAllowed={createAllowed}
-                  key={sn.start.toJSON()}
-                  startDate={sn.start}
-                  endDate={sn.end}
-                  onEdit={() => setCreatingNew(sn.start)}
+                <ServiceNeedReadRow
+                  key={sn.id}
+                  serviceNeed={sn}
+                  permittedActions={permittedServiceNeedActions[sn.id] ?? []}
+                  onEdit={() => setEditingId(sn.id)}
+                  onDelete={() => setDeletingId(sn.id)}
                   disabled={creatingNew !== false || editingId !== null}
                 />
               )
-            )}
+            ) : creatingNew instanceof LocalDate &&
+              sn.start.isEqual(creatingNew) ? (
+              <ServiceNeedEditorRow
+                key={sn.start.toJSON()}
+                placement={placement}
+                options={options}
+                initialRange={sn}
+                onSuccess={() => {
+                  setCreatingNew(false)
+                  reload()
+                }}
+                onCancel={() => setCreatingNew(false)}
+              />
+            ) : (
+              <MissingServiceNeedRow
+                createAllowed={createAllowed}
+                key={sn.start.toJSON()}
+                startDate={sn.start}
+                endDate={sn.end}
+                onEdit={() => setCreatingNew(sn.start)}
+                disabled={creatingNew !== false || editingId !== null}
+              />
+            )
+          )}
         </Tbody>
       </Table>
 

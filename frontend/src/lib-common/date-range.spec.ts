@@ -76,6 +76,34 @@ describe('DateRange', () => {
       expect(r2.complement(range(15, null))).toEqual([range(10, 14)])
     })
   })
+
+  describe('contains', () => {
+    it('returns complement', () => {
+      const r = range(10, 20)
+      expect(r.contains(range(9, 19))).toEqual(false)
+      expect(r.contains(range(9, 20))).toEqual(false)
+      expect(r.contains(range(9, 21))).toEqual(false)
+      expect(r.contains(range(9, null))).toEqual(false)
+
+      expect(r.contains(range(10, 19))).toEqual(true)
+      expect(r.contains(range(10, 20))).toEqual(true)
+      expect(r.contains(range(10, 21))).toEqual(false)
+      expect(r.contains(range(10, null))).toEqual(false)
+
+      expect(r.contains(range(11, 19))).toEqual(true)
+      expect(r.contains(range(11, 20))).toEqual(true)
+      expect(r.contains(range(11, 21))).toEqual(false)
+      expect(r.contains(range(11, null))).toEqual(false)
+
+      const r2 = range(10, null)
+      expect(r2.contains(range(9, 20))).toEqual(false)
+      expect(r2.contains(range(9, null))).toEqual(false)
+      expect(r2.contains(range(10, 20))).toEqual(true)
+      expect(r2.contains(range(10, null))).toEqual(true)
+      expect(r2.contains(range(11, 20))).toEqual(true)
+      expect(r2.contains(range(11, null))).toEqual(true)
+    })
+  })
 })
 
 const localDate = (startDay: number) => LocalDate.of(2000, 1, startDay)

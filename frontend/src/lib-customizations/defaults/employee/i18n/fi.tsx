@@ -4,8 +4,10 @@
 
 import React, { ReactNode } from 'react'
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 import { H3, P } from 'lib-components/typography'
 
 import components from '../../components/i18n/fi'
@@ -1496,15 +1498,12 @@ export const fi = {
           message:
             'Merkitsemäsi palveluntarve menee päällekkäin aiemmin ilmoitetun kanssa. Mikäli vahvistat nyt merkitsemäsi palveluntarpeen, aiemmin merkitty palveluntarve katkaistaan automaattisesti päällekkäin menevältä ajalta.'
         },
-        optionStartNotValidWarningTitle: (validFrom: string) =>
-          `Valittu palveluntarvetyyppi on käytettävissä vasta ${validFrom} alkaen`,
-        optionEndNotValidWarningTitle: (validTo: string) =>
-          `Valittu palveluntarvetyyppi on käytettävissä vain ${validTo} asti`,
-        optionStartEndNotValidWarningTitle: (
-          validFrom: string,
-          validTo: string
-        ) =>
-          `Valittu palveluntarvetyyppi on käytettävissä ajalla ${validFrom} - ${validTo}`,
+        optionStartNotValidWarningTitle: (validFrom: LocalDate) =>
+          `Valittu palveluntarvetyyppi on käytettävissä vasta ${validFrom.format()} alkaen`,
+        optionEndNotValidWarningTitle: (validTo: LocalDate) =>
+          `Valittu palveluntarvetyyppi on käytettävissä vain ${validTo.format()} asti`,
+        optionStartEndNotValidWarningTitle: (validity: FiniteDateRange) =>
+          `Valittu palveluntarvetyyppi on käytettävissä ajalla ${validity.format()}`,
         notFullyValidOptionWarning:
           'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.'
       }
