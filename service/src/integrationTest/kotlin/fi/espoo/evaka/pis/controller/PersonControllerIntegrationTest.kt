@@ -13,6 +13,7 @@ import fi.espoo.evaka.pis.getFosterChildren
 import fi.espoo.evaka.pis.getFosterParents
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,7 +21,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevVardaOrganizerChild
@@ -447,11 +447,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val blockedDependant = dependants.find { it.socialSecurityNumber == "070714A9126" }!!
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate("DELETE FROM guardian WHERE child_id = :id")
-                .bind("id", blockedDependant.id)
-                .execute()
-            tx.insert(DevGuardianBlocklistEntry(guardianId, blockedDependant.id))
+            tx.blockGuardian(childId = blockedDependant.id, guardianId = guardianId)
             tx.execute {
                 sql("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
             }
@@ -479,11 +475,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val blockedGuardian = guardians.find { it.socialSecurityNumber == "070644-937X" }!!
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate("DELETE FROM guardian WHERE guardian_id = :id")
-                .bind("id", blockedGuardian.id)
-                .execute()
-            tx.insert(DevGuardianBlocklistEntry(blockedGuardian.id, childId))
+            tx.blockGuardian(childId = childId, guardianId = blockedGuardian.id)
             tx.execute {
                 sql("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
             }

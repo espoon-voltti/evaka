@@ -1391,18 +1391,6 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
-fun Database.Transaction.insert(row: DevGuardianBlocklistEntry) {
-    createUpdate {
-            sql(
-                """
-INSERT INTO guardian_blocklist (guardian_id, child_id)
-VALUES (${bind(row.guardianId)}, ${bind(row.childId)})
-"""
-            )
-        }
-        .execute()
-}
-
 data class DevInvoiceCorrection(
     val id: InvoiceCorrectionId = InvoiceCorrectionId(UUID.randomUUID()),
     val headOfFamilyId: PersonId,

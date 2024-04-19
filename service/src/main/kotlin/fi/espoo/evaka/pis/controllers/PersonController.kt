@@ -25,12 +25,11 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
-import fi.espoo.evaka.pis.service.addToGuardianBlocklist
-import fi.espoo.evaka.pis.service.deleteFromGuardianBlocklist
-import fi.espoo.evaka.pis.service.deleteGuardianRelationship
+import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
+import fi.espoo.evaka.pis.service.unblockGuardian
 import fi.espoo.evaka.pis.updateOphPersonOid
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
@@ -621,10 +620,9 @@ class PersonController(
                     childId
                 )
                 if (body.denied) {
-                    tx.addToGuardianBlocklist(childId, body.guardianId)
-                    tx.deleteGuardianRelationship(childId, body.guardianId)
+                    tx.blockGuardian(childId, body.guardianId)
                 } else {
-                    tx.deleteFromGuardianBlocklist(childId, body.guardianId)
+                    tx.unblockGuardian(childId, body.guardianId)
                     personService.getGuardians(tx, user, childId, forceRefresh = true)
                 }
             }
