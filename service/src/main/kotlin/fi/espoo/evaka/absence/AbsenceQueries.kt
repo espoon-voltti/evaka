@@ -394,10 +394,9 @@ WHERE daycare_group.id = ${bind(groupId)}
         }
         .exactlyOne()
 
-private fun placementsQuery(range: FiniteDateRange, groupId: GroupId) =
-    QuerySql.of {
-        sql(
-            """
+private fun placementsQuery(range: FiniteDateRange, groupId: GroupId) = QuerySql {
+    sql(
+        """
 SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') AS date_range
 FROM daycare_group_placement AS gp
 JOIN placement p ON gp.daycare_placement_id = p.id AND daterange(p.start_date, p.end_date, '[]') && daterange(gp.start_date, gp.end_date, '[]')
@@ -412,8 +411,8 @@ JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end
 WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
 AND group_id = ${bind(groupId)}
 """
-        )
-    }
+    )
+}
 
 data class Child(
     val id: ChildId,

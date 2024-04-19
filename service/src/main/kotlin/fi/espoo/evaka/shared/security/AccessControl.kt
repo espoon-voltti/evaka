@@ -289,7 +289,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
                 null
             } else {
                 AccessControlFilter.Some(
-                    QuerySql.of {
+                    QuerySql {
                         sql(filters.joinToString(separator = " UNION ALL ") { "(${subquery(it)})" })
                     }
                 )

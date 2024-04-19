@@ -69,27 +69,19 @@ fun Database.Transaction.insertApplication(
     origin: ApplicationOrigin,
     hideFromGuardian: Boolean = false,
     sentDate: LocalDate? = null,
-): ApplicationId {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access)
-        VALUES (:type, 'CREATED'::application_status_type, :guardianId, :childId, :origin::application_origin_type, :hideFromGuardian, :sentDate, false)
-        RETURNING id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createUpdate(sql)
-        .bind("type", type)
-        .bind("guardianId", guardianId)
-        .bind("childId", childId)
-        .bind("origin", origin)
-        .bind("hideFromGuardian", hideFromGuardian)
-        .bind("sentDate", sentDate)
+    allowOtherGuardianAccess: Boolean = false,
+): ApplicationId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)})
+RETURNING id
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ApplicationId>()
-}
 
 fun Database.Read.duplicateApplicationExists(
     childId: ChildId,
@@ -759,7 +751,6 @@ fun Database.Read.fetchApplicationDetails(
             a.origin,
             a.child_id,
             a.guardian_id,
-            a.other_guardian_id,
             c.restricted_details_enabled AS child_restricted,
             g1.restricted_details_enabled AS guardian_restricted,
             g1.residence_code AS guardian_residence_code,
@@ -774,6 +765,7 @@ fun Database.Read.fetchApplicationDetails(
             a.duedate_set_manually_at,
             a.checkedbyadmin,
             a.allow_other_guardian_access,
+            EXISTS (SELECT FROM application_other_guardian WHERE application_id = a.id) AS has_other_guardian,
             coalesce(att.json, '[]'::jsonb) attachments
         FROM application a
         LEFT JOIN person c ON c.id = a.child_id
@@ -821,7 +813,6 @@ fun Database.Read.fetchApplicationDetails(
                 origin = column("origin"),
                 childId = column("child_id"),
                 guardianId = column("guardian_id"),
-                otherGuardianId = column("other_guardian_id"),
                 otherGuardianLivesInSameAddress = null,
                 childRestricted = childRestricted,
                 guardianRestricted = guardianRestricted,
@@ -836,7 +827,8 @@ fun Database.Read.fetchApplicationDetails(
                 checkedByAdmin = column("checkedbyadmin"),
                 hideFromGuardian = column("hidefromguardian"),
                 allowOtherGuardianAccess = column("allow_other_guardian_access"),
-                attachments = jsonColumn("attachments")
+                attachments = jsonColumn("attachments"),
+                hasOtherGuardian = column("has_other_guardian")
             )
         }
 
@@ -1082,22 +1074,19 @@ fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
         }
         .execute()
 
-fun Database.Transaction.updateApplicationOtherGuardian(
-    applicationId: ApplicationId,
-    otherGuardianId: PersonId?
-) {
-    // language=SQL
-    val sql =
-        "UPDATE application SET other_guardian_id = :otherGuardianId WHERE id = :applicationId"
+fun Database.Read.getApplicationOtherGuardians(id: ApplicationId): Set<PersonId> =
+    createQuery {
+            sql(
+                """
+SELECT guardian_id
+FROM application_other_guardian
+WHERE application_id = ${bind(id)}
+"""
+            )
+        }
+        .toSet()
 
-    @Suppress("DEPRECATION")
-    createUpdate(sql)
-        .bind("applicationId", applicationId)
-        .bind("otherGuardianId", otherGuardianId)
-        .execute()
-}
-
-fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId) {
+fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId, today: LocalDate) {
     createUpdate {
             sql("DELETE FROM application_other_guardian WHERE application_id = ${bind(id)}")
         }
@@ -1106,31 +1095,23 @@ fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId) {
     createUpdate {
             sql(
                 """
-            INSERT INTO application_other_guardian (application_id, guardian_id)
-            SELECT application.id, other_citizen.id
-            FROM application
-            JOIN LATERAL (
-                SELECT guardian_id AS id
-                FROM guardian
-                WHERE application.child_id = guardian.child_id AND application.guardian_id != guardian.guardian_id
-                AND EXISTS (
-                    SELECT 1
-                    FROM guardian WHERE application.child_id = guardian.child_id AND guardian.guardian_id = application.guardian_id
-                )
+INSERT INTO application_other_guardian (application_id, guardian_id)
+SELECT application.id, other_citizen.id
+FROM application
+JOIN LATERAL (
+    SELECT guardian_id AS id
+    FROM guardian
+    WHERE application.child_id = guardian.child_id
 
-                UNION
+    UNION
 
-                SELECT parent_id AS id
-                FROM foster_parent
-                WHERE application.child_id = foster_parent.child_id AND application.guardian_id != foster_parent.parent_id
-                AND EXISTS (
-                    SELECT 1
-                    FROM foster_parent WHERE application.child_id = foster_parent.child_id AND foster_parent.parent_id = application.guardian_id
-                )
-            ) other_citizen ON true
-            WHERE application.id = ${bind(id)}
-        """
-                    .trimIndent()
+    SELECT parent_id AS id
+    FROM foster_parent
+    WHERE application.child_id = foster_parent.child_id AND valid_during @> ${bind(today)}
+) other_citizen ON true
+WHERE application.id = ${bind(id)}
+AND other_citizen.id != application.guardian_id
+"""
             )
         }
         .execute()

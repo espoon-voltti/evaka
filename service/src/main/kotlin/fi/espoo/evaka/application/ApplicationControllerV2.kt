@@ -181,6 +181,7 @@ class ApplicationControllerV2(
                             origin = ApplicationOrigin.PAPER,
                             hideFromGuardian = body.hideFromGuardian,
                             sentDate = body.sentDate,
+                            allowOtherGuardianAccess = true
                         )
                     applicationStateService.initializeApplicationForm(
                         tx,
@@ -501,7 +502,10 @@ class ApplicationControllerV2(
 
                     val applicationGuardianIsVtjGuardian: Boolean =
                         vtjGuardians.any { it.id == application.guardianId }
-                    val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
+                    val otherGuardian =
+                        tx.getApplicationOtherGuardians(applicationId).firstOrNull()?.let {
+                            tx.getPersonById(it)
+                        }
 
                     DecisionDraftGroup(
                         decisions = decisionDrafts,
@@ -628,7 +632,13 @@ class ApplicationControllerV2(
                         Action.Application.CREATE_PLACEMENT_PLAN,
                         applicationId
                     )
-                    applicationStateService.createPlacementPlan(it, user, applicationId, body)
+                    applicationStateService.createPlacementPlan(
+                        it,
+                        user,
+                        clock,
+                        applicationId,
+                        body
+                    )
                 }
             }
         Audit.PlacementPlanCreate.log(

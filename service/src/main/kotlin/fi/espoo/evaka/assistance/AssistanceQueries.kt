@@ -15,16 +15,15 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
-private fun getAssistanceFactors(predicate: Predicate) =
-    QuerySql.of {
-        sql(
-            """
+private fun getAssistanceFactors(predicate: Predicate) = QuerySql {
+    sql(
+        """
 SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM evaka_user WHERE id = modified_by) AS modified_by
 FROM assistance_factor
 WHERE ${predicate(predicate.forTable("assistance_factor"))}
 """
-        )
-    }
+    )
+}
 
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
     @Suppress("DEPRECATION")

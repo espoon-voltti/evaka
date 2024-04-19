@@ -62,7 +62,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
                 union(
                     all = true,
                     aclQueries.map { aclQuery ->
-                        QuerySql.of {
+                        QuerySql {
                             sql(
                                 """
 SELECT target.id
@@ -80,7 +80,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
         DatabaseActionRule.Scoped.Query<T, IsMobile> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
-                is AuthenticatedUser.MobileDevice -> QuerySql.of { filter(user, now) }
+                is AuthenticatedUser.MobileDevice -> QuerySql { filter(user, now) }
                 else -> Pair(user, now)
             }
 
@@ -119,7 +119,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
             when (ctx.user) {
                 is AuthenticatedUser.MobileDevice ->
                     if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                        QuerySql.of { filter(ctx.user, ctx.now) }
+                        QuerySql { filter(ctx.user, ctx.now) }
                     } else {
                         null
                     }
@@ -162,7 +162,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
             union(
                 all = true,
                 cfg.aclQueries(user, now).map { aclQuery ->
-                    QuerySql.of {
+                    QuerySql {
                         sql("""
 SELECT acl.child_id AS id
 FROM (${subquery(aclQuery)}) acl

@@ -118,7 +118,6 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
             transferApplication = false,
             allowOtherGuardianAccess = true,
             sentDate = sentDate,
-            otherGuardianId = null,
             dueDate = null
         )
         tx.insertTestApplicationForm(

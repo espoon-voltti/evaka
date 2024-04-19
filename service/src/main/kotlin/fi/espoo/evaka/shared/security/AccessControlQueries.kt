@@ -49,36 +49,33 @@ data class ChildAclConfig(
         )
 }
 
-fun employeeChildAclViaPlacement(employee: EmployeeId, now: HelsinkiDateTime) =
-    QuerySql.of {
-        sql(
-            """
+fun employeeChildAclViaPlacement(employee: EmployeeId, now: HelsinkiDateTime) = QuerySql {
+    sql(
+        """
 SELECT pl.child_id, pl.unit_id, role
 FROM placement pl
 JOIN daycare_acl ON pl.unit_id = daycare_acl.daycare_id
 WHERE ${bind(now.toLocalDate())} < pl.end_date + INTERVAL '1 month'
 AND daycare_acl.employee_id = ${bind(employee)}
 """
-        )
-    }
+    )
+}
 
-fun employeeChildAclViaBackupCare(employee: EmployeeId, now: HelsinkiDateTime) =
-    QuerySql.of {
-        sql(
-            """
+fun employeeChildAclViaBackupCare(employee: EmployeeId, now: HelsinkiDateTime) = QuerySql {
+    sql(
+        """
 SELECT bc.child_id, bc.unit_id, role
 FROM backup_care bc
 JOIN daycare_acl ON unit_id = daycare_acl.daycare_id
 WHERE ${bind(now.toLocalDate())} < bc.end_date + INTERVAL '1 month'
 AND daycare_acl.employee_id = ${bind(employee)}
 """
-        )
-    }
+    )
+}
 
-fun employeeChildAclViaApplication(employee: EmployeeId) =
-    QuerySql.of {
-        sql(
-            """
+fun employeeChildAclViaApplication(employee: EmployeeId) = QuerySql {
+    sql(
+        """
 SELECT a.child_id, pp.unit_id, role
 FROM placement_plan pp
 JOIN application a ON pp.application_id = a.id
@@ -87,13 +84,12 @@ WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECI
 AND NOT (role = 'SPECIAL_EDUCATION_TEACHER' AND coalesce((a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean, FALSE) IS FALSE)
 AND daycare_acl.employee_id = ${bind(employee)}
 """
-        )
-    }
+    )
+}
 
-fun mobileChildAclViaPlacement(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) =
-    QuerySql.of {
-        sql(
-            """
+fun mobileChildAclViaPlacement(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) = QuerySql {
+    sql(
+        """
 SELECT pl.child_id
 FROM placement pl
 WHERE ${bind(now.toLocalDate())} < pl.end_date + INTERVAL '1 month'
@@ -103,13 +99,12 @@ AND EXISTS (
     WHERE md.id = ${bind(mobileDevice)} AND (md.unit_id = pl.unit_id OR acl.daycare_id = pl.unit_id)
 )
 """
-        )
-    }
+    )
+}
 
-fun mobileChildAclViaBackupCare(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) =
-    QuerySql.of {
-        sql(
-            """
+fun mobileChildAclViaBackupCare(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) = QuerySql {
+    sql(
+        """
 SELECT bc.child_id
 FROM backup_care bc
 WHERE ${bind(now.toLocalDate())} < bc.end_date + INTERVAL '1 month'
@@ -119,13 +114,12 @@ AND EXISTS (
     WHERE md.id = ${bind(mobileDevice)} AND (md.unit_id = bc.unit_id OR acl.daycare_id = bc.unit_id)
 )
 """
-        )
-    }
+    )
+}
 
-fun mobileChildAclViaApplication(mobileDevice: MobileDeviceId) =
-    QuerySql.of {
-        sql(
-            """
+fun mobileChildAclViaApplication(mobileDevice: MobileDeviceId) = QuerySql {
+    sql(
+        """
 SELECT a.child_id
 FROM placement_plan pp
 JOIN application a ON pp.application_id = a.id
@@ -136,5 +130,5 @@ AND EXISTS (
     WHERE md.id = ${bind(mobileDevice)} AND (md.unit_id = pp.unit_id OR acl.daycare_id = pp.unit_id)
 )
 """
-        )
-    }
+    )
+}

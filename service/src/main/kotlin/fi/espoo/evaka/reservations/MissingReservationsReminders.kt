@@ -100,10 +100,9 @@ LIMIT 1
     }
 }
 
-private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?) =
-    QuerySql.of {
-        sql(
-            """
+private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?) = QuerySql {
+    sql(
+        """
 SELECT guardian_id
 FROM (
     SELECT p.child_id, t::date AS date
@@ -152,5 +151,5 @@ JOIN (
 ON missing.child_id = guardian.child_id
 AND (valid_during IS NULL OR valid_during @> missing.date)
 """
-        )
-    }
+    )
+}

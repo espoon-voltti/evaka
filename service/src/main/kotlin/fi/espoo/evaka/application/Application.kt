@@ -96,7 +96,7 @@ data class ApplicationDetails(
     val origin: ApplicationOrigin,
     val childId: ChildId,
     val guardianId: PersonId,
-    val otherGuardianId: PersonId?,
+    val hasOtherGuardian: Boolean,
     val otherGuardianLivesInSameAddress: Boolean?,
     val childRestricted: Boolean,
     val guardianRestricted: Boolean,
@@ -165,9 +165,11 @@ enum class ApplicationStatus {
     CANCELLED
 }
 
-enum class ApplicationOrigin {
+enum class ApplicationOrigin : DatabaseEnum {
     ELECTRONIC,
-    PAPER
+    PAPER;
+
+    override val sqlType: String = "application_origin_type"
 }
 
 data class PreferredUnit(val id: DaycareId, val name: String)
@@ -223,24 +225,19 @@ fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
     personService: PersonService,
     applicationId: ApplicationId
 ): ApplicationDetails? =
-    tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)
-        ?.let { application ->
-            application.copy(
-                otherGuardianId =
-                    personService
-                        .getOtherGuardian(tx, user, application.guardianId, application.childId)
-                        ?.id
-            )
-        }
-        ?.let { application ->
-            application.copy(
-                otherGuardianLivesInSameAddress =
-                    application.otherGuardianId?.let { otherGuardianId ->
-                        personService.personsLiveInTheSameAddress(
-                            tx,
-                            application.guardianId,
-                            otherGuardianId
-                        )
-                    }
-            )
-        }
+    tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)?.let {
+        application ->
+        val otherGuardian =
+            personService.getOtherGuardian(tx, user, application.guardianId, application.childId)
+        application.copy(
+            hasOtherGuardian = otherGuardian != null,
+            otherGuardianLivesInSameAddress =
+                otherGuardian?.id?.let { otherGuardianId ->
+                    personService.personsLiveInTheSameAddress(
+                        tx,
+                        application.guardianId,
+                        otherGuardianId
+                    )
+                }
+        )
+    }

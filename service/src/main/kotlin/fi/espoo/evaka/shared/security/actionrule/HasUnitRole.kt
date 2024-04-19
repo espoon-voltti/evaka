@@ -120,7 +120,7 @@ SELECT EXISTS (
                 union(
                     all = true,
                     aclQueries.map { aclQuery ->
-                        QuerySql.of {
+                        QuerySql {
                             sql(
                                 """
 SELECT target.id, acl.role, acl.unit_id
@@ -138,7 +138,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
         DatabaseActionRule.Scoped.Query<T, HasUnitRole> {
         override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
             when (user) {
-                is AuthenticatedUser.Employee -> QuerySql.of { getUnitRoles(user, now) }
+                is AuthenticatedUser.Employee -> QuerySql { getUnitRoles(user, now) }
                 else -> Pair(user, now)
             }
 
@@ -182,7 +182,7 @@ WHERE ${predicate(targetCheck.forTable("fragment"))}
         ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
-                    QuerySql.of {
+                    QuerySql {
                         sql(
                             """
 SELECT fragment.id
@@ -595,7 +595,7 @@ FROM backup_pickup bp
             union(
                 all = true,
                 cfg.aclQueries(user, now).map { aclQuery ->
-                    QuerySql.of {
+                    QuerySql {
                         sql(
                             """
 SELECT acl.child_id AS id, acl.role, acl.unit_id
@@ -937,7 +937,7 @@ AND attachment.type = 'EXTENDED_CARE'
             union(
                 all = true,
                 cfg.aclQueries(user, now).map { aclQuery ->
-                    QuerySql.of {
+                    QuerySql {
                         sql(
                             """
 SELECT acl.child_id AS id, acl.role, acl.unit_id

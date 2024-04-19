@@ -219,7 +219,6 @@ class ApplicationStateService(
         )
 
         personService.getGuardians(tx, user, application.childId)
-        tx.syncApplicationOtherGuardians(application.id)
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags)
@@ -297,6 +296,7 @@ class ApplicationStateService(
             )
         }
 
+        tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, SENT)
         Audit.ApplicationSend.log(targetId = applicationId)
     }
@@ -336,6 +336,7 @@ class ApplicationStateService(
             listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)),
             runAt = clock.now()
         )
+        tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
         Audit.ApplicationVerify.log(targetId = applicationId)
     }
@@ -356,6 +357,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
+        tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, SENT)
         Audit.ApplicationReturnToSent.log(targetId = applicationId)
     }
@@ -423,28 +425,19 @@ class ApplicationStateService(
     fun createPlacementPlan(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        clock: EvakaClock,
         applicationId: ApplicationId,
         placementPlan: DaycarePlacementPlan
     ): PlacementPlanId {
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
 
-        val guardian =
-            tx.getPersonById(application.guardianId) ?: throw NotFound("Guardian not found")
-        val secondDecisionTo =
-            personService
-                .getGuardians(tx, user, application.childId)
-                .firstOrNull {
-                    it.id != guardian.id &&
-                        !livesInSameAddress(guardian.residenceCode, it.residenceCode)
-                }
-                ?.id
-
-        tx.updateApplicationOtherGuardian(applicationId, secondDecisionTo)
         val placementPlanId =
             placementPlanService.createPlacementPlan(tx, application, placementPlan)
         createDecisionDrafts(tx, user, application)
 
+        personService.getGuardians(tx, user, application.childId)
+        tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
         return placementPlanId
     }
@@ -467,6 +460,7 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_DECISION)
         tx.deletePlacementPlans(listOf(application.id))
         tx.clearDecisionDrafts(listOf(application.id))
+        tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
         Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
     }
@@ -510,6 +504,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
+        tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_UNIT_CONFIRMATION)
         Audit.PlacementProposalCreate.log(targetId = applicationId)
     }
@@ -530,6 +525,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
+        tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
         Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
     }
@@ -642,6 +638,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
+        tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
         tx.markApplicationDecisionsSent(application.id, clock.today())
         Audit.ApplicationConfirmDecisionsMailed.log(targetId = applicationId)
@@ -851,7 +848,7 @@ class ApplicationStateService(
                         }
                     }
                 }
-                tx.syncApplicationOtherGuardians(applicationId)
+                tx.syncApplicationOtherGuardians(applicationId, now.toLocalDate())
             }
         }
 
@@ -1139,6 +1136,7 @@ class ApplicationStateService(
         return if (decisionDrafts.any { it.planned }) {
             val decisionIds =
                 decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
+            tx.syncApplicationOtherGuardians(application.id, clock.today())
             tx.updateApplicationStatus(
                 application.id,
                 if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
@@ -1165,9 +1163,4 @@ class ApplicationStateService(
 
         return hasSsn && guardianIsVtjGuardian
     }
-
-    private fun livesInSameAddress(residenceCode1: String?, residenceCode2: String?): Boolean =
-        !residenceCode1.isNullOrBlank() &&
-            !residenceCode2.isNullOrBlank() &&
-            residenceCode1 == residenceCode2
 }

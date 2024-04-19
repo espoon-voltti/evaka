@@ -435,7 +435,7 @@ fun Database.Transaction.insertTestApplication(
     status: ApplicationStatus = ApplicationStatus.SENT,
     guardianId: PersonId,
     childId: ChildId,
-    otherGuardianId: PersonId? = null,
+    otherGuardians: Set<PersonId> = emptySet(),
     hideFromGuardian: Boolean = false,
     additionalDaycareApplication: Boolean = false,
     transferApplication: Boolean = false,
@@ -444,14 +444,14 @@ fun Database.Transaction.insertTestApplication(
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access)
-VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, ${bind(otherGuardianId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)})
+INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access)
+VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)})
 """
             )
         }
         .execute()
 
-    if (otherGuardianId != null) {
+    otherGuardians.forEach { otherGuardianId ->
         createUpdate {
                 sql(
                     """
@@ -1104,7 +1104,7 @@ fun Database.Transaction.insertApplication(application: DevApplicationWithForm):
     createUpdate {
             sql(
                 """
-INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, other_guardian_id, allow_other_guardian_access)
+INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, allow_other_guardian_access)
 VALUES (
     ${bind(application.id)},
     ${bind(application.type)},
@@ -1117,7 +1117,6 @@ VALUES (
     ${bind(application.checkedByAdmin)},
     ${bind(application.hideFromGuardian)},
     ${bind(application.transferApplication)},
-    ${bind(application.otherGuardianId)},
     ${bind(application.allowOtherGuardianAccess)}
 )
 """

@@ -24,13 +24,14 @@ data class Decision(
     val childId: ChildId,
     val childName: String,
     val documentKey: String?,
-    val otherGuardianDocumentKey: String?,
     val decisionNumber: Long,
     val sentDate: LocalDate?,
     val status: DecisionStatus,
     val requestedStartDate: LocalDate?,
     val resolved: LocalDate?,
-    val resolvedByName: String?
+    val resolvedByName: String?,
+    // True if the document is a legacy document that may contain guardian name and address.
+    val documentContainsContactInfo: Boolean,
 ) {
     fun validRequestedStartDatePeriod(featureConfig: FeatureConfig) =
         FiniteDateRange(

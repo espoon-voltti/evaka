@@ -785,6 +785,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
             )
@@ -840,6 +841,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
             )
@@ -895,6 +897,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
             )
@@ -970,6 +973,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
@@ -1058,6 +1062,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
@@ -1134,6 +1139,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
@@ -1233,6 +1239,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
             )
@@ -1261,12 +1268,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 assertNotNull(decision.sentDate)
             }
             assertNotNull(decision.documentKey)
-
-            if (secondDecisionTo == null) {
-                assertNull(decision.otherGuardianDocumentKey)
-            } else {
-                assertNotNull(decision.otherGuardianDocumentKey)
-            }
         }
 
         val messages = MockSfiMessagesClient.getMessages()
@@ -1297,6 +1298,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
@@ -1332,6 +1334,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
@@ -1372,6 +1375,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
@@ -1404,7 +1408,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             decisionsByApplication.forEach { decision ->
                 assertNotNull(decision.sentDate)
                 assertNotNull(decision.documentKey)
-                assertNull(decision.otherGuardianDocumentKey)
             }
             val messages = MockSfiMessagesClient.getMessages()
             assertEquals(2, messages.size)
@@ -1428,6 +1431,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
@@ -1986,6 +1990,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.createPlacementPlan(
                 tx,
                 serviceWorker,
+                clock,
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,

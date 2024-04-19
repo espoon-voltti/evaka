@@ -282,7 +282,7 @@ export function apiDataToFormData(
 export function formDataToApiData(
   {
     type,
-    otherGuardianId,
+    hasOtherGuardian,
     otherGuardianLivesInSameAddress
   }: ApplicationDetails,
   form: ApplicationFormData,
@@ -328,7 +328,7 @@ export function formDataToApiData(
       email: form.contactInfo.guardianEmail
     },
     secondGuardian:
-      type !== 'CLUB' && otherGuardianId && !otherGuardianLivesInSameAddress
+      type !== 'CLUB' && hasOtherGuardian && !otherGuardianLivesInSameAddress
         ? {
             agreementStatus:
               form.contactInfo.otherGuardianAgreementStatus ?? 'NOT_AGREED',

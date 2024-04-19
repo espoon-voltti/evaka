@@ -412,7 +412,6 @@ class PdfGeneratorTest {
                 pdfGenerator,
                 settings,
                 decision,
-                guardian,
                 child,
                 isTransferApplication,
                 serviceNeed,
@@ -455,7 +454,6 @@ fun createValidDecision(
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     childId: ChildId = ChildId(UUID.randomUUID()),
     documentKey: String? = null,
-    otherGuardianDocumentKey: String? = null,
     decisionNumber: Long = 123,
     sentDate: LocalDate = LocalDate.now(),
     status: DecisionStatus = DecisionStatus.ACCEPTED,
@@ -471,13 +469,13 @@ fun createValidDecision(
         applicationId = applicationId,
         childId = childId,
         documentKey = documentKey,
-        otherGuardianDocumentKey = otherGuardianDocumentKey,
         decisionNumber = decisionNumber,
         sentDate = sentDate,
         status = status,
         childName = "Test Child",
         requestedStartDate = startDate,
         resolved = resolved,
-        resolvedByName = null
+        resolvedByName = null,
+        documentContainsContactInfo = false
     )
 }

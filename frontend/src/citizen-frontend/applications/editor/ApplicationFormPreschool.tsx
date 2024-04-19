@@ -137,7 +137,7 @@ export default React.memo(function ApplicationFormPreschool({
         verificationRequested={verificationRequested}
         fullFamily={formData.serviceNeed.connectedDaycare}
         otherGuardianStatus={
-          application.otherGuardianId
+          application.hasOtherGuardian
             ? application.otherGuardianLivesInSameAddress
               ? 'SAME_ADDRESS'
               : 'DIFFERENT_ADDRESS'

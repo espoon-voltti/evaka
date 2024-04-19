@@ -156,7 +156,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
   }, [terms])
 
-  const hasOtherGuardian = !!application.otherGuardianId
+  const hasOtherGuardian = application.hasOtherGuardian
 
   const { mutateAsync: saveApplicationDraft, isPending: savingDraft } =
     useMutation(saveApplicationDraftMutation)

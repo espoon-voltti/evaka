@@ -461,9 +461,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping("/decisions/{id}/actions/create-pdf")
     fun createDecisionPdf(db: Database, @PathVariable id: DecisionId) {
-        db.connect { dbc ->
-            dbc.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) }
-        }
+        db.connect { dbc -> dbc.transaction { decisionService.createDecisionPdf(it, id) } }
     }
 
     @PostMapping("/decisions/{id}/actions/reject-by-citizen")
@@ -689,6 +687,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
             dbc.transaction { tx ->
                 applications.map { application ->
                     val id = tx.insertApplication(application)
+                    application.otherGuardians.forEach { otherGuardianId ->
+                        tx.createUpdate {
+                                sql(
+                                    "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(id)}, ${bind(otherGuardianId)})"
+                                )
+                            }
+                            .execute()
+                    }
                     tx.insertApplicationForm(
                         DevApplicationForm(
                             applicationId = id,
@@ -835,13 +841,20 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
     fun createApplicationPlacementPlan(
         db: Database,
+        clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                applicationStateService.createPlacementPlan(tx, fakeAdmin, applicationId, body)
+                applicationStateService.createPlacementPlan(
+                    tx,
+                    fakeAdmin,
+                    clock,
+                    applicationId,
+                    body
+                )
             }
         }
     }
@@ -868,6 +881,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                         applicationStateService.createPlacementPlan(
                             tx,
                             fakeAdmin,
+                            clock,
                             applicationId,
                             it
                         )
@@ -2082,8 +2096,8 @@ data class DevApplicationWithForm(
     val checkedByAdmin: Boolean,
     val hideFromGuardian: Boolean,
     val transferApplication: Boolean,
-    val otherGuardianId: PersonId?,
     val allowOtherGuardianAccess: Boolean = true,
+    val otherGuardians: List<PersonId>,
     val form: ApplicationForm
 )
 

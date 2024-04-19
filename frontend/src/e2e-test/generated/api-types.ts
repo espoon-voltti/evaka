@@ -162,7 +162,7 @@ export interface DevApplicationWithForm {
   id: UUID
   modifiedDate: HelsinkiDateTime | null
   origin: ApplicationOrigin
-  otherGuardianId: UUID | null
+  otherGuardians: UUID[]
   sentDate: LocalDate | null
   status: ApplicationStatus
   transferApplication: boolean

@@ -109,11 +109,11 @@ export interface ApplicationDetails {
   guardianDateOfDeath: LocalDate | null
   guardianId: UUID
   guardianRestricted: boolean
+  hasOtherGuardian: boolean
   hideFromGuardian: boolean
   id: UUID
   modifiedDate: HelsinkiDateTime | null
   origin: ApplicationOrigin
-  otherGuardianId: UUID | null
   otherGuardianLivesInSameAddress: boolean | null
   sentDate: LocalDate | null
   status: ApplicationStatus
