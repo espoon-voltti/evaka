@@ -14,12 +14,13 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
 @ConstList("otherIncomes")
-enum class OtherIncome {
+enum class OtherIncome : DatabaseEnum {
     PENSION,
     ADULT_EDUCATION_ALLOWANCE,
     SICKNESS_ALLOWANCE,
@@ -43,12 +44,16 @@ enum class OtherIncome {
     GRANT,
     APPRENTICESHIP_SALARY,
     ACCIDENT_INSURANCE_COMPENSATION,
-    OTHER_INCOME
+    OTHER_INCOME;
+
+    override val sqlType: String = "other_income_type"
 }
 
-enum class IncomeSource {
+enum class IncomeSource : DatabaseEnum {
     INCOMES_REGISTER,
-    ATTACHMENTS
+    ATTACHMENTS;
+
+    override val sqlType: String = "income_source"
 }
 
 data class Gross(

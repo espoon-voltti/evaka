@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -86,10 +87,12 @@ data class AssistanceNeedPreschoolDecision(
         }
 }
 
-enum class AssistanceNeedPreschoolDecisionType {
+enum class AssistanceNeedPreschoolDecisionType : DatabaseEnum {
     NEW,
     CONTINUING,
-    TERMINATED
+    TERMINATED;
+
+    override val sqlType: String = "assistance_need_preschool_decision_type"
 }
 
 data class AssistanceNeedPreschoolDecisionForm(

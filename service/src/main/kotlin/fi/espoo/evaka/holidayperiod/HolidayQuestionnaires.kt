@@ -7,14 +7,17 @@ package fi.espoo.evaka.holidayperiod
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Translatable
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
-enum class QuestionnaireType {
+enum class QuestionnaireType : DatabaseEnum {
     FIXED_PERIOD,
-    OPEN_RANGES
+    OPEN_RANGES;
+
+    override val sqlType: String = "questionnaire_type"
 }
 
 data class QuestionnaireConditions(val continuousPlacement: FiniteDateRange? = null)

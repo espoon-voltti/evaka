@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 
@@ -22,11 +23,13 @@ data class Pairing(
     val mobileDeviceId: MobileDeviceId? = null
 )
 
-enum class PairingStatus {
+enum class PairingStatus : DatabaseEnum {
     WAITING_CHALLENGE,
     WAITING_RESPONSE,
     READY,
-    PAIRED
+    PAIRED;
+
+    override val sqlType: String = "pairing_status"
 }
 
 data class MobileDeviceDetails(

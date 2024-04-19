@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -28,18 +29,22 @@ import java.util.UUID
 import org.jdbi.v3.json.Json
 
 @ConstList("curriculumTypes")
-enum class CurriculumType {
+enum class CurriculumType : DatabaseEnum {
     DAYCARE,
-    PRESCHOOL
+    PRESCHOOL;
+
+    override val sqlType: String = "curriculum_type"
 }
 
-enum class VasuDocumentEventType {
+enum class VasuDocumentEventType : DatabaseEnum {
     PUBLISHED,
     MOVED_TO_READY,
     RETURNED_TO_READY,
     MOVED_TO_REVIEWED,
     RETURNED_TO_REVIEWED,
-    MOVED_TO_CLOSED
+    MOVED_TO_CLOSED;
+
+    override val sqlType: String = "curriculum_document_event_type"
 }
 
 enum class VasuDocumentState {
@@ -70,9 +75,11 @@ private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentSta
 }
 
 @ConstList("curriculumLanguages")
-enum class VasuLanguage {
+enum class VasuLanguage : DatabaseEnum {
     FI,
-    SV
+    SV;
+
+    override val sqlType: String = "curriculum_language"
 }
 
 data class VasuDocumentSummary(

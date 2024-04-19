@@ -35,8 +35,7 @@ enum class DaycareAssistanceLevel : DatabaseEnum {
     INTENSIFIED_SUPPORT,
     SPECIAL_SUPPORT;
 
-    override val sqlType: String
-        get() = "daycare_assistance_level"
+    override val sqlType: String = "daycare_assistance_level"
 }
 
 data class DaycareAssistance(
@@ -60,8 +59,7 @@ enum class PreschoolAssistanceLevel : DatabaseEnum {
     SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
     SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2;
 
-    override val sqlType: String
-        get() = "preschool_assistance_level"
+    override val sqlType: String = "preschool_assistance_level"
 }
 
 data class PreschoolAssistance(
@@ -87,8 +85,7 @@ enum class OtherAssistanceMeasureType : DatabaseEnum {
     CHILD_DISCUSSION_HELD,
     CHILD_DISCUSSION_COUNSELING;
 
-    override val sqlType: String
-        get() = "other_assistance_measure_type"
+    override val sqlType: String = "other_assistance_measure_type"
 }
 
 data class OtherAssistanceMeasure(

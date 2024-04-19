@@ -7,6 +7,7 @@ package fi.espoo.evaka.note.child.daily
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 data class ChildDailyNote(
@@ -31,15 +32,19 @@ data class ChildDailyNoteBody(
 )
 
 @ConstList("childDailyNoteLevelValues")
-enum class ChildDailyNoteLevel {
+enum class ChildDailyNoteLevel : DatabaseEnum {
     GOOD,
     MEDIUM,
-    NONE
+    NONE;
+
+    override val sqlType: String = "child_daily_note_level"
 }
 
 @ConstList("childDailyNoteReminderValues")
-enum class ChildDailyNoteReminder {
+enum class ChildDailyNoteReminder : DatabaseEnum {
     DIAPERS,
     CLOTHES,
-    LAUNDRY
+    LAUNDRY;
+
+    override val sqlType: String = "child_daily_note_reminder"
 }

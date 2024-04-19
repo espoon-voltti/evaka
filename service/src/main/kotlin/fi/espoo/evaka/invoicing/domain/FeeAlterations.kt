@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
@@ -33,10 +34,12 @@ data class FeeAlteration(
 )
 
 @ConstList("feeAlterationTypes")
-enum class FeeAlterationType {
+enum class FeeAlterationType : DatabaseEnum {
     DISCOUNT,
     INCREASE,
-    RELIEF
+    RELIEF;
+
+    override val sqlType: String = "fee_alteration_type"
 }
 
 data class FeeAlterationAttachment(val id: AttachmentId, val name: String, val contentType: String)

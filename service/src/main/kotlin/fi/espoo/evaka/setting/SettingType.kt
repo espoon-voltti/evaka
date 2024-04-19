@@ -5,9 +5,12 @@
 package fi.espoo.evaka.setting
 
 import fi.espoo.evaka.ConstList
+import fi.espoo.evaka.shared.db.DatabaseEnum
 
 @ConstList("settings")
-enum class SettingType {
+enum class SettingType : DatabaseEnum {
     DECISION_MAKER_NAME,
-    DECISION_MAKER_TITLE
+    DECISION_MAKER_TITLE;
+
+    override val sqlType: String = "setting_type"
 }

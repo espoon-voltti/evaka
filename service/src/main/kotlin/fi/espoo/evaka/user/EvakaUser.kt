@@ -5,14 +5,17 @@
 package fi.espoo.evaka.user
 
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import org.jdbi.v3.core.mapper.PropagateNull
 
-enum class EvakaUserType {
+enum class EvakaUserType : DatabaseEnum {
     SYSTEM,
     CITIZEN,
     EMPLOYEE,
     MOBILE_DEVICE,
-    UNKNOWN
+    UNKNOWN;
+
+    override val sqlType: String = "evaka_user_type"
 }
 
 data class EvakaUser(@PropagateNull val id: EvakaUserId, val name: String, val type: EvakaUserType)

@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.shared.IncomeNotificationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -26,11 +27,13 @@ fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: Local
         .isNotEmpty()
 }
 
-enum class IncomeNotificationType {
+enum class IncomeNotificationType : DatabaseEnum {
     INITIAL_EMAIL,
     REMINDER_EMAIL,
     EXPIRED_EMAIL,
-    NEW_CUSTOMER
+    NEW_CUSTOMER;
+
+    override val sqlType: String = "income_notification_type"
 }
 
 data class PersonIncomeExpirationDate(val personId: PersonId, val expirationDate: LocalDate)

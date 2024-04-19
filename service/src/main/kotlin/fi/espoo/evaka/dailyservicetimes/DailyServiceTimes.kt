@@ -10,16 +10,19 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.time.DayOfWeek
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.PropagateNull
 
-enum class DailyServiceTimesType {
+enum class DailyServiceTimesType : DatabaseEnum {
     REGULAR,
     IRREGULAR,
-    VARIABLE_TIME
+    VARIABLE_TIME;
+
+    override val sqlType: String = "daily_service_time_type"
 }
 
 data class DailyServiceTimes(

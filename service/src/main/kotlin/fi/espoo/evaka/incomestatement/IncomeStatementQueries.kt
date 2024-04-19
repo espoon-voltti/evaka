@@ -12,16 +12,19 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.pagedForPageSize
 import java.time.LocalDate
 
-enum class IncomeStatementType {
+enum class IncomeStatementType : DatabaseEnum {
     HIGHEST_FEE,
     INCOME,
-    CHILD_INCOME
+    CHILD_INCOME;
+
+    override val sqlType: String = "income_statement_type"
 }
 
 private fun selectQuery(single: Boolean, excludeEmployeeAttachments: Boolean): String {
