@@ -816,14 +816,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val activePlacementStart = mockClock.today().minusMonths(3)
         val activePlacementEnd = mockClock.today().plusMonths(7)
 
-        val activePlacement =
-            createPlacementAndGroupPlacement(
-                activePlacementStart,
-                activePlacementEnd,
-                childId,
-                daycareId,
-                groupId
-            )
+        createPlacementAndGroupPlacement(
+            activePlacementStart,
+            activePlacementEnd,
+            childId,
+            daycareId,
+            groupId
+        )
 
         val futurePlacementStart = activePlacementEnd.plusDays(1)
         val futurePlacementEnd = futurePlacementStart.plusMonths(1)

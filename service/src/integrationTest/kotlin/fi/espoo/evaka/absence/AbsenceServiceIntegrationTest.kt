@@ -1128,7 +1128,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 )
             }
 
-        val operationDays = result.days.filter { it.children != null }.map { it.date }
+        val operationDays = result.days.map { it.date }
         assertTrue(operationDays.contains(epiphany2020))
     }
 

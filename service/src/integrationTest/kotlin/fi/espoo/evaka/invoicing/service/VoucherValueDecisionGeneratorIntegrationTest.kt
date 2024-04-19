@@ -673,7 +673,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
@@ -749,7 +748,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testAdult_1.id, 10000, subPeriod2)
@@ -797,7 +795,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertIncome(testChild_1.id, 10000, subPeriod2)
@@ -817,7 +814,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), subPeriod2)
@@ -848,7 +844,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
@@ -880,7 +875,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(
@@ -921,7 +915,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period.asDateRange())
         val placementId =
             insertPlacement(
@@ -960,7 +953,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -1006,7 +998,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertFeeAlteration(testChild_1.id, 50.0, subPeriod2)
@@ -1032,7 +1023,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2020, 5, 31))
         val subPeriod2 = period.copy(start = LocalDate.of(2020, 6, 1)) // 3rd birthday
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
 
@@ -1057,7 +1047,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
@@ -1136,7 +1125,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val subPeriod1 = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 30))
         val subPeriod2 = DateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 12, 31))
         val subPeriod3 = DateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 9, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
@@ -1175,13 +1163,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-            @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
+            tx.createUpdate { sql("UPDATE voucher_value_decision SET status = 'SENT'") }.execute()
         }
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
 
@@ -1208,14 +1194,12 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-            @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
-            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM placement").execute()
+            tx.createUpdate { sql("UPDATE voucher_value_decision SET status = 'SENT'") }.execute()
+            tx.createUpdate { sql("DELETE FROM placement") }.execute()
         }
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare2.id)
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare.id)
@@ -1248,7 +1232,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
@@ -1268,13 +1251,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
         val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
-        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-            @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
+            tx.createUpdate { sql("UPDATE voucher_value_decision SET status = 'SENT'") }.execute()
         }
         insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
 

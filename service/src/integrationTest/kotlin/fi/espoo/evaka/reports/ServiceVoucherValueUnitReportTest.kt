@@ -1311,15 +1311,14 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 now = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0))
             )
         }
-        val decision3 =
-            createVoucherDecision(
-                unitId = testDaycare.id,
-                validFrom = LocalDate.of(2024, 1, 21),
-                validTo = LocalDate.of(2024, 4, 1),
-                value = 148300,
-                coPayment = 0,
-                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0))
-            )
+        createVoucherDecision(
+            unitId = testDaycare.id,
+            validFrom = LocalDate.of(2024, 1, 21),
+            validTo = LocalDate.of(2024, 4, 1),
+            value = 148300,
+            coPayment = 0,
+            approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0))
+        )
 
         // 25.3. lock report
         // refund 6.-31. -1213,36
