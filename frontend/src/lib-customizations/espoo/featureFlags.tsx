@@ -17,7 +17,8 @@ const features: Features = {
     citizenShiftCareAbsence: true,
     assistanceActionOther: true,
     daycareApplication: {
-      dailyTimes: true
+      dailyTimes: true,
+      serviceNeedOption: false
     },
     preschoolApplication: {
       connectedDaycarePreferredStartDate: true,
@@ -46,7 +47,8 @@ const features: Features = {
     citizenShiftCareAbsence: true,
     assistanceActionOther: true,
     daycareApplication: {
-      dailyTimes: true
+      dailyTimes: true,
+      serviceNeedOption: false
     },
     preschoolApplication: {
       connectedDaycarePreferredStartDate: true,
@@ -75,7 +77,8 @@ const features: Features = {
     citizenShiftCareAbsence: true,
     assistanceActionOther: true,
     daycareApplication: {
-      dailyTimes: true
+      dailyTimes: true,
+      serviceNeedOption: false
     },
     preschoolApplication: {
       connectedDaycarePreferredStartDate: true,

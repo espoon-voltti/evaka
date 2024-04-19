@@ -77,7 +77,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 
@@ -109,7 +108,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `initialize daycare application form with null service need option`() {
-        whenever(featureConfig.daycareApplicationServiceNeedOptionsEnabled).thenReturn(false)
         db.transaction { tx ->
             // given
             tx.insertApplication(
@@ -135,37 +133,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
             assertNull(application.form.preferences.serviceNeed?.serviceNeedOption)
-        }
-    }
-
-    @Test
-    fun `initialize daycare application form with service need option`() {
-        whenever(featureConfig.daycareApplicationServiceNeedOptionsEnabled).thenReturn(true)
-        db.transaction { tx ->
-            // given
-            tx.insertApplication(
-                appliedType = PlacementType.DAYCARE,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
-            )
-        }
-
-        db.transaction { tx ->
-            service.initializeApplicationForm(
-                tx,
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                today,
-                now,
-                applicationId,
-                ApplicationType.DAYCARE,
-                tx.getPersonById(testChild_1.id)!!,
-                tx.getPersonById(testAdult_1.id)!!
-            )
-        }
-
-        db.read {
-            val application = it.fetchApplicationDetails(applicationId)!!
-            assertNotNull(application.form.preferences.serviceNeed?.serviceNeedOption)
         }
     }
 

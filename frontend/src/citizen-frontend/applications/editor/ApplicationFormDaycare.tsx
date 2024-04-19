@@ -9,6 +9,7 @@ import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import featureFlags from 'lib-customizations/espoo/featureFlags'
 
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import Heading from '../../applications/editor/Heading'
@@ -38,8 +39,7 @@ export default React.memo(function ApplicationFormDaycare({
       placementTypes: ['DAYCARE', 'DAYCARE_PART_TIME']
     }),
     {
-      // If service need options are not enabled, backend sets to null
-      enabled: formData.serviceNeed.serviceNeedOption !== null,
+      enabled: featureFlags.daycareApplication.serviceNeedOption,
       initialData: []
     }
   )

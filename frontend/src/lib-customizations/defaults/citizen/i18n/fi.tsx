@@ -866,6 +866,8 @@ export default {
             PRESCHOOL: 'Esiopetuksen alkaminen',
             CLUB: 'Kerhon alkaminen'
           },
+          missing:
+            'Päästäksesi valitsemaan palveluntarpeen valitse ensin toivottu aloituspäivä',
           info: {
             DAYCARE: [],
             PRESCHOOL: [

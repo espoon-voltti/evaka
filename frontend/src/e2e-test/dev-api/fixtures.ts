@@ -1588,7 +1588,8 @@ export class Fixture {
       validPlacementType: 'DAYCARE',
       voucherValueDescriptionFi: `Test service need option ${id}`,
       voucherValueDescriptionSv: `Test service need option ${id}`,
-      active: true
+      validFrom: LocalDate.of(2000, 1, 1),
+      validTo: null
     })
   }
 

@@ -48,7 +48,6 @@ export interface ServiceNeedCreateRequest {
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedOption
 */
 export interface ServiceNeedOption {
-  active: boolean
   contractDaysPerMonth: number | null
   daycareHoursPerMonth: number | null
   daycareHoursPerWeek: number
@@ -67,7 +66,9 @@ export interface ServiceNeedOption {
   realizedOccupancyCoefficient: number
   realizedOccupancyCoefficientUnder3y: number
   updated: HelsinkiDateTime
+  validFrom: LocalDate
   validPlacementType: PlacementType
+  validTo: LocalDate | null
   voucherValueDescriptionFi: string
   voucherValueDescriptionSv: string
 }
@@ -80,7 +81,9 @@ export interface ServiceNeedOptionPublicInfo {
   nameEn: string
   nameFi: string
   nameSv: string
+  validFrom: LocalDate
   validPlacementType: PlacementType
+  validTo: LocalDate | null
 }
 
 /**
@@ -159,7 +162,18 @@ export function deserializeJsonServiceNeedCreateRequest(json: JsonOf<ServiceNeed
 export function deserializeJsonServiceNeedOption(json: JsonOf<ServiceNeedOption>): ServiceNeedOption {
   return {
     ...json,
-    updated: HelsinkiDateTime.parseIso(json.updated)
+    updated: HelsinkiDateTime.parseIso(json.updated),
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonServiceNeedOptionPublicInfo(json: JsonOf<ServiceNeedOptionPublicInfo>): ServiceNeedOptionPublicInfo {
+  return {
+    ...json,
+    validFrom: LocalDate.parseIso(json.validFrom),
+    validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
   }
 }
 
@@ -176,6 +190,7 @@ export function deserializeJsonServiceNeedSummary(json: JsonOf<ServiceNeedSummar
   return {
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
+    option: (json.option != null) ? deserializeJsonServiceNeedOptionPublicInfo(json.option) : null,
     startDate: LocalDate.parseIso(json.startDate)
   }
 }

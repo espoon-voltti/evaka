@@ -123,6 +123,35 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `post service need with range not contained by option validity`() {
+        db.transaction {
+            it.createUpdate {
+                    sql(
+                        """
+                UPDATE service_need_option SET valid_from = ${bind(testDate(2))}
+                WHERE id = ${bind(snDefaultDaycare.id)}
+            """
+                    )
+                }
+                .execute()
+        }
+        assertThrows<BadRequest> {
+            serviceNeedController.postServiceNeed(
+                dbInstance(),
+                unitSupervisor,
+                clock,
+                ServiceNeedController.ServiceNeedCreateRequest(
+                    placementId = placementId,
+                    startDate = testDate(1),
+                    endDate = testDate(30),
+                    optionId = snDefaultDaycare.id,
+                    shiftCare = ShiftCareType.NONE
+                )
+            )
+        }
+    }
+
+    @Test
     fun `post service need with invalid option`() {
         assertThrows<BadRequest> {
             serviceNeedController.postServiceNeed(

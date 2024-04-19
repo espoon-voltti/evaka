@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -24,7 +24,6 @@ import { faPlus, faQuestion } from 'lib-icons'
 
 import { deleteServiceNeed } from '../../../generated/api-clients/serviceneed'
 import { useTranslation } from '../../../state/i18n'
-import { DateRange } from '../../../utils/date'
 
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
 import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
@@ -47,8 +46,6 @@ export default React.memo(function ServiceNeeds({
   reload,
   serviceNeedOptions
 }: Props) {
-  const { serviceNeeds, type: placementType } = placement
-
   const { i18n } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
 
@@ -58,13 +55,11 @@ export default React.memo(function ServiceNeeds({
 
   const gaps = useMemo(
     () =>
-      new FiniteDateRange(placement.startDate, placement.endDate)
-        .getGaps(
-          placement.serviceNeeds.map(
-            (sn) => new FiniteDateRange(sn.startDate, sn.endDate)
-          )
+      new FiniteDateRange(placement.startDate, placement.endDate).getGaps(
+        placement.serviceNeeds.map(
+          (sn) => new FiniteDateRange(sn.startDate, sn.endDate)
         )
-        .map((gap) => ({ startDate: gap.start, endDate: gap.end })),
+      ),
     [placement]
   )
 
@@ -72,13 +67,11 @@ export default React.memo(function ServiceNeeds({
 
   const options = serviceNeedOptions.filter(
     (option) =>
-      option.validPlacementType === placementType &&
-      !option.defaultOption &&
-      option.active
+      option.validPlacementType === placement.type && !option.defaultOption
   )
 
   const placementHasNonDefaultServiceNeedOptions = serviceNeedOptions.some(
-    (opt) => opt.validPlacementType === placementType && !opt.defaultOption
+    (opt) => opt.validPlacementType === placement.type && !opt.defaultOption
   )
 
   const createAllowed = permittedPlacementActions.includes(
@@ -115,14 +108,6 @@ export default React.memo(function ServiceNeeds({
             <ServiceNeedEditorRow
               placement={placement}
               options={options}
-              initialForm={{
-                startDate: serviceNeeds.length
-                  ? undefined
-                  : placement.startDate,
-                endDate: placement.endDate,
-                optionId: undefined,
-                shiftCare: 'NONE'
-              }}
               onSuccess={() => {
                 setCreatingNew(false)
                 reload()
@@ -131,19 +116,18 @@ export default React.memo(function ServiceNeeds({
             />
           )}
 
-          {orderBy(rows, ['startDate'], ['desc']).map((sn) =>
-            'id' in sn ? (
+          {orderBy(
+            rows,
+            (row) => (isServiceNeed(row) ? row.startDate : row.start),
+            ['desc']
+          ).map((sn) =>
+            isServiceNeed(sn) ? (
               editingId === sn.id ? (
                 <ServiceNeedEditorRow
                   key={sn.id}
                   placement={placement}
                   options={options}
-                  initialForm={{
-                    startDate: sn.startDate,
-                    endDate: sn.endDate,
-                    optionId: sn.option.id,
-                    shiftCare: sn.shiftCare
-                  }}
+                  editedServiceNeed={sn}
                   onSuccess={() => {
                     setEditingId(null)
                     reload()
@@ -162,17 +146,12 @@ export default React.memo(function ServiceNeeds({
                 />
               )
             ) : creatingNew instanceof LocalDate &&
-              sn.startDate.isEqual(creatingNew) ? (
+              sn.start.isEqual(creatingNew) ? (
               <ServiceNeedEditorRow
-                key={sn.startDate.toJSON()}
+                key={sn.start.toJSON()}
                 placement={placement}
                 options={options}
-                initialForm={{
-                  startDate: sn.startDate,
-                  endDate: sn.endDate,
-                  optionId: undefined,
-                  shiftCare: 'NONE'
-                }}
+                initialRange={sn}
                 onSuccess={() => {
                   setCreatingNew(false)
                   reload()
@@ -182,10 +161,10 @@ export default React.memo(function ServiceNeeds({
             ) : (
               <MissingServiceNeedRow
                 createAllowed={createAllowed}
-                key={sn.startDate.toJSON()}
-                startDate={sn.startDate}
-                endDate={sn.endDate}
-                onEdit={() => setCreatingNew(sn.startDate)}
+                key={sn.start.toJSON()}
+                startDate={sn.start}
+                endDate={sn.end}
+                onEdit={() => setCreatingNew(sn.start)}
                 disabled={creatingNew !== false || editingId !== null}
               />
             )
@@ -215,7 +194,11 @@ export default React.memo(function ServiceNeeds({
   ) : null
 })
 
-type ServiceNeedOrGap = ServiceNeed | DateRange
+type ServiceNeedOrGap = ServiceNeed | FiniteDateRange
+
+function isServiceNeed(sn: ServiceNeedOrGap): sn is ServiceNeed {
+  return 'id' in sn
+}
 
 const HeaderRow = styled.div`
   display: flex;

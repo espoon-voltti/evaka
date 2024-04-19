@@ -39,7 +39,8 @@ val snDefaultDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "Kokopäiväinen",
         voucherValueDescriptionSv = "Kokopäiväinen",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultPartDayDaycare =
@@ -64,7 +65,8 @@ val snDefaultPartDayDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultFiveYearOldsDaycare =
@@ -89,7 +91,8 @@ val snDefaultFiveYearOldsDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultFiveYearOldsPartDayDaycare =
@@ -114,7 +117,8 @@ val snDefaultFiveYearOldsPartDayDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultPreschool =
@@ -139,7 +143,8 @@ val snDefaultPreschool =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultPreschoolDaycare =
@@ -164,7 +169,8 @@ val snDefaultPreschoolDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultPreparatory =
@@ -189,7 +195,8 @@ val snDefaultPreparatory =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultPreparatoryDaycare =
@@ -214,7 +221,8 @@ val snDefaultPreparatoryDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultClub =
@@ -239,7 +247,8 @@ val snDefaultClub =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultTemporaryDaycare =
@@ -264,7 +273,8 @@ val snDefaultTemporaryDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultTemporaryPartDayDaycare =
@@ -289,7 +299,8 @@ val snDefaultTemporaryPartDayDaycare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycareFullDay35 =
@@ -314,7 +325,8 @@ val snDaycareFullDay35 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "Kokopäiväinen, vähintään 35h",
         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycareFullDay25to35 =
@@ -339,7 +351,8 @@ val snDaycareFullDay25to35 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycareFullDayPartWeek25 =
@@ -364,7 +377,8 @@ val snDaycareFullDayPartWeek25 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycarePartDay25 =
@@ -389,7 +403,8 @@ val snDaycarePartDay25 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreschoolDaycare45 =
@@ -414,7 +429,8 @@ val snPreschoolDaycare45 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreschoolDaycarePartDay35to45 =
@@ -439,7 +455,8 @@ val snPreschoolDaycarePartDay35to45 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreschoolDaycarePartDay35 =
@@ -464,7 +481,8 @@ val snPreschoolDaycarePartDay35 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreschoolClub45 =
@@ -489,7 +507,8 @@ val snPreschoolClub45 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreparatoryDaycare50 =
@@ -514,7 +533,8 @@ val snPreparatoryDaycare50 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreparatoryDaycarePartDay40to50 =
@@ -539,7 +559,8 @@ val snPreparatoryDaycarePartDay40to50 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreparatoryDaycarePartDay40 =
@@ -564,7 +585,8 @@ val snPreparatoryDaycarePartDay40 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycareFiveYearOldsFullDayPartWeek25 =
@@ -589,7 +611,8 @@ val snDaycareFiveYearOldsFullDayPartWeek25 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycareContractDays15 =
@@ -614,7 +637,8 @@ val snDaycareContractDays15 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snPreschoolDaycareContractDays13 =
@@ -639,7 +663,8 @@ val snPreschoolDaycareContractDays13 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycareContractDays10 =
@@ -664,7 +689,8 @@ val snDaycareContractDays10 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDaycareHours120 =
@@ -689,7 +715,8 @@ val snDaycareHours120 =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val snDefaultSchoolShiftcare =
@@ -714,7 +741,8 @@ val snDefaultSchoolShiftcare =
         feeDescriptionSv = "",
         voucherValueDescriptionFi = "",
         voucherValueDescriptionSv = "",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 val serviceNeedTestFixtures =

@@ -49,7 +49,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
-import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
@@ -62,6 +61,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -94,7 +94,6 @@ class ApplicationStateService(
             ApplicationForm.initForm(type, guardian, child)
                 .let { form -> withDefaultStartDate(tx, today, type, form) }
                 .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
-                .let { form -> withDefaultServiceNeedOption(tx, type, form) }
 
         tx.updateForm(
             applicationId,
@@ -161,40 +160,6 @@ class ApplicationStateService(
                     }
             }
         return form.copy(otherChildren = vtjOtherChildren)
-    }
-
-    private fun withDefaultServiceNeedOption(
-        tx: Database.Transaction,
-        type: ApplicationType,
-        form: ApplicationForm
-    ): ApplicationForm {
-        var defaultServiceNeedOption: ServiceNeedOptionPublicInfo? = null
-        if (
-            ApplicationType.DAYCARE == type &&
-                featureConfig.daycareApplicationServiceNeedOptionsEnabled
-        ) {
-            defaultServiceNeedOption =
-                tx.getServiceNeedOptionPublicInfos(listOf(PlacementType.DAYCARE)).firstOrNull()
-        }
-
-        return form.copy(
-            preferences =
-                form.preferences.copy(
-                    serviceNeed =
-                        form.preferences.serviceNeed?.copy(
-                            serviceNeedOption =
-                                defaultServiceNeedOption?.let {
-                                    ServiceNeedOption(
-                                        id = it.id,
-                                        nameFi = it.nameFi,
-                                        nameSv = it.nameSv,
-                                        nameEn = it.nameEn,
-                                        validPlacementType = it.validPlacementType
-                                    )
-                                }
-                        )
-                )
-        )
     }
 
     // STATE TRANSITIONS
@@ -1077,6 +1042,24 @@ class ApplicationStateService(
                 tx.getClubTerms().any { it.term.includes(preferredStartDate) }
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to club on $preferredStartDate")
+            }
+        }
+
+        if (application.preferences.serviceNeed?.serviceNeedOption != null) {
+            val serviceNeedStartDate =
+                application.preferences.connectedDaycarePreferredStartDate
+                    ?: application.preferences.preferredStartDate
+            if (serviceNeedStartDate != null) {
+                val serviceNeedOptionId = application.preferences.serviceNeed.serviceNeedOption.id
+                tx.getServiceNeedOptionPublicInfos(PlacementType.entries)
+                    .find { it.id == serviceNeedOptionId }
+                    ?.also {
+                        if (!DateRange(it.validFrom, it.validTo).includes(serviceNeedStartDate)) {
+                            throw BadRequest(
+                                "Service need option $serviceNeedOptionId is not valid at $serviceNeedStartDate"
+                            )
+                        }
+                    }
             }
         }
 

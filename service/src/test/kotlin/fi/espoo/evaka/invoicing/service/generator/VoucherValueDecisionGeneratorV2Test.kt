@@ -171,7 +171,8 @@ private val snDaycareFullDay35 =
         feeDescriptionSv = "Kokopäiväinen, vähintään 35h",
         voucherValueDescriptionFi = "Kokopäiväinen, vähintään 35h",
         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
-        active = true
+        validFrom = LocalDate.of(2000, 1, 1),
+        validTo = null
     )
 
 private val feeThresholds =

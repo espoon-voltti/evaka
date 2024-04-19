@@ -88,7 +88,9 @@ data class ServiceNeedOptionPublicInfo(
     val nameFi: String,
     val nameSv: String,
     val nameEn: String,
-    val validPlacementType: PlacementType
+    val validPlacementType: PlacementType,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?
 ) {
     companion object {
         fun of(option: ServiceNeedOption) =
@@ -97,7 +99,9 @@ data class ServiceNeedOptionPublicInfo(
                 option.nameFi,
                 option.nameSv,
                 option.nameEn,
-                option.validPlacementType
+                option.validPlacementType,
+                option.validFrom,
+                option.validTo
             )
     }
 }
@@ -123,7 +127,8 @@ data class ServiceNeedOption(
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
     val voucherValueDescriptionSv: String,
-    val active: Boolean,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
     val updated: HelsinkiDateTime = HelsinkiDateTime.now()
 ) {
     fun daycareMinutesPerMonth(): Long? = daycareHoursPerMonth?.let { it * 60L }
@@ -173,7 +178,8 @@ fun validateServiceNeed(
                 SELECT 1
                 FROM placement pl
                 JOIN service_need_option sno ON sno.valid_placement_type = pl.type
-                WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)}
+                WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)} 
+                    AND daterange(sno.valid_from, sno.valid_to, '[]') @> ${bind(FiniteDateRange(startDate, endDate))}
                 """
             )
         }

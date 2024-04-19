@@ -509,7 +509,8 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     feeDescriptionSv = "",
                     voucherValueDescriptionFi = "",
                     voucherValueDescriptionSv = "",
-                    active = true,
+                    validFrom = LocalDate.of(2000, 1, 1),
+                    validTo = null
                 )
             )
         }

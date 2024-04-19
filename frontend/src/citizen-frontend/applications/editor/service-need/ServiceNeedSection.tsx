@@ -35,7 +35,7 @@ export type ServiceNeedSectionProps = {
   errors: ApplicationFormDataErrors['serviceNeed']
   verificationRequested: boolean
   terms?: FiniteDateRange[]
-  serviceNeedOptions?: ServiceNeedOptionPublicInfo[]
+  serviceNeedOptions: ServiceNeedOptionPublicInfo[]
 }
 
 export default React.memo(function ServiceNeedSection(

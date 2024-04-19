@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -18,6 +19,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -54,20 +56,52 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   const t = useTranslation()
   const { applicationId } = useRouteParams(['applicationId'])
 
+  const preferredStartDate = formData.preferredStartDate
+  const optionsValidAtTime = useMemo(
+    () =>
+      featureFlags.daycareApplication.serviceNeedOption && preferredStartDate
+        ? serviceNeedOptions.filter((opt) =>
+            new DateRange(opt.validFrom, opt.validTo).includes(
+              preferredStartDate
+            )
+          )
+        : [],
+    [serviceNeedOptions, preferredStartDate]
+  )
   const fullTimeOptions = useMemo(
     () =>
-      serviceNeedOptions?.filter(
-        (opt) => opt.validPlacementType === 'DAYCARE'
-      ) ?? [],
-    [serviceNeedOptions]
+      optionsValidAtTime.filter((opt) => opt.validPlacementType === 'DAYCARE'),
+    [optionsValidAtTime]
   )
   const partTimeOptions = useMemo(
     () =>
-      serviceNeedOptions?.filter(
+      optionsValidAtTime.filter(
         (opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'
-      ) ?? [],
-    [serviceNeedOptions]
+      ),
+    [optionsValidAtTime]
   )
+
+  useEffect(() => {
+    if (
+      featureFlags.daycareApplication.serviceNeedOption &&
+      preferredStartDate &&
+      formData.serviceNeedOption
+    ) {
+      const validSelectedType = optionsValidAtTime?.find(
+        (opt) =>
+          opt.id === formData.serviceNeedOption?.id &&
+          new DateRange(opt.validFrom, opt.validTo).includes(preferredStartDate)
+      )
+      if (!validSelectedType) {
+        updateFormData({ serviceNeedOption: null })
+      }
+    }
+  }, [
+    preferredStartDate,
+    formData.serviceNeedOption,
+    optionsValidAtTime,
+    updateFormData
+  ])
 
   const updateServiceNeed = (partTime: boolean) => {
     let serviceNeedOption = formData.serviceNeedOption
@@ -123,6 +157,16 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     })
 
   function renderServiceNeedSelection() {
+    if (serviceNeedOptions.length > 0 && !preferredStartDate) {
+      return (
+        <div>
+          <AlertBox
+            message={t.applications.editor.serviceNeed.startDate.missing}
+          />
+        </div>
+      )
+    }
+
     return (
       <FixedSpaceColumn>
         {placementTypes.includes('DAYCARE_PART_TIME') && (
@@ -185,6 +229,15 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
               ))}
             </FixedSpaceColumn>
           </SubRadios>
+        )}
+        {errors.serviceNeedOption && verificationRequested && (
+          <div>
+            <AlertBox
+              message={t.validationErrors[errors.serviceNeedOption]}
+              thin
+              noMargin
+            />
+          </div>
         )}
       </FixedSpaceColumn>
     )
