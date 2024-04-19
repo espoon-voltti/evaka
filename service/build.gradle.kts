@@ -207,10 +207,6 @@ allprojects {
     }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.allWarningsAsErrors = name != "compileIntegrationTestKotlin"
-}
-
 tasks.getByName<Jar>("jar") {
     archiveClassifier.set("")
 }

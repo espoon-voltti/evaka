@@ -444,15 +444,17 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun groupHasMessageAccount(groupId: GroupId): Boolean {
-        // language=SQL
-        val sql =
-            """
-            SELECT EXISTS(
-                SELECT * FROM message_account WHERE daycare_group_id = :daycareGroupId AND active = true
-            )
-        """
-                .trimIndent()
-        return db.read { it.createQuery(sql).bind("daycareGroupId", groupId).exactlyOne<Boolean>() }
-    }
+    private fun groupHasMessageAccount(groupId: GroupId): Boolean =
+        db.read {
+                it.createQuery {
+                    sql(
+                        """
+SELECT EXISTS(
+    SELECT * FROM message_account WHERE daycare_group_id = ${bind(groupId)} AND active = true
+)
+"""
+                    )
+                }
+            }
+            .exactlyOne()
 }
