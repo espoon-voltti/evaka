@@ -46,7 +46,7 @@
     "split2": "^4.2.0",
     "through2": "^4.0.2",
     "uuid": "^9.0.0",
-    "zod": "^3.22.3"
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.3",

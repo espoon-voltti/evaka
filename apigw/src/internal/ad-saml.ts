@@ -23,16 +23,17 @@ export function createAdSamlStrategy(
   config: Config['ad'],
   samlConfig: SamlConfig
 ): SamlStrategy {
-  const Profile = z.object({
-    [config.userIdKey]: z.string(),
-    [AD_GIVEN_NAME_KEY]: z.string(),
-    [AD_FAMILY_NAME_KEY]: z.string(),
-    [AD_EMAIL_KEY]: z.string().optional(),
-    [AD_EMPLOYEE_NUMBER_KEY]: z.string().toLowerCase().optional()
-  })
+  const Profile = z
+    .object({
+      [AD_GIVEN_NAME_KEY]: z.string(),
+      [AD_FAMILY_NAME_KEY]: z.string(),
+      [AD_EMAIL_KEY]: z.string().optional(),
+      [AD_EMPLOYEE_NUMBER_KEY]: z.string().toLowerCase().optional()
+    })
+    .passthrough()
   return createSamlStrategy(sessions, samlConfig, Profile, async (profile) => {
     const aad = profile[config.userIdKey]
-    if (!aad) throw Error('No user ID in SAML data')
+    if (!aad || typeof aad !== 'string') throw Error('No user ID in SAML data')
     const person = await employeeLogin({
       externalId: `${config.externalIdPrefix}:${aad}`,
       firstName: profile[AD_GIVEN_NAME_KEY] ?? '',
