@@ -85,6 +85,7 @@ export interface ChildServiceNeedInfo {
   daycareHoursPerMonth: number | null
   hasContractDays: boolean
   optionName: string
+  partWeek: boolean
   shiftCare: ShiftCareType
   validDuring: FiniteDateRange
 }

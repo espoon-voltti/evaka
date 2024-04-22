@@ -18,6 +18,7 @@ export interface ServiceNeed {
   endDate: LocalDate
   id: UUID
   option: ServiceNeedOptionSummary
+  partWeek: boolean
   placementId: UUID
   shiftCare: ShiftCareType
   startDate: LocalDate
@@ -39,6 +40,7 @@ export interface ServiceNeedConfirmation {
 export interface ServiceNeedCreateRequest {
   endDate: LocalDate
   optionId: UUID
+  partWeek: boolean
   placementId: UUID
   shiftCare: ShiftCareType
   startDate: LocalDate
@@ -62,7 +64,7 @@ export interface ServiceNeedOption {
   occupancyCoefficient: number
   occupancyCoefficientUnder3y: number
   partDay: boolean
-  partWeek: boolean
+  partWeek: boolean | null
   realizedOccupancyCoefficient: number
   realizedOccupancyCoefficientUnder3y: number
   updated: HelsinkiDateTime
@@ -114,6 +116,7 @@ export interface ServiceNeedSummary {
 export interface ServiceNeedUpdateRequest {
   endDate: LocalDate
   optionId: UUID
+  partWeek: boolean
   shiftCare: ShiftCareType
   startDate: LocalDate
 }

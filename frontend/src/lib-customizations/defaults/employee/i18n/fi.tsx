@@ -1474,6 +1474,7 @@ export const fi = {
           INTERMITTENT: 'Satunnainen',
           FULL: 'Kyllä'
         },
+        partWeek: 'Osaviikkoinen',
         confirmed: 'Vahvistettu',
         createNewBtn: 'Luo uusi palveluntarve',
         addNewBtn: 'Lisää palveluntarve',
