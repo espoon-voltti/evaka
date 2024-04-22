@@ -44,7 +44,9 @@ function ServiceNeedReadRow({
             ? i18n.common.yes
             : i18n.common.no}
       </Td>
-      <Td>{serviceNeed.partWeek ? i18n.common.yes : i18n.common.no}</Td>
+      <Td data-qa="part-week">
+        {serviceNeed.partWeek ? i18n.common.yes : i18n.common.no}
+      </Td>
       <Td>
         <Tooltip tooltip={<span>{serviceNeed.confirmed?.name}</span>}>
           {serviceNeed.confirmed?.at?.format() ?? ''}

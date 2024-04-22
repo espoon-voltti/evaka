@@ -338,7 +338,11 @@ function ServiceNeedEditorRow({
         </Td>
         <Td>
           {option.isValid() && partWeekEditable && (
-            <CheckboxF label={t.partWeek} bind={partWeek} />
+            <CheckboxF
+              label={t.partWeek}
+              bind={partWeek}
+              data-qa="part-week-checkbox"
+            />
           )}
           {option.isValid() && !partWeekEditable && (
             <div>{partWeek.value() ? i18n.common.yes : i18n.common.no}</div>

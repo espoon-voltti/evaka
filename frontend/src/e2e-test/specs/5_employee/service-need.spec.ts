@@ -28,6 +28,7 @@ let placement: PlacementBuilder
 let activeServiceNeedOption: ServiceNeedOptionBuilder
 let inactiveServiceNeedOption: ServiceNeedOptionBuilder
 let partiallyInactiveServiceNeedOption: ServiceNeedOptionBuilder
+let serviceNeedOptionPartWeekNull: ServiceNeedOptionBuilder
 
 const mockToday = LocalDate.of(2024, 3, 1)
 const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
@@ -63,6 +64,9 @@ beforeEach(async () => {
       validTo: mockToday.addDays(5)
     })
     .save()
+  serviceNeedOptionPartWeekNull = await Fixture.serviceNeedOption()
+    .with({ validPlacementType: placement.data.type, partWeek: null })
+    .save()
 
   admin = await Fixture.employeeAdmin().save()
 
@@ -88,6 +92,7 @@ describe('Service need', () => {
       0,
       activeServiceNeedOption.data.nameFi
     )
+    await section.assertNthServiceNeedPartWeek(0, false)
   })
 
   test('only active service need options can be selected', async () => {
@@ -95,7 +100,8 @@ describe('Service need', () => {
 
     await section.assertServiceNeedOptions(placement.data.id, [
       activeServiceNeedOption.data.id,
-      partiallyInactiveServiceNeedOption.data.id
+      partiallyInactiveServiceNeedOption.data.id,
+      serviceNeedOptionPartWeekNull.data.id
     ])
   })
 
@@ -133,5 +139,21 @@ describe('Service need', () => {
       0,
       inactiveServiceNeedOption.data.nameFi
     )
+  })
+
+  test('add service need to a placement and choose partWeek', async () => {
+    const section = await openCollapsible()
+    await section.addMissingServiceNeed(
+      placement.data.id,
+      serviceNeedOptionPartWeekNull.data.nameFi,
+      'NONE',
+      undefined,
+      true
+    )
+    await section.assertNthServiceNeedName(
+      0,
+      serviceNeedOptionPartWeekNull.data.nameFi
+    )
+    await section.assertNthServiceNeedPartWeek(0, true)
   })
 })
