@@ -274,14 +274,26 @@ describe('Income', () => {
       })
       .save()
 
+    await Fixture.incomeNotification()
+      .with({
+        receiverId: personId,
+        notificationType: 'NEW_CUSTOMER',
+        created: incomeEndDate.subDays(1).toHelsinkiDateTime(LocalTime.of(6, 0))
+      })
+      .save()
+
     await page.reload()
-    await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 2)
+    await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 3)
     await incomesSection.incomeNotificationRows
       .nth(0)
       .assertTextEquals('15.02.2020 06:00')
     await incomesSection.incomeNotificationRows
       .nth(1)
       .assertTextEquals('22.02.2020 06:00')
+
+    await incomesSection.incomeNotificationRows
+      .nth(2)
+      .assertTextEquals('28.02.2020 06:00')
   })
 
   it('Income notification sent title is not shown if none has been sent', async () => {
