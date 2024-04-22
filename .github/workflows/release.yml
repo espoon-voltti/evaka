@@ -35,10 +35,10 @@ jobs:
     steps:
       - id: config
         run: |
-          echo "tag=${{ inputs.git-tag || 'v$( date ''+%Y%m%d'')' }}" >> "$GITHUB_OUTPUT"
+          echo "tag=${{ inputs.git-tag || 'v$(date ''+%Y%m%d'')' }}" >> "$GITHUB_OUTPUT"
           echo "target=${{ inputs.target || 'master' }}" >> "$GITHUB_OUTPUT"
-          echo "start-date=${{ inputs.start-date || '$(date -v -6d ''+%Y-%V'')' }}" >> "$GITHUB_OUTPUT"
-          echo "end-date=${{ inputs.end-date || '$(date ''+%Y-%V'')' }}" >> "$GITHUB_OUTPUT"
+          echo "start-date=${{ inputs.start-date || '$(date --date ''-6 days'' ''+%Y-%m-%d'')' }}" >> "$GITHUB_OUTPUT"
+          echo "end-date=${{ inputs.end-date || '$(date ''+%Y-%m-%d'')' }}" >> "$GITHUB_OUTPUT"
           echo "draft=${{ inputs.draft || 'false' }}" >> "$GITHUB_OUTPUT"
     outputs:
       changelog-args: ${{ steps.config.outputs.start-date }} ${{ steps.config.outputs.end-date }}
