@@ -12,6 +12,7 @@ import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.format.DateTimeFormatter
 import org.jdbi.v3.json.Json
@@ -321,7 +322,7 @@ data class Section(
 
 /** statuses is an ordered list which defines a linear state machine */
 @ConstList("documentTypes")
-enum class DocumentType(val statuses: List<DocumentStatus>) {
+enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
     PEDAGOGICAL_REPORT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     PEDAGOGICAL_ASSESSMENT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
@@ -331,11 +332,15 @@ enum class DocumentType(val statuses: List<DocumentStatus>) {
     LEOPS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED));
 
     fun isMigrated() = this in listOf(MIGRATED_VASU, MIGRATED_LEOPS)
+
+    override val sqlType: String = "document_template_type"
 }
 
-enum class DocumentLanguage {
+enum class DocumentLanguage : DatabaseEnum {
     FI,
-    SV
+    SV;
+
+    override val sqlType: String = "document_language"
 }
 
 data class DocumentTemplate(

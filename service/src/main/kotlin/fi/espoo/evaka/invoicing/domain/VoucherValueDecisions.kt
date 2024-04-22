@@ -126,20 +126,24 @@ data class VoucherValueDecision(
     }
 }
 
-enum class VoucherValueDecisionType {
+enum class VoucherValueDecisionType : DatabaseEnum {
     NORMAL,
     RELIEF_REJECTED,
     RELIEF_PARTLY_ACCEPTED,
-    RELIEF_ACCEPTED
+    RELIEF_ACCEPTED;
+
+    override val sqlType: String = "voucher_value_decision_type"
 }
 
-enum class VoucherValueDecisionStatus {
+enum class VoucherValueDecisionStatus : DatabaseEnum {
     DRAFT,
     IGNORED,
     WAITING_FOR_SENDING,
     WAITING_FOR_MANUAL_SENDING,
     SENT,
     ANNULLED;
+
+    override val sqlType: String = "voucher_value_decision_status"
 
     companion object {
         /**

@@ -11,6 +11,7 @@ import fi.espoo.evaka.attachment.IncomeAttachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
@@ -74,11 +75,13 @@ data class IncomeValue(
     val monthlyAmount: Int
 )
 
-enum class IncomeEffect {
+enum class IncomeEffect : DatabaseEnum {
     MAX_FEE_ACCEPTED,
     INCOMPLETE,
     INCOME,
-    NOT_AVAILABLE
+    NOT_AVAILABLE;
+
+    override val sqlType: String = "income_effect"
 }
 
 data class IncomeType(

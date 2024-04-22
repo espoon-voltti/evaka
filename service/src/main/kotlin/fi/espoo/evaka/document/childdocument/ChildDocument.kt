@@ -13,6 +13,7 @@ import fi.espoo.evaka.document.QuestionType
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -113,10 +114,12 @@ data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
     }
 }
 
-enum class DocumentStatus(val editable: Boolean) {
+enum class DocumentStatus(val editable: Boolean) : DatabaseEnum {
     DRAFT(editable = true),
     PREPARED(editable = true),
-    COMPLETED(editable = false)
+    COMPLETED(editable = false);
+
+    override val sqlType: String = "child_document_status"
 }
 
 data class ChildDocumentSummary(

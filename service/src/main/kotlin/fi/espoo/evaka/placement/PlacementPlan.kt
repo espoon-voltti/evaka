@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementPlanId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
@@ -59,16 +60,20 @@ data class PlacementPlanChild(
     val dateOfBirth: LocalDate
 )
 
-enum class PlacementPlanConfirmationStatus {
+enum class PlacementPlanConfirmationStatus : DatabaseEnum {
     PENDING,
     ACCEPTED,
     REJECTED,
-    REJECTED_NOT_CONFIRMED
+    REJECTED_NOT_CONFIRMED;
+
+    override val sqlType: String = "confirmation_status"
 }
 
-enum class PlacementPlanRejectReason {
+enum class PlacementPlanRejectReason : DatabaseEnum {
     OTHER,
     REASON_1,
     REASON_2,
-    REASON_3
+    REASON_3;
+
+    override val sqlType: String = "placement_reject_reason"
 }

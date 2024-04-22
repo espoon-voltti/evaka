@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -204,11 +205,13 @@ data class ServiceVoucherValueUnitAggregate(
     )
 }
 
-enum class VoucherReportRowType {
+enum class VoucherReportRowType : DatabaseEnum {
     // note: order is meaningful when sorting
     REFUND,
     CORRECTION,
-    ORIGINAL
+    ORIGINAL;
+
+    override val sqlType: String = "voucher_report_row_type"
 }
 
 data class ServiceVoucherValueRow(

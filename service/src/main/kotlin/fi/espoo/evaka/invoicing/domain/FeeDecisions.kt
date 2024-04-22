@@ -130,11 +130,13 @@ enum class FeeDecisionStatus : DatabaseEnum {
     }
 }
 
-enum class FeeDecisionType {
+enum class FeeDecisionType : DatabaseEnum {
     NORMAL,
     RELIEF_REJECTED,
     RELIEF_PARTLY_ACCEPTED,
-    RELIEF_ACCEPTED
+    RELIEF_ACCEPTED;
+
+    override val sqlType: String = "fee_decision_type"
 }
 
 @ConstList("feeDecisionDifferences")

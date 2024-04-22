@@ -4,8 +4,12 @@
 
 package fi.espoo.evaka.decision
 
-enum class DecisionStatus {
+import fi.espoo.evaka.shared.db.DatabaseEnum
+
+enum class DecisionStatus : DatabaseEnum {
     PENDING,
     ACCEPTED,
-    REJECTED
+    REJECTED;
+
+    override val sqlType: String = "decision_status"
 }

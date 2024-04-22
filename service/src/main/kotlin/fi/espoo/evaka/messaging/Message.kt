@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -120,9 +121,11 @@ data class SentMessage(
     @Json val attachments: List<MessageAttachment>
 )
 
-enum class MessageType {
+enum class MessageType : DatabaseEnum {
     MESSAGE,
-    BULLETIN
+    BULLETIN;
+
+    override val sqlType: String = "message_type"
 }
 
 data class MessageReceiversResponse(
@@ -163,7 +166,7 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
         MessageReceiver(MessageRecipientType.CITIZEN)
 }
 
-enum class AccountType {
+enum class AccountType : DatabaseEnum {
     PERSONAL,
     GROUP,
     CITIZEN,
@@ -178,6 +181,8 @@ enum class AccountType {
             MUNICIPAL -> false
             SERVICE_WORKER -> false
         }
+
+    override val sqlType: String = "message_account_type"
 }
 
 data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
