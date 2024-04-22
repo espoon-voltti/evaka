@@ -7036,7 +7036,7 @@ __metadata:
     react-datepicker: "npm:^6.9.0"
     react-day-picker: "npm:^8.10.0"
     react-dom: "npm:^18.2.0"
-    react-focus-lock: "npm:2.11.1"
+    react-focus-lock: "npm:2.12.0"
     react-image-crop: "npm:^11.0.1"
     react-leaflet: "npm:^4.2.1"
     react-router-dom: "npm:^6.22.0"
@@ -7348,12 +7348,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"focus-lock@npm:^1.3.2":
-  version: 1.3.3
-  resolution: "focus-lock@npm:1.3.3"
+"focus-lock@npm:^1.3.5":
+  version: 1.3.5
+  resolution: "focus-lock@npm:1.3.5"
   dependencies:
     tslib: "npm:^2.0.3"
-  checksum: 10/8760cec07f263ba24277302c5f10a1cfc93660ec7deda2cde59814af8def83618c347942a6b244c00cfaf36595af052d19a6f4c41699778edf2bd65c25f74bac
+  checksum: 10/1078c9d1f5515c47961a27d22b3b09c2a4eaf42a405f9be621d5ec5f426086a65f5937bff8a104e93d4bd84a7d8364e2f3ec07be876dae259df207384bbfb5de
   languageName: node
   linkType: hard
 
@@ -11099,15 +11099,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-focus-lock@npm:2.11.1":
-  version: 2.11.1
-  resolution: "react-focus-lock@npm:2.11.1"
+"react-focus-lock@npm:2.12.0":
+  version: 2.12.0
+  resolution: "react-focus-lock@npm:2.12.0"
   dependencies:
     "@babel/runtime": "npm:^7.0.0"
-    focus-lock: "npm:^1.3.2"
+    focus-lock: "npm:^1.3.5"
     prop-types: "npm:^15.6.2"
     react-clientside-effect: "npm:^1.2.6"
-    use-callback-ref: "npm:^1.3.0"
+    use-callback-ref: "npm:^1.3.2"
     use-sidecar: "npm:^1.1.2"
   peerDependencies:
     "@types/react": ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -11115,7 +11115,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/b7d01554cea4b783ee348bafe225d293bb64e239e1952e33d1fca0e9c25e5e214a55016171c485283af119e18790419ba093d5d6ffbeb1c8d2d63f12e48a4989
+  checksum: 10/b30cfb998d9fce77ea08b457ab98c82f1cf6117694bcbe0e28fc2e839609721b8e179402d5d0a7a70041c39e6ffbebfc1d681c7df9c18a9fb15e6458c1dba423
   languageName: node
   linkType: hard
 
@@ -12755,9 +12755,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-callback-ref@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "use-callback-ref@npm:1.3.0"
+"use-callback-ref@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "use-callback-ref@npm:1.3.2"
   dependencies:
     tslib: "npm:^2.0.0"
   peerDependencies:
@@ -12766,7 +12766,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/f9f1b217db60419b033228ba17cee5c521123e7c7f35577258a1abdce6d9623e5880f0bed3a0504eff35fdf6c761a2b2e020337a34218fb86229b8641772654a
+  checksum: 10/3be76eae71b52ab233b4fde974eddeff72e67e6723100a0c0297df4b0d60daabedfa706ffb314d0a52645f2c1235e50fdbd53d99f374eb5df68c74d412e98a9b
   languageName: node
   linkType: hard
 
