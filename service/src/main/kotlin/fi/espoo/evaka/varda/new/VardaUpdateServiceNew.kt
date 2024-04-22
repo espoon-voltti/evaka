@@ -144,7 +144,7 @@ class VardaUpdateServiceNew(
             val dryRunClient = DryRunClient()
             service.updateChild(dryRunClient, vardaState, evakaState)
 
-            dryRunClient.operations.also { ops ->
+            dryRunClient.operationsHumanReadable.also { ops ->
                 logger.info(
                     mapOf("operations" to ops.joinToString("\n").takeIf { it.isNotBlank() })
                 ) {
@@ -547,9 +547,16 @@ private fun <Old, New> diff(
     }
 }
 
-private class DryRunClient : VardaWriteClient {
+class DryRunClient : VardaWriteClient {
     private var ids = mutableMapOf<String, Int>()
-    private val _operations = mutableListOf<String>()
+
+    private data class Operation(val op: String, val type: String?, val data: Any)
+
+    private val _operations = mutableListOf<Operation>()
+
+    private fun create(what: String?, data: Any) {
+        _operations.add(Operation("Create", what, data))
+    }
 
     private fun nextUri(type: String): URI {
         val i = ids.getOrDefault(type, 0)
@@ -560,7 +567,7 @@ private class DryRunClient : VardaWriteClient {
     override fun createHenkilo(
         body: VardaWriteClient.CreateHenkiloRequest
     ): VardaReadClient.HenkiloResponse {
-        _operations.add("Create henkilo: $body")
+        create("henkilo", body)
         return VardaReadClient.HenkiloResponse(
             henkilo_oid = null,
             url = nextUri("henkilo"),
@@ -571,35 +578,45 @@ private class DryRunClient : VardaWriteClient {
     override fun createLapsi(
         body: VardaWriteClient.CreateLapsiRequest
     ): VardaWriteClient.CreateResponse {
-        _operations.add("Create lapsi: $body")
+        create("lapsi", body)
         return VardaWriteClient.CreateResponse(url = nextUri("lapsi"))
     }
 
     override fun createVarhaiskasvatuspaatos(
         body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest
     ): VardaWriteClient.CreateResponse {
-        _operations.add("Create varhaiskasvatuspaatos: $body")
+        create("varhaiskasvatuspaatos", body)
         return VardaWriteClient.CreateResponse(url = nextUri("varhaiskasvatuspaatos"))
     }
 
     override fun createVarhaiskasvatussuhde(
         body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest
     ): VardaWriteClient.CreateResponse {
-        _operations.add("Create varhaiskasvatussuhde: $body")
+        create("varhaiskasvatussuhde", body)
         return VardaWriteClient.CreateResponse(url = nextUri("varhaiskasvatussuhde"))
     }
 
     override fun createMaksutieto(
         body: VardaWriteClient.CreateMaksutietoRequest
     ): VardaWriteClient.CreateResponse {
-        _operations.add("Create maksutieto: $body")
+        create("maksutieto", body)
         return VardaWriteClient.CreateResponse(url = nextUri("maksutieto"))
     }
 
     override fun <T : VardaEntity> delete(data: T) {
-        _operations.add("Delete $data")
+        _operations.add(Operation("Delete", null, data))
     }
 
-    val operations: List<String>
-        get() = _operations
+    val operationsHumanReadable: List<String>
+        get() = _operations.map { "${it.op} ${it.type ?: ""}: ${it.data}" }
+
+    val operations: List<Pair<String, Any>>
+        get() =
+            _operations.map {
+                when (it.op) {
+                    "Create" -> Pair("Create", it.data)
+                    "Delete" -> Pair("Delete", (it.data as VardaEntity).url)
+                    else -> throw IllegalStateException("Unknown operation ${it.op}")
+                }
+            }
 }
