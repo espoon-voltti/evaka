@@ -306,13 +306,13 @@ export default React.memo(function Reports() {
                 data-qa="report-attendance-reservation-by-child"
               />
             )}
-            {reports.has('MEALS') && (
+            {featureFlags.jamixIntegration && reports.has('MEALS') && (
               <Report
                 path="/reports/meals"
                 color={colors.main.m2}
                 icon={faUtensils}
                 i18n={i18n.reports.meals}
-                data-qa="report-attendance-reservation"
+                data-qa="report-meals"
               />
             )}
             {reports.has('SEXTET') && (
