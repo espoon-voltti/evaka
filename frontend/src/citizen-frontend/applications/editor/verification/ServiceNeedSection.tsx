@@ -35,7 +35,7 @@ export default React.memo(function ServiceNeedSection({
   const t = useTranslation()
 
   return (
-    <div>
+    <div data-qa="service-need-section">
       <H2>{t.applications.editor.verification.serviceNeed.title}</H2>
 
       <Gap size="s" />
@@ -133,7 +133,7 @@ export default React.memo(function ServiceNeedSection({
                   .description
               }
             </Label>
-            <div>
+            <div data-qa="assistance-need-description">
               {formData.serviceNeed.assistanceDescription
                 .split('\n')
                 .map((text, i) => (

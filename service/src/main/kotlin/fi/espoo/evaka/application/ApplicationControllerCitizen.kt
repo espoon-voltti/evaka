@@ -767,6 +767,7 @@ private fun hideCriticalApplicationInfoFromOtherGuardian(
                         person = application.form.child.person.copy(socialSecurityNumber = null),
                         address = null,
                         futureAddress = null,
+                        assistanceDescription = ""
                     ),
                 guardian =
                     application.form.guardian.copy(
