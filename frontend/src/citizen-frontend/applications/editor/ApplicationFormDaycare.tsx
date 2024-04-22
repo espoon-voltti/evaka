@@ -9,7 +9,7 @@ import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import featureFlags from 'lib-customizations/espoo/featureFlags'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import Heading from '../../applications/editor/Heading'
