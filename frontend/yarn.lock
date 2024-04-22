@@ -7033,7 +7033,7 @@ __metadata:
     react-autosize-textarea: "npm:^7.1.0"
     react-chartjs-2: "npm:^5.2.0"
     react-csv: "npm:^2.2.2"
-    react-datepicker: "npm:^6.6.0"
+    react-datepicker: "npm:^6.9.0"
     react-day-picker: "npm:^8.10.0"
     react-dom: "npm:^18.2.0"
     react-focus-lock: "npm:2.11.1"
@@ -11061,9 +11061,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-datepicker@npm:^6.6.0":
-  version: 6.6.0
-  resolution: "react-datepicker@npm:6.6.0"
+"react-datepicker@npm:^6.9.0":
+  version: 6.9.0
+  resolution: "react-datepicker@npm:6.9.0"
   dependencies:
     "@floating-ui/react": "npm:^0.26.2"
     clsx: "npm:^2.1.0"
@@ -11073,7 +11073,7 @@ __metadata:
   peerDependencies:
     react: ^16.9.0 || ^17 || ^18
     react-dom: ^16.9.0 || ^17 || ^18
-  checksum: 10/810002300403c756e466c4362fce4e197583a6132dd7ec664ad4f9c6f6b8e3713952d83d244c9e8e2042c2da50b7d5c326c0de501ca676f7aaf907e50428124a
+  checksum: 10/7effd81e0e00e77d691c552bed77e2b08f7abc377528ae67727de9cc08eb05f7ec021f3daa40748dd7d32b12dd6cf2833eac0cbc2d9f3026fa8c606100752d32
   languageName: node
   linkType: hard
 
