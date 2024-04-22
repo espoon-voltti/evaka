@@ -115,35 +115,20 @@ class VardaUpdateServiceNew(
         clock: EvakaClock,
         job: AsyncJob.VardaUpdateChild
     ) {
-        val today = clock.today()
-        val service = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+        val dryRunClient = DryRunClient()
+        val service =
+            VardaUpdater(jsonMapper, vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
-        val evakaState = dbc.read { service.getEvakaState(it, today, job.childId) }
-        val previousEvakaState =
-            dbc.read {
-                it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(jsonMapper, job.childId)
-            }
-
-        if (previousEvakaState == evakaState) {
-            logger.info { "No changes for ${job.childId}" }
-            return
-        }
-
-        val vardaState =
-            service.getVardaState(
-                vardaClient,
-                evakaState.henkilo.henkilotunnus,
-                evakaState.henkilo.henkilo_oid
-            )
-
-        logger.info(mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())) {
-            "Varda update state for ${job.childId} (see the meta.varda and meta.evaka fields)"
-        }
+        service.updateChild(
+            dbc,
+            readClient = vardaClient,
+            writeClient = if (job.dryRun) dryRunClient else vardaClient,
+            today = clock.today(),
+            childId = job.childId,
+            saveState = !job.dryRun
+        )
 
         if (job.dryRun) {
-            val dryRunClient = DryRunClient()
-            service.updateChild(dryRunClient, vardaState, evakaState)
-
             dryRunClient.operationsHumanReadable.also { ops ->
                 logger.info(
                     mapOf("operations" to ops.joinToString("\n").takeIf { it.isNotBlank() })
@@ -151,24 +136,60 @@ class VardaUpdateServiceNew(
                     "Varda dry run for ${job.childId}: ${ops.size} operations (see meta.operations field)"
                 }
             }
-        } else {
-            service.updateChild(vardaClient, vardaState, evakaState) { henkiloOidInVarda ->
-                if (evakaState.henkilo.henkilo_oid != henkiloOidInVarda) {
-                    dbc.transaction { it.updateOphPersonOid(job.childId, henkiloOidInVarda) }
-                }
-            }
-            dbc.transaction { tx -> tx.setVardaUpdateState(job.childId, evakaState) }
         }
     }
 }
 
 class VardaUpdater(
+    private val jsonMapper: JsonMapper,
     private val vardaEnabledRange: DateRange,
     private val omaOrganisaatioOid: String,
     private val lahdejarjestelma: String
 ) {
     // Varda's validation rules can be deduced from the list of error codes:
     // https://virkailija.opintopolku.fi/varda/julkinen/koodistot/vardavirheviestit
+
+    fun updateChild(
+        dbc: Database.Connection,
+        readClient: VardaReadClient,
+        writeClient: VardaWriteClient,
+        today: LocalDate,
+        childId: ChildId,
+        saveState: Boolean
+    ) {
+        logger.info { "Starting Varda update for child $childId" }
+
+        val evakaState = dbc.read { getEvakaState(it, today, childId) }
+        val previousEvakaState =
+            dbc.read { it.getVardaUpdateState<EvakaHenkiloNode>(jsonMapper, childId) }
+
+        if (previousEvakaState == evakaState) {
+            logger.info { "No changes for child $childId" }
+            return
+        }
+
+        val vardaState =
+            getVardaState(
+                readClient,
+                evakaState.henkilo.henkilotunnus,
+                evakaState.henkilo.henkilo_oid
+            )
+
+        logger.info(mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())) {
+            "Varda update state for $childId (see the meta.varda and meta.evaka fields)"
+        }
+
+        val henkiloOidInVarda = diffAndUpdate(writeClient, vardaState, evakaState)
+
+        dbc.transaction { tx ->
+            if (henkiloOidInVarda != null && evakaState.henkilo.henkilo_oid != henkiloOidInVarda) {
+                tx.updateOphPersonOid(childId, henkiloOidInVarda)
+            }
+            if (saveState) {
+                tx.setVardaUpdateState(childId, evakaState)
+            }
+        }
+    }
 
     fun getEvakaState(tx: Database.Read, today: LocalDate, childId: ChildId): EvakaHenkiloNode {
         val person = tx.getVardaPerson(childId)
@@ -289,13 +310,11 @@ class VardaUpdater(
             }
     }
 
-    fun updateChild(
+    fun diffAndUpdate(
         client: VardaWriteClient,
         vardaHenkilo: VardaHenkiloNode?,
         evakaHenkilo: EvakaHenkiloNode,
-        /** Called as soon as the Varda henkilo OID is known */
-        onOid: ((oid: String) -> Unit)? = null
-    ) {
+    ): String? {
         val henkilo =
             // Create a henkilo if it doesn't exist yet and there are lapsi entries
             if (vardaHenkilo == null && evakaHenkilo.lapset.isNotEmpty()) {
@@ -303,9 +322,6 @@ class VardaUpdater(
             } else {
                 vardaHenkilo?.henkilo
             }
-        if (henkilo != null && onOid != null && henkilo.henkilo_oid != null) {
-            onOid(henkilo.henkilo_oid)
-        }
 
         diff(
             old = vardaHenkilo?.lapset ?: emptyList(),
@@ -367,6 +383,8 @@ class VardaUpdater(
                 client.createLapsiDeep(henkilo!!.url, it)
             },
         )
+
+        return henkilo?.henkilo_oid
     }
 
     /** Like Iterable.all, but runs all the side effects regardless of what they return */
