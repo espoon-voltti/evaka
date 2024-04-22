@@ -1972,10 +1972,13 @@ export class Fixture {
     })
   }
 
-  static guardian(child: PersonBuilder, guardian: PersonBuilder) {
+  static guardian(
+    child: PersonBuilder | PersonDetail,
+    guardian: PersonBuilder | PersonDetail
+  ) {
     return new GuardianBuilder({
-      childId: child.data.id,
-      guardianId: guardian.data.id
+      childId: 'data' in child ? child.data.id : child.id,
+      guardianId: 'data' in guardian ? guardian.data.id : guardian.id
     })
   }
 

@@ -125,9 +125,7 @@ export async function execSimpleApplicationActions(
 ): Promise<void> {
   for (const action of actions) {
     await execSimpleApplicationAction(applicationId, action, mockedTime)
-    if (action === 'move-to-waiting-placement') {
-      await runPendingAsyncJobs(mockedTime)
-    }
+    await runPendingAsyncJobs(mockedTime)
   }
 }
 

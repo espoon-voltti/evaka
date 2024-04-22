@@ -4,21 +4,22 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
+import {
+  execSimpleApplicationActions,
+  insertApplications,
+  insertVtjPersonFixture
+} from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { applicationFixture } from '../../dev-api/fixtures'
+import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import { resetDatabase } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let page: Page
-let header: CitizenHeader
-let applicationsPage: CitizenApplicationsPage
 let fixtures: AreaAndPersonFixtures
 
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
@@ -26,14 +27,22 @@ const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
+})
 
-  page = await Page.open({
+async function openApplicationsPage(citizen: { ssn?: string }) {
+  const page = await Page.open({
     mockedTime: now
   })
-  await enduserLogin(page)
-  header = new CitizenHeader(page)
-  applicationsPage = new CitizenApplicationsPage(page)
-})
+  await enduserLogin(page, citizen.ssn)
+  const header = new CitizenHeader(page)
+  await header.selectTab('applications')
+  const applicationsPage = new CitizenApplicationsPage(page)
+  return {
+    page,
+    header,
+    applicationsPage
+  }
+}
 
 describe('Citizen applications list', () => {
   test('Citizen sees their children and applications', async () => {
@@ -47,11 +56,57 @@ describe('Citizen applications list', () => {
       true
     )
     await insertApplications([application])
-    await page.reload()
-
-    await header.selectTab('applications')
+    const { applicationsPage } = await openApplicationsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     const child = fixtures.enduserChildFixtureJari
+    await applicationsPage.assertChildIsShown(
+      child.id,
+      `${child.firstName} ${child.lastName}`
+    )
+    await applicationsPage.assertApplicationIsListed(
+      application.id,
+      'Esiopetushakemus',
+      application.form.preferences.preferredStartDate?.format() ?? '',
+      'Lähetetty'
+    )
+  })
+
+  test('Guardian sees their children and applications made by the other guardian', async () => {
+    const guardian = (
+      await Fixture.person().with({ ssn: '010106A973C' }).save()
+    ).data
+    const child = (await Fixture.person().with({ ssn: '010116A9219' }).save())
+      .data
+    const otherGuardian = (
+      await Fixture.person().with({ ssn: '010106A9388' }).save()
+    ).data
+    await insertVtjPersonFixture({
+      ...child,
+      guardians: [guardian, otherGuardian]
+    })
+    await insertVtjPersonFixture({
+      ...guardian,
+      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
+    })
+    await insertVtjPersonFixture({
+      ...otherGuardian,
+      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
+    })
+
+    const application = applicationFixture(
+      child,
+      guardian,
+      otherGuardian,
+      'PRESCHOOL',
+      null,
+      [fixtures.daycareFixture.id],
+      true
+    )
+    await insertApplications([application])
+    const { applicationsPage } = await openApplicationsPage(otherGuardian)
+
     await applicationsPage.assertChildIsShown(
       child.id,
       `${child.firstName} ${child.lastName}`
@@ -84,9 +139,11 @@ describe('Citizen applications list', () => {
       ],
       now
     )
-    await page.reload()
+    const { page, applicationsPage } = await openApplicationsPage(
+      fixtures.enduserGuardianFixture
+    )
 
-    await header.selectTab('applications')
+    await page.reload()
     await applicationsPage.assertApplicationIsListed(
       application.id,
       'Varhaiskasvatushakemus',
@@ -107,9 +164,10 @@ describe('Citizen applications list', () => {
       'CREATED'
     )
     await insertApplications([application])
-    await page.reload()
+    const { applicationsPage } = await openApplicationsPage(
+      fixtures.enduserGuardianFixture
+    )
 
-    await header.selectTab('applications')
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
   })
@@ -126,9 +184,10 @@ describe('Citizen applications list', () => {
       'SENT'
     )
     await insertApplications([application])
-    await page.reload()
+    const { applicationsPage } = await openApplicationsPage(
+      fixtures.enduserGuardianFixture
+    )
 
-    await header.selectTab('applications')
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
   })
