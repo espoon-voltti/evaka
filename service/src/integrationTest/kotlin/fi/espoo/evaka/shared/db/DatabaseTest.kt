@@ -19,11 +19,13 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `transaction savepoint should be able to recover from a database constraint exception`() {
         db.transaction { tx ->
-            tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
+            tx.execute { sql("INSERT INTO holiday (date) VALUES ('2020-01-01')") }
             assertThrows<UnableToExecuteStatementException> {
-                tx.subTransaction { tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')") }
+                tx.subTransaction {
+                    tx.execute { sql("INSERT INTO holiday (date) VALUES ('2020-01-01')") }
+                }
             }
-            tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-02')")
+            tx.execute { sql("INSERT INTO holiday (date) VALUES ('2020-01-02')") }
         }
         assertEquals(
             listOf(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)),
@@ -37,10 +39,10 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `transaction savepoint should be able to recover from an application exception`() {
         db.transaction { tx ->
-            tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
+            tx.execute { sql("INSERT INTO holiday (date) VALUES ('2020-01-01')") }
             assertThrows<TestException> {
                 tx.subTransaction<Unit> {
-                    tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-02')")
+                    tx.execute { sql("INSERT INTO holiday (date) VALUES ('2020-01-02')") }
                     throw TestException()
                 }
             }

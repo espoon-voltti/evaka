@@ -7,12 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.FeeDecisionId
-import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.*
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -20,7 +15,7 @@ import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 import kotlin.math.max
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json

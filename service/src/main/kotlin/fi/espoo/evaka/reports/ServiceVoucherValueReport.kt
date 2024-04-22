@@ -116,26 +116,14 @@ fun freezeVoucherValueReportRows(
             .executeAndReturnGeneratedKeys()
             .exactlyOne<UUID>()
 
-    // language=sql
-    val sql =
-        """
-        INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
-        VALUES (:voucherValueReportSnapshotId, :decisionId, :realizedAmount, :realizedPeriod, :type)
-    """
-            .trimIndent()
-    val batch = tx.prepareBatch(sql)
-
-    rows.forEach { row ->
-        batch
-            .bind("voucherValueReportSnapshotId", voucherValueReportSnapshotId)
-            .bind("decisionId", row.serviceVoucherDecisionId)
-            .bind("realizedAmount", row.realizedAmount)
-            .bind("realizedPeriod", row.realizedPeriod)
-            .bind("type", row.type)
-            .add()
+    tx.executeBatch(rows) {
+        sql(
+            """
+INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
+VALUES (${bind(voucherValueReportSnapshotId)}, ${bind { it.serviceVoucherDecisionId }}, ${bind { it.realizedAmount }}, ${bind { it.realizedPeriod }}, ${bind { it.type }})
+"""
+        )
     }
-
-    batch.execute()
 }
 
 data class ServiceVoucherReport(

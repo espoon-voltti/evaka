@@ -315,14 +315,11 @@ fun Database.Transaction.updateChildDocumentKey(id: ChildDocumentId, documentKey
 }
 
 fun Database.Transaction.resetChildDocumentKey(ids: List<ChildDocumentId>) {
-    val batch =
-        this.prepareBatch(
-            """
-        UPDATE child_document
-        SET document_key = NULL
-        WHERE id = :id
-    """
-        )
-    ids.forEach { batch.bind("id", it).add() }
-    batch.execute()
+    executeBatch(ids) {
+        sql("""
+UPDATE child_document
+SET document_key = NULL
+WHERE id = ${bind { it }}
+""")
+    }
 }

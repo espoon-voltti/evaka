@@ -452,9 +452,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 .bind("id", blockedDependant.id)
                 .execute()
             tx.insert(DevGuardianBlocklistEntry(guardianId, blockedDependant.id))
-            tx.execute(
-                "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL"
-            )
+            tx.execute {
+                sql("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
+            }
         }
 
         assertEquals(2, controller.getPersonDependants(dbInstance(), admin, clock, guardianId).size)
@@ -484,9 +484,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 .bind("id", blockedGuardian.id)
                 .execute()
             tx.insert(DevGuardianBlocklistEntry(blockedGuardian.id, childId))
-            tx.execute(
-                "UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL"
-            )
+            tx.execute {
+                sql("UPDATE person SET vtj_guardians_queried = NULL, vtj_dependants_queried = NULL")
+            }
         }
 
         assertEquals(1, controller.getPersonGuardians(dbInstance(), admin, clock, childId).size)

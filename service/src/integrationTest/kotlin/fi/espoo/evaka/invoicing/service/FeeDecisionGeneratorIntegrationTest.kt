@@ -509,7 +509,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction { tx ->
-            tx.execute("DELETE FROM service_need WHERE placement_id = ?", placementId)
+            tx.execute { sql("DELETE FROM service_need WHERE placement_id = ${bind(placementId)}") }
             generator.generateNewDecisionsForChild(tx, testChild_1.id)
         }
 

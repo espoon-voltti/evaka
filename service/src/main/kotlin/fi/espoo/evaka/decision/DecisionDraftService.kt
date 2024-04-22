@@ -47,26 +47,14 @@ fun createDecisionDrafts(
                 error("Cannot create decision draft from placement of type '${placementPlan.type}'")
         }
 
-    // language=sql
-    val sql =
-        """
-            INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
-            VALUES (:createdBy, :unitId, :applicationId, :type, :startDate, :endDate, :planned);
+    tx.executeBatch(drafts) {
+        sql(
             """
-            .trimIndent()
-    val batch = tx.prepareBatch(sql)
-    drafts.forEach { draft ->
-        batch
-            .bind("createdBy", user.evakaUserId)
-            .bind("unitId", draft.unitId)
-            .bind("applicationId", application.id)
-            .bind("type", draft.type)
-            .bind("startDate", draft.startDate)
-            .bind("endDate", draft.endDate)
-            .bind("planned", draft.planned)
-            .add()
+INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
+VALUES (${bind(user.evakaUserId)}, ${bind { it.unitId }}, ${bind(application.id)}, ${bind { it.type }}, ${bind { it.startDate }}, ${bind { it.endDate }}, ${bind { it.planned }});
+"""
+        )
     }
-    batch.execute()
 }
 
 fun updateDecisionDrafts(
@@ -74,27 +62,17 @@ fun updateDecisionDrafts(
     applicationId: ApplicationId,
     updates: List<DecisionDraftUpdate>
 ) {
-    // language=sql
-    val sql =
-        """
+    val successfulUpdates =
+        tx.executeBatch(updates) {
+                sql(
+                    """
             UPDATE decision
-            SET unit_id = :unitId, start_date = :startDate, end_date = :endDate, planned = :planned
-            WHERE id = :decisionId AND application_id = :applicationId
-            """
-            .trimIndent()
-
-    val batch = tx.prepareBatch(sql)
-    updates.forEach {
-        batch
-            .bind("applicationId", applicationId)
-            .bind("decisionId", it.id)
-            .bind("unitId", it.unitId)
-            .bind("startDate", it.startDate)
-            .bind("endDate", it.endDate)
-            .bind("planned", it.planned)
-            .add()
-    }
-    val successfulUpdates = batch.execute().sum()
+            SET unit_id = ${bind { it.unitId }}, start_date = ${bind { it.startDate }}, end_date = ${bind { it.endDate }}, planned = ${bind { it.planned }}
+            WHERE id = ${bind { it.id }} AND application_id = ${bind(applicationId)}
+"""
+                )
+            }
+            .sum()
 
     if (successfulUpdates < updates.size) {
         throw NotFound("Some decision draft was not found")

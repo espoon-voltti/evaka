@@ -121,21 +121,13 @@ fun Database.Transaction.insertDaycareGroupAcl(
     employeeId: EmployeeId,
     groupIds: Collection<GroupId>
 ) =
-    prepareBatch(
+    executeBatch(groupIds) {
+        sql(
             """
 INSERT INTO daycare_group_acl
-SELECT id, :employeeId
+SELECT id, ${bind(employeeId)}
 FROM daycare_group
-WHERE id = :groupId AND daycare_id = :daycareId
+WHERE id = ${bind { it }} AND daycare_id = ${bind(daycareId)}
 """
         )
-        .let { batch ->
-            groupIds.forEach { groupId ->
-                batch
-                    .bind("daycareId", daycareId)
-                    .bind("employeeId", employeeId)
-                    .bind("groupId", groupId)
-                    .add()
-            }
-            batch.execute()
-        }
+    }

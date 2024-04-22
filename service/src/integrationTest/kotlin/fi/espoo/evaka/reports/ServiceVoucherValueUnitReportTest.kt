@@ -57,16 +57,16 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.execute(
-                "INSERT INTO holiday (date, description) VALUES (?, ?)",
-                janFirst,
-                "New Year"
-            )
-            it.execute(
-                "INSERT INTO holiday (date, description) VALUES (?, ?)",
-                janFirst.plusDays(5),
-                "Epiphany"
-            )
+            it.execute {
+                sql(
+                    "INSERT INTO holiday (date, description) VALUES (${bind(janFirst)}, ${bind("New Year")})"
+                )
+            }
+            it.execute {
+                sql(
+                    "INSERT INTO holiday (date, description) VALUES (${bind(janFirst.plusDays(5))}, ${bind("Epiphany")})"
+                )
+            }
         }
     }
 

@@ -191,11 +191,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .bind("childId", testChild_1.id)
                 .execute()
 
-            it.execute(
-                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
-                testDecisionMaker_2.id,
-                testVoucherDaycare.id
-            )
+            it.execute {
+                sql(
+                    "UPDATE daycare SET finance_decision_handler = ${bind(testDecisionMaker_2.id)} WHERE id = ${bind(testVoucherDaycare.id)}"
+                )
+            }
         }
 
         sendAllValueDecisions()
@@ -553,7 +553,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun changeHeadOfFamily(child: DevPerson, headOfFamilyId: PersonId) {
-        db.transaction { it.execute("DELETE FROM fridge_child WHERE child_id = ?", child.id) }
+        db.transaction {
+            it.execute { sql("DELETE FROM fridge_child WHERE child_id = ${bind(child.id)}") }
+        }
 
         val body =
             ParentshipController.ParentshipRequest(

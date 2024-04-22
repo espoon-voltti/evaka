@@ -27,18 +27,18 @@ fun Database.Read.getEmployeeIdsByNumbers(employeeNumbers: List<String>): Map<St
     return employeeNumbersQuery(employeeNumbers).toMap { columnPair("employee_number", "id") }
 }
 
-fun Database.Transaction.createEmployees(employees: List<NewEmployee>): Map<String, EmployeeId> {
-    val sql =
-        """
-        INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active)
-        VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.employeeNumber, :employee.roles::user_role[], true)
-        RETURNING id, employee_number
-    """
-            .trimIndent()
-    val batch = prepareBatch(sql)
-    employees.forEach { employee -> batch.bindKotlin("employee", employee).add() }
-    return batch.executeAndReturn().toMap { columnPair("employee_number", "id") }
-}
+fun Database.Transaction.createEmployees(employees: List<NewEmployee>): Map<String, EmployeeId> =
+    prepareBatch(employees) {
+            sql(
+                """
+INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active)
+VALUES (${bind { it.firstName }}, ${bind { it.lastName }}, ${bind { it.email }}, ${bind { it.externalId }}, ${bind { it.employeeNumber }}, ${bind { it.roles }}, true)
+RETURNING id, employee_number
+"""
+            )
+        }
+        .executeAndReturn()
+        .toMap { columnPair("employee_number", "id") }
 
 fun Database.Read.getEmployeeIdsByNumbersMapById(
     employeeNumbers: Collection<String>
@@ -73,15 +73,14 @@ fun Database.Transaction.insertStaffAttendancePlans(plans: List<StaffAttendanceP
     if (plans.isEmpty()) {
         return IntArray(0)
     }
-    val sql =
-        """
-        INSERT INTO staff_attendance_plan (employee_id, type, start_time, end_time, description)
-        VALUES (:employeeId, :type, :startTime, :endTime, :description)
-    """
-            .trimIndent()
-    val batch = prepareBatch(sql)
-    plans.forEach { plan -> batch.bindKotlin(plan).add() }
-    return batch.execute()
+    return executeBatch(plans) {
+        sql(
+            """
+INSERT INTO staff_attendance_plan (employee_id, type, start_time, end_time, description)
+VALUES (${bind { it.employeeId }}, ${bind { it.type }}, ${bind { it.startTime }}, ${bind { it.endTime }}, ${bind { it.description }})
+"""
+        )
+    }
 }
 
 fun Database.Transaction.deleteStaffAttendancePlansBy(

@@ -31,11 +31,11 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(DevDaycareGroup(id = groupId, daycareId = daycareId, startDate = groupStart))
-            tx.execute(
-                "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (?, ?, NULL, 3)",
-                groupId,
-                groupStart
-            )
+            tx.execute {
+                sql(
+                    "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(groupId)}, ${bind(groupStart)}, NULL, 3)"
+                )
+            }
         }
     }
 

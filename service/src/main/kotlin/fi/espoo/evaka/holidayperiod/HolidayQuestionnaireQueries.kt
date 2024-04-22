@@ -154,8 +154,8 @@ fun Database.Transaction.insertQuestionnaireAnswers(
     modifiedBy: PersonId,
     answers: List<HolidayQuestionnaireAnswer>
 ) {
-    val batch =
-        prepareBatch(
+    executeBatch(answers) {
+        sql(
             """
 INSERT INTO holiday_questionnaire_answer (
     questionnaire_id,
@@ -164,20 +164,17 @@ INSERT INTO holiday_questionnaire_answer (
     modified_by
 )
 VALUES (
-    :questionnaireId,
-    :childId,
-    :fixedPeriod,
-    :modifiedBy
+    ${bind { it.questionnaireId }},
+    ${bind { it.childId }},
+    ${bind { it.fixedPeriod }},
+    ${bind(modifiedBy)}
 )
 ON CONFLICT(questionnaire_id, child_id)
     DO UPDATE SET fixed_period = EXCLUDED.fixed_period,
                   modified_by  = EXCLUDED.modified_by
 """
         )
-
-    answers.forEach { answer -> batch.bindKotlin(answer).bind("modifiedBy", modifiedBy).add() }
-
-    batch.execute()
+    }
 }
 
 fun Database.Read.getQuestionnaireAnswers(

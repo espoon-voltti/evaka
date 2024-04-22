@@ -185,9 +185,9 @@ private fun Database.Transaction.updateFamilyContactPriority(
     contactPersonId: PersonId,
     priority: Int?
 ) {
-    this.execute(
-        "SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED"
-    )
+    this.execute {
+        sql("SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED")
+    }
 
     this.createUpdate {
             sql(

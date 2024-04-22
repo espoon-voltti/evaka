@@ -273,18 +273,15 @@ fun Database.Transaction.upsertEmployeeDaycareRoles(
     daycareIds: List<DaycareId>,
     role: UserRole
 ) {
-    val batch =
-        prepareBatch(
+    executeBatch(daycareIds) {
+        sql(
             """
-        INSERT INTO daycare_acl (daycare_id, employee_id, role) 
-        VALUES (:daycareId, :employeeId, :role)
-        ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = :role
-    """
+INSERT INTO daycare_acl (daycare_id, employee_id, role) 
+VALUES (${bind { daycareId -> daycareId }}, ${bind(id)}, ${bind(role)})
+ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = ${bind(role)}
+"""
         )
-    daycareIds.forEach {
-        batch.bind("daycareId", it).bind("employeeId", id).bind("role", role).add()
     }
-    batch.execute()
 }
 
 fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: List<UserRole>) {

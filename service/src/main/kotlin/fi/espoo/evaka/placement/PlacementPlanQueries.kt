@@ -17,10 +17,9 @@ import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 
 fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId>) {
-    execute(
-        "DELETE FROM placement_plan WHERE application_id = ANY(?)",
-        applicationIds.toTypedArray()
-    )
+    execute {
+        sql("DELETE FROM placement_plan WHERE application_id = ANY(${bind(applicationIds)})")
+    }
 }
 
 fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: ApplicationId) {

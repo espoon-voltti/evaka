@@ -39,10 +39,13 @@ class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     fun Database.Transaction.updateShowForCitizen() {
-        execute(
-            "UPDATE service_need_option SET show_for_citizen=FALSE WHERE id=? OR id=?",
-            snPreschoolDaycare45.id,
-            snPreparatoryDaycare50.id
-        )
+        execute {
+            sql(
+                """
+UPDATE service_need_option SET show_for_citizen=FALSE
+WHERE id=${bind(snPreschoolDaycare45.id)} OR id=${bind(snPreparatoryDaycare50.id)}
+"""
+            )
+        }
     }
 }

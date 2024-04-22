@@ -22,17 +22,16 @@ fun Database.Transaction.deletePaymentDraftsByDateRange(range: DateRange) {
 }
 
 fun Database.Transaction.insertPaymentDrafts(payments: List<PaymentDraft>) {
-    val batch =
-        prepareBatch(
+    executeBatch(payments) {
+        sql(
             """
-        INSERT INTO payment (unit_id, unit_name, period, amount, status)
-        SELECT :unitId, d.name, :period, :amount, 'DRAFT'
-        FROM daycare d
-        WHERE d.id = :unitId
-    """
+INSERT INTO payment (unit_id, unit_name, period, amount, status)
+SELECT ${bind { it.unitId }}, d.name, ${bind { it.period }}, ${bind { it.amount }}, 'DRAFT'
+FROM daycare d
+WHERE d.id = ${bind { it.unitId }}
+"""
         )
-    payments.forEach { batch.bindKotlin(it).add() }
-    batch.execute()
+    }
 }
 
 fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List<Payment> {
@@ -142,23 +141,22 @@ fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
 }
 
 fun Database.Transaction.updatePaymentDraftsAsSent(payments: List<Payment>, now: HelsinkiDateTime) {
-    val batch =
-        prepareBatch(
+    executeBatch(payments) {
+        sql(
             """
-        UPDATE payment SET
-            status = 'SENT',
-            number = :number,
-            payment_date = :paymentDate,
-            due_date = :dueDate,
-            sent_at = :now,
-            sent_by = :sentBy,
-            unit_name = :unit.name,
-            unit_business_id = :unit.businessId,
-            unit_iban = :unit.iban,
-            unit_provider_id = :unit.providerId
-        WHERE id = :id
-        """
+UPDATE payment SET
+    status = 'SENT',
+    number = ${bind { it.number }},
+    payment_date = ${bind { it.paymentDate }},
+    due_date = ${bind { it.dueDate }},
+    sent_at = ${bind(now)},
+    sent_by = ${bind { it.sentBy }},
+    unit_name = ${bind { it.unit.name }},
+    unit_business_id = ${bind { it.unit.businessId }},
+    unit_iban = ${bind { it.unit.iban }},
+    unit_provider_id = ${bind { it.unit.providerId }}
+WHERE id = ${bind { it.id }}
+"""
         )
-    payments.forEach { batch.bind("now", now).bindKotlin(it).add() }
-    batch.execute()
+    }
 }

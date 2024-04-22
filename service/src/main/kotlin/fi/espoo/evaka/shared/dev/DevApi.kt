@@ -654,21 +654,31 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createMessageAccounts(db: Database) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.execute(
-                    "INSERT INTO message_account (daycare_group_id, type) SELECT id, 'GROUP'::message_account_type as type FROM daycare_group ON CONFLICT DO NOTHING"
-                )
-                tx.execute(
-                    "INSERT INTO message_account (person_id, type) SELECT id, 'CITIZEN'::message_account_type as type FROM person ON CONFLICT DO NOTHING"
-                )
-                tx.execute(
-                    "INSERT INTO message_account (employee_id, type) SELECT employee_id, 'PERSONAL'::message_account_type as type FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' OR role = 'SPECIAL_EDUCATION_TEACHER' ON CONFLICT DO NOTHING"
-                )
-                tx.execute(
-                    "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING"
-                )
-                tx.execute(
-                    "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING"
-                )
+                tx.execute {
+                    sql(
+                        "INSERT INTO message_account (daycare_group_id, type) SELECT id, 'GROUP'::message_account_type as type FROM daycare_group ON CONFLICT DO NOTHING"
+                    )
+                }
+                tx.execute {
+                    sql(
+                        "INSERT INTO message_account (person_id, type) SELECT id, 'CITIZEN'::message_account_type as type FROM person ON CONFLICT DO NOTHING"
+                    )
+                }
+                tx.execute {
+                    sql(
+                        "INSERT INTO message_account (employee_id, type) SELECT employee_id, 'PERSONAL'::message_account_type as type FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' OR role = 'SPECIAL_EDUCATION_TEACHER' ON CONFLICT DO NOTHING"
+                    )
+                }
+                tx.execute {
+                    sql(
+                        "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING"
+                    )
+                }
+                tx.execute {
+                    sql(
+                        "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING"
+                    )
+                }
             }
         }
     }
@@ -1638,7 +1648,7 @@ private fun <T> Database.Connection.withLockedDatabase(
     do {
         try {
             return transaction {
-                it.execute("SELECT lock_database_nowait()")
+                it.execute { sql("SELECT lock_database_nowait()") }
                 f(it)
             }
         } catch (e: UnableToExecuteStatementException) {
@@ -1700,14 +1710,15 @@ ON CONFLICT DO NOTHING
 }
 
 fun Database.Transaction.deleteAndCascadeEmployee(id: EmployeeId) {
-    execute("DELETE FROM message_account WHERE employee_id = ?", id)
-    execute("DELETE FROM employee_pin WHERE user_id = ?", id)
-    execute("DELETE FROM employee WHERE id = ?", id)
+    execute { sql("DELETE FROM message_account WHERE employee_id = ${bind(id)}") }
+    execute { sql("DELETE FROM employee_pin WHERE user_id = ${bind(id)}") }
+    execute { sql("DELETE FROM employee WHERE id = ${bind(id)}") }
 }
 
 fun Database.Transaction.insertServiceNeedOptions() {
-    execute(
-        """
+    execute {
+        sql(
+            """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to) VALUES
     ('7406df92-e715-11ec-9ec2-9b7ff580dcb4', 'Kokopäiväinen', 'Kokopäiväinen', 'Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.75, 1.0, 1.75, 35, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25h/viikko', 'mer än 25 h/vecka', '2000-01-01'::date, NULL),
     ('7406e0be-e715-11ec-9ec2-c76f979e1897', 'Osapäiväinen', 'Osapäiväinen', 'Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.54, 1.75, 0.54, 1.75, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka', '2000-01-01'::date, NULL),
@@ -1721,12 +1732,14 @@ INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_
     ('7406e186-e715-11ec-9ec2-73d12d14969d', 'Kokopäiväinen tilapäinen', 'Kokopäiväinen tilapäinen', 'Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 1.0, 1.75, 1.0, 1.75, 35, FALSE, TRUE, '', '', '', '', '2000-01-01'::date, NULL),
     ('7406e19a-e715-11ec-9ec2-875be5d177c9', 'Osapäiväinen tilapäinen', 'Osapäiväinen tilapäinen', 'Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.54, 1.75, 0.54, 1.75, 25, TRUE, TRUE, '', '', '', '', '2000-01-01'::date, NULL)
 """
-    )
+        )
+    }
 }
 
 fun Database.Transaction.insertServiceNeedOptionVoucherValues() {
-    execute(
-        """
+    execute {
+        sql(
+            """
 INSERT INTO service_need_option_voucher_value (service_need_option_id, validity, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y) VALUES
     ('7406df92-e715-11ec-9ec2-9b7ff580dcb4', daterange('2000-01-01', NULL, '[]'), 87000, 1.0, 87000, 134850, 1.0, 134850),
     ('7406e0be-e715-11ec-9ec2-c76f979e1897', daterange('2000-01-01', NULL, '[]'), 87000, 0.6, 52200, 134850, 0.6, 80910),
@@ -1740,7 +1753,8 @@ INSERT INTO service_need_option_voucher_value (service_need_option_id, validity,
     ('7406e186-e715-11ec-9ec2-73d12d14969d', daterange('2000-01-01', NULL, '[]'), 87000, 0.0, 0, 134850, 0.0, 0),
     ('7406e19a-e715-11ec-9ec2-875be5d177c9', daterange('2000-01-01', NULL, '[]'), 87000, 0.0, 0, 134850, 0.0, 0)
 """
-    )
+        )
+    }
 }
 
 fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) =

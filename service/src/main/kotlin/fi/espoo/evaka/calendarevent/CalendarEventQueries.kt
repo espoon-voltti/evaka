@@ -123,35 +123,19 @@ fun Database.Transaction.createCalendarEventAttendees(
     tree: Map<GroupId, Set<ChildId>?>?
 ) {
     if (tree != null) {
-        val batch =
-            prepareBatch(
-                """
-            INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
-            VALUES (:eventId, :unitId, :groupId, :childId)
-        """
-                    .trimIndent()
-            )
-        tree.forEach { (groupId, childIds) ->
-            if (childIds != null) {
-                childIds.forEach { childId ->
-                    batch
-                        .bind("eventId", eventId)
-                        .bind("unitId", unitId)
-                        .bind("groupId", groupId)
-                        .bind("childId", childId)
-                        .add()
-                }
-            } else {
-                val childId: ChildId? = null
-                batch
-                    .bind("eventId", eventId)
-                    .bind("unitId", unitId)
-                    .bind("groupId", groupId)
-                    .bind("childId", childId)
-                    .add()
+        val rows: Sequence<Pair<GroupId, ChildId?>> =
+            tree.asSequence().flatMap { (groupId, childIds) ->
+                childIds?.asSequence()?.map { childId -> Pair(groupId, childId) }
+                    ?: sequenceOf(Pair(groupId, null))
             }
+        executeBatch(rows) {
+            sql(
+                """
+INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
+VALUES (${bind(eventId)}, ${bind(unitId)}, ${bind { (groupId, _) -> groupId }}, ${bind { (_, childId) -> childId }})
+"""
+            )
         }
-        batch.execute()
     } else {
         createCalendarEventAttendee(eventId, unitId, null, null)
     }

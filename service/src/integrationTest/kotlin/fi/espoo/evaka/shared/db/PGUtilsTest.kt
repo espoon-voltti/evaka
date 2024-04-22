@@ -20,10 +20,10 @@ class PGUtilsTest : PureJdbiTest(resetDbBeforeEach = false) {
                         try {
                             try {
                                 try {
-                                    tx.execute(
+                                    tx.execute {
                                         // language=
-                                        "Not valid SQL"
-                                    )
+                                        sql("Not valid SQL")
+                                    }
                                 } catch (e: Throwable) {
                                     throw Exception("Wrap", e)
                                 }

@@ -39,9 +39,11 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.execute(
-                "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')"
-            )
+            tx.execute {
+                sql(
+                    "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')"
+                )
+            }
             child =
                 tx.createChild(
                     Child(

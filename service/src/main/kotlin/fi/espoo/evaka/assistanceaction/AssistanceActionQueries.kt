@@ -55,19 +55,16 @@ fun Database.Transaction.insertAssistanceAction(
 fun Database.Transaction.insertAssistanceActionOptionRefs(
     actionId: AssistanceActionId,
     options: Set<String>
-): IntArray {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO assistance_action_option_ref (action_id, option_id)
-        VALUES (:action_id, (SELECT id FROM assistance_action_option WHERE value = :option))
-        ON CONFLICT DO NOTHING
-        """
-            .trimIndent()
-    val batch = prepareBatch(sql)
-    options.forEach { option -> batch.bind("action_id", actionId).bind("option", option).add() }
-    return batch.execute()
-}
+): IntArray =
+    executeBatch(options) {
+        sql(
+            """
+INSERT INTO assistance_action_option_ref (action_id, option_id)
+VALUES (${bind(actionId)}, (SELECT id FROM assistance_action_option WHERE value = ${bind { it }}))
+ON CONFLICT DO NOTHING
+"""
+        )
+    }
 
 fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction {
     // language=sql

@@ -212,7 +212,12 @@ sealed interface PredicateSql {
     }
 
     class Builder : SqlBuilder() {
+        private var bindings: List<ValueBinding<out Any?>> = emptyList()
         private var used: Boolean = false
+
+        override fun addBinding(binding: ValueBinding<*>) {
+            this.bindings += binding
+        }
 
         fun where(@Language("sql", prefix = "SELECT WHERE ") sql: String): PredicateSql {
             check(!used) { "builder has already been used" }

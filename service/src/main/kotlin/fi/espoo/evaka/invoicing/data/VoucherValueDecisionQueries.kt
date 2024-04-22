@@ -104,7 +104,7 @@ INSERT INTO voucher_value_decision (
     ${bind(decision.difference)},
     ${bind(decision.created)}
 ) ON CONFLICT (id) DO UPDATE SET
-    status = ${bind(decision.status)}::voucher_value_decision_status,
+    status = ${bind(decision.status)},
     decision_number = ${bind(decision.decisionNumber)},
     valid_from = ${bind(decision.validFrom)},
     valid_to = ${bind(decision.validTo)},
@@ -540,36 +540,26 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
     decisionHandlerId: EmployeeId?,
     alwaysUseDaycareFinanceDecisionHandler: Boolean
 ) {
-    val sql =
-        """
-        UPDATE voucher_value_decision SET
-            status = :status::voucher_value_decision_status,
-            decision_number = nextval('voucher_value_decision_number_sequence'),
-            approved_by = :approvedBy,
-            decision_handler = (CASE
-                WHEN :decisionHandlerId IS NOT NULL THEN :decisionHandlerId
-                WHEN daycare.finance_decision_handler IS NOT NULL AND :alwaysUseDaycareFinanceDecisionHandler = true THEN daycare.finance_decision_handler
-                WHEN daycare.finance_decision_handler IS NOT NULL AND vd.decision_type = 'NORMAL' THEN daycare.finance_decision_handler
-                ELSE :approvedBy
-            END),
-            approved_at = :approvedAt
-        FROM voucher_value_decision AS vd
-        JOIN daycare ON vd.placement_unit_id = daycare.id
-        WHERE vd.id = :id AND voucher_value_decision.id = vd.id
-        """
-
-    val batch = prepareBatch(sql)
-    ids.forEach { id ->
-        batch
-            .bind("status", VoucherValueDecisionStatus.WAITING_FOR_SENDING)
-            .bind("approvedBy", approvedBy)
-            .bind("approvedAt", approvedAt)
-            .bind("id", id)
-            .bind("decisionHandlerId", decisionHandlerId)
-            .bind("alwaysUseDaycareFinanceDecisionHandler", alwaysUseDaycareFinanceDecisionHandler)
-            .add()
+    executeBatch(ids) {
+        sql(
+            """
+UPDATE voucher_value_decision SET
+    status = ${bind(VoucherValueDecisionStatus.WAITING_FOR_SENDING)},
+    decision_number = nextval('voucher_value_decision_number_sequence'),
+    approved_by = ${bind(approvedBy)},
+    decision_handler = (CASE
+        WHEN ${bind(decisionHandlerId)} IS NOT NULL THEN ${bind(decisionHandlerId)}
+        WHEN daycare.finance_decision_handler IS NOT NULL AND ${bind(alwaysUseDaycareFinanceDecisionHandler)} = true THEN daycare.finance_decision_handler
+        WHEN daycare.finance_decision_handler IS NOT NULL AND vd.decision_type = 'NORMAL' THEN daycare.finance_decision_handler
+        ELSE ${bind(approvedBy)}
+    END),
+    approved_at = ${bind(approvedAt)}
+FROM voucher_value_decision AS vd
+JOIN daycare ON vd.placement_unit_id = daycare.id
+WHERE vd.id = ${bind { id -> id }} AND voucher_value_decision.id = vd.id
+"""
+        )
     }
-    batch.execute()
 }
 
 fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId): String? {
@@ -670,19 +660,17 @@ fun Database.Transaction.updateVoucherValueDecisionEndDates(
     updatedDecisions: List<VoucherValueDecision>,
     now: HelsinkiDateTime
 ) {
-    prepareBatch(
-            "UPDATE voucher_value_decision SET valid_to = :validTo, validity_updated_at = :now WHERE id = :id"
+    executeBatch(updatedDecisions) {
+        sql(
+            """
+UPDATE voucher_value_decision
+SET
+    valid_to = ${bind { it.validTo }},
+    validity_updated_at = ${bind(now)}
+WHERE id = ${bind { it.id }}
+"""
         )
-        .also { batch ->
-            updatedDecisions.forEach { decision ->
-                batch
-                    .bind("id", decision.id)
-                    .bind("validTo", decision.validTo)
-                    .bind("now", now)
-                    .add()
-            }
-        }
-        .execute()
+    }
 }
 
 fun Database.Transaction.annulVoucherValueDecisions(
