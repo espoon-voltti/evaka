@@ -362,7 +362,7 @@ export default {
       holidayPeriod: (period: FiniteDateRange) =>
         `Loma-aika: ${period.start.format('dd.MM.')}-${period.end.format(
           'dd.MM.'
-        )}`,
+        )}. Merkitse loma-ajan läsnäolot määräaikaan mennessä. Tarkat kellonajat voi merkitä, kun kyselyn määräaika on päättynyt.`,
       dateRange: 'Läsnäoloaika',
       dateRangeLabel: 'Ilmoita läsnäolo päiville',
       dateRangeInfo: (date: LocalDate) =>
