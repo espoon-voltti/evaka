@@ -13,7 +13,7 @@ javaPlatform {
 dependencies {
     constraints {
         api("com.auth0:java-jwt:4.4.0")
-        api("com.github.kagkarlsson:db-scheduler:13.0.0")
+        api("com.github.kagkarlsson:db-scheduler:14.0.0")
         api(libs.fuel)
         api(libs.fuel.jackson)
         api("com.google.guava:guava:33.1.0-jre")
