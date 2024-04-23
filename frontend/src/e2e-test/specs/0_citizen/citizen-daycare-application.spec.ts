@@ -254,6 +254,7 @@ describe('Citizen daycare applications', () => {
       otherGuardianAgreementStatus: 'AGREED'
     })
     await editorPage.fillData(applicationForm.form)
+    await editorPage.writeAssistanceNeedDescription('Child has assistance need')
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const otherGuardianPage = await Page.open({
@@ -271,6 +272,7 @@ describe('Citizen daycare applications', () => {
 
     await applicationReadView.unitPreferenceSection.waitUntilVisible()
     await applicationReadView.contactInfoSection.waitUntilHidden()
+    await applicationReadView.assistanceNeedDescription.assertTextEquals('')
   })
 
   test('Application can be saved as draft', async () => {

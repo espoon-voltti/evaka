@@ -126,6 +126,9 @@ class CitizenApplicationReadView {
 
   contactInfoSection = this.page.findByDataQa('contact-info-section')
   unitPreferenceSection = this.page.findByDataQa('unit-preference-section')
+  assistanceNeedDescription = new TextInput(
+    this.page.findByDataQa('assistance-need-description')
+  )
 }
 
 class CitizenApplicationEditor {
@@ -162,6 +165,17 @@ class CitizenApplicationEditor {
   guardianPhoneInput = new TextInput(
     this.page.findByDataQa('guardianPhone-input')
   )
+
+  async writeAssistanceNeedDescription(description: string) {
+    const assistanceNeededCheckbox = new Checkbox(
+      this.page.findByDataQa('assistanceNeeded-input')
+    )
+    await assistanceNeededCheckbox.check()
+    const assistanceNeededDescription = new TextInput(
+      this.page.findByDataQa('assistanceDescription-input')
+    )
+    await assistanceNeededDescription.fill(description)
+  }
 
   async waitUntilLoaded() {
     await this.page
