@@ -7,7 +7,7 @@ import { promisify } from 'util'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { DocumentTemplatesListPage } from '../../pages/employee/documents/document-templates'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -18,7 +18,7 @@ let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   admin = (await Fixture.employeeAdmin().save()).data
   page = await Page.open()

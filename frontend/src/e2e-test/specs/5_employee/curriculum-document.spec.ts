@@ -8,7 +8,10 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import config from '../../config'
 import { insertVasuTemplateFixture } from '../../dev-api'
 import { EmployeeBuilder, Fixture, PersonBuilder } from '../../dev-api/fixtures'
-import { createVasuDocument, resetDatabase } from '../../generated/api-clients'
+import {
+  createVasuDocument,
+  resetServiceState
+} from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import { Page } from '../../utils/page'
@@ -17,7 +20,7 @@ import { employeeLogin } from '../../utils/user'
 const mockedTime = HelsinkiDateTime.of(2023, 9, 27, 10, 31)
 const mockedDate = mockedTime.toLocalDate()
 
-beforeEach(async (): Promise<void> => resetDatabase())
+beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('curriculum document with person duplicate', () => {
   let admin: EmployeeBuilder

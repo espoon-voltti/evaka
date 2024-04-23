@@ -23,7 +23,7 @@ import { PersonDetail } from '../../dev-api/types'
 import {
   createMessageAccounts,
   insertGuardians,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
@@ -51,7 +51,7 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 )
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   childInAreaA = fixtures.enduserChildFixtureJari
   childInAreaB = fixtures.enduserChildFixtureKaarina

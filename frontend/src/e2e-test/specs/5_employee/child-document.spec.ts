@@ -7,7 +7,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { EmployeeBuilder, Fixture, PersonBuilder } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import { Page } from '../../utils/page'
@@ -16,7 +16,7 @@ import { employeeLogin } from '../../utils/user'
 const mockedTime = HelsinkiDateTime.of(2023, 9, 27, 10, 31)
 const mockedDate = mockedTime.toLocalDate()
 
-beforeEach(async (): Promise<void> => resetDatabase())
+beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('child document with person duplicate', () => {
   let admin: EmployeeBuilder

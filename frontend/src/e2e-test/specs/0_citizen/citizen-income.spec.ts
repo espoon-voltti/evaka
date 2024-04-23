@@ -17,7 +17,7 @@ import {
   PersonBuilder,
   uuidv4
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
@@ -39,7 +39,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
   const placementEnd = placementStart.addYears(1)
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
 
     daycare = await Fixture.daycare()
       .with(daycareFixture)

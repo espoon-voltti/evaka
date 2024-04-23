@@ -17,7 +17,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
@@ -27,7 +27,7 @@ let page: Page
 let personId: UUID
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   personId = fixtures.enduserChildFixtureJari.id

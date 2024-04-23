@@ -21,7 +21,7 @@ import {
 import {
   createDefaultServiceNeedOptions,
   postAttendances,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
@@ -35,7 +35,7 @@ let group: DaycareGroupBuilder
 let unitSupervisor: EmployeeBuilder
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   await createDefaultServiceNeedOptions()
   const careArea = await Fixture.careArea().with(careAreaFixture).save()

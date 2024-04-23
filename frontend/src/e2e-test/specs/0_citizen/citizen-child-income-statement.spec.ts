@@ -11,7 +11,7 @@ import {
 import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -29,7 +29,7 @@ const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
 

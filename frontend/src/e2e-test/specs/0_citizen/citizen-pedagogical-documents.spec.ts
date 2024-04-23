@@ -17,7 +17,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -36,7 +36,7 @@ const testFilePath = `src/e2e-test/assets`
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
   await createDaycarePlacements({

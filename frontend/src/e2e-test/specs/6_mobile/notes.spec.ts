@@ -16,7 +16,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
@@ -33,7 +33,7 @@ describe('Child and group notes', () => {
   let child: PersonDetail
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
     child = fixtures.enduserChildFixtureJari
     const unit = fixtures.daycareFixture
@@ -126,7 +126,7 @@ describe('Child and group notes (backup care)', () => {
   let backupCareDaycare: DaycareBuilder
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
     child = fixtures.enduserChildFixtureJari
     const unit = fixtures.daycareFixture

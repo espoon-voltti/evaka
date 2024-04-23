@@ -21,7 +21,7 @@ import {
 import { Application } from '../../dev-api/types'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
@@ -33,7 +33,7 @@ let page: Page
 const mockToday = LocalDate.of(2021, 2, 1)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   const admin = (await Fixture.employeeAdmin().save()).data
 

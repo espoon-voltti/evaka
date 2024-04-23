@@ -2133,12 +2133,12 @@ export async function rejectDecisionByCitizen(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.resetDatabase
+* Generated from fi.espoo.evaka.shared.dev.DevApi.resetServiceState
 */
-export async function resetDatabase(): Promise<void> {
+export async function resetServiceState(): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/reset-db`.toString(),
+      url: uri`/reset-service-state`.toString(),
       method: 'POST'
     })
     return json

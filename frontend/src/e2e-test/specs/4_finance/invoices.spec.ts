@@ -27,7 +27,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
@@ -45,7 +45,7 @@ let feeDecisionFixture: FeeDecision
 const adultWithoutSSN = adultFixtureWihtoutSSN
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await insertPersonFixture(adultWithoutSSN)
   await insertParentshipFixtures([

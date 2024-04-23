@@ -27,7 +27,7 @@ import {
   createVasuDocument,
   getSentEmails,
   insertGuardians,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -49,7 +49,7 @@ let daycarePlacementFixture: DevPlacement
 const mockedTime = LocalDate.of(2022, 12, 20)
 
 beforeAll(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   admin = (await Fixture.employeeAdmin().save()).data
 

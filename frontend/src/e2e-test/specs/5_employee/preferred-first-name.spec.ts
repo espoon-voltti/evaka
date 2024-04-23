@@ -4,7 +4,7 @@
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
@@ -18,7 +18,7 @@ let employeePreferredFirstNamePage: EmployeePreferredFirstNamePage
 const firstName = 'Matti-Teppo Seppo'
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   admin = (
     await Fixture.employeeAdmin()
       .with({

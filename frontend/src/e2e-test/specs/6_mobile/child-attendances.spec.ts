@@ -23,7 +23,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevPlacement } from '../../generated/api-types'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
@@ -59,7 +59,7 @@ const openPage = async (
 }
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await createDefaultServiceNeedOptions()
   await Fixture.preschoolTerm().save()
 

@@ -16,7 +16,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
@@ -26,7 +26,7 @@ let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   admin = (await Fixture.employeeAdmin().save()).data
 })

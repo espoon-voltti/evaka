@@ -25,7 +25,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -45,7 +45,7 @@ const group2 = {
 }
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await createDefaultServiceNeedOptions()
   await insertConfirmedDaysTestData()
 

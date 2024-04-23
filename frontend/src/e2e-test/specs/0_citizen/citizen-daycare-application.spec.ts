@@ -17,7 +17,7 @@ import {
 import {
   createDaycarePlacements,
   getApplication,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -39,7 +39,7 @@ const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
   page = await Page.open({ mockedTime: mockedNow })

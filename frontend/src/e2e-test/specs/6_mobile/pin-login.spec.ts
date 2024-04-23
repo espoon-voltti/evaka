@@ -21,7 +21,7 @@ import {
   createFamilyContact,
   createFridgeChild,
   createFridgePartner,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -49,7 +49,7 @@ const childName =
 const pin = '2580'
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   child = fixtures.enduserChildFixtureJari
   const unit = fixtures.daycareFixture

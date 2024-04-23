@@ -17,7 +17,7 @@ import {
 import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
@@ -39,7 +39,7 @@ const individualEventId = uuidv4()
 let jariId: UUID
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
   children = [
     fixtures.enduserChildFixtureJari,

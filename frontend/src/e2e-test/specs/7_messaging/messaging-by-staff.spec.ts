@@ -23,7 +23,7 @@ import {
   createDaycareGroups,
   createMessageAccounts,
   insertGuardians,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
@@ -54,7 +54,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
   LocalTime.of(12, 17)
 )
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
 

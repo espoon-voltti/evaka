@@ -26,7 +26,7 @@ import {
   createVasuDocument,
   getApplicationDecisions,
   publishVasuDocument,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
@@ -52,7 +52,7 @@ const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
   fosterParent = fixtures.enduserGuardianFixture

@@ -18,7 +18,7 @@ import {
   createDefaultServiceNeedOptions,
   createVardaReset,
   createVardaServiceNeed,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -32,7 +32,7 @@ let childId: UUID
 let serviceNeed: ServiceNeedBuilder
 
 beforeAll(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   admin = (await Fixture.employeeAdmin().save()).data
 

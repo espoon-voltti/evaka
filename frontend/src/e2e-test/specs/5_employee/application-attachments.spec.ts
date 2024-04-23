@@ -16,7 +16,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -31,7 +31,7 @@ const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
 
   const fixture = applicationFixture(

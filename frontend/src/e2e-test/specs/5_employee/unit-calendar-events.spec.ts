@@ -17,7 +17,7 @@ import {
 import { Child, Daycare } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
@@ -45,7 +45,7 @@ const testSurveyId = uuidv4()
 const eventTimeId = uuidv4()
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()

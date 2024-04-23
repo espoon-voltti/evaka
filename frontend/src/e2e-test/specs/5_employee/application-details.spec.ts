@@ -21,7 +21,7 @@ import {
   cleanUpMessages,
   createApplicationPlacementPlan,
   getMessages,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ApplicationDetailsPage from '../../pages/admin/application-details-page'
@@ -44,7 +44,7 @@ let separatedFamilyApplication: Application
 let restrictedDetailsGuardianApplication: Application
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   singleParentApplication = applicationFixture(
     fixtures.enduserChildFixtureKaarina,

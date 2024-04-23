@@ -10,7 +10,7 @@ import { Fixture } from '../../dev-api/fixtures'
 import { Daycare, PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevDaycareGroup, DevPlacement } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -30,7 +30,7 @@ const placementDates = () => ({
 })
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
   unitFixture = fixtures.daycareFixture

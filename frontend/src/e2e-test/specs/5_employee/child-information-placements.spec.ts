@@ -21,14 +21,14 @@ import {
   createDaycareGroups,
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
-  resetDatabase,
+  resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetDatabase())
+beforeEach(async (): Promise<void> => resetServiceState())
 
 const setupPlacement = async (
   placementId: string,

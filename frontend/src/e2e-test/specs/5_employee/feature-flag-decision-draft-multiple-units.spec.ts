@@ -21,7 +21,7 @@ import {
   cleanUpMessages,
   createDefaultServiceNeedOptions,
   getApplicationDecisions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
@@ -37,7 +37,7 @@ let fixtures: AreaAndPersonFixtures
 let serviceWorker: DevEmployee
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data

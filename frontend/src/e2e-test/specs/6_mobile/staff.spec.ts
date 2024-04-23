@@ -8,7 +8,7 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import StaffPage from '../../pages/mobile/staff-page'
@@ -25,7 +25,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 const today = now.toLocalDate()
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
 

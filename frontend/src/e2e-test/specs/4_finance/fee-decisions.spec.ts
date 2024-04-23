@@ -22,7 +22,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { insertGuardians, resetDatabase } from '../../generated/api-clients'
+import { insertGuardians, resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FeeDecisionsPage,
@@ -36,7 +36,7 @@ let page: Page
 let feeDecisionsPage: FeeDecisionsPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()

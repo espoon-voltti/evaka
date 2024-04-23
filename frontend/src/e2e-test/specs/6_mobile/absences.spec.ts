@@ -6,7 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import MobileAbsencesPage from '../../pages/mobile/absences-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -22,7 +22,7 @@ let childPage: MobileChildPage
 let absencesPage: MobileAbsencesPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const area = await Fixture.careArea().save()
   const unit = await Fixture.daycare()
     .with({

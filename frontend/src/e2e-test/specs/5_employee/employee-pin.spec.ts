@@ -4,7 +4,7 @@
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
@@ -17,7 +17,7 @@ let nav: EmployeeNav
 let pinPage: EmployeePinPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   admin = (await Fixture.employeeAdmin().save()).data
 
   page = await Page.open()

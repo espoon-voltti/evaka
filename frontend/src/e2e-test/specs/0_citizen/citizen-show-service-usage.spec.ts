@@ -13,7 +13,7 @@ import {
   enduserGuardianFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -35,7 +35,7 @@ async function openCalendarPage() {
 
 describe('Service time usage', () => {
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
 
     await Fixture.careArea().with(careAreaFixture).save()
     await Fixture.daycare().with(daycareFixture).save()
@@ -193,7 +193,7 @@ describe('Service time usage', () => {
 })
 describe('Service time alert', () => {
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
 
     await Fixture.careArea().with(careAreaFixture).save()
     await Fixture.daycare().with(daycareFixture).save()

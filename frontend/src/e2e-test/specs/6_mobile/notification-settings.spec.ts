@@ -9,7 +9,7 @@ import {
   DaycareBuilder,
   Fixture
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { SettingsPage } from '../../pages/mobile/settings-page'
 import UnitListPage from '../../pages/mobile/unit-list-page'
@@ -27,7 +27,7 @@ const enabledPilotFeatures: PilotFeature[] = [
 ]
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   area = await Fixture.careArea().save()
   unit = await Fixture.daycare()
     .with({

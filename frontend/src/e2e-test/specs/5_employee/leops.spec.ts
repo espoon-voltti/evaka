@@ -11,7 +11,7 @@ import { Fixture, uuidv4 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   deleteVasuTemplates,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -34,7 +34,7 @@ let childInformationPage: ChildInformationPage
 let childId: UUID
 
 beforeAll(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   admin = (await Fixture.employeeAdmin().save()).data
 

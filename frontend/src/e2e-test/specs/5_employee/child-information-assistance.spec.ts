@@ -20,7 +20,7 @@ import {
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -39,7 +39,7 @@ let voucherUnitId: UUID
 let admin: DevEmployee
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()

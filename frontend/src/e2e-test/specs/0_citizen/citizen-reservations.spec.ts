@@ -29,7 +29,7 @@ import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
@@ -68,7 +68,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   let fixtures: AreaAndPersonFixtures
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
 
     children = [
@@ -563,7 +563,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
 describe.each(e)('Calendar day content (%s)', (env) => {
   async function init(options?: { placementType?: PlacementType }) {
-    await resetDatabase()
+    await resetServiceState()
 
     await Fixture.careArea().with(careAreaFixture).save()
     await Fixture.daycare().with(daycareFixture).save()
@@ -861,7 +861,7 @@ describe('Citizen calendar child visibility', () => {
   let child2: PersonDetail
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
     child = fixtures.enduserChildFixtureJari
     child2 = fixtures.enduserChildFixtureKaarina
@@ -1016,7 +1016,7 @@ describe('Citizen calendar visibility', () => {
   let daycareId: string
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     const fixtures = await initializeAreaAndPersonData()
     child = fixtures.enduserChildFixtureJari
     daycareId = fixtures.daycareFixture.id
@@ -1100,7 +1100,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
   let fixtures: AreaAndPersonFixtures
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
     const careArea = await Fixture.careArea().with(careArea2Fixture).save()
     await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()

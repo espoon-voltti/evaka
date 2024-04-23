@@ -11,7 +11,7 @@ import { UUID } from 'lib-common/types'
 import { Fixture } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -31,7 +31,7 @@ let page: Page
 const today = LocalDate.of(2023, 9, 13) // Wed
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 })
 
 const setupTestData = async ({

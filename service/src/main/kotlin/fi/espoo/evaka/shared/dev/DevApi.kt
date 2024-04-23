@@ -282,8 +282,8 @@ class DevApi(
         }
     }
 
-    @PostMapping("/reset-db")
-    fun resetDatabase(db: Database, clock: EvakaClock) {
+    @PostMapping("/reset-service-state")
+    fun resetServiceState(db: Database, clock: EvakaClock) {
         // Run async jobs before database reset to avoid database locks/deadlocks
         runAllAsyncJobs(clock)
 

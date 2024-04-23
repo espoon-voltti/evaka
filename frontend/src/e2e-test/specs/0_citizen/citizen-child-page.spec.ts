@@ -21,7 +21,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevPlacement } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
@@ -38,7 +38,7 @@ const mockedDate = LocalDate.of(2022, 3, 1)
 
 describe('Citizen children page', () => {
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
 
     page = await Page.open({
@@ -516,7 +516,7 @@ describe.each(['desktop', 'mobile'] as const)(
   'Citizen children page with weak login (%s)',
   (env) => {
     beforeEach(async () => {
-      await resetDatabase()
+      await resetServiceState()
       fixtures = await initializeAreaAndPersonData()
 
       const viewport =

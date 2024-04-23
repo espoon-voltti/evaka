@@ -18,7 +18,7 @@ import {
   Fixture,
   PersonBuilder
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -78,7 +78,7 @@ async function assertCalendarDayRange(
 }
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })

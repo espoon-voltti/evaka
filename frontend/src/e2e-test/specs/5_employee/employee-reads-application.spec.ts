@@ -8,7 +8,7 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -18,7 +18,7 @@ let page: Page
 let applicationReadView: ApplicationReadView
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   const admin = await Fixture.employeeAdmin().save()
 

@@ -29,7 +29,7 @@ import {
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
   createVoucherValues,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -39,7 +39,7 @@ let page: Page
 let guardianPage: GuardianInformationPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await createDefaultServiceNeedOptions()
   await initializeAreaAndPersonData()
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()

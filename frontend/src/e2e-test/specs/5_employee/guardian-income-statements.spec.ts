@@ -19,7 +19,7 @@ import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   insertGuardians,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -32,7 +32,7 @@ let child: PersonDetail
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   personId = fixtures.enduserGuardianFixture.id

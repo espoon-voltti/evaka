@@ -20,7 +20,7 @@ import {
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import {
   getApplicationDecisions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
@@ -36,7 +36,7 @@ let decisionMaker: DevEmployee
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   decisionMaker = (await Fixture.employeeServiceWorker().save()).data
 })

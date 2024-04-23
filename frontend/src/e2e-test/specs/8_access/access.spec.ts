@@ -8,7 +8,7 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
@@ -20,7 +20,7 @@ let nav: EmployeeNav
 let childInfo: ChildInformationPage
 
 beforeAll(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await Fixture.placement()
     .with({

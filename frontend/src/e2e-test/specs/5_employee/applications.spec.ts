@@ -9,7 +9,7 @@ import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import { Family } from '../../dev-api/types'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
@@ -20,7 +20,7 @@ let applicationsPage: ApplicationsPage
 let familyWithDeadGuardian: Family
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   familyWithDeadGuardian = (await initializeAreaAndPersonData())
     .familyWithDeadGuardian
   const serviceWorker = await Fixture.employeeServiceWorker().save()
