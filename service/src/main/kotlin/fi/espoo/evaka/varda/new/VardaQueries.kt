@@ -204,6 +204,7 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0) {
                     SELECT child_id, null
                     FROM placement pl
                     WHERE
+                        pl.type = ANY(${bind(vardaPlacementTypes)}) AND
                         NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = pl.child_id) AND
                         NOT EXISTS (SELECT FROM varda_reset_child vrc WHERE vrc.evaka_child_id = pl.child_id)
                     ON CONFLICT (child_id) DO NOTHING
