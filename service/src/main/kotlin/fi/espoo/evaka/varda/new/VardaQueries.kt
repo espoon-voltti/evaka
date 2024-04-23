@@ -182,18 +182,22 @@ fun Database.Read.getVardaPerson(childId: ChildId): VardaPerson =
 fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0) {
     if (migrationSpeed > 0) {
         // Move children from varda_reset_child (old integration) to varda_state (new integration)
-        createUpdate {
-                sql(
-                    """
+        execute {
+            sql(
+                """
+                WITH inserted_children AS (
                     INSERT INTO varda_state (child_id, state)
                     SELECT evaka_child_id, null
                     FROM varda_reset_child
                     WHERE NOT EXISTS (SELECT FROM varda_state WHERE child_id = evaka_child_id)
                     LIMIT ${bind(migrationSpeed)}
-                    """
+                    RETURNING child_id
                 )
-            }
-            .execute()
+                DELETE FROM varda_reset_child
+                WHERE evaka_child_id IN (SELECT child_id FROM inserted_children)
+                """
+            )
+        }
     }
 
     // Insert newly placed children to varda_state
