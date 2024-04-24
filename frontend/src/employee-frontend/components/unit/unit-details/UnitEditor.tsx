@@ -817,8 +817,8 @@ export default function UnitEditor(props: Props) {
 
   // recompute form state after when it has been fetched from API. e.g. on form submit
   useEffect(() => {
-    setForm(initialData)
-  }, [initialData])
+    if (!props.editable) setForm(initialData)
+  }, [initialData, props.editable])
 
   const [validationErrors, setValidationErrors] = useState<UnitEditorErrors>({
     rangeErrors: {
