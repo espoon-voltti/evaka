@@ -64,7 +64,8 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed =
             allWorkers.find { it.id == feeDecision.decisionHandlerId }?.firstName,
         financeDecisionHandlerLastName =
             allWorkers.find { it.id == feeDecision.decisionHandlerId }?.lastName,
-        created = feeDecision.created
+        created = feeDecision.created,
+        documentContainsContactInfo = false
     )
 
 fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary =
