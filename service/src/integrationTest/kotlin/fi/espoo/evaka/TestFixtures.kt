@@ -774,6 +774,7 @@ fun Database.Transaction.insertApplication(
     maxFeeAccepted: Boolean = false,
     preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
+    sentDate: LocalDate? = null,
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi",
     serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
@@ -781,7 +782,7 @@ fun Database.Transaction.insertApplication(
 ): ApplicationDetails {
     insertTestApplication(
         id = applicationId,
-        sentDate = null,
+        sentDate = sentDate,
         dueDate = null,
         status = status,
         guardianId = guardian.id,

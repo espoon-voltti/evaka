@@ -495,7 +495,7 @@ data class PersonJSON(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
-    val ophPersonOid: String? = "",
+    val ophPersonOid: String? = null,
     val updatedFromVtj: HelsinkiDateTime? = null,
 ) {
     companion object {

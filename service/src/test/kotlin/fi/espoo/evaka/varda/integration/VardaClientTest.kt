@@ -75,7 +75,9 @@ class VardaClientTest {
                     sourceSystem = "SourceSystemVarda",
                     startDate = LocalDate.of(2020, 1, 1),
                     endDate = null,
-                    localDevPort = null
+                    localDevPort = null,
+                    newIntegrationEnabled = false,
+                    newIntegrationMigrationSpeed = 0
                 )
             )
 

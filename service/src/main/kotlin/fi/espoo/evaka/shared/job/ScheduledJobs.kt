@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.ScheduledJobsEnv
+import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedSentTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
@@ -32,6 +33,7 @@ import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
 import fi.espoo.evaka.varda.old.VardaResetService
 import fi.espoo.evaka.varda.old.VardaUpdateService
 import fi.espoo.evaka.vasu.closeVasusWithExpiredTemplate
@@ -189,6 +191,8 @@ class ScheduledJobs(
     // private val vardaService: VardaService, // Use this once varda fixes MA003 retry glitch
     private val vardaUpdateService: VardaUpdateService,
     private val vardaResetService: VardaResetService,
+    private val vardaUpdateServiceNew: VardaUpdateServiceNew,
+    private val vardaEnv: VardaEnv,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
@@ -286,6 +290,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
+        if (vardaEnv.newIntegrationEnabled) {
+            vardaUpdateServiceNew.planUpdate(db, clock, vardaEnv.newIntegrationMigrationSpeed)
+        }
+
         // Use this once varda fixes their MA003 validation retry glitch
         // vardaService.startVardaUpdate(db, clock)
         // Remove this once varda fixes their MA003 validation retry glitch
@@ -294,7 +302,11 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     // Remove this once varda fixes their MA003 validation retry glitch
     fun vardaReset(db: Database.Connection, clock: EvakaClock) {
-        vardaResetService.planVardaReset(db, clock, addNewChildren = true)
+        vardaResetService.planVardaReset(
+            db,
+            clock,
+            addNewChildren = !vardaEnv.newIntegrationEnabled
+        )
     }
 
     fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {

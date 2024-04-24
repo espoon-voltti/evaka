@@ -56,6 +56,7 @@ import fi.espoo.evaka.shared.EmployeePinId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FamilyContactId
 import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.FosterParentId
 import fi.espoo.evaka.shared.GroupId
@@ -79,6 +80,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -1688,3 +1690,202 @@ VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bi
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
+
+fun Database.Transaction.insert(decision: DevFeeDecision): FeeDecisionId {
+    return createUpdate {
+            sql(
+                """
+INSERT INTO fee_decision (
+    id,
+    status,
+    valid_during,
+    decision_type,
+    head_of_family_id,
+    head_of_family_income,
+    partner_id,
+    partner_income,
+    family_size,
+    fee_thresholds,
+    decision_number,
+    document_key,
+    approved_at,
+    approved_by_id,
+    decision_handler_id,
+    sent_at,
+    cancelled_at,
+    total_fee,
+    difference
+) VALUES (
+    ${bind(decision.id)},
+    ${bind(decision.status)},
+    ${bind(decision.validDuring)},
+    ${bind(decision.decisionType)},
+    ${bind(decision.headOfFamilyId)},
+    ${bindJson(decision.headOfFamilyIncome)},
+    ${bind(decision.partnerId)},
+    ${bindJson(decision.partnerIncome)},
+    ${bind(decision.familySize)},
+    ${bindJson(decision.feeThresholds)},
+    ${bind(decision.decisionNumber)},
+    ${bind(decision.documentKey)},
+    ${bind(decision.approvedAt)},
+    ${bind(decision.approvedById)},
+    ${bind(decision.decisionHandlerId)},
+    ${bind(decision.sentAt)},
+    ${bind(decision.cancelledAt)},
+    ${bind(decision.totalFee)},
+    ${bind(decision.difference)}
+)
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+}
+
+fun Database.Transaction.insert(feeDecisionChild: DevFeeDecisionChild) {
+    createUpdate {
+            sql(
+                """
+INSERT INTO fee_decision_child (
+    id,
+    fee_decision_id,
+    child_id,
+    child_date_of_birth,
+    sibling_discount,
+    placement_unit_id,
+    placement_type,
+    service_need_fee_coefficient,
+    service_need_description_fi,
+    service_need_description_sv,
+    base_fee,
+    fee,
+    fee_alterations,
+    final_fee,
+    service_need_missing,
+    service_need_contract_days_per_month,
+    child_income,
+    service_need_option_id
+) VALUES (
+    ${bind(feeDecisionChild.id)},
+    ${bind(feeDecisionChild.feeDecisionId)},
+    ${bind(feeDecisionChild.childId)},
+    ${bind(feeDecisionChild.childDateOfBirth)},
+    ${bind(feeDecisionChild.siblingDiscount)},
+    ${bind(feeDecisionChild.placementUnitId)},
+    ${bind(feeDecisionChild.placementType)},
+    ${bind(feeDecisionChild.serviceNeedFeeCoefficient)},
+    ${bind(feeDecisionChild.serviceNeedDescriptionFi)},
+    ${bind(feeDecisionChild.serviceNeedDescriptionSv)},
+    ${bind(feeDecisionChild.baseFee)},
+    ${bind(feeDecisionChild.fee)},
+    ${bindJson(feeDecisionChild.feeAlterations)},
+    ${bind(feeDecisionChild.finalFee)},
+    ${bind(feeDecisionChild.serviceNeedMissing)},
+    ${bind(feeDecisionChild.serviceNeedContractDaysPerMonth)},
+    ${bindJson(feeDecisionChild.childIncome)},
+    ${bind(feeDecisionChild.serviceNeedOptionId)}
+)
+"""
+            )
+        }
+        .execute()
+}
+
+fun Database.Transaction.insert(decision: DevVoucherValueDecision): VoucherValueDecisionId {
+    return createUpdate {
+            sql(
+                """
+INSERT INTO voucher_value_decision (
+    id,
+    status,
+    valid_from,
+    valid_to,
+    decision_number,
+    head_of_family_id,
+    partner_id,
+    head_of_family_income,
+    partner_income,
+    family_size,
+    fee_thresholds,
+    document_key,
+    approved_by,
+    approved_at,
+    sent_at,
+    cancelled_at,
+    decision_handler,
+    child_id,
+    child_date_of_birth,
+    base_co_payment,
+    sibling_discount,
+    placement_unit_id,
+    placement_type,
+    co_payment,
+    fee_alterations,
+    base_value,
+    voucher_value,
+    final_co_payment,
+    service_need_fee_coefficient,
+    service_need_voucher_value_coefficient,
+    service_need_fee_description_fi,
+    service_need_fee_description_sv,
+    service_need_voucher_value_description_fi,
+    service_need_voucher_value_description_sv,
+    assistance_need_coefficient,
+    decision_type,
+    annulled_at,
+    validity_updated_at,
+    child_income,
+    difference,
+    service_need_missing
+) VALUES (
+    ${bind(decision.id)},
+    ${bind(decision.status)},
+    ${bind(decision.validFrom)},
+    ${bind(decision.validTo)},
+    ${bind(decision.decisionNumber)},
+    ${bind(decision.headOfFamilyId)},
+    ${bind(decision.partnerId)},
+    ${bindJson(decision.headOfFamilyIncome)},
+    ${bindJson(decision.partnerIncome)},
+    ${bind(decision.familySize)},
+    ${bindJson(decision.feeThresholds)},
+    ${bind(decision.documentKey)},
+    ${bind(decision.approvedBy)},
+    ${bind(decision.approvedAt)},
+    ${bind(decision.sentAt)},
+    ${bind(decision.cancelledAt)},
+    ${bind(decision.decisionHandlerId)},
+    ${bind(decision.childId)},
+    ${bind(decision.childDateOfBirth)},
+    ${bind(decision.baseCoPayment)},
+    ${bind(decision.siblingDiscount)},
+    ${bind(decision.placementUnitId)},
+    ${bind(decision.placementType)},
+    ${bind(decision.coPayment)},
+    ${bindJson(decision.feeAlterations)},
+    ${bind(decision.baseValue)},
+    ${bind(decision.voucherValue)},
+    ${bind(decision.finalCoPayment)},
+    ${bind(decision.serviceNeedFeeCoefficient)},
+    ${bind(decision.serviceNeedVoucherValueCoefficient)},
+    ${bind(decision.serviceNeedFeeDescriptionFi)},
+    ${bind(decision.serviceNeedFeeDescriptionSv)},
+    ${bind(decision.serviceNeedVoucherValueDescriptionFi)},
+    ${bind(decision.serviceNeedVoucherValueDescriptionSv)},
+    ${bind(decision.assistanceNeedCoefficient)},
+    ${bind(decision.decisionType)},
+    ${bind(decision.annulledAt)},
+    ${bind(decision.validityUpdatedAt)},
+    ${bindJson(decision.childIncome)},
+    ${bind(decision.difference)},
+    ${bind(decision.serviceNeedMissing)}
+)
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+}

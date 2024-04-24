@@ -74,11 +74,19 @@ import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
+import fi.espoo.evaka.invoicing.domain.DecisionIncome
+import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotification
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
@@ -141,6 +149,7 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -163,6 +172,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
@@ -1989,7 +1999,7 @@ data class DevPerson(
     val dependants: List<DevPerson> = emptyList(),
     val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,
-    val ophPersonOid: String? = "",
+    val ophPersonOid: String? = null,
     val duplicateOf: PersonId? = null,
     val enabledEmailTypes: List<EmailMessageType>? = null,
 ) {
@@ -2344,4 +2354,120 @@ data class DevAssistanceActionOption(
     val value: String = "TEST_ASSISTANCE_ACTION_OPTION",
     val nameFi: String = "testAssistanceActionOption",
     val descriptionFi: String?
+)
+
+val feeThresholds2020 =
+    FeeThresholds(
+        validDuring = DateRange(LocalDate.of(2020, 8, 1), null),
+        minIncomeThreshold2 = 213600,
+        minIncomeThreshold3 = 275600,
+        minIncomeThreshold4 = 312900,
+        minIncomeThreshold5 = 350200,
+        minIncomeThreshold6 = 387400,
+        incomeMultiplier2 = BigDecimal("0.1070"),
+        incomeMultiplier3 = BigDecimal("0.1070"),
+        incomeMultiplier4 = BigDecimal("0.1070"),
+        incomeMultiplier5 = BigDecimal("0.1070"),
+        incomeMultiplier6 = BigDecimal("0.1070"),
+        maxIncomeThreshold2 = 482300,
+        maxIncomeThreshold3 = 544300,
+        maxIncomeThreshold4 = 581600,
+        maxIncomeThreshold5 = 618900,
+        maxIncomeThreshold6 = 656100,
+        incomeThresholdIncrease6Plus = 14200,
+        siblingDiscount2 = BigDecimal("0.5000"),
+        siblingDiscount2Plus = BigDecimal("0.8000"),
+        maxFee = 28800,
+        minFee = 2700,
+        temporaryFee = 2800,
+        temporaryFeePartDay = 1500,
+        temporaryFeeSibling = 1500,
+        temporaryFeeSiblingPartDay = 800
+    )
+
+data class DevFeeDecision(
+    val id: FeeDecisionId = FeeDecisionId(UUID.randomUUID()),
+    val status: FeeDecisionStatus = FeeDecisionStatus.DRAFT,
+    val validDuring: FiniteDateRange,
+    val decisionType: FeeDecisionType = FeeDecisionType.NORMAL,
+    val headOfFamilyId: PersonId,
+    val headOfFamilyIncome: DecisionIncome? = null,
+    val partnerId: PersonId? = null,
+    val partnerIncome: DecisionIncome? = null,
+    val familySize: Int = 2,
+    val feeThresholds: FeeThresholds = feeThresholds2020,
+    val decisionNumber: Long? = null,
+    val documentKey: String? = null,
+    val approvedAt: HelsinkiDateTime? = null,
+    val approvedById: EvakaUserId? = null,
+    val decisionHandlerId: EvakaUserId? = null,
+    val sentAt: HelsinkiDateTime? = null,
+    val cancelledAt: HelsinkiDateTime? = null,
+    val totalFee: Int = 0,
+    val difference: List<FeeDecisionDifference> = emptyList()
+)
+
+data class DevFeeDecisionChild(
+    val id: UUID = UUID.randomUUID(),
+    val feeDecisionId: FeeDecisionId,
+    val childId: ChildId,
+    val childDateOfBirth: LocalDate = LocalDate.of(2019, 1, 1),
+    val siblingDiscount: Int = 0,
+    val placementUnitId: DaycareId,
+    val placementType: PlacementType = PlacementType.DAYCARE,
+    val serviceNeedFeeCoefficient: BigDecimal = BigDecimal("1.0"),
+    val serviceNeedDescriptionFi: String = "Testipalveluntarve",
+    val serviceNeedDescriptionSv: String = "Testservicebehov",
+    val baseFee: Int = 0,
+    val fee: Int = 0,
+    val feeAlterations: List<FeeAlterationWithEffect> = listOf(),
+    val finalFee: Int = 0,
+    val serviceNeedMissing: Boolean = false,
+    val serviceNeedContractDaysPerMonth: Int? = null,
+    val childIncome: DecisionIncome? = null,
+    val serviceNeedOptionId: ServiceNeedOptionId? = null
+)
+
+data class DevVoucherValueDecision(
+    val id: VoucherValueDecisionId = VoucherValueDecisionId(UUID.randomUUID()),
+    val status: VoucherValueDecisionStatus = VoucherValueDecisionStatus.DRAFT,
+    val validFrom: LocalDate,
+    val validTo: LocalDate,
+    val decisionNumber: Long? = null,
+    val headOfFamilyId: PersonId,
+    val partnerId: PersonId? = null,
+    val headOfFamilyIncome: DecisionIncome? = null,
+    val partnerIncome: DecisionIncome? = null,
+    val familySize: Int = 2,
+    val feeThresholds: FeeThresholds = feeThresholds2020,
+    val documentKey: String? = null,
+    val approvedBy: EvakaUserId? = null,
+    val approvedAt: HelsinkiDateTime? = null,
+    val sentAt: HelsinkiDateTime? = null,
+    val cancelledAt: HelsinkiDateTime? = null,
+    val decisionHandlerId: EvakaUserId? = null,
+    val childId: ChildId,
+    val childDateOfBirth: LocalDate = LocalDate.of(2019, 1, 1),
+    val baseCoPayment: Int = 0,
+    val siblingDiscount: Int = 0,
+    val placementUnitId: DaycareId,
+    val placementType: PlacementType = PlacementType.DAYCARE,
+    val coPayment: Int = 0,
+    val feeAlterations: List<FeeAlterationWithEffect> = listOf(),
+    val baseValue: Int = 134850,
+    val voucherValue: Int = 134850,
+    val finalCoPayment: Int = 0,
+    val serviceNeedFeeCoefficient: BigDecimal = BigDecimal("1.0"),
+    val serviceNeedVoucherValueCoefficient: BigDecimal = BigDecimal("1.0"),
+    val serviceNeedFeeDescriptionFi: String = "Testipalveluntarve",
+    val serviceNeedFeeDescriptionSv: String = "Testservicebehov",
+    val serviceNeedVoucherValueDescriptionFi: String = "Testipalveluseteli",
+    val serviceNeedVoucherValueDescriptionSv: String = "Testservicecheck",
+    val assistanceNeedCoefficient: BigDecimal = BigDecimal("1.0"),
+    val decisionType: VoucherValueDecisionType = VoucherValueDecisionType.NORMAL,
+    val annulledAt: HelsinkiDateTime? = null,
+    val validityUpdatedAt: HelsinkiDateTime? = null,
+    val childIncome: DecisionIncome? = null,
+    val difference: List<VoucherValueDecisionDifference> = emptyList(),
+    val serviceNeedMissing: Boolean = false,
 )
