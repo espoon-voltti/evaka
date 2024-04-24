@@ -67,7 +67,7 @@ interface Props<
 > {
   date: LocalDate
   name: string
-  previousStaffOccupancyEffect?: boolean
+  staffOccupancyEffectDefault: boolean
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
   isExternal: boolean
@@ -104,7 +104,7 @@ function StaffAttendanceDetailsModal<
 >({
   date,
   name,
-  previousStaffOccupancyEffect,
+  staffOccupancyEffectDefault,
   attendances,
   plannedAttendances,
   isExternal,
@@ -183,11 +183,11 @@ function StaffAttendanceDetailsModal<
             arrived: '',
             departed: '',
             type: 'PRESENT',
-            hasStaffOccupancyEffect: previousStaffOccupancyEffect ?? true
+            hasStaffOccupancyEffect: staffOccupancyEffectDefault ?? true
           }
         ]
       })),
-    [defaultGroupId, previousStaffOccupancyEffect]
+    [defaultGroupId, staffOccupancyEffectDefault]
   )
   const [requestBody, errors] = validate(editState)
   const save = useCallback(() => {
