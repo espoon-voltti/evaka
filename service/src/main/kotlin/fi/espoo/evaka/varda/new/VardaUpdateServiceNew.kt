@@ -103,8 +103,7 @@ class VardaUpdateServiceNew(
         val maxUpdatesPerDay = 1000
 
         val today = clock.today()
-        val updater =
-            VardaUpdater(jsonMapper, vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+        val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
         val childIds =
             dbc.transaction { tx ->
@@ -144,8 +143,7 @@ class VardaUpdateServiceNew(
         job: AsyncJob.VardaUpdateChild
     ) {
         val dryRunClient = DryRunClient()
-        val service =
-            VardaUpdater(jsonMapper, vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+        val service = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
         service.updateChild(
             dbc,
@@ -169,7 +167,6 @@ class VardaUpdateServiceNew(
 }
 
 class VardaUpdater(
-    private val jsonMapper: JsonMapper,
     private val vardaEnabledRange: DateRange,
     private val omaOrganisaatioOid: String,
     private val lahdejarjestelma: String
@@ -225,7 +222,7 @@ class VardaUpdater(
         val guardians = tx.getVardaGuardians(childIds)
         val serviceNeeds = tx.getVardaServiceNeeds(childIds, vardaEnabledRange)
         val feeData = tx.getVardaFeeData(childIds, vardaEnabledRange)
-        val updateStates = tx.getVardaUpdateState<EvakaHenkiloNode>(jsonMapper, childIds)
+        val updateStates = tx.getVardaUpdateState<EvakaHenkiloNode>(childIds)
         return childIds.map {
             val evakaState =
                 computeEvakaState(

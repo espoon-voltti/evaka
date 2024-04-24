@@ -227,7 +227,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val updater =
             VardaUpdater(
-                jsonMapper,
                 DateRange(LocalDate.of(2019, 1, 1), null),
                 municipalOrganizerOid,
                 "sourceSystem"
@@ -348,7 +347,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val updater =
             VardaUpdater(
-                jsonMapper,
                 DateRange(LocalDate.of(2019, 1, 1), null),
                 "municipalOrganizerOid",
                 "sourceSystem"
@@ -433,7 +431,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val updater =
             VardaUpdater(
-                jsonMapper,
                 DateRange(LocalDate.of(2019, 1, 1), null),
                 municipalOrganizerOid,
                 "sourceSystem"
@@ -587,7 +584,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val updater =
             VardaUpdater(
-                jsonMapper,
                 DateRange(LocalDate.of(2019, 1, 1), null),
                 municipalOrganizerOid,
                 "sourceSystem"
@@ -700,12 +696,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                "sourceSystem"
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, "sourceSystem")
 
         val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
         assertEquals(
@@ -842,7 +833,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
         }
 
-        val updater = VardaUpdater(jsonMapper, vardaEnabledRange, organizerOid, "sourceSystem")
+        val updater = VardaUpdater(vardaEnabledRange, organizerOid, "sourceSystem")
 
         val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
 
@@ -964,12 +955,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                "sourceSystem"
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, "sourceSystem")
 
         val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
 
@@ -1050,12 +1036,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                "sourceSystem"
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, "sourceSystem")
 
         val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
         assertEquals(
@@ -1159,12 +1140,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                "sourceSystem"
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, "sourceSystem")
 
         val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
         assertEquals(
@@ -1330,12 +1306,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                "sourceSystem"
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, "sourceSystem")
 
         val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
         assertEquals(
@@ -1381,12 +1352,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val applicationDate = placementRange.start.minusMonths(4)
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                sourceSystem
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, sourceSystem)
         val client = DryRunClient()
 
         updater.diffAndUpdate(
@@ -1775,12 +1741,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val client = DryRunClient()
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                sourceSystem
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, sourceSystem)
 
         updater.diffAndUpdate(client, vardaHenkilo = vardaHenkilo, evakaHenkilo = evakaHenkilo)
 
@@ -1956,8 +1917,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         val client = DryRunClient()
-        val updater =
-            VardaUpdater(jsonMapper, DateRange(vardaStart, null), organizerOid, sourceSystem)
+        val updater = VardaUpdater(DateRange(vardaStart, null), organizerOid, sourceSystem)
 
         updater.diffAndUpdate(client, vardaHenkilo = vardaHenkilo, evakaHenkilo = evakaHenkilo)
 
@@ -2081,12 +2041,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val client = DryRunClient()
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                organizerOid,
-                evakaSourceSystem
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, evakaSourceSystem)
 
         updater.diffAndUpdate(client, vardaHenkilo = vardaHenkilo, evakaHenkilo = evakaHenkilo)
 
@@ -2106,12 +2061,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                "organizerOid",
-                "sourceSystem"
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : NotImplementedVardaReadClient() {
             override fun haeHenkilo(
@@ -2129,12 +2079,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         val state =
-            db.read {
-                    it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(
-                        jsonMapper,
-                        listOf(child.id)
-                    )
-                }
+            db.read { it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id)) }
                 .values
                 .first()
 
@@ -2165,12 +2110,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                "organizerOid",
-                "sourceSystem"
-            )
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : NotImplementedVardaReadClient() {
             override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest) =
@@ -2192,6 +2132,44 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val updatedChild = db.read { it.getPersonById(child.id)!! }
         assertEquals("henkilo_oid", updatedChild.ophPersonOid)
+    }
+
+    @Test
+    fun foobar() {
+        val child1 = DevPerson(ssn = "030320A904N")
+        val child2 = DevPerson(ssn = "030320A906Q")
+        val state2 =
+            VardaUpdater.EvakaHenkiloNode(
+                henkilo =
+                    Henkilo(
+                        etunimet = child2.firstName,
+                        sukunimi = child2.lastName,
+                        henkilo_oid = null,
+                        henkilotunnus = child2.ssn,
+                    ),
+                lapset = emptyList()
+            )
+        db.transaction { tx ->
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.execute {
+                sql(
+                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child1.id)}, '{}'::jsonb)"
+                )
+            }
+
+            tx.execute {
+                sql(
+                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child2.id)}, ${bindJson(state2)})"
+                )
+            }
+        }
+
+        val states =
+            db.read { tx ->
+                tx.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child1.id, child2.id))
+            }
+        assertEquals(mapOf(child1.id to null, child2.id to state2), states)
     }
 
     private fun varhaiskasvatuspaatos(

@@ -4,8 +4,7 @@
 
 package fi.espoo.evaka.varda.new
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.JsonMappingException
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -14,6 +13,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
+import org.jdbi.v3.core.result.UnableToProduceResultException
 
 private val vardaPlacementTypes =
     listOf(
@@ -269,26 +269,24 @@ fun Database.Read.getVardaUpdateChildIds(): List<ChildId> =
  * performed in this case.
  */
 inline fun <reified T> Database.Read.getVardaUpdateState(
-    jsonMapper: JsonMapper,
     childIds: List<ChildId>
 ): Map<ChildId, T?> =
     createQuery {
-            sql(
-                "SELECT child_id, state::text FROM varda_state WHERE child_id = ANY (${bind(childIds)})"
-            )
+            sql("SELECT child_id, state FROM varda_state WHERE child_id = ANY (${bind(childIds)})")
         }
-        .toMap { columnPair<ChildId, String?>("child_id", "state") }
-        .mapValues {
-            val text = it.value
-            if (text != null) {
+        .toMap {
+            val childId = column<ChildId>("child_id")
+            val state =
                 try {
-                    jsonMapper.readValue<T>(text)
-                } catch (e: Exception) {
-                    null
+                    jsonColumn<T?>("state")
+                } catch (exc: UnableToProduceResultException) {
+                    if (exc.cause is JsonMappingException) {
+                        null
+                    } else {
+                        throw exc
+                    }
                 }
-            } else {
-                null
-            }
+            childId to state
         }
 
 fun Database.Transaction.setVardaUpdateState(childId: ChildId, state: Any?) {
