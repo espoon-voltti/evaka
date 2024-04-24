@@ -51,8 +51,11 @@ describe.each(e)('Citizen income (%s)', (env) => {
       .daycare(daycare)
       .save()
 
-    guardian = await Fixture.person().with(enduserGuardianFixture).save()
-    const child1 = await Fixture.person().with(child).save()
+    const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
+    guardian = await Fixture.person()
+      .with(enduserGuardianFixture)
+      .withDependants(child)
+      .saveAndUpdateMockVtj()
     await Fixture.child(child1.data.id).save()
     await Fixture.guardian(child1, guardian).save()
     const placement = await Fixture.placement()

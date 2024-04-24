@@ -10,7 +10,6 @@ import config from '../../config'
 import {
   execSimpleApplicationActions,
   insertApplications,
-  insertVtjPersonFixture,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -204,26 +203,21 @@ describe('Citizen application decisions', () => {
   })
 
   test('Guardian sees decisions related to applications made by the other guardian', async () => {
+    const child = (
+      await Fixture.person().with({ ssn: '010116A9219' }).saveAndUpdateMockVtj()
+    ).data
     const guardian = (
-      await Fixture.person().with({ ssn: '010106A973C' }).save()
+      await Fixture.person()
+        .with({ ssn: '010106A973C' })
+        .withDependants(child)
+        .saveAndUpdateMockVtj()
     ).data
-    const child = (await Fixture.person().with({ ssn: '010116A9219' }).save())
-      .data
     const otherGuardian = (
-      await Fixture.person().with({ ssn: '010106A9388' }).save()
+      await Fixture.person()
+        .with({ ssn: '010106A9388' })
+        .withDependants(child)
+        .saveAndUpdateMockVtj()
     ).data
-    await insertVtjPersonFixture({
-      ...child,
-      guardians: [guardian, otherGuardian]
-    })
-    await insertVtjPersonFixture({
-      ...guardian,
-      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
-    })
-    await insertVtjPersonFixture({
-      ...otherGuardian,
-      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
-    })
 
     const application = applicationFixture(
       child,

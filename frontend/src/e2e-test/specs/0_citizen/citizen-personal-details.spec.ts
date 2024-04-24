@@ -30,7 +30,7 @@ const citizenFixture = {
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.person().with(citizenFixture).save()
+  await Fixture.person().with(citizenFixture).saveAndUpdateMockVtj()
   page = await Page.open()
 })
 

@@ -77,7 +77,26 @@ describe('Employee - paper application', () => {
   })
 
   test('Paper application can be created for other non guardian vtj person and child with ssn', async () => {
-    await createApplicationModal.selectVtjPersonAsGuardian('270372-905L') // From service addLegacyVtjMocks()
+    const ssn = '270372-905L'
+    const child = await Fixture.person()
+      .with({
+        ssn: '010106A981M',
+        firstName: 'Lapsi',
+        lastName: 'Korhonen-Hämäläinen'
+      })
+      .saveAndUpdateMockVtj()
+    await Fixture.person()
+      .with({
+        ssn,
+        firstName: 'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
+        lastName: 'Korhonen-Hämäläinen',
+        streetAddress: 'Kamreerintie 2',
+        postalCode: '00370',
+        postOffice: 'Espoo'
+      })
+      .withDependants(child)
+      .saveAndUpdateMockVtj()
+    await createApplicationModal.selectVtjPersonAsGuardian(ssn)
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(

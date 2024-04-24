@@ -43,8 +43,11 @@ beforeEach(async () => {
     .save()
   await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
 
-  guardian = await Fixture.person().with(enduserGuardianFixture).save()
-  const child1 = await Fixture.person().with(child).save()
+  const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
+  guardian = await Fixture.person()
+    .with(enduserGuardianFixture)
+    .withDependants(child1)
+    .saveAndUpdateMockVtj()
   await Fixture.child(child1.data.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement()

@@ -567,8 +567,13 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
     await Fixture.careArea().with(careAreaFixture).save()
     await Fixture.daycare().with(daycareFixture).save()
-    const guardian = await Fixture.person().with(enduserGuardianFixture).save()
-    const child = await Fixture.person().with(enduserChildFixtureKaarina).save()
+    const child = await Fixture.person()
+      .with(enduserChildFixtureKaarina)
+      .saveAndUpdateMockVtj()
+    const guardian = await Fixture.person()
+      .with(enduserGuardianFixture)
+      .withDependants(child)
+      .saveAndUpdateMockVtj()
     await Fixture.child(enduserChildFixtureKaarina.id).save()
     await Fixture.guardian(child, guardian).save()
 

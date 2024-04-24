@@ -80,28 +80,40 @@ export const initializeAreaAndPersonData = async (): Promise<
     .careArea(careArea)
     .save()
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserGuardianFixture)
-    .save()
-  await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildFixtureJari)
-    .save()
+    .saveAndUpdateMockVtj()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildFixtureKaarina)
-    .save()
+    .saveAndUpdateMockVtj()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted)
-    .save()
+    .saveAndUpdateMockVtj()
+  await Fixture.person()
+    .with(areaAndPersonFixtures.enduserGuardianFixture)
+    .withDependants(
+      areaAndPersonFixtures.enduserChildFixtureJari,
+      areaAndPersonFixtures.enduserChildFixtureKaarina,
+      areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted
+    )
+    .saveAndUpdateMockVtj()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildJariOtherGuardianFixture)
-    .save()
+    .withDependants(areaAndPersonFixtures.enduserChildFixtureJari)
+    .saveAndUpdateMockVtj()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserDeceasedChildFixture)
-    .save()
+    .saveAndUpdateMockVtj()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserNonSsnChildFixture)
     .with({ ssn: undefined })
     .save()
   await devApi.insertChildFixtures([])
+
+  await Promise.all(
+    areaAndPersonFixtures.familyWithTwoGuardians.children.map(async (child) => {
+      await Fixture.person().with(child).saveAndUpdateMockVtj()
+    })
+  )
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithTwoGuardians.guardian)
@@ -112,9 +124,11 @@ export const initializeAreaAndPersonData = async (): Promise<
     .saveAndUpdateMockVtj()
 
   await Promise.all(
-    areaAndPersonFixtures.familyWithTwoGuardians.children.map(async (child) => {
-      await Fixture.person().with(child).saveAndUpdateMockVtj()
-    })
+    areaAndPersonFixtures.familyWithSeparatedGuardians.children.map(
+      async (child) => {
+        await Fixture.person().with(child).saveAndUpdateMockVtj()
+      }
+    )
   )
 
   await Fixture.person()
@@ -126,7 +140,7 @@ export const initializeAreaAndPersonData = async (): Promise<
     .saveAndUpdateMockVtj()
 
   await Promise.all(
-    areaAndPersonFixtures.familyWithSeparatedGuardians.children.map(
+    areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children.map(
       async (child) => {
         await Fixture.person().with(child).saveAndUpdateMockVtj()
       }
@@ -143,27 +157,19 @@ export const initializeAreaAndPersonData = async (): Promise<
     )
     .saveAndUpdateMockVtj()
 
-  await Promise.all(
-    areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children.map(
-      async (child) => {
-        await Fixture.person().with(child).saveAndUpdateMockVtj()
-      }
-    )
-  )
-
   await Fixture.person()
     .with(areaAndPersonFixtures.restrictedPersonFixture)
-    .save()
+    .saveAndUpdateMockVtj()
 
   await Fixture.person()
     .with(areaAndPersonFixtures.personFixtureChildZeroYearOld)
     .save()
 
   await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithDeadGuardian.guardian)
+    .with(areaAndPersonFixtures.familyWithDeadGuardian.children[0])
     .saveAndUpdateMockVtj()
   await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithDeadGuardian.children[0])
+    .with(areaAndPersonFixtures.familyWithDeadGuardian.guardian)
     .saveAndUpdateMockVtj()
 
   await devApi.insertChildFixtures([

@@ -56,8 +56,9 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 
   fosterParent = fixtures.enduserGuardianFixture
-  fosterChild = (await Fixture.person().with({ ssn: '120220A995L' }).save())
-    .data
+  fosterChild = (
+    await Fixture.person().with({ ssn: '120220A995L' }).saveAndUpdateMockVtj()
+  ).data
   await Fixture.child(fosterChild.id).save()
   await createFosterParent({
     body: [

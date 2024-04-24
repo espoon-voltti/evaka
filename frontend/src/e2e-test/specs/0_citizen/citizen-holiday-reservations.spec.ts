@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { vtjDependants } from '../../dev-api'
 import {
   careAreaFixture,
   DaycareBuilder,
@@ -18,7 +19,10 @@ import {
   Fixture,
   PersonBuilder
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  resetServiceState,
+  upsertVtjDataset
+} from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -89,8 +93,11 @@ beforeEach(async () => {
     .save()
   await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
 
-  guardian = await Fixture.person().with(enduserGuardianFixture).save()
-  const child1 = await Fixture.person().with(child).save()
+  const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
+  guardian = await Fixture.person()
+    .with(enduserGuardianFixture)
+    .withDependants(child1)
+    .saveAndUpdateMockVtj()
   await Fixture.child(child1.data.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement()
@@ -107,7 +114,10 @@ async function setupAnotherChild(
   startDate = LocalDate.of(2022, 1, 1),
   endDate = LocalDate.of(2036, 6, 30)
 ) {
-  const child2 = await Fixture.person().with(enduserChildFixtureKaarina).save()
+  const child2 = await Fixture.person()
+    .with(enduserChildFixtureKaarina)
+    .saveAndUpdateMockVtj()
+  await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
   await Fixture.child(child2.data.id).save()
   await Fixture.guardian(child2, guardian).save()
   await Fixture.placement()
