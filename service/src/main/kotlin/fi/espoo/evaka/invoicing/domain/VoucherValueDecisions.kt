@@ -234,7 +234,9 @@ data class VoucherValueDecisionDetailed(
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
-    val partnerIsCodebtor: Boolean? = false
+    val partnerIsCodebtor: Boolean? = false,
+    // True if the document is a legacy document that may contain guardian name and address.
+    val documentContainsContactInfo: Boolean
 ) {
     val incomeEffect
         get() =

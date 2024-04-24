@@ -182,6 +182,7 @@ class DecisionController(
 
                         if (
                             (child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) &&
+                                decision.documentContainsContactInfo &&
                                 !user.isAdmin
                         ) {
                             throw Forbidden(
