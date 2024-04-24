@@ -174,19 +174,6 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(allChildIds - plannedChildIds, remainingChildren)
     }
 
-    private fun addChildToVardaState(
-        childId: ChildId,
-        state: VardaUpdater.EvakaHenkiloNode? = null
-    ) {
-        db.transaction { tx ->
-            tx.execute {
-                sql(
-                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(childId)}, ${bindJson(state)})"
-                )
-            }
-        }
-    }
-
     private fun getVardaStateChildIds(): Set<ChildId> =
         db.read { tx -> tx.getVardaUpdateChildIds() }.toSet()
 

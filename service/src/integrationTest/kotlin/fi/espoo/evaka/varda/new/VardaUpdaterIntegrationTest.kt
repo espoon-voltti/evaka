@@ -2135,41 +2135,22 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun foobar() {
-        val child1 = DevPerson(ssn = "030320A904N")
-        val child2 = DevPerson(ssn = "030320A906Q")
-        val state2 =
-            VardaUpdater.EvakaHenkiloNode(
-                henkilo =
-                    Henkilo(
-                        etunimet = child2.firstName,
-                        sukunimi = child2.lastName,
-                        henkilo_oid = null,
-                        henkilotunnus = child2.ssn,
-                    ),
-                lapset = emptyList()
-            )
+    fun `non-compatible state decodes as null`() {
+        val child = DevPerson(ssn = "030320A904N")
         db.transaction { tx ->
-            tx.insert(child1, DevPersonType.CHILD)
-            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(child, DevPersonType.CHILD)
             tx.execute {
                 sql(
-                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child1.id)}, '{}'::jsonb)"
-                )
-            }
-
-            tx.execute {
-                sql(
-                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child2.id)}, ${bindJson(state2)})"
+                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, '{\"foo\": \"bar\"}'::jsonb)"
                 )
             }
         }
 
         val states =
             db.read { tx ->
-                tx.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child1.id, child2.id))
+                tx.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id))
             }
-        assertEquals(mapOf(child1.id to null, child2.id to state2), states)
+        assertEquals(mapOf(child.id to null), states)
     }
 
     private fun varhaiskasvatuspaatos(
