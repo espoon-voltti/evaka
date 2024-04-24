@@ -132,7 +132,7 @@ WHERE
                     """
 SELECT DISTINCT(COALESCE(g.guardian_id, fp.parent_id))
 FROM person p
-LEFT JOIN guardian g ON p.id = g.child_id AND NOT EXISTS (SELECT 1 FROM guardian_blocklist block WHERE block.guardian_id = g.guardian_id AND block.child_id = g.child_id)
+LEFT JOIN guardian g ON p.id = g.child_id
 LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during @> ${bind(today)}
 WHERE p.id = ANY(${bind(childIds)})
  AND (g.guardian_id IS NOT NULL OR fp.parent_id IS NOT NULL)

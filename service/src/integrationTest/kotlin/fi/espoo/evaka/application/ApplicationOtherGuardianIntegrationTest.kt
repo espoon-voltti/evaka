@@ -8,8 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.getDecisionsByApplication
-import fi.espoo.evaka.pis.service.addToGuardianBlocklist
-import fi.espoo.evaka.pis.service.deleteGuardianRelationship
+import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.updateFosterParentRelationshipValidity
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
@@ -172,10 +171,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         executeTestApplicationProcess(clock) { status ->
             assertEquals(expectedOtherGuardians, getOtherGuardians())
             if (status == blockDuring) {
-                db.transaction {
-                    it.deleteGuardianRelationship(child.id, otherVtjGuardian.id)
-                    it.addToGuardianBlocklist(child.id, otherVtjGuardian.id)
-                }
+                db.transaction { it.blockGuardian(child.id, otherVtjGuardian.id) }
                 expectedOtherGuardians -= otherVtjGuardian.id
             }
         }

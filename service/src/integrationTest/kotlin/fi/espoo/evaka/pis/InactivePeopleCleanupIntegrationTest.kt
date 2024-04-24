@@ -15,7 +15,7 @@ import fi.espoo.evaka.messaging.insertMessageContent
 import fi.espoo.evaka.messaging.insertRecipients
 import fi.espoo.evaka.messaging.insertThread
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
-import fi.espoo.evaka.pis.service.addToGuardianBlocklist
+import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.EmployeeId
@@ -80,8 +80,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insertGuardian(testAdult_1.id, testChild_1.id)
-            tx.addToGuardianBlocklist(testChild_1.id, testAdult_1.id)
+            tx.blockGuardian(testChild_1.id, testAdult_1.id)
         }
 
         assertCleanedUpPeople(testDate, setOf(testChild_1.id))

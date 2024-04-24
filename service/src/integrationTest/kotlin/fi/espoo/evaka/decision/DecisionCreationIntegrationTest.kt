@@ -21,7 +21,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.PersonService
-import fi.espoo.evaka.pis.service.addToGuardianBlocklist
+import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
@@ -396,7 +396,7 @@ WHERE id = :unitId
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
 
-        db.transaction { tx -> tx.addToGuardianBlocklist(testChild_6.id, testAdult_5.id) }
+        db.transaction { tx -> tx.blockGuardian(testChild_6.id, testAdult_5.id) }
 
         val notificationCount =
             applicationControllerCitizen.getGuardianApplicationNotifications(

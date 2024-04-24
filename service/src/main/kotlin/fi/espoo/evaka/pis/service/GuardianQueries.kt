@@ -42,7 +42,12 @@ fun Database.Read.getBlockedGuardians(childId: ChildId): List<PersonId> {
         .toList<PersonId>()
 }
 
-fun Database.Transaction.addToGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
+/**
+ * Blocks a child <-> VTJ guardian relationship by removing it if it exists, and preventing it from
+ * getting recreated by adding it to the blocklist
+ */
+fun Database.Transaction.blockGuardian(childId: ChildId, guardianId: PersonId) {
+    deleteGuardianRelationship(childId = childId, guardianId = guardianId)
     createUpdate {
             sql(
                 "INSERT INTO guardian_blocklist (child_id, guardian_id) VALUES (${bind(childId)}, ${bind(guardianId)})"
@@ -51,7 +56,8 @@ fun Database.Transaction.addToGuardianBlocklist(childId: ChildId, guardianId: Pe
         .execute()
 }
 
-fun Database.Transaction.deleteFromGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
+/** Unblocks a child <-> VTJ guardian relationship by removing it from the blocklist if it exists */
+fun Database.Transaction.unblockGuardian(childId: ChildId, guardianId: PersonId) {
     createUpdate {
             sql(
                 "DELETE FROM guardian_blocklist WHERE child_id = ${bind(childId)} AND guardian_id = ${bind(guardianId)}"

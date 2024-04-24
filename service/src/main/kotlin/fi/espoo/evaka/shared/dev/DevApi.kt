@@ -2150,8 +2150,6 @@ data class DevServiceNeed(
 
 data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
 
-data class DevGuardianBlocklistEntry(val guardianId: PersonId, val childId: ChildId)
-
 data class DevUpsertStaffOccupancyCoefficient(
     val unitId: DaycareId,
     val employeeId: EmployeeId,

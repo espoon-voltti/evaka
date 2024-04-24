@@ -9,6 +9,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -22,7 +23,6 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -156,7 +156,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `Missing holiday reminder is sent to foster parent if child guardian is on a blocklist`() {
+    fun `Missing holiday reminder is sent to foster parent if the child guardian is blocked`() {
         db.transaction {
             val voucherDaycare =
                 it.insert(
@@ -186,7 +186,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     validDuring = DateRange(clockToday.today(), clockToday.today())
                 )
             )
-            it.insert(DevGuardianBlocklistEntry(guardian, child))
+            it.blockGuardian(childId = child, guardianId = guardian)
         }
         assertEquals(listOf("fosterparent@test.com"), getHolidayReminderRecipients())
     }
