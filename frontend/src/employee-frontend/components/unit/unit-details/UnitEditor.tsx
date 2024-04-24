@@ -97,6 +97,7 @@ type FormData = {
   ophUnitOid: string
   ophOrganizerOid: string
   operationTimes: (EditableTimeRange | null)[]
+  shiftCareOperationTimes: (EditableTimeRange | null)[]
   businessId: string
   iban: string
   providerId: string
@@ -226,6 +227,7 @@ type UnitEditorErrors = {
     dailyPreschoolTime: RangeValidationResult
     dailyPreparatoryTime: RangeValidationResult
     operationTimes: RangeValidationResult[]
+    shiftCareOperationTimes: RangeValidationResult[]
   }
   formErrors: FormErrorItem[]
 }
@@ -548,6 +550,21 @@ function validateForm(
     })
   }
 
+  let shiftCareOperationTimes: (TimeRange | null)[] = []
+  const shiftCareOperationTimesRangeErrors = form.shiftCareOperationTimes.map(
+    (tr) => (tr ? validateTimeRange(tr) : {})
+  )
+  if (!shiftCareOperationTimesRangeErrors.some((r) => r.start || r.end)) {
+    shiftCareOperationTimes = form.shiftCareOperationTimes.map((tr) =>
+      tr && form.roundTheClock ? TimeRange.parse(tr) : null
+    )
+  } else {
+    errors.push({
+      text: i18n.unitEditor.error.shiftCareOperationTimes,
+      key: 'unit-shift-care-operationtimes'
+    })
+  }
+
   function parseMealTimeRange(
     timeRange: EditableTimeRange,
     errorKey: keyof MealtimeData
@@ -658,6 +675,7 @@ function validateForm(
         ophUnitOid,
         ophOrganizerOid,
         operationTimes,
+        shiftCareOperationTimes,
         businessId,
         iban,
         providerId,
@@ -674,7 +692,8 @@ function validateForm(
         rangeErrors: {
           dailyPreschoolTime: dailyPreschoolTimeRangeErrors,
           dailyPreparatoryTime: dailyPreparatoryTimeRangeErrors,
-          operationTimes: operationTimesRangeErrors
+          operationTimes: operationTimesRangeErrors,
+          shiftCareOperationTimes: shiftCareOperationTimesRangeErrors
         }
       }
     ]
@@ -686,7 +705,8 @@ function validateForm(
         rangeErrors: {
           dailyPreschoolTime: dailyPreschoolTimeRangeErrors,
           dailyPreparatoryTime: dailyPreparatoryTimeRangeErrors,
-          operationTimes: operationTimesRangeErrors
+          operationTimes: operationTimesRangeErrors,
+          shiftCareOperationTimes: shiftCareOperationTimesRangeErrors
         }
       }
     ]
@@ -773,6 +793,11 @@ function toFormData(unit: Daycare | undefined): FormData {
     operationTimes: (unit?.operationTimes ?? emptyOperationWeek).map((range) =>
       range ? { start: range.formatStart(), end: range.formatEnd() } : null
     ),
+    shiftCareOperationTimes: (
+      unit?.shiftCareOperationTimes ?? emptyOperationWeek
+    ).map((range) =>
+      range ? { start: range.formatStart(), end: range.formatEnd() } : null
+    ),
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
     providerId: unit?.providerId ?? '',
@@ -826,7 +851,8 @@ export default function UnitEditor(props: Props) {
     rangeErrors: {
       dailyPreparatoryTime: {},
       dailyPreschoolTime: {},
-      operationTimes: []
+      operationTimes: [],
+      shiftCareOperationTimes: []
     },
     formErrors: []
   })
@@ -1297,15 +1323,6 @@ export default function UnitEditor(props: Props) {
         )}
 
       <FormPart>
-        <div>{i18n.unitEditor.label.roundTheClock}</div>
-        <Checkbox
-          disabled={!props.editable}
-          label={i18n.unitEditor.field.roundTheClock}
-          checked={form.roundTheClock}
-          onChange={(roundTheClock) => updateForm({ roundTheClock })}
-        />
-      </FormPart>
-      <FormPart>
         <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
         <FixedSpaceColumn spacing="xs">
           {form.operationTimes.map((timesToday, index) => {
@@ -1359,6 +1376,82 @@ export default function UnitEditor(props: Props) {
           })}
         </FixedSpaceColumn>
       </FormPart>
+
+      <FormPart>
+        <div>{i18n.unitEditor.label.roundTheClock}</div>
+        <Checkbox
+          disabled={!props.editable}
+          label={i18n.unitEditor.field.roundTheClock}
+          checked={form.roundTheClock}
+          onChange={(roundTheClock) => updateForm({ roundTheClock })}
+        />
+      </FormPart>
+
+      {form.roundTheClock && (
+        <FormPart>
+          <div>
+            {showRequired(i18n.unitEditor.label.shiftCareOperationDays)}
+          </div>
+          <FixedSpaceColumn spacing="xs">
+            {form.shiftCareOperationTimes.map((timesToday, index) => {
+              const dayOfWeek = (index + 1) as DayOfWeek
+              return (
+                <FixedSpaceRow
+                  key={`"weekday-${dayOfWeek}"`}
+                  spacing="s"
+                  alignItems="center"
+                >
+                  <FixedDayLabel>
+                    {i18n.unitEditor.label.operationDay[dayOfWeek]}
+                  </FixedDayLabel>
+                  <Checkbox
+                    disabled={!props.editable}
+                    checked={timesToday != null}
+                    hiddenLabel={true}
+                    label=""
+                    data-qa={`shift-care-operation-day-${dayOfWeek}`}
+                    onChange={(checked) => {
+                      const newOpTimes = [...form.shiftCareOperationTimes]
+                      newOpTimes[index] = checked ? emptyTimeRange : null
+                      updateForm({
+                        shiftCareOperationTimes: newOpTimes
+                      })
+                    }}
+                  />
+                  {props.editable ? (
+                    <TimeRangeInput
+                      value={timesToday ?? emptyTimeRange}
+                      onChange={(value) => {
+                        const newOpTimes = [...form.shiftCareOperationTimes]
+                        newOpTimes[index] = value
+                        updateForm({
+                          shiftCareOperationTimes: newOpTimes
+                        })
+                      }}
+                      error={
+                        validationErrors.rangeErrors.shiftCareOperationTimes[
+                          index
+                        ]
+                      }
+                      dataQaPrefix={`shift-care-${dayOfWeek.toString()}`}
+                      hideErrorsBeforeTouched={false}
+                    />
+                  ) : (
+                    <div
+                      data-qa={`shift-care-unit-timerange-detail-${dayOfWeek}`}
+                    >
+                      {timesToday?.start && timesToday?.end
+                        ? `${timesToday.start} - ${timesToday.end}`
+                        : ''}
+                    </div>
+                  )}
+                </FixedSpaceRow>
+              )
+            })}
+          </FixedSpaceColumn>
+        </FormPart>
+      )}
+
       <FormPart>
         <label htmlFor="unit-capacity">{i18n.unitEditor.label.capacity}</label>
         <CapacityInputContainer>

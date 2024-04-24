@@ -204,6 +204,8 @@ export interface Daycare {
   providerId: string
   providerType: ProviderType
   roundTheClock: boolean
+  shiftCareOperationDays: number[]
+  shiftCareOperationTimes: (TimeRange | null)[]
   type: CareType[]
   unitManager: UnitManager
   uploadChildrenToVarda: boolean
@@ -267,6 +269,7 @@ export interface DaycareFields {
   providerId: string
   providerType: ProviderType
   roundTheClock: boolean
+  shiftCareOperationTimes: (TimeRange | null)[]
   type: CareType[]
   unitManager: UnitManager
   uploadChildrenToVarda: boolean
@@ -627,7 +630,8 @@ export function deserializeJsonDaycare(json: JsonOf<Daycare>): Daycare {
     mealTimes: deserializeJsonDaycareMealtimes(json.mealTimes),
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
-    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
+    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null,
+    shiftCareOperationTimes: json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null)
   }
 }
 
@@ -643,7 +647,8 @@ export function deserializeJsonDaycareFields(json: JsonOf<DaycareFields>): Dayca
     mealtimes: deserializeJsonDaycareMealtimes(json.mealtimes),
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
-    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
+    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null,
+    shiftCareOperationTimes: json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null)
   }
 }
 

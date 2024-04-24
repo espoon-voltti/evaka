@@ -220,9 +220,21 @@ export class UnitEditor {
     return new TextInput(this.page.find(`[data-qa="${dayNumber}-${startEnd}"]`))
   }
 
+  #shiftCareTimeInput(dayNumber: number, startEnd: 'start' | 'end') {
+    return new TextInput(
+      this.page.find(`[data-qa="shift-care-${dayNumber}-${startEnd}"]`)
+    )
+  }
+
   #timeCheckBox(dayNumber: number) {
     return new Checkbox(
       this.page.find(`[data-qa="operation-day-${dayNumber}"]`)
+    )
+  }
+
+  #shiftCareTimeCheckBox(dayNumber: number) {
+    return new Checkbox(
+      this.page.find(`[data-qa="shift-care-operation-day-${dayNumber}"]`)
     )
   }
 
@@ -231,8 +243,21 @@ export class UnitEditor {
     await this.#timeInput(dayNumber, 'end').fill(end)
   }
 
+  async fillShiftCareDayTimeRange(
+    dayNumber: number,
+    start: string,
+    end: string
+  ) {
+    await this.#shiftCareTimeInput(dayNumber, 'start').fill(start)
+    await this.#shiftCareTimeInput(dayNumber, 'end').fill(end)
+  }
+
   async clearDayTimeRange(dayNumber: number) {
     await this.#timeCheckBox(dayNumber).uncheck()
+  }
+
+  async clearShiftCareDayTimeRange(dayNumber: number) {
+    await this.#shiftCareTimeCheckBox(dayNumber).uncheck()
   }
 
   #careTypeCheckbox(type: CareType) {

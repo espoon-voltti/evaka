@@ -142,6 +142,29 @@ describe('Employee - unit editor validations and warnings', () => {
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')
   })
 
+  test('Invalid unit shift care operation times produce a form error', async () => {
+    await unitEditorPage.assertWarningIsNotVisible(
+      'shift-care-unit-operationtimes'
+    )
+    await unitEditorPage.fillShiftCareDayTimeRange(2, '10:00', '10:66')
+    await unitEditorPage.assertWarningIsVisible(
+      'unit-shift-care-operationtimes'
+    )
+    await unitEditorPage.clearShiftCareDayTimeRange(2)
+    await unitEditorPage.assertWarningIsNotVisible(
+      'unit-shift-care-operationtimes'
+    )
+
+    await unitEditorPage.fillShiftCareDayTimeRange(3, '12:00', '10:00')
+    await unitEditorPage.assertWarningIsVisible(
+      'unit-shift-care-operationtimes'
+    )
+    await unitEditorPage.clearShiftCareDayTimeRange(3)
+    await unitEditorPage.assertWarningIsNotVisible(
+      'unit-shift-care-operationtimes'
+    )
+  })
+
   test('Varda unit warning is shown for non varda units', async () => {
     await unitEditorPage.selectProviderType('MUNICIPAL')
     await unitEditorPage.assertWarningIsNotVisible('send-to-varda-warning')
