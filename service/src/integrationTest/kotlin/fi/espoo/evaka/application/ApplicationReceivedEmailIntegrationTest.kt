@@ -35,6 +35,8 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
@@ -78,6 +80,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 
     @Test

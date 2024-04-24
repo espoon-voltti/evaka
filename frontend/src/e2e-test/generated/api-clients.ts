@@ -81,6 +81,7 @@ import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MockVtjDataset } from './api-types'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { PlacementPlan } from './api-types'
 import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
@@ -2293,18 +2294,18 @@ export async function upsertStaffOccupancyCoefficient(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertVtjPerson
+* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertVtjDataset
 */
-export async function upsertVtjPerson(
+export async function upsertVtjDataset(
   request: {
-    body: VtjPerson
+    body: MockVtjDataset
   }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/vtj-persons`.toString(),
       method: 'POST',
-      data: request.body satisfies JsonCompatible<VtjPerson>
+      data: request.body satisfies JsonCompatible<MockVtjDataset>
     })
     return json
   } catch (e) {

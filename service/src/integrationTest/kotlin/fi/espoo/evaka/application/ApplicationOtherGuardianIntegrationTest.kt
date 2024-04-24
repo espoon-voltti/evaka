@@ -37,6 +37,7 @@ import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
@@ -74,6 +75,9 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(daycare)
             tx.insert(serviceWorker)
         }
+        MockPersonDetailsService.addPersons(guardian, child, otherVtjGuardian)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherVtjGuardian, child)
     }
 
     @Test

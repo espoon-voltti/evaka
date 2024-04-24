@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -19,7 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
 class MockDataServiceTest {
-    private val mockDetailsService = MockPersonDetailsService()
+    private val mockDetailsService =
+        MockPersonDetailsService().also { MockPersonDetailsService.add(legacyMockVtjDataset()) }
 
     @Test
     fun `check that second child is less than three years old (2)`() {

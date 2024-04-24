@@ -52,7 +52,7 @@ describe('Create person', () => {
     await personSearchPage.findPerson(person.firstName)
     await personSearchPage.assertPersonData(person)
 
-    // data from mock-vtj-data.json
+    // data from addLegacyVtjMocks()
     const personWithSsn = {
       firstName: 'Ville',
       lastName: 'Vilkas',

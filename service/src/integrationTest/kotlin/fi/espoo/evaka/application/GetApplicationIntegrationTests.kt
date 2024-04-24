@@ -37,6 +37,8 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -66,6 +68,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 
     @Test

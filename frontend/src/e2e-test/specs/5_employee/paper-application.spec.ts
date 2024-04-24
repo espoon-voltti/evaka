@@ -77,7 +77,7 @@ describe('Employee - paper application', () => {
   })
 
   test('Paper application can be created for other non guardian vtj person and child with ssn', async () => {
-    await createApplicationModal.selectVtjPersonAsGuardian('270372-905L') // From service mock-vtj-data.json
+    await createApplicationModal.selectVtjPersonAsGuardian('270372-905L') // From service addLegacyVtjMocks()
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(

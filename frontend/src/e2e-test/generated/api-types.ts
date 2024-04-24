@@ -696,14 +696,12 @@ export interface DevPerson {
   backupPhone: string
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
-  dependants: DevPerson[]
   duplicateOf: UUID | null
   email: string | null
   enabledEmailTypes: EmailMessageType[] | null
   evakaUserId: UUID
   firstName: string
   forceManualFeeDecisions: boolean
-  guardians: DevPerson[]
   id: UUID
   invoiceRecipientName: string
   invoicingPostOffice: string
@@ -912,6 +910,29 @@ export interface FeatureProperties {
 */
 export interface Geometry {
   coordinates: [number, number]
+}
+
+/**
+* Generated from fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
+*/
+export interface MockVtjDataset {
+  guardianDependants: Record<string, string[]>
+  persons: MockVtjPerson[]
+}
+
+/**
+* Generated from fi.espoo.evaka.vtjclient.service.persondetails.MockVtjPerson
+*/
+export interface MockVtjPerson {
+  address: PersonAddress | null
+  dateOfDeath: LocalDate | null
+  firstNames: string
+  lastName: string
+  nationalities: Nationality[]
+  nativeLanguage: NativeLanguage | null
+  residenceCode: string | null
+  restrictedDetails: RestrictedDetails | null
+  socialSecurityNumber: string
 }
 
 /**
@@ -1361,8 +1382,6 @@ export function deserializeJsonDevPerson(json: JsonOf<DevPerson>): DevPerson {
     ...json,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
-    dependants: json.dependants.map(e => deserializeJsonDevPerson(e)),
-    guardians: json.guardians.map(e => deserializeJsonDevPerson(e)),
     restrictedDetailsEndDate: (json.restrictedDetailsEndDate != null) ? LocalDate.parseIso(json.restrictedDetailsEndDate) : null,
     updatedFromVtj: (json.updatedFromVtj != null) ? HelsinkiDateTime.parseIso(json.updatedFromVtj) : null
   }
@@ -1449,6 +1468,23 @@ export function deserializeJsonDevVardaServiceNeed(json: JsonOf<DevVardaServiceN
   return {
     ...json,
     evakaServiceNeedUpdated: HelsinkiDateTime.parseIso(json.evakaServiceNeedUpdated)
+  }
+}
+
+
+export function deserializeJsonMockVtjDataset(json: JsonOf<MockVtjDataset>): MockVtjDataset {
+  return {
+    ...json,
+    persons: json.persons.map(e => deserializeJsonMockVtjPerson(e))
+  }
+}
+
+
+export function deserializeJsonMockVtjPerson(json: JsonOf<MockVtjPerson>): MockVtjPerson {
+  return {
+    ...json,
+    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
+    restrictedDetails: (json.restrictedDetails != null) ? deserializeJsonRestrictedDetails(json.restrictedDetails) : null
   }
 }
 
