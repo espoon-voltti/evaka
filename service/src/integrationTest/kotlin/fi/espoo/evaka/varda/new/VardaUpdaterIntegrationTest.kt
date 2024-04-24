@@ -313,7 +313,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `evaka state - child in a unit without oph unit id is not included`() {
+    fun `evaka state - child in a unit without oph unit id gets an empty state`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id, ophUnitOid = null)
         val employee = DevEmployee()
@@ -2050,6 +2050,53 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `evaka state - child without ssn or oph id is skipped`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val employee = DevEmployee()
+
+        val child = DevPerson(ssn = null, ophPersonOid = null)
+        val placementRange = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 6, 30))
+        val today = LocalDate.of(2024, 1, 1)
+
+        db.transaction { tx ->
+            tx.insertServiceNeedOption(snDaycareFullDay35)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(employee)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = placementRange.start,
+                    endDate = placementRange.end
+                )
+                .also { placementId ->
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period = placementRange,
+                        optionId = snDaycareFullDay35.id,
+                        confirmedBy = employee.evakaUserId,
+                    )
+                }
+        }
+
+        val updater =
+            VardaUpdater(
+                DateRange(LocalDate.of(2019, 1, 1), null),
+                "municipalOrganizerOid",
+                "sourceSystem"
+            )
+
+        val readClient = FailEveryOperation()
+        val writeClient = DryRunClient()
+        updater.updateChild(db, readClient, writeClient, today, child.id, true)
+
+        assertEquals(emptyList(), writeClient.operations)
+    }
+
+    @Test
     fun `state is saved after update`() {
         val child = DevPerson(ssn = "030320A904N")
 
@@ -2063,7 +2110,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val updater =
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
-        class TestReadClient : NotImplementedVardaReadClient() {
+        class TestReadClient : FailEveryOperation() {
             override fun haeHenkilo(
                 body: VardaReadClient.HaeHenkiloRequest
             ): VardaReadClient.HenkiloResponse? = null
@@ -2112,7 +2159,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val updater =
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
-        class TestReadClient : NotImplementedVardaReadClient() {
+        class TestReadClient : FailEveryOperation() {
             override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest) =
                 VardaReadClient.HenkiloResponse(
                     url = URI.create("henkilo"),
@@ -2208,7 +2255,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 }
 
-open class NotImplementedVardaReadClient : VardaReadClient {
+open class FailEveryOperation : VardaReadClient {
     override fun haeHenkilo(
         body: VardaReadClient.HaeHenkiloRequest
     ): VardaReadClient.HenkiloResponse? {
