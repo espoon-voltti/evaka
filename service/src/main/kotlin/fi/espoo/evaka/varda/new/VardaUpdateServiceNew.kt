@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
-import fi.espoo.evaka.pis.getDependantGuardians
 import fi.espoo.evaka.pis.updateOphPersonOid
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -98,12 +97,41 @@ class VardaUpdateServiceNew(
     }
 
     fun planUpdate(dbc: Database.Connection, clock: EvakaClock, migrationSpeed: Int = 0) {
+        logger.info { "Planning Varda updates" }
+
+        val chunkSize = 1000
+        val maxUpdatesPerDay = 1000
+
+        val today = clock.today()
+        val updater =
+            VardaUpdater(jsonMapper, vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+
+        val childIds =
+            dbc.transaction { tx ->
+                tx.addNewChildrenForVardaUpdate(migrationSpeed)
+                tx.getVardaUpdateChildIds()
+            }
+
+        val childIdsRequiringUpdate =
+            // Process children in chunks to avoid running out of memory
+            childIds.chunked(chunkSize).flatMap { chunk ->
+                dbc.read { updater.getEvakaStates(it, today, chunk) }
+                    .filter { (_, _, status) -> status == VardaUpdater.Status.NEEDS_UPDATE }
+                    .map { (childId, _, _) -> childId }
+            }
+
+        logger.info {
+            "Children requiring Varda update: ${childIdsRequiringUpdate.size} out of ${childIds.size}"
+        }
+
         dbc.transaction { tx ->
-            tx.addNewChildrenForVardaUpdate(migrationSpeed)
-            val childIds = tx.getVardaUpdateChildIds()
             asyncJobRunner.plan(
                 tx,
-                payloads = childIds.map { AsyncJob.VardaUpdateChild(it, dryRun = false) },
+                payloads =
+                    // Children that are left out will be updated tomorrow
+                    childIdsRequiringUpdate.asSequence().take(maxUpdatesPerDay).map { childId ->
+                        AsyncJob.VardaUpdateChild(childId, dryRun = false)
+                    },
                 runAt = clock.now(),
                 retryCount = 1
             )
@@ -159,15 +187,7 @@ class VardaUpdater(
     ) {
         logger.info { "Starting Varda update for child $childId" }
 
-        val evakaState = dbc.read { getEvakaState(it, today, childId) }
-        val previousEvakaState =
-            dbc.read { it.getVardaUpdateState<EvakaHenkiloNode>(jsonMapper, childId) }
-
-        if (previousEvakaState == evakaState) {
-            logger.info { "No changes for child $childId" }
-            return
-        }
-
+        val evakaState = dbc.read { tx -> getEvakaState(tx, today, childId) }
         val vardaState =
             getVardaState(
                 readClient,
@@ -192,18 +212,52 @@ class VardaUpdater(
     }
 
     fun getEvakaState(tx: Database.Read, today: LocalDate, childId: ChildId): EvakaHenkiloNode {
-        val person = tx.getVardaPerson(childId)
-        if (person.ophPersonOid == null && person.socialSecurityNumber == null) {
-            throw IllegalStateException("Child $childId has no ophOid or ssn")
-        }
+        val (_, evakaState, _) = getEvakaStates(tx, today, listOf(childId)).first()
+        return evakaState
+    }
 
-        val guardians = tx.getDependantGuardians(childId)
-        val serviceNeeds = tx.getVardaServiceNeeds(childId, vardaEnabledRange)
+    fun getEvakaStates(
+        tx: Database.Read,
+        today: LocalDate,
+        childIds: List<ChildId>
+    ): List<Triple<ChildId, EvakaHenkiloNode, Status>> {
+        val children = tx.getVardaChildren(childIds)
+        val guardians = tx.getVardaGuardians(childIds)
+        val serviceNeeds = tx.getVardaServiceNeeds(childIds, vardaEnabledRange)
+        val feeData = tx.getVardaFeeData(childIds, vardaEnabledRange)
+        val updateStates = tx.getVardaUpdateState<EvakaHenkiloNode>(jsonMapper, childIds)
+        return childIds.map {
+            val evakaState =
+                computeEvakaState(
+                    today,
+                    children[it] ?: error("Child $it not found"),
+                    guardians[it] ?: emptyList(),
+                    serviceNeeds[it] ?: emptyList(),
+                    feeData[it] ?: emptyList(),
+                )
+            Triple(
+                it,
+                evakaState,
+                if (evakaState == updateStates[it]) Status.UP_TO_DATE else Status.NEEDS_UPDATE
+            )
+        }
+    }
+
+    private fun computeEvakaState(
+        today: LocalDate,
+        child: VardaChild,
+        guardians: List<VardaGuardian>,
+        serviceNeeds: List<VardaServiceNeed>,
+        feeData: List<VardaFeeData>
+    ): EvakaHenkiloNode {
+        if (child.ophPersonOid == null && child.socialSecurityNumber == null) {
+            throw IllegalStateException("Child ${child.id} has no ophOid or ssn")
+        }
 
         // Only fee data after 2019-09-01 can be sent to Varda (error code MA019)
         val vardaFeeDataRange = DateRange(LocalDate.of(2019, 9, 1), null)
 
-        val feeData =
+        val processedFeeData =
             if (serviceNeeds.isNotEmpty()) {
                     // Each maksutieto must be within the range of the start of first
                     // varhaiskasvatuspaatos and the end of the last varhaiskasvatuspaatos
@@ -218,7 +272,11 @@ class VardaUpdater(
                             .intersection(vardaFeeDataRange)
                             ?.intersection(serviceNeedRange)
                     if (feeDataRange != null) {
-                        tx.getVardaFeeData(childId, feeDataRange)
+                        feeData.mapNotNull {
+                            it.validDuring.intersection(feeDataRange)?.let { validDuring ->
+                                it.copy(validDuring = validDuring)
+                            }
+                        }
                     } else {
                         emptyList()
                     }
@@ -230,14 +288,14 @@ class VardaUpdater(
         val evakaLapsiServiceNeeds =
             serviceNeeds.groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
         val evakaFeeData =
-            feeData
+            processedFeeData
                 .mapNotNull { fee ->
                     Maksutieto.fromEvaka(guardians, fee)?.let { fee.ophOrganizerOid to it }
                 }
                 .groupBy({ it.first }, { it.second })
 
         return EvakaHenkiloNode(
-            henkilo = Henkilo.fromEvaka(person),
+            henkilo = Henkilo.fromEvaka(child),
             lapset =
                 evakaLapsiServiceNeeds.mapNotNull { (lapsi, serviceNeedsOfLapsi) ->
                     EvakaLapsiNode(
@@ -507,6 +565,11 @@ class VardaUpdater(
 
     private fun VardaWriteClient.createMaksutieto(lapsiUrl: URI, evakaMaksutieto: Maksutieto) {
         createMaksutieto(evakaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
+    }
+
+    enum class Status {
+        UP_TO_DATE,
+        NEEDS_UPDATE
     }
 
     data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>)

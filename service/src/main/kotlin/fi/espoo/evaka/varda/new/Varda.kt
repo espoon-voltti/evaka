@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.varda.new
 
-import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.varda.VardaUnitProviderType
 import java.net.URI
@@ -18,7 +16,7 @@ data class Henkilo(
     val henkilo_oid: String?,
 ) {
     companion object {
-        fun fromEvaka(data: VardaPerson): Henkilo =
+        fun fromEvaka(data: VardaChild): Henkilo =
             Henkilo(
                 etunimet = data.firstName,
                 sukunimi = data.lastName,
@@ -194,16 +192,16 @@ data class Maksutieto(
     val palveluseteli_arvo: Double
 ) {
     companion object {
-        fun fromEvaka(guardians: List<PersonDTO>, data: VardaFeeData): Maksutieto? {
+        fun fromEvaka(guardians: List<VardaGuardian>, data: VardaFeeData): Maksutieto? {
             val huoltajat =
                 guardians
                     .filter {
-                        it.identity is ExternalIdentifier.SSN &&
+                        it.socialSecurityNumber != null &&
                             (it.id == data.headOfFamilyId || it.id == data.partnerId)
                     }
                     .map {
                         Huoltaja(
-                            henkilotunnus = (it.identity as ExternalIdentifier.SSN).ssn,
+                            henkilotunnus = it.socialSecurityNumber,
                             henkilo_oid = it.ophPersonOid?.takeIf { oid -> oid.isNotBlank() },
                             etunimet = it.firstName,
                             sukunimi = it.lastName,

@@ -10,11 +10,9 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
 private val vardaPlacementTypes =
@@ -30,8 +28,6 @@ private val vardaTemporaryPlacementTypes =
     listOf(PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
 
 data class VardaServiceNeed(
-    val id: ServiceNeedId,
-    val serviceNeedUpdated: HelsinkiDateTime,
     val childId: ChildId,
     val applicationDate: LocalDate?,
     val range: FiniteDateRange,
@@ -44,13 +40,14 @@ data class VardaServiceNeed(
     val ophUnitOid: String
 )
 
-fun Database.Read.getVardaServiceNeeds(childId: ChildId, range: DateRange): List<VardaServiceNeed> {
+fun Database.Read.getVardaServiceNeeds(
+    childIds: List<ChildId>,
+    range: DateRange
+): Map<ChildId, List<VardaServiceNeed>> {
     return createQuery {
             sql(
                 """
 SELECT
-    sn.id,
-    sn.updated AS service_need_updated,
     p.child_id AS child_id,
     daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)} AS range,
     application_match.sentdate AS application_date,
@@ -87,22 +84,24 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) application_match ON true
 WHERE
-    p.child_id = ${bind(childId)} AND
+    p.child_id = ANY(${bind(childIds)}) AND
     daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)} AND
     p.type = ANY(${bind(vardaPlacementTypes)}::placement_type[]) AND
     sno.daycare_hours_per_week >= 1 AND
     u.upload_children_to_varda AND
     u.oph_organizer_oid IS NOT NULL AND
     u.oph_unit_oid IS NOT NULL
-ORDER BY sn.start_date
+ORDER BY 1, 2
 """
             )
         }
-        .toList<VardaServiceNeed>()
+        .mapTo<VardaServiceNeed>()
+        .useSequence { rows -> rows.groupBy { it.childId } }
 }
 
 data class VardaFeeData(
-    val validDuring: DateRange,
+    val childId: ChildId,
+    val validDuring: FiniteDateRange,
     val headOfFamilyId: PersonId,
     val partnerId: PersonId?,
     val placementType: PlacementType?,
@@ -112,11 +111,15 @@ data class VardaFeeData(
     val voucherValue: Int?
 )
 
-fun Database.Read.getVardaFeeData(childId: ChildId, range: FiniteDateRange): List<VardaFeeData> =
+fun Database.Read.getVardaFeeData(
+    childIds: List<ChildId>,
+    range: DateRange
+): Map<ChildId, List<VardaFeeData>> =
     createQuery {
             sql(
                 """
 SELECT
+    fdc.child_id,
     fd.valid_during * ${bind(range)} AS valid_during,
     fd.head_of_family_id,
     fd.partner_id,
@@ -131,12 +134,13 @@ JOIN daycare u ON u.id = fdc.placement_unit_id
 WHERE
     fd.status = 'SENT' AND
     fd.valid_during && ${bind(range)} AND
-    fdc.child_id = ${bind(childId)} AND
+    fdc.child_id = ANY(${bind(childIds)}) AND
     u.oph_organizer_oid IS NOT NULL
 
 UNION ALL
 
 SELECT
+    vvd.child_id,
     daterange(vvd.valid_from, vvd.valid_to, '[]') * ${bind(range)} AS valid_during,
     vvd.head_of_family_id,
     vvd.partner_id,
@@ -150,34 +154,71 @@ JOIN daycare u ON u.id = vvd.placement_unit_id
 WHERE
     vvd.status = 'SENT' AND
     daterange(vvd.valid_from, vvd.valid_to, '[]') && ${bind(range)} AND
-    vvd.child_id = ${bind(childId)} AND
+    vvd.child_id = ANY (${bind(childIds)}) AND
     vvd.placement_type IS NOT NULL AND
     u.oph_organizer_oid IS NOT NULL
 
-ORDER BY valid_during
+ORDER BY 1, 2
 """
             )
         }
-        .toList()
+        .mapTo<VardaFeeData>()
+        .useSequence { rows -> rows.groupBy { it.childId } }
 
-data class VardaPerson(
+data class VardaChild(
+    val id: ChildId,
     val firstName: String,
     val lastName: String,
     val socialSecurityNumber: String?,
-    val ophPersonOid: String?,
+    val ophPersonOid: String?
 )
 
-fun Database.Read.getVardaPerson(childId: ChildId): VardaPerson =
+fun Database.Read.getVardaChildren(childIds: List<ChildId>): Map<ChildId, VardaChild> =
     createQuery {
             sql(
                 """
-                SELECT first_name, last_name, social_security_number, oph_person_oid
+                SELECT
+                    id,
+                    first_name,
+                    last_name,
+                    social_security_number,
+                    oph_person_oid
                 FROM person
-                WHERE id = ${bind(childId)}
+                WHERE id = ANY(${bind(childIds)})
                 """
             )
         }
-        .exactlyOne()
+        .mapTo<VardaChild>()
+        .useSequence { rows -> rows.associateBy { it.id } }
+
+data class VardaGuardian(
+    val id: PersonId,
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val socialSecurityNumber: String?,
+    val ophPersonOid: String?
+)
+
+fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<VardaGuardian>> =
+    createQuery {
+            sql(
+                """
+                SELECT
+                    p.id,
+                    g.child_id,
+                    p.first_name,
+                    p.last_name,
+                    p.social_security_number,
+                    p.oph_person_oid
+                FROM guardian g 
+                JOIN person p ON p.id = g.guardian_id
+                WHERE g.child_id = ANY(${bind(childIds)})
+                """
+            )
+        }
+        .mapTo<VardaGuardian>()
+        .useSequence { rows -> rows.groupBy { it.childId } }
 
 fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0) {
     if (migrationSpeed > 0) {
@@ -229,14 +270,23 @@ fun Database.Read.getVardaUpdateChildIds(): List<ChildId> =
  */
 inline fun <reified T> Database.Read.getVardaUpdateState(
     jsonMapper: JsonMapper,
-    childId: ChildId
-): T? =
-    createQuery { sql("SELECT state::text FROM varda_state WHERE child_id = ${bind(childId)}") }
-        .exactlyOne<String?>()
-        ?.let {
-            try {
-                jsonMapper.readValue<T>(it)
-            } catch (e: Exception) {
+    childIds: List<ChildId>
+): Map<ChildId, T?> =
+    createQuery {
+            sql(
+                "SELECT child_id, state::text FROM varda_state WHERE child_id = ANY (${bind(childIds)})"
+            )
+        }
+        .toMap { columnPair<ChildId, String?>("child_id", "state") }
+        .mapValues {
+            val text = it.value
+            if (text != null) {
+                try {
+                    jsonMapper.readValue<T>(text)
+                } catch (e: Exception) {
+                    null
+                }
+            } else {
                 null
             }
         }

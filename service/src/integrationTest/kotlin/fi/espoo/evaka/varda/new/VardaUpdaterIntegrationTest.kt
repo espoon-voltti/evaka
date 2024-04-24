@@ -2129,7 +2129,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         val state =
-            db.read { it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(jsonMapper, child.id) }
+            db.read {
+                    it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(
+                        jsonMapper,
+                        listOf(child.id)
+                    )
+                }
+                .values
+                .first()
 
         assertEquals(
             VardaUpdater.EvakaHenkiloNode(
@@ -2143,51 +2150,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 lapset = emptyList()
             ),
             state
-        )
-    }
-
-    @Test
-    fun `update is not performed if state has not changed`() {
-        val child = DevPerson(ssn = "030320A904N")
-
-        db.transaction { tx ->
-            tx.insert(child, DevPersonType.CHILD)
-
-            val state =
-                VardaUpdater.EvakaHenkiloNode(
-                    henkilo =
-                        Henkilo(
-                            etunimet = child.firstName,
-                            sukunimi = child.lastName,
-                            henkilo_oid = null,
-                            henkilotunnus = child.ssn,
-                        ),
-                    lapset = emptyList()
-                )
-            tx.execute {
-                sql(
-                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, ${bindJson(state)})"
-                )
-            }
-        }
-
-        val updater =
-            VardaUpdater(
-                jsonMapper,
-                DateRange(LocalDate.of(2019, 1, 1), null),
-                "organizerOid",
-                "sourceSystem"
-            )
-
-        // If any Varda read operation is called, the `NotImplementedVardaReadClient` will throw an
-        // exception and the test will fail
-        updater.updateChild(
-            dbc = db,
-            readClient = NotImplementedVardaReadClient(),
-            writeClient = DryRunClient(),
-            today = LocalDate.of(2021, 1, 1),
-            childId = child.id,
-            saveState = true
         )
     }
 
