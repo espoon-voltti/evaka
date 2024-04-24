@@ -168,12 +168,20 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `addMissingStaffAttendanceDeparture adds departure for today's arrival with a planned departure in the past`() {
+    fun `addMissingStaffAttendanceDeparture adds departure for today's TRAINING arrival with a planned departure in the past`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().plusHours(8)
         val plannedDeparture = arrival.plusHours(8)
         db.transaction { tx ->
-            tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = employee1Id,
+                groupId = group1.id,
+                arrivalTime = arrival,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal(7.0),
+                type = StaffAttendanceType.TRAINING
+            )
 
             tx.insert(
                 DevStaffAttendancePlan(
@@ -202,14 +210,15 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         val expectedAddedDepartureTime = startOfToday.minusDays(1).plusHours(20)
 
         db.transaction { tx ->
-            val id = tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
-
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    "UPDATE staff_attendance_realtime a SET type = 'JUSTIFIED_CHANGE' WHERE id = :id"
-                )
-                .bind("id", id)
-                .execute()
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = employee1Id,
+                groupId = group1.id,
+                arrivalTime = arrival,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal(7.0),
+                type = StaffAttendanceType.JUSTIFIED_CHANGE
+            )
 
             tx.insert(
                 DevStaffAttendancePlan(
@@ -231,12 +240,55 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `addMissingStaffAttendanceDeparture adds a departure for overnight planned attendance`() {
+    fun `addMissingStaffAttendanceDeparture adds a departure after 12h for overnight attendance when type is  PRESENT`() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
         val arrival = now.atStartOfDay().minusHours(4)
         val plannedDeparture = arrival.plusHours(8)
         db.transaction { tx ->
-            tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = employee1Id,
+                groupId = group1.id,
+                arrivalTime = arrival,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal(7.0),
+                type = StaffAttendanceType.PRESENT
+            )
+
+            tx.insert(
+                DevStaffAttendancePlan(
+                    employeeId = employee1Id,
+                    startTime = arrival,
+                    endTime = plannedDeparture,
+                )
+            )
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(1, staffAttendances.size)
+            assertEquals(
+                arrival.plusHours(12),
+                staffAttendances.first { it.employeeId == employee1Id }.departed
+            )
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds a departure at planned time for overnight attendance when type is OTHER_WORK`() {
+        val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
+        val arrival = now.atStartOfDay().minusHours(4)
+        val plannedDeparture = arrival.plusHours(8)
+        db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = employee1Id,
+                groupId = group1.id,
+                arrivalTime = arrival,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal(7.0),
+                type = StaffAttendanceType.OTHER_WORK
+            )
 
             tx.insert(
                 DevStaffAttendancePlan(
