@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { localDateRange } from 'lib-common/form/fields'
+import { boolean, localDateRange } from 'lib-common/form/fields'
 import { object, oneOf, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
@@ -22,7 +22,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Td, Tr } from 'lib-components/layout/Table'
 import {
@@ -51,7 +51,8 @@ const putServiceNeedResult = wrapResult(putServiceNeed)
 const serviceNeedForm = object({
   range: required(localDateRange()),
   option: required(oneOf<UUID>()),
-  shiftCare: required(oneOf<ShiftCareType>())
+  shiftCare: required(oneOf<ShiftCareType>()),
+  partWeek: required(boolean())
 })
 
 interface ServiceNeedCreateRowProps {
@@ -76,16 +77,20 @@ function ServiceNeedEditorRow({
   const { i18n, lang } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
 
-  const getOptions = (range: FiniteDateRange) =>
-    options
-      .filter((opt) =>
-        range.overlaps(new DateRange(opt.validFrom, opt.validTo))
-      )
-      .map((opt) => ({
-        label: opt.nameFi,
-        value: opt.id,
-        domValue: opt.id
-      }))
+  const getOptions = useCallback(
+    (range: FiniteDateRange) =>
+      options
+        .filter((opt) =>
+          range.overlaps(new DateRange(opt.validFrom, opt.validTo))
+        )
+        .map((opt) => ({
+          label: opt.nameFi,
+          value: opt.id,
+          domValue: opt.id,
+          partWeek: opt.partWeek
+        })),
+    [options]
+  )
 
   const bind = useForm(
     serviceNeedForm,
@@ -96,14 +101,18 @@ function ServiceNeedEditorRow({
           placement.startDate,
         editedServiceNeed?.endDate ?? initialRange?.end ?? placement.endDate
       )
+      const options = getOptions(range)
+      const selectedOption = editedServiceNeed
+        ? options.find((o) => o.domValue === editedServiceNeed.option.id)
+        : undefined
       return {
         range: localDateRange.fromRange(range, {
           minDate: placement.startDate,
           maxDate: placement.endDate
         }),
         option: {
-          options: getOptions(range),
-          domValue: editedServiceNeed?.option?.id ?? ''
+          options,
+          domValue: selectedOption?.domValue ?? ''
         },
         shiftCare: {
           options: shiftCareType.map((type) => ({
@@ -112,7 +121,11 @@ function ServiceNeedEditorRow({
             domValue: type
           })),
           domValue: editedServiceNeed?.shiftCare ?? 'NONE'
-        }
+        },
+        partWeek:
+          selectedOption && selectedOption.partWeek !== null
+            ? selectedOption.partWeek
+            : editedServiceNeed?.partWeek ?? false
       }
     },
     i18n.validationErrors,
@@ -122,6 +135,9 @@ function ServiceNeedEditorRow({
         const range = shape.range.validate(nextState.range)
         if (range.isValid) {
           const newOptions = getOptions(range.value)
+          const selectedOption = nextState.option.domValue
+            ? newOptions.find((o) => o.domValue === nextState.option.domValue)
+            : undefined
           return {
             ...nextState,
             option: {
@@ -131,7 +147,13 @@ function ServiceNeedEditorRow({
               )
                 ? nextState.option.domValue
                 : ''
-            }
+            },
+            partWeek:
+              selectedOption === undefined
+                ? false
+                : selectedOption.partWeek === null
+                  ? nextState.partWeek
+                  : selectedOption.partWeek
           }
         } else {
           return nextState
@@ -139,7 +161,15 @@ function ServiceNeedEditorRow({
       }
     }
   )
-  const { range, option, shiftCare } = useFormFields(bind)
+  const { range, option, shiftCare, partWeek } = useFormFields(bind)
+
+  const partWeekEditable = useMemo(() => {
+    if (!range.isValid() || !option.isValid()) return false
+    const selectedOption = getOptions(range.value()).find(
+      (o) => o.domValue === option.value()
+    )
+    return selectedOption && selectedOption.partWeek === null
+  }, [getOptions, range, option])
 
   const { setErrorMessage } = useContext(UIContext)
   const [overlapWarning, setOverlapWarning] = useState(false)
@@ -225,7 +255,8 @@ function ServiceNeedEditorRow({
             startDate: range.value().start,
             endDate: range.value().end,
             optionId: option.value(),
-            shiftCare: shiftCare.value()
+            shiftCare: shiftCare.value(),
+            partWeek: partWeek.value()
           }
         })
       : postServiceNeedResult({
@@ -234,7 +265,8 @@ function ServiceNeedEditorRow({
             startDate: range.value().start,
             endDate: range.value().end,
             optionId: option.value(),
-            shiftCare: shiftCare.value()
+            shiftCare: shiftCare.value(),
+            partWeek: partWeek.value()
           }
         })
 
@@ -304,7 +336,18 @@ function ServiceNeedEditorRow({
             />
           )}
         </Td>
-        <Td />
+        <Td>
+          {option.isValid() && partWeekEditable && (
+            <CheckboxF
+              label={t.partWeek}
+              bind={partWeek}
+              data-qa="part-week-checkbox"
+            />
+          )}
+          {option.isValid() && !partWeekEditable && (
+            <div>{partWeek.value() ? i18n.common.yes : i18n.common.no}</div>
+          )}
+        </Td>
         <Td>
           <FixedSpaceRow justifyContent="flex-end" spacing="m">
             <InlineButton

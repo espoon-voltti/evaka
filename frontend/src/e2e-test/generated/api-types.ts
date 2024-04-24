@@ -784,6 +784,7 @@ export interface DevServiceNeed {
   endDate: LocalDate
   id: UUID
   optionId: UUID
+  partWeek: boolean
   placementId: UUID
   shiftCare: ShiftCareType
   startDate: LocalDate

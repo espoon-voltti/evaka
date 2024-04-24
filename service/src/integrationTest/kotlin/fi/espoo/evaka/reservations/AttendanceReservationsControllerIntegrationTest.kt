@@ -124,6 +124,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 endDate = thu,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -133,6 +134,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 endDate = fri,
                 optionId = snDaycareFullDay35.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -218,6 +220,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 endDate = fri,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -301,6 +304,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             optionName = snDaycareContractDays15.nameFi,
                             validDuring = FiniteDateRange(mon, thu),
                             shiftCare = ShiftCareType.NONE,
+                            partWeek = false
                         ),
                         ChildServiceNeedInfo(
                             childId = testChild_1.id,
@@ -308,7 +312,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             daycareHoursPerMonth = null,
                             optionName = snDaycareFullDay35.nameFi,
                             validDuring = FiniteDateRange(fri, fri),
-                            shiftCare = ShiftCareType.NONE
+                            shiftCare = ShiftCareType.NONE,
+                            partWeek = false
                         )
                     ),
                     child1.serviceNeeds
@@ -328,7 +333,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             daycareHoursPerMonth = null,
                             optionName = snDaycareContractDays15.nameFi,
                             validDuring = monFri,
-                            shiftCare = ShiftCareType.NONE
+                            shiftCare = ShiftCareType.NONE,
+                            partWeek = false
                         )
                     ),
                     child5.serviceNeeds
@@ -1372,6 +1378,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 endDate = thu,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -1381,6 +1388,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 endDate = fri,
                 optionId = snDaycareContractDays10.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -1405,6 +1413,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 endDate = fri,
                 optionId = snDefaultPreschool.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )

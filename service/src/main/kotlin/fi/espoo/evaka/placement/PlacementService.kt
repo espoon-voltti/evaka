@@ -12,6 +12,7 @@ import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
+import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -74,13 +75,16 @@ fun createPlacements(
                 period.end,
                 placeGuarantee && firstPlacementTypePeriod == period.start
             )
+
         if (serviceNeed?.placementType == type) {
+            val partWeek = tx.findServiceNeedOptionById(serviceNeed.optionId)?.partWeek ?: false
             tx.insertServiceNeed(
                 placement.id,
                 period.start,
                 period.end,
                 serviceNeed.optionId,
                 ShiftCareType.fromBoolean(serviceNeed.shiftCare),
+                partWeek = partWeek,
                 confirmedBy = null,
                 confirmedAt = null
             )

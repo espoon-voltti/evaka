@@ -397,3 +397,4 @@ V397__document_contains_contact_info.sql
 V398__application_other_guardian.sql
 V399__service_need_option_validity_period.sql
 V400__drop_child_consent_type.sql
+V401__move_part_week_to_service_need.sql

@@ -39,7 +39,8 @@ class ServiceNeedController(
         val startDate: LocalDate,
         val endDate: LocalDate,
         val optionId: ServiceNeedOptionId,
-        val shiftCare: ShiftCareType
+        val shiftCare: ShiftCareType,
+        val partWeek: Boolean
     )
 
     @PostMapping("/service-needs")
@@ -68,6 +69,7 @@ class ServiceNeedController(
                             endDate = body.endDate,
                             optionId = body.optionId,
                             shiftCare = body.shiftCare,
+                            partWeek = body.partWeek,
                             confirmedAt = HelsinkiDateTime.now()
                         )
                         .also { id ->
@@ -83,7 +85,8 @@ class ServiceNeedController(
         val startDate: LocalDate,
         val endDate: LocalDate,
         val optionId: ServiceNeedOptionId,
-        val shiftCare: ShiftCareType
+        val shiftCare: ShiftCareType,
+        val partWeek: Boolean
     )
 
     @PutMapping("/service-needs/{id}")
@@ -107,6 +110,7 @@ class ServiceNeedController(
                     endDate = body.endDate,
                     optionId = body.optionId,
                     shiftCare = body.shiftCare,
+                    partWeek = body.partWeek,
                     confirmedAt = HelsinkiDateTime.now()
                 )
                 notifyServiceNeedUpdated(

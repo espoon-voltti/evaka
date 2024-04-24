@@ -1558,6 +1558,7 @@ export class Fixture {
       endDate: LocalDate.todayInSystemTz(),
       optionId: 'not set',
       shiftCare: 'NONE',
+      partWeek: false,
       confirmedBy: 'not set',
       confirmedAt: LocalDate.todayInSystemTz()
     })

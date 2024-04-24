@@ -2133,6 +2133,7 @@ data class DevServiceNeed(
     val endDate: LocalDate,
     val optionId: ServiceNeedOptionId,
     val shiftCare: ShiftCareType = ShiftCareType.NONE,
+    val partWeek: Boolean = false,
     val confirmedBy: EvakaUserId,
     val confirmedAt: LocalDate? = null
 )

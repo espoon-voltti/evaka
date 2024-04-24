@@ -57,7 +57,7 @@ SELECT
         WHEN sno.valid_placement_type = ANY(${bind(vardaTemporaryPlacementTypes)}::placement_type[]) THEN true
         ELSE false
     END AS temporary,
-    NOT sno.part_week AS daily,
+    NOT sn.part_week AS daily,
     sn.shift_care = 'FULL' as shift_care,
     u.provider_type,
     u.oph_organizer_oid,

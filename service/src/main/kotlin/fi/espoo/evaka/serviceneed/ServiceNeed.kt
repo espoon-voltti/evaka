@@ -53,6 +53,7 @@ data class ServiceNeed(
     val endDate: LocalDate,
     @Nested("option") val option: ServiceNeedOptionSummary,
     val shiftCare: ShiftCareType,
+    val partWeek: Boolean,
     @Nested("confirmed")
     @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
     val confirmed: ServiceNeedConfirmation?,
@@ -122,7 +123,7 @@ data class ServiceNeedOption(
     val contractDaysPerMonth: Int?,
     val daycareHoursPerMonth: Int?,
     val partDay: Boolean,
-    val partWeek: Boolean,
+    val partWeek: Boolean?,
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
@@ -166,7 +167,8 @@ fun validateServiceNeed(
     placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: ServiceNeedOptionId
+    optionId: ServiceNeedOptionId,
+    partWeek: Boolean
 ) {
     if (endDate.isBefore(startDate)) {
         throw BadRequest("Start date cannot be before end date.")
@@ -180,6 +182,7 @@ fun validateServiceNeed(
                 JOIN service_need_option sno ON sno.valid_placement_type = pl.type
                 WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)} 
                     AND daterange(sno.valid_from, sno.valid_to, '[]') @> ${bind(FiniteDateRange(startDate, endDate))}
+                    AND (sno.part_week IS NULL OR sno.part_week = ${bind(partWeek)})
                 """
             )
         }
@@ -209,9 +212,10 @@ fun createServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: ShiftCareType,
+    partWeek: Boolean,
     confirmedAt: HelsinkiDateTime
 ): ServiceNeedId {
-    validateServiceNeed(tx, placementId, startDate, endDate, optionId)
+    validateServiceNeed(tx, placementId, startDate, endDate, optionId, partWeek)
     clearServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
     return tx.insertServiceNeed(
         placementId = placementId,
@@ -219,6 +223,7 @@ fun createServiceNeed(
         endDate = endDate,
         optionId = optionId,
         shiftCare = shiftCare,
+        partWeek = partWeek,
         confirmedBy = user.evakaUserId,
         confirmedAt = confirmedAt
     )
@@ -232,10 +237,11 @@ fun updateServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: ShiftCareType,
+    partWeek: Boolean,
     confirmedAt: HelsinkiDateTime
 ) {
     val old = tx.getServiceNeed(id)
-    validateServiceNeed(tx, old.placementId, startDate, endDate, optionId)
+    validateServiceNeed(tx, old.placementId, startDate, endDate, optionId, partWeek)
     if (startDate.isBefore(old.startDate)) {
         clearServiceNeedsFromPeriod(
             tx,
@@ -259,6 +265,7 @@ fun updateServiceNeed(
         endDate = endDate,
         optionId = optionId,
         shiftCare = shiftCare,
+        partWeek = partWeek,
         confirmedBy = user.evakaUserId,
         confirmedAt = confirmedAt
     )
@@ -284,6 +291,7 @@ fun clearServiceNeedsFromPeriod(
                         endDate = old.endDate,
                         optionId = old.option.id,
                         shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
                         confirmedAt = old.confirmed?.at
                     )
@@ -295,6 +303,7 @@ fun clearServiceNeedsFromPeriod(
                         endDate = periodToClear.start.minusDays(1),
                         optionId = old.option.id,
                         shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
                         confirmedAt = old.confirmed?.at
                     )
@@ -306,6 +315,7 @@ fun clearServiceNeedsFromPeriod(
                         endDate = periodToClear.start.minusDays(1),
                         optionId = old.option.id,
                         shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
                         confirmedAt = old.confirmed?.at
                     )
@@ -315,6 +325,7 @@ fun clearServiceNeedsFromPeriod(
                         endDate = old.endDate,
                         optionId = old.option.id,
                         shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
                         confirmedAt = old.confirmed?.at
                     )

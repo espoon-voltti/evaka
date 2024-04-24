@@ -107,6 +107,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 endDate = placementEnd,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -174,6 +175,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 endDate = otherPlacementEnd,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )
@@ -289,6 +291,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 endDate = partnerPlacementEnd,
                 optionId = snDaycareContractDays15.id,
                 shiftCare = ShiftCareType.NONE,
+                partWeek = false,
                 confirmedBy = null,
                 confirmedAt = null
             )

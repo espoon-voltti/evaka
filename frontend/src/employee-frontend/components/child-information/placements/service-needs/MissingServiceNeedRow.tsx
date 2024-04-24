@@ -45,6 +45,7 @@ function MissingServiceNeedRow({
       </InfoTd>
       <Td />
       <Td />
+      <Td />
       <Td align="right">
         {createAllowed && (
           <InlineButton

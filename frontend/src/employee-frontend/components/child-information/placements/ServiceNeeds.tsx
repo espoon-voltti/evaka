@@ -99,7 +99,8 @@ export default React.memo(function ServiceNeeds({
             <Th>{t.period}</Th>
             <Th>{t.description}</Th>
             <Th>{t.shiftCare}</Th>
-            <Th>{t.confirmed}</Th>
+            <Th>{t.partWeek}</Th>
+            {!creatingNew && !editingId && <Th>{t.confirmed}</Th>}
             <Th />
           </Tr>
         </Thead>

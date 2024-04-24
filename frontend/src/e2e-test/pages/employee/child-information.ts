@@ -701,7 +701,9 @@ export class PlacementsSection extends Section {
   #serviceNeedRow = (index: number) =>
     this.findAll('[data-qa="service-need-row"]').nth(index)
   #serviceNeedRowOptionName = (index: number) =>
-    this.#serviceNeedRow(index).find('[data-qa="service-need-name"]')
+    this.#serviceNeedRow(index).findByDataQa('service-need-name')
+  #serviceNeedPartWeek = (index: number) =>
+    this.#serviceNeedRow(index).findByDataQa('part-week')
   addMissingServiceNeedButton = this.find(
     '[data-qa="add-new-missing-service-need"]'
   )
@@ -713,6 +715,9 @@ export class PlacementsSection extends Section {
   )
   serviceNeedOptionSelect = new Select(
     this.find('[data-qa="service-need-option-select"]')
+  )
+  serviceNeedPartWeekCheckbox = new Checkbox(
+    this.findByDataQa('part-week-checkbox')
   )
 
   #nthServiceNeedEditButton = (index: number) =>
@@ -763,7 +768,8 @@ export class PlacementsSection extends Section {
     placementId: string,
     optionName: string,
     shiftCare: ShiftCareType = 'NONE',
-    intermittentShiftCare = false
+    intermittentShiftCare = false,
+    partWeek: boolean | null = null
   ) {
     await this.openPlacement(placementId)
     await this.addMissingServiceNeedButton.click()
@@ -777,11 +783,26 @@ export class PlacementsSection extends Section {
         await this.#serviceNeedShiftCareCheckBox.check()
       }
     }
+
+    if (partWeek === true) {
+      await this.serviceNeedPartWeekCheckbox.check()
+    } else if (partWeek === false) {
+      await this.serviceNeedPartWeekCheckbox.uncheck()
+    } else {
+      await this.serviceNeedPartWeekCheckbox.waitUntilHidden()
+    }
+
     await this.serviceNeedSaveButton.click()
   }
 
   async assertNthServiceNeedName(index: number, optionName: string) {
     await this.#serviceNeedRowOptionName(index).assertTextEquals(optionName)
+  }
+
+  async assertNthServiceNeedPartWeek(index: number, partWeek: boolean) {
+    await this.#serviceNeedPartWeek(index).assertTextEquals(
+      partWeek ? 'Kyllä' : 'Ei'
+    )
   }
 
   async assertNthServiceNeedShiftCare(

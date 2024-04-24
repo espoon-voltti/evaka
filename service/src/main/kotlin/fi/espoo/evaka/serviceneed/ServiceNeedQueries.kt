@@ -24,7 +24,7 @@ fun Database.Read.getServiceNeedsByChild(childId: ChildId): List<ServiceNeed> {
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
     sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
@@ -47,7 +47,7 @@ fun Database.Read.getServiceNeedsByUnit(
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
     sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
@@ -93,7 +93,7 @@ fun Database.Read.getServiceNeed(id: ServiceNeedId): ServiceNeed {
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
     sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated AS option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
@@ -126,14 +126,15 @@ fun Database.Transaction.insertServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: ShiftCareType,
+    partWeek: Boolean,
     confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ): ServiceNeedId {
     return createQuery {
             sql(
                 """
-INSERT INTO service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
-VALUES (${bind(placementId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(optionId)}, ${bind(shiftCare)}, ${bind(confirmedBy)}, ${bind(confirmedAt)})
+INSERT INTO service_need (placement_id, start_date, end_date, option_id, shift_care, part_week, confirmed_by, confirmed_at) 
+VALUES (${bind(placementId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(optionId)}, ${bind(shiftCare)}, ${bind(partWeek)}, ${bind(confirmedBy)}, ${bind(confirmedAt)})
 RETURNING id;
 """
             )
@@ -147,6 +148,7 @@ fun Database.Transaction.updateServiceNeed(
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
     shiftCare: ShiftCareType,
+    partWeek: Boolean,
     confirmedBy: EvakaUserId?,
     confirmedAt: HelsinkiDateTime?
 ) {
@@ -154,7 +156,7 @@ fun Database.Transaction.updateServiceNeed(
             sql(
                 """
 UPDATE service_need
-SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, option_id = ${bind(optionId)}, shift_care = ${bind(shiftCare)}, confirmed_by = ${bind(confirmedBy)}, confirmed_at = ${bind(confirmedAt)}
+SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, option_id = ${bind(optionId)}, shift_care = ${bind(shiftCare)}, part_week = ${bind(partWeek)}, confirmed_by = ${bind(confirmedBy)}, confirmed_at = ${bind(confirmedAt)}
 WHERE id = ${bind(id)}
 """
             )
@@ -176,7 +178,7 @@ fun Database.Read.getOverlappingServiceNeeds(
             sql(
                 """
 SELECT 
-    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+    sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.part_week, sn.updated,
     sno.id as option_id, sno.name_fi as option_name_fi, sno.name_sv as option_name_sv, sno.name_en as option_name_en, sno.updated as option_updated,
     sn.confirmed_by as confirmed_user_id, u.name as confirmed_name, sn.confirmed_at
 FROM service_need sn
@@ -219,7 +221,7 @@ SELECT
     valid_to,
     updated
 FROM service_need_option
-ORDER BY display_order, part_week, daycare_hours_per_week DESC, part_day, name_fi
+ORDER BY display_order, daycare_hours_per_week DESC, part_day, part_week, name_fi
         """
             )
         }
@@ -295,7 +297,8 @@ fun Database.Read.getChildServiceNeedInfos(
            sno.daycare_hours_per_month,
            sno.name_fi                                 AS option_name,
            daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
-           sn.shift_care
+           sn.shift_care,
+           sn.part_week
     FROM placement p
     JOIN service_need sn ON sn.placement_id = p.id
     JOIN service_need_option sno ON sn.option_id = sno.id
@@ -308,7 +311,8 @@ fun Database.Read.getChildServiceNeedInfos(
            sno.daycare_hours_per_month,
            sno.name_fi                                 AS option_name,
            daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
-           sn.shift_care
+           sn.shift_care,
+           sn.part_week
     FROM backup_care bc
     JOIN placement p ON bc.child_id = p.child_id 
         AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
@@ -337,7 +341,8 @@ SELECT
     sno.daycare_hours_per_month,
     sno.name_fi AS option_name,
     daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
-    sn.shift_care
+    sn.shift_care,
+    sn.part_week
 FROM daycare_group_placement AS gp
 JOIN placement p ON gp.daycare_placement_id = p.id AND daterange(p.start_date, p.end_date, '[]') && daterange(gp.start_date, gp.end_date, '[]')
 JOIN service_need sn ON sn.placement_id = p.id
@@ -355,7 +360,8 @@ SELECT
     sno.daycare_hours_per_month,
     sno.name_fi AS option_name,
     daterange(sn.start_date, sn.end_date, '[]') AS valid_during,
-    sn.shift_care
+    sn.shift_care,
+    sn.part_week
 FROM backup_care bc
 JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
 JOIN service_need sn ON sn.placement_id = p.id
