@@ -94,14 +94,12 @@ import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecision } from './api-types'
-import { VtjPerson } from './api-types'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
 import { deserializeJsonDecision } from 'lib-common/generated/api-types/decision'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
 import { deserializeJsonStaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
-import { deserializeJsonVtjPerson } from './api-types'
 import { devClient } from '../dev-api'
 import { uri } from 'lib-common/uri'
 
@@ -1748,26 +1746,6 @@ export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
       method: 'GET'
     })
     return json.map(e => deserializeJsonStaffMemberAttendance(e))
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getVtjPerson
-*/
-export async function getVtjPerson(
-  request: {
-    ssn: string
-  }
-): Promise<VtjPerson> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<VtjPerson>>({
-      url: uri`/vtj-persons/${request.ssn}`.toString(),
-      method: 'GET'
-    })
-    return deserializeJsonVtjPerson(json)
   } catch (e) {
     throw new DevApiError(e)
   }

@@ -802,12 +802,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
-    @GetMapping("/vtj-persons/{ssn}")
-    fun getVtjPerson(@PathVariable ssn: String): VtjPerson {
-        return MockPersonDetailsService.getPerson(ssn)
-            ?: throw NotFound("vtj person $ssn was not found")
-    }
-
     @GetMapping("/emails")
     fun getSentEmails(): List<Email> {
         return MockEmailClient.emails

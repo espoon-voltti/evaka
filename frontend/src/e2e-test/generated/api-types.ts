@@ -1041,23 +1041,6 @@ export interface VoucherValueDecisionPlacement {
   unitId: UUID
 }
 
-/**
-* Generated from fi.espoo.evaka.vtjclient.dto.VtjPerson
-*/
-export interface VtjPerson {
-  address: PersonAddress | null
-  dateOfDeath: LocalDate | null
-  dependants: VtjPerson[]
-  firstNames: string
-  guardians: VtjPerson[]
-  lastName: string
-  nationalities: Nationality[]
-  nativeLanguage: NativeLanguage | null
-  residenceCode: string | null
-  restrictedDetails: RestrictedDetails | null
-  socialSecurityNumber: string
-}
-
 
 export function deserializeJsonCaretaker(json: JsonOf<Caretaker>): Caretaker {
   return {
@@ -1517,16 +1500,5 @@ export function deserializeJsonVoucherValueDecision(json: JsonOf<VoucherValueDec
     sentAt: (json.sentAt != null) ? HelsinkiDateTime.parseIso(json.sentAt) : null,
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
-  }
-}
-
-
-export function deserializeJsonVtjPerson(json: JsonOf<VtjPerson>): VtjPerson {
-  return {
-    ...json,
-    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
-    dependants: json.dependants.map(e => deserializeJsonVtjPerson(e)),
-    guardians: json.guardians.map(e => deserializeJsonVtjPerson(e)),
-    restrictedDetails: (json.restrictedDetails != null) ? deserializeJsonRestrictedDetails(json.restrictedDetails) : null
   }
 }
