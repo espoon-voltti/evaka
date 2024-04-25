@@ -2,10 +2,8 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM eclipse-temurin:21-jammy as base
+FROM azul/zulu-openjdk:21-latest as builder
 ARG CACHE_BUST
-
-LABEL maintainer="https://github.com/espoon-voltti/evaka"
 
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
@@ -15,13 +13,10 @@ RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       tzdata \
       ca-certificates \
-      curl \
       unzip \
  && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
  && dpkg-reconfigure --frontend noninteractive tzdata \
  && rm -rf /var/lib/apt/lists/*
-
-FROM base as builder
 
 WORKDIR /evaka
 
@@ -52,7 +47,23 @@ COPY . /evaka
 RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin copyDownloadOnlyDeps \
  && unzip -oq build/libs/evaka-service-boot.jar -d target
 
-FROM base
+FROM azul/zulu-openjdk:21-jre-headless-latest
+ARG CACHE_BUST
+
+LABEL maintainer="https://github.com/espoon-voltti/evaka"
+
+ENV LC_ALL C.UTF-8
+ENV LANG C.UTF-8
+ENV LANGUAGE C.UTF-8
+RUN apt-get update \
+ && apt-get -y dist-upgrade \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      tzdata \
+      ca-certificates \
+      curl \
+ && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
+ && dpkg-reconfigure --frontend noninteractive tzdata \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /evaka/service
 
