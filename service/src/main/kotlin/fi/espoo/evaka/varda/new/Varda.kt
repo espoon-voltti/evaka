@@ -76,11 +76,10 @@ data class Lapsi(
             paos_organisaatio_oid = paos_organisaatio_oid
         )
 
-    val effectiveOrganizerOid: String
-        get() =
-            paos_organisaatio_oid
-                ?: vakatoimija_oid
-                ?: throw IllegalStateException("No organizer OID found")
+    fun effectiveOrganizerOid(): String =
+        paos_organisaatio_oid
+            ?: vakatoimija_oid
+            ?: throw IllegalStateException("No organizer OID found")
 }
 
 data class Varhaiskasvatuspaatos(

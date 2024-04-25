@@ -316,7 +316,7 @@ class VardaUpdater(
                                                 listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                                         )
                                     },
-                            maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid] ?: emptyList()
+                            maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid()] ?: emptyList()
                         )
                         .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
                 }

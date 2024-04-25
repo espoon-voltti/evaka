@@ -5,15 +5,22 @@
 package fi.espoo.evaka.varda.new
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.snDaycareFullDay35
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -23,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var vardaUpdateService: VardaUpdateServiceNew
+    @Autowired lateinit var ophEnv: OphEnv
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0))
     private val clock = MockEvakaClock(now)
@@ -63,25 +71,41 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `update is not planned if state is up-to-date`() {
         val area = DevCareArea()
-        val unit = DevDaycare(areaId = area.id)
+        val unit = DevDaycare(areaId = area.id, ophOrganizerOid = ophEnv.organizerOid)
+        val employee = DevEmployee()
         val child = DevPerson(ssn = "030320A904N")
 
         db.transaction { tx ->
+            tx.insertServiceNeedOption(snDaycareFullDay35)
             tx.insert(area)
             tx.insert(unit)
-            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(employee)
 
-            val state =
-                VardaUpdater.EvakaHenkiloNode(
-                    henkilo =
-                        Henkilo(
-                            etunimet = child.firstName,
-                            sukunimi = child.lastName,
-                            henkilotunnus = child.ssn,
-                            henkilo_oid = null
-                        ),
-                    lapset = emptyList()
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28)
                 )
+                .let { placementId ->
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period =
+                            FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 2, 28)),
+                        optionId = snDaycareFullDay35.id,
+                        confirmedBy = employee.evakaUserId
+                    )
+                }
+
+            // Compute the state that would be created by the updater
+            val state =
+                VardaUpdater(
+                        DateRange(LocalDate.of(2019, 1, 1), null),
+                        ophEnv.organizerOid,
+                        "sourceSystem"
+                    )
+                    .getEvakaState(tx, LocalDate.of(2024, 1, 1), child.id)
             tx.execute {
                 sql(
                     "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, ${bindJson(state)})"
