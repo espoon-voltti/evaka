@@ -69,11 +69,6 @@ fun Database.Transaction.updateChild(child: Child) {
         .bind("medication", child.additionalInformation.medication)
         .bind("languageAtHome", child.additionalInformation.languageAtHome)
         .bind("languageAtHomeDetails", child.additionalInformation.languageAtHomeDetails)
-        .bind(
-            "dietId",
-            if (child.additionalInformation.specialDiet != null)
-                child.additionalInformation.specialDiet.id
-            else null
-        )
+        .bind("dietId", child.additionalInformation.specialDiet?.id)
         .execute()
 }
