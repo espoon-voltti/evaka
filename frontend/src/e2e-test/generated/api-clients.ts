@@ -89,6 +89,7 @@ import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
 import { PostVasuDocBody } from './api-types'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { SfiMessage } from './api-types'
+import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecision } from './api-types'
@@ -2061,6 +2062,27 @@ export async function publishVasuDocument(
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/vasu/doc/publish/${request.documentId}`.toString(),
       method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.putDiets
+*/
+export async function putDiets(
+  request: {
+    body: SpecialDiet[]
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/diets`.toString(),
+      method: 'PUT',
+      data: request.body satisfies JsonCompatible<SpecialDiet[]>
     })
     return json
   } catch (e) {

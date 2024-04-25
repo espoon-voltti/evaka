@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.specialdiet.SpecialDiet
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -131,19 +132,7 @@ class ChildController(
 
 fun Database.Read.getAdditionalInformation(childId: ChildId): AdditionalInformation {
     val child = getChild(childId)
-    return if (child != null) {
-        AdditionalInformation(
-            allergies = child.additionalInformation.allergies,
-            diet = child.additionalInformation.diet,
-            additionalInfo = child.additionalInformation.additionalInfo,
-            preferredName = child.additionalInformation.preferredName,
-            medication = child.additionalInformation.medication,
-            languageAtHome = child.additionalInformation.languageAtHome,
-            languageAtHomeDetails = child.additionalInformation.languageAtHomeDetails
-        )
-    } else {
-        AdditionalInformation()
-    }
+    return child?.additionalInformation ?: AdditionalInformation()
 }
 
 fun Database.Transaction.upsertAdditionalInformation(
@@ -168,5 +157,6 @@ data class AdditionalInformation(
     val preferredName: String = "",
     val medication: String = "",
     val languageAtHome: String = "",
-    val languageAtHomeDetails: String = ""
+    val languageAtHomeDetails: String = "",
+    @Nested("special_diet") val specialDiet: SpecialDiet? = null
 )

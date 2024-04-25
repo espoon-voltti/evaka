@@ -191,6 +191,8 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
+import fi.espoo.evaka.specialdiet.SpecialDiet
+import fi.espoo.evaka.specialdiet.setSpecialDiets
 import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
@@ -1643,6 +1645,11 @@ $form
 </body>
 """
         return ResponseEntity.status(HttpStatus.OK).header("Content-Type", "text/html").body(body)
+    }
+
+    @PutMapping("/diets")
+    fun putDiets(db: Database, @RequestBody diets: List<SpecialDiet>) {
+        db.connect { dbc -> dbc.transaction { tx -> tx.setSpecialDiets((diets)) } }
     }
 }
 

@@ -8,7 +8,9 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
+import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -18,6 +20,7 @@ import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4 } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
 
 import LabelValueList from '../../../components/common/LabelValueList'
@@ -32,6 +35,8 @@ import { RequireRole } from '../../../utils/roles'
 import { renderResult } from '../../async-rendering'
 import { FlexRow } from '../../common/styled/containers'
 import { textAreaRows } from '../../utils'
+
+import { specialDietsQuery } from './queries'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;
@@ -52,8 +57,22 @@ const filterLanguages = (
   return items.filter((item) => item.nameFi.includes(filter))
 }
 
+const filterDiets = (
+  input: string,
+  diets: readonly SpecialDiet[]
+): SpecialDiet[] => {
+  const filter = input.toLowerCase()
+  return diets.filter((diet) =>
+    getDietCaption(diet).toLowerCase().includes(filter)
+  )
+}
+
 interface Props {
   id: UUID
+}
+
+function getDietCaption(diet: SpecialDiet) {
+  return `${diet.abbreviation}${diet.name ? ` (${diet.name})` : ''} - ${diet.id}`
 }
 
 export default React.memo(function AdditionalInformation({ id }: Props) {
@@ -70,7 +89,8 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
     preferredName: '',
     medication: '',
     languageAtHome: '',
-    languageAtHomeDetails: ''
+    languageAtHomeDetails: '',
+    specialDiet: null
   })
 
   const editing = uiMode == 'child-additional-details-editing'
@@ -84,7 +104,9 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
         preferredName: additionalInformation.value.preferredName,
         medication: additionalInformation.value.medication,
         languageAtHome: additionalInformation.value.languageAtHome,
-        languageAtHomeDetails: additionalInformation.value.languageAtHomeDetails
+        languageAtHomeDetails:
+          additionalInformation.value.languageAtHomeDetails,
+        specialDiet: additionalInformation.value.specialDiet
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -105,6 +127,9 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
     () => sortBy(Object.values(isoLanguages), ({ nameFi }) => nameFi),
     []
   )
+  const specialDiets = useQueryResult(specialDietsQuery(), {
+    enabled: editing
+  }).getOrElse([])
 
   return (
     <div data-qa="additional-information-section">
@@ -257,7 +282,42 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
                     </div>
                   </>
                 )
-              }
+              },
+              ...(featureFlags.jamixIntegration
+                ? [
+                    {
+                      label: i18n.childInformation.personDetails.specialDiet,
+                      value: editing ? (
+                        <>
+                          <Combobox
+                            data-qa="diet-input"
+                            items={specialDiets}
+                            getItemDataQa={(item) => `diet-${item.id}`}
+                            selectedItem={form.specialDiet}
+                            onChange={(diet) =>
+                              setForm({ ...form, specialDiet: diet ?? null })
+                            }
+                            filterItems={filterDiets}
+                            getItemLabel={getDietCaption}
+                            placeholder={
+                              i18n.childInformation.personDetails.placeholder
+                                .specialDiet
+                            }
+                            clearable={true}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <div data-qa="diet-value-display">
+                            {data.specialDiet
+                              ? getDietCaption(data.specialDiet)
+                              : '-'}
+                          </div>
+                        </>
+                      )
+                    }
+                  ]
+                : [])
             ]}
           />
           {editing && (

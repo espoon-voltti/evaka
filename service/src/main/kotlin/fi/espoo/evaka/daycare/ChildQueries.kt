@@ -11,7 +11,11 @@ import fi.espoo.evaka.shared.db.Database
 fun Database.Read.getChild(id: ChildId): Child? {
     // language=SQL
     val sql =
-        "SELECT child.*, person.preferred_name FROM child JOIN person ON child.id = person.id WHERE child.id = :id"
+        """
+SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.name as special_diet_name, special_diet.abbreviation as special_diet_abbreviation
+FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id
+WHERE child.id = :id
+"""
 
     @Suppress("DEPRECATION") return createQuery(sql).bind("id", id).exactlyOneOrNull<Child>()
 }
@@ -19,7 +23,7 @@ fun Database.Read.getChild(id: ChildId): Child? {
 fun Database.Transaction.createChild(child: Child): Child {
     // language=SQL
     val sql =
-        "INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details) VALUES (:id, :allergies, :diet, :additionalInfo, :medication, :languageAtHome, :languageAtHomeDetails) RETURNING *"
+        "INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details, diet_id) VALUES (:id, :allergies, :diet, :additionalInfo, :medication, :languageAtHome, :languageAtHomeDetails, :dietId) RETURNING *"
 
     @Suppress("DEPRECATION")
     return createQuery(sql)
@@ -30,6 +34,7 @@ fun Database.Transaction.createChild(child: Child): Child {
         .bind("medication", child.additionalInformation.medication)
         .bind("languageAtHome", child.additionalInformation.languageAtHome)
         .bind("languageAtHomeDetails", child.additionalInformation.languageAtHomeDetails)
+        .bind("dietId", child.additionalInformation.specialDiet?.id)
         .exactlyOne<Child>()
 }
 
@@ -53,7 +58,7 @@ fun Database.Transaction.upsertChild(child: Child) {
 fun Database.Transaction.updateChild(child: Child) {
     // language=SQL
     val sql =
-        "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication, language_at_home = :languageAtHome, language_at_home_details = :languageAtHomeDetails WHERE id = :id"
+        "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication, language_at_home = :languageAtHome, language_at_home_details = :languageAtHomeDetails, diet_id = :dietId WHERE id = :id"
 
     @Suppress("DEPRECATION")
     createUpdate(sql)
@@ -64,5 +69,6 @@ fun Database.Transaction.updateChild(child: Child) {
         .bind("medication", child.additionalInformation.medication)
         .bind("languageAtHome", child.additionalInformation.languageAtHome)
         .bind("languageAtHomeDetails", child.additionalInformation.languageAtHomeDetails)
+        .bind("dietId", child.additionalInformation.specialDiet?.id)
         .execute()
 }

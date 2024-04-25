@@ -421,6 +421,8 @@ enum class Audit(
     ServiceNeedReportRead,
     SettingsRead,
     SettingsUpdate,
+    SpecialDietsRead,
+    SpecialDietsUpdate,
     ServiceWorkerNoteUpdate,
     SextetReportRead,
     UnitStaffAttendanceRead,

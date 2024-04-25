@@ -20,6 +20,7 @@ import {
 import {
   createDaycareGroups,
   forceFullVtjRefresh,
+  putDiets,
   resetDatabase
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
@@ -136,6 +137,38 @@ describe('Child Information - edit additional information', () => {
     await section.confirmBtn.click()
     await section.languageAtHome.assertTextEquals(language)
     await section.languageAtHomeDetails.assertTextEquals(details)
+  })
+  test('Special diet can be edited', async () => {
+    await putDiets({
+      body: [
+        {
+          id: 79,
+          name: 'Laktoositon',
+          abbreviation: 'L'
+        },
+        {
+          id: 80,
+          name: 'Gluteeniton Laktoositon',
+          abbreviation: 'L G'
+        }
+      ]
+    })
+    const dietCaption = 'L (Laktoositon) - 79'
+    const dietSearchTerm = 'laktoosi'
+    const dietId = 79
+
+    await page.goto(
+      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
+    )
+    await childInformationPage.waitUntilLoaded()
+    await section.specialDiet.assertTextEquals('-')
+    await section.editBtn.click()
+    await section.specialDietCombobox.fillAndSelectItem(
+      dietSearchTerm,
+      `diet-${dietId}`
+    )
+    await section.confirmBtn.click()
+    await section.specialDiet.assertTextEquals(dietCaption)
   })
 })
 

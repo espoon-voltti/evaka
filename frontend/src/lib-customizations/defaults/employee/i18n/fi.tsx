@@ -597,9 +597,11 @@ export const fi = {
       address: 'Osoite',
       familyLink: 'Perheen tiedot',
       languageAtHome: 'Kotikieli, jos muu kuin VTJ:ssä mainittu',
+      specialDiet: 'Ruokatilausintegraatiossa käytettävä erityisruokavalio',
       placeholder: {
         languageAtHome: 'Valitse kieli',
-        languageAtHomeDetails: 'Lisätiedot kotikielestä'
+        languageAtHomeDetails: 'Lisätiedot kotikielestä',
+        specialDiet: 'Valitse erityisruokavalio'
       }
     },
     familyContacts: {

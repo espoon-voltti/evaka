@@ -146,6 +146,11 @@ export class AdditionalInformationSection extends Section {
   readonly languageAtHomeDetailsInput = new TextInput(
     this.page.findByDataQa('input-language-at-home-details')
   )
+
+  readonly specialDietCombobox = new Combobox(
+    this.page.findByDataQa('diet-input')
+  )
+  readonly specialDiet = this.page.findByDataQa('diet-value-display')
 }
 
 class DailyServiceTimeSectionBaseForm extends Section {
