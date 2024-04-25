@@ -247,7 +247,9 @@ class VoucherValueDecisionController(
                         personIds.any { personId ->
                             tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
                         }
-                    if (restrictedDetails && !user.isAdmin) {
+                    if (
+                        restrictedDetails && decision.documentContainsContactInfo && !user.isAdmin
+                    ) {
                         throw Forbidden(
                             "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
                         )

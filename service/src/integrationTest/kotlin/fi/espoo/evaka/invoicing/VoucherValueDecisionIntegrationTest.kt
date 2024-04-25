@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
@@ -376,13 +377,22 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `PDF can be downloaded`() {
         createPlacement(startDate, endDate)
-        val decisionIds = sendAllValueDecisions()
+        val decisionId = sendAllValueDecisions().first()
 
-        assertEquals(200, getPdfStatus(decisionIds[0], financeWorker))
+        assertEquals(200, getPdfStatus(decisionId, financeWorker))
     }
 
     @Test
-    fun `PDF can not be downloaded if head of family has restricted details`() {
+    fun `Legacy PDF can be downloaded`() {
+        createPlacement(startDate, endDate)
+        val decisionId = sendAllValueDecisions().first()
+        db.transaction { it.setDocumentContainsContactInfo(decisionId) }
+
+        assertEquals(200, getPdfStatus(decisionId, financeWorker))
+    }
+
+    @Test
+    fun `Legacy PDF can not be downloaded if head of family has restricted details`() {
         db.transaction {
             // testAdult_7 has restricted details on
             it.insertTestParentship(
@@ -394,9 +404,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
         }
         createPlacement(startDate, endDate, childId = testChild_2.id)
-        val decisionIds = sendAllValueDecisions()
+        val decisionId = sendAllValueDecisions().first()
+        db.transaction { it.setDocumentContainsContactInfo(decisionId) }
 
-        assertEquals(403, getPdfStatus(decisionIds[0], financeWorker))
+        assertEquals(403, getPdfStatus(decisionId, financeWorker))
 
         // Check that message is still sent via sfi
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -404,7 +415,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `PDF can not be downloaded if child has restricted details`() {
+    fun `Legacy PDF can not be downloaded if child has restricted details`() {
         val testChildRestricted =
             testChild_1.copy(
                 id = PersonId(UUID.randomUUID()),
@@ -422,13 +433,14 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         }
         createPlacement(startDate, endDate, childId = testChildRestricted.id)
-        val decisionIds = sendAllValueDecisions()
+        val decisionId = sendAllValueDecisions().first()
+        db.transaction { it.setDocumentContainsContactInfo(decisionId) }
 
-        assertEquals(403, getPdfStatus(decisionIds[0], financeWorker))
+        assertEquals(403, getPdfStatus(decisionId, financeWorker))
     }
 
     @Test
-    fun `PDF can be downloaded by admin even if someone in the family has restricted details`() {
+    fun `PDF without contact info can be downloaded even if head of family has restricted details`() {
         db.transaction {
             // testAdult_7 has restricted details on
             it.insertTestParentship(
@@ -440,9 +452,52 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
         }
         createPlacement(startDate, endDate, childId = testChild_2.id)
-        val decisionIds = sendAllValueDecisions()
+        val decisionId = sendAllValueDecisions().first()
 
-        assertEquals(200, getPdfStatus(decisionIds[0], adminUser))
+        assertEquals(200, getPdfStatus(decisionId, financeWorker))
+    }
+
+    @Test
+    fun `PDF without contact info can be downloaded even if child has restricted details`() {
+        val testChildRestricted =
+            testChild_1.copy(
+                id = PersonId(UUID.randomUUID()),
+                ssn = "010617A125W",
+                restrictedDetailsEnabled = true
+            )
+
+        db.transaction {
+            it.insert(testChildRestricted, DevPersonType.RAW_ROW)
+            it.insertTestParentship(
+                headOfChild = testAdult_3.id,
+                childId = testChildRestricted.id,
+                startDate = testChildRestricted.dateOfBirth,
+                endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+            )
+        }
+        createPlacement(startDate, endDate, childId = testChildRestricted.id)
+        val decisionId = sendAllValueDecisions().first()
+
+        assertEquals(200, getPdfStatus(decisionId, financeWorker))
+    }
+
+    @Test
+    fun `Legacy PDF can be downloaded by admin even if someone in the family has restricted details`() {
+        db.transaction {
+            // testAdult_7 has restricted details on
+            it.insertTestParentship(
+                headOfChild = testAdult_7.id,
+                childId = testChild_2.id,
+                startDate = testChild_2.dateOfBirth,
+                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            )
+            it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
+        }
+        createPlacement(startDate, endDate, childId = testChild_2.id)
+        val decisionId = sendAllValueDecisions().first()
+        db.transaction { it.setDocumentContainsContactInfo(decisionId) }
+
+        assertEquals(200, getPdfStatus(decisionId, adminUser))
     }
 
     @Test
@@ -641,4 +696,15 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val (_, response, _) = http.get("/value-decisions/pdf/$decisionId").asUser(user).response()
         return response.statusCode
     }
+
+    private fun Database.Transaction.setDocumentContainsContactInfo(id: VoucherValueDecisionId) =
+        execute {
+            sql(
+                """
+        UPDATE voucher_value_decision
+        SET document_contains_contact_info = TRUE
+        WHERE id = ${bind(id)}
+    """
+            )
+        }
 }

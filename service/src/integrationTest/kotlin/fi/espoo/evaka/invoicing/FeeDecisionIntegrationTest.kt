@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -1896,7 +1896,26 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `PDF can not be downloaded if head of family has restricted details`() {
+    fun `Legacy PDF can be downloaded`() {
+        db.transaction {
+            it.insertGuardian(testAdult_1.id, testChild_1.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision =
+            createAndConfirmFeeDecisionsForFamily(
+                testAdult_1,
+                testAdult_2,
+                listOf(testChild_1, testChild_2),
+                legacyPdfWithContactInfo = true
+            )
+
+        getPdf(decision.id, user)
+    }
+
+    @Test
+    fun `Legacy PDF can not be downloaded if head of family has restricted details`() {
         // testAdult_7 has restricted details on
         db.transaction {
             it.insertGuardian(testAdult_7.id, testChild_1.id)
@@ -1908,7 +1927,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createAndConfirmFeeDecisionsForFamily(
                 testAdult_7,
                 testAdult_2,
-                listOf(testChild_1, testChild_2)
+                listOf(testChild_1, testChild_2),
+                legacyPdfWithContactInfo = true
             )
 
         assertThrows<Forbidden> { getPdf(decision.id, user) }
@@ -1919,7 +1939,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `PDF can not be downloaded if a child has restricted details`() {
+    fun `Legacy PDF can not be downloaded if a child has restricted details`() {
         val testChildRestricted =
             testChild_1.copy(
                 id = PersonId(UUID.randomUUID()),
@@ -1937,7 +1957,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createAndConfirmFeeDecisionsForFamily(
                 testAdult_1,
                 testAdult_2,
-                listOf(testChildRestricted, testChild_2)
+                listOf(testChildRestricted, testChild_2),
+                legacyPdfWithContactInfo = true
             )
 
         assertThrows<Forbidden> { getPdf(decision.id, user) }
@@ -1947,7 +1968,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `PDF can be downloaded by admin even if someone in the family has restricted details`() {
+    fun `PDF without contact info can be downloaded even if head of family has restricted details`() {
         // testAdult_7 has restricted details on
         db.transaction {
             it.insertGuardian(testAdult_7.id, testChild_1.id)
@@ -1959,7 +1980,54 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             createAndConfirmFeeDecisionsForFamily(
                 testAdult_7,
                 testAdult_2,
-                listOf(testChild_1, testChild_2)
+                listOf(testChild_1, testChild_2),
+                legacyPdfWithContactInfo = false
+            )
+
+        getPdf(decision.id, user)
+    }
+
+    @Test
+    fun `PDF without contact info can be downloaded even if a child has restricted details`() {
+        val testChildRestricted =
+            testChild_1.copy(
+                id = PersonId(UUID.randomUUID()),
+                ssn = "010617A125W",
+                restrictedDetailsEnabled = true
+            )
+        db.transaction {
+            it.insert(testChildRestricted, DevPersonType.RAW_ROW)
+            it.insertGuardian(testAdult_1.id, testChildRestricted.id)
+            it.insertGuardian(testAdult_1.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChildRestricted.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision =
+            createAndConfirmFeeDecisionsForFamily(
+                testAdult_1,
+                testAdult_2,
+                listOf(testChildRestricted, testChild_2),
+                legacyPdfWithContactInfo = false
+            )
+
+        getPdf(decision.id, user)
+    }
+
+    @Test
+    fun `Legacy PDF can be downloaded by admin even if someone in the family has restricted details`() {
+        // testAdult_7 has restricted details on
+        db.transaction {
+            it.insertGuardian(testAdult_7.id, testChild_1.id)
+            it.insertGuardian(testAdult_7.id, testChild_2.id)
+            it.insertGuardian(testAdult_2.id, testChild_1.id)
+            it.insertGuardian(testAdult_2.id, testChild_2.id)
+        }
+        val decision =
+            createAndConfirmFeeDecisionsForFamily(
+                testAdult_7,
+                testAdult_2,
+                listOf(testChild_1, testChild_2),
+                legacyPdfWithContactInfo = true
             )
 
         getPdf(decision.id, adminUser)
@@ -1988,10 +2056,23 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     private fun createAndConfirmFeeDecisionsForFamily(
         headOfFamily: DevPerson,
         partner: DevPerson?,
-        familyChildren: List<DevPerson>
+        familyChildren: List<DevPerson>,
+        legacyPdfWithContactInfo: Boolean = false
     ): FeeDecision {
         val decision = createFeeDecisionsForFamily(headOfFamily, partner, familyChildren)
-        db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+            if (legacyPdfWithContactInfo) {
+                tx.execute {
+                    sql(
+                        """
+                    UPDATE fee_decision SET document_contains_contact_info = TRUE
+                    WHERE id = ${bind(decision.id)}
+                """
+                    )
+                }
+            }
+        }
 
         confirmDrafts(listOf(decision.id))
 

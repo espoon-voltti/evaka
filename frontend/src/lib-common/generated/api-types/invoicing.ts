@@ -193,6 +193,7 @@ export interface FeeDecisionDetailed {
   created: HelsinkiDateTime
   decisionNumber: number | null
   decisionType: FeeDecisionType
+  documentContainsContactInfo: boolean
   documentKey: string | null
   familySize: number
   feeThresholds: FeeDecisionThresholds
@@ -984,6 +985,7 @@ export interface VoucherValueDecisionDetailed {
   created: HelsinkiDateTime
   decisionNumber: number | null
   decisionType: VoucherValueDecisionType
+  documentContainsContactInfo: boolean
   documentKey: string | null
   familySize: number
   feeAlterations: FeeAlterationWithEffect[]

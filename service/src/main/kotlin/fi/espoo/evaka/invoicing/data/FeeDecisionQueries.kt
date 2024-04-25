@@ -111,6 +111,7 @@ SELECT
     decision.approved_at,
     decision.sent_at,
     decision.head_of_family_id AS head_id,
+    decision.document_contains_contact_info,
     head.date_of_birth as head_date_of_birth,
     head.first_name as head_first_name,
     head.last_name as head_last_name,

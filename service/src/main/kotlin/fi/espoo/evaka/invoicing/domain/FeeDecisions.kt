@@ -205,7 +205,9 @@ data class FeeDecisionDetailed(
     val financeDecisionHandlerFirstName: String?,
     val financeDecisionHandlerLastName: String?,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val partnerIsCodebtor: Boolean? = false
+    val partnerIsCodebtor: Boolean? = false,
+    // True if the document is a legacy document that may contain guardian name and address.
+    val documentContainsContactInfo: Boolean
 ) {
     val totalFee
         get() = children.fold(0) { sum, part -> sum + part.finalFee }
