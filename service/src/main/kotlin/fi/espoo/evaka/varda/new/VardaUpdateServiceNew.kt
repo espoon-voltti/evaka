@@ -107,7 +107,9 @@ class VardaUpdateServiceNew(
 
         val childIds =
             dbc.transaction { tx ->
-                tx.addNewChildrenForVardaUpdate(migrationSpeed)
+                val count = tx.addNewChildrenForVardaUpdate(migrationSpeed)
+                logger.info { "Added $count new children for Varda update" }
+
                 tx.getVardaUpdateChildIds()
             }
 
@@ -185,6 +187,11 @@ class VardaUpdater(
         logger.info { "Starting Varda update for child $childId" }
 
         val evakaState = dbc.read { tx -> getEvakaState(tx, today, childId) }
+        if (evakaState == null) {
+            logger.info { "Cannot compute Varda state for $childId" }
+            return
+        }
+
         val vardaState =
             getVardaState(
                 readClient,
@@ -193,7 +200,7 @@ class VardaUpdater(
             )
 
         logger.info(mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())) {
-            "Varda update state for $childId (see the meta.varda and meta.evaka fields)"
+            "Varda state for $childId (see the meta.varda and meta.evaka fields)"
         }
 
         val henkiloOidInVarda = diffAndUpdate(writeClient, vardaState, evakaState)
@@ -208,10 +215,8 @@ class VardaUpdater(
         }
     }
 
-    fun getEvakaState(tx: Database.Read, today: LocalDate, childId: ChildId): EvakaHenkiloNode {
-        val (_, evakaState, _) = getEvakaStates(tx, today, listOf(childId)).first()
-        return evakaState
-    }
+    fun getEvakaState(tx: Database.Read, today: LocalDate, childId: ChildId): EvakaHenkiloNode? =
+        getEvakaStates(tx, today, listOf(childId)).firstOrNull()?.second
 
     fun getEvakaStates(
         tx: Database.Read,
@@ -223,20 +228,22 @@ class VardaUpdater(
         val serviceNeeds = tx.getVardaServiceNeeds(childIds, vardaEnabledRange)
         val feeData = tx.getVardaFeeData(childIds, vardaEnabledRange)
         val updateStates = tx.getVardaUpdateState<EvakaHenkiloNode>(childIds)
-        return childIds.map {
-            val evakaState =
-                computeEvakaState(
+        return children.entries.mapNotNull { (childId, child) ->
+            computeEvakaState(
                     today,
-                    children[it] ?: error("Child $it not found"),
-                    guardians[it] ?: emptyList(),
-                    serviceNeeds[it] ?: emptyList(),
-                    feeData[it] ?: emptyList(),
+                    child,
+                    guardians[childId] ?: emptyList(),
+                    serviceNeeds[childId] ?: emptyList(),
+                    feeData[childId] ?: emptyList(),
                 )
-            Triple(
-                it,
-                evakaState,
-                if (evakaState == updateStates[it]) Status.UP_TO_DATE else Status.NEEDS_UPDATE
-            )
+                ?.let { evakaState ->
+                    Triple(
+                        childId,
+                        evakaState,
+                        if (evakaState == updateStates[childId]) Status.UP_TO_DATE
+                        else Status.NEEDS_UPDATE
+                    )
+                }
         }
     }
 
@@ -246,9 +253,10 @@ class VardaUpdater(
         guardians: List<VardaGuardian>,
         serviceNeeds: List<VardaServiceNeed>,
         feeData: List<VardaFeeData>
-    ): EvakaHenkiloNode {
+    ): EvakaHenkiloNode? {
         if (child.ophPersonOid == null && child.socialSecurityNumber == null) {
-            throw IllegalStateException("Child ${child.id} has no ophOid or ssn")
+            // Child has no identifiers, so we can't send data to Varda
+            return null
         }
 
         // Only fee data after 2019-09-01 can be sent to Varda (error code MA019)

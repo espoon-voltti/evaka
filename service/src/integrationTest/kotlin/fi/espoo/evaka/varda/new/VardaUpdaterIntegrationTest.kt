@@ -313,7 +313,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `evaka state - child in a unit without oph unit id is not included`() {
+    fun `evaka state - child in a unit without oph unit id gets an empty state`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id, ophUnitOid = null)
         val employee = DevEmployee()
@@ -2050,6 +2050,53 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `evaka state - child without ssn or oph id is skipped`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val employee = DevEmployee()
+
+        val child = DevPerson(ssn = null, ophPersonOid = null)
+        val placementRange = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 6, 30))
+        val today = LocalDate.of(2024, 1, 1)
+
+        db.transaction { tx ->
+            tx.insertServiceNeedOption(snDaycareFullDay35)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(employee)
+
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = placementRange.start,
+                    endDate = placementRange.end
+                )
+                .also { placementId ->
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period = placementRange,
+                        optionId = snDaycareFullDay35.id,
+                        confirmedBy = employee.evakaUserId,
+                    )
+                }
+        }
+
+        val updater =
+            VardaUpdater(
+                DateRange(LocalDate.of(2019, 1, 1), null),
+                "municipalOrganizerOid",
+                "sourceSystem"
+            )
+
+        val readClient = FailEveryOperation()
+        val writeClient = DryRunClient()
+        updater.updateChild(db, readClient, writeClient, today, child.id, true)
+
+        assertEquals(emptyList(), writeClient.operations)
+    }
+
+    @Test
     fun `state is saved after update`() {
         val child = DevPerson(ssn = "030320A904N")
 
@@ -2063,7 +2110,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val updater =
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
-        class TestReadClient : NotImplementedVardaReadClient() {
+        class TestReadClient : FailEveryOperation() {
             override fun haeHenkilo(
                 body: VardaReadClient.HaeHenkiloRequest
             ): VardaReadClient.HenkiloResponse? = null
@@ -2112,7 +2159,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val updater =
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
-        class TestReadClient : NotImplementedVardaReadClient() {
+        class TestReadClient : FailEveryOperation() {
             override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest) =
                 VardaReadClient.HenkiloResponse(
                     url = URI.create("henkilo"),
@@ -2135,41 +2182,22 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun foobar() {
-        val child1 = DevPerson(ssn = "030320A904N")
-        val child2 = DevPerson(ssn = "030320A906Q")
-        val state2 =
-            VardaUpdater.EvakaHenkiloNode(
-                henkilo =
-                    Henkilo(
-                        etunimet = child2.firstName,
-                        sukunimi = child2.lastName,
-                        henkilo_oid = null,
-                        henkilotunnus = child2.ssn,
-                    ),
-                lapset = emptyList()
-            )
+    fun `non-compatible state decodes as null`() {
+        val child = DevPerson(ssn = "030320A904N")
         db.transaction { tx ->
-            tx.insert(child1, DevPersonType.CHILD)
-            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(child, DevPersonType.CHILD)
             tx.execute {
                 sql(
-                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child1.id)}, '{}'::jsonb)"
-                )
-            }
-
-            tx.execute {
-                sql(
-                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child2.id)}, ${bindJson(state2)})"
+                    "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, '{\"foo\": \"bar\"}'::jsonb)"
                 )
             }
         }
 
         val states =
             db.read { tx ->
-                tx.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child1.id, child2.id))
+                tx.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id))
             }
-        assertEquals(mapOf(child1.id to null, child2.id to state2), states)
+        assertEquals(mapOf(child.id to null), states)
     }
 
     private fun varhaiskasvatuspaatos(
@@ -2227,7 +2255,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 }
 
-open class NotImplementedVardaReadClient : VardaReadClient {
+open class FailEveryOperation : VardaReadClient {
     override fun haeHenkilo(
         body: VardaReadClient.HaeHenkiloRequest
     ): VardaReadClient.HenkiloResponse? {

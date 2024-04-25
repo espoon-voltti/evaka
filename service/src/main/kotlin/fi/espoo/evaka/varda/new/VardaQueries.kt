@@ -220,10 +220,11 @@ fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<
         .mapTo<VardaGuardian>()
         .useSequence { rows -> rows.groupBy { it.childId } }
 
-fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0) {
+fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0): Int {
+    var count = 0
     if (migrationSpeed > 0) {
         // Move children from varda_reset_child (old integration) to varda_state (new integration)
-        execute {
+        count += execute {
             sql(
                 """
                 WITH inserted_children AS (
@@ -242,9 +243,9 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0) {
     }
 
     // Insert newly placed children to varda_state
-    createUpdate {
-            sql(
-                """
+    count += execute {
+        sql(
+            """
                     INSERT INTO varda_state (child_id, state)
                     SELECT child_id, null
                     FROM placement pl
@@ -254,9 +255,10 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0) {
                         NOT EXISTS (SELECT FROM varda_reset_child vrc WHERE vrc.evaka_child_id = pl.child_id)
                     ON CONFLICT (child_id) DO NOTHING
                     """
-            )
-        }
-        .execute()
+        )
+    }
+
+    return count
 }
 
 fun Database.Read.getVardaUpdateChildIds(): List<ChildId> =
