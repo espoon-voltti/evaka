@@ -375,7 +375,7 @@ WHERE id = :unitId
                                 Action.Citizen.Decision.DOWNLOAD_PDF
                             )
                     ),
-                canDecide = setOf(applicationId)
+                decidableApplications = setOf(applicationId)
             )
         )
     }
@@ -418,7 +418,7 @@ WHERE id = :unitId
             ApplicationDecisions(
                 decisions = emptyList(),
                 permittedActions = emptyMap(),
-                canDecide = emptySet()
+                decidableApplications = emptySet()
             ),
             citizenDecisions
         )

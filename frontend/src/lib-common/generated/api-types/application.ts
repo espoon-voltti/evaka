@@ -86,7 +86,7 @@ export type ApplicationDateType =
 * Generated from fi.espoo.evaka.application.ApplicationDecisions
 */
 export interface ApplicationDecisions {
-  canDecide: UUID[]
+  decidableApplications: UUID[]
   decisions: DecisionSummary[]
   permittedActions: Record<UUID, Action.Citizen.Decision[]>
 }
@@ -347,6 +347,7 @@ export interface ApplicationsOfChild {
   applicationSummaries: CitizenApplicationSummary[]
   childId: UUID
   childName: string
+  decidableApplications: UUID[]
   duplicateOf: UUID | null
   permittedActions: Record<UUID, Action.Citizen.Application[]>
 }
@@ -398,7 +399,6 @@ export interface CitizenApplicationSummary {
   childName: string | null
   createdDate: HelsinkiDateTime
   modifiedDate: HelsinkiDateTime
-  ownedByCurrentUser: boolean
   preferredUnitName: string | null
   sentDate: LocalDate | null
   startDate: LocalDate | null

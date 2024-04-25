@@ -217,7 +217,6 @@ data class CitizenApplicationSummary(
     val createdDate: HelsinkiDateTime,
     val modifiedDate: HelsinkiDateTime,
     val transferApplication: Boolean,
-    val ownedByCurrentUser: Boolean,
 )
 
 fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(

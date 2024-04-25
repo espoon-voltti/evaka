@@ -86,6 +86,13 @@ class ApplicationControllerCitizen(
                             clock,
                             allApplications.map { it.applicationId }
                         )
+                    val allDecidableApplications =
+                        getDecidableApplications(
+                            tx,
+                            user,
+                            clock,
+                            allApplications.map { it.applicationId }.toSet()
+                        )
                     val existingApplicationsByChild = allApplications.groupBy { it.childId }
 
                     // Some children might not have applications, so add 0 application children
@@ -102,6 +109,14 @@ class ApplicationControllerCitizen(
                             applicationSummaries = applications,
                             permittedActions = permittedActions,
                             duplicateOf = child.duplicateOf,
+                            decidableApplications =
+                                applications
+                                    .mapNotNull { application ->
+                                        application.applicationId.takeIf {
+                                            allDecidableApplications.contains(it)
+                                        }
+                                    }
+                                    .toSet()
                         )
                     }
                 }
@@ -437,7 +452,7 @@ class ApplicationControllerCitizen(
                                 clock,
                                 decisions.map { it.id }
                             ),
-                        canDecide =
+                        decidableApplications =
                             getDecidableApplications(
                                 tx,
                                 user,
@@ -791,6 +806,7 @@ data class ApplicationsOfChild(
     val childName: String,
     val applicationSummaries: List<CitizenApplicationSummary>,
     val permittedActions: Map<ApplicationId, Set<Action.Citizen.Application>>,
+    val decidableApplications: Set<ApplicationId>,
     val duplicateOf: PersonId?,
 )
 
@@ -799,7 +815,7 @@ data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType
 data class ApplicationDecisions(
     val decisions: List<DecisionSummary>,
     val permittedActions: Map<DecisionId, Set<Action.Citizen.Decision>>,
-    val canDecide: Set<ApplicationId>,
+    val decidableApplications: Set<ApplicationId>,
 )
 
 data class DecisionSummary(

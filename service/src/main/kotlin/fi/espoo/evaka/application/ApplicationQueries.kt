@@ -690,8 +690,7 @@ SELECT
     a.status AS application_status,
     a.created AS created_date,
     a.form_modified AS modified_date,
-    a.transferapplication,
-    (a.guardian_id = ${bind(citizenId)}) AS owned_by_current_user
+    a.transferapplication
 FROM application a
 WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
     SELECT 1 FROM application_other_guardian WHERE application_id = a.id AND guardian_id = ${bind(citizenId)}

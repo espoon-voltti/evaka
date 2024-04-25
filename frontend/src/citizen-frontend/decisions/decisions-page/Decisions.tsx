@@ -60,13 +60,13 @@ export default React.memo(function Decisions() {
     )[]
     firstName: string
     lastName: string
-    canDecide: UUID[]
+    decidableApplications: UUID[]
   }) => {
     const unconfirmedDecisionsCount = child.decisions.filter(
       (decision) =>
         'applicationId' in decision &&
         decision.resolved === null &&
-        child.canDecide.includes(decision.applicationId)
+        child.decidableApplications.includes(decision.applicationId)
     ).length
     return (
       `${child.firstName} ${child.lastName}` +
@@ -80,11 +80,12 @@ export default React.memo(function Decisions() {
     () =>
       applicationDecisions
         .map(
-          ({ decisions, canDecide }) =>
+          ({ decisions, decidableApplications }) =>
             decisions
               .filter(applicationDecisionIsUnread)
-              .filter((decision) => canDecide.includes(decision.applicationId))
-              .length
+              .filter((decision) =>
+                decidableApplications.includes(decision.applicationId)
+              ).length
         )
         .getOrElse(0),
     [applicationDecisions]
@@ -143,7 +144,8 @@ export default React.memo(function Decisions() {
                   applicationDecisions.permittedActions,
                   (actions) => new Set(actions)
                 ),
-                canDecide: applicationDecisions.canDecide
+                decidableApplications:
+                  applicationDecisions.decidableApplications
               }
             })
             .filter((child) => child.decisions.length > 0)
@@ -226,7 +228,7 @@ export default React.memo(function Decisions() {
                               decision.id
                             ] ?? new Set()
                           }
-                          canDecide={child.canDecide.includes(
+                          canDecide={child.decidableApplications.includes(
                             decision.applicationId
                           )}
                         />
