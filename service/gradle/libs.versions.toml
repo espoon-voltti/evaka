@@ -4,6 +4,7 @@
 
 [versions]
 bouncycastle = "1.78"
+dd-java-agent = "1.33.0"
 flyingsaucer = "9.4.0"
 flyway = "10.11.0"
 fuel = "2.3.1"
@@ -21,6 +22,7 @@ versions = "0.51.0"
 [libraries]
 bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
 bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+dd-java-agent = { module = "com.datadoghq:dd-java-agent", version.ref = "dd-java-agent" }
 flyingsaucer-core = { module = "org.xhtmlrenderer:flying-saucer-core", version.ref = "flyingsaucer" }
 flyingsaucer-pdf-openpdf = { module = "org.xhtmlrenderer:flying-saucer-pdf-openpdf", version.ref = "flyingsaucer" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }

@@ -49,7 +49,7 @@ RUN ./gradlew --no-daemon :sficlient:wsdl2java :vtjclient:wsdl2java
 COPY . /evaka
 
 # --offline is used to be sure that all dependencies are installed in previous steps
-RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin \
+RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin copyDownloadOnlyDeps \
  && unzip -oq build/libs/evaka-service-boot.jar -d target
 
 FROM base
@@ -60,12 +60,7 @@ RUN curl -sSL https://github.com/espoon-voltti/s3-downloader/releases/download/v
  && echo "520ea232e83a7cefe2a87d4f2af8433e383a4351464e213b7dd3b78ca0dc200f  /usr/local/bin/s3download" | sha256sum -c - \
  && chmod +x /usr/local/bin/s3download
 
-ARG DD_JAVA_AGENT_VERSION="1.21.0"
-ARG DD_JAVA_AGENT_SHA256="208e18c86185443e53ed9d10f6b87943433860bf1589c1fddb51fa2ceea405fb"
-
-RUN curl -sSfo /opt/dd-java-agent.jar "https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DD_JAVA_AGENT_VERSION}/dd-java-agent-${DD_JAVA_AGENT_VERSION}.jar" \
- && echo "${DD_JAVA_AGENT_SHA256}  /opt/dd-java-agent.jar" | sha256sum -c -
-
+COPY --from=builder /evaka/service/build/download-only/dd-java-agent.jar /opt/dd-java-agent.jar
 COPY ./service/dd-jmxfetch/ /etc/jmxfetch/
 
 COPY ./service/entrypoint.sh entrypoint.sh
