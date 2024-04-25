@@ -13,6 +13,7 @@ import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.EmployeeId
@@ -105,7 +106,8 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                 testChild_1.id,
                 testHeadOfChild.id,
                 LocalDate.now().minusYears(1),
-                LocalDate.now().plusYears(1)
+                LocalDate.now().plusYears(1),
+                Creator.DVV
             )
 
             tx.insert(DevEmployee(id = employeeId))

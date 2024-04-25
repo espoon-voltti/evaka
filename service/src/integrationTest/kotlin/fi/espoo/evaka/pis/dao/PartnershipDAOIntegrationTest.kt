@@ -7,7 +7,7 @@ package fi.espoo.evaka.pis.dao
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.insertTestDecisionMaker
-import fi.espoo.evaka.pis.CreatorOrApplicationId
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
@@ -51,7 +51,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate,
                     endDate,
                     false,
-                    CreatorOrApplicationId.Creator(partnershipCreator),
+                    Creator.User(partnershipCreator),
                     clock.now()
                 )
             }
@@ -75,7 +75,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now(),
                     LocalDate.now().plusDays(200),
                     false,
-                    CreatorOrApplicationId.Creator(partnershipCreator),
+                    Creator.User(partnershipCreator),
                     clock.now()
                 )
             }
@@ -87,7 +87,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now().plusDays(300),
                     LocalDate.now().plusDays(400),
                     false,
-                    CreatorOrApplicationId.Creator(partnershipCreator),
+                    Creator.User(partnershipCreator),
                     clock.now()
                 )
             }
@@ -118,7 +118,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate,
                     endDate = null,
                     false,
-                    CreatorOrApplicationId.Creator(partnershipCreator),
+                    Creator.User(partnershipCreator),
                     clock.now()
                 )
             }

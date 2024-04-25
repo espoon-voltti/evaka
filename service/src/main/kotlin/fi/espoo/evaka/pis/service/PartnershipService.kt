@@ -36,7 +36,7 @@ class PartnershipService {
                 startDate,
                 endDate,
                 false,
-                CreatorOrApplicationId.Creator(createdBy),
+                Creator.User(createdBy),
                 createdAt
             )
         } catch (e: UnableToExecuteStatementException) {

@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.dao
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -373,7 +374,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         parentId: PersonId,
         startDate: LocalDate,
         endDate: LocalDate
-    ) = db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
+    ) = db.transaction { it.createParentship(childId, parentId, startDate, endDate, Creator.DVV) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction { tx ->

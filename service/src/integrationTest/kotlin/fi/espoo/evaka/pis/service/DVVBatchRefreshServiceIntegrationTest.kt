@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -31,7 +32,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 
-class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @MockBean(name = "personService") lateinit var personService: PersonService
 
@@ -98,7 +99,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                 eq(testChild_1.id),
                 eq(testAdult_1.id),
                 eq(LocalDate.now()),
-                eq(lastDayBefore18YearsOld)
+                eq(lastDayBefore18YearsOld),
+                eq(Creator.DVV)
             )
     }
 
@@ -166,7 +168,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                 eq(testChild_1.id),
                 eq(testAdult_1.id),
                 eq(LocalDate.now()),
-                eq(lastDayBefore18YearsOld)
+                eq(lastDayBefore18YearsOld),
+                eq(Creator.DVV)
             )
     }
 

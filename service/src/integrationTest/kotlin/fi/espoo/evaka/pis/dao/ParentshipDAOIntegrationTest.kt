@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.dao
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
@@ -28,7 +29,9 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
         val parentship =
-            db.transaction { tx -> tx.createParentship(child.id, parent.id, startDate, endDate) }
+            db.transaction { tx ->
+                tx.createParentship(child.id, parent.id, startDate, endDate, Creator.DVV)
+            }
         assertNotNull(parentship.id)
         assertEquals(
             child.copy(updatedFromVtj = null),
@@ -46,7 +49,9 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = startDate.plusDays(100)
 
         listOf(testPerson4(), testPerson5(), testPerson6()).map {
-            db.transaction { tx -> tx.createParentship(it.id, parent.id, startDate, endDate) }
+            db.transaction { tx ->
+                tx.createParentship(it.id, parent.id, startDate, endDate, Creator.DVV)
+            }
         }
 
         val fetchedRelations =
@@ -64,7 +69,9 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         listOf(adult1, adult2).mapIndexed { index, parent ->
             val startDate = now.plusDays(index * 51.toLong())
             val endDate = startDate.plusDays((index + 1) * 50.toLong())
-            db.transaction { tx -> tx.createParentship(child.id, parent.id, startDate, endDate) }
+            db.transaction { tx ->
+                tx.createParentship(child.id, parent.id, startDate, endDate, Creator.DVV)
+            }
         }
 
         db.read { r ->
@@ -88,7 +95,8 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
         db.transaction { tx ->
-            val parentship = tx.createParentship(child.id, adult.id, startDate, endDate)
+            val parentship =
+                tx.createParentship(child.id, adult.id, startDate, endDate, Creator.DVV)
 
             assertEquals(
                 setOf(parentship),

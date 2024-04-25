@@ -7,7 +7,7 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.insertTestDecisionMaker
-import fi.espoo.evaka.pis.CreatorOrApplicationId
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
@@ -67,7 +67,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 mockToday.today(),
                 null,
                 false,
-                CreatorOrApplicationId.Creator(partnershipCreator),
+                Creator.User(partnershipCreator),
                 mockToday.now()
             )
         }
@@ -101,7 +101,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 mockToday.today(),
                 null,
                 false,
-                CreatorOrApplicationId.Creator(partnershipCreator),
+                Creator.User(partnershipCreator),
                 mockToday.now()
             )
         }

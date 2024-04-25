@@ -82,10 +82,11 @@ class FamilyInitializerService(
 
         tx.subTransaction {
             createParentship(
-                tx,
-                evakaClock,
+                tx = tx,
+                evakaClock = evakaClock,
                 child = familyFromApplication.fridgeChild,
-                headOfChildId = headOfFamily.id
+                headOfChildId = headOfFamily.id,
+                applicationId = applicationId
             )
         }
 
@@ -106,7 +107,13 @@ class FamilyInitializerService(
 
         familyFromApplication.fridgeSiblings.forEach { sibling ->
             tx.subTransaction {
-                createParentship(tx, evakaClock, child = sibling, headOfChildId = headOfFamily.id)
+                createParentship(
+                    tx = tx,
+                    evakaClock = evakaClock,
+                    child = sibling,
+                    headOfChildId = headOfFamily.id,
+                    applicationId = applicationId
+                )
             }
         }
     }
@@ -218,7 +225,8 @@ class FamilyInitializerService(
         tx: Database.Transaction,
         evakaClock: EvakaClock,
         child: PersonDTO,
-        headOfChildId: PersonId
+        headOfChildId: PersonId,
+        applicationId: ApplicationId
     ) {
         val startDate = evakaClock.today()
         val alreadyExists =
@@ -246,6 +254,7 @@ class FamilyInitializerService(
                         headOfChildId = headOfChildId,
                         startDate = startDate,
                         endDate = endDate,
+                        creator = Creator.Application(applicationId),
                         conflict = false
                     )
                 }
@@ -262,6 +271,7 @@ class FamilyInitializerService(
                             headOfChildId = headOfChildId,
                             startDate = startDate,
                             endDate = endDate,
+                            creator = Creator.Application(applicationId),
                             conflict = true
                         )
                     }
@@ -298,7 +308,7 @@ class FamilyInitializerService(
                         startDate = startDate,
                         endDate = null,
                         conflict = false,
-                        CreatorOrApplicationId.Application(applicationId),
+                        Creator.Application(applicationId),
                         evakaClock.now()
                     )
                 }
@@ -316,7 +326,7 @@ class FamilyInitializerService(
                             startDate = startDate,
                             endDate = null,
                             conflict = true,
-                            CreatorOrApplicationId.Application(applicationId),
+                            Creator.Application(applicationId),
                             evakaClock.now()
                         )
                     }

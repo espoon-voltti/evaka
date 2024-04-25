@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getDependantGuardians
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.personIsHeadOfFamily
@@ -145,7 +146,8 @@ class FridgeFamilyService(
                             childId = child.id,
                             headOfChildId = head.id,
                             startDate = startDate,
-                            endDate = child.dateOfBirth.plusYears(18).minusDays(1)
+                            endDate = child.dateOfBirth.plusYears(18).minusDays(1),
+                            Creator.DVV
                         )
                     }
                     logger.info("Child ${child.id} added to head of child ${head.id}")

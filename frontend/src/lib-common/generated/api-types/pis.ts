@@ -76,11 +76,12 @@ export interface CreatePersonBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.CreateSource
+* Generated from fi.espoo.evaka.pis.CreateSource
 */
 export type CreateSource =
   | 'USER'
   | 'APPLICATION'
+  | 'DVV'
 
 /**
 * Generated from fi.espoo.evaka.pis.DaycareGroupRole
@@ -304,7 +305,7 @@ export interface MergeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.ModifySource
+* Generated from fi.espoo.evaka.pis.ModifySource
 */
 export type ModifySource =
   | 'USER'

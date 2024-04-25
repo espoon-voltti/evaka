@@ -4,11 +4,8 @@
 
 package fi.espoo.evaka.pis
 
-import fi.espoo.evaka.pis.service.CreateSource
-import fi.espoo.evaka.pis.service.ModifySource
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
@@ -103,29 +100,21 @@ AND (${bind(includeConflicts)} OR fp.conflict = false)
         .toList(toPartner("p"))
 }
 
-sealed class CreatorOrApplicationId {
-    data class Creator(val id: EvakaUserId) : CreatorOrApplicationId()
-
-    data class Application(val id: ApplicationId) : CreatorOrApplicationId()
-}
-
 fun Database.Transaction.createPartnership(
     personId1: PersonId,
     personId2: PersonId,
     startDate: LocalDate,
     endDate: LocalDate?,
     conflict: Boolean = false,
-    creatorOrApplicationId: CreatorOrApplicationId,
+    creator: Creator,
     createDate: HelsinkiDateTime
 ): Partnership {
-    val (createSource, creatorId, applicationId) =
-        when (creatorOrApplicationId) {
-            is CreatorOrApplicationId.Creator -> {
-                Triple(CreateSource.USER, creatorOrApplicationId.id.raw, null)
-            }
-            is CreatorOrApplicationId.Application -> {
-                Triple(CreateSource.APPLICATION, null, creatorOrApplicationId.id)
-            }
+    val createSource = creator.source
+    val (creatorId, applicationId) =
+        when (creator) {
+            is Creator.User -> Pair(creator.id.raw, null)
+            is Creator.Application -> Pair(null, creator.id)
+            is Creator.DVV -> Pair(null, null)
         }
 
     val partnershipId = UUID.randomUUID()

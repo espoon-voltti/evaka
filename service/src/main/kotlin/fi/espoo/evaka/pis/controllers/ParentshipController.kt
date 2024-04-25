@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
@@ -38,7 +39,7 @@ class ParentshipController(
     @PostMapping
     fun createParentship(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ParentshipRequest
     ) {
@@ -58,7 +59,8 @@ class ParentshipController(
                         body.childId,
                         body.headOfChildId,
                         body.startDate,
-                        body.endDate
+                        body.endDate,
+                        Creator.User(user.evakaUserId)
                     )
                 }
             }
@@ -71,7 +73,7 @@ class ParentshipController(
     @GetMapping
     fun getParentships(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam headOfChildId: PersonId? = null,
         @RequestParam childId: PersonId? = null
@@ -125,7 +127,7 @@ class ParentshipController(
     @GetMapping("/{id}")
     fun getParentship(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ParentshipId
     ): Parentship {
@@ -141,7 +143,7 @@ class ParentshipController(
     @PutMapping("/{id}")
     fun updateParentship(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
@@ -150,11 +152,12 @@ class ParentshipController(
             dbc.transaction {
                 accessControl.requirePermissionFor(it, user, clock, Action.Parentship.UPDATE, id)
                 parentshipService.updateParentshipDuration(
-                    it,
-                    clock,
-                    id,
-                    body.startDate,
-                    body.endDate
+                    tx = it,
+                    clock = clock,
+                    user = user,
+                    id = id,
+                    startDate = body.startDate,
+                    endDate = body.endDate
                 )
             }
         }
@@ -167,14 +170,14 @@ class ParentshipController(
     @PutMapping("/{id}/retry")
     fun retryParentship(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ParentshipId
     ) {
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(it, user, clock, Action.Parentship.RETRY, id)
-                parentshipService.retryParentship(it, clock, id)
+                parentshipService.retryParentship(it, user, clock, id)
             }
         }
         Audit.ParentShipsRetry.log(targetId = id)
@@ -183,7 +186,7 @@ class ParentshipController(
     @DeleteMapping("/{id}")
     fun deleteParentship(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ParentshipId
     ) {
