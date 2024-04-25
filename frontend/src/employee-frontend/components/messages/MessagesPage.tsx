@@ -18,7 +18,6 @@ import {
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
@@ -71,7 +70,6 @@ export default React.memo(function MessagesPage({
     selectAccount,
     setSelectedThread,
     refreshMessages,
-    openMessageUndo,
     prefilledRecipient,
     prefilledTitle,
     relatedApplicationId,
@@ -143,11 +141,6 @@ export default React.memo(function MessagesPage({
             })
             if (res.value) {
               setSelectedThread(res.value)
-              openMessageUndo({
-                accountId: senderAccount.account.id,
-                contentId: res.value,
-                sentAt: HelsinkiDateTime.now()
-              })
             }
           }
           hideEditor()
@@ -166,7 +159,6 @@ export default React.memo(function MessagesPage({
       hideEditor,
       i18n.common.error.unknown,
       i18n.common.ok,
-      openMessageUndo,
       refreshMessages,
       selectAccount,
       setErrorMessage,

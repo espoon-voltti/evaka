@@ -127,13 +127,6 @@ export default class MessagesPage {
     await this.#emptyInboxText.waitUntilVisible()
   }
 
-  async undoMessage() {
-    await this.page
-      .findByDataQa('undo-message-toast')
-      .findByDataQa('cancel-message')
-      .click()
-  }
-
   async close() {
     return this.page.close()
   }

@@ -202,26 +202,6 @@ describe('Service Worker Messaging', () => {
       await messagesPageWithThread.assertMessageContent(0, content)
     })
 
-    it('should delete the application note if the message is undone', async () => {
-      await openStaffPage(mockedTime, serviceWorker)
-      const applicationsPage = new ApplicationsPage(staffPage)
-      await new EmployeeNav(staffPage).applicationsTab.click()
-      const applReadView = await applicationsPage
-        .applicationRow(applicationFixtureId)
-        .openApplication()
-      const messagesPage = await applReadView.openMessagesPage()
-      const messageEditor = messagesPage.getMessageEditor()
-      const content = 'This should be visible in the application note'
-      await messageEditor.inputContent.fill(content)
-      await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
-      await runPendingAsyncJobs(mockedTime.addMinutes(1))
-      await messagesPage.undoMessage()
-
-      await applReadView.reload()
-      await applReadView.assertNoNotes()
-    })
-
     it('should create an application note when the citizen answers a message', async () => {
       await openStaffPage(mockedTime, serviceWorker)
       let applicationsPage = new ApplicationsPage(staffPage)

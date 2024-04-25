@@ -12,7 +12,6 @@ import React, {
   useState
 } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useTheme } from 'styled-components'
 
 import { Failure, Loading, Result, wrapResult } from 'lib-common/api'
 import {
@@ -32,7 +31,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
-import { NotificationsContext } from 'lib-components/Notifications'
 import {
   GroupMessageAccount,
   isGroupMessageAccount,
@@ -41,7 +39,6 @@ import {
   isServiceWorkerMessageAccount
 } from 'lib-components/messages/types'
 import { SelectOption } from 'lib-components/molecules/Select'
-import { faCheck } from 'lib-icons'
 
 import { client } from '../../api/client'
 import {
@@ -57,7 +54,6 @@ import {
 } from '../../generated/api-clients/messaging'
 import { UserContext } from '../../state/user'
 
-import { UndoMessage } from './UndoMessageNotification'
 import {
   AccountView,
   groupMessageBoxes,
@@ -116,7 +112,6 @@ export interface MessagesState {
   unreadCountsByAccount: Result<UnreadCountByAccount[]>
   sentMessagesAsThreads: Result<MessageThread[]>
   messageCopiesAsThreads: Result<MessageThread[]>
-  openMessageUndo: (m: CancelableMessage) => void
   prefilledRecipient: string | null
   prefilledTitle: string | null
   relatedApplicationId: UUID | null
@@ -155,7 +150,6 @@ const defaultState: MessagesState = {
   unreadCountsByAccount: Loading.of(),
   sentMessagesAsThreads: Loading.of(),
   messageCopiesAsThreads: Loading.of(),
-  openMessageUndo: () => undefined,
   prefilledRecipient: null,
   prefilledTitle: null,
   relatedApplicationId: null,
@@ -185,10 +179,7 @@ export const MessageContextProvider = React.memo(
   }: {
     children: React.JSX.Element
   }) {
-    const theme = useTheme()
     const { user } = useContext(UserContext)
-    const { addNotification, removeNotification } =
-      useContext(NotificationsContext)
     const [searchParams, setSearchParams] = useSearchParams()
     const accountId = searchParams.get('accountId')
     const messageBox = searchParams.get('messageBox')
@@ -588,26 +579,6 @@ export const MessageContextProvider = React.memo(
       ]
     )
 
-    const openMessageUndo = useCallback(
-      (message: CancelableMessage) => {
-        addNotification(
-          {
-            icon: faCheck,
-            iconColor: theme.colors.main.m1,
-            children: (
-              <UndoMessage
-                message={message}
-                close={() => removeNotification('undo-message')}
-              />
-            ),
-            dataQa: 'undo-message-toast'
-          },
-          'undo-message'
-        )
-      },
-      [addNotification, removeNotification, theme.colors.main.m1]
-    )
-
     const appendMessageToSingleThread = useCallback(
       (message: Message) =>
         setSingleThread((prevState: Result<MessageThread> | undefined) =>
@@ -621,11 +592,6 @@ export const MessageContextProvider = React.memo(
 
     const onReplySent = useCallback(
       (accountId: UUID, { message, threadId }: ThreadReply) => {
-        openMessageUndo({
-          accountId,
-          messageId: message.id,
-          sentAt: HelsinkiDateTime.now()
-        })
         if (selectedAccount?.view === 'thread') {
           appendMessageToSingleThread(message)
         } else {
@@ -635,12 +601,7 @@ export const MessageContextProvider = React.memo(
         }
         setSelectedThread(threadId)
       },
-      [
-        appendMessageToSingleThread,
-        openMessageUndo,
-        selectedAccount,
-        setSelectedThread
-      ]
+      [appendMessageToSingleThread, selectedAccount, setSelectedThread]
     )
 
     const [replyContents, setReplyContents] = useState<RepliesByThread>({})
@@ -754,7 +715,6 @@ export const MessageContextProvider = React.memo(
         unreadCountsByAccount,
         sentMessagesAsThreads,
         messageCopiesAsThreads,
-        openMessageUndo,
         prefilledRecipient,
         prefilledTitle,
         relatedApplicationId,
@@ -789,7 +749,6 @@ export const MessageContextProvider = React.memo(
         unreadCountsByAccount,
         sentMessagesAsThreads,
         messageCopiesAsThreads,
-        openMessageUndo,
         prefilledRecipient,
         prefilledTitle,
         relatedApplicationId,
