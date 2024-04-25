@@ -35,7 +35,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
-import java.util.UUID
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,147 +49,118 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+    val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+
+    @BeforeEach
+    fun init() {
+        db.transaction { it.insert(admin) }
+        db.transaction { it.insert(serviceWorker) }
+    }
+
     @Test
     fun `PDF without contact info can be downloaded by service worker`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(id = serviceWorker, roles = setOf(UserRole.SERVICE_WORKER))
-        val decisionId = db.transaction { tx -> createDecisionWithPeople(tx, serviceWorker) }
+        val decisionId = db.transaction { tx -> createDecisionWithPeople(tx, serviceWorker.id) }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        downloadPdf(user, decisionId)
+        downloadPdf(serviceWorker.user, decisionId)
     }
 
     @Test
     fun `Legacy PDF with contact info can be downloaded by service worker`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(id = serviceWorker, roles = setOf(UserRole.SERVICE_WORKER))
         val decisionId =
             db.transaction { tx ->
-                createDecisionWithPeople(tx, serviceWorker, legacyPdfWithContactInfo = true)
+                createDecisionWithPeople(tx, serviceWorker.id, legacyPdfWithContactInfo = true)
             }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        downloadPdf(user, decisionId)
+        downloadPdf(serviceWorker.user, decisionId)
     }
 
     @Test
     fun `PDF without contact info where child has restricted details can be downloaded by service worker`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(id = serviceWorker, roles = setOf(UserRole.SERVICE_WORKER))
         val decisionId =
             db.transaction { tx ->
-                createDecisionWithPeople(tx, serviceWorker, childRestricted = true)
+                createDecisionWithPeople(tx, serviceWorker.id, childRestricted = true)
             }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        downloadPdf(user, decisionId)
+        downloadPdf(serviceWorker.user, decisionId)
     }
 
     @Test
     fun `PDF without contact info where guardian has restricted details can be downloaded by service worker`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(id = serviceWorker, roles = setOf(UserRole.SERVICE_WORKER))
         val decisionId =
             db.transaction { tx ->
-                createDecisionWithPeople(tx, serviceWorker, guardianRestricted = true)
+                createDecisionWithPeople(tx, serviceWorker.id, guardianRestricted = true)
             }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        downloadPdf(user, decisionId)
+        downloadPdf(serviceWorker.user, decisionId)
     }
 
     @Test
     fun `Legacy PDF with contact info where child has restricted details can NOT be downloaded by service worker`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(id = serviceWorker, roles = setOf(UserRole.SERVICE_WORKER))
         val decisionId =
             db.transaction { tx ->
                 createDecisionWithPeople(
                     tx,
-                    serviceWorker,
+                    serviceWorker.id,
                     childRestricted = true,
                     legacyPdfWithContactInfo = true
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        assertThrows<Forbidden> { downloadPdf(user, decisionId) }
+        assertThrows<Forbidden> { downloadPdf(serviceWorker.user, decisionId) }
     }
 
     @Test
     fun `Legacy PDF with contact info where guardian has restricted details can NOT be downloaded by service worker`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(id = serviceWorker, roles = setOf(UserRole.SERVICE_WORKER))
         val decisionId =
             db.transaction { tx ->
                 createDecisionWithPeople(
                     tx,
-                    serviceWorker,
+                    serviceWorker.id,
                     guardianRestricted = true,
                     legacyPdfWithContactInfo = true
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        assertThrows<Forbidden> { downloadPdf(user, decisionId) }
+        assertThrows<Forbidden> { downloadPdf(serviceWorker.user, decisionId) }
     }
 
     @Test
     fun `Legacy PDF with contact info where child has restricted details can be downloaded by admin`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(
-                id = EmployeeId(UUID.randomUUID()),
-                roles = setOf(UserRole.ADMIN)
-            )
         val decisionId =
             db.transaction { tx ->
                 createDecisionWithPeople(
                     tx,
-                    serviceWorker,
+                    serviceWorker.id,
                     childRestricted = true,
                     legacyPdfWithContactInfo = true
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        downloadPdf(user, decisionId)
+        downloadPdf(admin.user, decisionId)
     }
 
     @Test
     fun `Legacy PDF with contact info where guardian has restricted details can be downloaded by admin`() {
-        val serviceWorker =
-            db.transaction { it.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))) }
-        val user =
-            AuthenticatedUser.Employee(
-                id = EmployeeId(UUID.randomUUID()),
-                roles = setOf(UserRole.ADMIN)
-            )
         val decisionId =
             db.transaction { tx ->
                 createDecisionWithPeople(
                     tx,
-                    serviceWorker,
+                    serviceWorker.id,
                     guardianRestricted = true,
                     legacyPdfWithContactInfo = true
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
 
-        downloadPdf(user, decisionId)
+        downloadPdf(admin.user, decisionId)
     }
 
     private fun downloadPdf(user: AuthenticatedUser.Employee, decisionId: DecisionId) =
