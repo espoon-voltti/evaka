@@ -10,6 +10,7 @@ import config from '../../config'
 import {
   execSimpleApplicationActions,
   insertApplications,
+  insertVtjPersonFixture,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -30,9 +31,6 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let page: Page
-let header: CitizenHeader
-let citizenDecisionsPage: CitizenDecisionsPage
 let fixtures: AreaAndPersonFixtures
 let decisionMaker: DevEmployee
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
@@ -41,13 +39,22 @@ beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   decisionMaker = (await Fixture.employeeServiceWorker().save()).data
-
-  page = await Page.open({ mockedTime: now })
-  header = new CitizenHeader(page)
-  citizenDecisionsPage = new CitizenDecisionsPage(page)
-  await enduserLogin(page)
-  await page.goto(config.enduserUrl)
 })
+
+async function openCitizenDecisionsPage(citizen: { ssn?: string }) {
+  const page = await Page.open({
+    mockedTime: now
+  })
+  await enduserLogin(page, citizen.ssn)
+  const header = new CitizenHeader(page)
+  await header.selectTab('decisions')
+  const citizenDecisionsPage = new CitizenDecisionsPage(page)
+  return {
+    page,
+    header,
+    citizenDecisionsPage
+  }
+}
 
 describe('Citizen application decisions', () => {
   test('Citizen sees their decisions, accepts preschool and rejects preschool daycare', async () => {
@@ -86,7 +93,9 @@ describe('Citizen application decisions', () => {
     if (!preschoolDaycareDecisionId)
       throw Error('Expected a decision with type PRESCHOOL_DAYCARE')
 
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
     await citizenDecisionsPage.assertApplicationDecision(
@@ -176,7 +185,9 @@ describe('Citizen application decisions', () => {
     if (!preschoolDaycareDecisionId)
       throw Error('Expected a decision with type PRESCHOOL_DAYCARE')
 
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(2)
     const responsePage =
@@ -190,6 +201,56 @@ describe('Citizen application decisions', () => {
       'Hylätty'
     )
     await responsePage.assertUnresolvedDecisionsCount(0)
+  })
+
+  test('Guardian sees decisions related to applications made by the other guardian', async () => {
+    const guardian = (
+      await Fixture.person().with({ ssn: '010106A973C' }).save()
+    ).data
+    const child = (await Fixture.person().with({ ssn: '010116A9219' }).save())
+      .data
+    const otherGuardian = (
+      await Fixture.person().with({ ssn: '010106A9388' }).save()
+    ).data
+    await insertVtjPersonFixture({
+      ...child,
+      guardians: [guardian, otherGuardian]
+    })
+    await insertVtjPersonFixture({
+      ...guardian,
+      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
+    })
+    await insertVtjPersonFixture({
+      ...otherGuardian,
+      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
+    })
+
+    const application = applicationFixture(
+      child,
+      guardian,
+      otherGuardian,
+      'PRESCHOOL',
+      null,
+      [fixtures.daycareFixture.id],
+      true
+    )
+    await insertApplications([application])
+
+    await execSimpleApplicationActions(
+      application.id,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-decisions-without-proposal'
+      ],
+      now
+    )
+
+    const { citizenDecisionsPage } =
+      await openCitizenDecisionsPage(otherGuardian)
+    await citizenDecisionsPage.assertChildDecisionCount(2, child.id)
+    // other guardian can only see the decisions but not resolve them -> not shown in counts
+    await citizenDecisionsPage.assertUnresolvedDecisionsCount(0)
   })
 })
 
@@ -211,7 +272,9 @@ describe('Citizen assistance decisions', () => {
         decisionMade: LocalDate.of(2020, 1, 17)
       })
       .save()
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
@@ -238,7 +301,9 @@ describe('Citizen assistance decisions', () => {
         decisionMade: LocalDate.of(2021, 1, 17)
       })
       .save()
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
@@ -265,7 +330,9 @@ describe('Citizen assistance decisions', () => {
         decisionMade: LocalDate.of(2021, 1, 17)
       })
       .save()
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
@@ -300,7 +367,9 @@ describe('Citizen assistance decisions', () => {
         decisionMade: LocalDate.of(2021, 1, 17)
       })
       .save()
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertNoChildDecisions(
       fixtures.enduserChildFixtureKaarina.id
@@ -340,7 +409,9 @@ describe('Citizen assistance decisions', () => {
         unreadGuardianIds: [fixtures.enduserGuardianFixture.id]
       })
       .save()
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertUnreadAssistanceNeedDecisions(
       fixtures.enduserChildFixtureKaarina.id,
@@ -377,7 +448,9 @@ describe('Citizen assistance decisions', () => {
       })
       .save()
 
-    await header.selectTab('decisions')
+    const { page, citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
     await citizenDecisionsPage.openAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
       decision.data.id ?? ''
@@ -589,7 +662,9 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .save()
 
-    await header.selectTab('decisions')
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
 
     await citizenDecisionsPage.assertChildDecisionCount(
       5,
@@ -686,7 +761,9 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .save()
 
-    await header.selectTab('decisions')
+    const { page, citizenDecisionsPage } = await openCitizenDecisionsPage(
+      fixtures.enduserGuardianFixture
+    )
     await citizenDecisionsPage.openAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
       decision.data.id ?? ''

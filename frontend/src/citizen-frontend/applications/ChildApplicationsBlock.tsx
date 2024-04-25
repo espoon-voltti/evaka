@@ -86,7 +86,13 @@ const ChildHeading = styled(H2)`
 `
 
 export default React.memo(function ChildApplicationsBlock({
-  data: { childId, childName, applicationSummaries, permittedActions }
+  data: {
+    childId,
+    childName,
+    applicationSummaries,
+    permittedActions,
+    decidableApplications
+  }
 }: ChildApplicationsBlockProps) {
   const navigate = useNavigate()
   const t = useTranslation()
@@ -246,7 +252,8 @@ export default React.memo(function ChildApplicationsBlock({
                   {applicationStatus === 'WAITING_CONFIRMATION' &&
                     permittedActions[applicationId]?.includes(
                       'READ_DECISIONS'
-                    ) && (
+                    ) &&
+                    decidableApplications.includes(applicationId) && (
                       <ConfirmationContainer>
                         <div color={colors.main.m2}>
                           {t.applicationsList.confirmationLinkInstructions}

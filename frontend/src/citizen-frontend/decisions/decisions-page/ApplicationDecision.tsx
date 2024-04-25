@@ -5,6 +5,7 @@
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { Action } from 'lib-common/generated/action'
 import {
   DecisionStatus,
   DecisionType
@@ -37,6 +38,8 @@ interface Props {
   sentDate: LocalDate
   resolved: LocalDate | null
   status: DecisionStatus
+  permittedActions: Set<Action.Citizen.Decision>
+  canDecide: boolean
 }
 
 export default React.memo(function ApplicationDecision({
@@ -45,7 +48,9 @@ export default React.memo(function ApplicationDecision({
   type,
   sentDate,
   resolved,
-  status
+  status,
+  permittedActions,
+  canDecide
 }: Props) {
   const t = useTranslation()
   const [open, setOpen] = useState(resolved === null)
@@ -71,7 +76,7 @@ export default React.memo(function ApplicationDecision({
           } ${sentDate.format()}`}
         </H3>
       }
-      countIndicator={resolved === null ? 1 : 0}
+      countIndicator={resolved === null && canDecide ? 1 : 0}
       paddingHorizontal="0"
       paddingVertical="0"
       data-qa={`application-decision-${id}`}
@@ -96,14 +101,16 @@ export default React.memo(function ApplicationDecision({
           {t.decisions.applicationDecisions.status[status]}
         </StaticChip>
       </ListGrid>
-      {status === 'PENDING' ? (
-        <ConfirmationDialog applicationId={applicationId} type={type} />
-      ) : (
-        <>
-          <Gap size="m" />
-          <PdfLink decisionId={id} />
-        </>
-      )}
+      {status === 'PENDING'
+        ? canDecide && (
+            <ConfirmationDialog applicationId={applicationId} type={type} />
+          )
+        : permittedActions.has('DOWNLOAD_PDF') && (
+            <>
+              <Gap size="m" />
+              <PdfLink decisionId={id} />
+            </>
+          )}
     </CollapsibleContentArea>
   )
 })

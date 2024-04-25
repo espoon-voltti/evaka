@@ -1,0 +1,44 @@
+' SPDX-FileCopyrightText: 2017-2024 City of Espoo
+'
+' SPDX-License-Identifier: LGPL-2.1-or-later
+
+@startuml evaka-application
+
+[*] -> CREATED
+
+state CREATED : Luonnos
+state SENT : Lähetetty / saapunut
+state WAITING_PLACEMENT : Käsiteltävänä / Odottaa sijoitusta
+state WAITING_DECISION : Käsiteltävänä / Päätöksen valmistelu
+state WAITING_UNIT_CONFIRMATION : Käsiteltävänä / Johtajan tarkistettavana
+state WAITING_MAILING : Käsiteltävänä / Odottaa postitusta
+state WAITING_CONFIRMATION : Käsiteltävänä / Vahvistettavana huoltajalla
+state ACTIVE : Paikka vastaanotettu
+state REJECTED : Paikka hylätty
+state CANCELLED : Poistettu käsittelystä
+
+CREATED --> SENT : sendApplication
+WAITING_CONFIRMATION --> ACTIVE : acceptDecision
+SENT --> CANCELLED : cancelApplication
+WAITING_PLACEMENT --> CANCELLED : cancelApplication
+WAITING_DECISION --> WAITING_PLACEMENT : cancelPlacementPlan
+WAITING_MAILING --> WAITING_CONFIRMATION : confirmDecisionMailed
+WAITING_PLACEMENT --> WAITING_DECISION : createPlacementPlan
+WAITING_DECISION --> WAITING_CONFIRMATION : finalizeDecisions
+WAITING_DECISION --> WAITING_MAILING : finalizeDecisions
+WAITING_UNIT_CONFIRMATION --> WAITING_CONFIRMATION : confirmPlacementProposalChanges
+WAITING_UNIT_CONFIRMATION --> WAITING_MAILING : confirmPlacementProposalChanges
+SENT --> WAITING_PLACEMENT : moveToWaitingPlacement
+WAITING_CONFIRMATION --> REJECTED : rejectDecision
+WAITING_PLACEMENT --> SENT : returnToSent
+WAITING_DECISION --> WAITING_UNIT_CONFIRMATION : sendPlacementProposal
+WAITING_UNIT_CONFIRMATION --> WAITING_DECISION : withdrawPlacementProposal
+
+SENT --> CANCELLED : cancelOutdatedSentTransferApplications
+CREATED --> [*] : deleteApplication
+
+ACTIVE --> [*]
+REJECTED --> [*]
+CANCELLED --> [*]
+
+@enduml

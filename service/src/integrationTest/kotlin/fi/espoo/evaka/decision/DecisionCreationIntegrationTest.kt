@@ -37,6 +37,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowsByApplication
@@ -353,23 +354,28 @@ WHERE id = :unitId
             applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
         assertEquals(
             citizenDecisions,
-            listOf(
-                ApplicationDecisions(
-                    applicationId = applicationId,
-                    childId = testChild_6.id,
-                    childName =
-                        "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula",
-                    decisions =
-                        listOf(
-                            DecisionSummary(
-                                id = createdDecisions[0].id,
-                                type = DecisionType.DAYCARE,
-                                status = DecisionStatus.PENDING,
-                                sentDate = LocalDate.now(),
-                                resolved = null
-                            )
+            ApplicationDecisions(
+                decisions =
+                    listOf(
+                        DecisionSummary(
+                            id = createdDecisions[0].id,
+                            applicationId = applicationId,
+                            childId = testChild_6.id,
+                            type = DecisionType.DAYCARE,
+                            status = DecisionStatus.PENDING,
+                            sentDate = LocalDate.now(),
+                            resolved = null
                         )
-                )
+                    ),
+                permittedActions =
+                    mapOf(
+                        createdDecisions[0].id to
+                            setOf(
+                                Action.Citizen.Decision.READ,
+                                Action.Citizen.Decision.DOWNLOAD_PDF
+                            )
+                    ),
+                decidableApplications = setOf(applicationId)
             )
         )
     }
@@ -408,7 +414,14 @@ WHERE id = :unitId
 
         val citizenDecisions =
             applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
-        assertEquals(0, citizenDecisions.size)
+        assertEquals(
+            ApplicationDecisions(
+                decisions = emptyList(),
+                permittedActions = emptyMap(),
+                decidableApplications = emptySet()
+            ),
+            citizenDecisions
+        )
     }
 
     private fun checkDecisionDrafts(

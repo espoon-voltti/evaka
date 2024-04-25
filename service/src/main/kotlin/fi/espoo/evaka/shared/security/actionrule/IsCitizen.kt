@@ -418,12 +418,11 @@ SELECT id
 FROM application
 WHERE guardian_id = ${bind(citizenId)}
             """
-                    .trimIndent()
             )
         }
 
     fun otherGuardianOfApplication() =
-        rule<ApplicationId> { citizenId, _ ->
+        rule<ApplicationId> { citizenId, now ->
             sql(
                 """
 SELECT a.id
@@ -431,8 +430,11 @@ FROM application a
 JOIN application_other_guardian aog ON a.id = aog.application_id
 WHERE aog.guardian_id = ${bind(citizenId)}
 AND allow_other_guardian_access IS TRUE
-            """
-                    .trimIndent()
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+"""
             )
         }
 
@@ -445,8 +447,46 @@ FROM decision
 JOIN application ON decision.application_id = application.id
 WHERE guardian_id = ${bind(citizenId)}
 AND decision.sent_date IS NOT NULL
-            """
-                    .trimIndent()
+"""
+            )
+        }
+
+    fun otherGuardianOfApplicationOfSentDecision() =
+        rule<DecisionId> { citizenId, now ->
+            sql(
+                """
+SELECT decision.id
+FROM decision
+JOIN application a ON decision.application_id = a.id
+JOIN application_other_guardian aog ON a.id = aog.application_id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND decision.sent_date IS NOT NULL
+AND allow_other_guardian_access IS TRUE
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+"""
+            )
+        }
+
+    fun otherGuardianOfApplicationOfSentDecisionWithNoContactInfo() =
+        rule<DecisionId> { citizenId, now ->
+            sql(
+                """
+SELECT decision.id
+FROM decision
+JOIN application a ON decision.application_id = a.id
+JOIN application_other_guardian aog ON a.id = aog.application_id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND decision.sent_date IS NOT NULL
+AND allow_other_guardian_access IS TRUE
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+AND NOT decision.document_contains_contact_info
+"""
             )
         }
 

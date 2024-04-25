@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import mapValues from 'lodash/mapValues'
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useMemo } from 'react'
@@ -59,9 +60,13 @@ export default React.memo(function Decisions() {
     )[]
     firstName: string
     lastName: string
+    decidableApplications: UUID[]
   }) => {
     const unconfirmedDecisionsCount = child.decisions.filter(
-      (decision) => 'applicationId' in decision && decision.resolved === null
+      (decision) =>
+        'applicationId' in decision &&
+        decision.resolved === null &&
+        child.decidableApplications.includes(decision.applicationId)
     ).length
     return (
       `${child.firstName} ${child.lastName}` +
@@ -75,10 +80,12 @@ export default React.memo(function Decisions() {
     () =>
       applicationDecisions
         .map(
-          (decisions) =>
-            decisions.flatMap(({ decisions }) =>
-              decisions.filter(applicationDecisionIsUnread)
-            ).length
+          ({ decisions, decidableApplications }) =>
+            decisions
+              .filter(applicationDecisionIsUnread)
+              .filter((decision) =>
+                decidableApplications.includes(decision.applicationId)
+              ).length
         )
         .getOrElse(0),
     [applicationDecisions]
@@ -110,14 +117,9 @@ export default React.memo(function Decisions() {
             .map((child) => {
               const childDecisions = sortBy(
                 [
-                  ...applicationDecisions
-                    .filter(({ childId }) => child.id === childId)
-                    .flatMap(({ applicationId, decisions }) =>
-                      decisions.map((decision) => ({
-                        ...decision,
-                        applicationId
-                      }))
-                    ),
+                  ...applicationDecisions.decisions.filter(
+                    ({ childId }) => child.id === childId
+                  ),
                   ...assistanceDecisions.filter(
                     ({ childId }) => child.id === childId
                   ),
@@ -137,7 +139,13 @@ export default React.memo(function Decisions() {
                   'applicationId' in decision
                     ? applicationDecisionIsUnread(decision)
                     : decision.isUnread
-                ).length
+                ).length,
+                applicationDecisionPermittedActions: mapValues(
+                  applicationDecisions.permittedActions,
+                  (actions) => new Set(actions)
+                ),
+                decidableApplications:
+                  applicationDecisions.decidableApplications
               }
             })
             .filter((child) => child.decisions.length > 0)
@@ -213,7 +221,17 @@ export default React.memo(function Decisions() {
                     <Fragment key={decision.id}>
                       <HorizontalLine dashed slim />
                       {'applicationId' in decision ? (
-                        <ApplicationDecision {...decision} />
+                        <ApplicationDecision
+                          {...decision}
+                          permittedActions={
+                            child.applicationDecisionPermittedActions[
+                              decision.id
+                            ] ?? new Set()
+                          }
+                          canDecide={child.decidableApplications.includes(
+                            decision.applicationId
+                          )}
+                        />
                       ) : 'assistanceLevels' in decision ? (
                         <AssistanceDecision {...decision} />
                       ) : (

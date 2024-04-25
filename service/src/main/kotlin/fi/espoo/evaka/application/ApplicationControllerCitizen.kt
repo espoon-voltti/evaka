@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -37,7 +38,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.util.UUID
 import org.springframework.http.MediaType
@@ -86,6 +86,13 @@ class ApplicationControllerCitizen(
                             clock,
                             allApplications.map { it.applicationId }
                         )
+                    val allDecidableApplications =
+                        getDecidableApplications(
+                            tx,
+                            user,
+                            clock,
+                            allApplications.map { it.applicationId }.toSet()
+                        )
                     val existingApplicationsByChild = allApplications.groupBy { it.childId }
 
                     // Some children might not have applications, so add 0 application children
@@ -102,6 +109,14 @@ class ApplicationControllerCitizen(
                             applicationSummaries = applications,
                             permittedActions = permittedActions,
                             duplicateOf = child.duplicateOf,
+                            decidableApplications =
+                                applications
+                                    .mapNotNull { application ->
+                                        application.applicationId.takeIf {
+                                            allDecidableApplications.contains(it)
+                                        }
+                                    }
+                                    .toSet()
                         )
                     }
                 }
@@ -416,25 +431,50 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<ApplicationDecisions> {
+    ): ApplicationDecisions {
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Citizen.Person.READ_DECISIONS,
-                        user.id
+                dbc.read { tx ->
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.Decision.READ
+                        )
+                    val children = tx.getCitizenChildIds(clock.today(), user.id)
+                    val decisions = tx.getOwnDecisions(user.id, children, filter)
+                    ApplicationDecisions(
+                        decisions = decisions,
+                        permittedActions =
+                            accessControl.getPermittedActions(
+                                tx,
+                                user,
+                                clock,
+                                decisions.map { it.id }
+                            ),
+                        decidableApplications =
+                            getDecidableApplications(
+                                tx,
+                                user,
+                                clock,
+                                decisions.map { it.applicationId }.toSet()
+                            )
                     )
-                    it.getOwnDecisions(user.id)
                 }
             }
-            .also { Audit.DecisionRead.log(targetId = user.id, meta = mapOf("count" to it.size)) }
+            .also {
+                Audit.DecisionRead.log(
+                    targetId = user.id,
+                    meta = mapOf("count" to it.decisions.size)
+                )
+            }
     }
 
     data class DecisionWithValidStartDatePeriod(
         val decision: Decision,
-        val validRequestedStartDatePeriod: FiniteDateRange
+        val validRequestedStartDatePeriod: FiniteDateRange,
+        val permittedActions: Set<Action.Citizen.Decision>,
+        val canDecide: Boolean
     )
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -453,15 +493,36 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Application.READ_DECISIONS,
                         applicationId
                     )
-                    tx.fetchApplicationDetails(applicationId)
-                        ?: throw NotFound("Application not found")
-                    tx.getSentDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
-                        .map {
-                            DecisionWithValidStartDatePeriod(
-                                it,
-                                it.validRequestedStartDatePeriod(featureConfig)
-                            )
-                        }
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.Decision.READ
+                        )
+                    val decisions = tx.getSentDecisionsByApplication(applicationId, filter)
+                    val permittedActions =
+                        accessControl.getPermittedActions<DecisionId, Action.Citizen.Decision>(
+                            tx,
+                            user,
+                            clock,
+                            decisions.map { it.id }
+                        )
+                    val canDecide =
+                        getDecidableApplications(
+                            tx,
+                            user,
+                            clock,
+                            decisions.map { it.applicationId }.toSet()
+                        )
+                    decisions.map {
+                        DecisionWithValidStartDatePeriod(
+                            it,
+                            it.validRequestedStartDatePeriod(featureConfig),
+                            permittedActions[it.id] ?: emptySet(),
+                            canDecide.contains(it.applicationId)
+                        )
+                    }
                 }
             }
             .also {
@@ -707,6 +768,37 @@ class ApplicationControllerCitizen(
             }
             .also { Audit.CitizenVoucherValueDecisionDownloadPdf.log(targetId = id) }
     }
+
+    private fun getDecidableApplications(
+        tx: Database.Read,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        applications: Set<ApplicationId>
+    ): Set<ApplicationId> {
+        val canAccept =
+            accessControl
+                .checkPermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Application.ACCEPT_DECISION,
+                    applications
+                )
+                .filter { it.value.isPermitted() }
+                .keys
+        val canReject =
+            accessControl
+                .checkPermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Application.REJECT_DECISION,
+                    applications
+                )
+                .filter { it.value.isPermitted() }
+                .keys
+        return canAccept.intersect(canReject)
+    }
 }
 
 data class ApplicationsOfChild(
@@ -714,20 +806,22 @@ data class ApplicationsOfChild(
     val childName: String,
     val applicationSummaries: List<CitizenApplicationSummary>,
     val permittedActions: Map<ApplicationId, Set<Action.Citizen.Application>>,
+    val decidableApplications: Set<ApplicationId>,
     val duplicateOf: PersonId?,
 )
 
 data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType)
 
 data class ApplicationDecisions(
-    val applicationId: ApplicationId,
-    val childId: ChildId,
-    val childName: String,
-    val decisions: List<DecisionSummary>
+    val decisions: List<DecisionSummary>,
+    val permittedActions: Map<DecisionId, Set<Action.Citizen.Decision>>,
+    val decidableApplications: Set<ApplicationId>,
 )
 
 data class DecisionSummary(
     val id: DecisionId,
+    val childId: ChildId,
+    val applicationId: ApplicationId,
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,
