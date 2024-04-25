@@ -107,7 +107,9 @@ class VardaUpdateServiceNew(
 
         val childIds =
             dbc.transaction { tx ->
-                tx.addNewChildrenForVardaUpdate(migrationSpeed)
+                val count = tx.addNewChildrenForVardaUpdate(migrationSpeed)
+                logger.info { "Added $count new children for Varda update" }
+
                 tx.getVardaUpdateChildIds()
             }
 
