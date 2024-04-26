@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CreationModificationMetadata } from 'lib-common/generated/api-types/pis'
 import {
   TimelineChildDetailed,
   TimelineFeeAlteration,
@@ -154,25 +155,27 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
   },
   eventType: 'income'
 }
-interface PartnershipMetadataProps {
-  partnerDetails: TimelinePartnerDetailed
+
+interface FridgeRelationMetadataProps {
+  creationModificationMetadata: CreationModificationMetadata
+  originApplicationAccessible: boolean
 }
 
-const PartnershipMetadata = React.memo(function PartnershipMetadata({
-  partnerDetails: {
+const FridgeRelationMetadata = React.memo(function PartnershipMetadata({
+  creationModificationMetadata: {
     createdAt,
     createdBy,
     createdByName,
     createSource,
-    originApplicationAccessible,
     createdFromApplication,
     createdFromApplicationType,
     createdFromApplicationCreated,
     modifySource,
     modifiedAt,
     modifiedByName
-  }
-}: PartnershipMetadataProps) {
+  },
+  originApplicationAccessible
+}: FridgeRelationMetadataProps) {
   const { i18n } = useTranslation()
   const formatDate = (date: HelsinkiDateTime | null) =>
     date ? date.format() : i18n.timeline.notAvailable
@@ -248,12 +251,24 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
     </FixedSpaceColumn>
   ),
   Metadata: ({ elem: partnerDetails }) => (
-    <PartnershipMetadata partnerDetails={partnerDetails} />
+    <FridgeRelationMetadata
+      creationModificationMetadata={partnerDetails.creationModificationMetadata}
+      originApplicationAccessible={partnerDetails.originApplicationAccessible}
+    />
   ),
   NestedContent: ({ elem: partnerDetails, timelineRange, zoom }) => {
     const nestedRange = getNestedRange(partnerDetails.range, timelineRange)
     if (nestedRange === null)
-      return <PartnershipMetadata partnerDetails={partnerDetails} />
+      return (
+        <FridgeRelationMetadata
+          creationModificationMetadata={
+            partnerDetails.creationModificationMetadata
+          }
+          originApplicationAccessible={
+            partnerDetails.originApplicationAccessible
+          }
+        />
+      )
 
     return (
       <TlNestedContainer>

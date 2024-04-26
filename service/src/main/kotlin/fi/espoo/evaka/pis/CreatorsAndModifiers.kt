@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 enum class CreateSource : DatabaseEnum {
     USER,
@@ -53,5 +55,36 @@ sealed class Modifier {
     data object DVV : Modifier() {
         override val source: ModifySource
             get() = ModifySource.DVV
+    }
+}
+
+data class CreationModificationMetadata(
+    val createSource: CreateSource?,
+    val createdAt: HelsinkiDateTime?,
+    val createdBy: EvakaUserId?,
+    val createdByName: String?,
+    val modifySource: ModifySource?,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?,
+    val modifiedByName: String?,
+    val createdFromApplication: ApplicationId?,
+    val createdFromApplicationType: ApplicationType?,
+    val createdFromApplicationCreated: HelsinkiDateTime?
+) {
+    companion object {
+        fun empty() =
+            CreationModificationMetadata(
+                createSource = null,
+                createdAt = null,
+                createdBy = null,
+                createdByName = null,
+                modifySource = null,
+                modifiedAt = null,
+                modifiedBy = null,
+                modifiedByName = null,
+                createdFromApplication = null,
+                createdFromApplicationType = null,
+                createdFromApplicationCreated = null
+            )
     }
 }

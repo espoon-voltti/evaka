@@ -8,6 +8,7 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { ApplicationType } from './application'
 import { CitizenAuthLevel } from './shared'
 import { CitizenFeatures } from './shared'
 import { EmployeeFeatures } from './shared'
@@ -82,6 +83,23 @@ export type CreateSource =
   | 'USER'
   | 'APPLICATION'
   | 'DVV'
+
+/**
+* Generated from fi.espoo.evaka.pis.CreationModificationMetadata
+*/
+export interface CreationModificationMetadata {
+  createSource: CreateSource | null
+  createdAt: HelsinkiDateTime | null
+  createdBy: UUID | null
+  createdByName: string | null
+  createdFromApplication: UUID | null
+  createdFromApplicationCreated: HelsinkiDateTime | null
+  createdFromApplicationType: ApplicationType | null
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: UUID | null
+  modifiedByName: string | null
+  modifySource: ModifySource | null
+}
 
 /**
 * Generated from fi.espoo.evaka.pis.DaycareGroupRole
@@ -609,6 +627,16 @@ export function deserializeJsonCreatePersonBody(json: JsonOf<CreatePersonBody>):
   return {
     ...json,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+  }
+}
+
+
+export function deserializeJsonCreationModificationMetadata(json: JsonOf<CreationModificationMetadata>): CreationModificationMetadata {
+  return {
+    ...json,
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
+    createdFromApplicationCreated: (json.createdFromApplicationCreated != null) ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated) : null,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
   }
 }
 

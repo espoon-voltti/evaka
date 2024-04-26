@@ -4,9 +4,7 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.pis.*
-import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PersonId
@@ -102,15 +100,6 @@ data class Partner(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val conflict: Boolean = false,
-    val createSource: CreateSource?,
-    val createdAt: HelsinkiDateTime?,
-    val createdBy: EvakaUserId?,
-    val createdByName: String?,
-    val modifySource: ModifySource?,
-    val modifiedAt: HelsinkiDateTime?,
-    val modifiedBy: EvakaUserId?,
-    val modifiedByName: String?,
-    val createdFromApplication: ApplicationId?,
-    val createdFromApplicationType: ApplicationType?,
-    val createdFromApplicationCreated: HelsinkiDateTime?
+    val creationModificationMetadata: CreationModificationMetadata =
+        CreationModificationMetadata.empty()
 )
