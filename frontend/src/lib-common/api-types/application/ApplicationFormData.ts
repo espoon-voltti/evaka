@@ -166,10 +166,9 @@ export function apiDataToFormData(
 
   const formatAddress = (address: Address | null): string => {
     if (address) {
-      const formattedAddress =
-        `${address.street || ''}, ${address.postalCode || ''} ${
-          address.postOffice || ''
-        }` || ''
+      const formattedAddress = `${address.street || ''}, ${address.postalCode || ''} ${
+        address.postOffice || ''
+      }`
 
       return formattedAddress.trim().length > 1 ? formattedAddress : ''
     } else {

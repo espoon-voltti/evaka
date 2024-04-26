@@ -292,6 +292,9 @@
       "arrow-body-style": [
         "error",
         "as-needed"
+      ],
+      "no-constant-binary-expression": [
+        "error"
       ]
     },
     "overrides": [
