@@ -16,6 +16,7 @@ enum class Audit(
     AbsenceDelete,
     AbsenceDeleteRange,
     AbsenceUpsert,
+    AddressPageDownloadPdf,
     ApplicationAdminDetailsUpdate,
     ApplicationCancel,
     ApplicationConfirmDecisionsMailed,

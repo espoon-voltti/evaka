@@ -9,7 +9,12 @@ import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.invoicing.domain.PersonDetailed
+import fi.espoo.evaka.pdfgen.Page
+import fi.espoo.evaka.pdfgen.PdfGenerator
+import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.getDependantGuardians
 import fi.espoo.evaka.pis.getGuardianDependants
@@ -20,12 +25,14 @@ import fi.espoo.evaka.pis.updateNonSsnPersonDetails
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.pis.updatePersonNonVtjDetails
 import fi.espoo.evaka.pis.updatePersonSsnAddingDisabled
+import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.Nationality
@@ -35,6 +42,7 @@ import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import org.thymeleaf.context.Context
 
 private val logger = KotlinLogging.logger {}
 
@@ -725,3 +733,43 @@ private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: Ch
             )
         }
         .execute()
+
+fun createAddressPagePdf(
+    pdfGenerator: PdfGenerator,
+    guardian: PersonDTO,
+    clock: EvakaClock
+): Document {
+
+    // template path hardcoded to prevent need for customization
+    val template = "address-page/address-page"
+    val personDetails =
+        guardian.let {
+            val firstWordOfFirstName = it.firstName.trim().substringBefore(' ')
+
+            PersonDetailed(
+                dateOfBirth = it.dateOfBirth,
+                postOffice = it.postOffice,
+                streetAddress = it.streetAddress,
+                postalCode = it.postalCode,
+                firstName = firstWordOfFirstName,
+                lastName = it.lastName,
+                restrictedDetailsEnabled = it.restrictedDetailsEnabled,
+                id = it.id
+            )
+        }
+
+    val page =
+        Page(
+            Template(template),
+            Context().apply {
+                setVariable("guardian", personDetails)
+                setVariable("sendAddress", DecisionSendAddress.fromPerson(personDetails))
+            }
+        )
+
+    return Document(
+        name = "osoitesivu_${guardian.lastName}_${clock.today()}.pdf",
+        bytes = pdfGenerator.render(page),
+        contentType = "application/pdf"
+    )
+}

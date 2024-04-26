@@ -1784,6 +1784,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()
         ),
         DELETE(HasGlobalRole(ADMIN)),
+        DOWNLOAD_ADDRESS_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
         DUPLICATE(HasGlobalRole(ADMIN)),
         DISABLE_SSN_ADDING(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         ENABLE_SSN_ADDING(HasGlobalRole(ADMIN)),

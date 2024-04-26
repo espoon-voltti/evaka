@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faFileAlt } from 'Icons'
+import noop from 'lodash/noop'
 import React, {
   useCallback,
   useContext,
@@ -12,6 +14,7 @@ import React, {
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { API_URL } from 'employee-frontend/api/client'
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { Action } from 'lib-common/generated/action'
@@ -288,6 +291,24 @@ export default React.memo(function PersonDetails({
                 text={i18n.personProfile.updateFromVtj}
               />
             )}
+          </ButtonSpacer>
+        ) : null}
+        {permittedActions.has('DOWNLOAD_ADDRESS_PAGE') &&
+        !isChild &&
+        uiMode !== 'person-details-editing' ? (
+          <ButtonSpacer>
+            <a
+              href={`${API_URL}/person/${person.id}/address-page/download`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <InlineButton
+                icon={faFileAlt}
+                text={i18n.personProfile.downloadAddressPage}
+                onClick={noop}
+                data-qa="button-open-address-page"
+              />
+            </a>
           </ButtonSpacer>
         ) : null}
         {(!isChild && permittedActions.has('UPDATE')) ||

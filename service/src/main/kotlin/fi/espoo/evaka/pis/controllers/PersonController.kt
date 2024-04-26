@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.controllers.upsertAdditionalInformation
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.isValidSSN
+import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createFosterParentRelationship
@@ -26,6 +27,7 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.service.blockGuardian
+import fi.espoo.evaka.pis.service.createAddressPagePdf
 import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
@@ -43,6 +45,11 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.varda.getDistinctVardaPersonOidsByEvakaPersonId
 import java.time.LocalDate
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -59,7 +66,8 @@ class PersonController(
     private val personService: PersonService,
     private val mergeService: MergeService,
     private val accessControl: AccessControl,
-    private val fridgeFamilyService: FridgeFamilyService
+    private val fridgeFamilyService: FridgeFamilyService,
+    private val pdfGenerator: PdfGenerator
 ) {
     @PostMapping
     fun createEmpty(
@@ -633,6 +641,38 @@ class PersonController(
             meta = mapOf("denied" to body.denied)
         )
     }
+
+    @GetMapping("/{guardianId}/address-page/download", produces = [MediaType.APPLICATION_PDF_VALUE])
+    fun getAddressPagePdf(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable guardianId: PersonId
+    ): ResponseEntity<*> =
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.DOWNLOAD_ADDRESS_PAGE,
+                        guardianId
+                    )
+                    val personData =
+                        tx.getPersonById(guardianId) ?: throw NotFound("Person not found")
+                    val doc = createAddressPagePdf(pdfGenerator, personData, clock)
+                    val resource = ByteArrayResource(doc.bytes)
+                    ResponseEntity.ok()
+                        .contentLength(resource.contentLength())
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            ContentDisposition.attachment().filename(doc.name).build().toString()
+                        )
+                        .body(resource)
+                }
+            }
+            .also { Audit.AddressPageDownloadPdf.log(targetId = guardianId) }
 
     data class PersonResponse(val person: PersonJSON, val permittedActions: Set<Action.Person>)
 
