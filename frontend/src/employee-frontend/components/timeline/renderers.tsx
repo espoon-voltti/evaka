@@ -205,6 +205,8 @@ const FridgeRelationMetadata = React.memo(function PartnershipMetadata({
       } else {
         return i18n.timeline.notAvailable
       }
+    } else if (createSource === 'DVV') {
+      return i18n.timeline.DVV
     } else {
       return i18n.timeline.unknownSource
     }
@@ -388,6 +390,12 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
       </span>
       <span>s. {elem.dateOfBirth.format()}</span>
     </FixedSpaceColumn>
+  ),
+  Metadata: ({ elem: childDetails }) => (
+    <FridgeRelationMetadata
+      creationModificationMetadata={childDetails.creationModificationMetadata}
+      originApplicationAccessible={childDetails.originApplicationAccessible}
+    />
   ),
   NestedContent: ({ elem, timelineRange, zoom }) => {
     const nestedRange = getNestedRange(elem.range, timelineRange)

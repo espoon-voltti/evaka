@@ -374,13 +374,14 @@ fun Database.Transaction.insertTestParentship(
     childId: ChildId,
     id: ParentshipId = ParentshipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31)
+    endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    createdAt: HelsinkiDateTime = HelsinkiDateTime.now()
 ): ParentshipId {
     createUpdate {
             sql(
                 """
-INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at)
-VALUES (${bind(id)}, ${bind(headOfChild)}, ${bind(childId)}, ${bind(startDate)}, ${bind(endDate)}, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, create_source, created_by_user, created_by_application, created_at, modify_source, modified_by_user, modified_at)
+VALUES (${bind(id)}, ${bind(headOfChild)}, ${bind(childId)}, ${bind(startDate)}, ${bind(endDate)}, NULL, NULL, NULL, ${bind(createdAt)}, NULL, NULL, NULL)
 """
             )
         }

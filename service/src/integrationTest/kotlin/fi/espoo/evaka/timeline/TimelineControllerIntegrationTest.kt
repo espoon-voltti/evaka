@@ -7,6 +7,7 @@ package fi.espoo.evaka.timeline
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.pis.CreationModificationMetadata
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.ParentshipId
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -65,6 +67,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val childRange = FiniteDateRange(LocalDate.of(2022, 3, 1), LocalDate.of(2022, 6, 1))
         var parentshipId: ParentshipId? = null
         val incomeId = IncomeId(UUID.randomUUID())
+        val createdAt = HelsinkiDateTime.now()
 
         db.transaction { tx ->
             parentshipId =
@@ -72,7 +75,8 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     testAdult_1.id,
                     testChild_1.id,
                     startDate = childRange.start,
-                    endDate = childRange.end
+                    endDate = childRange.end,
+                    createdAt = createdAt
                 )
 
             // outside range is ignored
@@ -80,7 +84,8 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 testAdult_1.id,
                 testChild_1.id,
                 startDate = range.start.minusYears(2),
-                endDate = range.start.minusYears(1)
+                endDate = range.start.minusYears(1),
+                createdAt = createdAt
             )
 
             tx.insert(
@@ -124,7 +129,10 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                 ),
                             placements = emptyList(),
                             serviceNeeds = emptyList(),
-                            feeAlterations = emptyList()
+                            feeAlterations = emptyList(),
+                            creationModificationMetadata =
+                                CreationModificationMetadata.empty().copy(createdAt = createdAt),
+                            originApplicationAccessible = false
                         )
                     )
             ),

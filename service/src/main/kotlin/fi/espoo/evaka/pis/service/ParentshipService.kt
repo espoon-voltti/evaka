@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.pis.CreationModificationMetadata
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.Modifier
 import fi.espoo.evaka.pis.createParentship
@@ -156,3 +157,27 @@ data class Parentship(
     val endDate: LocalDate,
     val conflict: Boolean = false
 )
+
+data class ParentshipDetailed(
+    val id: ParentshipId,
+    val childId: ChildId,
+    val child: PersonJSON,
+    val headOfChildId: PersonId,
+    val headOfChild: PersonJSON,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val conflict: Boolean = false,
+    val creationModificationMetadata: CreationModificationMetadata
+) {
+    fun withoutDetails() =
+        Parentship(
+            id = id,
+            childId = childId,
+            child = child,
+            headOfChildId = headOfChildId,
+            headOfChild = headOfChild,
+            startDate = startDate,
+            endDate = endDate,
+            conflict = conflict
+        )
+}

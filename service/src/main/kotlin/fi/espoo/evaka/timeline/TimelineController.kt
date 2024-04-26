@@ -48,7 +48,7 @@ class TimelineController(private val accessControl: AccessControl) {
     @GetMapping
     fun getTimeline(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId,
         @RequestParam from: LocalDate,
@@ -108,21 +108,7 @@ class TimelineController(private val accessControl: AccessControl) {
                                             ->
                                             val childRange =
                                                 partnerRange.intersection(child.range)!!
-                                            TimelineChildDetailed(
-                                                id = child.id,
-                                                range = child.range,
-                                                childId = child.childId,
-                                                firstName = child.firstName,
-                                                lastName = child.lastName,
-                                                dateOfBirth = child.dateOfBirth,
-                                                incomes = tx.getIncomes(child.childId, childRange),
-                                                placements =
-                                                    tx.getPlacements(child.childId, childRange),
-                                                serviceNeeds =
-                                                    tx.getServiceNeeds(child.childId, childRange),
-                                                feeAlterations =
-                                                    tx.getFeeAlterations(child.childId, childRange)
-                                            )
+                                            addDetailsToChild(tx, user, clock, child, childRange)
                                         },
                                     creationModificationMetadata =
                                         partner.creationModificationMetadata,
@@ -132,24 +118,45 @@ class TimelineController(private val accessControl: AccessControl) {
                         children =
                             tx.getChildren(personId, range).map { child ->
                                 val childRange = range.intersection(child.range)!!
-                                TimelineChildDetailed(
-                                    id = child.id,
-                                    range = child.range,
-                                    childId = child.childId,
-                                    firstName = child.firstName,
-                                    lastName = child.lastName,
-                                    dateOfBirth = child.dateOfBirth,
-                                    incomes = tx.getIncomes(child.childId, childRange),
-                                    placements = tx.getPlacements(child.childId, childRange),
-                                    serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
-                                    feeAlterations = tx.getFeeAlterations(child.childId, childRange)
-                                )
+                                addDetailsToChild(tx, user, clock, child, childRange)
                             }
                     )
                 }
             }
             .also { Audit.TimelineRead.log(targetId = personId) }
     }
+
+    private fun addDetailsToChild(
+        tx: Database.Read,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        child: TimelineChild,
+        childRange: FiniteDateRange
+    ) =
+        TimelineChildDetailed(
+            id = child.id,
+            range = child.range,
+            childId = child.childId,
+            firstName = child.firstName,
+            lastName = child.lastName,
+            dateOfBirth = child.dateOfBirth,
+            incomes = tx.getIncomes(child.childId, childRange),
+            placements = tx.getPlacements(child.childId, childRange),
+            serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
+            feeAlterations = tx.getFeeAlterations(child.childId, childRange),
+            creationModificationMetadata = child.creationModificationMetadata,
+            originApplicationAccessible =
+                if (child.creationModificationMetadata.createdFromApplication != null)
+                    accessControl
+                        .getPermittedActions<ApplicationId, Action.Application>(
+                            tx,
+                            user,
+                            clock,
+                            child.creationModificationMetadata.createdFromApplication
+                        )
+                        .contains(Action.Application.READ)
+                else false
+        )
 }
 
 data class Timeline(
@@ -271,7 +278,8 @@ data class TimelineChild(
     val childId: PersonId,
     val firstName: String,
     val lastName: String,
-    val dateOfBirth: LocalDate
+    val dateOfBirth: LocalDate,
+    val creationModificationMetadata: CreationModificationMetadata
 ) : WithRange
 
 data class TimelineChildDetailed(
@@ -284,7 +292,9 @@ data class TimelineChildDetailed(
     val incomes: List<TimelineIncome>,
     val placements: List<TimelinePlacement>,
     val serviceNeeds: List<TimelineServiceNeed>,
-    val feeAlterations: List<TimelineFeeAlteration>
+    val feeAlterations: List<TimelineFeeAlteration>,
+    val creationModificationMetadata: CreationModificationMetadata,
+    val originApplicationAccessible: Boolean
 ) : WithRange
 
 private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange) =
@@ -301,7 +311,8 @@ private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange
                 childId = it.child.id,
                 firstName = it.child.firstName,
                 lastName = it.child.lastName,
-                dateOfBirth = it.child.dateOfBirth
+                dateOfBirth = it.child.dateOfBirth,
+                creationModificationMetadata = it.creationModificationMetadata
             )
         }
         .sortedBy { it.range.start }

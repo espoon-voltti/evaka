@@ -35,12 +35,14 @@ export interface Timeline {
 */
 export interface TimelineChildDetailed {
   childId: UUID
+  creationModificationMetadata: CreationModificationMetadata
   dateOfBirth: LocalDate
   feeAlterations: TimelineFeeAlteration[]
   firstName: string
   id: UUID
   incomes: TimelineIncome[]
   lastName: string
+  originApplicationAccessible: boolean
   placements: TimelinePlacement[]
   range: DateRange
   serviceNeeds: TimelineServiceNeed[]
@@ -146,6 +148,7 @@ export function deserializeJsonTimeline(json: JsonOf<Timeline>): Timeline {
 export function deserializeJsonTimelineChildDetailed(json: JsonOf<TimelineChildDetailed>): TimelineChildDetailed {
   return {
     ...json,
+    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     feeAlterations: json.feeAlterations.map(e => deserializeJsonTimelineFeeAlteration(e)),
     incomes: json.incomes.map(e => deserializeJsonTimelineIncome(e)),

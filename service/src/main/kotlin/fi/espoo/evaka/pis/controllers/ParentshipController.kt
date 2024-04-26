@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
+import fi.espoo.evaka.pis.service.ParentshipDetailed
 import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
@@ -228,7 +229,7 @@ class ParentshipController(
     data class ParentshipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate)
 
     data class ParentshipWithPermittedActions(
-        val data: Parentship,
+        val data: ParentshipDetailed,
         val permittedActions: Set<Action.Parentship>
     )
 }

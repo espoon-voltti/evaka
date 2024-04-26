@@ -11,7 +11,6 @@ import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
-import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -100,28 +99,40 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             assertEquals(
                 setOf(parentship),
-                tx.getParentships(headOfChildId = adult.id, childId = child.id).toHashSet()
+                tx.getParentships(headOfChildId = adult.id, childId = child.id)
+                    .map { it.withoutDetails() }
+                    .toHashSet()
             )
             assertEquals(
                 setOf(parentship),
-                tx.getParentships(headOfChildId = adult.id, childId = null).toHashSet()
+                tx.getParentships(headOfChildId = adult.id, childId = null)
+                    .map { it.withoutDetails() }
+                    .toHashSet()
             )
             assertEquals(
                 setOf(parentship),
-                tx.getParentships(headOfChildId = null, childId = child.id).toHashSet()
+                tx.getParentships(headOfChildId = null, childId = child.id)
+                    .map { it.withoutDetails() }
+                    .toHashSet()
             )
 
             assertEquals(
-                emptySet<Parentship>(),
-                tx.getParentships(headOfChildId = child.id, childId = adult.id).toHashSet()
+                emptySet(),
+                tx.getParentships(headOfChildId = child.id, childId = adult.id)
+                    .map { it.withoutDetails() }
+                    .toHashSet()
             )
             assertEquals(
-                emptySet<Parentship>(),
-                tx.getParentships(headOfChildId = child.id, childId = null).toHashSet()
+                emptySet(),
+                tx.getParentships(headOfChildId = child.id, childId = null)
+                    .map { it.withoutDetails() }
+                    .toHashSet()
             )
             assertEquals(
-                emptySet<Parentship>(),
-                tx.getParentships(headOfChildId = null, childId = adult.id).toHashSet()
+                emptySet(),
+                tx.getParentships(headOfChildId = null, childId = adult.id)
+                    .map { it.withoutDetails() }
+                    .toHashSet()
             )
         }
     }

@@ -375,6 +375,21 @@ export interface Parentship {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.service.ParentshipDetailed
+*/
+export interface ParentshipDetailed {
+  child: PersonJSON
+  childId: UUID
+  conflict: boolean
+  creationModificationMetadata: CreationModificationMetadata
+  endDate: LocalDate
+  headOfChild: PersonJSON
+  headOfChildId: UUID
+  id: UUID
+  startDate: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipRequest
 */
 export interface ParentshipRequest {
@@ -396,7 +411,7 @@ export interface ParentshipUpdateRequest {
 * Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipWithPermittedActions
 */
 export interface ParentshipWithPermittedActions {
-  data: Parentship
+  data: ParentshipDetailed
   permittedActions: Action.Parentship[]
 }
 
@@ -707,6 +722,18 @@ export function deserializeJsonParentship(json: JsonOf<Parentship>): Parentship 
 }
 
 
+export function deserializeJsonParentshipDetailed(json: JsonOf<ParentshipDetailed>): ParentshipDetailed {
+  return {
+    ...json,
+    child: deserializeJsonPersonJSON(json.child),
+    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
+    endDate: LocalDate.parseIso(json.endDate),
+    headOfChild: deserializeJsonPersonJSON(json.headOfChild),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
 export function deserializeJsonParentshipRequest(json: JsonOf<ParentshipRequest>): ParentshipRequest {
   return {
     ...json,
@@ -728,7 +755,7 @@ export function deserializeJsonParentshipUpdateRequest(json: JsonOf<ParentshipUp
 export function deserializeJsonParentshipWithPermittedActions(json: JsonOf<ParentshipWithPermittedActions>): ParentshipWithPermittedActions {
   return {
     ...json,
-    data: deserializeJsonParentship(json.data)
+    data: deserializeJsonParentshipDetailed(json.data)
   }
 }
 

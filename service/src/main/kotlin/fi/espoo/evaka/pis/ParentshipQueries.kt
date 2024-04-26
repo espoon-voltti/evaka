@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Parentship
+import fi.espoo.evaka.pis.service.ParentshipDetailed
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -41,7 +42,7 @@ fun Database.Read.getParentships(
     childId: ChildId?,
     includeConflicts: Boolean = false,
     period: DateRange? = null
-): List<Parentship> {
+): List<ParentshipDetailed> {
     if (headOfChildId == null && childId == null)
         throw BadRequest("Must give either headOfChildId or childId")
 
@@ -51,18 +52,25 @@ fun Database.Read.getParentships(
 SELECT
     fc.*,
     ${aliasedPersonColumns("child")},
-    ${aliasedPersonColumns("head")}
+    ${aliasedPersonColumns("head")},
+    created_by_user.name AS created_by_user_name,
+    modified_by_user.name AS modified_by_user_name,
+    created_by_application.type AS created_by_application_type,
+    created_by_application.created AS created_by_application_created
 FROM fridge_child fc
 JOIN person child ON fc.child_id = child.id
 JOIN person head ON fc.head_of_child = head.id
+LEFT JOIN application created_by_application ON fc.created_by_application = created_by_application.id
+LEFT JOIN evaka_user created_by_user ON fc.created_by_user = created_by_user.id
+LEFT JOIN evaka_user modified_by_user ON fc.modified_by_user = modified_by_user.id
 WHERE (${bind(headOfChildId)}::uuid IS NULL OR head_of_child = ${bind(headOfChildId)})
-AND (${bind(childId)}::uuid IS NULL OR child_id = ${bind(childId)})
+AND (${bind(childId)}::uuid IS NULL OR fc.child_id = ${bind(childId)})
 AND daterange(fc.start_date, fc.end_date, '[]') && daterange(${bind(period?.start)}, ${bind(period?.end)}, '[]')
 AND (${bind(includeConflicts)} OR conflict = false)
 """
             )
         }
-        .toList(toParentship("child", "head"))
+        .toList(toParentshipDetailed("child", "head"))
 }
 
 fun Database.Transaction.createParentship(
@@ -209,6 +217,36 @@ private val toParentship: (String, String) -> Row.() -> Parentship = { childAlia
         )
     }
 }
+
+private val toParentshipDetailed: (String, String) -> Row.() -> ParentshipDetailed =
+    { childAlias, headAlias ->
+        {
+            ParentshipDetailed(
+                id = ParentshipId(column("id")),
+                childId = ChildId(column("child_id")),
+                child = toPersonJSON(childAlias),
+                headOfChildId = PersonId(column("head_of_child")),
+                headOfChild = toPersonJSON(headAlias),
+                startDate = column("start_date"),
+                endDate = column("end_date"),
+                conflict = column("conflict"),
+                creationModificationMetadata =
+                    CreationModificationMetadata(
+                        createSource = column("create_source"),
+                        createdAt = column("created_at"),
+                        createdBy = column("created_by_user"),
+                        createdByName = column("created_by_user_name"),
+                        modifySource = column("modify_source"),
+                        modifiedAt = column("modified_at"),
+                        modifiedBy = column("modified_by_user"),
+                        modifiedByName = column("modified_by_user_name"),
+                        createdFromApplication = column("created_by_application"),
+                        createdFromApplicationType = column("created_by_application_type"),
+                        createdFromApplicationCreated = column("created_by_application_created")
+                    )
+            )
+        }
+    }
 
 internal val toPersonJSON: Row.(String) -> PersonJSON = { table ->
     PersonJSON(
