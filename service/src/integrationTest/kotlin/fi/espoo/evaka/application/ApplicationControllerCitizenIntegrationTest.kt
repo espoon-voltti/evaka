@@ -20,6 +20,7 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -43,6 +44,8 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(testDaycare)
             tx.insert(testDecisionMaker_1)
         }
+        MockPersonDetailsService.addPersons(testAdult_1, testChild_1)
+        MockPersonDetailsService.addDependants(testAdult_1, testChild_1)
     }
 
     @Test

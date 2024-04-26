@@ -21,7 +21,7 @@ import {
   createDaycareGroups,
   forceFullVtjRefresh,
   putDiets,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -44,7 +44,7 @@ let admin: DevEmployee
 const mockedDate = LocalDate.of(2022, 3, 1)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })

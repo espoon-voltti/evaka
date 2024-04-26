@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
-import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.VTJPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import java.time.LocalDate
@@ -77,7 +76,6 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insert(testPersonDependantChild, DevPersonType.CHILD)
         }
         MockVtjClientService.resetQueryCounts()
-        MockPersonDetailsService.addPerson(testPersonWithoutVtjChildren)
         personService =
             PersonService(VTJPersonDetailsService(mockVtjClientService, VtjHenkiloMapper()))
     }

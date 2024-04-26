@@ -10,7 +10,7 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -23,7 +23,7 @@ let guardianInformation: GuardianInformationPage
 const mockedDate = LocalDate.of(2021, 4, 1)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
   page = await Page.open({

@@ -203,6 +203,7 @@ import fi.espoo.evaka.vasu.publishVasuDocument
 import fi.espoo.evaka.vasu.revokeVasuGuardianHasGivenPermissionToShare
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
 import fi.espoo.evaka.webpush.PushNotificationCategory
 import java.math.BigDecimal
 import java.time.Duration
@@ -282,8 +283,8 @@ class DevApi(
         }
     }
 
-    @PostMapping("/reset-db")
-    fun resetDatabase(db: Database, clock: EvakaClock) {
+    @PostMapping("/reset-service-state")
+    fun resetServiceState(db: Database, clock: EvakaClock) {
         // Run async jobs before database reset to avoid database locks/deadlocks
         runAllAsyncJobs(clock)
 
@@ -292,6 +293,7 @@ class DevApi(
             dbc.withLockedDatabase(timeout = Duration.ofSeconds(10)) { it.resetDatabase() }
         }
         MockEmailClient.clear()
+        MockPersonDetailsService.reset()
     }
 
     @PostMapping("/run-jobs")
@@ -649,7 +651,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @GetMapping("/citizen")
     fun getCitizens(): List<Citizen> =
-        MockPersonDetailsService.allPersons.values
+        MockPersonDetailsService.getAllPersons()
             .filter { it.guardians.isEmpty() }
             .map(Citizen::from)
 
@@ -784,28 +786,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/vtj-persons")
-    fun upsertVtjPerson(db: Database, @RequestBody person: VtjPerson) {
-        MockPersonDetailsService.upsertPerson(person)
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                val uuid =
-                    tx.createQuery {
-                            sql(
-                                "SELECT id FROM person WHERE social_security_number = ${bind(person.socialSecurityNumber)}"
-                            )
-                        }
-                        .exactlyOneOrNull<PersonId>()
-
-                uuid?.let {
-                    // Refresh Pis data by forcing refresh from VTJ
-                    personService.getUpToDatePersonFromVtj(
-                        tx,
-                        AuthenticatedUser.SystemInternalUser,
-                        it
-                    )
-                }
-            }
-        }
+    fun upsertVtjDataset(db: Database, @RequestBody dataset: MockVtjDataset) {
+        MockPersonDetailsService.add(dataset)
     }
 
     @PostMapping("/persons/{person}/force-full-vtj-refresh")
@@ -818,12 +800,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 personService.getPersonWithChildren(tx, user, person)
             }
         }
-    }
-
-    @GetMapping("/vtj-persons/{ssn}")
-    fun getVtjPerson(@PathVariable ssn: String): VtjPerson {
-        return MockPersonDetailsService.getPerson(ssn)
-            ?: throw NotFound("vtj person $ssn was not found")
     }
 
     @GetMapping("/emails")
@@ -2003,8 +1979,6 @@ data class DevPerson(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
-    val dependants: List<DevPerson> = emptyList(),
-    val guardians: List<DevPerson> = emptyList(),
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String? = null,
     val duplicateOf: PersonId? = null,

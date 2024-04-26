@@ -21,7 +21,7 @@ import {
 import { Child, Daycare } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -44,7 +44,7 @@ const backupCareEndDate = backupCareStartDate.addDays(8)
 const groupId: UUID = uuidv4()
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 })
 
 const insertTestDataAndLogin = async ({

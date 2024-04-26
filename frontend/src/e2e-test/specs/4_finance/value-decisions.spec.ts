@@ -23,7 +23,7 @@ import {
   Fixture,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
-import { insertGuardians, resetDatabase } from '../../generated/api-clients'
+import { insertGuardians, resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -43,7 +43,7 @@ const decision2DateFrom = now.toLocalDate()
 const decision2DateTo = now.toLocalDate().addWeeks(5)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()

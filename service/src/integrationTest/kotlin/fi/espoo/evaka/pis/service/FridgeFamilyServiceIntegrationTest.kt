@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.mapper.VtjHenkiloMapper
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.VTJPersonDetailsService
@@ -40,10 +39,6 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     lateinit var adult2: PersonDTO
     lateinit var child1: PersonDTO
     lateinit var child2: PersonDTO
-    lateinit var adult1VtjPerson: VtjPerson
-    lateinit var adult2VtjPerson: VtjPerson
-    lateinit var child1VtjPerson: VtjPerson
-    lateinit var child2VtjPerson: VtjPerson
     private val partnershipCreator =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
             .evakaUserId
@@ -51,26 +46,18 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @BeforeEach
     fun setup() {
         adult1 = createPerson("140881-172X", "Isä")
-        adult1VtjPerson = adult1.toVtjPerson()
         adult2 = createPerson("150786-1766", "Äiti")
-        adult2VtjPerson = adult2.toVtjPerson()
         child1 = createPerson("120915A931W", "Lapsi1")
-        child1VtjPerson = child1.toVtjPerson()
         child2 = createPerson("101221A999S", "Lapsi2")
-        child2VtjPerson = child2.toVtjPerson()
+        MockPersonDetailsService.addPersons(adult1, adult2, child1, child2)
     }
 
     @Autowired lateinit var fridgeFamilyService: FridgeFamilyService
 
     @Test
     fun `First adult becomes the head of all common children`() {
-        MockPersonDetailsService.addPerson(
-            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
-        )
-
-        MockPersonDetailsService.addPerson(
-            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
-        )
+        MockPersonDetailsService.addDependants(adult1.identity, child1.identity, child2.identity)
+        MockPersonDetailsService.addDependants(adult2.identity, child1.identity, child2.identity)
 
         db.transaction {
             it.insertTestDecisionMaker()
@@ -103,13 +90,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `New child is added to existing head of family`() {
-        MockPersonDetailsService.addPerson(
-            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson))
-        )
-
-        MockPersonDetailsService.addPerson(
-            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson))
-        )
+        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
 
         db.transaction {
             it.insertTestDecisionMaker()
@@ -134,13 +116,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        MockPersonDetailsService.upsertPerson(
-            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
-        )
-
-        MockPersonDetailsService.addPerson(
-            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
-        )
+        MockPersonDetailsService.addDependants(adult1.identity, child2.identity)
+        MockPersonDetailsService.addDependants(adult2.identity, child2.identity)
 
         // Note: the person to update here is the other adult2. Implementation should
         // detect that her partner already has a fridge family and add the child to that one instead
@@ -164,15 +141,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `guardians are added to child`() {
-        MockPersonDetailsService.addPerson(
-            child1VtjPerson.copy(guardians = listOf(adult1VtjPerson, adult2VtjPerson))
-        )
-        MockPersonDetailsService.addPerson(
-            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson))
-        )
-        MockPersonDetailsService.addPerson(
-            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson))
-        )
+        MockPersonDetailsService.addDependants(adult1.identity, child1.identity)
+        MockPersonDetailsService.addDependants(adult2.identity, child1.identity)
 
         fridgeFamilyService.updateGuardianOrChildFromVtj(
             db,

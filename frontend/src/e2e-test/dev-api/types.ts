@@ -83,15 +83,14 @@ export interface PersonDetail {
   duplicateOf?: string | null
 }
 
-export interface PersonDetailWithDependantsAndGuardians extends PersonDetail {
-  dependants?: PersonDetailWithDependantsAndGuardians[]
-  guardians?: PersonDetailWithDependantsAndGuardians[]
+export interface PersonDetailWithDependants extends PersonDetail {
+  dependants?: string[]
 }
 
 export interface Family {
-  guardian: PersonDetailWithDependantsAndGuardians
-  otherGuardian?: PersonDetailWithDependantsAndGuardians
-  children: PersonDetailWithDependantsAndGuardians[]
+  guardian: PersonDetailWithDependants
+  otherGuardian?: PersonDetailWithDependants
+  children: PersonDetailWithDependants[]
 }
 
 export interface Application {
@@ -119,41 +118,4 @@ export interface PlacementPlan {
   periodEnd: LocalDate
   preschoolDaycarePeriodStart?: LocalDate | null
   preschoolDaycarePeriodEnd?: LocalDate | null
-}
-
-export interface VtjPerson {
-  firstNames: string
-  lastName: string
-  socialSecurityNumber: string
-  address: VtjPersonAddress | null
-  dependants: VtjPerson[]
-  guardians: VtjPerson[]
-  nationalities: VtjNationality[]
-  nativeLanguage: VtjNativeLanguage | null
-  restrictedDetails: VtjRestrictedDetails | null
-  dateOfDeath: LocalDate | null
-  residenceCode: string | null
-}
-
-export interface VtjPersonAddress {
-  streetAddress: string | null
-  postalCode: string | null
-  postOffice: string | null
-  streetAddressSe: string | null
-  postOfficeSe: string | null
-}
-
-export interface VtjNationality {
-  countryName: string
-  countryCode: string
-}
-
-export interface VtjNativeLanguage {
-  languageName: string
-  code: string
-}
-
-export interface VtjRestrictedDetails {
-  enabled: boolean
-  endDate: LocalDate | null
 }

@@ -4,7 +4,7 @@
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -18,7 +18,7 @@ let financePage: FinancePage
 let paymentsPage: PaymentsPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const { data: unit } = await Fixture.daycare()
     .careArea(await Fixture.careArea().save())
     .with({

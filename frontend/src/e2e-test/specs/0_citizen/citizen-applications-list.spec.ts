@@ -4,17 +4,13 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import {
-  execSimpleApplicationActions,
-  insertApplications,
-  insertVtjPersonFixture
-} from '../../dev-api'
+import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -25,7 +21,7 @@ let fixtures: AreaAndPersonFixtures
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 })
 
@@ -74,26 +70,21 @@ describe('Citizen applications list', () => {
   })
 
   test('Guardian sees their children and applications made by the other guardian', async () => {
+    const child = (
+      await Fixture.person().with({ ssn: '010116A9219' }).saveAndUpdateMockVtj()
+    ).data
     const guardian = (
-      await Fixture.person().with({ ssn: '010106A973C' }).save()
+      await Fixture.person()
+        .with({ ssn: '010106A973C' })
+        .withDependants(child)
+        .saveAndUpdateMockVtj()
     ).data
-    const child = (await Fixture.person().with({ ssn: '010116A9219' }).save())
-      .data
     const otherGuardian = (
-      await Fixture.person().with({ ssn: '010106A9388' }).save()
+      await Fixture.person()
+        .with({ ssn: '010106A9388' })
+        .withDependants(child)
+        .saveAndUpdateMockVtj()
     ).data
-    await insertVtjPersonFixture({
-      ...child,
-      guardians: [guardian, otherGuardian]
-    })
-    await insertVtjPersonFixture({
-      ...guardian,
-      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
-    })
-    await insertVtjPersonFixture({
-      ...otherGuardian,
-      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
-    })
 
     const application = applicationFixture(
       child,

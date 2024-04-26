@@ -9,7 +9,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { getApplication, resetDatabase } from '../../generated/api-clients'
+import { getApplication, resetServiceState } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import {
@@ -27,7 +27,7 @@ let fixtures: AreaAndPersonFixtures
 const mockedDate = LocalDate.of(2021, 1, 15)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
   page = await Page.open({

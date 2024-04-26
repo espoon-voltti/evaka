@@ -11,7 +11,7 @@ import {
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
@@ -33,7 +33,7 @@ let page: Page
 const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
   childFixture = fixtures.enduserChildFixtureKaarina

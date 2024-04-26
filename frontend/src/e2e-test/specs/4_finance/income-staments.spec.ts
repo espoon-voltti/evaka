@@ -17,7 +17,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
@@ -34,7 +34,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0, 0)
 const today = now.toLocalDate()
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await initializeAreaAndPersonData()
 
   page = await Page.open({

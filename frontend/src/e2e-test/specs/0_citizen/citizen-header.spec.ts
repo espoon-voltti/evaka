@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -12,7 +12,7 @@ let page: Page
 let header: CitizenHeader
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   await initializeAreaAndPersonData()
 
   page = await Page.open()

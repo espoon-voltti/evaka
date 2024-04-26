@@ -6,7 +6,10 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import {
+  resetServiceState,
+  upsertVtjDataset
+} from '../../generated/api-clients'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -15,7 +18,7 @@ let page: Page
 let personSearchPage: PersonSearchPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open()
@@ -52,7 +55,7 @@ describe('Create person', () => {
     await personSearchPage.findPerson(person.firstName)
     await personSearchPage.assertPersonData(person)
 
-    // data from mock-vtj-data.json
+    // data from addLegacyVtjMocks()
     const personWithSsn = {
       firstName: 'Ville',
       lastName: 'Vilkas',
@@ -62,6 +65,30 @@ describe('Create person', () => {
       postOffice: 'Espoo',
       ssn: '311299-999E'
     }
+    await upsertVtjDataset({
+      body: {
+        persons: [
+          {
+            socialSecurityNumber: personWithSsn.ssn,
+            lastName: personWithSsn.lastName,
+            firstNames: personWithSsn.firstName,
+            address: {
+              streetAddress: personWithSsn.streetAddress,
+              postalCode: personWithSsn.postalCode,
+              postOffice: personWithSsn.postOffice,
+              streetAddressSe: null,
+              postOfficeSe: null
+            },
+            dateOfDeath: null,
+            nationalities: [],
+            nativeLanguage: null,
+            residenceCode: null,
+            restrictedDetails: null
+          }
+        ],
+        guardianDependants: {}
+      }
+    })
     await personSearchPage.addSsn(personWithSsn.ssn)
     await personSearchPage.assertPersonData(personWithSsn)
   })

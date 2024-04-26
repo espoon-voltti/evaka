@@ -6,7 +6,7 @@ import { UUID } from 'lib-common/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { daycareFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
   EmployeeRowEditModal,
@@ -43,7 +43,7 @@ const yrjo = {
 let admin: DevEmployee
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   daycareId = fixtures.daycareFixture.id

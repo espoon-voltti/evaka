@@ -11,7 +11,7 @@ import {
   daycareGroupFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import UnitListPage from '../../pages/mobile/unit-list-page'
 import { pairPersonalMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
@@ -24,7 +24,7 @@ let group: DaycareGroupBuilder
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
 
   unit = await Fixture.daycare()

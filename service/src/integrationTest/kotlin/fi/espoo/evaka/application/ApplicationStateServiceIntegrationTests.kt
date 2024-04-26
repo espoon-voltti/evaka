@@ -66,6 +66,8 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -104,6 +106,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 
     @Test

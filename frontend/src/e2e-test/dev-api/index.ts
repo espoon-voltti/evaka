@@ -29,16 +29,15 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../config'
-import { VoucherValueDecision } from '../generated/api-types'
+import { MockVtjDataset, VoucherValueDecision } from '../generated/api-types'
 
+import { PersonBuilder } from './fixtures'
 import {
   Application,
   Child,
   Daycare,
   PersonDetail,
-  PersonDetailWithDependantsAndGuardians,
-  PlacementPlan,
-  VtjPerson
+  PlacementPlan
 } from './types'
 
 export class DevApiError extends BaseError {
@@ -322,79 +321,21 @@ export async function runPendingAsyncJobs(
   }
 }
 
-const toVtjPerson = (
-  person: PersonDetailWithDependantsAndGuardians
-): VtjPerson => ({
-  firstNames: person.firstName,
-  lastName: person.lastName,
-  socialSecurityNumber: person.ssn || '',
-  address: {
-    streetAddress: person.streetAddress || '',
-    postalCode: person.postalCode || '',
-    postOffice: person.postOffice || '',
-    streetAddressSe: person.streetAddress || '',
-    postOfficeSe: person.postalCode || ''
-  },
-  dependants: person.dependants?.map(toVtjPerson) ?? [],
-  guardians: person.guardians?.map(toVtjPerson) ?? [],
-  dateOfDeath: person.dateOfDeath ?? null,
-  nationalities: [],
-  nativeLanguage: null,
-  residenceCode:
-    person.residenceCode ??
-    `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
-      person.postOffice ?? ''
-    }`.replace(' ', ''),
-  restrictedDetails: {
-    enabled: person.restrictedDetailsEnabled || false,
-    endDate: person.restrictedDetailsEndDate || null
-  }
-})
-
-export async function insertVtjPersonFixture(
-  fixture: PersonDetailWithDependantsAndGuardians
-): Promise<void> {
-  const vtjPerson = toVtjPerson(fixture)
-  try {
-    await devClient.post<VtjPerson>(`/vtj-persons`, vtjPerson)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export function personToVtjPerson(
-  person: PersonDetail,
-  dependants: PersonDetail[],
-  guardians: PersonDetail[]
-): VtjPerson {
+export const vtjDependants = (
+  guardian: PersonDetail | PersonBuilder,
+  ...dependants: (PersonDetail | PersonBuilder)[]
+): MockVtjDataset => {
+  const guardianSsn = 'data' in guardian ? guardian.data.ssn : guardian.ssn
+  if (!guardianSsn) throw new Error('Guardian must have SSN')
   return {
-    address: {
-      streetAddress: person.streetAddress || null,
-      postalCode: person.postalCode || null,
-      postOffice: person.postOffice || null,
-      streetAddressSe: null,
-      postOfficeSe: null
-    },
-    dateOfDeath: null,
-    dependants: dependants.map((dependant) =>
-      personToVtjPerson(dependant, [], [])
-    ),
-    firstNames: person.firstName,
-    guardians: guardians.map((guardian) => personToVtjPerson(guardian, [], [])),
-    lastName: person.lastName,
-    nationalities: [
-      {
-        countryName: 'Suomi',
-        countryCode: 'FIN'
-      }
-    ],
-    nativeLanguage: {
-      languageName: 'suomi',
-      code: 'fi'
-    },
-    residenceCode: null,
-    restrictedDetails: null,
-    socialSecurityNumber: person.ssn || 'e2e-fixture-ssn-missing'
+    persons: [],
+    guardianDependants: {
+      [guardianSsn]: dependants.map((d) => {
+        const ssn = 'data' in d ? d.data.ssn : d.ssn
+        if (!ssn) throw new Error('Dependant must have SSN')
+        return ssn
+      })
+    }
   }
 }
 

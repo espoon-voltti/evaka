@@ -10,7 +10,10 @@ import {
 } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { createDaycareGroups, resetDatabase } from '../../generated/api-clients'
+import {
+  createDaycareGroups,
+  resetServiceState
+} from '../../generated/api-clients'
 import CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
@@ -24,7 +27,7 @@ let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
   const admin = await Fixture.employeeAdmin().save()
@@ -74,7 +77,26 @@ describe('Employee - paper application', () => {
   })
 
   test('Paper application can be created for other non guardian vtj person and child with ssn', async () => {
-    await createApplicationModal.selectVtjPersonAsGuardian('270372-905L') // From service mock-vtj-data.json
+    const ssn = '270372-905L'
+    const child = await Fixture.person()
+      .with({
+        ssn: '010106A981M',
+        firstName: 'Lapsi',
+        lastName: 'Korhonen-Hämäläinen'
+      })
+      .saveAndUpdateMockVtj()
+    await Fixture.person()
+      .with({
+        ssn,
+        firstName: 'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
+        lastName: 'Korhonen-Hämäläinen',
+        streetAddress: 'Kamreerintie 2',
+        postalCode: '00370',
+        postOffice: 'Espoo'
+      })
+      .withDependants(child)
+      .saveAndUpdateMockVtj()
+    await createApplicationModal.selectVtjPersonAsGuardian(ssn)
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(

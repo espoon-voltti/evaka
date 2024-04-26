@@ -11,7 +11,7 @@ import { Fixture, systemInternalUser, uuidv4 } from '../../dev-api/fixtures'
 import { Child, Daycare } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
-  resetDatabase,
+  resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
@@ -36,7 +36,7 @@ const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   daycare = fixtures.daycareFixture

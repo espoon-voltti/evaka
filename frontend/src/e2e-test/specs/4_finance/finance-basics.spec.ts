@@ -8,7 +8,7 @@ import LocalDate from 'lib-common/local-date'
 import config from '../../config'
 import { insertFeeThresholds } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import FinanceBasicsPage from '../../pages/employee/finance-basics'
 import { Page } from '../../utils/page'
@@ -19,7 +19,7 @@ let financeBasicsPage: FinanceBasicsPage
 let nav: EmployeeNav
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 })
 
 describe('Finance basics', () => {

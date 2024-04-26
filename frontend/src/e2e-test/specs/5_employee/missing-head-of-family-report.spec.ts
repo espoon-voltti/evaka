@@ -7,14 +7,14 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetDatabase())
+beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('Missing head of family report', () => {
   test('showIntentionalDuplicates filter works', async () => {

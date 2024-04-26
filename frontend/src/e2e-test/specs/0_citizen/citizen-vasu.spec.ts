@@ -22,7 +22,7 @@ import {
   createVasuDocument,
   insertGuardians,
   publishVasuDocument,
-  resetDatabase,
+  resetServiceState,
   revokeSharingPermission
 } from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
@@ -41,7 +41,7 @@ let header: CitizenHeader
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })

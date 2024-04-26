@@ -20,7 +20,7 @@ import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValues,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, {
@@ -39,7 +39,7 @@ let otherChild: PersonDetail
 let guardian: PersonDetail
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()

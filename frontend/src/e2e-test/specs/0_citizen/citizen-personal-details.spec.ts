@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
   CitizenNotificationSettingsSection,
@@ -29,8 +29,8 @@ const citizenFixture = {
 }
 
 beforeEach(async () => {
-  await resetDatabase()
-  await Fixture.person().with(citizenFixture).save()
+  await resetServiceState()
+  await Fixture.person().with(citizenFixture).saveAndUpdateMockVtj()
   page = await Page.open()
 })
 

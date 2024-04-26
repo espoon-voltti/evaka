@@ -94,7 +94,8 @@ import {
   createVardaServiceNeed,
   insertGuardians,
   postAttendances,
-  upsertStaffOccupancyCoefficient
+  upsertStaffOccupancyCoefficient,
+  upsertVtjDataset
 } from '../generated/api-clients'
 import {
   Caretaker,
@@ -139,7 +140,7 @@ import {
   Child,
   Daycare,
   PersonDetail,
-  PersonDetailWithDependantsAndGuardians,
+  PersonDetailWithDependants,
   PlacementPlan
 } from './types'
 
@@ -150,8 +151,7 @@ import {
   insertIncomeNotification,
   insertPersonFixture,
   insertPlacementPlan,
-  insertReservationFixtures,
-  insertVtjPersonFixture
+  insertReservationFixtures
 } from './index'
 
 export const uuidv4 = (): string =>
@@ -612,9 +612,9 @@ export const enduserChildFixturePorriHatterRestricted: PersonDetail = {
   phone: '',
   language: 'fi',
   dateOfBirth: LocalDate.of(2014, 7, 7),
-  streetAddress: enduserGuardianFixture.streetAddress,
-  postalCode: enduserGuardianFixture.postalCode,
-  postOffice: enduserGuardianFixture.postOffice,
+  streetAddress: '',
+  postalCode: '',
+  postOffice: '',
   nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
@@ -726,16 +726,13 @@ const twoGuardiansChildren = [
 export const familyWithTwoGuardians = {
   guardian: {
     ...twoGuardiansGuardian1,
-    dependants: twoGuardiansChildren
+    dependants: twoGuardiansChildren.map((child) => child.ssn)
   },
   otherGuardian: {
     ...twoGuardiansGuardian2,
-    dependants: twoGuardiansChildren
+    dependants: twoGuardiansChildren.map((child) => child.ssn)
   },
-  children: twoGuardiansChildren.map((child) => ({
-    ...child,
-    guardians: [twoGuardiansGuardian1, twoGuardiansGuardian2]
-  }))
+  children: twoGuardiansChildren
 }
 
 const separatedGuardiansGuardian1 = {
@@ -773,16 +770,13 @@ const separatedGuardiansChildren = [
 export const familyWithSeparatedGuardians = {
   guardian: {
     ...separatedGuardiansGuardian1,
-    dependants: separatedGuardiansChildren
+    dependants: separatedGuardiansChildren.map((child) => child.ssn)
   },
   otherGuardian: {
     ...separatedGuardiansGuardian2,
-    dependants: separatedGuardiansChildren
+    dependants: separatedGuardiansChildren.map((child) => child.ssn)
   },
-  children: separatedGuardiansChildren.map((child) => ({
-    ...child,
-    guardians: [separatedGuardiansGuardian1, separatedGuardiansGuardian2]
-  }))
+  children: separatedGuardiansChildren
 }
 
 const restrictedDetailsGuardian = {
@@ -794,9 +788,9 @@ const restrictedDetailsGuardian = {
   phone: '123456789',
   language: 'fi',
   dateOfBirth: LocalDate.of(1984, 8, 8),
-  streetAddress: 'Kamreerintie 4',
-  postalCode: '02100',
-  postOffice: 'Espoo',
+  streetAddress: '',
+  postalCode: '',
+  postOffice: '',
   nationalities: ['FI'],
   restrictedDetailsEnabled: true,
   restrictedDetailsEndDate: null
@@ -835,16 +829,13 @@ const restrictedDetailsGuardiansChildren = [
 export const familyWithRestrictedDetailsGuardian = {
   guardian: {
     ...restrictedDetailsGuardian,
-    dependants: restrictedDetailsGuardiansChildren
+    dependants: restrictedDetailsGuardiansChildren.map((child) => child.ssn)
   },
   otherGuardian: {
     ...guardian2WithNoRestrictions,
-    dependants: restrictedDetailsGuardiansChildren
+    dependants: restrictedDetailsGuardiansChildren.map((child) => child.ssn)
   },
-  children: restrictedDetailsGuardiansChildren.map((child) => ({
-    ...child,
-    guardians: [restrictedDetailsGuardian, guardian2WithNoRestrictions]
-  }))
+  children: restrictedDetailsGuardiansChildren
 }
 
 const deadGuardian = {
@@ -879,14 +870,9 @@ const deadGuardianChild = {
 export const familyWithDeadGuardian = {
   guardian: {
     ...deadGuardian,
-    dependants: [deadGuardianChild]
+    dependants: [deadGuardianChild.ssn]
   },
-  children: [
-    {
-      ...deadGuardianChild,
-      guardians: [deadGuardian]
-    }
-  ]
+  children: [deadGuardianChild]
 }
 
 export const personFixtureChildZeroYearOld: PersonDetail = {
@@ -2322,7 +2308,17 @@ export class ClubTermBuilder extends FixtureBuilder<ClubTerm> {
   }
 }
 
-export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependantsAndGuardians> {
+export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependants> {
+  withDependants(...dependants: (PersonDetail | PersonBuilder)[]) {
+    return this.with({
+      dependants: dependants.map((d) => {
+        const ssn = 'data' in d ? d.data.ssn : d.ssn
+        if (!ssn) throw new Error('Dependant must have SSN')
+        return ssn
+      })
+    })
+  }
+
   async save() {
     await insertPersonFixture(this.data)
     return this
@@ -2330,7 +2326,42 @@ export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependantsAndG
 
   async saveAndUpdateMockVtj(): Promise<PersonBuilder> {
     await this.save()
-    await insertVtjPersonFixture(this.data)
+    const person = this.data
+    await upsertVtjDataset({
+      body: {
+        persons: [
+          {
+            firstNames: person.firstName,
+            lastName: person.lastName,
+            socialSecurityNumber: person.ssn || '',
+            address: {
+              streetAddress: person.streetAddress || '',
+              postalCode: person.postalCode || '',
+              postOffice: person.postOffice || '',
+              streetAddressSe: person.streetAddress || '',
+              postOfficeSe: person.postalCode || ''
+            },
+            dateOfDeath: person.dateOfDeath ?? null,
+            nationalities: [],
+            nativeLanguage: null,
+            residenceCode:
+              person.residenceCode ??
+              `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
+                person.postOffice ?? ''
+              }`.replace(' ', ''),
+            restrictedDetails: {
+              enabled: person.restrictedDetailsEnabled || false,
+              endDate: person.restrictedDetailsEndDate || null
+            }
+          }
+        ],
+        guardianDependants: person.dependants
+          ? {
+              [person.ssn || '']: person.dependants
+            }
+          : {}
+      }
+    })
     return this
   }
 

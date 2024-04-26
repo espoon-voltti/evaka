@@ -11,7 +11,7 @@ import TimeRange from 'lib-common/time-range'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { careAreaFixture, Fixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage, {
   FormatterReservation,
   TwoPartReservation
@@ -26,7 +26,7 @@ const june7th2023 = LocalDate.of(2023, 6, 7)
 describe.each(e)(
   'Citizen reservations with intermittent shift care (%s)',
   (env) => {
-    beforeEach(async (): Promise<void> => resetDatabase())
+    beforeEach(async (): Promise<void> => resetServiceState())
 
     test('Citizen creates a repeating reservation outside placement unit times', async () => {
       const { child, parent } = await addTestData(june7th2023)

@@ -81,6 +81,7 @@ import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MockVtjDataset } from './api-types'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { PlacementPlan } from './api-types'
 import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
@@ -93,14 +94,12 @@ import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecision } from './api-types'
-import { VtjPerson } from './api-types'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
 import { deserializeJsonDecision } from 'lib-common/generated/api-types/decision'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
 import { deserializeJsonStaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
-import { deserializeJsonVtjPerson } from './api-types'
 import { devClient } from '../dev-api'
 import { uri } from 'lib-common/uri'
 
@@ -1754,26 +1753,6 @@ export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getVtjPerson
-*/
-export async function getVtjPerson(
-  request: {
-    ssn: string
-  }
-): Promise<VtjPerson> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<VtjPerson>>({
-      url: uri`/vtj-persons/${request.ssn}`.toString(),
-      method: 'GET'
-    })
-    return deserializeJsonVtjPerson(json)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.insertChild
 */
 export async function insertChild(
@@ -2133,12 +2112,12 @@ export async function rejectDecisionByCitizen(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.resetDatabase
+* Generated from fi.espoo.evaka.shared.dev.DevApi.resetServiceState
 */
-export async function resetDatabase(): Promise<void> {
+export async function resetServiceState(): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/reset-db`.toString(),
+      url: uri`/reset-service-state`.toString(),
       method: 'POST'
     })
     return json
@@ -2293,18 +2272,18 @@ export async function upsertStaffOccupancyCoefficient(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertVtjPerson
+* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertVtjDataset
 */
-export async function upsertVtjPerson(
+export async function upsertVtjDataset(
   request: {
-    body: VtjPerson
+    body: MockVtjDataset
   }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/vtj-persons`.toString(),
       method: 'POST',
-      data: request.body satisfies JsonCompatible<VtjPerson>
+      data: request.body satisfies JsonCompatible<MockVtjDataset>
     })
     return json
   } catch (e) {

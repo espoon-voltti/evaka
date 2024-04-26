@@ -4,7 +4,8 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { resetDatabase } from '../../generated/api-clients'
+import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
@@ -16,7 +17,9 @@ let header: CitizenHeader
 let incomeStatementsPage: IncomeStatementsPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
+
+  await Fixture.person().with(enduserGuardianFixture).saveAndUpdateMockVtj()
 
   page = await Page.open()
   await enduserLogin(page)

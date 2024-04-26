@@ -12,7 +12,10 @@ import {
 } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { createDaycareGroups, resetDatabase } from '../../generated/api-clients'
+import {
+  createDaycareGroups,
+  resetServiceState
+} from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -24,7 +27,7 @@ let page: Page
 let groupsPage: UnitGroupsPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   childFixture = fixtures.enduserChildFixtureKaarina
 

@@ -6,7 +6,7 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
 import { Daycare } from '../../dev-api/types'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   UnitEditor,
@@ -23,7 +23,7 @@ describe('Employee - unit details', () => {
   let daycare1: Daycare
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
     const fixtures = await initializeAreaAndPersonData()
     daycare1 = fixtures.daycareFixture
     const admin = await Fixture.employeeAdmin().save()
@@ -108,7 +108,7 @@ describe('Employee - unit editor validations and warnings', () => {
   let unitEditorPage: UnitEditor
 
   beforeEach(async () => {
-    await resetDatabase()
+    await resetServiceState()
 
     const fixtures = await initializeAreaAndPersonData()
     const admin = await Fixture.employeeAdmin().save()

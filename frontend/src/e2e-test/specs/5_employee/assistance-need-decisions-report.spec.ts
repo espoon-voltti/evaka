@@ -23,7 +23,7 @@ import {
 import {
   createDaycareGroups,
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
@@ -44,7 +44,7 @@ let childId: UUID
 const mockedTime = LocalDate.of(2021, 8, 16)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   decisionMaker = (await Fixture.employeeAdmin().save()).data
   director = (await Fixture.employeeDirector().save()).data

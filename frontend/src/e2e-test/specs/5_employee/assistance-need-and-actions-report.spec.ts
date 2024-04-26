@@ -17,7 +17,7 @@ import {
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { AssistanceNeedsAndActionsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
@@ -31,7 +31,7 @@ let admin: EmployeeBuilder
 const mockedTime = LocalDate.of(2024, 2, 19)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()

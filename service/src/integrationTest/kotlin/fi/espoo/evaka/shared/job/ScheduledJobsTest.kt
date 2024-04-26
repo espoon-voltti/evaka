@@ -42,6 +42,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -296,6 +297,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a transfer application with a decision does not get canceled`() {
         val preferredStartDate = LocalDate.now()
+        MockPersonDetailsService.addPersons(testAdult_1, testChild_1)
+        MockPersonDetailsService.addDependants(testAdult_1, testChild_1)
         val applicationId =
             createTransferApplication(
                 ApplicationType.PRESCHOOL,

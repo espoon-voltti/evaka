@@ -30,8 +30,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
-import fi.espoo.evaka.vtjclient.dto.PersonAddress
-import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import java.time.LocalDate
@@ -417,35 +415,6 @@ data class PersonDTO(
             city = this.postOffice,
             streetAddressSe = "",
             citySe = "",
-            residenceCode = this.residenceCode
-        )
-
-    fun toVtjPerson(
-        dependants: List<VtjPerson> = emptyList(),
-        guardians: List<VtjPerson> = emptyList()
-    ) =
-        VtjPerson(
-            firstNames = this.firstName,
-            lastName = this.lastName,
-            socialSecurityNumber = this.identity.toString(),
-            address =
-                PersonAddress(
-                    streetAddress = this.streetAddress,
-                    postalCode = this.postalCode,
-                    postOffice = this.postOffice,
-                    streetAddressSe = null,
-                    postOfficeSe = null
-                ),
-            dependants = dependants,
-            guardians = guardians,
-            nationalities = this.nationalities.map { Nationality(it, it) },
-            nativeLanguage = NativeLanguage(code = this.language ?: ""),
-            restrictedDetails =
-                fi.espoo.evaka.vtjclient.dto.RestrictedDetails(
-                    this.restrictedDetailsEnabled,
-                    this.restrictedDetailsEndDate
-                ),
-            dateOfDeath = this.dateOfDeath,
             residenceCode = this.residenceCode
         )
 }

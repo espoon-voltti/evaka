@@ -6,7 +6,7 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -17,7 +17,7 @@ let serviceWorkerPage: Page
 let serviceWorkerPersonSearchPage: PersonSearchPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const admin = await Fixture.employeeAdmin().save()
   const serviceWorker = await Fixture.employeeServiceWorker().save()

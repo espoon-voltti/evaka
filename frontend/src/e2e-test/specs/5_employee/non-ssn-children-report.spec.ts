@@ -7,7 +7,7 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import { Fixture, PersonBuilder } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { NonSsnChildrenReport } from '../../pages/employee/reports'
@@ -21,7 +21,7 @@ let child3: PersonBuilder
 let child4: PersonBuilder
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const area = await Fixture.careArea().save()
   const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
   child = await Fixture.person()

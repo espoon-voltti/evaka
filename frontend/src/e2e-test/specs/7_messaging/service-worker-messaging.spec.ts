@@ -19,7 +19,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createMessageAccounts,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -43,7 +43,7 @@ const mockedTime = HelsinkiDateTime.fromLocal(
 )
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   serviceWorker = (await Fixture.employeeServiceWorker().save()).data
   messagingAndServiceWorker = (

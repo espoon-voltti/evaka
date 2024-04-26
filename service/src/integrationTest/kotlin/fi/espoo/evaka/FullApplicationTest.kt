@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import io.opentracing.Tracer
 import java.io.File
 import java.net.URL
@@ -87,6 +88,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
         if (resetDbBeforeEach) {
             db.transaction { it.resetDatabase() }
         }
+        MockPersonDetailsService.reset()
         MockEmailClient.clear()
     }
 

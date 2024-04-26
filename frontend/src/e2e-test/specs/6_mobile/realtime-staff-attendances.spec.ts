@@ -19,7 +19,7 @@ import {
 import {
   createDefaultServiceNeedOptions,
   getStaffAttendances,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevDaycareGroup } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
@@ -46,7 +46,7 @@ const daycareGroup2Fixture: DevDaycareGroup = {
 }
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
 

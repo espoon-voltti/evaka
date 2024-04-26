@@ -10,7 +10,6 @@ import config from '../../config'
 import {
   execSimpleApplicationActions,
   insertApplications,
-  insertVtjPersonFixture,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -20,7 +19,7 @@ import {
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import {
   getApplicationDecisions,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
@@ -36,7 +35,7 @@ let decisionMaker: DevEmployee
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   decisionMaker = (await Fixture.employeeServiceWorker().save()).data
 })
@@ -204,26 +203,21 @@ describe('Citizen application decisions', () => {
   })
 
   test('Guardian sees decisions related to applications made by the other guardian', async () => {
+    const child = (
+      await Fixture.person().with({ ssn: '010116A9219' }).saveAndUpdateMockVtj()
+    ).data
     const guardian = (
-      await Fixture.person().with({ ssn: '010106A973C' }).save()
+      await Fixture.person()
+        .with({ ssn: '010106A973C' })
+        .withDependants(child)
+        .saveAndUpdateMockVtj()
     ).data
-    const child = (await Fixture.person().with({ ssn: '010116A9219' }).save())
-      .data
     const otherGuardian = (
-      await Fixture.person().with({ ssn: '010106A9388' }).save()
+      await Fixture.person()
+        .with({ ssn: '010106A9388' })
+        .withDependants(child)
+        .saveAndUpdateMockVtj()
     ).data
-    await insertVtjPersonFixture({
-      ...child,
-      guardians: [guardian, otherGuardian]
-    })
-    await insertVtjPersonFixture({
-      ...guardian,
-      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
-    })
-    await insertVtjPersonFixture({
-      ...otherGuardian,
-      dependants: [{ ...child, guardians: [guardian, otherGuardian] }]
-    })
 
     const application = applicationFixture(
       child,

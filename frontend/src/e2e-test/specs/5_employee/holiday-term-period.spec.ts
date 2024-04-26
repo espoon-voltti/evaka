@@ -8,7 +8,7 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { HolidayAndTermPeriodsPage } from '../../pages/employee/holiday-term-periods'
 import { waitUntilEqual } from '../../utils'
@@ -19,7 +19,7 @@ let page: Page
 let holidayAndTermPeriodsPage: HolidayAndTermPeriodsPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const admin = await Fixture.employeeAdmin().save()
   page = await Page.open({
     mockedTime: LocalDate.of(2021, 11, 1).toHelsinkiDateTime(

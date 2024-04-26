@@ -13,7 +13,7 @@ import {
 import { Daycare } from '../../dev-api/types'
 import {
   putDigitransitAutocomplete,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { Feature as DigitransitFeature } from '../../generated/api-types'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
@@ -57,7 +57,7 @@ const privateDaycareWithoutPeriods: Daycare = {
 let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
   await Fixture.daycare().with(clubFixture).careArea(careArea).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()

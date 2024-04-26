@@ -16,7 +16,7 @@ import {
 import {
   createDaycareGroups,
   createDaycarePlacements,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import ChildInformationPage, {
   PedagogicalDocumentsSection
@@ -36,7 +36,7 @@ const testfile2Name = 'test_file.jpg'
 const testfile2Path = `src/e2e-test/assets/${testfile2Name}`
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })

@@ -25,7 +25,7 @@ import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValues,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
@@ -50,7 +50,7 @@ const childZeroYo: PersonDetail = {
 }
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
   await createVoucherValues()

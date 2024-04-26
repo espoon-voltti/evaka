@@ -16,7 +16,7 @@ import {
 import {
   createDefaultServiceNeedOptions,
   postChildDailyNote,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
@@ -29,7 +29,7 @@ let daycareGroup: DaycareGroupBuilder
 let unitPage: UnitPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   const admin = await Fixture.employeeAdmin().save()
 

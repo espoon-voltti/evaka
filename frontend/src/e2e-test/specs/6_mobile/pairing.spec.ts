@@ -10,7 +10,7 @@ import {
 import {
   postPairing,
   postPairingResponse,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
@@ -21,7 +21,7 @@ let pairingFlow: PairingFlow
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
   page = await Page.open({ acceptDownloads: true })

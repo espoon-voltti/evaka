@@ -9,7 +9,7 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -22,7 +22,7 @@ let childInformation: ChildInformationPage
 let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
   const admin = await Fixture.employeeAdmin().save()

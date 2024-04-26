@@ -20,14 +20,14 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetailWithDependantsAndGuardians } from '../../dev-api/types'
+import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   createDaycareGroups,
   createDaycarePlacements,
   createVasuDocument,
   getSentEmails,
   insertGuardians,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -42,14 +42,16 @@ let page: Page
 let admin: DevEmployee
 let unitSupervisor: DevEmployee
 let childInformationPage: ChildInformationPage
-let child: PersonDetailWithDependantsAndGuardians
+let child: PersonDetailWithDependants
+let firstGuardian: PersonDetailWithDependants
+let secondGuardian: PersonDetailWithDependants
 let templateId: UUID
 let daycarePlacementFixture: DevPlacement
 
 const mockedTime = LocalDate.of(2022, 12, 20)
 
 beforeAll(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   admin = (await Fixture.employeeAdmin().save()).data
 
@@ -58,6 +60,8 @@ beforeAll(async () => {
 
   const unitId = fixtures.daycareFixture.id
   child = fixtures.familyWithTwoGuardians.children[0]
+  firstGuardian = fixtures.familyWithTwoGuardians.guardian
+  secondGuardian = fixtures.familyWithTwoGuardians.otherGuardian
 
   unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save()).data
 
@@ -80,7 +84,6 @@ beforeAll(async () => {
 
   templateId = await insertVasuTemplateFixture()
 
-  const [firstGuardian, secondGuardian] = child.guardians ?? []
   await insertGuardians({
     body: [
       {
@@ -208,7 +211,6 @@ describe('Vasu document page', () => {
           daycareGroupFixture.name
         }) ${daycarePlacementFixture.startDate.format()} - ${daycarePlacementFixture.endDate.format()}`
       )
-      const [firstGuardian, secondGuardian] = child.guardians ?? []
       await waitUntilTrue(async () => {
         const guardian1 = await basicInfo.guardian(0)
         const guardian2 = await basicInfo.guardian(1)
@@ -647,8 +649,7 @@ describe('Vasu document page', () => {
       )
       const emails = await getSentEmails()
 
-      // eslint-disable-next-line
-      const guardianEmails = child.guardians!.map((guardian) => guardian.email)
+      const guardianEmails = [firstGuardian.email, secondGuardian.email]
       assert(emails.every((email) => guardianEmails.includes(email.toAddress)))
       assert(
         guardianEmails.every((guardianEmailAddress) =>

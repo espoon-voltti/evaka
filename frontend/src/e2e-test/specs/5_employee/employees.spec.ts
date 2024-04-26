@@ -4,7 +4,7 @@
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeesPage } from '../../pages/employee/employees'
 import { waitUntilEqual } from '../../utils'
@@ -16,7 +16,7 @@ let nav: EmployeeNav
 let employeesPage: EmployeesPage
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   const admin = await Fixture.employeeAdmin().save()
   await Fixture.employeeServiceWorker()
     .with({ firstName: 'Teppo', lastName: 'Testaaja' })

@@ -12,7 +12,7 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
   IncomeSection
@@ -29,7 +29,7 @@ let placementStart: LocalDate
 let placementEnd: LocalDate
 let financeAdminId: UUID
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
   personId = fixtures.enduserGuardianFixture.id

@@ -8,14 +8,14 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import { insertApplications } from '../../dev-api'
 import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetDatabase())
+beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('Manual duplication report', () => {
   test('works', async () => {

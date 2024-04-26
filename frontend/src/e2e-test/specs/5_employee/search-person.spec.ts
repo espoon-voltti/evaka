@@ -14,7 +14,7 @@ import {
 import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
 import {
   createApplicationPlacementPlan,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import PersonSearchPage from '../../pages/employee/person-search'
@@ -26,7 +26,7 @@ let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   admin = (await Fixture.employeeAdmin().save()).data
 })

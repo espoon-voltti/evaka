@@ -26,7 +26,7 @@ import {
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -52,7 +52,7 @@ const voucherValueDecisionValidDuring = new DateRange(
 )
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   headOfFamily = fixtures.enduserGuardianFixture
   partner = fixtures.restrictedPersonFixture

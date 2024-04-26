@@ -16,7 +16,7 @@ import {
   Fixture,
   PersonBuilder
 } from '../../dev-api/fixtures'
-import { resetDatabase } from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -32,7 +32,7 @@ let daycare: DaycareBuilder
 let guardian: PersonBuilder
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
@@ -43,8 +43,11 @@ beforeEach(async () => {
     .save()
   await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
 
-  guardian = await Fixture.person().with(enduserGuardianFixture).save()
-  const child1 = await Fixture.person().with(child).save()
+  const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
+  guardian = await Fixture.person()
+    .with(enduserGuardianFixture)
+    .withDependants(child1)
+    .saveAndUpdateMockVtj()
   await Fixture.child(child1.data.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement()

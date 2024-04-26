@@ -28,7 +28,7 @@ import {
   createDaycarePlacements,
   createDecisions,
   deleteDaycareCostCenter,
-  resetDatabase
+  resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -38,7 +38,7 @@ let fixtures: AreaAndPersonFixtures
 let page: Page
 
 beforeEach(async () => {
-  await resetDatabase()
+  await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
 
