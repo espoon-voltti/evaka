@@ -64,7 +64,7 @@ interface VardaReadClient {
     data class LapsiResponse(
         override val url: URI,
         // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
-        // sometimes doesn't include it.
+        // doesn't always include it.
         val lahdejarjestelma: String?,
         val vakatoimija_oid: String?,
         val oma_organisaatio_oid: String?,
@@ -77,7 +77,9 @@ interface VardaReadClient {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class VarhaiskasvatuspaatosResponse(
         override val url: URI,
-        val lahdejarjestelma: String,
+        // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
+        // doesn't always include it.
+        val lahdejarjestelma: String?,
         val alkamis_pvm: LocalDate,
         val paattymis_pvm: LocalDate?,
         val hakemus_pvm: LocalDate,
@@ -94,7 +96,9 @@ interface VardaReadClient {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class VarhaiskasvatussuhdeResponse(
         override val url: URI,
-        val lahdejarjestelma: String,
+        // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
+        // doesn't always include it.
+        val lahdejarjestelma: String?,
         val varhaiskasvatuspaatos: URI,
         val toimipaikka_oid: String,
         val alkamis_pvm: LocalDate,
@@ -106,7 +110,9 @@ interface VardaReadClient {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class MaksutietoResponse(
         override val url: URI,
-        val lahdejarjestelma: String,
+        // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
+        // doesn't always include it.
+        val lahdejarjestelma: String?,
         val huoltajat: List<Huoltaja>,
         val lapsi: URI,
         val alkamis_pvm: LocalDate,
