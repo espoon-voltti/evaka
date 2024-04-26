@@ -404,7 +404,7 @@ class VardaClient(
     ): Nothing {
         val meta = parseVardaError(request, error)
         logger.error(request, meta.asMap()) {
-            "request failed to ${meta.url}, status ${meta.statusCode}, reason ${meta.errorCode}: ${meta.errorDescription}"
+            "request failed ${meta.method} ${meta.url}, status ${meta.statusCode}, reason ${meta.errorCode}: ${meta.errorDescription}"
         }
         error(message(meta))
     }

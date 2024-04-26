@@ -2055,7 +2055,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val unit = DevDaycare(areaId = area.id)
         val employee = DevEmployee()
 
-        val child = DevPerson(ssn = null, ophPersonOid = null)
+        val child1 = DevPerson(ssn = null, ophPersonOid = null)
+        val child2 = DevPerson(ssn = null, ophPersonOid = "")
         val placementRange = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 6, 30))
         val today = LocalDate.of(2024, 1, 1)
 
@@ -2065,9 +2066,25 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(unit)
             tx.insert(employee)
 
-            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(child1, DevPersonType.CHILD)
             tx.insertTestPlacement(
-                    childId = child.id,
+                    childId = child1.id,
+                    unitId = unit.id,
+                    startDate = placementRange.start,
+                    endDate = placementRange.end
+                )
+                .also { placementId ->
+                    tx.insertTestServiceNeed(
+                        placementId = placementId,
+                        period = placementRange,
+                        optionId = snDaycareFullDay35.id,
+                        confirmedBy = employee.evakaUserId,
+                    )
+                }
+
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insertTestPlacement(
+                    childId = child2.id,
                     unitId = unit.id,
                     startDate = placementRange.start,
                     endDate = placementRange.end
@@ -2091,7 +2108,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val readClient = FailEveryOperation()
         val writeClient = DryRunClient()
-        updater.updateChild(db, readClient, writeClient, today, child.id, true)
+        updater.updateChild(db, readClient, writeClient, today, child1.id, true)
+        updater.updateChild(db, readClient, writeClient, today, child2.id, true)
 
         assertEquals(emptyList(), writeClient.operations)
     }

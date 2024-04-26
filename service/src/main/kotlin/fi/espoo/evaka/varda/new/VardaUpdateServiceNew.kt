@@ -254,7 +254,7 @@ class VardaUpdater(
         serviceNeeds: List<VardaServiceNeed>,
         feeData: List<VardaFeeData>
     ): EvakaHenkiloNode? {
-        if (child.ophPersonOid == null && child.socialSecurityNumber == null) {
+        if (child.ophPersonOid.isNullOrBlank() && child.socialSecurityNumber == null) {
             // Child has no identifiers, so we can't send data to Varda
             return null
         }
@@ -316,7 +316,7 @@ class VardaUpdater(
                                                 listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                                         )
                                     },
-                            maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid] ?: emptyList()
+                            maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid()] ?: emptyList()
                         )
                         .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
                 }
@@ -330,7 +330,7 @@ class VardaUpdater(
     ): VardaHenkiloNode? {
         return client
             .haeHenkilo(
-                if (ophPersonOid != null) {
+                if (!ophPersonOid.isNullOrBlank()) {
                     VardaReadClient.HaeHenkiloRequest(
                         henkilotunnus = null,
                         henkilo_oid = ophPersonOid
