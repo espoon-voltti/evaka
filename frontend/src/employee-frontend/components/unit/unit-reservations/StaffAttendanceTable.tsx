@@ -82,7 +82,7 @@ interface Props {
 }
 
 type DetailsModalTarget =
-  | { type: 'employee'; employeeId: UUID }
+  | { type: 'employee'; employeeId: UUID; hasOccupancyEffect: boolean }
   | { type: 'external'; name: string }
 
 interface DetailsModalConfig {
@@ -173,7 +173,11 @@ export default React.memo(function StaffAttendanceTable({
                   name: row.name,
                   attendances: row.attendances,
                   plannedAttendances: row.plannedAttendances,
-                  target: { type: 'employee', employeeId: row.employeeId }
+                  target: {
+                    type: 'employee',
+                    employeeId: row.employeeId,
+                    hasOccupancyEffect: row.currentOccupancyCoefficient > 0
+                  }
                 })
               }}
             />
@@ -309,6 +313,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
     <StaffAttendanceDetailsModal
       isExternal={false}
       onSave={onSaveStaff}
+      staffOccupancyEffectDefault={target.hasOccupancyEffect}
       validate={staffAttendanceValidator(detailsModalConfig)}
       name={detailsModalConfig.name}
       date={detailsModalConfig.date}
@@ -323,7 +328,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
     <StaffAttendanceDetailsModal
       isExternal={true}
       onSave={onSaveExternal}
-      previousStaffOccupancyEffect={
+      staffOccupancyEffectDefault={
         detailsModalConfig.attendances[0] === undefined ||
         detailsModalConfig.attendances[0].occupancyCoefficient > 0
       }
