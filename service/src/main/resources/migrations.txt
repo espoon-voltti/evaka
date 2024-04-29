@@ -401,3 +401,4 @@ V401__move_part_week_to_service_need.sql
 V402__varda_state.sql
 V403__blocklist_constraint_trigger.sql
 V404__special_diets.sql
+V405__employee_pin_locked_not_null.sql
