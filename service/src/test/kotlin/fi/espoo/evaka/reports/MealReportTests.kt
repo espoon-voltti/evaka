@@ -1,0 +1,792 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+package fi.espoo.evaka.reports
+
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.daycare.DaycareInfo
+import fi.espoo.evaka.daycare.DaycareMealtimes
+import fi.espoo.evaka.daycare.DaycareTimeProps
+import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.reservations.AbsenceTypeResponse
+import fi.espoo.evaka.reservations.ChildData
+import fi.espoo.evaka.reservations.ReservationResponse
+import fi.espoo.evaka.reservations.UnitAttendanceReservations
+import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.TimeInterval
+import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.specialdiet.SpecialDiet
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class MealReportTests {
+
+    @Test
+    fun `mealReportData should return no meals for absent child`() {
+        val testDate = LocalDate.of(2023, 4, 15)
+        val childInfo =
+            listOf(
+                MealReportChildInfo(
+                    placementType = PlacementType.DAYCARE,
+                    firstName = "John",
+                    lastName = "Doe",
+                    reservations = listOf(), // No reservations
+                    absences =
+                        mapOf(
+                            AbsenceCategory.BILLABLE to
+                                AbsenceTypeResponse(AbsenceType.PLANNED_ABSENCE, false)
+                        ),
+                    dietInfo = null,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime = null
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
+                                    snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                )
+            )
+        val preschoolTerms = emptyList<PreschoolTerm>()
+
+        val report =
+            mealReportData(
+                children = childInfo,
+                date = testDate,
+                preschoolTerms = preschoolTerms,
+                reportName = "Test Report"
+            )
+
+        assertTrue(report.meals.isEmpty(), "Expected no meals for absent child")
+    }
+
+    @Test
+    fun `mealReportData should default to breakfast, lunch, and snack when no reservations`() {
+        val testDate = LocalDate.of(2023, 5, 10)
+        val childInfo =
+            listOf(
+                MealReportChildInfo(
+                    placementType = PlacementType.DAYCARE,
+                    firstName = "Jane",
+                    lastName = "Smith",
+                    reservations = emptyList(), // No reservations
+                    absences = null, // No absences
+                    dietInfo = null,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime = null
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                )
+            )
+        val preschoolTerms = emptyList<PreschoolTerm>()
+
+        val report =
+            mealReportData(
+                children = childInfo,
+                date = testDate,
+                preschoolTerms = preschoolTerms,
+                reportName = "Test Report No Reservations"
+            )
+
+        val expectedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH, MealType.SNACK)
+        val actualMeals = report.meals.map { it.mealType }.toSet()
+
+        assertEquals(
+            expectedMeals,
+            actualMeals,
+            "Expected default meals (breakfast, lunch, snack) when there are no reservations"
+        )
+    }
+
+    @Test
+    fun `mealReportData should provide meals during preschool times for preschool type placements`() {
+        val testDate = LocalDate.of(2023, 5, 10)
+        val childInfo =
+            listOf(
+                MealReportChildInfo(
+                    placementType = PlacementType.PRESCHOOL, // Preschool type placement
+                    firstName = "Alice",
+                    lastName = "Johnson",
+                    reservations = listOf(), // No specific reservations
+                    absences = null, // No absences
+                    dietInfo = null,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime =
+                                TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 30))
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
+                                    snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                )
+            )
+        val preschoolTerms =
+            listOf(
+                PreschoolTerm(
+                    finnishPreschool =
+                        FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+                    id = PreschoolTermId(UUID.randomUUID()),
+                    extendedTerm =
+                        FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+                    swedishPreschool =
+                        FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
+                    termBreaks = DateSet.empty(),
+                    applicationPeriod =
+                        FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
+                )
+            )
+
+        val report =
+            mealReportData(
+                children = childInfo,
+                date = testDate,
+                preschoolTerms = preschoolTerms,
+                reportName = "Test Report Preschool"
+            )
+
+        val expectedMealTypes = setOf(MealType.LUNCH_PRESCHOOL, MealType.SNACK)
+        val actualMealTypes = report.meals.map { it.mealType }.toSet()
+
+        assertEquals(
+            expectedMealTypes,
+            actualMealTypes,
+            "Expected lunch + snack meals for preschool type placements"
+        )
+    }
+
+    @Test
+    fun `mealReportData should provide individual rows for meals when child has special diet`() {
+        val testDate = LocalDate.of(2023, 5, 10)
+        val glutenFreeDiet = SpecialDiet(id = 101, name = "Gluten-Free", abbreviation = "G")
+        val lactoseFreeDiet = SpecialDiet(id = 42, name = "Lactose-Free", abbreviation = "L")
+        val childInfo =
+            listOf(
+                MealReportChildInfo( // child with glutenFreeDiet
+                    placementType = PlacementType.DAYCARE,
+                    firstName = "Ella",
+                    lastName = "Brown",
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                                false
+                            ),
+                        ),
+                    absences = null, // No absences
+                    dietInfo = glutenFreeDiet,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime = null
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                ),
+                MealReportChildInfo( // child with glutenFreeDiet
+                    placementType = PlacementType.DAYCARE,
+                    firstName = "Mike",
+                    lastName = "Brown",
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(12, 0), LocalTime.of(13, 0)),
+                                false
+                            ),
+                        ),
+                    absences = null, // No absences
+                    dietInfo = glutenFreeDiet,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime = null
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                ),
+                MealReportChildInfo( // child with lactoseFreeDiet
+                    placementType = PlacementType.DAYCARE,
+                    firstName = "Mikko",
+                    lastName = "Mallikas",
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(12, 0), LocalTime.of(13, 0)),
+                                false
+                            ),
+                        ),
+                    absences = null, // No absences
+                    dietInfo = lactoseFreeDiet,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime = null
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                )
+            )
+        val preschoolTerms = emptyList<PreschoolTerm>()
+
+        val report =
+            mealReportData(
+                children = childInfo,
+                date = testDate,
+                preschoolTerms = preschoolTerms,
+                reportName = "Test Report Special Diet"
+            )
+
+        val expectedRowsForElla =
+            setOf(
+                MealReportRow(
+                    MealType.BREAKFAST,
+                    143,
+                    1,
+                    glutenFreeDiet.id,
+                    glutenFreeDiet.name,
+                    glutenFreeDiet.abbreviation,
+                    "Brown Ella"
+                ),
+                MealReportRow(
+                    MealType.LUNCH,
+                    145,
+                    1,
+                    glutenFreeDiet.id,
+                    glutenFreeDiet.name,
+                    glutenFreeDiet.abbreviation,
+                    "Brown Ella"
+                ),
+                MealReportRow(
+                    MealType.SNACK,
+                    160,
+                    1,
+                    glutenFreeDiet.id,
+                    glutenFreeDiet.name,
+                    glutenFreeDiet.abbreviation,
+                    "Brown Ella"
+                )
+            )
+        val rowsForElla = report.meals.filter { it.additionalInfo.equals("Brown Ella") }.toSet()
+
+        assertEquals(
+            expectedRowsForElla,
+            rowsForElla,
+            "Expected individual meal rows for each meal type with special diet details"
+        )
+
+        val expectedRowsForMike =
+            setOf(
+                MealReportRow(
+                    MealType.LUNCH,
+                    145,
+                    1,
+                    glutenFreeDiet.id,
+                    glutenFreeDiet.name,
+                    glutenFreeDiet.abbreviation,
+                    "Brown Mike"
+                ),
+            )
+        val rowsForMike = report.meals.filter { it.additionalInfo.equals("Brown Mike") }.toSet()
+
+        assertEquals(
+            expectedRowsForMike,
+            rowsForMike,
+            "Expected individual meal rows for each meal type with special diet details"
+        )
+
+        val expectedRowsForMikko =
+            setOf(
+                MealReportRow(
+                    MealType.LUNCH,
+                    145,
+                    1,
+                    lactoseFreeDiet.id,
+                    lactoseFreeDiet.name,
+                    lactoseFreeDiet.abbreviation,
+                    "Mallikas Mikko"
+                ),
+            )
+        val rowsForMikko =
+            report.meals.filter { it.additionalInfo.equals("Mallikas Mikko") }.toSet()
+
+        assertEquals(
+            expectedRowsForMikko,
+            rowsForMikko,
+            "Expected individual meal rows for each meal type with special diet details"
+        )
+    }
+
+    @Test
+    fun `mealReportData should sum meals correctly for multiple children with no special diet`() {
+        val testDate = LocalDate.of(2023, 5, 10)
+        val childInfo =
+            listOf(
+                MealReportChildInfo(
+                    placementType = PlacementType.DAYCARE,
+                    firstName = "Ella",
+                    lastName = "Brown",
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times(
+                                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                                false
+                            ),
+                        ),
+                    absences = null, // No absences
+                    dietInfo = null,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime = null
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                ),
+                MealReportChildInfo(
+                    placementType = PlacementType.DAYCARE,
+                    firstName = "Mike",
+                    lastName = "Johnson",
+                    reservations =
+                        listOf(
+                            ReservationResponse.Times( // Arrives after breakfast
+                                TimeRange(LocalTime.of(10, 0), LocalTime.of(16, 0)),
+                                false
+                            ),
+                        ),
+                    absences = null, // No absences
+                    dietInfo = null,
+                    daycare =
+                        object : DaycareTimeProps {
+                            override val dailyPreschoolTime = null
+                            override val dailyPreparatoryTime = null
+                            override val mealTimes =
+                                DaycareMealtimes(
+                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                                    supper = null,
+                                    eveningSnack = null
+                                )
+                        }
+                )
+            )
+        val preschoolTerms = emptyList<PreschoolTerm>()
+
+        val report =
+            mealReportData(
+                children = childInfo,
+                date = testDate,
+                preschoolTerms = preschoolTerms,
+                reportName = "Test Report No Special Diet"
+            )
+
+        val expectedMealCounts =
+            mapOf(MealType.BREAKFAST to 1, MealType.LUNCH to 2, MealType.SNACK to 2)
+        val actualMealCounts =
+            report.meals
+                .groupBy { it.mealType }
+                .mapValues { entry -> entry.value.sumOf { it.mealCount } }
+
+        assertEquals(
+            expectedMealCounts,
+            actualMealCounts,
+            "Expected summed meal counts for multiple children with no special diet"
+        )
+    }
+
+    @Test
+    fun `getMealReportForUnit should return no meals on weekends for a normal unit`() {
+        val testDate = LocalDate.of(2023, 5, 14) // May 14, 2023, is a Sunday
+
+        val childId1 = ChildId(UUID.randomUUID())
+        val childId2 = ChildId(UUID.randomUUID())
+
+        val childPlacements =
+            mapOf(childId1 to PlacementType.DAYCARE, childId2 to PlacementType.PRESCHOOL)
+
+        val childData =
+            mapOf(
+                childId1 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "John",
+                                lastName = "Doe",
+                                id = childId1,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf<LocalDate, List<ReservationResponse>>(),
+                        absences = mapOf<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>(),
+                        attendances = mapOf<LocalDate, List<TimeInterval>>()
+                    ),
+                childId2 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "Jane",
+                                lastName = "Smith",
+                                id = childId1,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf<LocalDate, List<ReservationResponse>>(),
+                        absences = mapOf<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>(),
+                        attendances = mapOf<LocalDate, List<TimeInterval>>()
+                    )
+            )
+
+        val daycare =
+            object : DaycareInfo {
+                override val name = "Test Daycare"
+                override val operationDays = setOf(1, 2, 3, 4, 5) // Monday to Friday
+                override val mealTimes =
+                    DaycareMealtimes(
+                        breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                        lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
+                        snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
+                        supper = null,
+                        eveningSnack = null
+                    )
+                override val dailyPreschoolTime = null
+                override val dailyPreparatoryTime = null
+            }
+
+        val unitData =
+            DaycareUnitData(
+                daycare = daycare,
+                holidays = emptySet(),
+                childPlacements = childPlacements,
+                childData = childData,
+                specialDiets = emptyMap(),
+                preschoolTerms = emptyList()
+            )
+
+        val report = getMealReportForUnit(unitData, testDate)
+
+        assertTrue(report?.meals.isNullOrEmpty(), "Expected no meals on a Sunday for a normal unit")
+    }
+
+    @Test
+    fun `getMealReportForUnit should provide meals based on reservations for a round-the-clock unit on weekends`() {
+        val testDate = LocalDate.of(2023, 5, 13) // May 13, 2023, is a Saturday
+
+        val childId1 = ChildId(UUID.randomUUID())
+        val childId2 = ChildId(UUID.randomUUID())
+
+        val childPlacements =
+            mapOf(childId1 to PlacementType.DAYCARE, childId2 to PlacementType.DAYCARE)
+
+        val breakfastTime = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20))
+        val lunchTime = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20))
+        val snackTime = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20))
+
+        val childData =
+            mapOf(
+                childId1 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "John",
+                                lastName = "Doe",
+                                id = childId1,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations =
+                            mapOf(
+                                testDate to
+                                    listOf(
+                                        ReservationResponse.Times(
+                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 20)),
+                                            false
+                                        )
+                                    )
+                            ),
+                        absences = emptyMap(),
+                        attendances = emptyMap()
+                    ),
+                childId2 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "Jane",
+                                lastName = "Smith",
+                                id = childId2,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations =
+                            mapOf(
+                                testDate to
+                                    listOf(
+                                        ReservationResponse.Times(
+                                            TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 20)),
+                                            false
+                                        )
+                                    )
+                            ),
+                        absences = emptyMap(),
+                        attendances = emptyMap()
+                    )
+            )
+
+        val daycare =
+            object : DaycareInfo {
+                override val name = "24/7 Daycare"
+                override val operationDays = setOf(1, 2, 3, 4, 5, 6, 7) // Every day
+                override val mealTimes =
+                    DaycareMealtimes(
+                        breakfast = breakfastTime,
+                        lunch = lunchTime,
+                        snack = snackTime,
+                        supper = null,
+                        eveningSnack = null
+                    )
+                override val dailyPreschoolTime = null
+                override val dailyPreparatoryTime = null
+            }
+
+        val unitData =
+            DaycareUnitData(
+                daycare = daycare,
+                holidays = emptySet(),
+                childPlacements = childPlacements,
+                childData = childData,
+                specialDiets = emptyMap(),
+                preschoolTerms = emptyList()
+            )
+
+        val report = getMealReportForUnit(unitData, testDate)
+        assertFalse(
+            report?.meals.isNullOrEmpty(),
+            "Expected meals based on reservations for a round-the-clock unit on weekends"
+        )
+        assertEquals(
+            3,
+            report?.meals?.size,
+            "Expected three meals orders based on the children's reservations"
+        )
+    }
+
+    @Test
+    fun `getMealReportForUnit should return no meals on a holiday for a normal unit`() {
+        val testDate = LocalDate.of(2023, 12, 25) // December 25, 2023, is a holiday
+
+        val childId1 = ChildId(UUID.randomUUID())
+        val childId2 = ChildId(UUID.randomUUID())
+
+        val childPlacements =
+            mapOf(childId1 to PlacementType.DAYCARE, childId2 to PlacementType.DAYCARE)
+
+        val breakfastTime = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20))
+        val lunchTime = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20))
+        val snackTime = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20))
+
+        val childData =
+            mapOf(
+                childId1 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "John",
+                                lastName = "Doe",
+                                id = childId1,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf(),
+                        absences = emptyMap(),
+                        attendances = emptyMap()
+                    ),
+                childId2 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "Jane",
+                                lastName = "Smith",
+                                id = childId2,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf(),
+                        absences = emptyMap(),
+                        attendances = emptyMap()
+                    )
+            )
+
+        val daycare =
+            object : DaycareInfo {
+                override val name = "Regular Daycare"
+                override val operationDays = setOf(1, 2, 3, 4, 5) // Monday to Friday
+                override val mealTimes =
+                    DaycareMealtimes(
+                        breakfast = breakfastTime,
+                        lunch = lunchTime,
+                        snack = snackTime,
+                        supper = null,
+                        eveningSnack = null
+                    )
+                override val dailyPreschoolTime = null
+                override val dailyPreparatoryTime = null
+            }
+
+        val unitData =
+            DaycareUnitData(
+                daycare = daycare,
+                holidays = setOf(testDate),
+                childPlacements = childPlacements,
+                childData = childData,
+                specialDiets = emptyMap(),
+                preschoolTerms = emptyList()
+            )
+
+        val report = getMealReportForUnit(unitData, testDate)
+
+        assertTrue(
+            report?.meals.isNullOrEmpty(),
+            "Expected no meals on a holiday for a normal unit"
+        )
+    }
+
+    @Test
+    fun `getMealReportForUnit should return set of meals on a holiday for a round the clock unit`() {
+        val testDate = LocalDate.of(2023, 12, 25) // December 25, 2023, is a holiday
+
+        val childId1 = ChildId(UUID.randomUUID())
+        val childId2 = ChildId(UUID.randomUUID())
+
+        val childPlacements =
+            mapOf(childId1 to PlacementType.DAYCARE, childId2 to PlacementType.DAYCARE)
+
+        val breakfastTime = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20))
+        val lunchTime = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20))
+        val snackTime = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20))
+
+        val childData =
+            mapOf(
+                childId1 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "John",
+                                lastName = "Doe",
+                                id = childId1,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf(),
+                        absences = emptyMap(),
+                        attendances = emptyMap()
+                    ),
+                childId2 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "Jane",
+                                lastName = "Smith",
+                                id = childId2,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf(),
+                        absences = emptyMap(),
+                        attendances = emptyMap()
+                    )
+            )
+
+        val daycare =
+            object : DaycareInfo {
+                override val name = "Regular Daycare"
+                override val operationDays = setOf(1, 2, 3, 4, 5, 6, 7) // Monday to Sun
+                override val mealTimes =
+                    DaycareMealtimes(
+                        breakfast = breakfastTime,
+                        lunch = lunchTime,
+                        snack = snackTime,
+                        supper = null,
+                        eveningSnack = null
+                    )
+                override val dailyPreschoolTime = null
+                override val dailyPreparatoryTime = null
+            }
+
+        val unitData =
+            DaycareUnitData(
+                daycare = daycare,
+                holidays = setOf(testDate),
+                childPlacements = childPlacements,
+                childData = childData,
+                specialDiets = emptyMap(),
+                preschoolTerms = emptyList()
+            )
+
+        val report = getMealReportForUnit(unitData, testDate)
+
+        assertFalse(
+            report?.meals.isNullOrEmpty(),
+            "Expected no default meals on a holiday for a round-the-clock unit"
+        )
+    }
+}

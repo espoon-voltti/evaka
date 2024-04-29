@@ -32,15 +32,21 @@ data class MailingAddress(
     val postOffice: String? = null
 )
 
+interface DaycareTimeProps {
+    val dailyPreschoolTime: TimeRange?
+    val dailyPreparatoryTime: TimeRange?
+    val mealTimes: DaycareMealtimes
+}
+
 data class Daycare(
     val id: DaycareId,
-    val name: String,
+    override val name: String,
     val openingDate: LocalDate?,
     val closingDate: LocalDate?,
     @Nested("care_area_") val area: DaycareCareArea,
     val type: Set<CareType>,
-    val dailyPreschoolTime: TimeRange?,
-    val dailyPreparatoryTime: TimeRange?,
+    override val dailyPreschoolTime: TimeRange?,
+    override val dailyPreparatoryTime: TimeRange?,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
     val clubApplyPeriod: DateRange?,
@@ -66,18 +72,32 @@ data class Daycare(
     @Nested("decision_") val decisionCustomization: DaycareDecisionCustomization,
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
-    val operationDays: Set<Int>,
+    override val operationDays: Set<Int>,
     val operationTimes: List<TimeRange?>,
     val roundTheClock: Boolean,
     val enabledPilotFeatures: List<PilotFeature>,
     val businessId: String,
     val iban: String,
     val providerId: String,
-    val mealtimeBreakfast: TimeRange?,
-    val mealtimeLunch: TimeRange?,
-    val mealtimeSnack: TimeRange?,
-    val mealtimeSupper: TimeRange?,
-    val mealtimeEveningSnack: TimeRange?
+    @Nested("mealtime_") override val mealTimes: DaycareMealtimes
+) : DaycareInfo
+
+interface DaycareInfo : DaycareTimeProps, HasName, HasOperationDays
+
+interface HasName {
+    val name: String
+}
+
+interface HasOperationDays {
+    val operationDays: Set<Int>
+}
+
+data class DaycareMealtimes(
+    val breakfast: TimeRange?,
+    val lunch: TimeRange?,
+    val snack: TimeRange?,
+    val supper: TimeRange?,
+    val eveningSnack: TimeRange?
 )
 
 data class FinanceDecisionHandler(

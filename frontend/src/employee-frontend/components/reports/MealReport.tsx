@@ -100,7 +100,7 @@ const MealReportData = ({
         <ReportDownload
           data={tableData}
           headers={headers}
-          filename={`${i18n.reports.meals.title} ${report.unitName} ${report.date.formatIso()}.csv`}
+          filename={`${i18n.reports.meals.title} ${report.reportName} ${report.date.formatIso()}.csv`}
         />
         <TableScrollable>
           <Thead>

@@ -67,11 +67,7 @@ data class DaycareFields(
     val businessId: String,
     val iban: String,
     val providerId: String,
-    val mealtimeBreakfast: TimeRange?,
-    val mealtimeLunch: TimeRange?,
-    val mealtimeSnack: TimeRange?,
-    val mealtimeSupper: TimeRange?,
-    val mealtimeEveningSnack: TimeRange?
+    val mealtimes: DaycareMealtimes
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -298,11 +294,11 @@ SET
   iban = :iban,
   provider_id = :providerId,
   operation_times = :operationTimes,
-  mealtime_breakfast = :mealtimeBreakfast,
-  mealtime_lunch = :mealtimeLunch,
-  mealtime_snack = :mealtimeSnack,
-  mealtime_supper = :mealtimeSupper,
-  mealtime_evening_snack = :mealtimeEveningSnack
+  mealtime_breakfast = :mealtimes.breakfast,
+  mealtime_lunch = :mealtimes.lunch,
+  mealtime_snack = :mealtimes.snack,
+  mealtime_supper = :mealtimes.supper,
+  mealtime_evening_snack = :mealtimes.eveningSnack
 WHERE id = :id
 """
         )

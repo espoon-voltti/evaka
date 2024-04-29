@@ -450,7 +450,7 @@ export type ManualDuplicationReportViewMode =
 export interface MealReportData {
   date: LocalDate
   meals: MealReportRow[]
-  unitName: string
+  reportName: string
 }
 
 /**

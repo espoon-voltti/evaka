@@ -5,21 +5,19 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.PlacementType.*
-import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.reservations.getChildData
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.*
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.specialdiet.SpecialDiet
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,202 +25,22 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-val preschoolPlacementTypes =
-    listOf(
-        PRESCHOOL_DAYCARE,
-        PRESCHOOL_CLUB,
-        PRESCHOOL_DAYCARE_ONLY,
-        PREPARATORY_DAYCARE,
-        PREPARATORY_DAYCARE_ONLY
-    )
-
-enum class MealType {
-    BREAKFAST,
-    LUNCH,
-    LUNCH_PRESCHOOL,
-    SNACK,
-    SUPPER,
-    EVENING_SNACK
-}
-
-fun mealtypeToMealIdTranslator(mealType: MealType, specialDiet: Boolean): Int =
-    if (specialDiet) {
-        when (mealType) {
-            MealType.BREAKFAST -> 143
-            MealType.LUNCH -> 145
-            MealType.LUNCH_PRESCHOOL -> 24
-            MealType.SNACK -> 160
-            MealType.SUPPER -> 28
-            MealType.EVENING_SNACK -> 31
-        }
-    } else
-        when (mealType) {
-            MealType.BREAKFAST -> 162
-            MealType.LUNCH -> 175
-            MealType.LUNCH_PRESCHOOL -> 22
-            MealType.SNACK -> 152
-            MealType.SUPPER -> 27
-            MealType.EVENING_SNACK -> 30
-        }
-
-data class MealReportRow(
-    val mealType: MealType,
-    val mealId: Int,
-    val mealCount: Int,
-    val dietId: Int? = null,
-    val dietName: String? = null,
-    val dietAbbreviation: String? = null,
-    val additionalInfo: String? = null
-)
-
-data class MealReportData(
-    val date: LocalDate,
-    val unitName: String,
-    val meals: List<MealReportRow>
-)
-
-data class MealInfo(
-    val mealType: MealType,
-    val dietId: Int? = null,
-    val dietName: String? = null,
-    val dietAbbreviation: String? = null,
-    val additionalInfo: String? = null
-)
-
-private fun childMeals(
-    fixedScheduleRange: TimeRange?,
-    reservations: List<ReservationResponse>,
-    absent: Boolean,
-    daycare: Daycare,
-    usePreschoolMealTypes: Boolean
-): Sequence<MealInfo> {
-    // if absent -> no meals
-    if (absent) {
-        return emptySequence<MealInfo>()
-    }
-    // list of time ranges when child will be present according to fixed schedule or reservation
-    // times
-    val presentTimeRanges =
-        if (fixedScheduleRange != null) listOf(fixedScheduleRange)
-        else reservations.filterIsInstance<ReservationResponse.Times>().map { it.range }
-    // if we don't have data about when child will be present, default to breakfast + lunch + snack
-    if (presentTimeRanges.isEmpty()) {
-        return sequenceOf(
-            MealInfo(MealType.BREAKFAST),
-            MealInfo(MealType.LUNCH),
-            MealInfo(MealType.SNACK)
-        )
-    }
-    // otherwise check unit meal times against the present time ranges
-    val meals = mutableListOf<MealInfo>()
-
-    fun addMealIfPresent(mealTime: TimeRange?, mealType: MealType) {
-        if (mealTime != null && presentTimeRanges.any { it.overlaps(mealTime) }) {
-            meals.add(MealInfo(mealType))
-        }
-    }
-
-    addMealIfPresent(daycare.mealtimeBreakfast, MealType.BREAKFAST)
-    addMealIfPresent(
-        daycare.mealtimeLunch,
-        if (usePreschoolMealTypes) MealType.LUNCH_PRESCHOOL else MealType.LUNCH
-    )
-    addMealIfPresent(daycare.mealtimeSnack, MealType.SNACK)
-    addMealIfPresent(daycare.mealtimeSupper, MealType.SUPPER)
-    addMealIfPresent(daycare.mealtimeEveningSnack, MealType.EVENING_SNACK)
-
-    return meals.asSequence()
-}
-
-private fun getMealReport(tx: Database.Read, date: LocalDate, unitId: DaycareId): MealReportData? {
-    val daycare = tx.getDaycare(unitId) ?: return null
-
-    if (!daycare.operationDays.contains(date.dayOfWeek.value))
-        return MealReportData(date, daycare.name, emptyList())
-
-    val isRoundTheClockUnit = daycare.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
-    if (!isRoundTheClockUnit) {
-        val holidays = tx.getHolidays(FiniteDateRange(date, date))
-        if (holidays.contains(date)) {
-            return MealReportData(date, daycare.name, emptyList())
-        }
-    }
-
+fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId): DaycareUnitData {
+    val daycare = tx.getDaycare(unitId)
+    val holidays = tx.getHolidays(FiniteDateRange(date, date))
+    val childPlacements = tx.childPlacementsForDay(unitId, date)
+    val childIds = childPlacements.keys
+    val childData = tx.getChildData(unitId, childIds, date.toFiniteDateRange())
+    val specialDiets = tx.specialDietsForChildren(childIds)
     val preschoolTerms = tx.getPreschoolTerms()
 
-    val childrenToPlacementTypeMap = tx.childPlacementsForDay(unitId, date)
-    val childrenReservationsAndAttendances =
-        tx.getChildData(unitId, childrenToPlacementTypeMap.keys, date.toFiniteDateRange())
-
-    val dietInfos =
-        tx.createQuery {
-                sql(
-                    """
-SELECT child.id as child_id, special_diet.*
-FROM child LEFT JOIN special_diet ON child.diet_id = special_diet.id
-WHERE child.id = ANY (${bind(childrenToPlacementTypeMap.keys)})
-"""
-                )
-            }
-            .toMap { column<ChildId>("child_id") to row<SpecialDiet?>() }
-
-    val mealInfoMap =
-        childrenToPlacementTypeMap
-            .asSequence()
-            .flatMap { (childId, placementType) ->
-                val childReservationsAndAttendances = childrenReservationsAndAttendances[childId]!!
-                val fixedScheduleRange =
-                    placementType.fixedScheduleOnlyRange(
-                        date,
-                        daycare.dailyPreschoolTime,
-                        daycare.dailyPreparatoryTime,
-                        preschoolTerms
-                    )
-                val absent =
-                    childReservationsAndAttendances.absences[date]?.size ==
-                        placementType.absenceCategories().size
-                val usePreschoolMealTypes = preschoolPlacementTypes.contains(placementType)
-
-                val dietInfo = dietInfos[childId]
-
-                childMeals(
-                        fixedScheduleRange,
-                        childReservationsAndAttendances.reservations[date] ?: emptyList(),
-                        absent,
-                        daycare,
-                        usePreschoolMealTypes,
-                    )
-                    .map {
-                        it.copy(
-                            additionalInfo =
-                                if (dietInfo != null) {
-                                    childReservationsAndAttendances.child.lastName +
-                                        " " +
-                                        childReservationsAndAttendances.child.firstName
-                                } else null,
-                            dietId = dietInfo?.id,
-                            dietName = dietInfo?.name,
-                            dietAbbreviation = dietInfo?.abbreviation
-                        )
-                    }
-            }
-            .groupBy { it }
-            .mapValues { it.value.size }
-
-    return MealReportData(
-        date,
-        daycare.name,
-        mealInfoMap.map {
-            MealReportRow(
-                it.key.mealType,
-                mealtypeToMealIdTranslator(it.key.mealType, it.key.dietId != null),
-                it.value,
-                it.key.dietId,
-                it.key.dietName,
-                it.key.dietAbbreviation,
-                it.key.additionalInfo
-            )
-        }
+    return DaycareUnitData(
+        daycare,
+        holidays,
+        childPlacements,
+        childData,
+        specialDiets,
+        preschoolTerms
     )
 }
 
@@ -247,7 +65,7 @@ class MealReportController(private val accessControl: AccessControl) {
                         unitId
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    getMealReport(it, date, unitId)
+                    getMealReportForUnit(unitDataFromDatabase(it, date, unitId), date)
                         ?: throw BadRequest("Daycare not found for $unitId")
                 }
                 .also {
@@ -255,7 +73,7 @@ class MealReportController(private val accessControl: AccessControl) {
                         meta =
                             mapOf(
                                 "unitId" to unitId,
-                                "unitName" to it.unitName,
+                                "unitName" to it.reportName,
                                 "date" to date,
                                 "count" to it.meals.size
                             )
@@ -264,18 +82,3 @@ class MealReportController(private val accessControl: AccessControl) {
         }
     }
 }
-
-fun Database.Read.childPlacementsForDay(
-    daycareId: DaycareId,
-    date: LocalDate
-): Map<ChildId, PlacementType> =
-    createQuery {
-            sql(
-                """
-SELECT child_id, placement_type 
-FROM realized_placement_one(${bind(date)}) 
-WHERE unit_id = ${bind(daycareId)}
-                    """
-            )
-        }
-        .toMap { columnPair("child_id", "placement_type") }

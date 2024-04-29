@@ -661,11 +661,13 @@ function validateForm(
         businessId,
         iban,
         providerId,
-        mealtimeBreakfast,
-        mealtimeEveningSnack,
-        mealtimeLunch,
-        mealtimeSnack,
-        mealtimeSupper
+        mealtimes: {
+          breakfast: mealtimeBreakfast,
+          lunch: mealtimeLunch,
+          snack: mealtimeSnack,
+          supper: mealtimeSupper,
+          eveningSnack: mealtimeEveningSnack
+        }
       },
       {
         formErrors: errors,
@@ -774,11 +776,11 @@ function toFormData(unit: Daycare | undefined): FormData {
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
     providerId: unit?.providerId ?? '',
-    mealtimeBreakfast: formatTimeRange(unit?.mealtimeBreakfast),
-    mealtimeLunch: formatTimeRange(unit?.mealtimeLunch),
-    mealtimeSnack: formatTimeRange(unit?.mealtimeSnack),
-    mealtimeSupper: formatTimeRange(unit?.mealtimeSupper),
-    mealtimeEveningSnack: formatTimeRange(unit?.mealtimeEveningSnack)
+    mealtimeBreakfast: formatTimeRange(unit?.mealTimes.breakfast),
+    mealtimeLunch: formatTimeRange(unit?.mealTimes.lunch),
+    mealtimeSnack: formatTimeRange(unit?.mealTimes.snack),
+    mealtimeSupper: formatTimeRange(unit?.mealTimes.supper),
+    mealtimeEveningSnack: formatTimeRange(unit?.mealTimes.eveningSnack)
   }
 }
 
