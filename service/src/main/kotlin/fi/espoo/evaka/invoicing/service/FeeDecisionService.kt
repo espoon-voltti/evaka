@@ -294,7 +294,6 @@ class FeeDecisionService(
                 documentDisplayName = feeDecisionDisplayName,
                 documentBucket = bucket,
                 documentKey = decision.documentKey,
-                language = lang.langCode,
                 firstName = recipient.firstName,
                 lastName = recipient.lastName,
                 streetAddress = sendAddress.street,

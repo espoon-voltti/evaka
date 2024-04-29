@@ -197,7 +197,6 @@ class AssistanceNeedPreschoolDecisionService(
                                         suomiFiDocumentFileName(decision.form.language),
                                     documentKey = documentKey,
                                     documentBucket = bucket,
-                                    language = lang.langCode,
                                     firstName = guardian.firstName,
                                     lastName = guardian.lastName,
                                     streetAddress = sendAddress.street,

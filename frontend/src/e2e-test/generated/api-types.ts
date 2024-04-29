@@ -985,7 +985,6 @@ export interface SfiMessage {
   emailContent: string | null
   emailHeader: string | null
   firstName: string
-  language: string
   lastName: string
   messageContent: string
   messageHeader: string

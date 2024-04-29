@@ -4,10 +4,13 @@
 
 package fi.espoo.evaka.sficlient
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
 interface SfiMessagesClient {
     fun send(msg: SfiMessage)
 }
 
+@JsonIgnoreProperties(value = ["language"]) // ignore legacy properties
 data class SfiMessage(
     val messageId: String,
     val documentId: String, // This is sent to suomi.fi as reference id (UUID)
@@ -17,7 +20,6 @@ data class SfiMessage(
     val ssn: String,
     val firstName: String,
     val lastName: String,
-    val language: String = "fi",
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,

@@ -69,7 +69,6 @@ class SoapStackIntegrationTest {
             ssn = "ssn",
             firstName = "first",
             lastName = "last",
-            language = "fi",
             streetAddress = "street",
             postalCode = "01234",
             postOffice = "Espoo",

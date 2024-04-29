@@ -117,7 +117,6 @@ class VoucherValueDecisionService(
                         documentDisplayName = documentDisplayName,
                         documentBucket = bucket,
                         documentKey = decision.documentKey,
-                        language = lang.langCode,
                         firstName = decision.headOfFamily.firstName,
                         lastName = decision.headOfFamily.lastName,
                         streetAddress = sendAddress.street,

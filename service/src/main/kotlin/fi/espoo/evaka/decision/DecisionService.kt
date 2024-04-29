@@ -266,7 +266,6 @@ class DecisionService(
                 postalCode = sendAddress.postalCode,
                 postOffice = sendAddress.postOffice,
                 ssn = guardian.identity.ssn,
-                language = lang.langCode,
                 messageHeader = messageProvider.getDecisionHeader(lang.messageLang),
                 messageContent = messageProvider.getDecisionContent(lang.messageLang)
             )
