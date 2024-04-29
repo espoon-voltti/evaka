@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareFullDayPartWeek25
@@ -43,6 +44,7 @@ import fi.espoo.evaka.snDefaultTemporaryPartDayDaycare
 import fi.espoo.evaka.snPreschoolDaycarePartDay35to45
 import java.net.URI
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -2058,7 +2060,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val child1 = DevPerson(ssn = null, ophPersonOid = null)
         val child2 = DevPerson(ssn = null, ophPersonOid = "")
         val placementRange = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 6, 30))
-        val today = LocalDate.of(2024, 1, 1)
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0))
 
         db.transaction { tx ->
             tx.insertServiceNeedOption(snDaycareFullDay35)
@@ -2108,8 +2110,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val readClient = FailEveryOperation()
         val writeClient = DryRunClient()
-        updater.updateChild(db, readClient, writeClient, today, child1.id, true)
-        updater.updateChild(db, readClient, writeClient, today, child2.id, true)
+        updater.updateChild(db, readClient, writeClient, now, child1.id, true)
+        updater.updateChild(db, readClient, writeClient, now, child2.id, true)
 
         assertEquals(emptyList(), writeClient.operations)
     }
@@ -2138,7 +2140,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             dbc = db,
             readClient = TestReadClient(),
             writeClient = DryRunClient(),
-            today = LocalDate.of(2021, 1, 1),
+            now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0)),
             childId = child.id,
             saveState = true
         )
@@ -2190,13 +2192,60 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             dbc = db,
             readClient = TestReadClient(),
             writeClient = DryRunClient(),
-            today = LocalDate.of(2021, 1, 1),
+            now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0)),
             childId = child.id,
             saveState = true
         )
 
         val updatedChild = db.read { it.getPersonById(child.id)!! }
         assertEquals("henkilo_oid", updatedChild.ophPersonOid)
+    }
+
+    @Test
+    fun `error is saved`() {
+        val child = DevPerson(ssn = "030320A904N", ophPersonOid = null)
+        val now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0))
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.execute {
+                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, null)")
+            }
+        }
+
+        val updater =
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
+
+        class TestReadClient : FailEveryOperation() {
+            override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest) =
+                error("this is an error message")
+        }
+
+        updater.updateChild(
+            dbc = db,
+            readClient = TestReadClient(),
+            writeClient = DryRunClient(),
+            now = now,
+            childId = child.id,
+            saveState = true
+        )
+
+        val (lastSuccessAt, erroredAt, error) =
+            db.read { tx ->
+                tx.createQuery { sql("SELECT last_success_at, errored_at, error FROM varda_state") }
+                    .map {
+                        Triple<HelsinkiDateTime?, HelsinkiDateTime?, String?>(
+                            column("last_success_at"),
+                            column("errored_at"),
+                            column("error")
+                        )
+                    }
+                    .exactlyOne()
+            }
+
+        assertEquals(null, lastSuccessAt)
+        assertEquals(now, erroredAt)
+        assertEquals("this is an error message", error)
     }
 
     @Test

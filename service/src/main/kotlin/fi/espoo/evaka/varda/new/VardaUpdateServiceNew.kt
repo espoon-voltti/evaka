@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import fi.espoo.voltti.logging.loggers.info
 import java.net.URI
@@ -151,7 +152,7 @@ class VardaUpdateServiceNew(
             dbc,
             readClient = vardaClient,
             writeClient = if (job.dryRun) dryRunClient else vardaClient,
-            today = clock.today(),
+            now = clock.now(),
             childId = job.childId,
             saveState = !job.dryRun
         )
@@ -180,37 +181,49 @@ class VardaUpdater(
         dbc: Database.Connection,
         readClient: VardaReadClient,
         writeClient: VardaWriteClient,
-        today: LocalDate,
+        now: HelsinkiDateTime,
         childId: ChildId,
         saveState: Boolean
     ) {
         logger.info { "Starting Varda update for child $childId" }
 
-        val evakaState = dbc.read { tx -> getEvakaState(tx, today, childId) }
-        if (evakaState == null) {
-            logger.info { "Cannot compute Varda state for $childId" }
-            return
-        }
-
-        val vardaState =
-            getVardaState(
-                readClient,
-                evakaState.henkilo.henkilotunnus,
-                evakaState.henkilo.henkilo_oid
-            )
-
-        logger.info(mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())) {
-            "Varda state for $childId (see the meta.varda and meta.evaka fields)"
-        }
-
-        val henkiloOidInVarda = diffAndUpdate(writeClient, vardaState, evakaState)
-
-        dbc.transaction { tx ->
-            if (henkiloOidInVarda != null && evakaState.henkilo.henkilo_oid != henkiloOidInVarda) {
-                tx.updateOphPersonOid(childId, henkiloOidInVarda)
+        try {
+            val evakaState = dbc.read { tx -> getEvakaState(tx, now.toLocalDate(), childId) }
+            if (evakaState == null) {
+                logger.info { "Cannot compute Varda state for $childId" }
+                return
             }
+
+            val vardaState =
+                getVardaState(
+                    readClient,
+                    evakaState.henkilo.henkilotunnus,
+                    evakaState.henkilo.henkilo_oid
+                )
+
+            logger.info(
+                mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())
+            ) {
+                "Varda state for $childId (see the meta.varda and meta.evaka fields)"
+            }
+
+            val henkiloOidInVarda = diffAndUpdate(writeClient, vardaState, evakaState)
+
+            dbc.transaction { tx ->
+                if (
+                    henkiloOidInVarda != null && evakaState.henkilo.henkilo_oid != henkiloOidInVarda
+                ) {
+                    tx.updateOphPersonOid(childId, henkiloOidInVarda)
+                }
+                if (saveState) {
+                    tx.setVardaUpdateSuccess(childId, now, evakaState)
+                }
+            }
+            logger.info { "Varda update succeeded for child $childId" }
+        } catch (e: Exception) {
+            logger.error(e) { "Varda update failed for child $childId" }
             if (saveState) {
-                tx.setVardaUpdateState(childId, evakaState)
+                dbc.transaction { tx -> tx.setVardaUpdateError(childId, now, e.localizedMessage) }
             }
         }
     }
