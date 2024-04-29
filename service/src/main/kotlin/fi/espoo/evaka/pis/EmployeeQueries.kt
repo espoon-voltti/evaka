@@ -6,6 +6,8 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pairing.MobileDevice
+import fi.espoo.evaka.pairing.deleteDevice
+import fi.espoo.evaka.pairing.listPersonalDevices
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -509,6 +511,7 @@ fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
     updateEmployeeGlobalRoles(id = id, globalRoles = emptyList())
     deleteEmployeeDaycareRoles(id = id, daycareId = null)
     removePinCode(userId = id)
+    listPersonalDevices(id).forEach { deleteDevice(it.id) }
 }
 
 fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> {

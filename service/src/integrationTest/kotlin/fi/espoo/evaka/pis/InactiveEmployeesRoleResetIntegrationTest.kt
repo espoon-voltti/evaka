@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.pairing.listPersonalDevices
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonalMobileDevice
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -182,6 +184,52 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
         val pin = db.read { it.getPinCode(userId = employeeId) }
         assertNull(pin)
+    }
+
+    @Test
+    fun `personal mobile pairing is removed when last_login is over 45 days ago`() {
+        val employeeId =
+            db.transaction {
+                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(46)))
+                val areaId = it.insert(DevCareArea())
+                val unitId = it.insert(DevDaycare(areaId = areaId))
+                it.insertDaycareAclRow(
+                    daycareId = unitId,
+                    employeeId = employeeId,
+                    role = UserRole.STAFF
+                )
+                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(46))
+                it.insert(DevPersonalMobileDevice(employeeId = employeeId))
+                employeeId
+            }
+        assertEquals(1, db.read { it.listPersonalDevices(employeeId).size })
+
+        db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
+
+        assertEquals(0, db.read { it.listPersonalDevices(employeeId).size })
+    }
+
+    @Test
+    fun `personal mobile pairing is not removed when last_login is less than 45 days ago`() {
+        val employeeId =
+            db.transaction {
+                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(44)))
+                val areaId = it.insert(DevCareArea())
+                val unitId = it.insert(DevDaycare(areaId = areaId))
+                it.insertDaycareAclRow(
+                    daycareId = unitId,
+                    employeeId = employeeId,
+                    role = UserRole.STAFF
+                )
+                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(44))
+                it.insert(DevPersonalMobileDevice(employeeId = employeeId))
+                employeeId
+            }
+        assertEquals(1, db.read { it.listPersonalDevices(employeeId).size })
+
+        db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
+
+        assertEquals(1, db.read { it.listPersonalDevices(employeeId).size })
     }
 
     private fun Database.Transaction.setDaycareAclUpdated(
