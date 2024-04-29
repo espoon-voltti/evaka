@@ -52,6 +52,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.voltti.logging.loggers.info
 import java.time.LocalDate
@@ -211,14 +212,14 @@ class FeeDecisionService(
             .toSet()
     }
 
-    private fun getDecisionLanguage(decision: FeeDecisionDetailed): DocumentLang {
+    private fun getDecisionLanguage(decision: FeeDecisionDetailed): OfficialLanguage {
         val defaultLanguage =
-            if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
+            if (decision.headOfFamily.language == "sv") OfficialLanguage.SV else OfficialLanguage.FI
 
         val youngestChildUnitLanguage =
             decision.children.maxByOrNull { it.child.dateOfBirth }?.placementUnit?.language
 
-        return if (youngestChildUnitLanguage == "sv") DocumentLang.SV else defaultLanguage
+        return if (youngestChildUnitLanguage == "sv") OfficialLanguage.SV else defaultLanguage
     }
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
@@ -248,7 +249,7 @@ class FeeDecisionService(
                 .upload(
                     bucket,
                     Document(
-                        "feedecision_${decision.id}_${lang.langCode}.pdf",
+                        "feedecision_${decision.id}_${lang.isoLanguage.alpha2}.pdf",
                         pdfByteArray,
                         "application/pdf"
                     )
@@ -281,10 +282,10 @@ class FeeDecisionService(
         // instead
         val sendAddress =
             DecisionSendAddress.fromPerson(recipient)
-                ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
+                ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
 
         val feeDecisionDisplayName =
-            if (lang == DocumentLang.SV) "Beslut_om_avgift_för_småbarnspedagogik.pdf"
+            if (lang == OfficialLanguage.SV) "Beslut_om_avgift_för_småbarnspedagogik.pdf"
             else "Varhaiskasvatuksen_maksupäätös.pdf"
 
         val message =
@@ -300,8 +301,8 @@ class FeeDecisionService(
                 postalCode = sendAddress.postalCode,
                 postOffice = sendAddress.postOffice,
                 ssn = recipient.ssn!!,
-                messageHeader = messageProvider.getFeeDecisionHeader(lang.messageLang),
-                messageContent = messageProvider.getFeeDecisionContent(lang.messageLang)
+                messageHeader = messageProvider.getFeeDecisionHeader(lang),
+                messageContent = messageProvider.getFeeDecisionContent(lang)
             )
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")

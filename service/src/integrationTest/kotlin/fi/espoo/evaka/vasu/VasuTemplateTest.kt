@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -22,7 +23,7 @@ class VasuTemplateTest {
             name = "foo",
             valid = FiniteDateRange(today.minusDays(5), today.plusDays(5)),
             type = CurriculumType.DAYCARE,
-            language = VasuLanguage.FI,
+            language = OfficialLanguage.FI,
             documentCount = 5
         )
     }

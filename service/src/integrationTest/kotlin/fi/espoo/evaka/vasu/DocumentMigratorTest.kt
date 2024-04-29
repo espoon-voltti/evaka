@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_CLOSED
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_READY
 import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_REVIEWED
@@ -41,7 +42,7 @@ class DocumentMigratorTest : PureJdbiTest(resetDbBeforeEach = true) {
                     name = "vasu",
                     valid = FiniteDateRange(mockToday.minusMonths(13), mockToday.minusMonths(1)),
                     type = CurriculumType.DAYCARE,
-                    language = VasuLanguage.FI,
+                    language = OfficialLanguage.FI,
                     content =
                         VasuContent(
                             hasDynamicFirstSection = true,

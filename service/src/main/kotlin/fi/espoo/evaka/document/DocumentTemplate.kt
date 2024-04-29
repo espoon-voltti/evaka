@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.format.DateTimeFormatter
 import org.jdbi.v3.json.Json
 
@@ -23,10 +24,10 @@ private val translationsFi = Translations(yes = "Kyllä", no = "Ei")
 
 private val translationsSv = Translations(yes = "Ja", no = "Nej")
 
-private fun getTranslations(language: DocumentLanguage) =
+private fun getTranslations(language: OfficialLanguage) =
     when (language) {
-        DocumentLanguage.FI -> translationsFi
-        DocumentLanguage.SV -> translationsSv
+        OfficialLanguage.FI -> translationsFi
+        OfficialLanguage.SV -> translationsSv
     }
 
 @ConstList("questionTypes")
@@ -50,7 +51,7 @@ sealed class Question(val type: QuestionType) {
 
     abstract fun generateHtml(
         answeredQuestion: AnsweredQuestion<*>?,
-        language: DocumentLanguage
+        language: OfficialLanguage
     ): HtmlElement
 
     fun htmlClassName() = "question question-${type.name.lowercase().replace('_', '-')}"
@@ -64,7 +65,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.TEXT) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: DocumentLanguage
+            language: OfficialLanguage
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -99,7 +100,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.CHECKBOX) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: DocumentLanguage
+            language: OfficialLanguage
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -131,7 +132,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.CHECKBOX_GROUP) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: DocumentLanguage
+            language: OfficialLanguage
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -174,7 +175,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.RADIO_BUTTON_GROUP) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: DocumentLanguage
+            language: OfficialLanguage
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -210,7 +211,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.STATIC_TEXT_DISPLAY) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: DocumentLanguage
+            language: OfficialLanguage
         ): HtmlElement {
             return HtmlBuilder.div(className = htmlClassName()) {
                 listOfNotNull(
@@ -226,7 +227,7 @@ sealed class Question(val type: QuestionType) {
         Question(QuestionType.DATE) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: DocumentLanguage
+            language: OfficialLanguage
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -262,7 +263,7 @@ sealed class Question(val type: QuestionType) {
     ) : Question(QuestionType.GROUPED_TEXT_FIELDS) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: DocumentLanguage
+            language: OfficialLanguage
         ): HtmlElement {
             val headerRow = HtmlBuilder.tr { fieldLabels.map { th(it) } }
             val emptyRow = HtmlBuilder.tr { fieldLabels.map { td("-") } }
@@ -336,18 +337,18 @@ enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
     override val sqlType: String = "document_template_type"
 }
 
-enum class DocumentLanguage : DatabaseEnum {
-    FI,
-    SV;
-
-    override val sqlType: String = "document_language"
-}
+@Deprecated(
+    message = "use OfficialLanguage instead",
+    replaceWith =
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+)
+typealias DocumentLanguage = OfficialLanguage
 
 data class DocumentTemplate(
     val id: DocumentTemplateId,
     val name: String,
     val type: DocumentType,
-    val language: DocumentLanguage,
+    val language: OfficialLanguage,
     val confidential: Boolean,
     val legalBasis: String,
     val validity: DateRange,
@@ -358,7 +359,7 @@ data class DocumentTemplate(
 data class ExportedDocumentTemplate(
     val name: String,
     val type: DocumentType,
-    val language: DocumentLanguage,
+    val language: OfficialLanguage,
     val confidential: Boolean,
     val legalBasis: String,
     val validity: DateRange,
@@ -368,7 +369,7 @@ data class ExportedDocumentTemplate(
 data class DocumentTemplateBasicsRequest(
     val name: String,
     val type: DocumentType,
-    val language: DocumentLanguage,
+    val language: OfficialLanguage,
     val confidential: Boolean,
     val legalBasis: String,
     val validity: DateRange
@@ -378,7 +379,7 @@ data class DocumentTemplateSummary(
     val id: DocumentTemplateId,
     val name: String,
     val type: DocumentType,
-    val language: DocumentLanguage,
+    val language: OfficialLanguage,
     val validity: DateRange,
     val published: Boolean
 )

@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
@@ -72,7 +73,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         AssistanceNeedDecisionForm(
             validityPeriod = DateRange(LocalDate.of(2022, 1, 1), null),
             status = AssistanceNeedDecisionStatus.DRAFT,
-            language = AssistanceNeedDecisionLanguage.FI,
+            language = OfficialLanguage.FI,
             decisionMade = LocalDate.of(2021, 12, 31),
             sentForDecision = null,
             selectedUnit = UnitIdInfo(id = testDaycare.id),
@@ -661,7 +662,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecision(
                     validityPeriod = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2023, 1, 1)),
                     status = AssistanceNeedDecisionStatus.ACCEPTED,
-                    language = AssistanceNeedDecisionLanguage.FI,
+                    language = OfficialLanguage.FI,
                     decisionMade = LocalDate.of(2021, 12, 31),
                     sentForDecision = null,
                     selectedUnit =

@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -79,7 +80,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     private val testForm =
         AssistanceNeedPreschoolDecisionForm(
-            language = AssistanceNeedDecisionLanguage.FI,
+            language = OfficialLanguage.FI,
             type = AssistanceNeedPreschoolDecisionType.NEW,
             validFrom = LocalDate.of(2022, 1, 1),
             validTo = null,

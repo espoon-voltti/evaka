@@ -13,7 +13,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getUnitManager
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
@@ -36,9 +35,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
-import java.util.Locale
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -106,7 +105,7 @@ class DecisionService(
         decision: Decision,
         application: ApplicationDetails,
         child: PersonDTO,
-        decisionLanguage: DocumentLang,
+        decisionLanguage: OfficialLanguage,
         unitManager: DaycareManager
     ): DocumentLocation {
         val decisionBytes =
@@ -140,15 +139,15 @@ class DecisionService(
     private fun determineDecisionLanguage(
         decision: Decision,
         tx: Database.Transaction
-    ): DocumentLang {
+    ): OfficialLanguage {
         return if (decision.type == DecisionType.CLUB) {
-            DocumentLang.FI
+            OfficialLanguage.FI
         } else {
             tx.getDecisionLanguage(decision.id)
         }
     }
 
-    private fun constructObjectKey(decision: Decision, lang: DocumentLang): String {
+    private fun constructObjectKey(decision: Decision, lang: OfficialLanguage): String {
         return when (decision.type) {
             DecisionType.CLUB -> "clubdecision"
             DecisionType.DAYCARE,
@@ -266,8 +265,8 @@ class DecisionService(
                 postalCode = sendAddress.postalCode,
                 postOffice = sendAddress.postOffice,
                 ssn = guardian.identity.ssn,
-                messageHeader = messageProvider.getDecisionHeader(lang.messageLang),
-                messageContent = messageProvider.getDecisionContent(lang.messageLang)
+                messageHeader = messageProvider.getDecisionHeader(lang),
+                messageContent = messageProvider.getDecisionContent(lang)
             )
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
@@ -286,7 +285,7 @@ class DecisionService(
         return documentClient.responseAttachment(decisionBucket, documentKey, fileName)
     }
 
-    private fun calculateDecisionFileName(decision: Decision, lang: DocumentLang): String {
+    private fun calculateDecisionFileName(decision: Decision, lang: OfficialLanguage): String {
         val decisionUniqueId = decision.decisionNumber
         val prefix = templateProvider.getLocalizedFilename(decision.type, lang)
         return "${prefix}_$decisionUniqueId.pdf".replace(" ", "_")
@@ -301,7 +300,7 @@ fun createDecisionPdf(
     child: PersonDTO,
     isTransferApplication: Boolean,
     serviceNeed: ServiceNeed?,
-    lang: DocumentLang,
+    lang: OfficialLanguage,
     unitManager: DaycareManager
 ): ByteArray {
     val template = createTemplate(templateProvider, decision, isTransferApplication)
@@ -324,7 +323,7 @@ fun createDecisionPdf(
 
 private fun generateDecisionPages(
     template: String,
-    lang: DocumentLang,
+    lang: OfficialLanguage,
     settings: Map<SettingType, String>,
     decision: Decision,
     child: PersonDTO,
@@ -335,7 +334,7 @@ private fun generateDecisionPages(
     return Page(
         Template(template),
         Context().apply {
-            locale = Locale.Builder().setLanguage(lang.langCode).build()
+            locale = lang.isoLanguage.toLocale()
             setVariable("decision", decision)
             setVariable("child", child)
             setVariable("manager", manager)

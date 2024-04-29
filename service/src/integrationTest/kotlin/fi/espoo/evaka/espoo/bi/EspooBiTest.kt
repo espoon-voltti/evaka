@@ -13,7 +13,6 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.Child
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
@@ -84,8 +83,8 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.vasu.CurriculumType
-import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultVasuContent
 import fi.espoo.evaka.vasu.getVasuTemplate
 import fi.espoo.evaka.vasu.insertVasuDocument
@@ -339,7 +338,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = child,
                         validityPeriod = DateRange.ofMonth(2019, Month.JANUARY),
                         status = AssistanceNeedDecisionStatus.ACCEPTED,
-                        language = AssistanceNeedDecisionLanguage.FI,
+                        language = OfficialLanguage.FI,
                         decisionMade = null,
                         sentForDecision = null,
                         selectedUnit = null,
@@ -380,7 +379,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = child,
                         form =
                             AssistanceNeedPreschoolDecisionForm(
-                                language = AssistanceNeedDecisionLanguage.FI,
+                                language = OfficialLanguage.FI,
                                 type = AssistanceNeedPreschoolDecisionType.NEW,
                                 validFrom = LocalDate.of(2019, 1, 1),
                                 validTo = null,
@@ -625,7 +624,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
             "Template",
             valid = FiniteDateRange.ofMonth(2022, Month.JANUARY),
             type = CurriculumType.DAYCARE,
-            language = VasuLanguage.FI,
-            content = getDefaultVasuContent(VasuLanguage.FI)
+            language = OfficialLanguage.FI,
+            content = getDefaultVasuContent(OfficialLanguage.FI)
         )
 }

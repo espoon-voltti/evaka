@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -24,7 +25,7 @@ data class AssistanceNeedDecision(
     @Nested("child") val child: AssistanceNeedDecisionChild?,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-    val language: AssistanceNeedDecisionLanguage,
+    val language: OfficialLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
     @Nested("selected_unit") val selectedUnit: UnitInfo?,
@@ -82,7 +83,7 @@ data class AssistanceNeedDecisionForm(
     val decisionNumber: Long? = null,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-    val language: AssistanceNeedDecisionLanguage,
+    val language: OfficialLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
     @Nested("selected_unit") val selectedUnit: UnitIdInfo?,
@@ -128,10 +129,12 @@ enum class AssistanceNeedDecisionStatus : DatabaseEnum {
     fun isDecided() = this in listOf(ACCEPTED, REJECTED, ANNULLED)
 }
 
-enum class AssistanceNeedDecisionLanguage {
-    FI,
-    SV
-}
+@Deprecated(
+    message = "use OfficialLanguage instead",
+    replaceWith =
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+)
+typealias AssistanceNeedDecisionLanguage = OfficialLanguage
 
 data class AssistanceNeedDecisionEmployee(
     @PropagateNull val employeeId: EmployeeId?,

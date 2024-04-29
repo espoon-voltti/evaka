@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.security
 
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
@@ -22,6 +21,7 @@ import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,7 +50,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         childId = childId,
                         validityPeriod = DateRange(LocalDate.of(2020, 1, 1), null),
                         status = AssistanceNeedDecisionStatus.DRAFT,
-                        language = AssistanceNeedDecisionLanguage.FI,
+                        language = OfficialLanguage.FI,
                         decisionMade = LocalDate.of(2019, 9, 1),
                         sentForDecision = LocalDate.of(2019, 6, 1),
                         selectedUnit = null,
@@ -106,7 +106,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         validityPeriod =
                             DateRange(clock.today().minusMonths(1), clock.today().minusDays(1)),
                         status = AssistanceNeedDecisionStatus.DRAFT,
-                        language = AssistanceNeedDecisionLanguage.FI,
+                        language = OfficialLanguage.FI,
                         decisionMade = clock.today().minusMonths(1),
                         sentForDecision = clock.today().minusMonths(1),
                         selectedUnit = null,

@@ -12,7 +12,6 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecision
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployeeForm
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionForm
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionMakerForm
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionRequest
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
@@ -25,6 +24,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -48,7 +48,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         AssistanceNeedDecisionForm(
             validityPeriod = DateRange(LocalDate.of(2022, 1, 1), null),
             status = AssistanceNeedDecisionStatus.DRAFT,
-            language = AssistanceNeedDecisionLanguage.FI,
+            language = OfficialLanguage.FI,
             decisionMade = LocalDate.of(2021, 12, 31),
             sentForDecision = null,
             selectedUnit = UnitIdInfo(id = testDaycare.id),

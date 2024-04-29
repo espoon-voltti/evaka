@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.time.LocalDate
 import java.util.UUID
@@ -38,7 +39,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 name = "vasu",
                 valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
                 type = CurriculumType.DAYCARE,
-                language = VasuLanguage.FI
+                language = OfficialLanguage.FI
             )
         )
 
@@ -48,11 +49,12 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             assertEquals("vasu", name)
             assertEquals(FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)), valid)
             assertEquals(CurriculumType.DAYCARE, type)
-            assertEquals(VasuLanguage.FI, language)
+            assertEquals(OfficialLanguage.FI, language)
             assertEquals(0, documentCount)
         }
 
-        val defaultQuestions = getDefaultTemplateContent(CurriculumType.DAYCARE, VasuLanguage.FI)
+        val defaultQuestions =
+            getDefaultTemplateContent(CurriculumType.DAYCARE, OfficialLanguage.FI)
 
         val templateId = summaries.first().id
         val template = getVasuTemplate(templateId)
@@ -70,7 +72,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 name = "vasu",
                 valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
                 type = CurriculumType.DAYCARE,
-                language = VasuLanguage.FI
+                language = OfficialLanguage.FI
             )
         )
 

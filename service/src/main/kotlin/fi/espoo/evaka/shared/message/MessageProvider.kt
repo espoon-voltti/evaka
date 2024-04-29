@@ -5,39 +5,42 @@
 package fi.espoo.evaka.shared.message
 
 import fi.espoo.evaka.decision.DecisionSendAddress
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 interface IMessageProvider {
-    fun getDecisionHeader(lang: MessageLanguage): String
+    fun getDecisionHeader(lang: OfficialLanguage): String
 
-    fun getDecisionContent(lang: MessageLanguage): String
+    fun getDecisionContent(lang: OfficialLanguage): String
 
-    fun getFeeDecisionHeader(lang: MessageLanguage): String
+    fun getFeeDecisionHeader(lang: OfficialLanguage): String
 
-    fun getFeeDecisionContent(lang: MessageLanguage): String
+    fun getFeeDecisionContent(lang: OfficialLanguage): String
 
-    fun getVoucherValueDecisionHeader(lang: MessageLanguage): String
+    fun getVoucherValueDecisionHeader(lang: OfficialLanguage): String
 
-    fun getVoucherValueDecisionContent(lang: MessageLanguage): String
+    fun getVoucherValueDecisionContent(lang: OfficialLanguage): String
 
-    fun getAssistanceNeedDecisionHeader(lang: MessageLanguage): String
+    fun getAssistanceNeedDecisionHeader(lang: OfficialLanguage): String
 
-    fun getAssistanceNeedDecisionContent(lang: MessageLanguage): String
+    fun getAssistanceNeedDecisionContent(lang: OfficialLanguage): String
 
-    fun getAssistanceNeedPreschoolDecisionHeader(lang: MessageLanguage): String
+    fun getAssistanceNeedPreschoolDecisionHeader(lang: OfficialLanguage): String
 
-    fun getAssistanceNeedPreschoolDecisionContent(lang: MessageLanguage): String
+    fun getAssistanceNeedPreschoolDecisionContent(lang: OfficialLanguage): String
 
     /**
      * Returns address used for decisions when person has restricted details enabled or missing
      * address.
      */
-    fun getDefaultDecisionAddress(lang: MessageLanguage): DecisionSendAddress
+    fun getDefaultDecisionAddress(lang: OfficialLanguage): DecisionSendAddress
 
     /** Returns address used for fee decisions when person is missing address. */
-    fun getDefaultFinancialDecisionAddress(lang: MessageLanguage): DecisionSendAddress
+    fun getDefaultFinancialDecisionAddress(lang: OfficialLanguage): DecisionSendAddress
 }
 
-enum class MessageLanguage {
-    FI,
-    SV
-}
+@Deprecated(
+    message = "use OfficialLanguage instead",
+    replaceWith =
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+)
+typealias MessageLanguage = OfficialLanguage

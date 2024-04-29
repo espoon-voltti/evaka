@@ -14,11 +14,14 @@ import { object, oneOf, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import {
-  DocumentLanguage,
   DocumentType,
   documentTypes,
   ExportedDocumentTemplate
 } from 'lib-common/generated/api-types/document'
+import {
+  OfficialLanguage,
+  officialLanguages
+} from 'lib-common/generated/api-types/shared'
 import { JsonOf } from 'lib-common/json'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -40,7 +43,7 @@ import {
 export const documentTemplateForm = object({
   name: validated(string(), nonBlank),
   type: required(oneOf<DocumentType>()),
-  language: required(oneOf<DocumentLanguage>()),
+  language: required(oneOf<OfficialLanguage>()),
   confidential: boolean(),
   legalBasis: string(),
   validity: required(openEndedLocalDateRange())
@@ -85,7 +88,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
 
   const languageOptions = useMemo(
     () =>
-      ['FI' as const, 'SV' as const].map((option) => ({
+      officialLanguages.map((option) => ({
         domValue: option,
         value: option,
         label: i18n.documentTemplates.languages[option]

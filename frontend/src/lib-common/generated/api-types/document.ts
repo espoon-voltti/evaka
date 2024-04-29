@@ -9,6 +9,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { JsonOf } from '../../json'
+import { OfficialLanguage } from './shared'
 import { UUID } from '../../types'
 
 
@@ -193,13 +194,6 @@ export interface DocumentContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentLanguage
-*/
-export type DocumentLanguage =
-  | 'FI'
-  | 'SV'
-
-/**
 * Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.DocumentLockResponse
 */
 export interface DocumentLockResponse {
@@ -222,7 +216,7 @@ export interface DocumentTemplate {
   confidential: boolean
   content: DocumentTemplateContent
   id: UUID
-  language: DocumentLanguage
+  language: OfficialLanguage
   legalBasis: string
   name: string
   published: boolean
@@ -235,7 +229,7 @@ export interface DocumentTemplate {
 */
 export interface DocumentTemplateBasicsRequest {
   confidential: boolean
-  language: DocumentLanguage
+  language: OfficialLanguage
   legalBasis: string
   name: string
   type: DocumentType
@@ -254,7 +248,7 @@ export interface DocumentTemplateContent {
 */
 export interface DocumentTemplateSummary {
   id: UUID
-  language: DocumentLanguage
+  language: OfficialLanguage
   name: string
   published: boolean
   type: DocumentType
@@ -291,7 +285,7 @@ export interface DocumentWriteLock {
 export interface ExportedDocumentTemplate {
   confidential: boolean
   content: DocumentTemplateContent
-  language: DocumentLanguage
+  language: OfficialLanguage
   legalBasis: string
   name: string
   type: DocumentType

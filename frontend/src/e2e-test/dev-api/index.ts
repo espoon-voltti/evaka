@@ -20,10 +20,8 @@ import {
   Invoice
 } from 'lib-common/generated/api-types/invoicing'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import {
-  CurriculumType,
-  VasuLanguage
-} from 'lib-common/generated/api-types/vasu'
+import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
+import { CurriculumType } from 'lib-common/generated/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -367,7 +365,7 @@ export async function insertVasuTemplateFixture(
     name: string
     valid: FiniteDateRange
     type: CurriculumType
-    language: VasuLanguage
+    language: OfficialLanguage
   }> = {}
 ): Promise<UUID> {
   try {

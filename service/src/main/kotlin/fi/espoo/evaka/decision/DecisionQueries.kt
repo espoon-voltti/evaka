@@ -5,7 +5,6 @@
 package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.application.DecisionSummary
-import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
@@ -17,6 +16,7 @@ import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
@@ -303,21 +303,18 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
         .exactlyOne<Boolean>()
 }
 
-fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            // language=SQL
-            """
+fun Database.Read.getDecisionLanguage(decisionId: DecisionId): OfficialLanguage =
+    createQuery {
+            sql(
+                """
             SELECT daycare.language
             FROM decision
                 INNER JOIN daycare ON unit_id = daycare.id
-            WHERE decision.id = :id
+            WHERE decision.id = ${bind(decisionId)}
         """
-                .trimIndent()
-        )
-        .bind("id", decisionId)
-        .exactlyOne<DocumentLang>()
-}
+            )
+        }
+        .exactlyOne<OfficialLanguage>()
 
 fun Database.Transaction.markDecisionAccepted(
     user: AuthenticatedUser,

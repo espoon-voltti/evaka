@@ -13,7 +13,6 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
-import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
@@ -28,7 +27,6 @@ import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.document.childdocument.generateChildDocumentHtml
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.ApplicationId
@@ -41,6 +39,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -160,26 +159,26 @@ class PdfGeneratorTest {
 
     @Test
     fun createFinnishPDFs() {
-        createPDF(daycareTransferDecision, true, DocumentLang.FI)
-        createPDF(daycareDecision, false, DocumentLang.FI)
-        createPDF(daycareDecisionPartTime, false, DocumentLang.FI)
-        createPDF(preschoolDaycareDecision, false, DocumentLang.FI)
-        createPDF(preschoolDecision, false, DocumentLang.FI)
-        createPDF(preparatoryDecision, false, DocumentLang.FI)
-        createPDF(voucherDecision, false, DocumentLang.FI)
-        createPDF(clubDecision, false, DocumentLang.FI)
+        createPDF(daycareTransferDecision, true, OfficialLanguage.FI)
+        createPDF(daycareDecision, false, OfficialLanguage.FI)
+        createPDF(daycareDecisionPartTime, false, OfficialLanguage.FI)
+        createPDF(preschoolDaycareDecision, false, OfficialLanguage.FI)
+        createPDF(preschoolDecision, false, OfficialLanguage.FI)
+        createPDF(preparatoryDecision, false, OfficialLanguage.FI)
+        createPDF(voucherDecision, false, OfficialLanguage.FI)
+        createPDF(clubDecision, false, OfficialLanguage.FI)
     }
 
     @Test
     fun createSwedishPDFs() {
-        createPDF(daycareTransferDecision, true, DocumentLang.SV)
-        createPDF(daycareDecision, false, DocumentLang.SV)
-        createPDF(daycareDecisionPartTime, false, DocumentLang.SV)
-        createPDF(preschoolDaycareDecision, false, DocumentLang.SV)
-        createPDF(preschoolDecision, false, DocumentLang.SV)
-        createPDF(preparatoryDecision, false, DocumentLang.SV)
-        createPDF(voucherDecision, false, DocumentLang.SV)
-        createPDF(clubDecision, false, DocumentLang.SV)
+        createPDF(daycareTransferDecision, true, OfficialLanguage.SV)
+        createPDF(daycareDecision, false, OfficialLanguage.SV)
+        createPDF(daycareDecisionPartTime, false, OfficialLanguage.SV)
+        createPDF(preschoolDaycareDecision, false, OfficialLanguage.SV)
+        createPDF(preschoolDecision, false, OfficialLanguage.SV)
+        createPDF(preparatoryDecision, false, OfficialLanguage.SV)
+        createPDF(voucherDecision, false, OfficialLanguage.SV)
+        createPDF(clubDecision, false, OfficialLanguage.SV)
     }
 
     @Test
@@ -258,7 +257,7 @@ class PdfGeneratorTest {
                         id = DocumentTemplateId(UUID.randomUUID()),
                         type = DocumentType.HOJKS,
                         name = "Varhaiskasvatussuunnitelma 2023-2024",
-                        language = DocumentLanguage.FI,
+                        language = OfficialLanguage.FI,
                         confidential = true,
                         legalBasis =
                             "§3.2b varhaiskasvatuslaki, varhaiskasvatuslautakunnan päätös ja määräys 11.3.2017",
@@ -403,7 +402,7 @@ class PdfGeneratorTest {
     private fun createPDF(
         decision: Decision,
         isTransferApplication: Boolean,
-        lang: DocumentLang,
+        lang: OfficialLanguage,
         serviceNeed: ServiceNeed? = null
     ) {
         val decisionPdfByteArray =

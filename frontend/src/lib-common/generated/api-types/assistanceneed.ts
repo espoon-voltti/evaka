@@ -10,6 +10,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { JsonOf } from '../../json'
+import { OfficialLanguage } from './shared'
 import { UUID } from '../../types'
 
 /**
@@ -51,7 +52,7 @@ export interface AssistanceNeedDecision {
   guardiansHeardOn: LocalDate | null
   hasDocument: boolean
   id: UUID
-  language: AssistanceNeedDecisionLanguage
+  language: OfficialLanguage
   motivationForDecision: string | null
   otherRepresentativeDetails: string | null
   otherRepresentativeHeard: boolean
@@ -145,7 +146,7 @@ export interface AssistanceNeedDecisionForm {
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
-  language: AssistanceNeedDecisionLanguage
+  language: OfficialLanguage
   motivationForDecision: string | null
   otherRepresentativeDetails: string | null
   otherRepresentativeHeard: boolean
@@ -173,13 +174,6 @@ export interface AssistanceNeedDecisionGuardian {
   name: string
   personId: UUID | null
 }
-
-/**
-* Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
-*/
-export type AssistanceNeedDecisionLanguage =
-  | 'FI'
-  | 'SV'
 
 /**
 * Generated from fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionMaker
@@ -324,7 +318,7 @@ export interface AssistanceNeedPreschoolDecisionForm {
   grantedServicesBasis: string
   guardianInfo: AssistanceNeedPreschoolDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
-  language: AssistanceNeedDecisionLanguage
+  language: OfficialLanguage
   otherRepresentativeDetails: string
   otherRepresentativeHeard: boolean
   preparer1EmployeeId: UUID | null

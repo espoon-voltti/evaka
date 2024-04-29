@@ -7,12 +7,14 @@ import React, { useContext, useState } from 'react'
 import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  OfficialLanguage,
+  officialLanguages
+} from 'lib-common/generated/api-types/shared'
+import {
   CreateTemplateRequest,
-  curriculumLanguages,
   CurriculumTemplateError,
   CurriculumType,
   curriculumTypes,
-  VasuLanguage,
   VasuTemplateSummary
 } from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
@@ -55,7 +57,7 @@ export default React.memo(function CreateOrEditTemplateModal({
   const [type, setType] = useState<CurriculumType>(
     templateToEdit?.type ?? 'DAYCARE'
   )
-  const [language, setLanguage] = useState<VasuLanguage>(
+  const [language, setLanguage] = useState<OfficialLanguage>(
     templateToEdit?.language ?? 'FI'
   )
   const [submitting, setSubmitting] = useState(false)
@@ -144,7 +146,7 @@ export default React.memo(function CreateOrEditTemplateModal({
           <Label>{t.language}</Label>
           {isEditableTypeAndLang ? (
             <Select
-              items={curriculumLanguages}
+              items={officialLanguages}
               selectedItem={language}
               onChange={(value) => {
                 if (value) setLanguage(value)

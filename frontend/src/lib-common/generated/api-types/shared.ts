@@ -90,6 +90,16 @@ export interface HelsinkiDateTimeRange {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.domain.OfficialLanguage
+*/
+export const officialLanguages = [
+  'FI',
+  'SV'
+] as const
+
+export type OfficialLanguage = typeof officialLanguages[number]
+
+/**
 * Generated from fi.espoo.evaka.shared.security.PilotFeature
 */
 export const pilotFeatures = [

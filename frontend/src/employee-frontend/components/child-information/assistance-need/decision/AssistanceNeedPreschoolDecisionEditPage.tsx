@@ -27,13 +27,13 @@ import {
   useFormFields
 } from 'lib-common/form/hooks'
 import {
-  AssistanceNeedDecisionLanguage,
   AssistanceNeedPreschoolDecision,
   AssistanceNeedPreschoolDecisionForm,
   AssistanceNeedPreschoolDecisionType
 } from 'lib-common/generated/api-types/assistanceneed'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -99,7 +99,7 @@ const guardianForm = object({
 
 const form = mapped(
   object({
-    language: required(oneOf<AssistanceNeedDecisionLanguage>()),
+    language: required(oneOf<OfficialLanguage>()),
 
     type: oneOf<AssistanceNeedPreschoolDecisionType>(),
     validFrom: nullBlank(localDate()),
@@ -258,7 +258,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
   }, [decision, navigate])
 
   const getTypeOptions = useCallback(
-    (lang: AssistanceNeedDecisionLanguage) =>
+    (lang: OfficialLanguage) =>
       types.map((type) => ({
         domValue: type,
         value: type,

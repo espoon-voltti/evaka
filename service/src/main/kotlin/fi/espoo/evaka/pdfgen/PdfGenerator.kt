@@ -9,11 +9,11 @@ import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
-import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.invoicing.service.FeeDecisionPdfData
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionPdfData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.setting.SettingType
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
@@ -85,7 +85,7 @@ class PdfGenerator(
 
     private fun createVoucherValueDecisionPdfContext(data: VoucherValueDecisionPdfData): Context {
         return Context().apply {
-            locale = Locale.Builder().setLanguage(data.lang.langCode).build()
+            locale = data.lang.isoLanguage.toLocale()
             setVariables(getVoucherValueDecisionPdfVariables(data))
         }
     }
@@ -130,8 +130,8 @@ class PdfGenerator(
             "value" to formatCents(decision.voucherValue),
             "voucherValueDescription" to
                 when (lang) {
-                    DocumentLang.FI -> decision.serviceNeed.voucherValueDescriptionFi
-                    DocumentLang.SV -> decision.serviceNeed.voucherValueDescriptionSv
+                    OfficialLanguage.FI -> decision.serviceNeed.voucherValueDescriptionFi
+                    OfficialLanguage.SV -> decision.serviceNeed.voucherValueDescriptionSv
                 },
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
             "headIncomeEffect" to
@@ -179,7 +179,7 @@ class PdfGenerator(
 
     private fun createFeeDecisionPdfContext(data: FeeDecisionPdfData): Context {
         return Context().apply {
-            locale = Locale.Builder().setLanguage(data.lang.langCode).build()
+            locale = data.lang.isoLanguage.toLocale()
             setVariables(getFeeDecisionPdfVariables(data))
         }
     }
@@ -238,7 +238,7 @@ class PdfGenerator(
                         FeeDecisionPdfPart(
                             "${it.child.firstName} ${it.child.lastName}",
                             it.placementType,
-                            if (lang == DocumentLang.SV) it.serviceNeedDescriptionSv
+                            if (lang == OfficialLanguage.SV) it.serviceNeedDescriptionSv
                             else it.serviceNeedDescriptionFi,
                             it.feeAlterations.map { fa ->
                                 FeeAlterationPdfPart(

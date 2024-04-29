@@ -9,6 +9,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { JsonOf } from '../../json'
+import { OfficialLanguage } from './shared'
 import { UUID } from '../../types'
 import { VasuQuestion } from '../../api-types/vasu'
 import { mapVasuQuestion } from '../../api-types/vasu'
@@ -64,7 +65,7 @@ export interface CreateDocumentRequest {
 * Generated from fi.espoo.evaka.vasu.VasuTemplateController.CreateTemplateRequest
 */
 export interface CreateTemplateRequest {
-  language: VasuLanguage
+  language: OfficialLanguage
   name: string
   type: CurriculumType
   valid: FiniteDateRange
@@ -136,7 +137,7 @@ export interface VasuDocument {
   documentState: VasuDocumentState
   events: VasuDocumentEvent[]
   id: UUID
-  language: VasuLanguage
+  language: OfficialLanguage
   modifiedAt: HelsinkiDateTime
   publishedAt: HelsinkiDateTime | null
   templateId: UUID
@@ -216,16 +217,6 @@ export interface VasuGuardian {
 }
 
 /**
-* Generated from fi.espoo.evaka.vasu.VasuLanguage
-*/
-export const curriculumLanguages = [
-  'FI',
-  'SV'
-] as const
-
-export type VasuLanguage = typeof curriculumLanguages[number]
-
-/**
 * Generated from fi.espoo.evaka.vasu.VasuPlacement
 */
 export interface VasuPlacement {
@@ -252,7 +243,7 @@ export interface VasuTemplate {
   content: VasuContent
   documentCount: number
   id: UUID
-  language: VasuLanguage
+  language: OfficialLanguage
   name: string
   type: CurriculumType
   valid: FiniteDateRange
@@ -264,7 +255,7 @@ export interface VasuTemplate {
 export interface VasuTemplateSummary {
   documentCount: number
   id: UUID
-  language: VasuLanguage
+  language: OfficialLanguage
   name: string
   type: CurriculumType
   valid: FiniteDateRange
