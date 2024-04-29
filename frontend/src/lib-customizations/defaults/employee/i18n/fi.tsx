@@ -4351,6 +4351,12 @@ export const fi = {
         addRoles: 'Lisää luvituksia',
         addRolesModalTitle: 'Uusi luvitus',
         units: 'Yksiköt'
+      },
+      mobile: {
+        title: 'Henkilökohtaiset mobiililaitteet',
+        name: 'Laitteen nimi',
+        nameless: 'Nimeämätön laite',
+        deleteConfirm: 'Haluatko poistaa käyttäjän mobiililaitteen parituksen?'
       }
     }
   },

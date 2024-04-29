@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.pairing.MobileDevice
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -68,6 +69,7 @@ data class EmployeeWithDaycareRoles(
     val globalRoles: List<UserRole> = listOf(),
     @Json val daycareRoles: List<DaycareRole> = listOf(),
     @Json val daycareGroupRoles: List<DaycareGroupRole> = listOf(),
+    @Json val personalMobileDevices: List<MobileDevice> = listOf(),
     val temporaryUnitName: String?,
     val active: Boolean
 )
@@ -246,7 +248,12 @@ SELECT
         JOIN daycare_group dg on dg.id = acl.daycare_group_id
         JOIN daycare d ON d.id = dg.daycare_id
         WHERE acl.employee_id = employee.id
-    ) AS daycare_group_roles
+    ) AS daycare_group_roles,
+    (
+        SELECT jsonb_agg(jsonb_build_object('id', md.id, 'name', md.name))
+        FROM mobile_device md
+        WHERE md.employee_id = employee.id
+    ) AS personal_mobile_devices
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
 WHERE employee.id = ${bind(id)}
@@ -385,6 +392,11 @@ SELECT
         JOIN daycare d ON d.id = dg.daycare_id
         WHERE acl.employee_id = employee.id
     ) AS daycare_group_roles,
+    (
+        SELECT jsonb_agg(jsonb_build_object('id', md.id, 'name', md.name))
+        FROM mobile_device md
+        WHERE md.employee_id = employee.id
+    ) AS personal_mobile_devices,
     count(*) OVER () AS count
 FROM employee
 LEFT JOIN daycare temp_unit ON temp_unit.id = employee.temporary_in_unit_id
