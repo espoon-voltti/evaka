@@ -458,7 +458,9 @@ export interface MealReportData {
 */
 export interface MealReportRow {
   additionalInfo: string | null
+  dietAbbreviation: string | null
   dietId: number | null
+  dietName: string | null
   mealCount: number
   mealId: number
   mealType: MealType

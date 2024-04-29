@@ -85,10 +85,11 @@ const MealReportData = ({
     const columns = {
       mealName: i18n.reports.meals.headings.mealName,
       mealId: i18n.reports.meals.headings.mealId,
-      mealCount: i18n.reports.meals.headings.mealCount
-      // TODO once we have data for special diets, add:
-      // dietId: i18n.reports.meals.headings.dietId
-      // additionalInfo:i18n.reports.meals.headings.additionalInfo
+      mealCount: i18n.reports.meals.headings.mealCount,
+      dietId: i18n.reports.meals.headings.dietId,
+      dietName: i18n.reports.meals.headings.dietName,
+      dietAbbreviation: i18n.reports.meals.headings.dietAbbreviation,
+      additionalInfo: i18n.reports.meals.headings.additionalInfo
     }
     const headers = Object.entries(columns).map(([columnKey, label]) => ({
       label: label,

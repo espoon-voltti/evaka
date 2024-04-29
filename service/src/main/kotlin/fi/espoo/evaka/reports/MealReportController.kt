@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.*
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.specialdiet.SpecialDiet
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -44,31 +45,33 @@ enum class MealType {
     EVENING_SNACK
 }
 
-fun mealtypeToMealIdTranslator(mealType: MealType): Int =
-    when (mealType) {
-        MealType.BREAKFAST -> 162
-        MealType.LUNCH -> 175
-        MealType.LUNCH_PRESCHOOL -> 22
-        MealType.SNACK -> 152
-        MealType.SUPPER -> 27
-        MealType.EVENING_SNACK -> 30
-    }
-
-val mealIdsSpecialDiet =
-    mapOf(
-        MealType.BREAKFAST to 143,
-        MealType.LUNCH to 145,
-        MealType.LUNCH_PRESCHOOL to 24,
-        MealType.SNACK to 160,
-        MealType.SUPPER to 28,
-        MealType.EVENING_SNACK to 31
-    )
+fun mealtypeToMealIdTranslator(mealType: MealType, specialDiet: Boolean): Int =
+    if (specialDiet) {
+        when (mealType) {
+            MealType.BREAKFAST -> 143
+            MealType.LUNCH -> 145
+            MealType.LUNCH_PRESCHOOL -> 24
+            MealType.SNACK -> 160
+            MealType.SUPPER -> 28
+            MealType.EVENING_SNACK -> 31
+        }
+    } else
+        when (mealType) {
+            MealType.BREAKFAST -> 162
+            MealType.LUNCH -> 175
+            MealType.LUNCH_PRESCHOOL -> 22
+            MealType.SNACK -> 152
+            MealType.SUPPER -> 27
+            MealType.EVENING_SNACK -> 30
+        }
 
 data class MealReportRow(
     val mealType: MealType,
     val mealId: Int,
     val mealCount: Int,
     val dietId: Int? = null,
+    val dietName: String? = null,
+    val dietAbbreviation: String? = null,
     val additionalInfo: String? = null
 )
 
@@ -79,8 +82,11 @@ data class MealReportData(
 )
 
 data class MealInfo(
-    val mealType: MealType
-    // TODO to support special diets add extra info: additionalInfo (name), dietId
+    val mealType: MealType,
+    val dietId: Int? = null,
+    val dietName: String? = null,
+    val dietAbbreviation: String? = null,
+    val additionalInfo: String? = null
 )
 
 private fun childMeals(
@@ -148,6 +154,18 @@ private fun getMealReport(tx: Database.Read, date: LocalDate, unitId: DaycareId)
     val childrenReservationsAndAttendances =
         tx.getChildData(unitId, childrenToPlacementTypeMap.keys, date.toFiniteDateRange())
 
+    val dietInfos =
+        tx.createQuery {
+                sql(
+                    """
+SELECT child.id as child_id, special_diet.*
+FROM child LEFT JOIN special_diet ON child.diet_id = special_diet.id
+WHERE child.id = ANY (${bind(childrenToPlacementTypeMap.keys)})
+"""
+                )
+            }
+            .toMap { column<ChildId>("child_id") to row<SpecialDiet?>() }
+
     val mealInfoMap =
         childrenToPlacementTypeMap
             .asSequence()
@@ -164,13 +182,29 @@ private fun getMealReport(tx: Database.Read, date: LocalDate, unitId: DaycareId)
                     childReservationsAndAttendances.absences[date]?.size ==
                         placementType.absenceCategories().size
                 val usePreschoolMealTypes = preschoolPlacementTypes.contains(placementType)
+
+                val dietInfo = dietInfos[childId]
+
                 childMeals(
-                    fixedScheduleRange,
-                    childReservationsAndAttendances.reservations[date] ?: emptyList(),
-                    absent,
-                    daycare,
-                    usePreschoolMealTypes
-                )
+                        fixedScheduleRange,
+                        childReservationsAndAttendances.reservations[date] ?: emptyList(),
+                        absent,
+                        daycare,
+                        usePreschoolMealTypes,
+                    )
+                    .map {
+                        it.copy(
+                            additionalInfo =
+                                if (dietInfo != null) {
+                                    childReservationsAndAttendances.child.lastName +
+                                        " " +
+                                        childReservationsAndAttendances.child.firstName
+                                } else null,
+                            dietId = dietInfo?.id,
+                            dietName = dietInfo?.name,
+                            dietAbbreviation = dietInfo?.abbreviation
+                        )
+                    }
             }
             .groupBy { it }
             .mapValues { it.value.size }
@@ -179,7 +213,15 @@ private fun getMealReport(tx: Database.Read, date: LocalDate, unitId: DaycareId)
         date,
         daycare.name,
         mealInfoMap.map {
-            MealReportRow(it.key.mealType, mealtypeToMealIdTranslator(it.key.mealType), it.value)
+            MealReportRow(
+                it.key.mealType,
+                mealtypeToMealIdTranslator(it.key.mealType, it.key.dietId != null),
+                it.value,
+                it.key.dietId,
+                it.key.dietName,
+                it.key.dietAbbreviation,
+                it.key.additionalInfo
+            )
         }
     )
 }
