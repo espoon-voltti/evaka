@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import autosize from 'autosize'
 import classNames from 'classnames'
-import React, { RefObject, useMemo, useState } from 'react'
-import TextareaAutosize from 'react-autosize-textarea'
+import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { BoundFormState } from 'lib-common/form/hooks'
@@ -13,7 +13,6 @@ import { BaseProps } from '../../utils'
 import UnderRowStatusIcon from '../StatusIcon'
 
 import { InputFieldUnderRow, InputInfo } from './InputField'
-import TextArea from './TextArea'
 
 interface TextAreaInputProps extends BaseProps {
   value: string
@@ -39,7 +38,7 @@ interface TextAreaInputProps extends BaseProps {
   wrapperClassName?: string
 }
 
-export default React.memo(function TextArea({
+const TextArea = React.memo(function TextArea({
   value,
   onChange,
   onFocus,
@@ -113,6 +112,8 @@ export default React.memo(function TextArea({
   )
 })
 
+export default TextArea
+
 interface TextAreaFProps
   extends Omit<TextAreaInputProps, 'value' | 'onChange'> {
   bind: BoundFormState<string>
@@ -135,6 +136,33 @@ export const TextAreaF = React.memo(function TextAreaF({
             : bind.inputInfo()
       }
     />
+  )
+})
+
+const TextareaAutosize = React.forwardRef(function TextAreaAutosize({
+  rows = 1,
+  ...props
+}: React.HTMLProps<HTMLTextAreaElement>) {
+  const textarea = useRef<HTMLTextAreaElement | null>(null)
+
+  useEffect(() => {
+    const el = textarea.current
+    if (!el) return
+
+    autosize(el)
+    return () => {
+      autosize.destroy(el)
+    }
+  }, [])
+
+  useEffect(() => {
+    textarea.current && autosize.update(textarea.current)
+  })
+
+  return (
+    <textarea {...props} rows={rows} ref={textarea}>
+      {props.children}
+    </textarea>
   )
 })
 
