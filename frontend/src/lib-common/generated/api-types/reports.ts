@@ -900,10 +900,9 @@ export interface VardaErrorReportRow {
   created: HelsinkiDateTime
   errors: string[]
   resetTimeStamp: HelsinkiDateTime | null
-  serviceNeedEndDate: string
   serviceNeedId: UUID
   serviceNeedOptionName: string
-  serviceNeedStartDate: string
+  serviceNeedValidity: FiniteDateRange
   updated: HelsinkiDateTime
 }
 
@@ -1073,6 +1072,7 @@ export function deserializeJsonVardaErrorReportRow(json: JsonOf<VardaErrorReport
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
     resetTimeStamp: (json.resetTimeStamp != null) ? HelsinkiDateTime.parseIso(json.resetTimeStamp) : null,
+    serviceNeedValidity: FiniteDateRange.parseJson(json.serviceNeedValidity),
     updated: HelsinkiDateTime.parseIso(json.updated)
   }
 }

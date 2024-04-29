@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -46,8 +47,7 @@ private fun Database.Read.getVardaErrors(): List<VardaErrorReportRow> =
                 """
 SELECT
     vsn.evaka_service_need_id AS service_need_id,
-    sn.start_date as service_need_start_date,
-    sn.end_date as service_need_end_date,
+    daterange(sn.start_date, sn.end_date, '[]') as service_need_validity,
     sno.name_fi as service_need_option_name,
     vsn.evaka_child_id AS child_id,
     vsn.updated,
@@ -67,8 +67,7 @@ ORDER BY vsn.updated DESC
 
 data class VardaErrorReportRow(
     val serviceNeedId: ServiceNeedId,
-    val serviceNeedStartDate: String,
-    val serviceNeedEndDate: String,
+    val serviceNeedValidity: FiniteDateRange,
     val serviceNeedOptionName: String,
     val childId: ChildId,
     val updated: HelsinkiDateTime,
