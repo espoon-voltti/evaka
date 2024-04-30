@@ -79,14 +79,16 @@ class VardaUpdateService(
 
     val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
 
-    fun startVardaUpdate(db: Database.Connection, clock: EvakaClock) {
-        val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
-
-        logger.info("VardaUpdate: starting update process")
-
-        updateUnits(db, clock, client, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
-
-        planVardaChildrenUpdate(db, clock)
+    fun updateUnits(db: Database.Connection, clock: EvakaClock) {
+        logger.info("VardaUpdate: starting unit update")
+        updateUnits(
+            db,
+            clock,
+            client,
+            lahdejarjestelma = client.sourceSystem,
+            kuntakoodi = ophMunicipalityCode,
+            vakajarjestajaUrl = ophMunicipalOrganizerIdUrl
+        )
     }
 
     /*

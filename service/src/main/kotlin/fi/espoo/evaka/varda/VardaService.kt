@@ -64,7 +64,14 @@ class VardaService(
 
         logger.info("VardaService: starting update process")
 
-        updateUnits(db, clock, client, ophMunicipalityCode, ophMunicipalOrganizerIdUrl)
+        updateUnits(
+            db,
+            clock,
+            client,
+            lahdejarjestelma = client.sourceSystem,
+            kuntakoodi = ophMunicipalityCode,
+            vakajarjestajaUrl = ophMunicipalOrganizerIdUrl
+        )
 
         planVardaUpdate(db, clock)
     }

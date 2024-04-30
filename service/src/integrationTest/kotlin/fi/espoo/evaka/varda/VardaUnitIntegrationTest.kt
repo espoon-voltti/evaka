@@ -97,22 +97,19 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
                 }
                 .execute()
         }
-        val unit =
-            db.read {
-                    getNewOrStaleUnits(
-                        it,
-                        ophEnv.municipalityCode,
-                        ophMunicipalOrganizerIdUrl,
-                        vardaClient.sourceSystem
-                    )
-                }
-                .find { it.name == testDaycare.name }
+        val unit = db.read { getNewOrStaleUnits(it) }.find { it.name == testDaycare.name }
 
         // Because of too tight serialization annotation the unit closing date removal (setting as
         // null) was dropped out
         assert(
             jsonMapper
-                .writeValueAsString(unit!!.toVardaUnitRequest())
+                .writeValueAsString(
+                    unit!!.toVardaUnitRequest(
+                        vakajarjestaja = ophMunicipalOrganizerIdUrl,
+                        kuntakoodi = ophEnv.municipalityCode,
+                        lahdejarjestelma = vardaClient.sourceSystem
+                    )
+                )
                 .contains(""""paattymis_pvm":null""")
         )
 
@@ -177,7 +174,14 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
     private fun updateUnits() {
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
-        updateUnits(db, clock, vardaClient, ophEnv.municipalityCode, ophMunicipalOrganizerIdUrl)
+        updateUnits(
+            db,
+            clock,
+            vardaClient,
+            vardaClient.sourceSystem,
+            ophEnv.municipalityCode,
+            ophMunicipalOrganizerIdUrl
+        )
     }
 }
 

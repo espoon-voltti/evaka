@@ -62,7 +62,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             )
         }
 
-        vardaUpdateService.planUpdate(db, clock)
+        vardaUpdateService.planChildrenUpdate(db, clock)
 
         assertEquals(setOf(child1.id, child2.id), getVardaStateChildIds())
         assertEquals(setOf(child1.id, child2.id), getPlannedChildIds())
@@ -113,7 +113,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             }
         }
 
-        vardaUpdateService.planUpdate(db, clock)
+        vardaUpdateService.planChildrenUpdate(db, clock)
 
         assertEquals(emptySet(), getPlannedChildIds())
     }
@@ -149,7 +149,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             }
         }
 
-        vardaUpdateService.planUpdate(db, clock)
+        vardaUpdateService.planChildrenUpdate(db, clock)
 
         assertEquals(setOf(child2.id), getVardaStateChildIds())
         assertEquals(setOf(child2.id), getPlannedChildIds())
@@ -188,7 +188,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             }
         }
 
-        vardaUpdateService.planUpdate(db, clock, migrationSpeed = 1)
+        vardaUpdateService.planChildrenUpdate(db, clock, migrationSpeed = 1)
 
         val plannedChildIds = getPlannedChildIds()
         assertEquals(1, plannedChildIds.size)
