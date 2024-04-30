@@ -4,6 +4,7 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import java.util.regex.Pattern
 
 buildscript {
     repositories {
@@ -38,6 +39,10 @@ sourceSets {
 
 val integrationTestImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
+}
+
+val downloadOnly: Configuration by configurations.creating {
+    isTransitive = false
 }
 
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
@@ -163,6 +168,8 @@ dependencies {
     implementation(project(":vtjclient"))
 
     ktlint(project(":custom-ktlint-rules"))
+
+    downloadOnly(libs.dd.java.agent)
 }
 
 allOpen {
@@ -249,6 +256,13 @@ tasks {
         description = "Generate VAPID key for use with push notifications"
         mainClass.set("fi.espoo.evaka.webpush.VapidKeyGeneratorKt")
         classpath = sourceSets["test"].runtimeClasspath
+    }
+
+    register("copyDownloadOnlyDeps", Copy::class) {
+        from(downloadOnly)
+        into(layout.buildDirectory.dir("download-only"))
+        // remove version numbers from jar filenames
+        rename(Pattern.compile("-([0-9]+[.]?)+.jar"), ".jar")
     }
 
     dependencyCheck {
