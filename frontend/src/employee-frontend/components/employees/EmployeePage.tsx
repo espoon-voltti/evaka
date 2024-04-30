@@ -39,6 +39,7 @@ import { unitsQuery } from '../unit/queries'
 import DaycareRolesModal from './DaycareRolesModal'
 import {
   deleteEmployeeDaycareRolesMutation,
+  deleteEmployeeMobileDeviceMutation,
   employeeDetailsQuery,
   updateEmployeeGlobalRolesMutation
 } from './queries'
@@ -199,6 +200,38 @@ const EmployeePage = React.memo(function EmployeePage({
                   onClick={() => ({
                     id: employee.id,
                     daycareId: daycareId
+                  })}
+                  disabled={editingGlobalRoles}
+                />
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+      <Gap />
+
+      <Title size={3}>{i18n.employees.editor.mobile.title}</Title>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{i18n.employees.editor.mobile.name}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {employee.personalMobileDevices.map(({ id, name }) => (
+            <Tr key={id}>
+              <Td>{name.trim() || i18n.employees.editor.mobile.nameless}</Td>
+              <Td>
+                <ConfirmedMutation
+                  buttonStyle="ICON"
+                  icon={faTrash}
+                  buttonAltText={i18n.common.remove}
+                  confirmationTitle={i18n.employees.editor.mobile.deleteConfirm}
+                  mutation={deleteEmployeeMobileDeviceMutation}
+                  onClick={() => ({
+                    id: id,
+                    employeeId: employee.id
                   })}
                   disabled={editingGlobalRoles}
                 />

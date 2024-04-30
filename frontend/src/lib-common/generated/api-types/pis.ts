@@ -13,6 +13,7 @@ import { CitizenFeatures } from './shared'
 import { EmployeeFeatures } from './shared'
 import { IncomeEffect } from './invoicing'
 import { JsonOf } from '../../json'
+import { MobileDevice } from './pairing'
 import { Nationality } from './vtjclient'
 import { NativeLanguage } from './vtjclient'
 import { UUID } from '../../types'
@@ -181,6 +182,7 @@ export interface EmployeeWithDaycareRoles {
   id: UUID
   lastLogin: HelsinkiDateTime | null
   lastName: string
+  personalMobileDevices: MobileDevice[]
   temporaryUnitName: string | null
   updated: HelsinkiDateTime | null
 }
