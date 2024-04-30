@@ -211,6 +211,11 @@ public class EvakaReviewProfileAuthenticator extends AbstractIdpAuthenticator {
             public String getServiceAccountClientLink() {
                 return null;
             }
+
+            @Override
+            public String getFederationLink() {
+                return null;
+            }
         };
 
         UserProfileProvider profileProvider = context.getSession().getProvider(UserProfileProvider.class);
