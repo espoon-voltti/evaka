@@ -6,7 +6,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
 import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -103,12 +102,7 @@ export default React.memo(function VardaErrors() {
                     <Td>
                       <FlatList>
                         <li>{row.serviceNeedOptionName}</li>
-                        <li>
-                          {FiniteDateRange.parseJson({
-                            start: row.serviceNeedStartDate,
-                            end: row.serviceNeedEndDate
-                          }).format()}
-                        </li>
+                        <li>{row.serviceNeedValidity?.format()}</li>
                         <li>{row.serviceNeedId}</li>
                       </FlatList>
                     </Td>

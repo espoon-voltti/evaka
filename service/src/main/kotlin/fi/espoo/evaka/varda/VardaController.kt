@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.varda.new.getVardaUpdateChildIds
 import fi.espoo.evaka.varda.old.VardaResetService
 import fi.espoo.evaka.varda.old.VardaUpdateService
 import org.springframework.web.bind.annotation.PathVariable
@@ -75,13 +76,24 @@ class VardaController(
                         clock,
                         Action.Global.VARDA_OPERATIONS
                     )
-                    it.resetChildResetTimestamp(childId)
-                    asyncJobRunner.plan(
-                        it,
-                        listOf(AsyncJob.ResetVardaChildOld(childId)),
-                        retryCount = 1,
-                        runAt = clock.now()
-                    )
+                    if (it.getVardaUpdateChildIds().contains(childId)) {
+                        // New integration
+                        asyncJobRunner.plan(
+                            it,
+                            listOf(AsyncJob.VardaUpdateChild(childId, dryRun = false)),
+                            retryCount = 1,
+                            runAt = clock.now()
+                        )
+                    } else {
+                        // Old integration
+                        it.resetChildResetTimestamp(childId)
+                        asyncJobRunner.plan(
+                            it,
+                            listOf(AsyncJob.ResetVardaChildOld(childId)),
+                            retryCount = 1,
+                            runAt = clock.now()
+                        )
+                    }
                 }
             }
             .also { Audit.VardaReportOperations.log(targetId = childId) }

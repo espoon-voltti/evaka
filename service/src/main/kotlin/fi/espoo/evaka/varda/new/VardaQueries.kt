@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.core.result.UnableToProduceResultException
 
@@ -291,11 +292,35 @@ inline fun <reified T> Database.Read.getVardaUpdateState(
             childId to state
         }
 
-fun Database.Transaction.setVardaUpdateState(childId: ChildId, state: Any?) {
+fun Database.Transaction.setVardaUpdateSuccess(
+    childId: ChildId,
+    now: HelsinkiDateTime,
+    state: Any?
+) {
     createUpdate {
             sql(
                 """
-                UPDATE varda_state SET state = ${bindJson(state)}
+                UPDATE varda_state SET
+                    state = ${bindJson(state)},
+                    last_success_at = ${bind(now)},
+                    errored_at = NULL,
+                    error = NULL
+                WHERE child_id = ${bind(childId)}
+                """
+            )
+        }
+        .execute()
+}
+
+fun Database.Transaction.setVardaUpdateError(
+    childId: ChildId,
+    now: HelsinkiDateTime,
+    error: String
+) {
+    createUpdate {
+            sql(
+                """
+                UPDATE varda_state SET errored_at = ${bind(now)}, error = ${bind(error)}
                 WHERE child_id = ${bind(childId)}
                 """
             )
