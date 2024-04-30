@@ -70,6 +70,13 @@ data class EndpointMetadata(
     fun validate() {
         fun fail(reason: String): Nothing =
             error("Invalid $httpMethod endpoint $path in $controllerClass: $reason")
+
+        requestParameters.forEach {
+            if (!it.isOptional && it.type.isSubtypeOf(typeOf<Collection<*>>())) {
+                fail("Collection request params must be optional (add default to empty list)")
+            }
+        }
+
         when (httpMethod) {
             RequestMethod.GET,
             RequestMethod.HEAD,
