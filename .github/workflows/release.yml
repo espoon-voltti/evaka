@@ -56,7 +56,7 @@ jobs:
           gh pr list \
                   --base master \
                   --state merged \
-                  --limit 100 \
+                  --limit 300 \
                   --json title,labels,closedAt,number,url |\
               bin/changelog.js ${{ needs.config.outputs.changelog-args }} |\
               gh release create --notes-file - ${{ needs.config.outputs.gh-args }}
