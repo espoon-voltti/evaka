@@ -3968,8 +3968,8 @@ export const fi = {
       childCorrectedCity: 'Lapsen uusi postitoimipaikka',
       applicationSentDateRange: 'Hakemus lähetetty välillä'
     },
-    vardaErrors: {
-      title: 'Varda-virheet',
+    vardaChildErrors: {
+      title: 'Varda-lapsivirheet',
       vardaInfo:
         'Aloita päivitys-nappi käynnistää VardaUpdate-eräajon, joka vie kaikkien Vardaan vietäväksi ' +
         'merkittyjen yksiköiden ja lapsien muuttuneet tiedot Vardaan. Aloita uudelleenvienti-nappi käynnistää ' +
@@ -3977,8 +3977,7 @@ export const fi = {
         'kaikki vardatiedot. Raportin Uudelleenvie-nappi käynnistää vain kyseiselle lapselle VardaReset-eräajon.',
       vardaUpdateButton: 'Aloita päivitys',
       vardaResetButton: 'Aloita uudelleenvienti',
-      description:
-        'Vardapäivityksissä tapahtuneet virheet annetusta ajanhetkestä eteenpäin',
+      description: 'Varda-lasten päivityksissä tapahtuneet virheet',
       updated: 'Päivitetty viimeksi',
       age: 'Ikä (päivää)',
       child: 'Lapsi',
@@ -3988,6 +3987,13 @@ export const fi = {
       childMarkedForRest: 'Lapsen tiedot nollataan seuraavalla ajolla',
       resetChild: 'Uudelleenvie',
       updating: 'Päivittää'
+    },
+    vardaUnitErrors: {
+      title: 'Varda-yksikkövirheet',
+      description: 'Varda-yksiköiden päivityksissä tapahtuneet virheet',
+      age: 'Virheen ikä (päivää)',
+      unit: 'Yksikkö',
+      error: 'Virhe'
     },
     sextet: {
       title: 'Kuusikkovertailu',

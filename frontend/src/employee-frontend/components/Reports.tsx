@@ -413,13 +413,22 @@ export default React.memo(function Reports() {
               />
             )}
             {reports.has('VARDA_ERRORS') && (
-              <Report
-                data-qa="report-varda-errors"
-                path="/reports/varda-errors"
-                color={colors.status.warning}
-                icon={faDiagnoses}
-                i18n={i18n.reports.vardaErrors}
-              />
+              <>
+                <Report
+                  data-qa="report-varda-child-errors"
+                  path="/reports/varda-child-errors"
+                  color={colors.status.warning}
+                  icon={faDiagnoses}
+                  i18n={i18n.reports.vardaChildErrors}
+                />
+                <Report
+                  data-qa="report-varda-unit-errors"
+                  path="/reports/varda-unit-errors"
+                  color={colors.status.warning}
+                  icon={faDiagnoses}
+                  i18n={i18n.reports.vardaUnitErrors}
+                />
+              </>
             )}
           </ReportItems>
         ))}

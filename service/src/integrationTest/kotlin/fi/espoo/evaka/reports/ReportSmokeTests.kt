@@ -239,8 +239,9 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     }
 
     @Test
-    fun `varda errors report returns http 200`() {
-        assertOkResponse(http.get("/reports/varda-errors", listOf("errorsSince" to "2021-01-01")))
+    fun `varda error reports return http 200`() {
+        assertOkResponse(http.get("/reports/varda-child-errors"))
+        assertOkResponse(http.get("/reports/varda-unit-errors"))
     }
 
     @Test

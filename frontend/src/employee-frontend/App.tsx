@@ -98,7 +98,8 @@ import ReportServiceNeeds from './components/reports/ServiceNeeds'
 import ReportSextet from './components/reports/Sextet'
 import ReportStartingPlacements from './components/reports/StartingPlacements'
 import ReportUnits from './components/reports/Units'
-import VardaErrors from './components/reports/VardaErrors'
+import VardaChildErrors from './components/reports/VardaChildErrors'
+import VardaUnitErrors from './components/reports/VardaUnitErrors'
 import VoucherServiceProviderUnit from './components/reports/VoucherServiceProviderUnit'
 import VoucherServiceProviders from './components/reports/VoucherServiceProviders'
 import TimelinePage from './components/timeline/TimelinePage'
@@ -680,10 +681,18 @@ export default createBrowserRouter(
           )
         },
         {
-          path: '/reports/varda-errors',
+          path: '/reports/varda-child-errors',
           element: (
             <EmployeeRoute title="reports">
-              <VardaErrors />
+              <VardaChildErrors />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/varda-unit-errors',
+          element: (
+            <EmployeeRoute title="reports">
+              <VardaUnitErrors />
             </EmployeeRoute>
           )
         },

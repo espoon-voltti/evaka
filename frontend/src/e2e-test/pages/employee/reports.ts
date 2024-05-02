@@ -58,7 +58,7 @@ export default class ReportsPage {
   }
 
   async openVardaErrorsReport() {
-    await this.page.find('[data-qa="report-varda-errors"]').click()
+    await this.page.find('[data-qa="report-varda-child-errors"]').click()
     return new VardaErrorsReport(this.page)
   }
 }

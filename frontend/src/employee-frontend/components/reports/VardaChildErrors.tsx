@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
+import { VardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
@@ -27,7 +27,7 @@ import {
   resetVardaChildMutation,
   startVardaResetMutation,
   startVardaUpdateMutation,
-  vardaErrorsQuery
+  vardaChildErrorsQuery
 } from './queries'
 
 const FlatList = styled.ul`
@@ -36,9 +36,9 @@ const FlatList = styled.ul`
   margin-top: 0;
 `
 
-export default React.memo(function VardaErrors() {
+export default React.memo(function VardaChildErrors() {
   const { i18n } = useTranslation()
-  const vardaErrorsResult = useQueryResult(vardaErrorsQuery())
+  const vardaErrorsResult = useQueryResult(vardaChildErrorsQuery())
 
   const ageInDays = (timestamp: HelsinkiDateTime): number =>
     LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
@@ -47,22 +47,22 @@ export default React.memo(function VardaErrors() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        <Title size={1}>{i18n.reports.vardaErrors.title}</Title>
+        <Title size={1}>{i18n.reports.vardaChildErrors.title}</Title>
         <ExpandingInfo
           data-qa="varda-expanding-info"
-          info={i18n.reports.vardaErrors.vardaInfo}
+          info={i18n.reports.vardaChildErrors.vardaInfo}
         >
           <FixedSpaceRow>
             <MutateButton
               primary
-              text={i18n.reports.vardaErrors.vardaUpdateButton}
+              text={i18n.reports.vardaChildErrors.vardaUpdateButton}
               mutation={startVardaUpdateMutation}
               onClick={() => true}
               data-qa="varda-update-button"
             />
             <MutateButton
               primary
-              text={i18n.reports.vardaErrors.vardaResetButton}
+              text={i18n.reports.vardaChildErrors.vardaResetButton}
               mutation={startVardaResetMutation}
               onClick={() => true}
               data-qa="varda-reset-button"
@@ -76,16 +76,16 @@ export default React.memo(function VardaErrors() {
             <TableScrollable data-qa="varda-errors-table">
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.vardaErrors.age}</Th>
-                  <Th>{i18n.reports.vardaErrors.child}</Th>
-                  <Th>{i18n.reports.vardaErrors.error}</Th>
-                  <Th>{i18n.reports.vardaErrors.serviceNeed}</Th>
-                  <Th>{i18n.reports.vardaErrors.updated}</Th>
-                  <Th>{i18n.reports.vardaErrors.childLastReset}</Th>
+                  <Th>{i18n.reports.vardaChildErrors.age}</Th>
+                  <Th>{i18n.reports.vardaChildErrors.child}</Th>
+                  <Th>{i18n.reports.vardaChildErrors.error}</Th>
+                  <Th>{i18n.reports.vardaChildErrors.serviceNeed}</Th>
+                  <Th>{i18n.reports.vardaChildErrors.updated}</Th>
+                  <Th>{i18n.reports.vardaChildErrors.childLastReset}</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.map((row: VardaErrorReportRow) => (
+                {rows.map((row: VardaChildErrorReportRow) => (
                   <Tr data-qa="varda-error-row" key={row.serviceNeedId}>
                     <Td data-qa={`age-${row.childId}`}>
                       {ageInDays(row.created)}
@@ -118,7 +118,7 @@ export default React.memo(function VardaErrors() {
                         </span>
                         <MutateButton
                           primary
-                          text={i18n.reports.vardaErrors.resetChild}
+                          text={i18n.reports.vardaChildErrors.resetChild}
                           mutation={resetVardaChildMutation}
                           onClick={() => ({ childId: row.childId })}
                           data-qa={`reset-button-${row.childId}`}
