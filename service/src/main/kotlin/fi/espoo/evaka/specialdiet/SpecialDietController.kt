@@ -61,7 +61,7 @@ class SpecialDietController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.UPDATE_SETTINGS
+                        Action.Global.UPDATE_SPECIAL_DIET_LIST
                     )
                     tx.setSpecialDiets(cleanupJamixDietList(specialDietList))
                 }
