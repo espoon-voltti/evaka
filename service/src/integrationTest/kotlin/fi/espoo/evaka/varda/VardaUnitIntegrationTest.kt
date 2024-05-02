@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -167,6 +166,27 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         assertNotEquals(lastSuccessAt, updatedUnit.lastSuccessAt)
     }
 
+    @Test
+    fun `unit update error is saved`() {
+        val client =
+            object : VardaUnitClient {
+                override fun createUnit(unit: VardaUnitRequest) = error("unit creation failed")
+
+                override fun updateUnit(id: Long, unit: VardaUnitRequest) =
+                    error("unit update failed")
+            }
+
+        updateUnits(client)
+
+        getVardaUnits(db).also { units ->
+            assertEquals(2, units.size)
+            units.forEach { unit ->
+                assertEquals(clock.now(), unit.erroredAt)
+                assertEquals("unit creation failed", unit.error)
+            }
+        }
+    }
+
     private fun updateUnits(client: VardaUnitClient) {
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
         updateUnits(
@@ -200,13 +220,13 @@ class TestClient : VardaUnitClient {
 }
 
 fun getVardaUnits(db: Database.Connection): List<VardaUnitRow> =
-    db.read {
-        @Suppress("DEPRECATION") it.createQuery("SELECT * FROM varda_unit").toList<VardaUnitRow>()
-    }
+    db.read { it.createQuery { sql("SELECT * FROM varda_unit") }.toList<VardaUnitRow>() }
 
 data class VardaUnitRow(
     val evakaDaycareId: DaycareId,
-    val vardaUnitId: Long,
-    val lastSuccessAt: Instant,
-    val createdAt: Instant
+    val vardaUnitId: Long?,
+    val lastSuccessAt: HelsinkiDateTime?,
+    val createdAt: HelsinkiDateTime,
+    val erroredAt: HelsinkiDateTime?,
+    val error: String?
 )
