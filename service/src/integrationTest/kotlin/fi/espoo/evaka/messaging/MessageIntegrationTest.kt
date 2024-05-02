@@ -8,8 +8,10 @@ import fi.espoo.evaka.*
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.notes.getApplicationNotes
 import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.messaging.MessageController.PostMessagePreflightResponse
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
@@ -21,6 +23,7 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -39,7 +42,9 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -83,6 +88,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             id = EmployeeId(UUID.randomUUID()),
             roles = setOf(UserRole.SERVICE_WORKER)
         )
+    private val messager =
+        AuthenticatedUser.Employee(
+            id = EmployeeId(UUID.randomUUID()),
+            roles = setOf(UserRole.MESSAGING)
+        )
     private val person1 = AuthenticatedUser.Citizen(id = testAdult_1.id, CitizenAuthLevel.STRONG)
     private val person2 = AuthenticatedUser.Citizen(id = testAdult_2.id, CitizenAuthLevel.STRONG)
     private val person3 = AuthenticatedUser.Citizen(id = testAdult_3.id, CitizenAuthLevel.STRONG)
@@ -103,15 +113,18 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var person4Account: MessageAccountId
     private lateinit var person5Account: MessageAccountId
     private lateinit var serviceWorkerAccount: MessageAccountId
+    private lateinit var messagerAccount: MessageAccountId
 
     private fun insertChild(
         tx: Database.Transaction,
         child: DevPerson,
         groupId: GroupId,
-        daycareId: DaycareId = testDaycare.id
+        daycareId: DaycareId = testDaycare.id,
+        optionId: ServiceNeedOptionId = snDefaultDaycare.id,
+        shiftCare: ShiftCareType = ShiftCareType.NONE
     ) {
         tx.insert(
-            DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName),
+            child,
             DevPersonType.CHILD
         )
 
@@ -129,6 +142,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             groupId,
             startDate = placementStart,
             endDate = placementEnd
+        )
+        tx.insertTestServiceNeed(
+            confirmedBy = employee1.evakaUserId,
+            placementId = placementId,
+            period = FiniteDateRange(placementStart, placementEnd),
+            optionId = optionId,
+            shiftCare = shiftCare
         )
     }
 
@@ -149,6 +169,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     areaId = testArea.id,
                     id = testDaycare2.id,
                     name = testDaycare2.name,
+                    type = setOf(CareType.FAMILY),
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
@@ -174,9 +195,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             val fridgeHeadId = person4.id
 
+            tx.insertServiceNeedOptions()
+            tx.insert(
+                DevEmployee(id = employee1.id, firstName = "Firstname", lastName = "Employee")
+            )
+
             // person 1 and 2 are guardians of child 1
             testChild_1.let {
-                insertChild(tx, it, groupId1)
+                insertChild(tx, it, groupId1, optionId = snDefaultPartDayDaycare.id)
                 tx.insertGuardian(person1.id, it.id)
                 tx.insertGuardian(person2.id, it.id)
                 tx.insertTestParentship(
@@ -187,13 +213,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // person 2 and 3 are guardian of child 3
             testChild_3.let {
-                insertChild(tx, it, groupId1)
+                insertChild(tx, it, groupId1, optionId = snDefaultFiveYearOldsDaycare.id)
                 tx.insertGuardian(person2.id, it.id)
                 tx.insertGuardian(person3.id, it.id)
             }
 
             testChild_4.let {
-                insertChild(tx, it, groupId2)
+                insertChild(tx, it, groupId2, optionId = snDefaultFiveYearOldsPartDayDaycare.id, shiftCare = ShiftCareType.FULL)
                 tx.insertGuardian(person4.id, it.id)
             }
 
@@ -204,14 +230,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // person 3 and 5 are guardian of child 6
             testChild_6.let {
-                insertChild(tx, it, groupId1)
+                insertChild(tx, it, groupId2, daycareId = testDaycare2.id, optionId = snDefaultPreschool.id, shiftCare = ShiftCareType.INTERMITTENT)
                 tx.insertGuardian(person3.id, it.id)
                 tx.insertGuardian(person5.id, it.id)
             }
 
-            tx.insert(
-                DevEmployee(id = employee1.id, firstName = "Firstname", lastName = "Employee")
-            )
             employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
             tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareGroupAcl(testDaycare.id, employee1.id, listOf(groupId1, groupId2))
@@ -225,6 +248,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             serviceWorkerAccount =
                 tx.upsertEmployeeMessageAccount(serviceWorker.id, AccountType.SERVICE_WORKER)
+            tx.insert(
+                DevEmployee(id = messager.id, firstName = "Municipal", lastName = "Messager")
+            )
+            messagerAccount =
+                tx.upsertEmployeeMessageAccount(messager.id, AccountType.MUNICIPAL)
         }
     }
 
@@ -1156,6 +1184,141 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
+    @Test
+    fun `recipient list can be filtered`() {
+        postNewThread(
+            title = "Vappu",
+            message = "Vappuna paistaa aurinko",
+            messageType = MessageType.BULLETIN,
+            sender = messagerAccount,
+            recipients = listOf(
+                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+            ),
+            filters = MessageController.PostMessageFilters(
+                yearsOfBirth = listOf(2017)
+            ),
+            user = messager,
+            now = sendTime
+        )
+
+        db.read {
+            assertEquals(
+                2,
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+            )
+        }
+    }
+
+    @Test
+    fun `recipient list can be filtered 2`() {
+        postNewThread(
+            title = "Vappu",
+            message = "Vappuna paistaa aurinko",
+            messageType = MessageType.BULLETIN,
+            sender = messagerAccount,
+            recipients = listOf(
+                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+            ),
+            filters = MessageController.PostMessageFilters(
+                serviceNeedIds = listOf(snDefaultPartDayDaycare.id, snDefaultFiveYearOldsPartDayDaycare.id)
+            ),
+            user = messager,
+            now = sendTime
+        )
+
+        db.read {
+            assertEquals(
+                3,
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+            )
+        }
+    }
+
+    @Test
+    fun `recipient list can be filtered 3`() {
+        postNewThread(
+            title = "Vappu",
+            message = "Vappuna paistaa aurinko",
+            messageType = MessageType.BULLETIN,
+            sender = messagerAccount,
+            recipients = listOf(
+                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+            ),
+            filters = MessageController.PostMessageFilters(
+                shiftCare = true,
+                intermittentShiftCare = true
+            ),
+            user = messager,
+            now = sendTime
+        )
+
+        db.read {
+            assertEquals(
+                3,
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+            )
+        }
+    }
+
+    @Test
+    fun `recipient list can be filtered 4`() {
+        postNewThread(
+            title = "Vappu",
+            message = "Vappuna paistaa aurinko",
+            messageType = MessageType.BULLETIN,
+            sender = messagerAccount,
+            recipients = listOf(
+                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+            ),
+            filters = MessageController.PostMessageFilters(
+                familyDaycare = true
+            ),
+            user = messager,
+            now = sendTime
+        )
+
+        db.read {
+            assertEquals(
+                2,
+                @Suppress("DEPRECATION")
+                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+            )
+        }
+    }
+
+    @Test
+    fun `preflight check takes into account recipient filtering`() {
+        val response =
+            postNewThreadPreflightCheck(
+                user = messager,
+                sender = messagerAccount,
+                recipients = listOf(
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                ),
+                filters = MessageController.PostMessageFilters(
+                    yearsOfBirth = listOf(2018),
+                    serviceNeedIds = listOf()
+                )
+            )
+        assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 2), response)
+    }
+
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Citizen,
@@ -1189,6 +1352,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun postNewThreadPreflightCheck(
         sender: MessageAccountId,
         recipients: List<MessageRecipient>,
+        filters: MessageController.PostMessageFilters? = null,
         user: AuthenticatedUser.Employee,
         now: HelsinkiDateTime = sendTime
     ): PostMessagePreflightResponse {
@@ -1197,7 +1361,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user,
             MockEvakaClock(now),
             sender,
-            MessageController.PostMessagePreflightBody(recipients = recipients.toSet())
+            MessageController.PostMessagePreflightBody(
+                recipients = recipients.toSet(),
+                filters = filters
+            )
         )
     }
 
@@ -1214,6 +1381,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         now: HelsinkiDateTime = sendTime,
         relatedApplicationId: ApplicationId? = null,
         sensitive: Boolean = false,
+        filters: MessageController.PostMessageFilters? = null,
     ): MessageContentId? {
         val messageContentId =
             messageController.createMessage(
@@ -1231,7 +1399,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     draftId = draftId,
                     urgent = false,
                     sensitive = sensitive,
-                    relatedApplicationId = relatedApplicationId
+                    relatedApplicationId = relatedApplicationId,
+                    filters = filters
                 )
             )
         if (asyncJobRunningEnabled) {

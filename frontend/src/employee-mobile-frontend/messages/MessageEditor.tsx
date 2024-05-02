@@ -70,7 +70,12 @@ const messageForm = mapped(
       content: output.content,
       type: 'MESSAGE' as const,
       urgent: output.urgent,
-      sensitive: false
+      sensitive: false,
+      yearsOfBirth: [],
+      serviceNeedIds: [],
+      shiftCare: false,
+      intermittentShiftCare: false,
+      familyDaycare: false
     }
     return {
       messageContent: (draftId: UUID | null): PostMessageBody | undefined =>
@@ -84,7 +89,8 @@ const messageForm = mapped(
               recipientNames: selectedRecipients.map((r) => r.text),
               attachmentIds: [],
               draftId,
-              relatedApplicationId: null
+              relatedApplicationId: null,
+              filters: null
             },
       draftContent: (): UpdatableDraftContent => ({
         ...commonContent,

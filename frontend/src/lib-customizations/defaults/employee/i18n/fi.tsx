@@ -4312,7 +4312,22 @@ export const fi = {
         }
       },
       sender: 'Lähettäjä',
-      recipientsPlaceholder: 'Valitse...',
+      selectPlaceholder: 'Valitse...',
+      filters: {
+        showFilters: 'Näytä lisävalinnat',
+        hideFilters: 'Piilota lisävalinnat',
+        yearOfBirth: 'Syntymävuosi',
+        serviceNeed: 'Palveluntarve',
+        shiftCare: {
+          heading: 'Vuorohoito',
+          label: 'Vuorohoito',
+          intermittent: 'Satunnainen vuorohoito'
+        },
+        familyDaycare: {
+          heading: 'Perhepäivätoito',
+          label: 'Perhepäivähoito'
+        }
+      },
       title: 'Otsikko',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',

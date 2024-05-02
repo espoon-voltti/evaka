@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PagedFactory
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -1210,6 +1211,7 @@ private fun getReceiverGroups(
 fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
+    filters: MessageController.PostMessageFilters?,
     date: LocalDate
 ): List<Pair<MessageAccountId, ChildId?>> {
     val groupedRecipients = recipients.groupBy { it.type }
@@ -1219,6 +1221,26 @@ fun Database.Read.getMessageAccountsForRecipients(
     val childRecipients = groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
     val citizenRecipients =
         groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
+
+    val filterPredicates = PredicateSql.allNotNull(
+        if (filters?.yearsOfBirth?.isNotEmpty() == true) {
+            PredicateSql { where("date_part('year', p.date_of_birth) = ANY('{${filters.yearsOfBirth.joinToString(",")}}')") }
+        } else null,
+        if (filters?.serviceNeedIds?.isNotEmpty() == true) {
+            PredicateSql { where("sno.id = ANY('{${filters.serviceNeedIds.joinToString(",")}}')") }
+        } else null,
+        if (filters?.shiftCare == true && filters.intermittentShiftCare) {
+            PredicateSql { where("sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])") }
+        } else if (filters?.shiftCare == true) {
+            PredicateSql { where("sn.shift_care = 'FULL'::shift_care_type") }
+        } else if (filters?.intermittentShiftCare == true) {
+            PredicateSql { where("sn.shift_care = 'INTERMITTENT'::shift_care_type")}
+        } else null,
+        if (filters?.familyDaycare == true) {
+            PredicateSql { where("d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]") }
+        } else null
+    )
+
     return createQuery {
             sql(
                 """
@@ -1228,7 +1250,11 @@ WITH sender AS (
     SELECT DISTINCT pl.child_id
     FROM realized_placement_all(${bind(date)}) pl
     JOIN daycare d ON pl.unit_id = d.id
+    LEFT JOIN person p ON p.id = pl.child_id
+    LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+    LEFT JOIN service_need_option sno on sn.option_id = sno.id
     WHERE (d.care_area_id = ANY(${bind(areaRecipients)}) OR pl.unit_id = ANY(${bind(unitRecipients)}) OR pl.group_id = ANY(${bind(groupRecipients)}) OR pl.child_id = ANY(${bind(childRecipients)}))
+    AND ${predicate(filterPredicates)}
     AND EXISTS (
         SELECT 1
         FROM child_daycare_acl(${bind(date)})

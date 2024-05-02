@@ -318,3 +318,25 @@ describe('Staff copies', () => {
     await new MessagesPage(staffPage).assertNoCopies()
   })
 })
+
+describe('Additional filters', () => {
+  test('Additional filters are visible to unit supervisor on personal account', async () => {
+    await initUnitSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.filtersButton.waitUntilVisible()
+    await messageEditor.filtersButton.click()
+    await messageEditor.assertFiltersVisible()
+  })
+
+  test('Additional filters are not visible to unit supervisor on group account', async () => {
+    await initUnitSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(unitSupervisorPage)
+    await messagesPage.unitRecieved.click()
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.sendButton.waitUntilVisible()
+    expect(await messageEditor.filtersButtonCount).toBe(0)
+  })
+})

@@ -41,6 +41,8 @@ export default class MessagesPage {
     this.page.find('[data-qa="message-reply-content"]')
   )
   #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
+  #unitAccount = this.page.find('[data-qa="unit-accounts"]')
+  unitRecieved = this.#unitAccount.find('[data-qa="message-box-row-received"]')
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
@@ -177,6 +179,20 @@ export class MessageEditor extends Element {
   sendButton = this.findByDataQa('send-message-btn')
   discardButton = this.findByDataQa('discard-draft-btn')
 
+  filtersButton = this.findByDataQa('filters-btn')
+  filtersButtonCount = this.findAllByDataQa('filters-btn').count()
+  yearsOfBirthSelection = new TreeDropdown(
+    this.findByDataQa('select-years-of-birth')
+  )
+  serviceNeedSelection = new TreeDropdown(
+    this.findByDataQa('select-service-needs')
+  )
+  shiftcare = new Checkbox(this.findByDataQa('checkbox-shiftcare'))
+  intermittent = new Checkbox(
+    this.findByDataQa('checkbox-intermittent-shiftcare')
+  )
+  family = new Checkbox(this.findByDataQa('checkbox-family-daycare'))
+
   async sendNewMessage(message: {
     title: string
     content: string
@@ -267,5 +283,12 @@ export class MessageEditor extends Element {
 
   async assertTitle(title: string) {
     return waitUntilEqual(() => this.inputTitle.inputValue, title)
+  }
+
+  async assertFiltersVisible() {
+    await this.yearsOfBirthSelection.waitUntilVisible()
+    await this.serviceNeedSelection.waitUntilVisible()
+    await this.shiftcare.waitUntilVisible()
+    await this.family.waitUntilVisible()
   }
 }

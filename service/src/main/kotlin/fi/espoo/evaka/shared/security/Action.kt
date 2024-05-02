@@ -235,7 +235,8 @@ sealed interface Action {
                 REPORT_VIEWER,
                 FINANCE_ADMIN,
                 SERVICE_WORKER,
-                FINANCE_STAFF
+                FINANCE_STAFF,
+                MESSAGING
             ),
             HasUnitRole(
                     UNIT_SUPERVISOR,

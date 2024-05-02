@@ -206,4 +206,14 @@ describe('Municipal messaging -', () => {
       defaultMessage.content
     )
   })
+
+  test('Additional filters are visible to messaging role', async () => {
+    await openMessagingPage(messageSendTime)
+    await messagingPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(messagingPage)
+    const messageEditor = await messagesPage.openMessageEditor()
+    await messageEditor.filtersButton.waitUntilVisible()
+    await messageEditor.filtersButton.click()
+    await messageEditor.assertFiltersVisible()
+  })
 })
