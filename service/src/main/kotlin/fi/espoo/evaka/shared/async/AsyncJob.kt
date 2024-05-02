@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -321,6 +322,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendJamixOrder(val customerId: Int, val date: LocalDate) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -345,6 +350,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendAssistanceNeedDecisionSfiMessage::class,
                     SendAssistanceNeedPreschoolDecisionSfiMessage::class,
                     SendDecision::class,
+                    SendJamixOrder::class,
                     SendPatuReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,

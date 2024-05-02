@@ -8,9 +8,7 @@ import fi.espoo.evaka.daycare.*
 import fi.espoo.evaka.mealintegration.MealType
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.reservations.AbsenceTypeResponse
 import fi.espoo.evaka.reservations.ChildData
-import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.specialdiet.SpecialDiet
@@ -52,7 +50,7 @@ data class MealInfo(
 
 private fun childMeals(
     fixedScheduleRange: TimeRange?,
-    reservations: List<ReservationResponse>,
+    reservations: List<TimeRange>,
     absent: Boolean,
     mealtimes: DaycareMealtimes,
     usePreschoolMealTypes: Boolean
@@ -64,8 +62,7 @@ private fun childMeals(
     // list of time ranges when child will be present according to fixed schedule or reservation
     // times
     val presentTimeRanges =
-        if (fixedScheduleRange != null) listOf(fixedScheduleRange)
-        else reservations.filterIsInstance<ReservationResponse.Times>().map { it.range }
+        if (fixedScheduleRange != null) listOf(fixedScheduleRange) else reservations
     // if we don't have data about when child will be present, default to breakfast + lunch + snack
     if (presentTimeRanges.isEmpty()) {
         return setOf(MealType.BREAKFAST, MealType.LUNCH, MealType.SNACK)
@@ -95,8 +92,8 @@ data class MealReportChildInfo(
     val placementType: PlacementType,
     val firstName: String,
     val lastName: String,
-    val reservations: List<ReservationResponse>?,
-    val absences: Map<AbsenceCategory, AbsenceTypeResponse>?,
+    val reservations: List<TimeRange>?,
+    val absences: Set<AbsenceCategory>?,
     val dietInfo: SpecialDiet?,
     val daycare: DaycareTimeProps
 )
@@ -105,9 +102,8 @@ fun mealReportData(
     children: Collection<MealReportChildInfo>,
     date: LocalDate,
     preschoolTerms: List<PreschoolTerm>,
-    reportName: String,
     mealTypeMapper: MealTypeMapper
-): MealReportData {
+): List<MealReportRow> {
     val mealInfoMap =
         children
             .flatMap { childInfo ->
@@ -146,21 +142,17 @@ fun mealReportData(
             .groupBy { it }
             .mapValues { it.value.size }
 
-    return MealReportData(
-        date,
-        reportName,
-        mealInfoMap.map {
-            MealReportRow(
-                it.key.mealType,
-                mealTypeMapper.toMealId(it.key.mealType, it.key.dietId != null),
-                it.value,
-                it.key.dietId,
-                it.key.dietName,
-                it.key.dietAbbreviation,
-                it.key.additionalInfo
-            )
-        }
-    )
+    return mealInfoMap.map {
+        MealReportRow(
+            it.key.mealType,
+            mealTypeMapper.toMealId(it.key.mealType, it.key.dietId != null),
+            it.value,
+            it.key.dietId,
+            it.key.dietName,
+            it.key.dietAbbreviation,
+            it.key.additionalInfo
+        )
+    }
 }
 
 data class DaycareUnitData(
@@ -200,8 +192,11 @@ fun getMealReportForUnit(
                     placementType = placementType,
                     firstName = childrenReservationsAndAttendances[childId]!!.child.firstName,
                     lastName = childrenReservationsAndAttendances[childId]!!.child.lastName,
-                    reservations = childrenReservationsAndAttendances[childId]!!.reservations[date],
-                    absences = childrenReservationsAndAttendances[childId]!!.absences[date],
+                    reservations =
+                        childrenReservationsAndAttendances[childId]!!
+                            .reservations[date]
+                            ?.mapNotNull { it.asTimeRange() },
+                    absences = childrenReservationsAndAttendances[childId]!!.absences[date]?.keys,
                     dietInfo = dietInfos[childId],
                     daycare = daycare
                 )
@@ -209,5 +204,6 @@ fun getMealReportForUnit(
             .values
 
     val preschoolTerms = unitData.preschoolTerms
-    return mealReportData(childInfos, date, preschoolTerms, daycare.name, mealTypeMapper)
+    val reportRows = mealReportData(childInfos, date, preschoolTerms, mealTypeMapper)
+    return MealReportData(date, daycare.name, reportRows)
 }
