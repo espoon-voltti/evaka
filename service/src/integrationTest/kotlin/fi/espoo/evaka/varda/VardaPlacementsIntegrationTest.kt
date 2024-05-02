@@ -6,8 +6,8 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testDaycare
-import java.time.Instant
 
 internal fun insertVardaUnit(
     db: Database.Connection,
@@ -15,25 +15,21 @@ internal fun insertVardaUnit(
     unitOid: String? = "1.2.3"
 ) {
     db.transaction {
-        @Suppress("DEPRECATION")
-        it.createUpdate(
+        it.execute {
+            sql(
                 """
-INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, created_at, uploaded_at)
-VALUES (:evakaDaycareId, :vardaUnitId,  :createdAt, :uploadedAt)
-                """
-                    .trimIndent()
+INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, created_at, last_success_at)
+VALUES (${bind(unitId)}, 1, ${bind(HelsinkiDateTime.now())}, ${bind(HelsinkiDateTime.now())})
+"""
             )
-            .bind("evakaDaycareId", unitId)
-            .bind("vardaUnitId", 1L)
-            .bind("ophUnitOid", unitOid)
-            .bind("createdAt", Instant.now())
-            .bind("uploadedAt", Instant.now())
-            .execute()
+        }
 
-        @Suppress("DEPRECATION")
-        it.createUpdate("UPDATE daycare SET oph_unit_oid = :unitOid WHERE daycare.id = :unitId")
-            .bind("unitId", unitId)
-            .bind("unitOid", unitOid)
-            .execute()
+        it.execute {
+            sql(
+                """
+UPDATE daycare SET oph_unit_oid = ${bind(unitOid)} WHERE daycare.id = ${bind(unitId)}
+"""
+            )
+        }
     }
 }

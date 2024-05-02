@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.varda
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -48,7 +50,7 @@ val testUnit =
     VardaUnit(
         vardaUnitId = null,
         ophUnitOid = null,
-        evakaDaycareId = null,
+        evakaDaycareId = DaycareId(UUID.randomUUID()),
         name = "Testipäiväkoti",
         address = "Testiosoite 6",
         postalCode = "00200",

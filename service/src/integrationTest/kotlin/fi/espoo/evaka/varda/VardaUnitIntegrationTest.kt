@@ -146,7 +146,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val unitToStale = getVardaUnits(db)[0]
         val daycareId = unitToStale.evakaDaycareId
         val vardaId = unitToStale.vardaUnitId
-        val uploadedAt = unitToStale.uploadedAt
+        val lastSuccessAt = unitToStale.lastSuccessAt
         val createdAt = unitToStale.createdAt
 
         clock.tick()
@@ -169,7 +169,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val updatedUnit = getVardaUnits(db).toList().find { it.evakaDaycareId == daycareId }!!
         assertEquals(vardaId, updatedUnit.vardaUnitId)
         assertEquals(createdAt, updatedUnit.createdAt)
-        assertNotEquals(uploadedAt, updatedUnit.uploadedAt)
+        assertNotEquals(lastSuccessAt, updatedUnit.lastSuccessAt)
     }
 
     private fun updateUnits() {
@@ -193,6 +193,6 @@ fun getVardaUnits(db: Database.Connection): List<VardaUnitRow> =
 data class VardaUnitRow(
     val evakaDaycareId: DaycareId,
     val vardaUnitId: Long,
-    val uploadedAt: Instant,
+    val lastSuccessAt: Instant,
     val createdAt: Instant
 )
