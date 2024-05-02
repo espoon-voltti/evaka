@@ -5,6 +5,8 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.*
+import fi.espoo.evaka.mealintegration.MealType
+import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.AbsenceTypeResponse
 import fi.espoo.evaka.reservations.ChildData
@@ -23,35 +25,6 @@ val preschoolPlacementTypes =
         PlacementType.PREPARATORY_DAYCARE,
         PlacementType.PREPARATORY_DAYCARE_ONLY
     )
-
-enum class MealType {
-    BREAKFAST,
-    LUNCH,
-    LUNCH_PRESCHOOL,
-    SNACK,
-    SUPPER,
-    EVENING_SNACK
-}
-
-fun mealtypeToMealIdTranslator(mealType: MealType, specialDiet: Boolean): Int =
-    if (specialDiet) {
-        when (mealType) {
-            MealType.BREAKFAST -> 143
-            MealType.LUNCH -> 145
-            MealType.LUNCH_PRESCHOOL -> 24
-            MealType.SNACK -> 160
-            MealType.SUPPER -> 28
-            MealType.EVENING_SNACK -> 31
-        }
-    } else
-        when (mealType) {
-            MealType.BREAKFAST -> 162
-            MealType.LUNCH -> 175
-            MealType.LUNCH_PRESCHOOL -> 22
-            MealType.SNACK -> 152
-            MealType.SUPPER -> 27
-            MealType.EVENING_SNACK -> 30
-        }
 
 data class MealReportRow(
     val mealType: MealType,
@@ -132,7 +105,8 @@ fun mealReportData(
     children: Collection<MealReportChildInfo>,
     date: LocalDate,
     preschoolTerms: List<PreschoolTerm>,
-    reportName: String
+    reportName: String,
+    mealTypeMapper: MealTypeMapper
 ): MealReportData {
     val mealInfoMap =
         children
@@ -178,7 +152,7 @@ fun mealReportData(
         mealInfoMap.map {
             MealReportRow(
                 it.key.mealType,
-                mealtypeToMealIdTranslator(it.key.mealType, it.key.dietId != null),
+                mealTypeMapper.toMealId(it.key.mealType, it.key.dietId != null),
                 it.value,
                 it.key.dietId,
                 it.key.dietName,
@@ -198,7 +172,11 @@ data class DaycareUnitData(
     val preschoolTerms: List<PreschoolTerm>
 )
 
-fun getMealReportForUnit(unitData: DaycareUnitData, date: LocalDate): MealReportData? {
+fun getMealReportForUnit(
+    unitData: DaycareUnitData,
+    date: LocalDate,
+    mealTypeMapper: MealTypeMapper
+): MealReportData? {
     val daycare = unitData.daycare ?: return null
 
     if (!daycare.operationDays.contains(date.dayOfWeek.value))
@@ -231,5 +209,5 @@ fun getMealReportForUnit(unitData: DaycareUnitData, date: LocalDate): MealReport
             .values
 
     val preschoolTerms = unitData.preschoolTerms
-    return mealReportData(childInfos, date, preschoolTerms, daycare.name)
+    return mealReportData(childInfos, date, preschoolTerms, daycare.name, mealTypeMapper)
 }

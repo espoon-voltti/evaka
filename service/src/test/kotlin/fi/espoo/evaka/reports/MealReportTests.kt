@@ -9,6 +9,8 @@ import fi.espoo.evaka.daycare.DaycareInfo
 import fi.espoo.evaka.daycare.DaycareMealtimes
 import fi.espoo.evaka.daycare.DaycareTimeProps
 import fi.espoo.evaka.daycare.PreschoolTerm
+import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
+import fi.espoo.evaka.mealintegration.MealType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.AbsenceTypeResponse
 import fi.espoo.evaka.reservations.ChildData
@@ -69,7 +71,8 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                reportName = "Test Report"
+                reportName = "Test Report",
+                DefaultMealTypeMapper
             )
 
         assertTrue(report.meals.isEmpty(), "Expected no meals for absent child")
@@ -109,7 +112,8 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                reportName = "Test Report No Reservations"
+                reportName = "Test Report No Reservations",
+                DefaultMealTypeMapper
             )
 
         val expectedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH, MealType.SNACK)
@@ -171,7 +175,8 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                reportName = "Test Report Preschool"
+                reportName = "Test Report Preschool",
+                DefaultMealTypeMapper
             )
 
         val expectedMealTypes = setOf(MealType.LUNCH_PRESCHOOL, MealType.SNACK)
@@ -280,7 +285,8 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                reportName = "Test Report Special Diet"
+                reportName = "Test Report Special Diet",
+                DefaultMealTypeMapper
             )
 
         val expectedRowsForElla =
@@ -430,7 +436,8 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                reportName = "Test Report No Special Diet"
+                reportName = "Test Report No Special Diet",
+                DefaultMealTypeMapper
             )
 
         val expectedMealCounts =
@@ -517,7 +524,7 @@ class MealReportTests {
                 preschoolTerms = emptyList()
             )
 
-        val report = getMealReportForUnit(unitData, testDate)
+        val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
 
         assertTrue(report?.meals.isNullOrEmpty(), "Expected no meals on a Sunday for a normal unit")
     }
@@ -614,7 +621,7 @@ class MealReportTests {
                 preschoolTerms = emptyList()
             )
 
-        val report = getMealReportForUnit(unitData, testDate)
+        val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
         assertFalse(
             report?.meals.isNullOrEmpty(),
             "Expected meals based on reservations for a round-the-clock unit on weekends"
@@ -700,7 +707,7 @@ class MealReportTests {
                 preschoolTerms = emptyList()
             )
 
-        val report = getMealReportForUnit(unitData, testDate)
+        val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
 
         assertTrue(
             report?.meals.isNullOrEmpty(),
@@ -782,7 +789,7 @@ class MealReportTests {
                 preschoolTerms = emptyList()
             )
 
-        val report = getMealReportForUnit(unitData, testDate)
+        val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
 
         assertFalse(
             report?.meals.isNullOrEmpty(),

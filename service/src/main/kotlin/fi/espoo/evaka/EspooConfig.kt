@@ -28,6 +28,8 @@ import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.logging.defaultAccessLoggingValve
+import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
+import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
@@ -207,6 +209,8 @@ class EspooConfig {
         espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
         env: ScheduledJobsEnv<EspooScheduledJob>
     ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env)
+
+    @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 }
 
 data class EspooEnv(
