@@ -121,7 +121,6 @@ SELECT
         OR EXISTS(SELECT FROM assistance_action aa WHERE aa.child_id = pl.child_id AND t::date BETWEEN aa.start_date AND aa.end_date)
         OR EXISTS(SELECT FROM daycare_assistance da WHERE da.child_id = pl.child_id AND da.valid_during @> t::date)
         OR EXISTS(SELECT FROM preschool_assistance pa WHERE pa.child_id = pl.child_id AND pa.valid_during @> t::date)
-        OR EXISTS(SELECT FROM other_assistance_measure oam WHERE oam.child_id = pl.child_id AND oam.valid_during @> t::date)
     ) AS has_assistance_need,
 
     coalesce(an.capacity_factor, 1.0) as capacity_factor,
