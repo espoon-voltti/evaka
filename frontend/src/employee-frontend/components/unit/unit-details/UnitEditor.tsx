@@ -1384,6 +1384,7 @@ export default function UnitEditor(props: Props) {
           label={i18n.unitEditor.field.roundTheClock}
           checked={form.roundTheClock}
           onChange={(roundTheClock) => updateForm({ roundTheClock })}
+          data-qa="round-the-clock"
         />
       </FormPart>
 

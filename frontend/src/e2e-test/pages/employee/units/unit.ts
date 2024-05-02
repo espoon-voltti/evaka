@@ -206,6 +206,12 @@ export class UnitDetailsPage {
         .assertTextEquals(`${value.start} - ${value.end}`)
     }
   }
+
+  async assertShiftCareOperationTime(index: number, expected: string) {
+    await this.page
+      .findByDataQa(`shift-care-unit-timerange-detail-${index}`)
+      .assertTextEquals(expected)
+  }
 }
 
 export class UnitEditor {
@@ -215,6 +221,10 @@ export class UnitEditor {
     this.page.find('[data-qa="unit-name-input"]')
   )
   readonly #areaSelect = new Combobox(this.page.find('[data-qa="area-select"]'))
+
+  readonly roundTheClock: Checkbox = new Checkbox(
+    this.page.findByDataQa('round-the-clock')
+  )
 
   #timeInput(dayNumber: number, startEnd: 'start' | 'end') {
     return new TextInput(this.page.find(`[data-qa="${dayNumber}-${startEnd}"]`))
@@ -250,6 +260,17 @@ export class UnitEditor {
   ) {
     await this.#shiftCareTimeInput(dayNumber, 'start').fill(start)
     await this.#shiftCareTimeInput(dayNumber, 'end').fill(end)
+  }
+
+  async assertShiftCareOperationChecked(dayIndex: number, checked: boolean) {
+    const checkbox = new Checkbox(
+      this.page.findByDataQa(`shift-care-operation-day-${dayIndex}`)
+    )
+    await checkbox.waitUntilChecked(checked)
+  }
+
+  async setRoundTheClock(on: boolean) {
+    on ? await this.roundTheClock.check() : await this.roundTheClock.uncheck()
   }
 
   async clearDayTimeRange(dayNumber: number) {
