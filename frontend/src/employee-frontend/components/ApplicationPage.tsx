@@ -205,10 +205,7 @@ export default React.memo(function ApplicationPage() {
   const shouldLoadServiceNeedOptions =
     editedApplication !== undefined &&
     ((editedApplication.type === 'DAYCARE' &&
-      editedApplication.form.preferences.serviceNeed !== null &&
-      // If service need options are not enabled, backend sets to null
-      editedApplication.form.preferences.serviceNeed.serviceNeedOption !==
-        null) ||
+      featureFlags.daycareApplication.serviceNeedOption) ||
       (editedApplication.type === 'PRESCHOOL' &&
         featureFlags.preschoolApplication.serviceNeedOption))
 
