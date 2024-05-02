@@ -127,10 +127,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         optionId: ServiceNeedOptionId = snDefaultDaycare.id,
         shiftCare: ShiftCareType = ShiftCareType.NONE
     ) {
-        tx.insert(
-            child,
-            DevPersonType.CHILD
-        )
+        tx.insert(child, DevPersonType.CHILD)
 
         val placementId =
             tx.insert(
@@ -225,7 +222,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
             testChild_4.let {
-                insertChild(tx, it, groupId2, optionId = snDefaultFiveYearOldsPartDayDaycare.id, shiftCare = ShiftCareType.FULL)
+                insertChild(
+                    tx,
+                    it,
+                    groupId2,
+                    optionId = snDefaultFiveYearOldsPartDayDaycare.id,
+                    shiftCare = ShiftCareType.FULL
+                )
                 tx.insertGuardian(person4.id, it.id)
             }
 
@@ -243,7 +246,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // person 3 and 5 are guardian of child 6
             testChild_8.let {
-                insertChild(tx, it, groupId2, daycareId = testDaycare2.id, optionId = snDefaultPreschool.id, shiftCare = ShiftCareType.INTERMITTENT)
+                insertChild(
+                    tx,
+                    it,
+                    groupId2,
+                    daycareId = testDaycare2.id,
+                    optionId = snDefaultPreschool.id,
+                    shiftCare = ShiftCareType.INTERMITTENT
+                )
                 tx.insertGuardian(person6.id, it.id)
                 tx.insertGuardian(person7.id, it.id)
             }
@@ -261,11 +271,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             serviceWorkerAccount =
                 tx.upsertEmployeeMessageAccount(serviceWorker.id, AccountType.SERVICE_WORKER)
-            tx.insert(
-                DevEmployee(id = messager.id, firstName = "Municipal", lastName = "Messager")
-            )
-            messagerAccount =
-                tx.upsertEmployeeMessageAccount(messager.id, AccountType.MUNICIPAL)
+            tx.insert(DevEmployee(id = messager.id, firstName = "Municipal", lastName = "Messager"))
+            messagerAccount = tx.upsertEmployeeMessageAccount(messager.id, AccountType.MUNICIPAL)
         }
     }
 
@@ -1204,16 +1211,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Vappuna paistaa aurinko",
             messageType = MessageType.BULLETIN,
             sender = messagerAccount,
-            recipients = listOf(
-                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
-            ),
-            filters = MessageController.PostMessageFilters(
-                yearsOfBirth = listOf(2017)
-            ),
+            recipients =
+                listOf(
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                ),
+            filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2017)),
             user = messager,
             now = sendTime
         )
@@ -1234,16 +1240,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Vappuna paistaa aurinko",
             messageType = MessageType.BULLETIN,
             sender = messagerAccount,
-            recipients = listOf(
-                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
-            ),
-            filters = MessageController.PostMessageFilters(
-                serviceNeedIds = listOf(snDefaultPartDayDaycare.id, snDefaultFiveYearOldsPartDayDaycare.id)
-            ),
+            recipients =
+                listOf(
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                ),
+            filters =
+                MessageController.PostMessageFilters(
+                    serviceNeedIds =
+                        listOf(snDefaultPartDayDaycare.id, snDefaultFiveYearOldsPartDayDaycare.id)
+                ),
             user = messager,
             now = sendTime
         )
@@ -1264,17 +1273,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Vappuna paistaa aurinko",
             messageType = MessageType.BULLETIN,
             sender = messagerAccount,
-            recipients = listOf(
-                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
-            ),
-            filters = MessageController.PostMessageFilters(
-                shiftCare = true,
-                intermittentShiftCare = true
-            ),
+            recipients =
+                listOf(
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                ),
+            filters =
+                MessageController.PostMessageFilters(
+                    shiftCare = true,
+                    intermittentShiftCare = true
+                ),
             user = messager,
             now = sendTime
         )
@@ -1295,16 +1306,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Vappuna paistaa aurinko",
             messageType = MessageType.BULLETIN,
             sender = messagerAccount,
-            recipients = listOf(
-                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
-            ),
-            filters = MessageController.PostMessageFilters(
-                familyDaycare = true
-            ),
+            recipients =
+                listOf(
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                ),
+            filters = MessageController.PostMessageFilters(familyDaycare = true),
             user = messager,
             now = sendTime
         )
@@ -1324,14 +1334,16 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             postNewThreadPreflightCheck(
                 user = messager,
                 sender = messagerAccount,
-                recipients = listOf(
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                ),
-                filters = MessageController.PostMessageFilters(
-                    yearsOfBirth = listOf(2018),
-                    serviceNeedIds = listOf()
-                )
+                recipients =
+                    listOf(
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                    ),
+                filters =
+                    MessageController.PostMessageFilters(
+                        yearsOfBirth = listOf(2018),
+                        serviceNeedIds = listOf()
+                    )
             )
         assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 2), response)
     }

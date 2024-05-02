@@ -1222,24 +1222,33 @@ fun Database.Read.getMessageAccountsForRecipients(
     val citizenRecipients =
         groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
 
-    val filterPredicates = PredicateSql.allNotNull(
-        if (filters?.yearsOfBirth?.isNotEmpty() == true) {
-            PredicateSql { where("date_part('year', p.date_of_birth) = ANY('{${filters.yearsOfBirth.joinToString(",")}}')") }
-        } else null,
-        if (filters?.serviceNeedIds?.isNotEmpty() == true) {
-            PredicateSql { where("sno.id = ANY('{${filters.serviceNeedIds.joinToString(",")}}')") }
-        } else null,
-        if (filters?.shiftCare == true && filters.intermittentShiftCare) {
-            PredicateSql { where("sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])") }
-        } else if (filters?.shiftCare == true) {
-            PredicateSql { where("sn.shift_care = 'FULL'::shift_care_type") }
-        } else if (filters?.intermittentShiftCare == true) {
-            PredicateSql { where("sn.shift_care = 'INTERMITTENT'::shift_care_type")}
-        } else null,
-        if (filters?.familyDaycare == true) {
-            PredicateSql { where("d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]") }
-        } else null
-    )
+    val filterPredicates =
+        PredicateSql.allNotNull(
+            if (filters?.yearsOfBirth?.isNotEmpty() == true) {
+                PredicateSql {
+                    where(
+                        "date_part('year', p.date_of_birth) = ANY('{${filters.yearsOfBirth.joinToString(",")}}')"
+                    )
+                }
+            } else null,
+            if (filters?.serviceNeedIds?.isNotEmpty() == true) {
+                PredicateSql {
+                    where("sno.id = ANY('{${filters.serviceNeedIds.joinToString(",")}}')")
+                }
+            } else null,
+            if (filters?.shiftCare == true && filters.intermittentShiftCare) {
+                PredicateSql {
+                    where("sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])")
+                }
+            } else if (filters?.shiftCare == true) {
+                PredicateSql { where("sn.shift_care = 'FULL'::shift_care_type") }
+            } else if (filters?.intermittentShiftCare == true) {
+                PredicateSql { where("sn.shift_care = 'INTERMITTENT'::shift_care_type") }
+            } else null,
+            if (filters?.familyDaycare == true) {
+                PredicateSql { where("d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]") }
+            } else null
+        )
 
     return createQuery {
             sql(
