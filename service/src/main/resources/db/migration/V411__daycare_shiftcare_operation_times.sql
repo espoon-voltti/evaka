@@ -14,14 +14,3 @@ ALTER TABLE daycare
                                                                CASE WHEN daycare.shift_care_operation_times[7] IS NOT NULL THEN 7 END
                                                                ], NULL)
                                               ) STORED;
-
-UPDATE daycare
-SET shift_care_operation_times = array [
-    CASE WHEN 1 = ANY (shift_care_operation_days) THEN '(00:00,23:59)'::timerange_non_nullable_range END,
-    CASE WHEN 2 = ANY (shift_care_operation_days) THEN '(00:00,23:59)'::timerange_non_nullable_range END,
-    CASE WHEN 3 = ANY (shift_care_operation_days) THEN '(00:00,23:59)'::timerange_non_nullable_range END,
-    CASE WHEN 4 = ANY (shift_care_operation_days) THEN '(00:00,23:59)'::timerange_non_nullable_range END,
-    CASE WHEN 5 = ANY (shift_care_operation_days) THEN '(00:00,23:59)'::timerange_non_nullable_range END,
-    CASE WHEN 6 = ANY (shift_care_operation_days) THEN '(00:00,23:59)'::timerange_non_nullable_range END,
-    CASE WHEN 7 = ANY (shift_care_operation_days) THEN '(00:00,23:59)'::timerange_non_nullable_range END
-    ];
