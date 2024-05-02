@@ -403,3 +403,4 @@ V403__blocklist_constraint_trigger.sql
 V404__special_diets.sql
 V405__employee_pin_locked_not_null.sql
 V406__varda_state_error.sql
+V407__acl_history.sql
