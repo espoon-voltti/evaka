@@ -98,6 +98,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val person3 = AuthenticatedUser.Citizen(id = testAdult_3.id, CitizenAuthLevel.STRONG)
     private val person4 = AuthenticatedUser.Citizen(id = testAdult_4.id, CitizenAuthLevel.STRONG)
     private val person5 = AuthenticatedUser.Citizen(id = testAdult_5.id, CitizenAuthLevel.STRONG)
+    private val person6 = AuthenticatedUser.Citizen(id = testAdult_6.id, CitizenAuthLevel.STRONG)
+    private val person7 = AuthenticatedUser.Citizen(id = testAdult_7.id, CitizenAuthLevel.STRONG)
     private val placementStart = LocalDate.of(2022, 5, 14)
     private val placementEnd = placementStart.plusMonths(1)
     private val sendTime = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 11))
@@ -112,6 +114,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var person3Account: MessageAccountId
     private lateinit var person4Account: MessageAccountId
     private lateinit var person5Account: MessageAccountId
+    private lateinit var person6Account: MessageAccountId
+    private lateinit var person7Account: MessageAccountId
     private lateinit var serviceWorkerAccount: MessageAccountId
     private lateinit var messagerAccount: MessageAccountId
 
@@ -192,6 +196,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             person3Account = insertPerson(testAdult_3)
             person4Account = insertPerson(testAdult_4)
             person5Account = insertPerson(testAdult_5)
+            person6Account = insertPerson(testAdult_6)
+            person7Account = insertPerson(testAdult_7)
 
             val fridgeHeadId = person4.id
 
@@ -230,9 +236,16 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // person 3 and 5 are guardian of child 6
             testChild_6.let {
-                insertChild(tx, it, groupId2, daycareId = testDaycare2.id, optionId = snDefaultPreschool.id, shiftCare = ShiftCareType.INTERMITTENT)
+                insertChild(tx, it, groupId1)
                 tx.insertGuardian(person3.id, it.id)
                 tx.insertGuardian(person5.id, it.id)
+            }
+
+            // person 3 and 5 are guardian of child 6
+            testChild_8.let {
+                insertChild(tx, it, groupId2, daycareId = testDaycare2.id, optionId = snDefaultPreschool.id, shiftCare = ShiftCareType.INTERMITTENT)
+                tx.insertGuardian(person6.id, it.id)
+                tx.insertGuardian(person7.id, it.id)
             }
 
             employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
@@ -1196,6 +1209,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
             ),
             filters = MessageController.PostMessageFilters(
                 yearsOfBirth = listOf(2017)
@@ -1225,6 +1239,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
             ),
             filters = MessageController.PostMessageFilters(
                 serviceNeedIds = listOf(snDefaultPartDayDaycare.id, snDefaultFiveYearOldsPartDayDaycare.id)
@@ -1254,6 +1269,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
             ),
             filters = MessageController.PostMessageFilters(
                 shiftCare = true,
@@ -1284,6 +1300,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
             ),
             filters = MessageController.PostMessageFilters(
                 familyDaycare = true
