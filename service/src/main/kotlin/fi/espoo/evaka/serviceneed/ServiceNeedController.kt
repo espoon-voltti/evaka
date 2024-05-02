@@ -180,7 +180,7 @@ class ServiceNeedController(
     )
     fun getServiceNeedOptionPublicInfos(
         db: Database,
-        @RequestParam placementTypes: List<PlacementType>
+        @RequestParam placementTypes: List<PlacementType> = emptyList()
     ): List<ServiceNeedOptionPublicInfo> {
         return db.connect { dbc -> dbc.read { it.getServiceNeedOptionPublicInfos(placementTypes) } }
     }

@@ -125,7 +125,7 @@ export const clubTermsQuery = query({
 export const serviceNeedOptionPublicInfosQuery = query({
   api: getServiceNeedOptionPublicInfos,
   queryKey: ({ placementTypes }) =>
-    queryKeys.serviceNeedOptionPublicInfos(placementTypes)
+    queryKeys.serviceNeedOptionPublicInfos(placementTypes ?? [])
 })
 
 export const createApplicationMutation = mutation({

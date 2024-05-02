@@ -40,11 +40,11 @@ export async function deleteServiceNeed(
 */
 export async function getServiceNeedOptionPublicInfos(
   request: {
-    placementTypes: PlacementType[]
+    placementTypes?: PlacementType[] | null
   }
 ): Promise<ServiceNeedOptionPublicInfo[]> {
   const params = createUrlSearchParams(
-    ...(request.placementTypes.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]))
+    ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<ServiceNeedOptionPublicInfo[]>>({
     url: uri`/public/service-needs/options`.toString(),

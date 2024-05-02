@@ -58,7 +58,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam unitIds: List<DaycareId>
+        @RequestParam unitIds: List<DaycareId> = emptyList()
     ): List<UnitStats> {
         return db.connect { dbc ->
                 dbc.read { tx ->

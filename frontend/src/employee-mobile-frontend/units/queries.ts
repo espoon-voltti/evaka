@@ -15,7 +15,7 @@ const queryKeys = createQueryKeys('units', {
 
 export const unitStatsQuery = query({
   api: getUnitStats,
-  queryKey: ({ unitIds }) => queryKeys.stats(unitIds)
+  queryKey: ({ unitIds }) => queryKeys.stats(unitIds ?? [])
 })
 
 export const unitInfoQuery = query({

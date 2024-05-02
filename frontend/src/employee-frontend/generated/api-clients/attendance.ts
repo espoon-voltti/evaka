@@ -372,11 +372,11 @@ export async function getUnitInfo(
 */
 export async function getUnitStats(
   request: {
-    unitIds: UUID[]
+    unitIds?: UUID[] | null
   }
 ): Promise<UnitStats[]> {
   const params = createUrlSearchParams(
-    ...(request.unitIds.map((e): [string, string | null | undefined] => ['unitIds', e]))
+    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<UnitStats[]>>({
     url: uri`/mobile/units/stats`.toString(),
