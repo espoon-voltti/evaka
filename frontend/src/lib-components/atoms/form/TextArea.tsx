@@ -139,7 +139,7 @@ export const TextAreaF = React.memo(function TextAreaF({
   )
 })
 
-const TextareaAutosize = React.forwardRef(function TextAreaAutosize({
+const TextareaAutosize = React.memo(function TextAreaAutosize({
   rows = 1,
   ...props
 }: React.HTMLProps<HTMLTextAreaElement>) {
