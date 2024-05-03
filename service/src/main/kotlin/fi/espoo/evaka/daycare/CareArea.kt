@@ -32,12 +32,6 @@ data class MailingAddress(
     val postOffice: String? = null
 )
 
-interface DaycareTimeProps {
-    val dailyPreschoolTime: TimeRange?
-    val dailyPreparatoryTime: TimeRange?
-    val mealTimes: DaycareMealtimes
-}
-
 data class Daycare(
     val id: DaycareId,
     override val name: String,
@@ -82,14 +76,27 @@ data class Daycare(
     @Nested("mealtime_") override val mealTimes: DaycareMealtimes
 ) : DaycareInfo
 
-interface DaycareInfo : DaycareTimeProps, HasName, HasOperationDays
-
-interface HasName {
+interface DaycareInfo {
     val name: String
+    val operationDays: Set<Int>
+    val dailyPreschoolTime: TimeRange?
+    val dailyPreparatoryTime: TimeRange?
+    val mealTimes: DaycareMealtimes
 }
 
-interface HasOperationDays {
-    val operationDays: Set<Int>
+fun isUnitOperationDay(
+    operationDays: Set<Int>,
+    holidays: Set<LocalDate>,
+    date: LocalDate
+): Boolean {
+    if (!operationDays.contains(date.dayOfWeek.value)) return false
+
+    val isRoundTheClockUnit = operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
+    if (!isRoundTheClockUnit && holidays.contains(date)) {
+        return false
+    }
+
+    return true
 }
 
 data class DaycareMealtimes(

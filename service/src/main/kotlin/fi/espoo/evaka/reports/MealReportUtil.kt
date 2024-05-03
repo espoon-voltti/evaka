@@ -95,7 +95,9 @@ data class MealReportChildInfo(
     val reservations: List<TimeRange>?,
     val absences: Set<AbsenceCategory>?,
     val dietInfo: SpecialDiet?,
-    val daycare: DaycareTimeProps
+    val dailyPreschoolTime: TimeRange?,
+    val dailyPreparatoryTime: TimeRange?,
+    val mealTimes: DaycareMealtimes
 )
 
 fun mealReportData(
@@ -110,8 +112,8 @@ fun mealReportData(
                 val fixedScheduleRange =
                     childInfo.placementType.fixedScheduleOnlyRange(
                         date,
-                        childInfo.daycare.dailyPreschoolTime,
-                        childInfo.daycare.dailyPreparatoryTime,
+                        childInfo.dailyPreschoolTime,
+                        childInfo.dailyPreparatoryTime,
                         preschoolTerms
                     )
                 val absent =
@@ -123,7 +125,7 @@ fun mealReportData(
                         fixedScheduleRange,
                         childInfo.reservations ?: emptyList(),
                         absent,
-                        childInfo.daycare.mealTimes,
+                        childInfo.mealTimes,
                         usePreschoolMealTypes,
                     )
                     .map {
@@ -171,14 +173,8 @@ fun getMealReportForUnit(
 ): MealReportData? {
     val daycare = unitData.daycare ?: return null
 
-    if (!daycare.operationDays.contains(date.dayOfWeek.value))
+    if (!isUnitOperationDay(daycare.operationDays, unitData.holidays, date)) {
         return MealReportData(date, daycare.name, emptyList())
-
-    val isRoundTheClockUnit = daycare.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
-    if (!isRoundTheClockUnit) {
-        if (unitData.holidays.contains(date)) {
-            return MealReportData(date, daycare.name, emptyList())
-        }
     }
 
     val childrenToPlacementTypeMap = unitData.childPlacements
@@ -186,22 +182,22 @@ fun getMealReportForUnit(
 
     val dietInfos = unitData.specialDiets
     val childInfos =
-        childrenToPlacementTypeMap
-            .mapValues { (childId, placementType) ->
-                MealReportChildInfo(
-                    placementType = placementType,
-                    firstName = childrenReservationsAndAttendances[childId]!!.child.firstName,
-                    lastName = childrenReservationsAndAttendances[childId]!!.child.lastName,
-                    reservations =
-                        childrenReservationsAndAttendances[childId]!!
-                            .reservations[date]
-                            ?.mapNotNull { it.asTimeRange() },
-                    absences = childrenReservationsAndAttendances[childId]!!.absences[date]?.keys,
-                    dietInfo = dietInfos[childId],
-                    daycare = daycare
-                )
-            }
-            .values
+        childrenToPlacementTypeMap.map { (childId, placementType) ->
+            MealReportChildInfo(
+                placementType = placementType,
+                firstName = childrenReservationsAndAttendances[childId]!!.child.firstName,
+                lastName = childrenReservationsAndAttendances[childId]!!.child.lastName,
+                reservations =
+                    childrenReservationsAndAttendances[childId]!!.reservations[date]?.mapNotNull {
+                        it.asTimeRange()
+                    },
+                absences = childrenReservationsAndAttendances[childId]!!.absences[date]?.keys,
+                dietInfo = dietInfos[childId],
+                dailyPreschoolTime = daycare.dailyPreschoolTime,
+                dailyPreparatoryTime = daycare.dailyPreparatoryTime,
+                mealTimes = daycare.mealTimes,
+            )
+        }
 
     val preschoolTerms = unitData.preschoolTerms
     val reportRows = mealReportData(childInfos, date, preschoolTerms, mealTypeMapper)

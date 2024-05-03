@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.DaycareInfo
 import fi.espoo.evaka.daycare.DaycareMealtimes
-import fi.espoo.evaka.daycare.DaycareTimeProps
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealType
@@ -29,7 +28,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class MealReportTests {
-
     @Test
     fun `mealReportData should return no meals for absent child`() {
         val testDate = LocalDate.of(2023, 4, 15)
@@ -42,19 +40,16 @@ class MealReportTests {
                     reservations = listOf(), // No reservations
                     absences = setOf(AbsenceCategory.BILLABLE),
                     dietInfo = null,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime = null
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
-                                    snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
+                            snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 )
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
@@ -82,19 +77,16 @@ class MealReportTests {
                     reservations = emptyList(), // No reservations
                     absences = null, // No absences
                     dietInfo = null,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime = null
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
-                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                            snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 )
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
@@ -129,20 +121,16 @@ class MealReportTests {
                     reservations = listOf(), // No specific reservations
                     absences = null, // No absences
                     dietInfo = null,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime =
-                                TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 30))
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
-                                    snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 30)),
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
+                            snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 )
             )
         val preschoolTerms =
@@ -193,19 +181,16 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
                     absences = null, // No absences
                     dietInfo = glutenFreeDiet,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime = null
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
-                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                            snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 ),
                 MealReportChildInfo( // child with glutenFreeDiet
                     placementType = PlacementType.DAYCARE,
@@ -214,19 +199,16 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(12, 0), LocalTime.of(13, 0))),
                     absences = null, // No absences
                     dietInfo = glutenFreeDiet,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime = null
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
-                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                            snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 ),
                 MealReportChildInfo( // child with lactoseFreeDiet
                     placementType = PlacementType.DAYCARE,
@@ -235,19 +217,16 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(12, 0), LocalTime.of(13, 0))),
                     absences = null, // No absences
                     dietInfo = lactoseFreeDiet,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime = null
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
-                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                            snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 )
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
@@ -351,19 +330,16 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
                     absences = null, // No absences
                     dietInfo = null,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime = null
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
-                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                            snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 ),
                 MealReportChildInfo(
                     placementType = PlacementType.DAYCARE,
@@ -372,19 +348,16 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(10, 0), LocalTime.of(16, 0))),
                     absences = null, // No absences
                     dietInfo = null,
-                    daycare =
-                        object : DaycareTimeProps {
-                            override val dailyPreschoolTime = null
-                            override val dailyPreparatoryTime = null
-                            override val mealTimes =
-                                DaycareMealtimes(
-                                    breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                                    lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
-                                    snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
-                                    supper = null,
-                                    eveningSnack = null
-                                )
-                        }
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                            snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                            supper = null,
+                            eveningSnack = null
+                        )
                 )
             )
         val preschoolTerms = emptyList<PreschoolTerm>()

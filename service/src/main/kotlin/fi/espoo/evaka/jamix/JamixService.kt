@@ -13,6 +13,7 @@ import com.github.kittinunf.result.Result
 import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.daycare.isUnitOperationDay
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.MealReportChildInfo
 import fi.espoo.evaka.reports.mealReportData
@@ -124,13 +125,7 @@ private fun getChildInfos(
 
     return childData.mapNotNull { child ->
         val unit = units[child.unitId] ?: error("Daycare not found for unitId ${child.unitId}")
-
-        if (!unit.operationDays.contains(date.dayOfWeek.value)) return@mapNotNull null
-
-        val isRoundTheClockUnit = unit.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
-        if (!isRoundTheClockUnit && holidays.contains(date)) {
-            return@mapNotNull null
-        }
+        if (!isUnitOperationDay(unit.operationDays, holidays, date)) return@mapNotNull null
 
         MealReportChildInfo(
             placementType = child.placementType,
@@ -139,7 +134,9 @@ private fun getChildInfos(
             reservations = child.reservations,
             absences = child.absences,
             dietInfo = specialDiets[child.childId],
-            daycare = unit
+            dailyPreschoolTime = unit.dailyPreschoolTime,
+            dailyPreparatoryTime = unit.dailyPreparatoryTime,
+            mealTimes = unit.mealTimes
         )
     }
 }
