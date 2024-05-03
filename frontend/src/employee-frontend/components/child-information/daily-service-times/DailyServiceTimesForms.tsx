@@ -7,7 +7,7 @@ import pick from 'lodash/pick'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { Failure, wrapResult } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
 import {
@@ -17,6 +17,7 @@ import {
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { useMutationResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -34,16 +35,12 @@ import { Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import {
-  postDailyServiceTimes,
-  putDailyServiceTimes,
-  putDailyServiceTimesEnd
-} from '../../../generated/api-clients/dailyservicetimes'
+  postDailyServiceTimesMutation,
+  putDailyServiceTimesEndMutation,
+  putDailyServiceTimesMutation
+} from '../queries'
 
 import { DailyServiceTimesReadOnly } from './DailyServiceTimesRow'
-
-const postDailyServiceTimesResult = wrapResult(postDailyServiceTimes)
-const putDailyServiceTimesResult = wrapResult(putDailyServiceTimes)
-const putDailyServiceTimesEndResult = wrapResult(putDailyServiceTimesEnd)
 
 interface FormState {
   startDate: LocalDate | null
@@ -214,7 +211,7 @@ const emptyTimeRange: JsonOf<TimeRange> = {
 }
 
 export interface CreateProps {
-  onClose: (shouldRefresh: boolean) => void
+  onClose: () => void
   childId: UUID
   hasActiveOrUpcomingServiceTimes: boolean
 }
@@ -226,6 +223,10 @@ export const DailyServiceTimesCreationForm = React.memo(
     hasActiveOrUpcomingServiceTimes
   }: CreateProps) {
     const { i18n, lang } = useTranslation()
+
+    const { mutateAsync: postDailyServiceTimes } = useMutationResult(
+      postDailyServiceTimesMutation
+    )
 
     const [formData, setFormData] = useState<FormState>({
       startDate: LocalDate.todayInHelsinkiTz().addDays(1),
@@ -266,11 +267,11 @@ export const DailyServiceTimesCreationForm = React.memo(
         )
       }
 
-      return postDailyServiceTimesResult({
+      return postDailyServiceTimes({
         childId,
         body: validationResult.data
       })
-    }, [childId, validationResult])
+    }, [childId, validationResult, postDailyServiceTimes])
 
     return (
       <form>
@@ -308,12 +309,12 @@ export const DailyServiceTimesCreationForm = React.memo(
         />
         <FixedSpaceRow justifyContent="flex-end">
           <FixedSpaceRow spacing="s">
-            <Button text={i18n.common.cancel} onClick={() => onClose(false)} />
+            <Button text={i18n.common.cancel} onClick={() => onClose()} />
             <AsyncButton
               text={i18n.common.confirm}
               primary
               onClick={sendCreationRequest}
-              onSuccess={() => onClose(true)}
+              onSuccess={() => onClose()}
               data-qa="create-times-btn"
             />
           </FixedSpaceRow>
@@ -325,12 +326,18 @@ export const DailyServiceTimesCreationForm = React.memo(
 
 export interface EditProps {
   onClose: (shouldRefresh: boolean) => void
+  childId: UUID
   id: UUID
   initialData: DailyServiceTimesValue
 }
 
 export const DailyServiceTimesEditForm = React.memo(
-  function DailyServiceTimesEditForm({ onClose, id, initialData }: EditProps) {
+  function DailyServiceTimesEditForm({
+    onClose,
+    childId,
+    id,
+    initialData
+  }: EditProps) {
     const hasStarted = !initialData.validityPeriod.start.isAfter(
       LocalDate.todayInHelsinkiTz()
     )
@@ -338,6 +345,7 @@ export const DailyServiceTimesEditForm = React.memo(
       return (
         <DailyServiceTimesEditEndForm
           onClose={onClose}
+          childId={childId}
           id={id}
           initialData={initialData}
         />
@@ -346,6 +354,7 @@ export const DailyServiceTimesEditForm = React.memo(
       return (
         <DailyServiceTimesEditFullForm
           onClose={onClose}
+          childId={childId}
           id={id}
           initialData={initialData}
         />
@@ -356,12 +365,16 @@ export const DailyServiceTimesEditForm = React.memo(
 
 const DailyServiceTimesEditFullForm = React.memo(
   function DailyServiceTimesEditFullForm({
+    childId,
     onClose,
     id,
     initialData
   }: EditProps) {
     const { i18n, lang } = useTranslation()
 
+    const { mutateAsync: putDailyServiceTimes } = useMutationResult(
+      putDailyServiceTimesMutation
+    )
     const [formData, setFormData] = useState<FormState>({
       startDate: initialData.validityPeriod.start,
       endDate: initialData.validityPeriod.end,
@@ -430,8 +443,8 @@ const DailyServiceTimesEditFullForm = React.memo(
         )
       }
 
-      return putDailyServiceTimesResult({ id, body: validationResult.data })
-    }, [id, validationResult])
+      return putDailyServiceTimes({ childId, id, body: validationResult.data })
+    }, [id, childId, validationResult, putDailyServiceTimes])
 
     return (
       <form>
@@ -505,19 +518,23 @@ const DailyServiceTimesEditFullForm = React.memo(
 
 const DailyServiceTimesEditEndForm = React.memo(
   function DailyServiceTimesEditEndForm({
+    childId,
     id,
     onClose,
     initialData
   }: EditProps) {
     const { i18n, lang } = useTranslation()
 
+    const { mutateAsync: putDailyServiceTimesEnd } = useMutationResult(
+      putDailyServiceTimesEndMutation
+    )
     const [endDate, setEndDate] = useState<LocalDate | null>(
       initialData.validityPeriod.end
     )
 
     const save = useCallback(
-      async () => putDailyServiceTimesEndResult({ id, body: { endDate } }),
-      [id, endDate]
+      async () => putDailyServiceTimesEnd({ childId, id, body: { endDate } }),
+      [id, childId, endDate, putDailyServiceTimesEnd]
     )
 
     return (

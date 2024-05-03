@@ -14,11 +14,12 @@ import styled from 'styled-components'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UIContext } from 'employee-frontend/state/ui'
-import { Failure, wrapResult } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -31,16 +32,9 @@ import { LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import {
-  createAssistanceNeedVoucherCoefficient,
-  updateAssistanceNeedVoucherCoefficient
-} from '../../../../generated/api-clients/assistanceneed'
-
-const createAssistanceNeedVoucherCoefficientResult = wrapResult(
-  createAssistanceNeedVoucherCoefficient
-)
-const updateAssistanceNeedVoucherCoefficientResult = wrapResult(
-  updateAssistanceNeedVoucherCoefficient
-)
+  createAssistanceNeedVoucherCoefficientMutation,
+  updateAssistanceNeedVoucherCoefficientMutation
+} from '../../queries'
 
 const CoefficientInputContainer = styled.div`
   display: flex;
@@ -71,14 +65,11 @@ interface CreateProps extends CommonProps {
 }
 
 interface UpdateProps extends CommonProps {
+  childId: UUID
   coefficient: AssistanceNeedVoucherCoefficient
 }
 
 type Props = CreateProps | UpdateProps
-
-function isCreate(props: Props): props is CreateProps {
-  return 'childId' in props
-}
 
 function isUpdate(props: Props): props is UpdateProps {
   return 'coefficient' in props
@@ -122,6 +113,11 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
   } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
+  const { mutateAsync: createAssistanceNeedVoucherCoefficient } =
+    useMutationResult(createAssistanceNeedVoucherCoefficientMutation)
+  const { mutateAsync: updateAssistanceNeedVoucherCoefficient } =
+    useMutationResult(updateAssistanceNeedVoucherCoefficientMutation)
+
   const [form, setForm] = useState<Form>(
     isUpdate(props)
       ? {
@@ -151,9 +147,9 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
     const validityPeriod = new FiniteDateRange(form.start, form.end)
 
     const relevantExistingCoefficients = (
-      isCreate(props)
-        ? props.coefficients
-        : props.coefficients.filter((c) => c.id !== props.coefficient.id)
+      isUpdate(props)
+        ? props.coefficients.filter((c) => c.id !== props.coefficient.id)
+        : props.coefficients
     ).map((c) => c.validityPeriod)
 
     const overlapWarning = [
@@ -203,18 +199,27 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
       coefficient: parseFloat(form.coefficient.replace(',', '.'))
     }
 
-    if (isCreate(props)) {
-      return createAssistanceNeedVoucherCoefficientResult({
+    if (isUpdate(props)) {
+      return updateAssistanceNeedVoucherCoefficient({
         childId: props.childId,
-        body: data
-      })
-    } else {
-      return updateAssistanceNeedVoucherCoefficientResult({
         id: props.coefficient.id,
         body: data
       })
+    } else {
+      return createAssistanceNeedVoucherCoefficient({
+        childId: props.childId,
+        body: data
+      })
     }
-  }, [form.coefficient, form.end, form.start, isValid, props])
+  }, [
+    form.coefficient,
+    form.end,
+    form.start,
+    isValid,
+    props,
+    createAssistanceNeedVoucherCoefficient,
+    updateAssistanceNeedVoucherCoefficient
+  ])
 
   return (
     <form onSubmit={submitForm}>

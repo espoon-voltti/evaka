@@ -41,17 +41,20 @@ const updateFamilyContactPriorityResult = wrapResult(
 )
 
 export interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default React.memo(function FamilyContacts({ id, startOpen }: Props) {
+export default React.memo(function FamilyContacts({
+  childId,
+  startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(ChildContext)
 
   const [contacts, reloadContacts] = useApiState(
-    () => getFamilyContactSummaryResult({ childId: id }),
-    [id]
+    () => getFamilyContactSummaryResult({ childId }),
+    [childId]
   )
   const [open, setOpen] = useState(startOpen)
 
@@ -67,13 +70,15 @@ export default React.memo(function FamilyContacts({ id, startOpen }: Props) {
     >
       {renderResult(contacts, (contacts) => (
         <FamilyContactTable
-          childId={id}
+          childId={childId}
           contacts={contacts}
           reloadContacts={reloadContacts}
         />
       ))}
       <Gap size="XL" />
-      {permittedActions.has('READ_BACKUP_PICKUP') && <BackupPickup id={id} />}
+      {permittedActions.has('READ_BACKUP_PICKUP') && (
+        <BackupPickup childId={childId} />
+      )}
     </CollapsibleContentArea>
   )
 })

@@ -72,7 +72,7 @@ const HeadOfFamilyLink = styled(Link)`
 `
 
 interface SectionProps {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
@@ -80,10 +80,10 @@ function requireOneOfPermittedActions(
   Component: React.FunctionComponent<SectionProps>,
   ...actions: (Action.Child | Action.Person)[]
 ): React.FunctionComponent<SectionProps> {
-  return function Section({ id, startOpen }: SectionProps) {
+  return function Section({ childId, startOpen }: SectionProps) {
     const { permittedActions } = useContext<ChildState>(ChildContext)
     if (actions.some((action) => permittedActions.has(action))) {
-      return <Component id={id} startOpen={startOpen} />
+      return <Component childId={childId} startOpen={startOpen} />
     } else {
       return null
     }
@@ -374,7 +374,7 @@ const ChildInformation = React.memo(function ChildInformation({
         <FixedSpaceColumn spacing="m">
           {layout.map(({ component, open }) => {
             const Component = components[component]
-            return <Component id={id} key={component} startOpen={open} />
+            return <Component childId={id} key={component} startOpen={open} />
           })}
         </FixedSpaceColumn>
       </div>

@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { boolean, localDate, string } from 'lib-common/form/fields'
 import {
   array,
@@ -39,7 +39,6 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -64,18 +63,16 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { fi } from 'lib-customizations/defaults/employee/i18n/fi'
 import { featureFlags, translations } from 'lib-customizations/employee'
 
-import { getEmployees } from '../../../../generated/api-clients/pis'
+import { getEmployeesQuery } from '../../../../queries'
 import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
   assistanceNeedPreschoolDecisionMakerOptionsQuery,
   assistanceNeedPreschoolDecisionQuery,
-  unitsQuery,
   queryKeys,
+  unitsQuery,
   updateAssistanceNeedPreschoolDecisionMutation
 } from '../../queries'
-
-const getEmployeesResult = wrapResult(getEmployees)
 
 const WidthLimiter = styled.div`
   max-width: 700px;
@@ -1012,7 +1009,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
   ).map((units) =>
     units.filter((u) => u.careTypes.some((type) => type !== 'CLUB'))
   )
-  const [employeesResult] = useApiState(() => getEmployeesResult(), [])
+  const employeesResult = useQueryResult(getEmployeesQuery())
 
   // invalidate cached decision on onmount
   const queryClient = useQueryClient()

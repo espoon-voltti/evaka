@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -24,43 +23,42 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H3, Label } from 'lib-components/typography'
 import { faPen, faQuestion, faTrash } from 'lib-icons'
 
-import {
-  createBackupPickup,
-  deleteBackupPickup,
-  getBackupPickups,
-  updateBackupPickup
-} from '../../generated/api-clients/backuppickup'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { FlexRow } from '../common/styled/containers'
 
+import {
+  createBackupPickupMutation,
+  deleteBackupPickupMutation,
+  getBackupPickupsQuery,
+  updateBackupPickupMutation
+} from './queries'
+
 interface BackupPickupProps {
-  id: UUID
+  childId: UUID
 }
 
-const createBackupPickupResult = wrapResult(createBackupPickup)
-const getBackupPickupsResult = wrapResult(getBackupPickups)
-const updateBackupPickupResult = wrapResult(updateBackupPickup)
-const deleteBackupPickupResult = wrapResult(deleteBackupPickup)
-
-function BackupPickup({ id }: BackupPickupProps) {
+function BackupPickup({ childId }: BackupPickupProps) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const { permittedActions } = useContext(ChildContext)
 
-  const [result, setResult] = useState<Result<ChildBackupPickup[]>>(
-    Loading.of()
+  const backupPickups = useQueryResult(getBackupPickupsQuery({ childId }))
+  const { mutateAsync: createBackupPickup } = useMutationResult(
+    createBackupPickupMutation
   )
+  const { mutateAsync: updateBackupPickup } = useMutationResult(
+    updateBackupPickupMutation
+  )
+  const { mutateAsync: deleteBackupPickup } = useMutationResult(
+    deleteBackupPickupMutation
+  )
+
   const [backupPickup, setBackupPickup] = useState<
     ChildBackupPickup | undefined
   >(undefined)
-
-  const loadBackupPickups = useRestApi(getBackupPickupsResult, setResult)
-  useEffect(() => {
-    void loadBackupPickups({ childId: id })
-  }, [id, loadBackupPickups])
 
   const openEditBackupPickupModal = (pickup: ChildBackupPickup) => {
     setBackupPickup(pickup)
@@ -73,10 +71,9 @@ function BackupPickup({ id }: BackupPickupProps) {
   }
 
   const confirmRemoveModal = async () => {
-    if (result.isSuccess && backupPickup) {
-      await deleteBackupPickupResult({ id: backupPickup.id })
+    if (backupPickups.isSuccess && backupPickup) {
+      await deleteBackupPickup({ childId, id: backupPickup.id })
       setBackupPickup(undefined)
-      void loadBackupPickups({ childId: id })
       clearUiMode()
     }
   }
@@ -87,8 +84,7 @@ function BackupPickup({ id }: BackupPickupProps) {
 
     async function saveBackupPickup() {
       if (name !== '' && phone !== '') {
-        await createBackupPickupResult({ childId: id, body: { name, phone } })
-        void loadBackupPickups({ childId: id })
+        await createBackupPickup({ childId, body: { name, phone } })
         setBackupPickup(undefined)
         clearUiMode()
       }
@@ -134,14 +130,14 @@ function BackupPickup({ id }: BackupPickupProps) {
 
     async function saveBackupPickup() {
       if (backupPickup) {
-        await updateBackupPickupResult({
+        await updateBackupPickup({
+          childId,
           id: backupPickup.id,
           body: {
             name: name !== '' ? name : backupPickup.name,
             phone: phone !== '' ? phone : backupPickup.phone
           }
         })
-        void loadBackupPickups({ childId: id })
         setBackupPickup(undefined)
         clearUiMode()
       }
@@ -193,9 +189,9 @@ function BackupPickup({ id }: BackupPickupProps) {
 
   return (
     <>
-      {result.isLoading && <SpinnerSegment />}
-      {result.isFailure && <ErrorSegment />}
-      {result.isSuccess && (
+      {backupPickups.isLoading && <SpinnerSegment />}
+      {backupPickups.isFailure && <ErrorSegment />}
+      {backupPickups.isSuccess && (
         <>
           <FlexRow justifyContent="space-between">
             <H3 noMargin>{i18n.childInformation.backupPickups.title}</H3>
@@ -207,7 +203,7 @@ function BackupPickup({ id }: BackupPickupProps) {
               />
             )}
           </FlexRow>
-          {result.value.length > 0 && (
+          {backupPickups.value.length > 0 && (
             <Table>
               <Thead>
                 <Tr>
@@ -219,7 +215,7 @@ function BackupPickup({ id }: BackupPickupProps) {
                 </Tr>
               </Thead>
               <Tbody>
-                {result.value.map((row) => (
+                {backupPickups.value.map((row) => (
                   <Tr
                     key={row.id}
                     data-qa={`table-backup-pickup-row-${row.name}`}

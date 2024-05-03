@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { combine, Loading, Result, wrapResult } from 'lib-common/api'
+import { combine, Loading, Result } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -14,13 +14,11 @@ import MutateButton, {
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { getEmployees } from '../../../generated/api-clients/pis'
+import { getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { renderResult } from '../../async-rendering'
 import { areaQuery, createUnitMutation } from '../queries'
-
-const getEmployeesResult = wrapResult(getEmployees)
 
 export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()
@@ -29,20 +27,20 @@ export default React.memo(function CreateUnitPage() {
   const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
     useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
 
+  const employeesResponse = useQueryResult(getEmployeesQuery())
+
   useEffect(() => {
-    void getEmployeesResult().then((employeesResponse) => {
-      setFinanceDecisionHandlerOptions(
-        employeesResponse.map((employees) =>
-          employees.map((employee) => ({
-            value: employee.id,
-            label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
-              employee.email ? ` (${employee.email})` : ''
-            }`
-          }))
-        )
+    setFinanceDecisionHandlerOptions(
+      employeesResponse.map((employees) =>
+        employees.map((employee) => ({
+          value: employee.id,
+          label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
+            employee.email ? ` (${employee.email})` : ''
+          }`
+        }))
       )
-    })
-  }, [])
+    )
+  }, [employeesResponse])
 
   return (
     <Container>

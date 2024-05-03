@@ -14,11 +14,11 @@ import { Gap } from 'lib-components/white-space'
 import { Incomes, IncomeStatements } from '../person-profile/PersonIncome'
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default React.memo(function ChildIncome({ id, startOpen }: Props) {
+export default React.memo(function ChildIncome({ childId, startOpen }: Props) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(startOpen)
   const { permittedActions } = useContext(ChildContext)
@@ -33,10 +33,10 @@ export default React.memo(function ChildIncome({ id, startOpen }: Props) {
       data-qa="income-collapsible"
     >
       <H4>{i18n.personProfile.incomeStatement.title}</H4>
-      <IncomeStatements personId={id} />
+      <IncomeStatements personId={childId} />
       <Gap size="L" />
       <H3>{i18n.personProfile.income.title}</H3>
-      <Incomes personId={id} permittedActions={permittedActions} />
+      <Incomes personId={childId} permittedActions={permittedActions} />
     </CollapsibleContentArea>
   )
 })

@@ -27,19 +27,22 @@ const getRecipientsResult = wrapResult(getRecipients)
 const editRecipientResult = wrapResult(editRecipient)
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
+export default React.memo(function MessageBlocklist({
+  childId,
+  startOpen
+}: Props) {
   const { i18n } = useTranslation()
 
   const { setErrorMessage } = useContext(UIContext)
   const { permittedActions } = useContext(ChildContext)
   const [open, setOpen] = useState(startOpen)
   const [recipients, loadData] = useApiState(
-    () => getRecipientsResult({ childId: id }),
-    [id]
+    () => getRecipientsResult({ childId }),
+    [childId]
   )
   const [saving, setSaving] = useState(false)
 
@@ -51,7 +54,7 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
     async (personId: UUID, checked: boolean) => {
       setSaving(true)
       const res = await editRecipientResult({
-        childId: id,
+        childId,
         personId,
         body: {
           blocklisted: !checked
@@ -68,7 +71,7 @@ export default React.memo(function MessageBlocklist({ id, startOpen }: Props) {
       setSaving(false)
       void loadData()
     },
-    [i18n, id, loadData, setErrorMessage]
+    [i18n, childId, loadData, setErrorMessage]
   )
 
   return (

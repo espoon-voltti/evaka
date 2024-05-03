@@ -5,6 +5,7 @@
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
+import { getChildApplicationSummaries } from '../../generated/api-clients/application'
 import {
   createAssistanceAction,
   createAssistanceFactor,
@@ -26,16 +27,37 @@ import {
 import {
   annulAssistanceNeedPreschoolDecision,
   createAssistanceNeedPreschoolDecision,
+  createAssistanceNeedVoucherCoefficient,
   decideAssistanceNeedPreschoolDecision,
   deleteAssistanceNeedPreschoolDecision,
+  deleteAssistanceNeedVoucherCoefficient,
   getAssistanceNeedPreschoolDecision,
   getAssistanceNeedPreschoolDecisions,
+  getAssistanceNeedVoucherCoefficients,
   getAssistancePreschoolDecisionMakerOptions,
   revertAssistanceNeedPreschoolDecisionToUnsent,
   sendAssistanceNeedPreschoolDecisionForDecision,
-  updateAssistanceNeedPreschoolDecision
+  updateAssistanceNeedPreschoolDecision,
+  updateAssistanceNeedVoucherCoefficient
 } from '../../generated/api-clients/assistanceneed'
-import { getUnits } from '../../generated/api-clients/daycare'
+import {
+  createBackupPickup,
+  deleteBackupPickup,
+  getBackupPickups,
+  updateBackupPickup
+} from '../../generated/api-clients/backuppickup'
+import {
+  deleteDailyServiceTimes,
+  getDailyServiceTimes,
+  postDailyServiceTimes,
+  putDailyServiceTimes,
+  putDailyServiceTimesEnd
+} from '../../generated/api-clients/dailyservicetimes'
+import {
+  getAdditionalInfo,
+  getUnits,
+  updateAdditionalInfo
+} from '../../generated/api-clients/daycare'
 import {
   createDocument,
   deleteDraftDocument,
@@ -47,6 +69,13 @@ import {
   takeDocumentWriteLock,
   updateDocumentContent
 } from '../../generated/api-clients/document'
+import {
+  createFeeAlteration,
+  deleteFeeAlteration,
+  getFeeAlterations,
+  updateFeeAlteration
+} from '../../generated/api-clients/invoicing'
+import { getFosterParents } from '../../generated/api-clients/pis'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('childInformation', {
@@ -62,12 +91,26 @@ export const queryKeys = createQueryKeys('childInformation', {
     'assistanceNeedPreschoolDecision',
     decisionId
   ],
-  units: () => ['units'],
-  decisionMakerOptions: (decisionId: UUID, unitId: UUID | null) => [
-    'decisionMakerOptions',
+  assistanceNeedPreschoolDecisionDecisionMakerOptions: (
+    decisionId: UUID,
+    unitId: UUID | null
+  ) => [
+    'assistanceNeedPreschoolDecisionDecisionMakerOptions',
     decisionId,
     unitId
-  ]
+  ],
+  units: () => ['units'],
+  backupPickups: (childId: UUID) => ['backupPickups', childId],
+  fosterParents: (childId: UUID) => ['fosterParents', childId],
+  feeAlterations: (personId: UUID) => ['feeAlterations', personId],
+  applicationSummaries: (childId: UUID) => ['applicationSummaries', childId],
+  assistanceNeedVoucherCoefficients: (childId: UUID) => [
+    'assistanceNeedVoucherCoefficients',
+    childId
+  ],
+  backupCares: (childId: UUID) => ['backupCares', childId],
+  dailyServiceTimes: (childId: UUID) => ['dailyServiceTimes', childId],
+  additionalInfo: (childId: UUID) => ['additionalInfo', childId]
 })
 
 export const childDocumentsQuery = query({
@@ -239,7 +282,8 @@ export const assistanceNeedPreschoolDecisionMakerOptionsQuery = query({
       unitId: UUID | null
     }
   ) => getAssistancePreschoolDecisionMakerOptions(arg),
-  queryKey: ({ id, unitId }) => queryKeys.decisionMakerOptions(id, unitId)
+  queryKey: ({ id, unitId }) =>
+    queryKeys.assistanceNeedPreschoolDecisionDecisionMakerOptions(id, unitId)
 })
 
 export const createAssistanceNeedPreschoolDecisionMutation = mutation({
@@ -311,4 +355,127 @@ export const deleteAssistanceNeedPreschoolDecisionMutation = mutation({
 export const unitsQuery = query({
   api: getUnits,
   queryKey: queryKeys.units
+})
+
+export const getBackupPickupsQuery = query({
+  api: getBackupPickups,
+  queryKey: ({ childId }) => queryKeys.backupPickups(childId)
+})
+
+export const createBackupPickupMutation = mutation({
+  api: createBackupPickup,
+  invalidateQueryKeys: ({ childId }) => [queryKeys.backupPickups(childId)]
+})
+
+export const updateBackupPickupMutation = mutation({
+  api: (arg: Arg0<typeof updateBackupPickup> & { childId: UUID }) =>
+    updateBackupPickup(arg),
+  invalidateQueryKeys: ({ childId }) => [queryKeys.backupPickups(childId)]
+})
+
+export const deleteBackupPickupMutation = mutation({
+  api: (arg: Arg0<typeof deleteBackupPickup> & { childId: UUID }) =>
+    deleteBackupPickup(arg),
+  invalidateQueryKeys: ({ childId }) => [queryKeys.backupPickups(childId)]
+})
+
+export const getFosterParentsQuery = query({
+  api: getFosterParents,
+  queryKey: ({ childId }) => queryKeys.fosterParents(childId)
+})
+
+export const getFeeAlterationsQuery = query({
+  api: getFeeAlterations,
+  queryKey: ({ personId }) => queryKeys.feeAlterations(personId)
+})
+
+export const createFeeAlterationMutation = mutation({
+  api: createFeeAlteration,
+  invalidateQueryKeys: ({ body }) => [queryKeys.feeAlterations(body.personId)]
+})
+
+export const updateFeeAlterationMutation = mutation({
+  api: (arg: Arg0<typeof updateFeeAlteration> & { personId: UUID }) =>
+    updateFeeAlteration(arg),
+  invalidateQueryKeys: ({ personId }) => [queryKeys.feeAlterations(personId)]
+})
+
+export const deleteFeeAlterationMutation = mutation({
+  api: (arg: Arg0<typeof deleteFeeAlteration> & { personId: UUID }) =>
+    deleteFeeAlteration(arg),
+  invalidateQueryKeys: ({ personId }) => [queryKeys.feeAlterations(personId)]
+})
+
+export const getChildApplicationSummariesQuery = query({
+  api: getChildApplicationSummaries,
+  queryKey: ({ childId }) => queryKeys.applicationSummaries(childId)
+})
+
+export const getAssistanceNeedVoucherCoefficientsQuery = query({
+  api: getAssistanceNeedVoucherCoefficients,
+  queryKey: ({ childId }) =>
+    queryKeys.assistanceNeedVoucherCoefficients(childId)
+})
+
+export const createAssistanceNeedVoucherCoefficientMutation = mutation({
+  api: createAssistanceNeedVoucherCoefficient,
+  invalidateQueryKeys: ({ childId }) => [
+    queryKeys.assistanceNeedVoucherCoefficients(childId)
+  ]
+})
+
+export const updateAssistanceNeedVoucherCoefficientMutation = mutation({
+  api: (
+    arg: Arg0<typeof updateAssistanceNeedVoucherCoefficient> & { childId: UUID }
+  ) => updateAssistanceNeedVoucherCoefficient(arg),
+  invalidateQueryKeys: ({ childId }) => [
+    queryKeys.assistanceNeedVoucherCoefficients(childId)
+  ]
+})
+
+export const deleteAssistanceNeedVoucherCoefficientMutation = mutation({
+  api: (
+    arg: Arg0<typeof deleteAssistanceNeedVoucherCoefficient> & { childId: UUID }
+  ) => deleteAssistanceNeedVoucherCoefficient(arg),
+  invalidateQueryKeys: ({ childId }) => [
+    queryKeys.assistanceNeedVoucherCoefficients(childId)
+  ]
+})
+
+export const getDailyServiceTimesQuery = query({
+  api: getDailyServiceTimes,
+  queryKey: ({ childId }) => queryKeys.dailyServiceTimes(childId)
+})
+
+export const postDailyServiceTimesMutation = mutation({
+  api: postDailyServiceTimes,
+  invalidateQueryKeys: ({ childId }) => [queryKeys.dailyServiceTimes(childId)]
+})
+
+export const putDailyServiceTimesMutation = mutation({
+  api: (arg: Arg0<typeof putDailyServiceTimes> & { childId: UUID }) =>
+    putDailyServiceTimes(arg),
+  invalidateQueryKeys: (arg) => [queryKeys.dailyServiceTimes(arg.childId)]
+})
+
+export const putDailyServiceTimesEndMutation = mutation({
+  api: (arg: Arg0<typeof putDailyServiceTimesEnd> & { childId: UUID }) =>
+    putDailyServiceTimesEnd(arg),
+  invalidateQueryKeys: (arg) => [queryKeys.dailyServiceTimes(arg.childId)]
+})
+
+export const deleteDailyServiceTimesMutation = mutation({
+  api: (arg: Arg0<typeof deleteDailyServiceTimes> & { childId: UUID }) =>
+    deleteDailyServiceTimes(arg),
+  invalidateQueryKeys: ({ childId }) => [queryKeys.dailyServiceTimes(childId)]
+})
+
+export const getAdditionalInfoQuery = query({
+  api: getAdditionalInfo,
+  queryKey: ({ childId }) => queryKeys.additionalInfo(childId)
+})
+
+export const updateAdditionalInfoMutation = mutation({
+  api: updateAdditionalInfo,
+  invalidateQueryKeys: ({ childId }) => [queryKeys.additionalInfo(childId)]
 })

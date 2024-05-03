@@ -46,7 +46,7 @@ export default React.memo(function ChildDetails({ id }: Props) {
         ))}
         {permittedActions.has('READ_ADDITIONAL_INFO') && (
           <div className="additional-information">
-            <AdditionalInformation id={id} />
+            <AdditionalInformation childId={id} />
           </div>
         )}
       </CollapsibleContentArea>

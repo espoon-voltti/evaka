@@ -11,11 +11,12 @@ import { useQueryResult } from 'lib-common/query'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 
+import { serviceNeedsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import PlacementTypeItem from './PlacementTypeItem'
-import { serviceNeedsQuery, voucherValuesQuery } from './queries'
+import { voucherValuesQuery } from './queries'
 
 export default React.memo(function ServiceNeedsSection() {
   const { i18n } = useTranslation()

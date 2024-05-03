@@ -6,10 +6,9 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { wrapResult } from 'lib-common/api'
 import { PersonApplicationSummary } from 'lib-common/generated/api-types/application'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -18,7 +17,6 @@ import { H2 } from 'lib-components/typography'
 import { faFileAlt } from 'lib-icons'
 
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
-import { getChildApplicationSummaries } from '../../generated/api-clients/application'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -27,22 +25,22 @@ import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import { inferApplicationType } from '../person-profile/PersonApplications'
 
-const getChildApplicationSummariesResult = wrapResult(
-  getChildApplicationSummaries
-)
+import { getChildApplicationSummariesQuery } from './queries'
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default React.memo(function ChildApplications({ id, startOpen }: Props) {
+export default React.memo(function ChildApplications({
+  childId,
+  startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { person, guardians } = useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
-  const [applications] = useApiState(
-    () => getChildApplicationSummariesResult({ childId: id }),
-    [id]
+  const applications = useQueryResult(
+    getChildApplicationSummariesQuery({ childId })
   )
   const [open, setOpen] = useState(startOpen)
 

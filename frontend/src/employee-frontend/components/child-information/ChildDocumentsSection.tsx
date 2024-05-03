@@ -15,12 +15,12 @@ import ChildDocuments from './ChildDocuments'
 import VasuAndLeops from './VasuAndLeops'
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
 export default React.memo(function ChildDocumentsSection({
-  id: childId,
+  childId,
   startOpen
 }: Props) {
   const { i18n } = useTranslation()

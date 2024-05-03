@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { combine, Loading, Result, wrapResult } from 'lib-common/api'
+import { combine, Loading, Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -16,14 +16,12 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { getEmployees } from '../../../generated/api-clients/pis'
+import { getEmployeesQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 import { TitleContext, TitleState } from '../../../state/title'
 import { renderResult } from '../../async-rendering'
 import { areaQuery, unitQuery, updateUnitMutation } from '../queries'
-
-const getEmployeesResult = wrapResult(getEmployees)
 
 export default React.memo(function UnitDetailsPage() {
   const { id } = useRouteParams(['id'])
@@ -40,20 +38,20 @@ export default React.memo(function UnitDetailsPage() {
     }
   }, [setTitle, unit])
 
+  const employeesResponse = useQueryResult(getEmployeesQuery())
+
   useEffect(() => {
-    void getEmployeesResult().then((employeesResponse) => {
-      setFinanceDecisionHandlerOptions(
-        employeesResponse.map((employees) =>
-          employees.map((employee) => ({
-            value: employee.id,
-            label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
-              employee.email ? ` (${employee.email})` : ''
-            }`
-          }))
-        )
+    setFinanceDecisionHandlerOptions(
+      employeesResponse.map((employees) =>
+        employees.map((employee) => ({
+          value: employee.id,
+          label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
+            employee.email ? ` (${employee.email})` : ''
+          }`
+        }))
       )
-    })
-  }, [id])
+    )
+  }, [id, employeesResponse])
 
   return (
     <Container>

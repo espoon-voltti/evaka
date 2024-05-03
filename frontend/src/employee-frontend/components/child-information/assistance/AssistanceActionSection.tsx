@@ -5,24 +5,22 @@
 import React, { useContext, useMemo, useRef } from 'react'
 import styled from 'styled-components'
 
-import { ChildState, ChildContext } from 'employee-frontend/state/child'
-import { combine, Result, wrapResult } from 'lib-common/api'
+import { ChildContext, ChildState } from 'employee-frontend/state/child'
+import { combine, Result } from 'lib-common/api'
 import { AssistanceActionResponse } from 'lib-common/generated/api-types/assistanceaction'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 
-import { getAssistanceActionOptions } from '../../../generated/api-clients/assistance'
+import { getAssistanceActionOptionsQuery } from '../../../queries'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { renderResult } from '../../async-rendering'
 
 import AssistanceActionForm from './AssistanceActionForm'
 import AssistanceActionRow from './AssistanceActionRow'
-
-const getAssistanceActionOptionsResult = wrapResult(getAssistanceActionOptions)
 
 const TitleRow = styled.div`
   display: flex;
@@ -49,9 +47,8 @@ export default React.memo(function AssistanceActionSection({
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const refSectionTop = useRef(null)
 
-  const [assistanceActionOptions] = useApiState(
-    getAssistanceActionOptionsResult,
-    []
+  const assistanceActionOptions = useQueryResult(
+    getAssistanceActionOptionsQuery()
   )
 
   const duplicate = useMemo(

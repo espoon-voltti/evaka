@@ -10,6 +10,7 @@ import { UIContext } from 'employee-frontend/state/ui'
 import { Action } from 'lib-common/generated/action'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -22,6 +23,7 @@ import { TimeBasedStatusChip } from '../../TimeBasedStatusChip'
 import AssistanceNeedVoucherCoefficientForm from './AssistanceNeedVoucherCoefficientForm'
 
 interface Props {
+  childId: UUID
   voucherCoefficient: AssistanceNeedVoucherCoefficient
   activeCoefficient?: AssistanceNeedVoucherCoefficient
   setActiveCoefficient: (
@@ -29,7 +31,6 @@ interface Props {
   ) => void
   permittedActions: Action.AssistanceNeedVoucherCoefficient[]
   coefficients: AssistanceNeedVoucherCoefficient[]
-  reloadCoefficients: () => void
 }
 
 const TdWithoutTopPadding = styled(Td)`
@@ -37,12 +38,12 @@ const TdWithoutTopPadding = styled(Td)`
 `
 
 export default React.memo(function AssistanceNeedVoucherCoefficientRow({
+  childId,
   voucherCoefficient,
   activeCoefficient,
   setActiveCoefficient,
   permittedActions,
-  coefficients,
-  reloadCoefficients
+  coefficients
 }: Props) {
   const { toggleUiMode, uiMode, clearUiMode } = useContext(UIContext)
 
@@ -158,12 +159,12 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
         <Tr data-qa="table-assistance-need-voucher-coefficient-editor">
           <TdWithoutTopPadding colSpan={4}>
             <AssistanceNeedVoucherCoefficientForm
+              childId={childId}
               coefficient={voucherCoefficient}
               coefficients={coefficients}
               onSuccess={() => {
                 clearUiMode()
                 setActiveCoefficient(undefined)
-                reloadCoefficients()
               }}
             />
           </TdWithoutTopPadding>

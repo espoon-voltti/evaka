@@ -5,10 +5,10 @@
 import orderBy from 'lodash/orderBy'
 import React, { Fragment, useContext, useState } from 'react'
 
-import { combine, wrapResult } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2, H3 } from 'lib-components/typography'
@@ -16,7 +16,7 @@ import { Gap } from 'lib-components/white-space'
 
 import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
 import PlacementRow from '../../components/child-information/placements/PlacementRow'
-import { getServiceNeedOptions } from '../../generated/api-clients/serviceneed'
+import { serviceNeedsQuery } from '../../queries'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
@@ -24,14 +24,12 @@ import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
-const getServiceNeedOptionsResult = wrapResult(getServiceNeedOptions)
-
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default React.memo(function Placements({ id, startOpen }: Props) {
+export default React.memo(function Placements({ childId, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
   const {
@@ -40,7 +38,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
     reloadPermittedActions,
     loadBackupCares
   } = useContext<ChildState>(ChildContext)
-  const [serviceNeedOptions] = useApiState(getServiceNeedOptionsResult, [])
+  const serviceNeedOptions = useQueryResult(serviceNeedsQuery())
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
@@ -106,7 +104,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
       </CollapsibleContentArea>
       {uiMode === 'create-new-placement' && (
         <CreatePlacementModal
-          childId={id}
+          childId={childId}
           reload={() => {
             loadPlacements()
             reloadPermittedActions()

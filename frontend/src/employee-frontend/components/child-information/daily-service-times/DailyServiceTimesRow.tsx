@@ -22,19 +22,19 @@ import { TimeBasedStatusChip } from '../TimeBasedStatusChip'
 import { DailyServiceTimesEditForm } from './DailyServiceTimesForms'
 
 export default React.memo(function DailyServiceTimesRow({
+  childId,
   times,
   permittedActions,
   onDelete,
   onEdit,
-  onRefresh,
   isEditing,
   id
 }: {
+  childId: UUID
   times: DailyServiceTimesValue
   permittedActions: Action.DailyServiceTime[]
   onDelete: () => void
   onEdit: (open: boolean) => void
-  onRefresh: () => void
   isEditing: boolean
   id: UUID
 }) {
@@ -147,13 +147,10 @@ export default React.memo(function DailyServiceTimesRow({
             verticalPadding="zero"
           >
             <DailyServiceTimesEditForm
+              childId={childId}
               id={id}
-              onClose={(shouldRefresh) => {
+              onClose={() => {
                 onEdit(false)
-
-                if (shouldRefresh) {
-                  onRefresh()
-                }
               }}
               initialData={times}
             />
