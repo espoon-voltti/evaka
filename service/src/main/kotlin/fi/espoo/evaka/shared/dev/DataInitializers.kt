@@ -185,7 +185,8 @@ INSERT INTO daycare (
     unit_manager_name, unit_manager_phone, unit_manager_email,
     decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
     oph_unit_oid, oph_organizer_oid, round_the_clock, operation_times, enabled_pilot_features,
-    finance_decision_handler, business_id, iban, provider_id
+    finance_decision_handler, business_id, iban, provider_id, mealtime_breakfast, mealtime_lunch, mealtime_snack,
+    mealtime_supper, mealtime_evening_snack
 ) VALUES (
     ${bind(row.id)}, ${bind(row.name)}, ${bind(row.openingDate)}, ${bind(row.closingDate)}, ${bind(row.areaId)},
     ${bind(row.type)}::care_types[], ${bind(row.dailyPreschoolTime)}, ${bind(row.dailyPreparatoryTime)}, ${bind(row.daycareApplyPeriod)},
@@ -199,7 +200,9 @@ INSERT INTO daycare (
     ${bind(row.decisionCustomization.daycareName)}, ${bind(row.decisionCustomization.preschoolName)}, ${bind(row.decisionCustomization.handler)},
     ${bind(row.decisionCustomization.handlerAddress)}, ${bind(row.ophUnitOid)}, ${bind(row.ophOrganizerOid)}, ${bind(row.roundTheClock)},
     ${bind(row.operationTimes)}, ${bind(row.enabledPilotFeatures)}::pilot_feature[], ${bind(row.financeDecisionHandler)}, ${bind(row.businessId)},
-    ${bind(row.iban)}, ${bind(row.providerId)})
+    ${bind(row.iban)}, ${bind(row.providerId)}, ${bind(row.mealtimeBreakfast)}, ${bind(row.mealtimeLunch)}, ${bind(row.mealtimeSnack)},
+    ${bind(row.mealtimeSupper)}, ${bind(row.mealtimeEveningSnack)}
+)
 RETURNING id
 """
             )
@@ -512,10 +515,10 @@ fun Database.Transaction.insert(row: DevChild): ChildId =
     createUpdate {
             sql(
                 """
-INSERT INTO child (id, allergies, diet, medication, additionalinfo, language_at_home, language_at_home_details)
-VALUES (${bind(row.id)}, ${bind(row.allergies)}, ${bind(row.diet)}, ${bind(row.medication)}, ${bind(row.additionalInfo)}, ${bind(row.languageAtHome)}, ${bind(row.languageAtHomeDetails)})
+INSERT INTO child (id, allergies, diet, medication, additionalinfo, language_at_home, language_at_home_details, diet_id)
+VALUES (${bind(row.id)}, ${bind(row.allergies)}, ${bind(row.diet)}, ${bind(row.medication)}, ${bind(row.additionalInfo)}, ${bind(row.languageAtHome)}, ${bind(row.languageAtHomeDetails)}, ${bind(row.dietId)})
 ON CONFLICT(id) DO UPDATE
-SET id = ${bind(row.id)}, allergies = ${bind(row.allergies)}, diet = ${bind(row.diet)}, medication = ${bind(row.medication)}, additionalInfo = ${bind(row.additionalInfo)}, language_at_home = ${bind(row.languageAtHome)}, language_at_home_details = ${bind(row.languageAtHomeDetails)}
+SET id = ${bind(row.id)}, allergies = ${bind(row.allergies)}, diet = ${bind(row.diet)}, medication = ${bind(row.medication)}, additionalInfo = ${bind(row.additionalInfo)}, language_at_home = ${bind(row.languageAtHome)}, language_at_home_details = ${bind(row.languageAtHomeDetails)}, diet_id = ${bind(row.dietId)}
 RETURNING id
     """
             )
@@ -709,8 +712,8 @@ fun Database.Transaction.insert(row: DevDaycareGroup): GroupId =
     createUpdate {
             sql(
                 """
-INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date)
-VALUES (${bind(row.id)}, ${bind(row.daycareId)}, ${bind(row.name)}, ${bind(row.startDate)}, ${bind(row.endDate)})
+INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date, jamix_customer_id)
+VALUES (${bind(row.id)}, ${bind(row.daycareId)}, ${bind(row.name)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.jamixCustomerId)})
 """
             )
         }

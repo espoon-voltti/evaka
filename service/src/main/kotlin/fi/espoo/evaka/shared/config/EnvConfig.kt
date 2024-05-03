@@ -10,6 +10,7 @@ import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.OphEnv
@@ -82,6 +83,13 @@ class EnvConfig {
     fun webPushEnv(evakaEnv: EvakaEnv, env: Environment): WebPushEnv? =
         when (evakaEnv.webPushEnabled) {
             true -> WebPushEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    @Bean
+    fun jamixEnv(evakaEnv: EvakaEnv, env: Environment): JamixEnv? =
+        when (evakaEnv.jamixEnabled) {
+            true -> JamixEnv.fromEnvironment(env)
             false -> null
         }
 }

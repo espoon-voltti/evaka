@@ -1781,7 +1781,8 @@ data class DevChild(
     val medication: String = "",
     val additionalInfo: String = "",
     val languageAtHome: String = "",
-    val languageAtHomeDetails: String = ""
+    val languageAtHomeDetails: String = "",
+    val dietId: Int? = null
 )
 
 data class DevHoliday(val date: LocalDate, val description: String = "Test Holiday")
@@ -1849,7 +1850,12 @@ data class DevDaycare(
     val financeDecisionHandler: EmployeeId? = null,
     val businessId: String = "",
     val iban: String = "",
-    val providerId: String = ""
+    val providerId: String = "",
+    val mealtimeBreakfast: TimeRange? = null,
+    val mealtimeLunch: TimeRange? = null,
+    val mealtimeSnack: TimeRange? = null,
+    val mealtimeSupper: TimeRange? = null,
+    val mealtimeEveningSnack: TimeRange? = null
 )
 
 data class DevDaycareGroup(
@@ -1857,7 +1863,8 @@ data class DevDaycareGroup(
     val daycareId: DaycareId,
     val name: String = "Testiläiset",
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    val endDate: LocalDate? = null
+    val endDate: LocalDate? = null,
+    val jamixCustomerId: Int? = null
 )
 
 data class DevDaycareGroupPlacement(

@@ -20,6 +20,7 @@ import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.invoicing.service.NewCustomerIncomeNotification
 import fi.espoo.evaka.invoicing.service.OutdatedIncomeNotifications
+import fi.espoo.evaka.jamix.JamixService
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
@@ -27,8 +28,6 @@ import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
@@ -115,6 +114,13 @@ enum class ScheduledJob(
     RemoveOldDraftApplications(
         ScheduledJobs::removeOldDraftApplications,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 30)))
+    ),
+    SendJamixOrders(
+        ScheduledJobs::sendJamixOrders,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 25 2 * * 2") // tue @ 2:25
+        )
     ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
@@ -204,7 +210,7 @@ class ScheduledJobs(
     private val financeDecisionGenerator: FinanceDecisionGenerator,
     private val childDocumentService: ChildDocumentService,
     private val attachmentService: AttachmentService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val jamixService: JamixService,
     env: ScheduledJobsEnv<ScheduledJob>
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -322,6 +328,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         logger.info {
             "Canceled ${canceledApplications.size} outdated transfer applications (ids: ${canceledApplications.joinToString(", ")})"
         }
+    }
+
+    fun sendJamixOrders(db: Database.Connection, clock: EvakaClock) {
+        jamixService.planOrders(db, clock)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {

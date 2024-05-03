@@ -162,6 +162,13 @@ fun Database.Read.getDaycares(
     return createQuery(daycaresQuery(filter.toPredicate().and(predicate))).toList<Daycare>()
 }
 
+fun Database.Read.getDaycaresById(ids: Set<DaycareId>): Map<DaycareId, Daycare> {
+    if (ids.isEmpty()) return emptyMap()
+    return createQuery(daycaresQuery(Predicate { where("$it.id = ANY(${bind(ids)})") }))
+        .mapTo<Daycare>()
+        .useSequence { rows -> rows.associateBy { it.id } }
+}
+
 data class UnitApplyPeriods(
     val id: DaycareId,
     val daycareApplyPeriod: DateRange?,

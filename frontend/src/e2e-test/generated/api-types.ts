@@ -337,6 +337,7 @@ export interface DevChild {
   additionalInfo: string
   allergies: string
   diet: string
+  dietId: number | null
   id: UUID
   languageAtHome: string
   languageAtHomeDetails: string
@@ -443,6 +444,11 @@ export interface DevDaycare {
   language: Language
   location: Coordinate | null
   mailingAddress: MailingAddress
+  mealtimeBreakfast: TimeRange | null
+  mealtimeEveningSnack: TimeRange | null
+  mealtimeLunch: TimeRange | null
+  mealtimeSnack: TimeRange | null
+  mealtimeSupper: TimeRange | null
   name: string
   openingDate: LocalDate | null
   operationTimes: (TimeRange | null)[]
@@ -481,6 +487,7 @@ export interface DevDaycareGroup {
   daycareId: UUID
   endDate: LocalDate | null
   id: UUID
+  jamixCustomerId: number | null
   name: string
   startDate: LocalDate
 }
@@ -1233,6 +1240,11 @@ export function deserializeJsonDevDaycare(json: JsonOf<DevDaycare>): DevDaycare 
     dailyPreparatoryTime: (json.dailyPreparatoryTime != null) ? TimeRange.parseJson(json.dailyPreparatoryTime) : null,
     dailyPreschoolTime: (json.dailyPreschoolTime != null) ? TimeRange.parseJson(json.dailyPreschoolTime) : null,
     daycareApplyPeriod: (json.daycareApplyPeriod != null) ? DateRange.parseJson(json.daycareApplyPeriod) : null,
+    mealtimeBreakfast: (json.mealtimeBreakfast != null) ? TimeRange.parseJson(json.mealtimeBreakfast) : null,
+    mealtimeEveningSnack: (json.mealtimeEveningSnack != null) ? TimeRange.parseJson(json.mealtimeEveningSnack) : null,
+    mealtimeLunch: (json.mealtimeLunch != null) ? TimeRange.parseJson(json.mealtimeLunch) : null,
+    mealtimeSnack: (json.mealtimeSnack != null) ? TimeRange.parseJson(json.mealtimeSnack) : null,
+    mealtimeSupper: (json.mealtimeSupper != null) ? TimeRange.parseJson(json.mealtimeSupper) : null,
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null

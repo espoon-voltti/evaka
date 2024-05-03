@@ -26,6 +26,7 @@ data class EvakaEnv(
     val sfiEnabled: Boolean,
     val vtjEnabled: Boolean,
     val webPushEnabled: Boolean,
+    val jamixEnabled: Boolean,
     val awsRegion: Region,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
@@ -53,6 +54,7 @@ data class EvakaEnv(
                     env.lookup("evaka.integration.vtj.enabled", "fi.espoo.voltti.vtj.enabled")
                         ?: false,
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
+                jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 awsRegion = Region.of(env.lookup("evaka.aws.region", "aws.region")),
                 asyncJobRunnerDisabled =
                     env.lookup("evaka.async_job_runner.disable_runner") ?: false,
@@ -822,6 +824,19 @@ data class CitizenCalendarEnv(val calendarOpenBeforePlacementDays: Int) {
             return CitizenCalendarEnv(
                 calendarOpenBeforePlacementDays =
                     env.lookup("evaka.citizen.calendar.calendar_open_before_placement_days") ?: 14
+            )
+        }
+    }
+}
+
+data class JamixEnv(val url: URI, val user: String, val password: Sensitive<String>) {
+    companion object {
+        fun fromEnvironment(env: Environment): JamixEnv {
+            return JamixEnv(
+                // URL up to the operation name, e.g. https://fi.jamix.cloud/japi/pirnet/
+                url = URI.create(env.lookup("evaka.integration.jamix.url")),
+                user = env.lookup("evaka.integration.jamix.user"),
+                password = Sensitive(env.lookup("evaka.integration.jamix.password"))
             )
         }
     }

@@ -105,7 +105,8 @@ beforeEach(async () => {
         daycareId: backupDaycareId,
         name: 'Varayksikön ryhmä',
         startDate: LocalDate.of(2000, 1, 1),
-        endDate: null
+        endDate: null,
+        jamixCustomerId: null
       }
     ]
   })
