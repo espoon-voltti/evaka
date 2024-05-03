@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reservations.getChildData
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -45,7 +46,10 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
 }
 
 @RestController
-class MealReportController(private val accessControl: AccessControl) {
+class MealReportController(
+    private val accessControl: AccessControl,
+    private val mealTypeMapper: MealTypeMapper
+) {
 
     @GetMapping("/reports/meal/{unitId}")
     fun getMealReportByUnit(
@@ -65,8 +69,11 @@ class MealReportController(private val accessControl: AccessControl) {
                         unitId
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    getMealReportForUnit(unitDataFromDatabase(it, date, unitId), date)
-                        ?: throw BadRequest("Daycare not found for $unitId")
+                    getMealReportForUnit(
+                        unitDataFromDatabase(it, date, unitId),
+                        date,
+                        mealTypeMapper
+                    ) ?: throw BadRequest("Daycare not found for $unitId")
                 }
                 .also {
                     Audit.MealReportRead.log(

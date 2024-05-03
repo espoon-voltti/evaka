@@ -21,6 +21,8 @@ import fi.espoo.evaka.invoicing.service.EspooIncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
+import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
+import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
@@ -197,6 +199,8 @@ class SharedIntegrationTestConfig {
         object : TitaniaEmployeeIdConverter {
             override fun fromTitania(employeeId: String): String = employeeId.trimStart('0')
         }
+
+    @Bean fun mealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 }
 
 val testFeatureConfig =

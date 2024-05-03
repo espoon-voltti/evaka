@@ -15,6 +15,7 @@ import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { DaycareAssistanceLevel } from './assistance'
 import { DecisionType } from './decision'
 import { JsonOf } from '../../json'
+import { MealType } from './mealintegration'
 import { OccupancyValues } from './occupancy'
 import { OtherAssistanceMeasureType } from './assistance'
 import { PlacementType } from './placement'
@@ -465,17 +466,6 @@ export interface MealReportRow {
   mealId: number
   mealType: MealType
 }
-
-/**
-* Generated from fi.espoo.evaka.reports.MealType
-*/
-export type MealType =
-  | 'BREAKFAST'
-  | 'LUNCH'
-  | 'LUNCH_PRESCHOOL'
-  | 'SNACK'
-  | 'SUPPER'
-  | 'EVENING_SNACK'
 
 /**
 * Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
