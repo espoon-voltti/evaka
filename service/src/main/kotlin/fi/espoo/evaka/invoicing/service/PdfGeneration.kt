@@ -7,28 +7,23 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.setting.SettingType
-import fi.espoo.evaka.shared.message.MessageLanguage
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 data class FeeDecisionPdfData(
     val decision: FeeDecisionDetailed,
     val settings: Map<SettingType, String>,
-    val lang: DocumentLang
+    val lang: OfficialLanguage
 )
 
 data class VoucherValueDecisionPdfData(
     val decision: VoucherValueDecisionDetailed,
     val settings: Map<SettingType, String>,
-    val lang: DocumentLang
+    val lang: OfficialLanguage
 )
 
-enum class DocumentLang(val langCode: String) {
-    FI("fi"),
-    SV("sv");
-
-    val messageLang: MessageLanguage
-        get() =
-            when (this) {
-                FI -> MessageLanguage.FI
-                SV -> MessageLanguage.SV
-            }
-}
+@Deprecated(
+    message = "use OfficialLanguage instead",
+    replaceWith =
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+)
+typealias DocumentLang = OfficialLanguage

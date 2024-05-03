@@ -5,12 +5,12 @@
 package fi.espoo.evaka.shared.template
 
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.invoicing.service.DocumentLang
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 class EvakaTemplateProvider : ITemplateProvider {
-    override fun getLocalizedFilename(type: DecisionType, lang: DocumentLang): String {
+    override fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String {
         return when (lang) {
-            DocumentLang.SV ->
+            OfficialLanguage.SV ->
                 when (type) {
                     DecisionType.CLUB -> "Kerhopäätös" // All clubs are in Finnish
                     DecisionType.DAYCARE,

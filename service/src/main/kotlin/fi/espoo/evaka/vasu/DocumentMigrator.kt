@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.vasu
 
-import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateBasicsRequest
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
@@ -24,6 +23,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import org.springframework.stereotype.Service
@@ -167,8 +167,8 @@ private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
             },
         language =
             when (vasu.language) {
-                VasuLanguage.FI -> DocumentLanguage.FI
-                VasuLanguage.SV -> DocumentLanguage.SV
+                OfficialLanguage.FI -> OfficialLanguage.FI
+                OfficialLanguage.SV -> OfficialLanguage.SV
             },
         confidential = true,
         legalBasis =
@@ -532,8 +532,8 @@ private val translationsSv =
         lawLeops = "OffentlighetsL 24.1 §§ punkt 25 och 30"
     )
 
-private fun getTranslations(language: VasuLanguage) =
+private fun getTranslations(language: OfficialLanguage) =
     when (language) {
-        VasuLanguage.FI -> translationsFi
-        VasuLanguage.SV -> translationsSv
+        OfficialLanguage.FI -> translationsFi
+        OfficialLanguage.SV -> translationsSv
     }

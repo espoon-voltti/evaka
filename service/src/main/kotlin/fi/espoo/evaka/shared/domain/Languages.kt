@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.shared.domain
 
+import java.util.Locale
+
 data class IsoLanguage(
     /** ISO 639-3 identifier */
     val id: String,
@@ -15,7 +17,20 @@ data class IsoLanguage(
     val alpha2: String,
     /** Name in Finnish */
     val nameFi: String
-)
+) {
+    fun toLocale(): Locale =
+        Locale.of(
+            // Locale javadoc:
+            // "When a language has both an alpha-2 code and an alpha-3 code, the alpha-2 code must
+            // be used."
+            alpha2.takeIf { it.isNotEmpty() } ?: id
+        )
+
+    companion object {
+        val FIN = IsoLanguage("fin", "fin", "fin", "fi", "suomi")
+        val SWE = IsoLanguage("swe", "swe", "swe", "sv", "ruotsi")
+    }
+}
 
 // A subset of ISO 639-3 languages
 // Source for data except nameFi: https://iso639-3.sil.org/code_tables/download_tables
@@ -68,7 +83,7 @@ val ISO_LANGUAGES_SUBSET =
         IsoLanguage("fas", "per", "fas", "fa", "persia"),
         IsoLanguage("fij", "fij", "fij", "fj", "fidži"),
         IsoLanguage("fil", "", "", "", "filipino"),
-        IsoLanguage("fin", "fin", "fin", "fi", "suomi"),
+        IsoLanguage.FIN,
         IsoLanguage("fra", "fre", "fra", "fr", "ranska"),
         IsoLanguage("fry", "fry", "fry", "fy", "länsifriisi"),
         IsoLanguage("ful", "ful", "ful", "ff", "fulani"),
@@ -182,7 +197,7 @@ val ISO_LANGUAGES_SUBSET =
         IsoLanguage("ssw", "ssw", "ssw", "ss", "swazi"),
         IsoLanguage("sun", "sun", "sun", "su", "sunda"),
         IsoLanguage("swa", "swa", "swa", "sw", "swahili"),
-        IsoLanguage("swe", "swe", "swe", "sv", "ruotsi"),
+        IsoLanguage.SWE,
         IsoLanguage("tah", "tah", "tah", "ty", "tahiti"),
         IsoLanguage("tam", "tam", "tam", "ta", "tamili"),
         IsoLanguage("tat", "tat", "tat", "tt", "tataari"),

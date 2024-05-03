@@ -6,6 +6,7 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -21,7 +22,7 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "foo",
                     dateRangeNow,
                     CurriculumType.DAYCARE,
-                    VasuLanguage.FI,
+                    OfficialLanguage.FI,
                     VasuContent(sections = listOf())
                 )
             assertEquals(
@@ -30,7 +31,7 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "foo",
                     CurriculumType.DAYCARE,
                     dateRangeNow,
-                    VasuLanguage.FI,
+                    OfficialLanguage.FI,
                     VasuContent(sections = listOf()),
                     0
                 ),
@@ -46,7 +47,7 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "bar",
                     CurriculumType.DAYCARE,
                     modifiedDateRange,
-                    VasuLanguage.FI,
+                    OfficialLanguage.FI,
                     VasuContent(sections = listOf()),
                     0
                 ),

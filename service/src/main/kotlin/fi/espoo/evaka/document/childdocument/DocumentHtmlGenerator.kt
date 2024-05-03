@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.document.childdocument
 
-import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.Section
 import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.format.DateTimeFormatter
 
 // language=css
@@ -145,7 +145,7 @@ private fun generateHeader(template: DocumentTemplate): HtmlElement {
 private fun generateSectionHtml(
     section: Section,
     answers: List<AnsweredQuestion<*>>,
-    language: DocumentLanguage
+    language: OfficialLanguage
 ): HtmlElement {
     return HtmlBuilder.div(className = "section") {
         listOf(
@@ -160,7 +160,7 @@ private fun generateSectionHtml(
 private fun generateQuestionHtml(
     question: Question,
     answers: List<AnsweredQuestion<*>>,
-    language: DocumentLanguage
+    language: OfficialLanguage
 ): HtmlElement {
     return question.generateHtml(
         answeredQuestion = answers.find { it.questionId == question.id },
@@ -174,8 +174,8 @@ private val translationsFi = Translations(confidential = "Salassapidettävä")
 
 private val translationsSv = Translations(confidential = "Konfidentiellt")
 
-private fun getTranslations(language: DocumentLanguage) =
+private fun getTranslations(language: OfficialLanguage) =
     when (language) {
-        DocumentLanguage.FI -> translationsFi
-        DocumentLanguage.SV -> translationsSv
+        OfficialLanguage.FI -> translationsFi
+        OfficialLanguage.SV -> translationsSv
     }

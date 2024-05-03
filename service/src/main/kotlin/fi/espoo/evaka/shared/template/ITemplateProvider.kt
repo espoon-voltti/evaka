@@ -5,10 +5,10 @@
 package fi.espoo.evaka.shared.template
 
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.invoicing.service.DocumentLang
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 interface ITemplateProvider {
-    fun getLocalizedFilename(type: DecisionType, lang: DocumentLang): String
+    fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String
 
     fun getFeeDecisionPath(): String
 

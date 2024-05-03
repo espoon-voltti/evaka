@@ -12,7 +12,6 @@ import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
@@ -32,10 +31,10 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import java.time.LocalDate
-import java.util.Locale
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -130,7 +129,7 @@ class AssistanceNeedDecisionService(
 
         val language =
             when (decision.language) {
-                AssistanceNeedDecisionLanguage.SV -> Language.sv
+                OfficialLanguage.SV -> Language.sv
                 else -> Language.fi
             }
         val fromAddress = emailEnv.applicationReceivedSender(language)
@@ -173,8 +172,8 @@ class AssistanceNeedDecisionService(
                     )
 
             val lang =
-                if (decision.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
-                else DocumentLang.FI
+                if (decision.language == OfficialLanguage.SV) OfficialLanguage.SV
+                else OfficialLanguage.FI
 
             tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
                 .mapNotNull { tx.getPersonById(it) }
@@ -188,10 +187,8 @@ class AssistanceNeedDecisionService(
 
                     val sendAddress = getSendAddress(messageProvider, guardian, lang)
 
-                    val messageHeader =
-                        messageProvider.getAssistanceNeedDecisionHeader(lang.messageLang)
-                    val messageContent =
-                        messageProvider.getAssistanceNeedDecisionContent(lang.messageLang)
+                    val messageHeader = messageProvider.getAssistanceNeedDecisionHeader(lang)
+                    val messageContent = messageProvider.getAssistanceNeedDecisionContent(lang)
                     val messageId = "${decision.id}_${guardian.id}"
 
                     asyncJobRunner.plan(
@@ -205,7 +202,6 @@ class AssistanceNeedDecisionService(
                                         suomiFiDocumentFileName(decision.language),
                                     documentKey = documentKey,
                                     documentBucket = bucket,
-                                    language = lang.langCode,
                                     firstName = guardian.firstName,
                                     lastName = guardian.lastName,
                                     streetAddress = sendAddress.street,
@@ -242,8 +238,7 @@ class AssistanceNeedDecisionService(
             Page(
                 Template(templateProvider.getAssistanceNeedDecisionPath()),
                 Context().apply {
-                    locale =
-                        Locale.Builder().setLanguage(decision.language.name.lowercase()).build()
+                    locale = decision.language.isoLanguage.toLocale()
                     setVariable("decision", decision)
                     setVariable("sentDate", sentDate)
                     setVariable(
@@ -271,8 +266,8 @@ class AssistanceNeedDecisionService(
     }
 }
 
-private fun suomiFiDocumentFileName(lang: AssistanceNeedDecisionLanguage) =
-    if (lang == AssistanceNeedDecisionLanguage.SV) {
+private fun suomiFiDocumentFileName(lang: OfficialLanguage) =
+    if (lang == OfficialLanguage.SV) {
         "Beslut_om_stöd.pdf"
     } else {
         "Päätös_tuesta.pdf"

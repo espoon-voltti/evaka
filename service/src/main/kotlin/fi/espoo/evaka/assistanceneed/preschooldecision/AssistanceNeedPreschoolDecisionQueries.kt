@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.assistanceneed.preschooldecision
 
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
@@ -14,13 +13,14 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
     childId: ChildId,
-    language: AssistanceNeedDecisionLanguage = AssistanceNeedDecisionLanguage.FI
+    language: OfficialLanguage = OfficialLanguage.FI
 ): AssistanceNeedPreschoolDecision =
     @Suppress("DEPRECATION")
     createQuery(

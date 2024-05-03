@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 
 import { RadioGroupQuestion } from 'lib-common/api-types/vasu'
-import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
+import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Bold, Label } from 'lib-components/typography'
@@ -29,7 +29,7 @@ interface Props {
   questionNumber: string
   question: RadioGroupQuestion
   onChange?: (selected: RadioGroupSelectedValue | null) => void
-  lang: VasuLanguage
+  lang: OfficialLanguage
   translations: VasuTranslations
 }
 

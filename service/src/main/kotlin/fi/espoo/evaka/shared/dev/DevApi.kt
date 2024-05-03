@@ -26,7 +26,6 @@ import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceLevel
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionEmployee
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionGuardian
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
@@ -51,7 +50,6 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.decision.getDecisionsByApplication
-import fi.espoo.evaka.document.DocumentLanguage
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.DocumentContent
@@ -187,6 +185,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -194,7 +193,6 @@ import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import fi.espoo.evaka.specialdiet.setSpecialDiets
 import fi.espoo.evaka.vasu.CurriculumType
-import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
 import fi.espoo.evaka.vasu.getVasuTemplate
 import fi.espoo.evaka.vasu.insertVasuDocument
@@ -1179,7 +1177,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         val valid: FiniteDateRange =
             FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
         val type: CurriculumType = CurriculumType.DAYCARE,
-        val language: VasuLanguage = VasuLanguage.FI
+        val language: OfficialLanguage = OfficialLanguage.FI
     )
 
     @PostMapping("/vasu/template")
@@ -1876,7 +1874,7 @@ data class DevAssistanceNeedDecision(
     val childId: ChildId,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-    val language: AssistanceNeedDecisionLanguage,
+    val language: OfficialLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
     @Nested("selected_unit") val selectedUnit: DaycareId?,
@@ -2241,7 +2239,7 @@ data class DevDocumentTemplate(
     val id: DocumentTemplateId = DocumentTemplateId(UUID.randomUUID()),
     val name: String = "Pedagoginen arvio 2023",
     val type: DocumentType = DocumentType.PEDAGOGICAL_ASSESSMENT,
-    val language: DocumentLanguage = DocumentLanguage.FI,
+    val language: OfficialLanguage = OfficialLanguage.FI,
     val confidential: Boolean = true,
     val legalBasis: String = "§15",
     val validity: DateRange,

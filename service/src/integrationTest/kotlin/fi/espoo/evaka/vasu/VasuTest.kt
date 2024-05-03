@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
@@ -12,7 +13,7 @@ class VasuTest {
 
     @Test
     fun `matchesStructurally returns true for equal objects`() {
-        val content = getDefaultTemplateContent(CurriculumType.DAYCARE, VasuLanguage.FI)
+        val content = getDefaultTemplateContent(CurriculumType.DAYCARE, OfficialLanguage.FI)
         assertTrue { content.matchesStructurally(content) }
     }
 

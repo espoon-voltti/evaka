@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
@@ -87,10 +88,10 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         name = "vasu",
                         valid = FiniteDateRange(mockToday.minusMonths(2), mockToday.plusYears(1)),
                         type = CurriculumType.DAYCARE,
-                        language = VasuLanguage.FI
+                        language = OfficialLanguage.FI
                     )
                 )
-            putVasuTemplateContent(templateId, getDefaultVasuContent(VasuLanguage.FI))
+            putVasuTemplateContent(templateId, getDefaultVasuContent(OfficialLanguage.FI))
             getVasuTemplate(templateId)
         }
 
@@ -101,10 +102,10 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         name = "vasu",
                         valid = FiniteDateRange(mockToday, mockToday.plusYears(1)),
                         type = CurriculumType.PRESCHOOL,
-                        language = VasuLanguage.FI
+                        language = OfficialLanguage.FI
                     )
                 )
-            putVasuTemplateContent(templateId, getDefaultLeopsContent(VasuLanguage.FI))
+            putVasuTemplateContent(templateId, getDefaultLeopsContent(OfficialLanguage.FI))
             getVasuTemplate(templateId)
         }
     }
@@ -439,10 +440,10 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     name = "vasu",
                     valid = FiniteDateRange(mockToday.plusYears(1), mockToday.plusYears(2)),
                     type = CurriculumType.DAYCARE,
-                    language = VasuLanguage.FI
+                    language = OfficialLanguage.FI
                 )
             )
-        putVasuTemplateContent(nonExpiredTemplateId, getDefaultVasuContent(VasuLanguage.FI))
+        putVasuTemplateContent(nonExpiredTemplateId, getDefaultVasuContent(OfficialLanguage.FI))
 
         val nonExpiredDocumentId =
             postVasuDocument(

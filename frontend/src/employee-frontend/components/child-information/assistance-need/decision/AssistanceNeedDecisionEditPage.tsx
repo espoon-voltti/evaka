@@ -14,11 +14,9 @@ import AutosaveStatusIndicator from 'employee-frontend/components/common/Autosav
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
 import { Failure, Result, wrapResult } from 'lib-common/api'
-import {
-  AssistanceNeedDecisionForm,
-  AssistanceNeedDecisionLanguage
-} from 'lib-common/generated/api-types/assistanceneed'
+import { AssistanceNeedDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee, PersonJSON } from 'lib-common/generated/api-types/pis'
+import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-decision/AssistanceNeedDecisionInfoHeader'
@@ -118,7 +116,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       if (formState && o) {
         setFormState({
           ...formState,
-          language: (o.value as AssistanceNeedDecisionLanguage) ?? 'FI'
+          language: (o.value as OfficialLanguage) ?? 'FI'
         })
       }
     },

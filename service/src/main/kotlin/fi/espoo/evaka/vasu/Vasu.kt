@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import java.time.LocalDate
 import java.util.UUID
@@ -74,13 +75,12 @@ private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentSta
     }
 }
 
-@ConstList("curriculumLanguages")
-enum class VasuLanguage : DatabaseEnum {
-    FI,
-    SV;
-
-    override val sqlType: String = "curriculum_language"
-}
+@Deprecated(
+    message = "use OfficialLanguage instead",
+    replaceWith =
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+)
+typealias VasuLanguage = OfficialLanguage
 
 data class VasuDocumentSummary(
     val id: VasuDocumentId,
@@ -102,7 +102,7 @@ data class VasuDocument(
     val templateName: String,
     val templateRange: FiniteDateRange,
     val type: CurriculumType,
-    val language: VasuLanguage,
+    val language: OfficialLanguage,
     @Json val events: List<VasuDocumentEvent> = listOf(),
     @Json val basics: VasuBasics,
     @Json val content: VasuContent,

@@ -19,7 +19,6 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { AssistanceLevel } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionEmployee } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionGuardian } from 'lib-common/generated/api-types/assistanceneed'
-import { AssistanceNeedDecisionLanguage } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedPreschoolDecisionForm } from 'lib-common/generated/api-types/assistanceneed'
 import { CalendarEventType } from 'lib-common/generated/api-types/calendarevent'
@@ -34,7 +33,6 @@ import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import { DecisionStatus } from 'lib-common/generated/api-types/decision'
 import { DecisionType } from 'lib-common/generated/api-types/decision'
 import { DocumentContent } from 'lib-common/generated/api-types/document'
-import { DocumentLanguage } from 'lib-common/generated/api-types/document'
 import { DocumentStatus } from 'lib-common/generated/api-types/document'
 import { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import { DocumentType } from 'lib-common/generated/api-types/document'
@@ -48,6 +46,7 @@ import { Language } from 'lib-common/generated/api-types/daycare'
 import { MailingAddress } from 'lib-common/generated/api-types/daycare'
 import { Nationality } from 'lib-common/generated/api-types/vtjclient'
 import { NativeLanguage } from 'lib-common/generated/api-types/vtjclient'
+import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
@@ -62,7 +61,6 @@ import { StructuralMotivationOptions } from 'lib-common/generated/api-types/assi
 import { UUID } from 'lib-common/types'
 import { UnitManager } from 'lib-common/generated/api-types/daycare'
 import { UserRole } from 'lib-common/generated/api-types/shared'
-import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
 import { VisitingAddress } from 'lib-common/generated/api-types/daycare'
 import { VoucherValueDecisionDifference } from 'lib-common/generated/api-types/invoicing'
 import { VoucherValueDecisionServiceNeed } from 'lib-common/generated/api-types/invoicing'
@@ -105,7 +103,7 @@ export interface Citizen {
 * Generated from fi.espoo.evaka.shared.dev.DevApi.CreateVasuTemplateBody
 */
 export interface CreateVasuTemplateBody {
-  language: VasuLanguage
+  language: OfficialLanguage
   name: string
   type: CurriculumType
   valid: FiniteDateRange
@@ -219,7 +217,7 @@ export interface DevAssistanceNeedDecision {
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
   id: UUID
-  language: AssistanceNeedDecisionLanguage
+  language: OfficialLanguage
   motivationForDecision: string | null
   otherRepresentativeDetails: string | null
   otherRepresentativeHeard: boolean
@@ -513,7 +511,7 @@ export interface DevDocumentTemplate {
   confidential: boolean
   content: DocumentTemplateContent
   id: UUID
-  language: DocumentLanguage
+  language: OfficialLanguage
   legalBasis: string
   name: string
   published: boolean
@@ -985,7 +983,6 @@ export interface SfiMessage {
   emailContent: string | null
   emailHeader: string | null
   firstName: string
-  language: string
   lastName: string
   messageContent: string
   messageHeader: string

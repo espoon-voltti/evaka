@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -34,7 +35,7 @@ class VasuTemplateController(
         val name: String,
         val valid: FiniteDateRange,
         val type: CurriculumType,
-        val language: VasuLanguage
+        val language: OfficialLanguage
     )
 
     @PostMapping

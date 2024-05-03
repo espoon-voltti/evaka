@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import java.math.BigDecimal
@@ -207,7 +208,7 @@ class PdfGenerationTest {
             FeeDecisionPdfData(
                 decision = normalDecision,
                 settings = mapOf(),
-                lang = DocumentLang.FI
+                lang = OfficialLanguage.FI
             )
 
         val simpleVariables =
@@ -264,7 +265,7 @@ class PdfGenerationTest {
             FeeDecisionPdfData(
                 decision = reliefDecision,
                 settings = mapOf(),
-                lang = DocumentLang.FI
+                lang = OfficialLanguage.FI
             )
 
         val simpleVariables =
@@ -321,7 +322,7 @@ class PdfGenerationTest {
             FeeDecisionPdfData(
                 decision = normalDecision,
                 settings = mapOf(),
-                lang = DocumentLang.FI
+                lang = OfficialLanguage.FI
             )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
@@ -337,7 +338,7 @@ class PdfGenerationTest {
             VoucherValueDecisionPdfData(
                 decision = normalVoucherValueDecision,
                 settings = mapOf(),
-                lang = DocumentLang.FI
+                lang = OfficialLanguage.FI
             )
         val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
 

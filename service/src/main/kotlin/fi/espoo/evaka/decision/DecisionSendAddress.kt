@@ -6,8 +6,8 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.addressUsable
-import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 
 private fun addressIsUnusable(
@@ -21,7 +21,7 @@ private fun addressIsUnusable(
 fun getSendAddress(
     messageProvider: IMessageProvider,
     guardian: PersonDTO,
-    lang: DocumentLang
+    lang: OfficialLanguage
 ): DecisionSendAddress {
     val logMissingAddress = {
         logger.warn(
@@ -29,11 +29,10 @@ fun getSendAddress(
         )
     }
     return when {
-        guardian.restrictedDetailsEnabled ->
-            messageProvider.getDefaultDecisionAddress(lang.messageLang)
+        guardian.restrictedDetailsEnabled -> messageProvider.getDefaultDecisionAddress(lang)
         addressIsUnusable(guardian.streetAddress, guardian.postalCode, guardian.postOffice) -> {
             logMissingAddress()
-            messageProvider.getDefaultDecisionAddress(lang.messageLang)
+            messageProvider.getDefaultDecisionAddress(lang)
         }
         else ->
             DecisionSendAddress(

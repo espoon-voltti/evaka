@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.assistanceneed.preschooldecision
 
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.UnitInfoBasics
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionGuardianId
@@ -16,6 +15,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -96,7 +96,7 @@ enum class AssistanceNeedPreschoolDecisionType : DatabaseEnum {
 }
 
 data class AssistanceNeedPreschoolDecisionForm(
-    val language: AssistanceNeedDecisionLanguage,
+    val language: OfficialLanguage,
     val type: AssistanceNeedPreschoolDecisionType?,
     val validFrom: LocalDate?,
     val validTo: LocalDate?,

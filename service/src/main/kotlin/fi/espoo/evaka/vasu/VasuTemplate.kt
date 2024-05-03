@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import org.jdbi.v3.json.Json
 
 data class VasuTemplate(
@@ -15,7 +16,7 @@ data class VasuTemplate(
     val name: String,
     val type: CurriculumType,
     val valid: FiniteDateRange,
-    val language: VasuLanguage,
+    val language: OfficialLanguage,
     @Json val content: VasuContent,
     val documentCount: Int
 )
@@ -25,7 +26,7 @@ data class VasuTemplateSummary(
     val name: String,
     val valid: FiniteDateRange,
     val type: CurriculumType,
-    val language: VasuLanguage,
+    val language: OfficialLanguage,
     val documentCount: Int
 )
 

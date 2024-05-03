@@ -8,12 +8,13 @@ import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 fun Database.Transaction.insertVasuTemplate(
     name: String,
     valid: FiniteDateRange,
     type: CurriculumType,
-    language: VasuLanguage,
+    language: OfficialLanguage,
     content: VasuContent
 ): VasuTemplateId {
     return createQuery {

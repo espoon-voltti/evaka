@@ -6,14 +6,12 @@ package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
-import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionLanguage
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pdfgen.Page
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pdfgen.Template
@@ -29,10 +27,10 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import java.time.LocalDate
-import java.util.Locale
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -124,7 +122,7 @@ class AssistanceNeedPreschoolDecisionService(
 
         val language =
             when (decision.form.language) {
-                AssistanceNeedDecisionLanguage.SV -> Language.sv
+                OfficialLanguage.SV -> Language.sv
                 else -> Language.fi
             }
         val fromAddress = emailEnv.applicationReceivedSender(language)
@@ -165,8 +163,8 @@ class AssistanceNeedPreschoolDecisionService(
                     )
 
             val lang =
-                if (decision.form.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV
-                else DocumentLang.FI
+                if (decision.form.language == OfficialLanguage.SV) OfficialLanguage.SV
+                else OfficialLanguage.FI
 
             tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
                 .mapNotNull { tx.getPersonById(it) }
@@ -181,9 +179,9 @@ class AssistanceNeedPreschoolDecisionService(
                     val sendAddress = getSendAddress(messageProvider, guardian, lang)
 
                     val messageHeader =
-                        messageProvider.getAssistanceNeedPreschoolDecisionHeader(lang.messageLang)
+                        messageProvider.getAssistanceNeedPreschoolDecisionHeader(lang)
                     val messageContent =
-                        messageProvider.getAssistanceNeedPreschoolDecisionContent(lang.messageLang)
+                        messageProvider.getAssistanceNeedPreschoolDecisionContent(lang)
                     val messageId = "${decision.id}_${guardian.id}"
 
                     asyncJobRunner.plan(
@@ -197,7 +195,6 @@ class AssistanceNeedPreschoolDecisionService(
                                         suomiFiDocumentFileName(decision.form.language),
                                     documentKey = documentKey,
                                     documentBucket = bucket,
-                                    language = lang.langCode,
                                     firstName = guardian.firstName,
                                     lastName = guardian.lastName,
                                     streetAddress = sendAddress.street,
@@ -238,10 +235,7 @@ class AssistanceNeedPreschoolDecisionService(
             Page(
                 Template(templateProvider.getAssistanceNeedPreschoolDecisionPath()),
                 Context().apply {
-                    locale =
-                        Locale.Builder()
-                            .setLanguage(decision.form.language.name.lowercase())
-                            .build()
+                    locale = decision.form.language.isoLanguage.toLocale()
                     setVariable("decision", decision)
                     setVariable("sentDate", sentDate)
                     setVariable("validTo", validTo)
@@ -251,8 +245,8 @@ class AssistanceNeedPreschoolDecisionService(
     }
 }
 
-private fun suomiFiDocumentFileName(lang: AssistanceNeedDecisionLanguage) =
-    if (lang == AssistanceNeedDecisionLanguage.SV) {
+private fun suomiFiDocumentFileName(lang: OfficialLanguage) =
+    if (lang == OfficialLanguage.SV) {
         "Beslut_om_stöd.pdf"
     } else {
         "Päätös_tuesta.pdf"

@@ -6,7 +6,7 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { QuestionOption } from 'lib-common/api-types/vasu'
-import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
+import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import Radio from 'lib-components/atoms/form/Radio'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -24,7 +24,7 @@ interface Props {
   onChange: (selected: RadioGroupSelectedValue) => void
   isSelected: boolean
   onSelected: () => void
-  lang: VasuLanguage
+  lang: OfficialLanguage
 }
 
 export default React.memo(function RadioGroupQuestionOption({
