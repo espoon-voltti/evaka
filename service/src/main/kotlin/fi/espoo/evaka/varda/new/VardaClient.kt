@@ -19,6 +19,9 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import fi.espoo.evaka.shared.utils.token
+import fi.espoo.evaka.varda.VardaUnitClient
+import fi.espoo.evaka.varda.VardaUnitRequest
+import fi.espoo.evaka.varda.VardaUnitResponse
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import fi.espoo.voltti.logging.loggers.error
 import java.net.URI
@@ -237,7 +240,7 @@ class VardaClient(
     private val fuel: FuelManager,
     private val jsonMapper: JsonMapper,
     vardaBaseUrl: URI
-) : VardaReadClient, VardaWriteClient {
+) : VardaReadClient, VardaWriteClient, VardaUnitClient {
     private val baseUrl = vardaBaseUrl.ensureTrailingSlash()
 
     override fun haeHenkilo(
@@ -279,6 +282,15 @@ class VardaClient(
     override fun getMaksutiedotByLapsi(lapsiUrl: URI): List<VardaReadClient.MaksutietoResponse> =
         getAllPages(lapsiUrl.resolve("maksutiedot/"))
 
+    fun vakajarjestajaUrl(organizerId: String): String =
+        baseUrl.resolve("v1/vakajarjestajat/$organizerId/").toString()
+
+    override fun createUnit(unit: VardaUnitRequest): VardaUnitResponse =
+        post(baseUrl.resolve("v1/toimipaikat/"), unit)
+
+    override fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse =
+        put(baseUrl.resolve("v1/toimipaikat/$id/"), unit)
+
     private inline fun <reified R> get(url: URI): R = request(Method.GET, url)
 
     private data class PaginatedResponse<T>(
@@ -300,6 +312,8 @@ class VardaClient(
     }
 
     private inline fun <T, reified R> post(url: URI, body: T): R = request(Method.POST, url, body)
+
+    private inline fun <T, reified R> put(url: URI, body: T): R = request(Method.PUT, url, body)
 
     override fun <T : VardaEntity> delete(data: T) = request<Unit>(Method.DELETE, data.url)
 

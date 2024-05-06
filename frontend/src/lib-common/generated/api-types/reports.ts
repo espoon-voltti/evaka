@@ -885,9 +885,9 @@ export interface UnitsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.VardaErrorReportRow
+* Generated from fi.espoo.evaka.reports.VardaChildErrorReportRow
 */
-export interface VardaErrorReportRow {
+export interface VardaChildErrorReportRow {
   childId: UUID
   created: HelsinkiDateTime
   errors: string[]
@@ -896,6 +896,17 @@ export interface VardaErrorReportRow {
   serviceNeedOptionName: string | null
   serviceNeedValidity: FiniteDateRange | null
   updated: HelsinkiDateTime
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.VardaUnitErrorReportRow
+*/
+export interface VardaUnitErrorReportRow {
+  createdAt: HelsinkiDateTime
+  error: string
+  erroredAt: HelsinkiDateTime
+  unitId: UUID
+  unitName: string
 }
 
 /**
@@ -1059,12 +1070,21 @@ export function deserializeJsonStartingPlacementsRow(json: JsonOf<StartingPlacem
 }
 
 
-export function deserializeJsonVardaErrorReportRow(json: JsonOf<VardaErrorReportRow>): VardaErrorReportRow {
+export function deserializeJsonVardaChildErrorReportRow(json: JsonOf<VardaChildErrorReportRow>): VardaChildErrorReportRow {
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
     resetTimeStamp: (json.resetTimeStamp != null) ? HelsinkiDateTime.parseIso(json.resetTimeStamp) : null,
     serviceNeedValidity: (json.serviceNeedValidity != null) ? FiniteDateRange.parseJson(json.serviceNeedValidity) : null,
     updated: HelsinkiDateTime.parseIso(json.updated)
+  }
+}
+
+
+export function deserializeJsonVardaUnitErrorReportRow(json: JsonOf<VardaUnitErrorReportRow>): VardaUnitErrorReportRow {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    erroredAt: HelsinkiDateTime.parseIso(json.erroredAt)
   }
 }

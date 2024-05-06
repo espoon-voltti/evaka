@@ -47,7 +47,8 @@ import { SextetReportRow } from 'lib-common/generated/api-types/reports'
 import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import { UUID } from 'lib-common/types'
 import { UnitsReportRow } from 'lib-common/generated/api-types/reports'
-import { VardaErrorReportRow } from 'lib-common/generated/api-types/reports'
+import { VardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
+import { VardaUnitErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
@@ -64,7 +65,8 @@ import { deserializeJsonPlacementSketchingReportRow } from 'lib-common/generated
 import { deserializeJsonPresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonRawReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonStartingPlacementsRow } from 'lib-common/generated/api-types/reports'
-import { deserializeJsonVardaErrorReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonVardaChildErrorReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonVardaUnitErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { uri } from 'lib-common/uri'
 
 
@@ -760,14 +762,26 @@ export async function getUnitsReport(): Promise<UnitsReportRow[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaErrorsReport
+* Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaChildErrorsReport
 */
-export async function getVardaErrorsReport(): Promise<VardaErrorReportRow[]> {
-  const { data: json } = await client.request<JsonOf<VardaErrorReportRow[]>>({
-    url: uri`/reports/varda-errors`.toString(),
+export async function getVardaChildErrorsReport(): Promise<VardaChildErrorReportRow[]> {
+  const { data: json } = await client.request<JsonOf<VardaChildErrorReportRow[]>>({
+    url: uri`/reports/varda-child-errors`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonVardaErrorReportRow(e))
+  return json.map(e => deserializeJsonVardaChildErrorReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaUnitErrorsReport
+*/
+export async function getVardaUnitErrorsReport(): Promise<VardaUnitErrorReportRow[]> {
+  const { data: json } = await client.request<JsonOf<VardaUnitErrorReportRow[]>>({
+    url: uri`/reports/varda-unit-errors`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonVardaUnitErrorReportRow(e))
 }
 
 

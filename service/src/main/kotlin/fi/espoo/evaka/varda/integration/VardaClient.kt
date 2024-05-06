@@ -29,6 +29,7 @@ import fi.espoo.evaka.varda.VardaPersonRequest
 import fi.espoo.evaka.varda.VardaPersonResponse
 import fi.espoo.evaka.varda.VardaPlacement
 import fi.espoo.evaka.varda.VardaPlacementResponse
+import fi.espoo.evaka.varda.VardaUnitClient
 import fi.espoo.evaka.varda.VardaUnitRequest
 import fi.espoo.evaka.varda.VardaUnitResponse
 import fi.espoo.voltti.logging.loggers.error
@@ -41,7 +42,7 @@ class VardaClient(
     private val fuel: FuelManager,
     private val jsonMapper: JsonMapper,
     env: VardaEnv
-) {
+) : VardaUnitClient {
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
     private val unitUrl = "${env.url}/v1/toimipaikat/"
     private val personUrl = "${env.url}/v1/henkilot/"
@@ -367,7 +368,7 @@ class VardaClient(
         }
     }
 
-    fun createUnit(unit: VardaUnitRequest): VardaUnitResponse {
+    override fun createUnit(unit: VardaUnitRequest): VardaUnitResponse {
         logger.info("VardaUpdate: client sending new unit ${unit.nimi}")
         val (request, _, result) =
             fuel
@@ -388,9 +389,9 @@ class VardaClient(
         }
     }
 
-    fun updateUnit(unit: VardaUnitRequest): VardaUnitResponse {
+    override fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse {
         logger.info("VardaUpdate: client updating unit ${unit.nimi}")
-        val url = "$unitUrl${unit.id}/"
+        val url = "$unitUrl$id/"
         val (request, _, result) =
             fuel
                 .put(url)

@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -19,12 +20,12 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class VardaErrorReport(private val accessControl: AccessControl) {
-    @GetMapping("/reports/varda-errors")
-    fun getVardaErrorsReport(
+    @GetMapping("/reports/varda-child-errors")
+    fun getVardaChildErrorsReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock
-    ): List<VardaErrorReportRow> {
+    ): List<VardaChildErrorReportRow> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -34,14 +35,35 @@ class VardaErrorReport(private val accessControl: AccessControl) {
                         Action.Global.READ_VARDA_REPORT
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getVardaErrors()
+                    it.getVardaChildErrors()
                 }
             }
             .also { Audit.VardaReportRead.log(meta = mapOf("count" to it.size)) }
     }
+
+    @GetMapping("/reports/varda-unit-errors")
+    fun getVardaUnitErrorsReport(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<VardaUnitErrorReportRow> {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_VARDA_REPORT
+                    )
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getVardaUnitErrors()
+                }
+            }
+            .also { Audit.VardaUnitReportRead.log(meta = mapOf("count" to it.size)) }
+    }
 }
 
-private fun Database.Read.getVardaErrors(): List<VardaErrorReportRow> =
+private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> =
     createQuery {
             sql(
                 """
@@ -81,9 +103,9 @@ ORDER BY updated DESC
     """
             )
         }
-        .toList<VardaErrorReportRow>()
+        .toList<VardaChildErrorReportRow>()
 
-data class VardaErrorReportRow(
+data class VardaChildErrorReportRow(
     val serviceNeedId: ServiceNeedId?,
     val serviceNeedValidity: FiniteDateRange?,
     val serviceNeedOptionName: String?,
@@ -92,4 +114,30 @@ data class VardaErrorReportRow(
     val created: HelsinkiDateTime,
     val errors: List<String>,
     val resetTimeStamp: HelsinkiDateTime?
+)
+
+private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> =
+    createQuery {
+            sql(
+                """
+                SELECT
+                    vu.evaka_daycare_id AS unit_id,
+                    u.name AS unit_name,
+                    coalesce(vu.last_success_at, vu.created_at) AS created_at,
+                    vu.errored_at,
+                    vu.error
+                FROM varda_unit vu
+                JOIN daycare u ON u.id = vu.evaka_daycare_id
+                WHERE vu.errored_at IS NOT NULL
+                """
+            )
+        }
+        .toList<VardaUnitErrorReportRow>()
+
+data class VardaUnitErrorReportRow(
+    val unitId: DaycareId,
+    val unitName: String,
+    val createdAt: HelsinkiDateTime,
+    val erroredAt: HelsinkiDateTime,
+    val error: String
 )

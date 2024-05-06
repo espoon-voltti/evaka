@@ -472,6 +472,7 @@ enum class Audit(
     UnitsReportRead,
     VardaReportRead,
     VardaReportOperations,
+    VardaUnitReportRead,
     VasuDocumentCreate,
     VasuDocumentRead,
     VasuDocumentReadByGuardian,

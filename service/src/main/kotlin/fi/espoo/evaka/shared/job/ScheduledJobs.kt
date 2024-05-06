@@ -297,16 +297,21 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
         if (vardaEnv.newIntegrationEnabled) {
-            vardaUpdateServiceNew.planUpdate(db, clock, vardaEnv.newIntegrationMigrationSpeed)
+            vardaUpdateServiceNew.updateUnits(db, clock)
+            vardaUpdateServiceNew.planChildrenUpdate(
+                db,
+                clock,
+                vardaEnv.newIntegrationMigrationSpeed
+            )
+        } else {
+            vardaUpdateService.updateUnits(db, clock)
         }
 
-        // Use this once varda fixes their MA003 validation retry glitch
-        // vardaService.startVardaUpdate(db, clock)
-        // Remove this once varda fixes their MA003 validation retry glitch
-        vardaUpdateService.startVardaUpdate(db, clock)
+        // Run old integration in addition to the new one. The old integration can be removed when
+        // all children have been migrated to the new integration.
+        vardaUpdateService.planVardaChildrenUpdate(db, clock)
     }
 
-    // Remove this once varda fixes their MA003 validation retry glitch
     fun vardaReset(db: Database.Connection, clock: EvakaClock) {
         vardaResetService.planVardaReset(
             db,

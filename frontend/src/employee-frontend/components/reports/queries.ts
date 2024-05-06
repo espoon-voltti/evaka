@@ -19,7 +19,8 @@ import {
   getPlacementGuaranteeReport,
   getServiceVoucherReportForAllUnits,
   getUnitsReport,
-  getVardaErrorsReport
+  getVardaChildErrorsReport,
+  getVardaUnitErrorsReport
 } from '../../generated/api-clients/reports'
 import {
   markChildForVardaReset,
@@ -53,7 +54,8 @@ const queryKeys = createQueryKeys('reports', {
   voucherServiceProviders: (
     filters: Arg0<typeof getServiceVoucherReportForAllUnits>
   ) => ['voucherServiceProviders', filters],
-  vardaErrors: () => ['vardaErrors'],
+  vardaChildErrors: () => ['vardaChildErrors'],
+  vardaUnitErrors: () => ['vardaUnitErrors'],
   futurePreschoolers: () => ['futurePreschoolers'],
   futurePreschoolersGroups: () => ['futurePreschoolersGroups'],
   units: () => ['units'],
@@ -108,24 +110,29 @@ export const voucherServiceProvidersReportQuery = query({
   queryKey: queryKeys.voucherServiceProviders
 })
 
-export const vardaErrorsQuery = query({
-  api: getVardaErrorsReport,
-  queryKey: queryKeys.vardaErrors
+export const vardaChildErrorsQuery = query({
+  api: getVardaChildErrorsReport,
+  queryKey: queryKeys.vardaChildErrors
 })
 
 export const startVardaUpdateMutation = mutation({
   api: runFullVardaUpdate,
-  invalidateQueryKeys: () => [queryKeys.vardaErrors()]
+  invalidateQueryKeys: () => [queryKeys.vardaChildErrors()]
 })
 
 export const startVardaResetMutation = mutation({
   api: runFullVardaReset,
-  invalidateQueryKeys: () => [queryKeys.vardaErrors()]
+  invalidateQueryKeys: () => [queryKeys.vardaChildErrors()]
 })
 
 export const resetVardaChildMutation = mutation({
   api: markChildForVardaReset,
-  invalidateQueryKeys: () => [queryKeys.vardaErrors()]
+  invalidateQueryKeys: () => [queryKeys.vardaChildErrors()]
+})
+
+export const vardaUnitErrorsQuery = query({
+  api: getVardaUnitErrorsReport,
+  queryKey: queryKeys.vardaUnitErrors
 })
 
 export const futurePreschoolersQuery = query({

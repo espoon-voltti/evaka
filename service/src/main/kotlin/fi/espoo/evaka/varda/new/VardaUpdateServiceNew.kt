@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
+import fi.espoo.evaka.varda.updateUnits
 import fi.espoo.voltti.logging.loggers.info
 import java.net.URI
 import java.time.LocalDate
@@ -97,8 +98,19 @@ class VardaUpdateServiceNew(
         asyncJobRunner.registerHandler(::updateChildJob)
     }
 
-    fun planUpdate(dbc: Database.Connection, clock: EvakaClock, migrationSpeed: Int = 0) {
-        logger.info { "Planning Varda updates" }
+    fun updateUnits(dbc: Database.Connection, clock: EvakaClock) {
+        updateUnits(
+            dbc,
+            clock,
+            vardaClient,
+            lahdejarjestelma = vardaEnv.sourceSystem,
+            kuntakoodi = ophEnv.municipalityCode,
+            vakajarjestajaUrl = vardaClient.vakajarjestajaUrl(ophEnv.organizerId)
+        )
+    }
+
+    fun planChildrenUpdate(dbc: Database.Connection, clock: EvakaClock, migrationSpeed: Int = 0) {
+        logger.info { "Planning Varda child updates" }
 
         val chunkSize = 1000
         val maxUpdatesPerDay = 1000

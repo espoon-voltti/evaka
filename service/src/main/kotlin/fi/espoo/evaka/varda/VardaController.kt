@@ -42,7 +42,8 @@ class VardaController(
                         Action.Global.VARDA_OPERATIONS
                     )
                 }
-                vardaService.startVardaUpdate(dbc, clock)
+                vardaService.updateUnits(dbc, clock)
+                vardaService.planVardaChildrenUpdate(dbc, clock)
             }
             .also { Audit.VardaReportOperations.log() }
     }

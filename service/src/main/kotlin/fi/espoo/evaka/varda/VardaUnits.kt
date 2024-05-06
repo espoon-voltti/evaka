@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.varda.integration.VardaClient
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 import mu.KotlinLogging
 
@@ -19,49 +19,63 @@ private val logger = KotlinLogging.logger {}
 val unitTypesToUpload =
     listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
+interface VardaUnitClient {
+    fun createUnit(unit: VardaUnitRequest): VardaUnitResponse
+
+    fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse
+}
+
 fun updateUnits(
     db: Database.Connection,
     clock: EvakaClock,
-    client: VardaClient,
-    ophMunicipalityCode: String,
-    ophMunicipalOrganizerIdUrl: String
+    client: VardaUnitClient,
+    lahdejarjestelma: String,
+    kuntakoodi: String,
+    vakajarjestajaUrl: String
 ) {
-    val units =
-        db.read {
-            getNewOrStaleUnits(
-                it,
-                ophMunicipalityCode,
-                ophMunicipalOrganizerIdUrl,
-                client.sourceSystem
-            )
-        }
-    logger.info { "VardaUpdate: Sending ${units.size} new or updated units" }
+    val startTime = clock.now()
+    val units = db.read { getNewOrStaleUnits(it) }
+
+    logger.info { "Sending ${units.size} new or updated units to Varda" }
     units.forEach { unit ->
         try {
+            val request =
+                unit.toVardaUnitRequest(
+                    lahdejarjestelma = lahdejarjestelma,
+                    vakajarjestaja = vakajarjestajaUrl,
+                    kuntakoodi = kuntakoodi
+                )
             val response =
                 if (unit.vardaUnitId == null) {
-                    client.createUnit(unit.toVardaUnitRequest())
+                    client.createUnit(request)
                 } else {
-                    client.updateUnit(unit.toVardaUnitRequest())
+                    client.updateUnit(unit.vardaUnitId, request)
                 }
             db.transaction {
                 setUnitUploaded(
-                    it,
-                    clock,
-                    unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)
+                    tx = it,
+                    now = startTime,
+                    unitId = unit.evakaDaycareId,
+                    vardaUnitId = response.id,
+                    ophUnitOid = response.organisaatio_oid
                 )
             }
         } catch (e: Exception) {
-            logger.error("VardaUpdate: failed to update unit ${unit.name}: $e", e)
+            logger.error("Failed to update unit ${unit.name}: $e", e)
+            db.transaction {
+                setUnitUploadFailed(
+                    tx = it,
+                    now = startTime,
+                    unitId = unit.evakaDaycareId,
+                    error = e.localizedMessage
+                )
+            }
         }
     }
 }
 
 fun getNewOrStaleUnits(
     tx: Database.Read,
-    ophMunicipalityCode: String,
-    ophMunicipalOrganizerIdUrl: String,
-    sourceSystem: String
 ): List<VardaUnit> {
     return tx.createQuery {
             sql(
@@ -70,8 +84,6 @@ fun getNewOrStaleUnits(
                     daycare.id AS evakaDaycareId,
                     varda_unit.varda_unit_id AS vardaUnitId,
                     daycare.oph_unit_oid AS ophUnitOid,
-                    ${bind(ophMunicipalOrganizerIdUrl)} AS organizer,
-                    ${bind(ophMunicipalityCode)} AS municipalityCode,
                     daycare.name AS name,
                     daycare.street_address AS address,
                     daycare.postal_code AS postalCode,
@@ -87,14 +99,13 @@ fun getNewOrStaleUnits(
                     daycare.language AS language,
                     daycare.language_emphasis_id AS languageEmphasisId,
                     daycare.opening_date AS openingDate,
-                    daycare.closing_date AS closingDate,
-                    ${bind(sourceSystem)} AS sourceSystem
+                    daycare.closing_date AS closingDate
                 FROM daycare
                 LEFT JOIN varda_unit ON varda_unit.evaka_daycare_id = daycare.id
                 WHERE daycare.upload_to_varda IS TRUE
                     AND (
-                        daycare.updated > varda_unit.uploaded_at OR
-                        daycare.id NOT IN (SELECT evaka_daycare_id from varda_unit) OR
+                        varda_unit.last_success_at IS NULL OR
+                        daycare.updated > varda_unit.last_success_at OR
                         daycare.oph_unit_oid IS NULL
                     )
                     AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
@@ -104,15 +115,20 @@ fun getNewOrStaleUnits(
         .toList<VardaUnit>()
 }
 
-fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: VardaUnit) {
-    val now = clock.now()
+fun setUnitUploaded(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    unitId: DaycareId,
+    vardaUnitId: Long?,
+    ophUnitOid: String?
+) {
     tx.createUpdate {
             sql(
                 """
-                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
-                VALUES (${bind(vardaUnit.evakaDaycareId)}, ${bind(vardaUnit.vardaUnitId)}, ${bind(now)})
+                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, last_success_at, errored_at, error)
+                VALUES (${bind(unitId)}, ${bind(vardaUnitId)}, ${bind(now)}, NULL, NULL)
                 ON CONFLICT (evaka_daycare_id)
-                DO UPDATE SET varda_unit_id = ${bind(vardaUnit.vardaUnitId)}, uploaded_at = ${bind(now)}
+                DO UPDATE SET varda_unit_id = ${bind(vardaUnitId)}, last_success_at = ${bind(now)}, errored_at = NULL, error = NULL
                 """
             )
         }
@@ -120,7 +136,26 @@ fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: Vard
 
     tx.createUpdate {
             sql(
-                "UPDATE daycare SET oph_unit_oid = ${bind(vardaUnit.ophUnitOid)} WHERE daycare.id = ${bind(vardaUnit.evakaDaycareId)}"
+                "UPDATE daycare SET oph_unit_oid = ${bind(ophUnitOid)} WHERE daycare.id = ${bind(unitId)}"
+            )
+        }
+        .execute()
+}
+
+fun setUnitUploadFailed(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    unitId: DaycareId,
+    error: String
+) {
+    tx.createUpdate {
+            sql(
+                """
+                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, last_success_at, errored_at, error)
+                VALUES (${bind(unitId)}, NULL, NULL, ${bind(now)}, ${bind(error)})
+                ON CONFLICT (evaka_daycare_id)
+                DO UPDATE SET errored_at = ${bind(now)}, error = ${bind(error)}
+                """
             )
         }
         .execute()
@@ -178,12 +213,11 @@ enum class VardaUnitEducationSystem(val vardaCode: String) {
     OTHER("kj99")
 }
 
-data class VardaUnitResponse(var id: Long, val organisaatio_oid: String)
+data class VardaUnitResponse(val id: Long, val organisaatio_oid: String)
 
 data class VardaUnit(
-    var vardaUnitId: Long?,
+    val vardaUnitId: Long?,
     val ophUnitOid: String?,
-    var organizer: String?,
     val name: String?,
     val address: String?,
     val postalCode: String?,
@@ -196,19 +230,21 @@ data class VardaUnit(
     val capacity: Int,
     val openingDate: String?,
     val closingDate: String?,
-    val municipalityCode: String,
-    val sourceSystem: String,
-    val evakaDaycareId: DaycareId?,
+    val evakaDaycareId: DaycareId,
     val unitProviderType: VardaUnitProviderType,
     val unitType: List<VardaUnitType>,
     val language: VardaLanguage,
     val languageEmphasisId: UUID?
 ) {
-    fun toVardaUnitRequest() =
+    fun toVardaUnitRequest(
+        lahdejarjestelma: String,
+        vakajarjestaja: String,
+        kuntakoodi: String,
+    ) =
         VardaUnitRequest(
             id = vardaUnitId,
             organisaatio_oid = ophUnitOid,
-            vakajarjestaja = organizer,
+            vakajarjestaja = vakajarjestaja,
             nimi = name,
             kayntiosoite = address,
             kayntiosoite_postinumero = postalCode,
@@ -221,8 +257,8 @@ data class VardaUnit(
             varhaiskasvatuspaikat = capacity,
             alkamis_pvm = openingDate,
             paattymis_pvm = closingDate,
-            kunta_koodi = municipalityCode,
-            lahdejarjestelma = sourceSystem,
+            kunta_koodi = kuntakoodi,
+            lahdejarjestelma = lahdejarjestelma,
             toiminnallinenpainotus_kytkin = false,
             kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
             jarjestamismuoto_koodi = listOfNotNull(unitProviderType.vardaCode),

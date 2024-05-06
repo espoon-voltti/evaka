@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.varda
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -13,37 +15,34 @@ class VardaUnitModelTest {
 
     @Test
     fun `data output is in correct form`() {
-        assertEquals(listOf("jm01"), testUnit.toVardaUnitRequest().jarjestamismuoto_koodi)
-        assertEquals("tm01", testUnit.toVardaUnitRequest().toimintamuoto_koodi)
-        assertEquals(listOf("FI"), testUnit.toVardaUnitRequest().toimintakieli_koodi)
+        assertEquals(listOf("jm01"), toRequest(testUnit).jarjestamismuoto_koodi)
+        assertEquals("tm01", toRequest(testUnit).toimintamuoto_koodi)
+        assertEquals(listOf("FI"), toRequest(testUnit).toimintakieli_koodi)
     }
 
     @Test
     fun `unit types are printed correctly`() {
-        assertEquals("tm01", testUnitPreschool.toVardaUnitRequest().toimintamuoto_koodi)
-        assertEquals("tm02", testUnitFamily.toVardaUnitRequest().toimintamuoto_koodi)
-        assertEquals("tm03", testUnitGroupFamily.toVardaUnitRequest().toimintamuoto_koodi)
-        assertEquals("tm02", testUnitPreparatoryFamily.toVardaUnitRequest().toimintamuoto_koodi)
-        assertEquals("tm02", testUnitPreschoolFamily.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals("tm01", toRequest(testUnitPreschool).toimintamuoto_koodi)
+        assertEquals("tm02", toRequest(testUnitFamily).toimintamuoto_koodi)
+        assertEquals("tm03", toRequest(testUnitGroupFamily).toimintamuoto_koodi)
+        assertEquals("tm02", toRequest(testUnitPreparatoryFamily).toimintamuoto_koodi)
+        assertEquals("tm02", toRequest(testUnitPreschoolFamily).toimintamuoto_koodi)
     }
 
     @Test
     fun `also municipal school should have provider type printed`() {
-        assertEquals(
-            listOf("jm01"),
-            testUnitMunicipalSchool.toVardaUnitRequest().jarjestamismuoto_koodi
-        )
+        assertEquals(listOf("jm01"), toRequest(testUnitMunicipalSchool).jarjestamismuoto_koodi)
     }
 
     @Test
     fun `non Varda unit types returns null`() {
-        assertEquals(null, testUnitPreparatory.toVardaUnitRequest().toimintamuoto_koodi)
+        assertEquals(null, toRequest(testUnitPreparatory).toimintamuoto_koodi)
     }
 
     @Test
     fun `json output is correct`() {
         val parsed = mapper.readValue(testUnitJson, VardaUnitRequest::class.java)
-        assertEquals(parsed, testUnit.toVardaUnitRequest())
+        assertEquals(parsed, toRequest(testUnit))
     }
 }
 
@@ -51,10 +50,8 @@ val testUnit =
     VardaUnit(
         vardaUnitId = null,
         ophUnitOid = null,
-        evakaDaycareId = null,
-        municipalityCode = "049",
+        evakaDaycareId = DaycareId(UUID.randomUUID()),
         name = "Testipäiväkoti",
-        organizer = "http://path.to.organizer",
         address = "Testiosoite 6",
         postalCode = "00200",
         postOffice = "Espoo",
@@ -69,8 +66,14 @@ val testUnit =
         language = VardaLanguage.FI,
         languageEmphasisId = null,
         openingDate = "2000-01-01",
-        closingDate = null,
-        sourceSystem = "ss"
+        closingDate = null
+    )
+
+fun toRequest(unit: VardaUnit) =
+    unit.toVardaUnitRequest(
+        lahdejarjestelma = "ss",
+        kuntakoodi = "049",
+        vakajarjestaja = "http://path.to.organizer"
     )
 
 val testUnitJson =
