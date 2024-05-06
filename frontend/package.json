@@ -30,7 +30,7 @@
     "@react-spring/web": "^9.7.3",
     "@sentry/browser": "^7.113.0",
     "@sentry/react": "^7.113.0",
-    "@tanstack/react-query": "^5.34.2",
+    "@tanstack/react-query": "^5.35.1",
     "@types/autosize": "^4.0.3",
     "autosize": "^6.0.1",
     "axios": "^1.6.0",
