@@ -36,6 +36,41 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var jamixService: JamixService
 
     @Test
+    fun `meal order jobs for daycare groups without customer id are not planned`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val group = DevDaycareGroup(daycareId = daycare.id, jamixCustomerId = null)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(group)
+        }
+
+        // Tuesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 2), LocalTime.of(2, 25))
+
+        jamixService.planOrders(db, MockEvakaClock(now))
+
+        val jobs =
+            db.read { tx ->
+                tx.createQuery {
+                        sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'")
+                    }
+                    .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
+                    .toList()
+            }
+
+        assertEquals(emptyList(), jobs)
+    }
+
+    @Test
     fun `meal order jobs for the next week are planned`() {
         val area = DevCareArea()
         val daycare =
