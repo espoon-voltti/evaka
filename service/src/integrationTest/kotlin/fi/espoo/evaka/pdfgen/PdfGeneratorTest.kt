@@ -28,6 +28,7 @@ import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.document.childdocument.generateChildDocumentHtml
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.pis.service.createAddressPagePdf
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -40,6 +41,7 @@ import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -179,6 +181,16 @@ class PdfGeneratorTest {
         createPDF(preparatoryDecision, false, OfficialLanguage.SV)
         createPDF(voucherDecision, false, OfficialLanguage.SV)
         createPDF(clubDecision, false, OfficialLanguage.SV)
+    }
+
+    @Test
+    fun createAddressPagePdfTest() {
+        val document = createAddressPagePdf(pdfGenerator, guardian, RealEvakaClock())
+
+        val file = File.createTempFile("address_page_", ".pdf")
+        FileOutputStream(file).use { it.write(document.bytes) }
+
+        logger.debug { "Generated address page PDF to ${file.absolutePath}" }
     }
 
     @Test

@@ -1960,7 +1960,8 @@ export const fi = {
       validity: 'Aikaväli',
       price: 'Summa',
       status: 'Status'
-    }
+    },
+    downloadAddressPage: 'Lataa osoitesivu'
   },
   timeline: {
     title: 'Perheen aikajana',
