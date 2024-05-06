@@ -5,7 +5,7 @@
 
 ARG NGINX_VERSION=1.25.1
 
-FROM node:20.12.2-bookworm-slim AS builder
+FROM node:22.1.0-bookworm-slim AS builder
 ARG CACHE_BUST
 
 USER root
