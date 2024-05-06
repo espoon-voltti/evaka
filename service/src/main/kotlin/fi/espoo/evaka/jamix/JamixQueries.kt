@@ -24,7 +24,12 @@ data class JamixChildData(
 )
 
 fun Database.Read.getJamixCustomerIds(): Set<Int> =
-    createQuery { sql("SELECT DISTINCT jamix_customer_id FROM daycare_group") }.toSet()
+    createQuery {
+            sql(
+                "SELECT DISTINCT jamix_customer_id FROM daycare_group WHERE jamix_customer_id IS NOT NULL"
+            )
+        }
+        .toSet()
 
 fun Database.Read.getJamixChildData(jamixCustomerId: Int, date: LocalDate): List<JamixChildData> =
     createQuery {
