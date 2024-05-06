@@ -3788,10 +3788,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/linkify-it@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "@types/linkify-it@npm:3.0.2"
-  checksum: 10/dff8f10fafb885422474e456596f12d518ec4cdd6c33cca7a08e7c86b912d301ed91cf5a7613e148c45a12600dc9ab3d85ad16d5b48dc1aaeda151a68f16b536
+"@types/linkify-it@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@types/linkify-it@npm:5.0.0"
+  checksum: 10/c3919044d4876f9d71d037e861745cd2485c95ac8c36a4fa67b132d4e60eb1d067e123cc7965c9cf5110eea351517d767f0d306af5e9147d6d0af87bc374ddcf
   languageName: node
   linkType: hard
 
@@ -6972,7 +6972,7 @@ __metadata:
     "@types/autosize": "npm:^4.0.3"
     "@types/jest": "npm:^29.5.12"
     "@types/leaflet": "npm:^1.9.3"
-    "@types/linkify-it": "npm:^3.0.2"
+    "@types/linkify-it": "npm:^5.0.0"
     "@types/lodash": "npm:^4.17.0"
     "@types/node": "npm:^20.12.5"
     "@types/punycode": "npm:^2.1.0"
