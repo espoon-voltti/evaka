@@ -5,6 +5,7 @@
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -27,7 +28,8 @@ class VardaController(
     private val vardaService: VardaUpdateService,
     private val vardaResetService: VardaResetService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val vardaEnv: VardaEnv
 ) {
     @PostMapping("/start-update")
     fun runFullVardaUpdate(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
@@ -56,7 +58,11 @@ class VardaController(
                         Action.Global.VARDA_OPERATIONS
                     )
                 }
-                vardaResetService.planVardaReset(dbc, clock, true)
+                vardaResetService.planVardaReset(
+                    dbc,
+                    clock,
+                    addNewChildren = !vardaEnv.newIntegrationEnabled
+                )
             }
             .also { Audit.VardaReportOperations.log() }
     }
