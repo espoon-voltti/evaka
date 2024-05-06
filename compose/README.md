@@ -38,8 +38,8 @@ packages.
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version 18.17+
   - Install correct version automatically with [nvm](https://github.com/nvm-sh/nvm): `nvm install` (see [`.nvmrc`](../.nvmrc))
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+
-- [JDK](https://openjdk.java.net/projects/jdk/17/) – Java Development
-  Kit, version 17. We recommend using OpenJDK.
+- [JDK](https://openjdk.java.net/projects/jdk/21/) – Java Development
+  Kit, version 21. We recommend using OpenJDK.
 - [Docker](https://docs.docker.com/get-docker/) – Docker is an open platform for developing, shipping, and running applications.
 - [docker compose](https://docs.docker.com/compose/install/) - Tool for running multi-container Docker applications, version 1.26.0+
 
