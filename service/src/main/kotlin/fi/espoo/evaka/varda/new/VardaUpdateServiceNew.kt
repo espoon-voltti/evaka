@@ -22,6 +22,7 @@ import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import fi.espoo.evaka.varda.updateUnits
 import fi.espoo.voltti.logging.loggers.info
 import java.net.URI
+import java.time.Duration
 import java.time.LocalDate
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
@@ -121,6 +122,8 @@ class VardaUpdateServiceNew(
             "Varda enabled range must start after 2019-01-01"
         }
         asyncJobRunner.registerHandler(::updateChildJob)
+        asyncJobRunner.registerHandler(::planEndExistingChildData)
+        asyncJobRunner.registerHandler(::endExistingChildData)
     }
 
     fun updateUnits(dbc: Database.Connection, clock: EvakaClock) {
@@ -183,9 +186,9 @@ class VardaUpdateServiceNew(
         job: AsyncJob.VardaUpdateChild
     ) {
         val dryRunClient = DryRunClient()
-        val service = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+        val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
-        service.updateChild(
+        updater.updateChild(
             dbc,
             readClient = vardaClient,
             writeClient = if (job.dryRun) dryRunClient else vardaClient,
@@ -200,6 +203,64 @@ class VardaUpdateServiceNew(
                     mapOf("operations" to ops.joinToString("\n").takeIf { it.isNotBlank() })
                 ) {
                     "Varda dry run for ${job.childId}: ${ops.size} operations (see meta.operations field)"
+                }
+            }
+        }
+    }
+
+    fun planEndExistingChildData(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.VardaPlanEndExistingChildData
+    ) {
+        logger.info {
+            "Planning Varda end existing child data jobs for end date ${job.endDate}" +
+                if (job.dryRun) " (dry run)" else ""
+        }
+
+        val lapset = vardaClient.getLapset()
+        logger.info { "Found ${lapset.size} lapsi entries" }
+
+        dbc.transaction { tx ->
+            asyncJobRunner.plan(
+                tx,
+                payloads =
+                    lapset.map { lapsi ->
+                        AsyncJob.VardaEndExistingChildData(lapsi.url, job.endDate, job.dryRun)
+                    },
+                runAt = clock.now(),
+                retryInterval = Duration.ofHours(24),
+                retryCount = 5
+            )
+        }
+    }
+
+    fun endExistingChildData(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.VardaEndExistingChildData
+    ) {
+        logger.info {
+            "Starting Varda end existing child data job for end date ${job.endDate} for ${job.lapsiUrl}" +
+                if (job.dryRun) " (dry run)" else ""
+        }
+
+        val dryRunClient = DryRunClient()
+        val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+
+        updater.endExistingChildData(
+            lapsiUrl = job.lapsiUrl,
+            readClient = vardaClient,
+            writeClient = if (job.dryRun) dryRunClient else vardaClient,
+            endDate = job.endDate
+        )
+
+        if (job.dryRun) {
+            dryRunClient.operationsHumanReadable.also { ops ->
+                logger.info(
+                    mapOf("operations" to ops.joinToString("\n").takeIf { it.isNotBlank() })
+                ) {
+                    "Varda end existing child data dry run: ${ops.size} operations (see meta.operations field)"
                 }
             }
         }
@@ -490,7 +551,25 @@ class VardaUpdater(
         return henkilo.henkilo_oid
     }
 
-    /** Like Iterable.all, but runs all the side effects regardless of what they return */
+    fun endExistingChildData(
+        lapsiUrl: URI,
+        readClient: VardaReadClient,
+        writeClient: VardaWriteClient,
+        endDate: LocalDate
+    ) {
+        logger.info { "Ending existing data for lapsi $lapsiUrl" }
+
+        val maksutiedot = readClient.getMaksutiedotByLapsi(lapsiUrl)
+        maksutiedot.forEach { writeClient.endOrDelete(it, endDate) }
+
+        val suhteet = readClient.getVarhaiskasvatussuhteetByLapsi(lapsiUrl)
+        suhteet.forEach { writeClient.endOrDelete(it, endDate) }
+
+        val varhaiskasvatuspaatokset = readClient.getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl)
+        varhaiskasvatuspaatokset.forEach { writeClient.endOrDelete(it, endDate) }
+    }
+
+    /** Like `Iterable.all`, but runs all the side effects regardless of what they return */
     private fun <T> Iterable<T>.allSucceed(sideEffect: (T) -> Boolean): Boolean {
         var result = true
         for (e in this) {
@@ -612,6 +691,17 @@ class VardaUpdater(
         createMaksutieto(evakaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
     }
 
+    private fun VardaWriteClient.endOrDelete(entity: VardaEntityWithValidity, endDate: LocalDate) {
+        if (entity.alkamis_pvm > endDate) {
+            this.delete(entity)
+        } else {
+            val paattymisPvm: LocalDate? = entity.paattymis_pvm
+            if (paattymisPvm == null || paattymisPvm > endDate) {
+                this.setPaattymisPvm(entity.url, VardaWriteClient.SetPaattymisPvmRequest(endDate))
+            }
+        }
+    }
+
     enum class Status {
         UP_TO_DATE,
         NEEDS_UPDATE
@@ -720,6 +810,10 @@ class DryRunClient : VardaWriteClient {
 
     override fun <T : VardaEntity> delete(data: T) {
         _operations.add(Operation("Delete", null, data))
+    }
+
+    override fun setPaattymisPvm(url: URI, body: VardaWriteClient.SetPaattymisPvmRequest) {
+        _operations.add(Operation("SetPaattymisPvm", null, url to body))
     }
 
     val operationsHumanReadable: List<String>

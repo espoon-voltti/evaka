@@ -2396,6 +2396,10 @@ open class FailEveryOperation : VardaReadClient {
         throw NotImplementedError()
     }
 
+    override fun getLapset(): List<VardaReadClient.LapsiResponse> {
+        throw NotImplementedError()
+    }
+
     override fun getLapsi(url: URI): VardaReadClient.LapsiResponse {
         throw NotImplementedError()
     }

@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
+import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
@@ -277,13 +278,27 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class UpdateVardaChild(
-        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
+    data class VardaUpdateChild(val childId: ChildId, val dryRun: Boolean = false) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class VardaPlanEndExistingChildData(val endDate: LocalDate, val dryRun: Boolean) :
+        AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class VardaEndExistingChildData(
+        val lapsiUrl: URI,
+        val endDate: LocalDate,
+        val dryRun: Boolean
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class VardaUpdateChild(val childId: ChildId, val dryRun: Boolean = false) : AsyncJob {
+    // Old Varda jobs
+    data class UpdateVardaChild(
+        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -302,6 +317,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class DeleteVardaChild(val vardaChildId: Long) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
+    // End of Old Varda jobs
 
     data class SendOutdatedIncomeNotificationEmail(
         val guardianId: PersonId,
@@ -399,6 +415,8 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Config(concurrency = 1),
                 setOf(
                     VardaUpdateChild::class,
+                    VardaPlanEndExistingChildData::class,
+                    VardaEndExistingChildData::class,
                     UpdateVardaChild::class,
                     ResetVardaChild::class,
                     DeleteVardaChild::class,

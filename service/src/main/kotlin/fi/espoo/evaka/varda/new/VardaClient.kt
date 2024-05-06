@@ -94,6 +94,8 @@ interface VardaReadClient {
         val paos_kytkin: Boolean,
     ) : VardaEntity
 
+    fun getLapset(): List<LapsiResponse>
+
     fun getLapsi(url: URI): LapsiResponse
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -102,8 +104,8 @@ interface VardaReadClient {
         // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
         // doesn't always include it.
         val lahdejarjestelma: String?,
-        val alkamis_pvm: LocalDate,
-        val paattymis_pvm: LocalDate?,
+        override val alkamis_pvm: LocalDate,
+        override val paattymis_pvm: LocalDate?,
         val hakemus_pvm: LocalDate,
         val vuorohoito_kytkin: Boolean,
         val tilapainen_vaka_kytkin: Boolean,
@@ -111,7 +113,7 @@ interface VardaReadClient {
         val paivittainen_vaka_kytkin: Boolean,
         val kokopaivainen_vaka_kytkin: Boolean,
         val jarjestamismuoto_koodi: String,
-    ) : VardaEntity
+    ) : VardaEntityWithValidity
 
     fun getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl: URI): List<VarhaiskasvatuspaatosResponse>
 
@@ -123,9 +125,9 @@ interface VardaReadClient {
         val lahdejarjestelma: String?,
         val varhaiskasvatuspaatos: URI,
         val toimipaikka_oid: String,
-        val alkamis_pvm: LocalDate,
-        val paattymis_pvm: LocalDate?,
-    ) : VardaEntity
+        override val alkamis_pvm: LocalDate,
+        override val paattymis_pvm: LocalDate?,
+    ) : VardaEntityWithValidity
 
     fun getVarhaiskasvatussuhteetByLapsi(lapsiUrl: URI): List<VarhaiskasvatussuhdeResponse>
 
@@ -137,13 +139,13 @@ interface VardaReadClient {
         val lahdejarjestelma: String?,
         val huoltajat: List<Huoltaja>,
         val lapsi: URI,
-        val alkamis_pvm: LocalDate,
-        val paattymis_pvm: LocalDate?,
+        override val alkamis_pvm: LocalDate,
+        override val paattymis_pvm: LocalDate?,
         val maksun_peruste_koodi: String,
         val palveluseteli_arvo: Double?,
         val asiakasmaksu: Double,
         val perheen_koko: Int?,
-    ) : VardaEntity
+    ) : VardaEntityWithValidity
 
     fun getMaksutiedotByLapsi(lapsiUrl: URI): List<MaksutietoResponse>
 }
@@ -206,6 +208,10 @@ interface VardaWriteClient {
     fun createMaksutieto(body: CreateMaksutietoRequest): CreateResponse
 
     fun <T : VardaEntity> delete(data: T)
+
+    data class SetPaattymisPvmRequest(val paattymis_pvm: LocalDate)
+
+    fun setPaattymisPvm(url: URI, body: SetPaattymisPvmRequest)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -234,6 +240,11 @@ interface VardaEntity {
     val url: URI
 }
 
+interface VardaEntityWithValidity : VardaEntity {
+    val alkamis_pvm: LocalDate
+    val paattymis_pvm: LocalDate?
+}
+
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
     private val httpClient: OkHttpClient,
@@ -253,6 +264,9 @@ class VardaClient(
     override fun createLapsi(
         body: VardaWriteClient.CreateLapsiRequest
     ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/lapset/"), body)
+
+    override fun getLapset(): List<VardaReadClient.LapsiResponse> =
+        getAllPages(baseUrl.resolve("v1/lapset/"))
 
     override fun getLapsi(url: URI): VardaReadClient.LapsiResponse = get(url)
 
@@ -280,6 +294,9 @@ class VardaClient(
 
     override fun getMaksutiedotByLapsi(lapsiUrl: URI): List<VardaReadClient.MaksutietoResponse> =
         getAllPages(lapsiUrl.resolve("maksutiedot/"))
+
+    override fun setPaattymisPvm(url: URI, body: VardaWriteClient.SetPaattymisPvmRequest): Unit =
+        patch(url, body)
 
     fun vakajarjestajaUrl(organizerId: String): String =
         baseUrl.resolve("v1/vakajarjestajat/$organizerId/").toString()
@@ -309,6 +326,8 @@ class VardaClient(
         }
         return acc.toList()
     }
+
+    private inline fun <T, reified R> patch(url: URI, body: T): R = request("PATCH", url, body)
 
     private inline fun <T, reified R> post(url: URI, body: T): R = request("POST", url, body)
 
