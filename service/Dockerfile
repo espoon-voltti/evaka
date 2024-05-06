@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM azul/zulu-openjdk:21-latest as builder
+FROM azul/zulu-openjdk:22-latest as builder
 ARG CACHE_BUST
 
 ENV LC_ALL C.UTF-8
@@ -47,7 +47,7 @@ COPY . /evaka
 RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin copyDownloadOnlyDeps \
  && unzip -oq build/libs/evaka-service-boot.jar -d target
 
-FROM azul/zulu-openjdk:21-jre-headless-latest
+FROM azul/zulu-openjdk:22-jre-headless-latest
 ARG CACHE_BUST
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
