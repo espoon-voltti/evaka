@@ -232,7 +232,9 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0): 
                     INSERT INTO varda_state (child_id, state)
                     SELECT evaka_child_id, null
                     FROM varda_reset_child
-                    WHERE NOT EXISTS (SELECT FROM varda_state WHERE child_id = evaka_child_id)
+                    WHERE
+                        EXISTS (SELECT FROM person WHERE id = evaka_child_id) AND
+                        NOT EXISTS (SELECT FROM varda_state WHERE child_id = evaka_child_id)
                     LIMIT ${bind(migrationSpeed)}
                     RETURNING child_id
                 )
