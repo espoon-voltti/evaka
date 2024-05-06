@@ -11,14 +11,23 @@ version: 2
 updates:
   - package-ecosystem: docker
     directory: "/service"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     schedule:
       interval: weekly
   - package-ecosystem: docker
     directory: "/apigw"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     schedule:
       interval: weekly
   - package-ecosystem: docker
     directory: "/frontend"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     schedule:
       interval: weekly
   - package-ecosystem: npm
