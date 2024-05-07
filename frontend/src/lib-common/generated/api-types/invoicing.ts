@@ -568,6 +568,7 @@ export interface InvoiceDetailed {
   number: number | null
   periodEnd: LocalDate
   periodStart: LocalDate
+  relatedFeeDecisions: RelatedFeeDecision[]
   rows: InvoiceRowDetailed[]
   sentAt: HelsinkiDateTime | null
   sentBy: UUID | null
@@ -851,6 +852,14 @@ export interface PersonDetailed {
 export interface ProductWithName {
   key: string
   nameFi: string
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
+*/
+export interface RelatedFeeDecision {
+  decisionNumber: number
+  id: UUID
 }
 
 /**

@@ -69,7 +69,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         tx.deleteDraftInvoicesByDateRange(range)
         tx.insertInvoices(
             invoices = invoicesWithCorrections,
-            sourceFeeDecisions =
+            relatedFeeDecisions =
                 invoicesWithCorrections.associate { invoice ->
                     invoice.id to
                         invoiceCalculationData.decisions

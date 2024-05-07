@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
@@ -73,6 +74,8 @@ data class InvoiceRow(
         get() = amount * unitPrice
 }
 
+data class RelatedFeeDecision(val id: FeeDecisionId, val decisionNumber: Long)
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceDetailed(
     val id: InvoiceId,
@@ -88,7 +91,8 @@ data class InvoiceDetailed(
     @Json val rows: List<InvoiceRowDetailed>,
     val number: Long?,
     val sentBy: EvakaUserId?,
-    val sentAt: HelsinkiDateTime?
+    val sentAt: HelsinkiDateTime?,
+    @Json val relatedFeeDecisions: List<RelatedFeeDecision>
 ) {
     val account: Int = 3295
     val totalPrice

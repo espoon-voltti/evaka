@@ -134,7 +134,18 @@ val invoiceDetailedQueryBase =
             LEFT JOIN care_area AS row_care_area ON daycare.care_area_id = row_care_area.id
             LEFT JOIN person as child ON row.child = child.id
             WHERE invoice.id = row.invoice_id
-        ), '[]'::jsonb) as rows
+        ), '[]'::jsonb) as rows,
+        
+        coalesce((
+            SELECT jsonb_agg(jsonb_build_object(
+                'id', fd.id,
+                'decisionNumber', fd.decision_number
+            ) ORDER BY fd.decision_number)
+            FROM invoiced_fee_decision
+            JOIN fee_decision fd ON invoiced_fee_decision.fee_decision_id = fd.id
+            WHERE invoiced_fee_decision.invoice_id = invoice.id AND fd.decision_number IS NOT NULL
+        ), '[]'::jsonb) as related_fee_decisions
+        
     FROM invoice
     JOIN care_area ON invoice.area_id = care_area.id
     LEFT JOIN person as head ON invoice.head_of_family = head.id
@@ -466,14 +477,14 @@ fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
 
 fun Database.Transaction.insertInvoices(
     invoices: List<Invoice>,
-    sourceFeeDecisions: Map<InvoiceId, List<FeeDecisionId>> = emptyMap()
+    relatedFeeDecisions: Map<InvoiceId, List<FeeDecisionId>> = emptyMap()
 ) {
     upsertInvoicesWithoutRows(invoices)
     insertInvoiceRows(invoices.map { it.id to it.rows })
     insertInvoicedFeeDecisions(
         relations =
             invoices.flatMap { invoice ->
-                sourceFeeDecisions.getOrDefault(invoice.id, emptyList()).map { feeDecisionId ->
+                relatedFeeDecisions.getOrDefault(invoice.id, emptyList()).map { feeDecisionId ->
                     invoice.id to feeDecisionId
                 }
             }

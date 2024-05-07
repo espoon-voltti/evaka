@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
+import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
@@ -32,6 +33,7 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestParentship
@@ -481,6 +483,38 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result = getInvoice(invoice.id)
         assertDetailedEqualEnough(listOf(toDetailed(invoice)), listOf(result))
+    }
+
+    @Test
+    fun `getInvoice works with existing invoice with related fee decisions`() {
+        val invoice = testInvoices[0]
+        val feeDecisionId =
+            db.transaction {
+                it.insert(
+                    DevFeeDecision(
+                        validDuring = FiniteDateRange(invoice.periodStart, invoice.periodEnd),
+                        headOfFamilyId = invoice.headOfFamily,
+                        status = FeeDecisionStatus.SENT,
+                        decisionNumber = 123
+                    )
+                )
+            }
+        db.transaction { tx ->
+            tx.insertInvoices(listOf(invoice), mapOf(invoice.id to listOf(feeDecisionId)))
+        }
+
+        val result = getInvoice(invoice.id)
+        assertDetailedEqualEnough(
+            expected =
+                listOf(
+                    toDetailed(invoice)
+                        .copy(
+                            relatedFeeDecisions =
+                                listOf(RelatedFeeDecision(id = feeDecisionId, decisionNumber = 123))
+                        )
+                ),
+            actual = listOf(result)
+        )
     }
 
     @Test
