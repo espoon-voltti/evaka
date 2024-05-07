@@ -27,5 +27,5 @@ export const createVoucherValueMutation = mutation({
 
 export const deleteVoucherValueMutation = mutation({
   api: deleteVoucherValue,
-  invalidateQueryKeys: ({ id }) => [queryKeys.voucherValues()]
+  invalidateQueryKeys: () => [queryKeys.voucherValues()]
 })
