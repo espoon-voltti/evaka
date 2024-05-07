@@ -237,6 +237,12 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(migrationSpeed: Int = 0): 
                         NOT EXISTS (SELECT FROM varda_state WHERE child_id = evaka_child_id)
                     LIMIT ${bind(migrationSpeed)}
                     RETURNING child_id
+                ), _ AS (
+                    UPDATE person p SET oph_person_oid = voc.varda_person_oid
+                    FROM varda_organizer_child voc
+                    WHERE
+                        p.id IN (SELECT child_id from inserted_children) AND
+                        voc.evaka_person_id = p.id
                 )
                 DELETE FROM varda_reset_child
                 WHERE evaka_child_id IN (SELECT child_id FROM inserted_children)

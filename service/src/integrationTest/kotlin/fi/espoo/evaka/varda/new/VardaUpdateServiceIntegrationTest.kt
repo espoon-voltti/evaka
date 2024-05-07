@@ -156,13 +156,13 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `children are migrated from varda_reset_child`() {
+    fun `children are migrated from varda_reset_child and varda_organizer_child`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
-        val child1 = DevPerson(ssn = "030320A904N")
-        val child2 = DevPerson(ssn = "030320A905P")
+        val child1 = DevPerson(ssn = "030320A904N", ophPersonOid = null)
+        val child2 = DevPerson(ssn = "030320A905P", ophPersonOid = null)
 
-        val allChildIds = setOf(child1.id, child2.id)
+        val children = mapOf(child1.id to "child1oid", child2.id to "child2oid")
 
         db.transaction { tx ->
             tx.insert(area)
@@ -183,7 +183,15 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 endDate = LocalDate.of(2021, 2, 28)
             )
 
-            tx.executeBatch(allChildIds) {
+            tx.executeBatch(children.entries) {
+                sql(
+                    """
+                    INSERT INTO varda_organizer_child (evaka_person_id, varda_person_oid, varda_child_id, varda_person_id, organizer_oid)
+                    VALUES (${bind { it.key }}, ${bind { it.value }}, ${bind(123)}, ${bind(456)}, ${bind(789)})
+                    """
+                )
+            }
+            tx.executeBatch(children.keys) {
                 sql("INSERT INTO varda_reset_child (evaka_child_id) VALUES (${bind { it }})")
             }
         }
@@ -192,10 +200,21 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         val plannedChildIds = getPlannedChildIds()
         assertEquals(1, plannedChildIds.size)
-        assertTrue(plannedChildIds.single() in allChildIds)
+        val plannedChildId = plannedChildIds.single()
+        assertTrue(plannedChildId in children.keys)
 
         val remainingChildren = getVardaResetChildIds()
-        assertEquals(allChildIds - plannedChildIds, remainingChildren)
+        assertEquals(children.keys - plannedChildId, remainingChildren)
+
+        // OPH person OID should have been copied from varda_organizer_child
+        val ophPersonOid =
+            db.read {
+                it.createQuery {
+                        sql("SELECT oph_person_oid FROM person WHERE id = ${bind(plannedChildId)}")
+                    }
+                    .exactlyOne<String>()
+            }
+        assertEquals(children[plannedChildId], ophPersonOid)
     }
 
     private fun getVardaStateChildIds(): Set<ChildId> =
