@@ -78,7 +78,30 @@ data class EmployeeWithDaycareRoles(
 
 data class EmployeeIdWithName(val id: EmployeeId, val name: String)
 
-fun Database.Transaction.createEmployee(employee: NewEmployee): Employee =
+fun Database.Transaction.insertAclHistoryForGlobalRoles(
+    employeeId: EmployeeId,
+    roles: Set<UserRole>,
+    now: HelsinkiDateTime
+) {
+    executeBatch(roles) { sql("""
+        INSERT INTO acl_history (employee_id, daycare_id, role, valid_from, valid_to)
+        VALUES (${bind(employeeId)}, NULL, ${bind { role -> role }}, ${bind { now }}, NULL)
+        ON CONFLICT DO NOTHING 
+    """)}
+}
+
+fun Database.Transaction.terminateAclHistoryForGlobalRoles(
+    employeeId: EmployeeId,
+    roles: Set<UserRole>,
+    now: HelsinkiDateTime
+) {
+    execute { sql("""
+        UPDATE acl_history SET valid_to = ${bind(now)}
+        WHERE valid_to IS NULL AND employee_id = ${bind(employeeId)} AND daycare_id IS NULL AND NOT (role = ANY(${bind(roles)}))
+    """)}
+}
+
+fun Database.Transaction.createEmployee(employee: NewEmployee, now: HelsinkiDateTime): Employee =
     createUpdate {
             sql(
                 """
@@ -90,6 +113,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<Employee>()
+        .also { insertAclHistoryForGlobalRoles(it.id, employee.roles, now) }
 
 fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
@@ -104,6 +128,7 @@ fun Database.Transaction.updateExternalIdByEmployeeNumber(
 
 fun Database.Transaction.loginEmployee(clock: EvakaClock, employee: NewEmployee): Employee {
     val now = clock.now()
+    terminateAclHistoryForGlobalRoles()
     return createUpdate {
             sql(
                 """
@@ -280,8 +305,19 @@ fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
 fun Database.Transaction.upsertEmployeeDaycareRoles(
     id: EmployeeId,
     daycareIds: List<DaycareId>,
-    role: UserRole
+    role: UserRole,
+    now: HelsinkiDateTime
 ) {
+    // end history rows where role will change
+    executeBatch(daycareIds) {
+        sql(
+            """
+UPDATE acl_history SET valid_to = ${bind(now)} 
+WHERE valid_to IS NULL AND employee_id = ${bind(id)} AND daycare_id = ${bind(daycareIds)} AND role <> ${bind(role)}
+"""
+        )
+    }
+    // upsert the actual acl row
     executeBatch(daycareIds) {
         sql(
             """
@@ -291,9 +327,30 @@ ON CONFLICT (employee_id, daycare_id) DO UPDATE SET role = ${bind(role)}
 """
         )
     }
+    // add new history row
+    executeBatch(daycareIds) {
+        sql(
+            """
+INSERT INTO acl_history (employee_id, daycare_id, role, valid_from, valid_to) 
+VALUES (${bind(id)}, ${bind { daycareId -> daycareId }}, ${bind(role)}, ${bind(now)}, NULL)
+ON CONFLICT DO NOTHING 
+"""
+        )
+    }
 }
 
-fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: List<UserRole>) {
+fun Database.Transaction.updateEmployeeGlobalRoles(
+    id: EmployeeId,
+    globalRoles: List<UserRole>,
+    now: HelsinkiDateTime
+) {
+    // end history rows where role will change
+    execute { sql("""
+        UPDATE acl_history SET valid_to = ${bind(now)}
+        WHERE valid_to IS NULL AND employee_id = ${bind(id)} AND daycare_id IS NULL AND NOT (role = ANY(${bind(globalRoles)}))
+    """) }
+
+    // update the roles
     val updated =
         createUpdate {
                 sql(
@@ -306,10 +363,16 @@ fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: 
             }
             .execute()
 
+    // add new history rows
+    executeBatch(globalRoles) { sql("""
+        INSERT INTO acl_history (employee_id, daycare_id, role, valid_from, valid_to)
+        VALUES (${bind(id)}, NULL, ${bind { role -> role }}, ${bind { now }}, NULL)
+    """)}
+
     if (updated != 1) throw NotFound("employee $id not found")
 }
 
-fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?) {
+fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?, now: HelsinkiDateTime) {
     createUpdate {
             sql(
                 """
@@ -337,6 +400,14 @@ fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: D
             )
         }
         .execute()
+
+    val daycarePredicate = daycareId
+        ?.let { Predicate { where("$it.daycare_id = ${bind(daycareId)}")} }
+        ?: Predicate.alwaysTrue()
+    execute { sql("""
+        UPDATE acl_history SET valid_to = ${bind(now)}
+        WHERE valid_to IS NULL AND employee_id = ${bind(id)} AND ${daycarePredicate.forTable("acl_history")}
+    """.trimIndent()) }
 }
 
 data class PagedEmployeesWithDaycareRoles(

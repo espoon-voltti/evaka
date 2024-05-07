@@ -163,7 +163,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     id
                 )
 
-                it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role)
+                it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role, clock.now())
                 it.upsertEmployeeMessageAccount(id)
             }
         }
