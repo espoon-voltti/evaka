@@ -6,7 +6,9 @@ package fi.espoo.evaka.jamix
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
@@ -23,7 +25,9 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
+import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
 import mu.KotlinLogging
@@ -46,33 +50,68 @@ class JamixService(
     }
 
     fun planOrders(dbc: Database.Connection, clock: EvakaClock) {
-        val now = clock.now()
-        val range = now.toLocalDate().startOfNextWeek().weekSpan()
-        dbc.transaction { tx ->
-            val customerIds = tx.getJamixCustomerIds()
-            asyncJobRunner.plan(
-                tx,
-                range.dates().flatMap { date ->
-                    customerIds.map { customerId -> AsyncJob.SendJamixOrder(customerId, date) }
-                },
-                runAt = now,
-                retryInterval = Duration.ofHours(1),
-                retryCount = 3
-            )
-        }
+        if (client == null) error("Cannot plan Jamix order: JamixEnv is not configured")
+        planJamixOrderJobs(dbc, asyncJobRunner, client, clock.now())
     }
 
     fun sendOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendJamixOrder) {
         if (client == null) error("Cannot send Jamix order: JamixEnv is not configured")
         try {
-            createAndSendJamixOrder(client, dbc, mealTypeMapper, job.customerId, job.date)
-            logger.info { "Sent Jamix order for date ${job.date} for customer ${job.customerId}" }
+            createAndSendJamixOrder(
+                client,
+                dbc,
+                mealTypeMapper,
+                customerNumber = job.customerNumber,
+                customerId = job.customerId,
+                date = job.date
+            )
         } catch (e: Exception) {
             logger.error(e) {
-                "Failed to send meal order to Jamix: customerId=${job.customerId}, date=${job.date}, error=${e.localizedMessage}"
+                "Failed to send meal order to Jamix: date=${job.date}, customerNumber=${job.customerNumber}, customerId=${job.customerId}, error=${e.localizedMessage}"
             }
             throw e
         }
+    }
+}
+
+fun planJamixOrderJobs(
+    dbc: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    client: JamixClient,
+    now: HelsinkiDateTime
+) {
+    val range = now.toLocalDate().startOfNextWeek().weekSpan()
+
+    logger.info { "Getting Jamix customers" }
+    val customers = client.getCustomers()
+    val customerMapping = customers.associateBy({ it.customerNumber }, { it.customerId })
+
+    dbc.transaction { tx ->
+        val customerNumbers = tx.getJamixCustomerNumbers()
+        logger.info { "Planning Jamix orders for ${customerNumbers.size} customers" }
+        asyncJobRunner.plan(
+            tx,
+            range.dates().flatMap { date ->
+                customerNumbers.mapNotNull { customerNumber ->
+                    val customerId = customerMapping[customerNumber]
+                    if (customerId == null) {
+                        logger.error {
+                            "Jamix customerId not found for customerNumber $customerNumber"
+                        }
+                        null
+                    } else {
+                        AsyncJob.SendJamixOrder(
+                            customerNumber = customerNumber,
+                            customerId = customerId,
+                            date = date
+                        )
+                    }
+                }
+            },
+            runAt = now,
+            retryInterval = Duration.ofHours(1),
+            retryCount = 3
+        )
     }
 }
 
@@ -80,13 +119,14 @@ fun createAndSendJamixOrder(
     client: JamixClient,
     dbc: Database.Connection,
     mealTypeMapper: MealTypeMapper,
+    customerNumber: Int,
     customerId: Int,
     date: LocalDate
 ) {
     val (preschoolTerms, children) =
         dbc.read { tx ->
             val preschoolTerms = tx.getPreschoolTerms()
-            val children = getChildInfos(tx, customerId, date)
+            val children = getChildInfos(tx, customerNumber, date)
             preschoolTerms to children
         }
     val order =
@@ -106,17 +146,24 @@ fun createAndSendJamixOrder(
 
     if (order.mealOrderRows.isNotEmpty()) {
         client.createMealOrder(order)
+        logger.info {
+            "Sent Jamix order for date ${date} for customerNumber=${customerNumber} customerId=${customerId}"
+        }
+    } else {
+        logger.info {
+            "Skipped Jamix order with no rows for date ${date} for customerNumber=${customerNumber} customerId=${customerId}"
+        }
     }
 }
 
 private fun getChildInfos(
     tx: Database.Read,
-    jamixCustomerId: Int,
+    jamixCustomerNumber: Int,
     date: LocalDate
 ): List<MealReportChildInfo> {
     val holidays = tx.getHolidays(FiniteDateRange(date, date))
 
-    val childData = tx.getJamixChildData(jamixCustomerId, date)
+    val childData = tx.getJamixChildData(jamixCustomerNumber, date)
     val unitIds = childData.map { it.unitId }.toSet()
     val childIds = childData.map { it.childId }.toSet()
 
@@ -142,6 +189,10 @@ private fun getChildInfos(
 }
 
 interface JamixClient {
+    data class Customer(val customerId: Int, val customerNumber: Int)
+
+    fun getCustomers(): List<Customer>
+
     data class MealOrder(
         val customerID: Int,
         val deliveryDate: LocalDate,
@@ -164,19 +215,33 @@ class JamixHttpClient(
     private val fuel: FuelManager,
     private val jsonMapper: JsonMapper
 ) : JamixClient {
-    override fun createMealOrder(order: JamixClient.MealOrder) {
-        val url = env.url.resolve("v2/mealorders").toString()
+    override fun getCustomers(): List<JamixClient.Customer> =
+        request(Method.GET, env.url.resolve("customers"))
+
+    override fun createMealOrder(order: JamixClient.MealOrder): Unit =
+        request(Method.POST, env.url.resolve("v2/mealorders"), order)
+
+    private inline fun <reified R> request(method: Method, url: URI, body: Any? = null): R {
         val (request, response, result) =
             fuel
-                .post(url)
+                .request(method, url.toString())
                 .authentication()
                 .basic(env.user, env.password.value)
-                .jsonBody(jsonMapper.writeValueAsString(order))
-                .response()
-        if (result is Result.Failure) {
-            error(
-                "Failed to send meal order to Jamix: ${request.method} ${request.url}, status=${response.statusCode} error=${result.error.errorData.decodeToString()}"
-            )
+                .let { if (body != null) it.jsonBody(jsonMapper.writeValueAsString(body)) else it }
+                .responseString()
+        return when (result) {
+            is Result.Success -> {
+                if (Unit is R) {
+                    Unit
+                } else {
+                    jsonMapper.readValue(result.get())
+                }
+            }
+            is Result.Failure -> {
+                error(
+                    "failed to request ${request.method} ${request.url}: status=${response.statusCode} error=${result.error.errorData.decodeToString()}"
+                )
+            }
         }
     }
 }

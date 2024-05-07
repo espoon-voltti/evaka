@@ -322,7 +322,8 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendJamixOrder(val customerId: Int, val date: LocalDate) : AsyncJob {
+    data class SendJamixOrder(val customerNumber: Int, val customerId: Int, val date: LocalDate) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 

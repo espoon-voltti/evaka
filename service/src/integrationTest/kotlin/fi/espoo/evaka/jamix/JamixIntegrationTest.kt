@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -22,7 +23,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import fi.espoo.evaka.specialdiet.setSpecialDiets
@@ -33,10 +33,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired private lateinit var jamixService: JamixService
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    private val customerNumberToIdMapping = mapOf(88 to 888, 99 to 999)
 
     @Test
-    fun `meal order jobs for daycare groups without customer id are not planned`() {
+    fun `meal order jobs for daycare groups without customer number are not planned`() {
         val area = DevCareArea()
         val daycare =
             DevDaycare(
@@ -45,7 +47,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
             )
-        val group = DevDaycareGroup(daycareId = daycare.id, jamixCustomerId = null)
+        val group = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = null)
 
         db.transaction { tx ->
             tx.insert(area)
@@ -56,7 +58,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // Tuesday
         val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 2), LocalTime.of(2, 25))
 
-        jamixService.planOrders(db, MockEvakaClock(now))
+        planJamixOrderJobs(db, asyncJobRunner, TestJamixClient(customerNumberToIdMapping), now)
 
         val jobs =
             db.read { tx ->
@@ -80,8 +82,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
             )
-        val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerId = 88)
-        val group2 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerId = 99)
+        val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 88)
+        val group2 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 99)
 
         db.transaction { tx ->
             tx.insert(area)
@@ -93,7 +95,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // Tuesday
         val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 2), LocalTime.of(2, 25))
 
-        jamixService.planOrders(db, MockEvakaClock(now))
+        planJamixOrderJobs(db, asyncJobRunner, TestJamixClient(customerNumberToIdMapping), now)
 
         val jobs =
             db.read { tx ->
@@ -107,10 +109,15 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val mondayNextWeek = LocalDate.of(2024, 4, 8)
         val sundayNextWeek = LocalDate.of(2024, 4, 14)
         val dates = FiniteDateRange(mondayNextWeek, sundayNextWeek).dates().toList()
-        val customerIds = listOf(88, 99)
         assertEquals(
             dates.flatMap { date ->
-                customerIds.map { customerId -> AsyncJob.SendJamixOrder(customerId, date) }
+                customerNumberToIdMapping.map { (customerNumber, customerId) ->
+                    AsyncJob.SendJamixOrder(
+                        customerNumber = customerNumber,
+                        customerId = customerId,
+                        date
+                    )
+                }
             },
             jobs.sortedWith(compareBy({ it.date }, { it.customerId }))
         )
@@ -130,8 +137,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
                 mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
             )
-        val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerId = 88)
-        val group2 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerId = 99)
+        val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 88)
+        val group2 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 99)
         val employee = DevEmployee()
 
         val child = DevPerson()
@@ -218,20 +225,20 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         val client = TestJamixClient()
-        sendOrders(client, 88, monday)
-        sendOrders(client, 88, tuesday)
-        sendOrders(client, 99, monday)
-        sendOrders(client, 99, tuesday)
+        sendOrders(client, 88, 888, monday)
+        sendOrders(client, 88, 888, tuesday)
+        sendOrders(client, 99, 999, monday)
+        sendOrders(client, 99, 999, tuesday)
 
         // Empty orders should not be sent
-        sendOrders(client, 123, wednesday) // No groups with customer id 123
-        sendOrders(client, 88, wednesday) // No placements on Wednesday
+        sendOrders(client, 123, 1234, wednesday) // No groups with customer id 123
+        sendOrders(client, 88, 888, wednesday) // No placements on Wednesday
 
         assertEquals(
             listOf(
                 JamixClient.MealOrder(
                     deliveryDate = monday,
-                    customerID = 88,
+                    customerID = 888,
                     mealOrderRows =
                         listOf(
                             JamixClient.MealOrderRow(
@@ -256,7 +263,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
                 JamixClient.MealOrder(
                     deliveryDate = tuesday,
-                    customerID = 88,
+                    customerID = 888,
                     mealOrderRows =
                         listOf(
                             JamixClient.MealOrderRow(
@@ -269,7 +276,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
                 JamixClient.MealOrder(
                     deliveryDate = monday,
-                    customerID = 99,
+                    customerID = 999,
                     mealOrderRows =
                         listOf(
                             JamixClient.MealOrderRow(
@@ -285,13 +292,24 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun sendOrders(client: JamixClient, customerId: Int, date: LocalDate) {
-        createAndSendJamixOrder(client, db, DefaultMealTypeMapper, customerId, date)
+    private fun sendOrders(
+        client: JamixClient,
+        customerNumber: Int,
+        customerId: Int,
+        date: LocalDate
+    ) {
+        createAndSendJamixOrder(client, db, DefaultMealTypeMapper, customerNumber, customerId, date)
     }
 }
 
-class TestJamixClient : JamixClient {
+class TestJamixClient(val customers: Map<Int, Int> = mapOf()) : JamixClient {
     val orders = mutableListOf<JamixClient.MealOrder>()
+
+    override fun getCustomers(): List<JamixClient.Customer> {
+        return customers.map { (customerNumber, customerId) ->
+            JamixClient.Customer(customerId, customerNumber)
+        }
+    }
 
     override fun createMealOrder(order: JamixClient.MealOrder) {
         orders.add(order)
