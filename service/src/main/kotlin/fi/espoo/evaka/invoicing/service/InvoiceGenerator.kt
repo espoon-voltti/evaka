@@ -67,7 +67,11 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val invoicesWithCorrections =
             applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
         tx.deleteDraftInvoicesByDateRange(range)
-        tx.upsertInvoices(invoicesWithCorrections)
+        tx.upsertInvoices(
+            invoices = invoicesWithCorrections,
+            feeDecisions =
+                invoiceCalculationData.decisions.mapValues { entry -> entry.value.map { it.id } }
+        )
     }
 
     fun calculateInvoiceData(tx: Database.Transaction, range: DateRange): InvoiceCalculationData {

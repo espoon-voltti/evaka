@@ -18,6 +18,7 @@ import fi.espoo.evaka.invoicing.domain.PersonBasic
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
@@ -446,11 +447,25 @@ fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
     createUpdate { sql("SELECT id FROM invoice WHERE id = ANY(${bind(ids)}) FOR UPDATE") }.execute()
 }
 
-fun Database.Transaction.upsertInvoices(invoices: List<Invoice>) {
+fun Database.Transaction.upsertInvoices(
+    invoices: List<Invoice>,
+    feeDecisions: Map<PersonId, List<FeeDecisionId>>
+) {
     upsertInvoicesWithoutRows(invoices)
+
     val rowsWithInvoiceIds = invoices.map { it.id to it.rows }
     deleteInvoiceRows(rowsWithInvoiceIds.map { it.first })
     insertInvoiceRows(rowsWithInvoiceIds)
+
+    deleteInvoicedFeeDecisions(invoiceIds = invoices.map { it.id })
+    insertInvoicedFeeDecisions(
+        relations =
+            invoices.flatMap { invoice ->
+                feeDecisions.getOrDefault(invoice.headOfFamily, emptyList()).map { feeDecisionId ->
+                    invoice.id to feeDecisionId
+                }
+            }
+    )
 }
 
 private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoice>) {
@@ -530,6 +545,30 @@ INSERT INTO invoice_row (
     ${bind { (_, _, row) -> row.correctionId }}
 )
 """
+        )
+    }
+}
+
+private fun Database.Transaction.deleteInvoicedFeeDecisions(invoiceIds: List<InvoiceId>) {
+    if (invoiceIds.isEmpty()) return
+
+    createUpdate {
+            sql("DELETE FROM invoiced_fee_decision WHERE invoice_id = ANY(${bind(invoiceIds)})")
+        }
+        .execute()
+}
+
+private fun Database.Transaction.insertInvoicedFeeDecisions(
+    relations: List<Pair<InvoiceId, FeeDecisionId>>
+) {
+    if (relations.isEmpty()) return
+
+    executeBatch(relations) {
+        sql(
+            """
+        INSERT INTO invoiced_fee_decision (invoice_id, fee_decision_id) 
+        VALUES (${bind { pair -> pair.first }}, ${bind { pair -> pair.second }})
+    """
         )
     }
 }

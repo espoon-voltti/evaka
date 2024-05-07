@@ -101,7 +101,7 @@ class InvoiceService(
                 else -> throw BadRequest("Only draft invoices can be updated")
             }
 
-        tx.upsertInvoices(listOf(updated))
+        tx.upsertInvoices(listOf(updated)) // TODO: fix
     }
 
     fun getInvoiceIds(
