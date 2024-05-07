@@ -76,7 +76,7 @@ data class DaycareGroup(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val deletable: Boolean,
-    val jamixCustomerId: Int?
+    val jamixCustomerNumber: Int?
 )
 
 data class Caretakers(val minimum: Double, val maximum: Double)

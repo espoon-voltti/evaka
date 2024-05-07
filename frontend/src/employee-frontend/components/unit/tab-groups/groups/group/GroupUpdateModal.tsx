@@ -34,12 +34,12 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
     name: string
     startDate: LocalDate
     endDate: LocalDate | null
-    jamixCustomerId: number | null
+    jamixCustomerNumber: number | null
   }>({
     name: group.name,
     startDate: group.startDate,
     endDate: group.endDate,
-    jamixCustomerId: group.jamixCustomerId
+    jamixCustomerNumber: group.jamixCustomerNumber
   })
 
   return (
@@ -99,13 +99,15 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
                 {i18n.unit.groups.updateModal.jamixTitle}
               </div>
               <InputField
-                value={data.jamixCustomerId?.toString() ?? ''}
+                value={data.jamixCustomerNumber?.toString() ?? ''}
                 onChange={(value) => {
                   if (value.match(/^\d*$/)) {
                     const parsedNumber = parseInt(value)
                     setData((state) => ({
                       ...state,
-                      jamixCustomerId: isNaN(parsedNumber) ? null : parsedNumber
+                      jamixCustomerNumber: isNaN(parsedNumber)
+                        ? null
+                        : parsedNumber
                     }))
                   }
                 }}

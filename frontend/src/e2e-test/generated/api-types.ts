@@ -487,7 +487,7 @@ export interface DevDaycareGroup {
   daycareId: UUID
   endDate: LocalDate | null
   id: UUID
-  jamixCustomerId: number | null
+  jamixCustomerNumber: number | null
   name: string
   startDate: LocalDate
 }
