@@ -16,7 +16,6 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.math.BigDecimal

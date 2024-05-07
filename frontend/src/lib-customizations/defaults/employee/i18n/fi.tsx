@@ -4434,6 +4434,7 @@ export const fi = {
     },
     serviceNeeds: {
       title: 'Palveluntarpeet',
+      add: 'Lisää uusi palveluseteliarvo',
       voucherValues: 'Palvelusetelien arvot',
       validity: 'Voimassaoloaika',
       baseValue: (

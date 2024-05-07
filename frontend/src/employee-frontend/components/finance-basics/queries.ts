@@ -4,7 +4,10 @@
 
 import { mutation, query } from 'lib-common/query'
 
-import { getVoucherValues } from '../../generated/api-clients/invoicing'
+import {
+  createVoucherValue,
+  getVoucherValues
+} from '../../generated/api-clients/invoicing'
 import { deleteVoucherValue } from '../../generated/api-clients/invoicing'
 import { createQueryKeys } from '../../query'
 
@@ -15,6 +18,11 @@ const queryKeys = createQueryKeys('financeBasics', {
 export const voucherValuesQuery = query({
   api: getVoucherValues,
   queryKey: queryKeys.voucherValues
+})
+
+export const createVoucherValueMutation = mutation({
+  api: createVoucherValue,
+  invalidateQueryKeys: () => [queryKeys.voucherValues()]
 })
 
 export const deleteVoucherValueMutation = mutation({

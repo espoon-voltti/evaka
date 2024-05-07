@@ -243,6 +243,7 @@ enum class Audit(
     FinanceBasicsFeeThresholdsRead,
     FinanceBasicsFeeThresholdsCreate,
     FinanceBasicsFeeThresholdsUpdate,
+    FinanceBasicsVoucherValueCreate,
     FinanceBasicsVoucherValueDelete,
     FinanceBasicsVoucherValuesRead,
     FinanceDecisionHandlersRead,

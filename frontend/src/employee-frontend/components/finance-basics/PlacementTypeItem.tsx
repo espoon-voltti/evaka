@@ -49,7 +49,10 @@ export default React.memo(function PlacementTypeItem({
         .map((serviceNeed) => (
           <ServiceNeedItem
             key={serviceNeed.id}
-            serviceNeed={serviceNeed.nameFi + ' (oletus)'}
+            serviceNeedId={serviceNeed.id}
+            serviceNeedName={serviceNeed.nameFi + ' (oletus)'}
+            serviceNeedValidityStart={serviceNeed.validFrom}
+            serviceNeedValidityEnd={serviceNeed.validTo}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
             data-qa="service-need-default"
           />
@@ -62,7 +65,10 @@ export default React.memo(function PlacementTypeItem({
         .map((serviceNeed, i) => (
           <ServiceNeedItem
             key={serviceNeed.id}
-            serviceNeed={serviceNeed.nameFi}
+            serviceNeedId={serviceNeed.id}
+            serviceNeedName={serviceNeed.nameFi}
+            serviceNeedValidityStart={serviceNeed.validFrom}
+            serviceNeedValidityEnd={serviceNeed.validTo}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
             data-qa={`service-need-${i}`}
           />

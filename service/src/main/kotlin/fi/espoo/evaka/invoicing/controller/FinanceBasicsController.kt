@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
 import fi.espoo.evaka.invoicing.service.generator.getVoucherValuesByServiceNeedOption
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.UUID
 import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.mapper.Nested
@@ -158,6 +160,50 @@ class FinanceBasicsController(
             .also { Audit.FinanceBasicsVoucherValuesRead.log() }
     }
 
+    @PostMapping("/voucher-values")
+    fun createVoucherValue(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody body: ServiceNeedOptionVoucherValueRange
+    ) {
+        val id =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.CREATE_VOUCHER_VALUE
+                    )
+
+                    val serviceNeedOption =
+                        tx.getServiceNeedOptions()
+                            .filter { it.id == body.serviceNeedOptionId }
+                            .firstOrNull()
+                    if (serviceNeedOption == null)
+                        throw BadRequest("Invalid service need option ID")
+
+                    val currentVoucherValues =
+                        tx.getVoucherValuesByServiceNeedOption()[body.serviceNeedOptionId]!!
+
+                    val latest = currentVoucherValues.maxByOrNull { it.voucherValues.range.start }
+
+                    if (latest != null && latest.voucherValues.range.end == null)
+                        tx.updateVoucherValueEndDate(latest.id, body.range.start)
+
+                    tx.insertNewVoucherValue(body).also {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.range)),
+                            runAt = clock.now()
+                        )
+                    }
+                }
+            }
+        Audit.FinanceBasicsVoucherValueCreate.log(targetId = id)
+    }
+
     @DeleteMapping("/voucher-values/{id}")
     fun deleteVoucherValue(
         db: Database,
@@ -181,14 +227,27 @@ class FinanceBasicsController(
                         throw BadRequest("Can only delete the latest voucher value")
 
                     tx.deleteVoucherValue(id)
-                    tx.reopenVoucherValueValidityRange(values[1].id)
+                    tx.updateVoucherValueEndDate(values[1].id, null)
+
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.NotifyFeeThresholdsUpdated(
+                                DateRange(values[1].voucherValues.range.start, null)
+                            )
+                        ),
+                        runAt = clock.now()
+                    )
                 }
             }
             .also { Audit.FinanceBasicsVoucherValueDelete.log(targetId = id) }
     }
 }
 
-data class ServiceNeedOptionVoucherValueRangeWithId(val id: ServiceNeedOptionVoucherValueId, @Nested val voucherValues: ServiceNeedOptionVoucherValueRange)
+data class ServiceNeedOptionVoucherValueRangeWithId(
+    val id: ServiceNeedOptionVoucherValueId,
+    @Nested val voucherValues: ServiceNeedOptionVoucherValueRange
+)
 
 data class FeeThresholdsWithId(val id: FeeThresholdsId, @Nested val thresholds: FeeThresholds)
 
@@ -411,6 +470,39 @@ ORDER by upper(validity) DESC
         }
         .toList<ServiceNeedOptionVoucherValueRangeWithId>()
 
+fun Database.Transaction.insertNewVoucherValue(
+    voucherValue: ServiceNeedOptionVoucherValueRange
+): ServiceNeedOptionVoucherValueId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO service_need_option_voucher_value (
+    service_need_option_id,
+    validity,
+    base_value,
+    coefficient,
+    value,
+    base_value_under_3y,
+    coefficient_under_3y,
+    value_under_3y
+
+) VALUES (
+    ${bind(voucherValue.serviceNeedOptionId)},
+    ${bind(voucherValue.range)},
+    ${bind(voucherValue.baseValue)},
+    ${bind(voucherValue.coefficient)},
+    ${bind(voucherValue.value)},
+    ${bind(voucherValue.baseValueUnder3y)},
+    ${bind(voucherValue.coefficientUnder3y)},
+    ${bind(voucherValue.valueUnder3y)}
+)
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<ServiceNeedOptionVoucherValueId>()
+
 fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
     createUpdate {
             sql(
@@ -424,12 +516,15 @@ fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId)
         .execute()
 }
 
-fun Database.Transaction.reopenVoucherValueValidityRange(id: ServiceNeedOptionVoucherValueId) {
+fun Database.Transaction.updateVoucherValueEndDate(
+    id: ServiceNeedOptionVoucherValueId,
+    endDate: LocalDate?
+) {
     createUpdate {
             sql(
                 """
                 UPDATE service_need_option_voucher_value
-                SET validity = daterange(lower(validity), null)
+                SET validity = daterange(lower(validity), ${bind(endDate)})
                 WHERE id = ${bind(id)}
             """
             )

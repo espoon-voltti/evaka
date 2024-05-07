@@ -38,6 +38,7 @@ import { SearchInvoicesRequest } from 'lib-common/generated/api-types/invoicing'
 import { SearchPaymentsRequest } from 'lib-common/generated/api-types/invoicing'
 import { SearchVoucherValueDecisionRequest } from 'lib-common/generated/api-types/invoicing'
 import { SendPaymentsRequest } from 'lib-common/generated/api-types/invoicing'
+import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecisionDetailed } from 'lib-common/generated/api-types/invoicing'
@@ -323,6 +324,23 @@ export async function createFeeThresholds(
     url: uri`/finance-basics/fee-thresholds`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeThresholds>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.createVoucherValue
+*/
+export async function createVoucherValue(
+  request: {
+    body: ServiceNeedOptionVoucherValueRange
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/finance-basics/voucher-values`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ServiceNeedOptionVoucherValueRange>
   })
   return json
 }

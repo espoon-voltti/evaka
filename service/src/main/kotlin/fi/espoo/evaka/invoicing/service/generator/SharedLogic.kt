@@ -27,7 +27,9 @@ fun getPlacementDetailsByChild(
         buildFiniteDateRanges(
             *placements.flatMap { it.value }.toTypedArray(),
             *serviceNeeds.flatMap { it.value }.toTypedArray(),
-            *serviceNeedOptionVoucherValues.flatMap { it.value.map { it.voucherValues } }.toTypedArray()
+            *serviceNeedOptionVoucherValues
+                .flatMap { it.value.map { it.voucherValues } }
+                .toTypedArray()
         )
 
     return childIds.associateWith { childId ->
