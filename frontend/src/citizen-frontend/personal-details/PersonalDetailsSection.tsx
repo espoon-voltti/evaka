@@ -312,7 +312,7 @@ function initialFormState(user: User): StateOf<typeof personForm> {
     backupPhone: user.backupPhone,
     email: {
       email: user.email ?? '',
-      noEmail: false
+      noEmail: !user.email
     }
   }
 }

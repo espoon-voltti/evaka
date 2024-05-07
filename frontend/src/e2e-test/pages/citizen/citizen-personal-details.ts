@@ -65,11 +65,13 @@ export class CitizenPersonalDetailsSection extends Element {
     if (data.phone)
       await new TextInput(this.#phone.find('input')).fill(data.phone)
     await new TextInput(this.#backupPhone.find('input')).fill(data.backupPhone)
+
     if (data.email === null) {
       if (!(await this.#noEmail.checked)) {
         await this.#noEmail.click()
       }
     } else {
+      await new Checkbox(this.findByDataQa('no-email')).uncheck()
       await new TextInput(this.#email.find('input')).fill(data.email)
     }
 

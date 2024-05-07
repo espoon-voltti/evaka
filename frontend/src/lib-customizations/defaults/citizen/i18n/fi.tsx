@@ -1920,7 +1920,7 @@ export default {
       preferredName: 'Kutsumanimi',
       contactInfo: 'Yhteystiedot',
       address: 'Osoite',
-      phone: 'Puhelinnumero',
+      phone: 'Puhelinnumero*',
       backupPhone: 'Varapuhelinnumero',
       backupPhonePlaceholder: 'Esim. työpuhelin',
       email: 'Sähköpostiosoite',
