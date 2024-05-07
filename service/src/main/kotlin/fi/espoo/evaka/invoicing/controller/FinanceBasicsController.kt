@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueR
 import fi.espoo.evaka.invoicing.service.generator.getVoucherValuesByServiceNeedOption
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -26,6 +28,7 @@ import java.util.UUID
 import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.mapper.Nested
 import org.postgresql.util.PSQLState
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -153,6 +156,35 @@ class FinanceBasicsController(
                 }
             }
             .also { Audit.FinanceBasicsVoucherValuesRead.log() }
+    }
+
+    @DeleteMapping("/voucher-values/{id}")
+    fun deleteVoucherValue(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: ServiceNeedOptionVoucherValueId,
+    ) {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.DELETE_VOUCHER_VALUE
+                    )
+
+                    val values = tx.getServiceNeedVoucherValuesByVoucherValueRangeId(id)
+
+                    if (values.isEmpty()) throw NotFound("Voucher value $id not found")
+                    if (values[0].id != id)
+                        throw BadRequest("Can only delete the latest voucher value")
+
+                    tx.deleteVoucherValue(id)
+                    tx.reopenVoucherValueValidityRange(values[1].id)
+                }
+            }
+            .also { Audit.FinanceBasicsVoucherValueDelete.log(targetId = id) }
     }
 }
 
@@ -348,6 +380,60 @@ WHERE id = ${bind(id)}
             )
         }
         .execute()
+
+fun Database.Read.getServiceNeedVoucherValuesByVoucherValueRangeId(
+    voucherValueId: ServiceNeedOptionVoucherValueId
+): List<ServiceNeedOptionVoucherValueRange> =
+    createQuery {
+            sql(
+                """
+SELECT
+    id,
+    service_need_option_id,
+    validity as range,
+    base_value,
+    coefficient,
+    value,
+    base_value_under_3y,
+    coefficient_under_3y,
+    value_under_3y
+FROM service_need_option_voucher_value
+WHERE service_need_option_id = (
+  SELECT service_need_option_id
+  FROM service_need_option_voucher_value
+  WHERE id = ${bind(voucherValueId)}
+)
+ORDER by upper(validity) DESC
+"""
+            )
+        }
+        .toList<ServiceNeedOptionVoucherValueRange>()
+
+fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
+    createUpdate {
+            sql(
+                """
+                DELETE
+                FROM service_need_option_voucher_value
+                WHERE id = ${bind(id)}
+            """
+            )
+        }
+        .execute()
+}
+
+fun Database.Transaction.reopenVoucherValueValidityRange(id: ServiceNeedOptionVoucherValueId) {
+    createUpdate {
+            sql(
+                """
+                UPDATE service_need_option_voucher_value
+                SET validity = daterange(lower(validity), null)
+                WHERE id = ${bind(id)}
+            """
+            )
+        }
+        .execute()
+}
 
 fun <T> mapConstraintExceptions(fn: () -> T): T {
     return try {

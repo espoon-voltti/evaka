@@ -54,6 +54,7 @@ export default React.memo(function ServiceNeedsSection() {
                   serviceNeedsList={serviceNeedsList}
                   voucherValuesMap={voucherValuesMap}
                   key={i}
+                  data-qa={`placement-type-${i}`}
                 />
               ))}
           </>

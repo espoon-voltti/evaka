@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faTrash } from 'Icons'
 import React from 'react'
 
 import { useBoolean } from 'lib-common/form/hooks'
@@ -9,17 +10,21 @@ import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-typ
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H4 } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
+import { deleteVoucherValueMutation } from '../finance-basics/queries'
 
 export type ServiceNeedItemProps = {
   serviceNeed: string
   voucherValuesList: ServiceNeedOptionVoucherValueRange[]
+  'data-qa'?: string
 }
 export default React.memo(function ServiceNeedItem({
   serviceNeed,
-  voucherValuesList
+  voucherValuesList,
+  'data-qa': dataQa
 }: ServiceNeedItemProps) {
   const { i18n } = useTranslation()
   const [open, useOpen] = useBoolean(false)
@@ -33,6 +38,7 @@ export default React.memo(function ServiceNeedItem({
         toggleOpen={useOpen.toggle}
         paddingHorizontal="0"
         paddingVertical="0"
+        data-qa={dataQa}
       >
         <H4>{i18n.financeBasics.serviceNeeds.voucherValues}</H4>
         <Table>
@@ -45,13 +51,14 @@ export default React.memo(function ServiceNeedItem({
               <Th>{i18n.financeBasics.serviceNeeds.baseValueUnder3y}</Th>
               <Th>{i18n.financeBasics.serviceNeeds.coefficientUnder3y}</Th>
               <Th>{i18n.financeBasics.serviceNeeds.valueUnder3y}</Th>
+              <Th />
             </Tr>
           </Thead>
           <Tbody>
             {voucherValuesList
               .sort((a, b) => b.range.start.compareTo(a.range.start))
               .map((voucherValue, i) => (
-                <Tr key={i} data-qa="voucher-value-row">
+                <Tr key={i} data-qa={`voucher-value-row-${i}`}>
                   <Td data-qa="validity">
                     {voucherValue.range.format('dd.MM.yyyy')}
                   </Td>
@@ -70,6 +77,21 @@ export default React.memo(function ServiceNeedItem({
                   </Td>
                   <Td data-qa="value-under-3y">
                     {(voucherValue.valueUnder3y / 100).toFixed(2)}
+                  </Td>
+                  <Td data-qa="delete-btn">
+                    {voucherValue.range.end == null && (
+                      <ConfirmedMutation
+                        buttonStyle="INLINE"
+                        data-qa="btn-delete"
+                        icon={faTrash}
+                        buttonText=""
+                        mutation={deleteVoucherValueMutation}
+                        onClick={() => ({ id: voucherValue.id })}
+                        confirmationTitle={
+                          i18n.financeBasics.modals.deleteVoucherValue.title
+                        }
+                      />
+                    )}
                   </Td>
                 </Tr>
               ))}

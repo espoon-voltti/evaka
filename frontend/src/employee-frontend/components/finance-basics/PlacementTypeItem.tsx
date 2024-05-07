@@ -19,12 +19,14 @@ export type PlacementTypeItemProps = {
   placementType: PlacementType
   serviceNeedsList: ServiceNeedOption[]
   voucherValuesMap: Record<string, ServiceNeedOptionVoucherValueRange[]>
+  'data-qa'?: string
 }
 
 export default React.memo(function PlacementTypeItem({
   placementType,
   serviceNeedsList,
-  voucherValuesMap
+  voucherValuesMap,
+  'data-qa': dataQa
 }: PlacementTypeItemProps) {
   const { i18n } = useTranslation()
 
@@ -37,6 +39,7 @@ export default React.memo(function PlacementTypeItem({
       open={open}
       toggleOpen={useOpen.toggle}
       paddingHorizontal="0"
+      data-qa={dataQa}
     >
       {serviceNeedsList
         .filter(
@@ -48,6 +51,7 @@ export default React.memo(function PlacementTypeItem({
             key={serviceNeed.id}
             serviceNeed={serviceNeed.nameFi + ' (oletus)'}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
+            data-qa="service-need-default"
           />
         ))}
       {serviceNeedsList
@@ -55,11 +59,12 @@ export default React.memo(function PlacementTypeItem({
           (value) =>
             value.validPlacementType == placementType && !value.defaultOption
         )
-        .map((serviceNeed) => (
+        .map((serviceNeed, i) => (
           <ServiceNeedItem
             key={serviceNeed.id}
             serviceNeed={serviceNeed.nameFi}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
+            data-qa={`service-need-${i}`}
           />
         ))}
     </CollapsibleContentArea>

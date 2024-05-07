@@ -819,21 +819,36 @@ val serviceNeedOptionVoucherValueCoefficients =
     )
 
 val serviceNeedOptionVoucherValueTestFixtures =
-    serviceNeedTestFixtures.map {
+    serviceNeedTestFixtures.flatMap {
         val baseValue = 87000
         val baseValueUnder3y = 134850 // 87000 * 1.55
+        val newBaseValue = 88000
+        val newBaseValueUnder3y = 136400 // 88000 * 1.55
         val coefficient = serviceNeedOptionVoucherValueCoefficients.get(it.id)!!
 
-        ServiceNeedOptionVoucherValue(
-            id = ServiceNeedOptionVoucherValueId(UUID.randomUUID()),
-            serviceNeedOptionId = it.id,
-            validity = DateRange(LocalDate.of(2020, 1, 1), null),
-            baseValue = baseValue,
-            coefficient = coefficient,
-            value = (BigDecimal(baseValue) * coefficient).toInt(),
-            baseValueUnder3y = baseValueUnder3y,
-            coefficientUnder3y = coefficient,
-            valueUnder3y = (BigDecimal(baseValueUnder3y) * coefficient).toInt()
+        listOf(
+            ServiceNeedOptionVoucherValue(
+                id = ServiceNeedOptionVoucherValueId(UUID.randomUUID()),
+                serviceNeedOptionId = it.id,
+                validity = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2024, 1, 31)),
+                baseValue = baseValue,
+                coefficient = coefficient,
+                value = (BigDecimal(baseValue) * coefficient).toInt(),
+                baseValueUnder3y = baseValueUnder3y,
+                coefficientUnder3y = coefficient,
+                valueUnder3y = (BigDecimal(baseValueUnder3y) * coefficient).toInt()
+            ),
+            ServiceNeedOptionVoucherValue(
+                id = ServiceNeedOptionVoucherValueId(UUID.randomUUID()),
+                serviceNeedOptionId = it.id,
+                validity = DateRange(LocalDate.of(2024, 2, 1), null),
+                baseValue = newBaseValue,
+                coefficient = coefficient,
+                value = (BigDecimal(newBaseValue) * coefficient).toInt(),
+                baseValueUnder3y = newBaseValueUnder3y,
+                coefficientUnder3y = coefficient,
+                valueUnder3y = (BigDecimal(newBaseValueUnder3y) * coefficient).toInt()
+            )
         )
     }
 

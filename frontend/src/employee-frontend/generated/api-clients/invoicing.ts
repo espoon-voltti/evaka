@@ -329,6 +329,22 @@ export async function createFeeThresholds(
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.deleteVoucherValue
+*/
+export async function deleteVoucherValue(
+  request: {
+    id: UUID
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/finance-basics/voucher-values/${request.id}`.toString(),
+    method: 'DELETE'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getFeeThresholds
 */
 export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
