@@ -23,15 +23,18 @@ data class JamixChildData(
     val absences: Set<AbsenceCategory>
 )
 
-fun Database.Read.getJamixCustomerIds(): Set<Int> =
+fun Database.Read.getJamixCustomerNumbers(): Set<Int> =
     createQuery {
             sql(
-                "SELECT DISTINCT jamix_customer_id FROM daycare_group WHERE jamix_customer_id IS NOT NULL"
+                "SELECT DISTINCT jamix_customer_number FROM daycare_group WHERE jamix_customer_number IS NOT NULL"
             )
         }
         .toSet()
 
-fun Database.Read.getJamixChildData(jamixCustomerId: Int, date: LocalDate): List<JamixChildData> =
+fun Database.Read.getJamixChildData(
+    jamixCustomerNumber: Int,
+    date: LocalDate
+): List<JamixChildData> =
     createQuery {
             sql(
                 """
@@ -59,7 +62,7 @@ SELECT
 FROM realized_placement_one(${bind(date)}) rp
 JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN person p ON p.id = rp.child_id
-WHERE dg.jamix_customer_id = ${bind(jamixCustomerId)}
+WHERE dg.jamix_customer_number = ${bind(jamixCustomerNumber)}
                     """
             )
         }

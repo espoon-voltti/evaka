@@ -284,7 +284,7 @@ export interface DaycareGroup {
   deletable: boolean
   endDate: LocalDate | null
   id: UUID
-  jamixCustomerId: number | null
+  jamixCustomerNumber: number | null
   name: string
   startDate: LocalDate
 }
@@ -360,7 +360,7 @@ export interface GroupStaffAttendance {
 */
 export interface GroupUpdateRequest {
   endDate: LocalDate | null
-  jamixCustomerId: number | null
+  jamixCustomerNumber: number | null
   name: string
   startDate: LocalDate
 }

@@ -1864,7 +1864,7 @@ data class DevDaycareGroup(
     val name: String = "Testiläiset",
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate? = null,
-    val jamixCustomerId: Int? = null
+    val jamixCustomerNumber: Int? = null
 )
 
 data class DevDaycareGroupPlacement(

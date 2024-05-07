@@ -2422,8 +2422,8 @@ export const fi = {
         startDate: 'Perustettu',
         endDate: 'Lakkautettu',
         info: 'Ryhmän aikaisempia tietoja ei säilytetä',
-        jamixPlaceholder: 'Jamix customerID',
-        jamixTitle: 'Ruokatilausten asiakastunniste'
+        jamixPlaceholder: 'Jamix customerNumber',
+        jamixTitle: 'Ruokatilausten asiakasnumero'
       },
       startDate: 'Perustettu',
       endDate: 'Lakkautettu',

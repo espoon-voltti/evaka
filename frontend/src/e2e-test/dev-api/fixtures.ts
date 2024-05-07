@@ -1231,7 +1231,7 @@ export const daycareGroupFixture: DevDaycareGroup = {
   name: 'Kosmiset vakiot',
   startDate: LocalDate.of(2000, 1, 1),
   endDate: null,
-  jamixCustomerId: null
+  jamixCustomerNumber: null
 }
 
 export function createDaycarePlacementFixture(
@@ -1323,7 +1323,7 @@ export class Fixture {
       name: `daycareGroup_${id}`,
       startDate: LocalDate.of(2020, 1, 1),
       endDate: null,
-      jamixCustomerId: null
+      jamixCustomerNumber: null
     })
   }
 
