@@ -143,7 +143,7 @@ class FinanceBasicsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRange>> {
+    ): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -187,6 +187,8 @@ class FinanceBasicsController(
             .also { Audit.FinanceBasicsVoucherValueDelete.log(targetId = id) }
     }
 }
+
+data class ServiceNeedOptionVoucherValueRangeWithId(val id: ServiceNeedOptionVoucherValueId, @Nested val voucherValues: ServiceNeedOptionVoucherValueRange)
 
 data class FeeThresholdsWithId(val id: FeeThresholdsId, @Nested val thresholds: FeeThresholds)
 
@@ -383,7 +385,7 @@ WHERE id = ${bind(id)}
 
 fun Database.Read.getServiceNeedVoucherValuesByVoucherValueRangeId(
     voucherValueId: ServiceNeedOptionVoucherValueId
-): List<ServiceNeedOptionVoucherValueRange> =
+): List<ServiceNeedOptionVoucherValueRangeWithId> =
     createQuery {
             sql(
                 """
@@ -407,7 +409,7 @@ ORDER by upper(validity) DESC
 """
             )
         }
-        .toList<ServiceNeedOptionVoucherValueRange>()
+        .toList<ServiceNeedOptionVoucherValueRangeWithId>()
 
 fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
     createUpdate {

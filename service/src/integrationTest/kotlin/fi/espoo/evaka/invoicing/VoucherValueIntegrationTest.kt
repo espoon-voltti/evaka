@@ -3,7 +3,7 @@ package fi.espoo.evaka.invoicing
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FinanceBasicsController
-import fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
+import fi.espoo.evaka.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
 import fi.espoo.evaka.invoicing.service.generator.getVoucherValuesByServiceNeedOption
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
@@ -53,7 +53,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val voucherValues = getVoucherValues()
 
         val defaultDaycareVoucherValues =
-            (voucherValues[snDefaultDaycare.id])!!.sortedBy { it.range.start }
+            (voucherValues[snDefaultDaycare.id])!!.sortedBy { it.voucherValues.range.start }
         val notLatest = defaultDaycareVoucherValues.first()
 
         assertThrows<BadRequest>({ deleteVoucherValue(notLatest.id) })
@@ -62,7 +62,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @Test
     fun `should delete the voucher value`() {
         val voucherValuesBefore =
-            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.range.start }
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
         val latest = voucherValuesBefore.last()
 
         deleteVoucherValue(latest.id)
@@ -73,22 +73,22 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
-    fun `should reopen the validity range for the now latest voucher value`() {
+    fun `should reopen the validity range for the now latest voucher value when deleting`() {
         val voucherValuesBefore =
-            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.range.start }
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
         val latest = voucherValuesBefore.last()
 
         deleteVoucherValue(latest.id)
 
         val voucherValuesAfter =
-            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.range.start }
-        assert(voucherValuesAfter.last().range.end == null)
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+        assert(voucherValuesAfter.last().voucherValues.range.end == null)
     }
 
     fun deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
         financeBasicsController.deleteVoucherValue(dbInstance(), financeUser, mockClock, id)
     }
 
-    fun getVoucherValues(): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRange>> =
+    fun getVoucherValues(): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> =
         dbInstance().connect { dbc -> dbc.read { tx -> tx.getVoucherValuesByServiceNeedOption() } }
 }

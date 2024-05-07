@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service.generator
 
+import fi.espoo.evaka.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
@@ -61,8 +62,8 @@ FROM service_need_option_voucher_value
         """
             )
         }
-        .toList<ServiceNeedOptionVoucherValueRange>()
-        .groupBy { it.serviceNeedOptionId }
+        .toList<ServiceNeedOptionVoucherValueRangeWithId>()
+        .groupBy { it.voucherValues.serviceNeedOptionId }
 
 fun Database.Read.getChildRelations(parentIds: Set<PersonId>): Map<PersonId, List<ChildRelation>> {
     if (parentIds.isEmpty()) return emptyMap()

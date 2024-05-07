@@ -6,7 +6,7 @@ import { faTrash } from 'Icons'
 import React from 'react'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
+import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -18,7 +18,7 @@ import { deleteVoucherValueMutation } from '../finance-basics/queries'
 
 export type ServiceNeedItemProps = {
   serviceNeed: string
-  voucherValuesList: ServiceNeedOptionVoucherValueRange[]
+  voucherValuesList: ServiceNeedOptionVoucherValueRangeWithId[]
   'data-qa'?: string
 }
 export default React.memo(function ServiceNeedItem({
@@ -56,30 +56,38 @@ export default React.memo(function ServiceNeedItem({
           </Thead>
           <Tbody>
             {voucherValuesList
-              .sort((a, b) => b.range.start.compareTo(a.range.start))
+              .sort((a, b) =>
+                b.voucherValues.range.start.compareTo(
+                  a.voucherValues.range.start
+                )
+              )
               .map((voucherValue, i) => (
                 <Tr key={i} data-qa={`voucher-value-row-${i}`}>
                   <Td data-qa="validity">
-                    {voucherValue.range.format('dd.MM.yyyy')}
+                    {voucherValue.voucherValues.range.format('dd.MM.yyyy')}
                   </Td>
                   <Td data-qa="base-value">
-                    {(voucherValue.baseValue / 100).toFixed(2)}
+                    {(voucherValue.voucherValues.baseValue / 100).toFixed(2)}
                   </Td>
-                  <Td data-qa="coefficient">{voucherValue.coefficient}</Td>
+                  <Td data-qa="coefficient">
+                    {voucherValue.voucherValues.coefficient}
+                  </Td>
                   <Td data-qa="value">
-                    {(voucherValue.value / 100).toFixed(2)}
+                    {(voucherValue.voucherValues.value / 100).toFixed(2)}
                   </Td>
                   <Td data-qa="base-value-under-3y">
-                    {(voucherValue.baseValueUnder3y / 100).toFixed(2)}
+                    {(
+                      voucherValue.voucherValues.baseValueUnder3y / 100
+                    ).toFixed(2)}
                   </Td>
                   <Td data-qa="coefficient-under-3y">
-                    {voucherValue.coefficientUnder3y}
+                    {voucherValue.voucherValues.coefficientUnder3y}
                   </Td>
                   <Td data-qa="value-under-3y">
-                    {(voucherValue.valueUnder3y / 100).toFixed(2)}
+                    {(voucherValue.voucherValues.valueUnder3y / 100).toFixed(2)}
                   </Td>
                   <Td data-qa="delete-btn">
-                    {voucherValue.range.end == null && (
+                    {voucherValue.voucherValues.range.end == null && (
                       <ConfirmedMutation
                         buttonStyle="INLINE"
                         data-qa="btn-delete"

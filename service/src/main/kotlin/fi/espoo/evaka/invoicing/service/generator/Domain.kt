@@ -44,7 +44,6 @@ data class ServiceNeedOptionFeeRange(
 ) : WithRange
 
 data class ServiceNeedOptionVoucherValueRange(
-    val id: ServiceNeedOptionVoucherValueId,
     val serviceNeedOptionId: ServiceNeedOptionId,
     override val range: DateRange,
     val baseValue: Int,

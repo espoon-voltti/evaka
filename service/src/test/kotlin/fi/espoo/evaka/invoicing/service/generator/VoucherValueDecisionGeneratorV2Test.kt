@@ -128,7 +128,6 @@ private fun createVoucherBasis(): VoucherBasis {
                 serviceNeedOption = snDaycareFullDay35,
                 serviceNeedVoucherValues =
                     ServiceNeedOptionVoucherValueRange(
-                        id = ServiceNeedOptionVoucherValueId(UUID.randomUUID()),
                         serviceNeedOptionId = snDaycareFullDay35.id,
                         range = DateRange(date(1), null),
                         baseValue = 87000,
