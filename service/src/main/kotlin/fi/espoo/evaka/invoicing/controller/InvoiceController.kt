@@ -301,7 +301,7 @@ class InvoiceController(
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(it, user, clock, Action.Invoice.UPDATE, id)
-                service.updateInvoice(it, id, invoice)
+                service.updateDraftInvoiceRows(it, id, invoice)
             }
         }
         Audit.InvoicesUpdate.log(targetId = id)

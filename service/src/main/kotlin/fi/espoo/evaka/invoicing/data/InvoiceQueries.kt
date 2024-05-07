@@ -447,25 +447,25 @@ fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
     createUpdate { sql("SELECT id FROM invoice WHERE id = ANY(${bind(ids)}) FOR UPDATE") }.execute()
 }
 
-fun Database.Transaction.upsertInvoices(
+fun Database.Transaction.insertInvoices(
     invoices: List<Invoice>,
-    feeDecisions: Map<PersonId, List<FeeDecisionId>>
+    sourceFeeDecisions: Map<InvoiceId, List<FeeDecisionId>> = emptyMap()
 ) {
     upsertInvoicesWithoutRows(invoices)
-
-    val rowsWithInvoiceIds = invoices.map { it.id to it.rows }
-    deleteInvoiceRows(rowsWithInvoiceIds.map { it.first })
-    insertInvoiceRows(rowsWithInvoiceIds)
-
-    deleteInvoicedFeeDecisions(invoiceIds = invoices.map { it.id })
+    insertInvoiceRows(invoices.map { it.id to it.rows })
     insertInvoicedFeeDecisions(
         relations =
             invoices.flatMap { invoice ->
-                feeDecisions.getOrDefault(invoice.headOfFamily, emptyList()).map { feeDecisionId ->
+                sourceFeeDecisions.getOrDefault(invoice.id, emptyList()).map { feeDecisionId ->
                     invoice.id to feeDecisionId
                 }
             }
     )
+}
+
+fun Database.Transaction.updateInvoiceRows(invoiceId: InvoiceId, rows: List<InvoiceRow>) {
+    deleteInvoiceRows(invoiceId)
+    insertInvoiceRows(listOf(invoiceId to rows))
 }
 
 private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoice>) {
@@ -500,11 +500,8 @@ INSERT INTO invoice (
     }
 }
 
-private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) {
-    if (invoiceIds.isEmpty()) return
-
-    createUpdate { sql("DELETE FROM invoice_row WHERE invoice_id = ANY(${bind(invoiceIds)})") }
-        .execute()
+private fun Database.Transaction.deleteInvoiceRows(invoiceId: InvoiceId) {
+    execute { sql("DELETE FROM invoice_row WHERE invoice_id = ${bind(invoiceId)}") }
 }
 
 private fun Database.Transaction.insertInvoiceRows(
@@ -547,15 +544,6 @@ INSERT INTO invoice_row (
 """
         )
     }
-}
-
-private fun Database.Transaction.deleteInvoicedFeeDecisions(invoiceIds: List<InvoiceId>) {
-    if (invoiceIds.isEmpty()) return
-
-    createUpdate {
-            sql("DELETE FROM invoiced_fee_decision WHERE invoice_id = ANY(${bind(invoiceIds)})")
-        }
-        .execute()
 }
 
 private fun Database.Transaction.insertInvoicedFeeDecisions(

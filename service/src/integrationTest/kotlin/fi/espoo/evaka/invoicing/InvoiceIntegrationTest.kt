@@ -13,10 +13,10 @@ import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
+import fi.espoo.evaka.invoicing.data.insertInvoices
 import fi.espoo.evaka.invoicing.data.paginatedSearch
 import fi.espoo.evaka.invoicing.data.searchInvoices
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
-import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -189,7 +189,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with draft status parameter`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val drafts =
             testInvoices.filter { it.status == InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
@@ -206,7 +206,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with sent status parameter`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sent = testInvoices.filter { it.status == InvoiceStatus.SENT }
 
         val result =
@@ -218,7 +218,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with canceled status parameter`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val canceled = testInvoices.filter { it.status == InvoiceStatus.CANCELED }
 
         val result =
@@ -234,7 +234,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works with multiple status parameters`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sentAndCanceled =
             testInvoices.filter {
                 it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED
@@ -254,7 +254,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `search works with all status parameters`() {
         val testInvoiceSubset = testInvoices.take(2)
-        db.transaction { tx -> tx.upsertInvoices(testInvoiceSubset) }
+        db.transaction { tx -> tx.insertInvoices(testInvoiceSubset) }
         val invoices = testInvoiceSubset.sortedBy { it.status }.reversed()
 
         val result =
@@ -270,7 +270,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with existing area param`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val result =
@@ -282,7 +282,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with area and status params`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val result =
@@ -304,7 +304,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with non-existent area param`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
             searchInvoices(
@@ -315,7 +315,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with multiple partial search terms`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
             searchInvoices(
@@ -331,7 +331,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with multiple more specific search terms`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
             searchInvoices(
@@ -346,7 +346,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with multiple search terms where one does not match anything`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
             searchInvoices(
@@ -361,7 +361,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with child name as search term`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
             searchInvoices(
@@ -372,7 +372,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with ssn as search term`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
             searchInvoices(
@@ -383,7 +383,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search works as expected with date of birth as search term`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
             searchInvoices(
@@ -398,7 +398,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search with pageSize 1 will find only one result`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).first())
 
         val result =
@@ -415,7 +415,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search with pageSize 1 and pageNumber 2 will find the second result`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id }))[1])
 
         val result =
@@ -432,7 +432,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search with pageSize 2 and pageNumber 1 will find first two results`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sent = testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).subList(0, 2)
 
         val result =
@@ -449,7 +449,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search gives correct total and page composition when using filters`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sent =
             testInvoices
                 .filter { it.status == InvoiceStatus.DRAFT }
@@ -476,7 +476,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `getInvoice works with existing invoice`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val invoice = testInvoices[0]
 
         val result = getInvoice(invoice.id)
@@ -485,7 +485,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `getInvoice returns not found with non-existent invoice`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         assertThrows<NotFound> {
             getInvoice(InvoiceId(UUID.fromString("00000000-0000-0000-0000-000000000000")))
@@ -494,7 +494,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send works with draft invoice`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         sendInvoices(listOf(draft.id))
@@ -502,7 +502,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send returns bad request for sent status invoice`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         assertThrows<BadRequest> { sendInvoices(listOf(sent.id)) }
@@ -510,7 +510,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send updates invoice status and number and sent fields`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         sendInvoices(listOf(draft.id))
@@ -547,7 +547,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             }
 
-        db.transaction { tx -> tx.upsertInvoices(drafts) }
+        db.transaction { tx -> tx.insertInvoices(drafts) }
 
         sendInvoices(drafts.map { it.id })
 
@@ -573,7 +573,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
             }
 
-        db.transaction { tx -> tx.upsertInvoices(drafts + sentInvoice) }
+        db.transaction { tx -> tx.insertInvoices(drafts + sentInvoice) }
 
         sendInvoices(drafts.map { it.id })
 
@@ -600,7 +600,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
 
         val draft = testInvoices[0]
-        db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
+        db.transaction { tx -> tx.insertInvoices(listOf(draft)) }
 
         sendInvoices(listOf(draft.id))
 
@@ -613,7 +613,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `mark as sent updates invoice status and sent fields`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.WAITING_FOR_SENDING)
         db.transaction { tx ->
-            tx.upsertInvoices(listOf(invoice))
+            tx.insertInvoices(listOf(invoice))
             @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE invoice_row SET saved_cost_center = '31500'").execute()
         }
@@ -637,7 +637,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `mark as sent returns bad request if invoice status is wrong`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
-        db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
+        db.transaction { tx -> tx.insertInvoices(listOf(invoice)) }
 
         assertThrows<BadRequest> { markInvoicesAsSent(listOf(invoice.id)) }
     }
@@ -645,7 +645,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `mark as sent returns bad request if one of the ids is incorrect`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
-        db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
+        db.transaction { tx -> tx.insertInvoices(listOf(invoice)) }
 
         assertThrows<BadRequest> {
             markInvoicesAsSent(listOf(invoice.id, InvoiceId(UUID.randomUUID())))
@@ -654,7 +654,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateInvoice works on drafts without updates`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         updateInvoice(draft)
@@ -662,7 +662,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateInvoice returns bad request on sent invoices`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         assertThrows<BadRequest> { updateInvoice(sent) }
@@ -670,7 +670,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateInvoice updates invoice row unitId and adds a new row`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
         val updated =
             original.copy(
@@ -694,7 +694,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateInvoice does not update invoice status, periods, invoiceDate, dueDate or headOfFamily`() {
-        db.transaction { tx -> tx.upsertInvoices(testInvoices) }
+        db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
         val updated =
             original.copy(

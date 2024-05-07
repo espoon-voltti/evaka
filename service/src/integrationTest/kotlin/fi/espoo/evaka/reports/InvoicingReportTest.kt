@@ -9,7 +9,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createInvoiceFixture
 import fi.espoo.evaka.invoicing.createInvoiceRowFixture
-import fi.espoo.evaka.invoicing.data.upsertInvoices
+import fi.espoo.evaka.invoicing.data.insertInvoices
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -111,7 +111,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun insertInvoices(date: LocalDate) {
         db.transaction {
-            it.upsertInvoices(testInvoices)
+            it.insertInvoices(testInvoices)
             @Suppress("DEPRECATION")
             it.createUpdate(
                     """

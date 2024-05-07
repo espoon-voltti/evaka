@@ -12,7 +12,7 @@ import fi.espoo.evaka.invoicing.data.lockInvoices
 import fi.espoo.evaka.invoicing.data.saveCostCenterFields
 import fi.espoo.evaka.invoicing.data.setDraftsSent
 import fi.espoo.evaka.invoicing.data.setDraftsWaitingForManualSending
-import fi.espoo.evaka.invoicing.data.upsertInvoices
+import fi.espoo.evaka.invoicing.data.updateInvoiceRows
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
@@ -79,29 +79,22 @@ class InvoiceService(
         tx.markInvoicedCorrectionsAsComplete()
     }
 
-    fun updateInvoice(tx: Database.Transaction, uuid: InvoiceId, invoice: Invoice) {
-        val original =
-            tx.getInvoice(uuid)
-                ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
-
+    fun updateDraftInvoiceRows(tx: Database.Transaction, uuid: InvoiceId, invoice: Invoice) {
         if (invoice.rows.any { it.amount <= 0 }) {
             throw BadRequest("Invoice rows amounts must be positive")
         }
 
-        val updated =
-            when (original.status) {
-                InvoiceStatus.DRAFT ->
-                    original.copy(
-                        rows =
-                            invoice.rows.map { row ->
-                                if (row.id == null) row.copy(id = InvoiceRowId(UUID.randomUUID()))
-                                else row
-                            }
-                    )
-                else -> throw BadRequest("Only draft invoices can be updated")
+        tx.getInvoice(uuid)?.also {
+            if (it.status != InvoiceStatus.DRAFT) {
+                throw BadRequest("Only draft invoices can be updated")
             }
+        } ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
 
-        tx.upsertInvoices(listOf(updated)) // TODO: fix
+        val rows =
+            invoice.rows.map { row ->
+                if (row.id == null) row.copy(id = InvoiceRowId(UUID.randomUUID())) else row
+            }
+        tx.updateInvoiceRows(uuid, rows)
     }
 
     fun getInvoiceIds(

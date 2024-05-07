@@ -9,8 +9,8 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByDateRange
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
+import fi.espoo.evaka.invoicing.data.insertInvoices
 import fi.espoo.evaka.invoicing.data.partnerIsCodebtor
-import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -67,10 +67,15 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val invoicesWithCorrections =
             applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
         tx.deleteDraftInvoicesByDateRange(range)
-        tx.upsertInvoices(
+        tx.insertInvoices(
             invoices = invoicesWithCorrections,
-            feeDecisions =
-                invoiceCalculationData.decisions.mapValues { entry -> entry.value.map { it.id } }
+            sourceFeeDecisions =
+                invoicesWithCorrections.associate { invoice ->
+                    invoice.id to
+                        invoiceCalculationData.decisions
+                            .getOrDefault(invoice.headOfFamily, emptyList())
+                            .map { it.id }
+                }
         )
     }
 

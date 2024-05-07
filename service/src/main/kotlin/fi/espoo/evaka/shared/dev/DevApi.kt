@@ -66,11 +66,11 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.createIncomeStatement
+import fi.espoo.evaka.invoicing.data.insertInvoices
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
-import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
@@ -556,7 +556,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping("/invoices")
     fun createInvoices(db: Database, @RequestBody invoices: List<Invoice>) {
-        db.connect { dbc -> dbc.transaction { tx -> tx.upsertInvoices(invoices) } }
+        db.connect { dbc -> dbc.transaction { tx -> tx.insertInvoices(invoices) } }
     }
 
     @PostMapping("/fee-thresholds")
