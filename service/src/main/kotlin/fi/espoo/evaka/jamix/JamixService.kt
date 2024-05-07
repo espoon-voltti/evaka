@@ -147,11 +147,11 @@ fun createAndSendJamixOrder(
     if (order.mealOrderRows.isNotEmpty()) {
         client.createMealOrder(order)
         logger.info {
-            "Sent Jamix order for date ${date} for customerNumber=${customerNumber} customerId=${customerId}"
+            "Sent Jamix order for date $date for customerNumber=$customerNumber customerId=$customerId"
         }
     } else {
         logger.info {
-            "Skipped Jamix order with no rows for date ${date} for customerNumber=${customerNumber} customerId=${customerId}"
+            "Skipped Jamix order with no rows for date $date for customerNumber=$customerNumber customerId=$customerId"
         }
     }
 }
