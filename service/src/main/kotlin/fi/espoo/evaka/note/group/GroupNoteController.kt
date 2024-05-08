@@ -35,7 +35,9 @@ class GroupNoteController(private val ac: AccessControl) {
                     it.getGroupNotesForGroup(groupId)
                 }
             }
-            .also { noteId -> Audit.GroupNoteRead.log(targetId = groupId, objectId = noteId) }
+            .also { notes ->
+                Audit.GroupNoteRead.log(targetId = groupId, objectId = notes.map { it.id })
+            }
     }
 
     @PostMapping("/daycare-groups/{groupId}/group-notes")
