@@ -10,11 +10,15 @@ import React, {
   useState
 } from 'react'
 
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
+
 import { SearchOrder } from '../types'
 
+type UnitFilter = { text: string; providerTypes: ProviderType[] }
+
 export interface UnitsState {
-  filter: string
-  setFilter: (text: string) => void
+  filter: UnitFilter
+  setFilter: (filter: UnitFilter) => void
   sortColumn: string
   setSortColumn: (text: string) => void
   sortDirection: SearchOrder
@@ -24,7 +28,7 @@ export interface UnitsState {
 }
 
 const defaultState: UnitsState = {
-  filter: '',
+  filter: { text: '', providerTypes: [] },
   setFilter: () => undefined,
   sortColumn: 'name',
   setSortColumn: () => undefined,
@@ -43,7 +47,7 @@ export const UnitsContextProvider = React.memo(function UnitsContextProvider({
 }: {
   children: React.JSX.Element
 }) {
-  const [filter, setFilter] = useState<string>(defaultState.filter)
+  const [filter, setFilter] = useState<UnitFilter>(defaultState.filter)
   const [sortColumn, setSortColumn] = useState<string>(defaultState.sortColumn)
   const [sortDirection, setSortDirection] = useState<SearchOrder>(
     defaultState.sortDirection
