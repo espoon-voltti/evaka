@@ -407,3 +407,4 @@ V407__official_language.sql
 V408__varda_unit_error.sql
 V409__jamix_customer_number.sql
 V410__parentship_meta_data.sql
+V411__daycare_shiftcare_operation_times.sql

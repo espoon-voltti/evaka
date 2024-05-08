@@ -9,6 +9,7 @@ import { Daycare } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
+  UnitDetailsPage,
   UnitEditor,
   UnitInfoPage,
   UnitPage
@@ -106,6 +107,7 @@ describe('Employee - unit editor validations and warnings', () => {
   let page: Page
   let unitInfoPage: UnitInfoPage
   let unitEditorPage: UnitEditor
+  let unitDetailsPage: UnitDetailsPage
 
   beforeEach(async () => {
     await resetServiceState()
@@ -117,7 +119,7 @@ describe('Employee - unit editor validations and warnings', () => {
     await employeeLogin(page, admin.data)
     const unitPage = await UnitPage.openUnit(page, fixtures.daycareFixture.id)
     unitInfoPage = await unitPage.openUnitInformation()
-    const unitDetailsPage = await unitInfoPage.openUnitDetails()
+    unitDetailsPage = await unitInfoPage.openUnitDetails()
     unitEditorPage = await unitDetailsPage.edit()
   })
 
@@ -140,6 +142,61 @@ describe('Employee - unit editor validations and warnings', () => {
     await unitEditorPage.assertWarningIsVisible('unit-operationtimes')
     await unitEditorPage.clearDayTimeRange(3)
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')
+  })
+
+  test('Invalid unit shift care operation times produce a form error', async () => {
+    await unitEditorPage.assertWarningIsNotVisible(
+      'shift-care-unit-operationtimes'
+    )
+    await unitEditorPage.fillShiftCareDayTimeRange(2, '10:00', '10:66')
+    await unitEditorPage.assertWarningIsVisible(
+      'unit-shift-care-operationtimes'
+    )
+    await unitEditorPage.clearShiftCareDayTimeRange(2)
+    await unitEditorPage.assertWarningIsNotVisible(
+      'unit-shift-care-operationtimes'
+    )
+
+    await unitEditorPage.fillShiftCareDayTimeRange(3, '12:00', '10:00')
+    await unitEditorPage.assertWarningIsVisible(
+      'unit-shift-care-operationtimes'
+    )
+    await unitEditorPage.clearShiftCareDayTimeRange(3)
+    await unitEditorPage.assertWarningIsNotVisible(
+      'unit-shift-care-operationtimes'
+    )
+
+    await unitEditorPage.fillShiftCareDayTimeRange(4, '16:00', '22:00')
+
+    await unitEditorPage.fillManagerData(
+      'Päiväkodin Johtaja',
+      '01234567',
+      'manager@example.com'
+    )
+
+    await unitEditorPage.submit()
+    await unitDetailsPage.assertShiftCareOperationTime(2, '')
+    await unitDetailsPage.assertShiftCareOperationTime(3, '')
+    await unitDetailsPage.assertShiftCareOperationTime(4, '16:00 - 22:00')
+  })
+
+  test('Shift care operation times are reset if round the clock is set to false', async () => {
+    await unitEditorPage.fillShiftCareDayTimeRange(1, '16:00', '22:00')
+
+    await unitEditorPage.fillManagerData(
+      'Päiväkodin Johtaja',
+      '01234567',
+      'manager@example.com'
+    )
+
+    await unitEditorPage.submit()
+    await unitDetailsPage.assertShiftCareOperationTime(1, '16:00 - 22:00')
+    unitEditorPage = await unitDetailsPage.edit()
+    await unitEditorPage.setRoundTheClock(false)
+    await unitEditorPage.submit()
+    unitEditorPage = await unitDetailsPage.edit()
+    await unitEditorPage.setRoundTheClock(true)
+    await unitEditorPage.assertShiftCareOperationChecked(1, false)
   })
 
   test('Varda unit warning is shown for non varda units', async () => {

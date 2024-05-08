@@ -92,6 +92,16 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     null,
                     null
                 ),
+            shiftCareOperationTimes =
+                listOf(
+                    standardOpTime,
+                    standardOpTime,
+                    standardOpTime,
+                    standardOpTime,
+                    standardOpTime,
+                    null,
+                    null
+                ),
             financeDecisionHandlerId = null,
             roundTheClock = false,
             businessId = "Y-123456789",

@@ -68,6 +68,8 @@ data class Daycare(
     val ophOrganizerOid: String?,
     override val operationDays: Set<Int>,
     val operationTimes: List<TimeRange?>,
+    val shiftCareOperationDays: Set<Int>,
+    val shiftCareOperationTimes: List<TimeRange?>,
     val roundTheClock: Boolean,
     val enabledPilotFeatures: List<PilotFeature>,
     val businessId: String,

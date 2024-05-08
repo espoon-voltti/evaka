@@ -4070,6 +4070,7 @@ export const fi = {
       canApply: 'Näytä yksikkö',
       providerType: 'Järjestämismuoto',
       operationDays: 'Toimintapäivät',
+      shiftCareOperationDays: 'Vuorohoidon toimintapäivät',
       operationDay: {
         0: 'SU',
         1: 'MA',
@@ -4198,6 +4199,8 @@ export const fi = {
       iban: 'Tilinumero puuttuu',
       providerId: 'Toimittajanumero puuttuu',
       operationTimes: 'Virheellinen merkintä yksikön toiminta-ajoissa',
+      shiftCareOperationTimes:
+        'Virheellinen merkintä yksikön vuorohoidon toiminta-ajoissa',
       mealTimes: 'Virheellinen merkintä yksikön ruokailuajoissa'
     },
     warning: {

@@ -206,6 +206,12 @@ export class UnitDetailsPage {
         .assertTextEquals(`${value.start} - ${value.end}`)
     }
   }
+
+  async assertShiftCareOperationTime(index: number, expected: string) {
+    await this.page
+      .findByDataQa(`shift-care-unit-timerange-detail-${index}`)
+      .assertTextEquals(expected)
+  }
 }
 
 export class UnitEditor {
@@ -216,8 +222,18 @@ export class UnitEditor {
   )
   readonly #areaSelect = new Combobox(this.page.find('[data-qa="area-select"]'))
 
+  readonly roundTheClock: Checkbox = new Checkbox(
+    this.page.findByDataQa('round-the-clock')
+  )
+
   #timeInput(dayNumber: number, startEnd: 'start' | 'end') {
     return new TextInput(this.page.find(`[data-qa="${dayNumber}-${startEnd}"]`))
+  }
+
+  #shiftCareTimeInput(dayNumber: number, startEnd: 'start' | 'end') {
+    return new TextInput(
+      this.page.find(`[data-qa="shift-care-${dayNumber}-${startEnd}"]`)
+    )
   }
 
   #timeCheckBox(dayNumber: number) {
@@ -226,13 +242,43 @@ export class UnitEditor {
     )
   }
 
+  #shiftCareTimeCheckBox(dayNumber: number) {
+    return new Checkbox(
+      this.page.find(`[data-qa="shift-care-operation-day-${dayNumber}"]`)
+    )
+  }
+
   async fillDayTimeRange(dayNumber: number, start: string, end: string) {
     await this.#timeInput(dayNumber, 'start').fill(start)
     await this.#timeInput(dayNumber, 'end').fill(end)
   }
 
+  async fillShiftCareDayTimeRange(
+    dayNumber: number,
+    start: string,
+    end: string
+  ) {
+    await this.#shiftCareTimeInput(dayNumber, 'start').fill(start)
+    await this.#shiftCareTimeInput(dayNumber, 'end').fill(end)
+  }
+
+  async assertShiftCareOperationChecked(dayIndex: number, checked: boolean) {
+    const checkbox = new Checkbox(
+      this.page.findByDataQa(`shift-care-operation-day-${dayIndex}`)
+    )
+    await checkbox.waitUntilChecked(checked)
+  }
+
+  async setRoundTheClock(on: boolean) {
+    on ? await this.roundTheClock.check() : await this.roundTheClock.uncheck()
+  }
+
   async clearDayTimeRange(dayNumber: number) {
     await this.#timeCheckBox(dayNumber).uncheck()
+  }
+
+  async clearShiftCareDayTimeRange(dayNumber: number) {
+    await this.#shiftCareTimeCheckBox(dayNumber).uncheck()
   }
 
   #careTypeCheckbox(type: CareType) {
