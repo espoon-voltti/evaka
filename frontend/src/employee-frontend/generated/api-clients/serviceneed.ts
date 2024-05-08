@@ -47,7 +47,7 @@ export async function getServiceNeedOptionPublicInfos(
     ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<ServiceNeedOptionPublicInfo[]>>({
-    url: uri`/public/service-needs/options`.toString(),
+    url: uri`/employee/public/service-needs/options`.toString(),
     method: 'GET',
     params
   })

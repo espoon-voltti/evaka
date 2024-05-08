@@ -54,25 +54,18 @@ private val deprecatedEndpoints =
         "/decisions/set-type/{id}",
         "/decisions/unignore",
         "/person/identity/{personId}",
-        "/units",
+        "/public/club-terms",
+        "/public/pairings/challenge",
+        "/public/pairings/{id}/status",
+        "/public/preschool-terms",
+        "/public/service-needs/options",
+        "/public/units",
+        "/public/units/{applicationType}",
+        "/units"
     )
 
 // these endpoint paths are planned, and API clients should not call them *yet*
-private val plannedEndpoints =
-    setOf(
-        "/citizen/public/club-terms",
-        "/citizen/public/preschool-terms",
-        "/citizen/public/service-needs/options",
-        "/citizen/public/units/{applicationType}",
-        "/citizen/units",
-        "/employee-mobile/public/pairings/challenge",
-        "/employee-mobile/public/pairings/{id}/status",
-        "/employee/public/club-terms",
-        "/employee/public/preschool-terms",
-        "/employee/public/service-needs/options",
-        "/employee/public/units/{applicationType}",
-        "/employee/units",
-    )
+private val plannedEndpoints = emptySet<String>()
 
 val endpointExcludes = plannedEndpoints + deprecatedEndpoints
 

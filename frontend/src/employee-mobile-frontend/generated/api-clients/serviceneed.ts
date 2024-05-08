@@ -6,16 +6,12 @@
 
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedCreateRequest } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedUpdateRequest } from 'lib-common/generated/api-types/serviceneed'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
-import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
-import { deserializeJsonServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { uri } from 'lib-common/uri'
 
 
@@ -32,26 +28,6 @@ export async function deleteServiceNeed(
     method: 'DELETE'
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.getServiceNeedOptionPublicInfos
-*/
-export async function getServiceNeedOptionPublicInfos(
-  request: {
-    placementTypes?: PlacementType[] | null
-  }
-): Promise<ServiceNeedOptionPublicInfo[]> {
-  const params = createUrlSearchParams(
-    ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
-  )
-  const { data: json } = await client.request<JsonOf<ServiceNeedOptionPublicInfo[]>>({
-    url: uri`/public/service-needs/options`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonServiceNeedOptionPublicInfo(e))
 }
 
 

@@ -407,7 +407,7 @@ export async function getAllApplicableUnits(
   }
 ): Promise<PublicUnit[]> {
   const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
-    url: uri`/public/units/${request.applicationType}`.toString(),
+    url: uri`/employee/public/units/${request.applicationType}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPublicUnit(e))
@@ -430,7 +430,7 @@ export async function getApplicationUnits(
     ['shiftCare', request.shiftCare?.toString()]
   )
   const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
-    url: uri`/public/units`.toString(),
+    url: uri`/employee/units`.toString(),
     method: 'GET',
     params
   })
@@ -602,7 +602,7 @@ export async function deletePreschoolTerm(
 */
 export async function getClubTerms(): Promise<ClubTerm[]> {
   const { data: json } = await client.request<JsonOf<ClubTerm[]>>({
-    url: uri`/public/club-terms`.toString(),
+    url: uri`/employee/public/club-terms`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonClubTerm(e))
@@ -614,7 +614,7 @@ export async function getClubTerms(): Promise<ClubTerm[]> {
 */
 export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
   const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({
-    url: uri`/public/preschool-terms`.toString(),
+    url: uri`/employee/public/preschool-terms`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPreschoolTerm(e))

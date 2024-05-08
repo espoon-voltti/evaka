@@ -120,7 +120,9 @@ export function internalGwRouter(
   router.use(checkMobileEmployeeIdToken(redisClient))
 
   router.get('/auth/status', refreshMobileSession, authStatus(sessions))
-  router.all('/public/*', createProxy())
+  router.all('/public/*', createProxy()) // deprecated
+  router.all('/employee/public/*', createProxy())
+  router.all('/employee-mobile/public/*', createProxy())
   router.get('/version', (_, res) => {
     res.send({ commitId: appCommit })
   })
