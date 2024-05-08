@@ -164,7 +164,7 @@ class MessageControllerCitizen(
             .let { (accountId, response) ->
                 Audit.MessagingCitizenFetchReceiversForAccount.log(
                     targetId = accountId,
-                    meta = mapOf("count" to response.messageAccounts)
+                    meta = mapOf("count" to response.messageAccounts.size)
                 )
                 response
             }
