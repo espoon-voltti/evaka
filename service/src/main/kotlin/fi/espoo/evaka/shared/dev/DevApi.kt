@@ -191,6 +191,7 @@ import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.specialdiet.SpecialDiet
+import fi.espoo.evaka.specialdiet.resetSpecialDietsNotContainedWithin
 import fi.espoo.evaka.specialdiet.setSpecialDiets
 import fi.espoo.evaka.vasu.CurriculumType
 import fi.espoo.evaka.vasu.getDefaultTemplateContent
@@ -1623,7 +1624,12 @@ $form
 
     @PutMapping("/diets")
     fun putDiets(db: Database, @RequestBody diets: List<SpecialDiet>) {
-        db.connect { dbc -> dbc.transaction { tx -> tx.setSpecialDiets((diets)) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.resetSpecialDietsNotContainedWithin(diets)
+                tx.setSpecialDiets(diets)
+            }
+        }
     }
 }
 

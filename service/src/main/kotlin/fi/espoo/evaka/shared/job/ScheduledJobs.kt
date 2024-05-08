@@ -122,6 +122,10 @@ enum class ScheduledJob(
             schedule = JobSchedule.cron("0 25 2 * * 2") // tue @ 2:25
         )
     ),
+    SyncJamixDiets(
+        ScheduledJobs::syncJamixDiets,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 */10 * * * *"))
+    ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(7, 0)))
@@ -337,6 +341,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun sendJamixOrders(db: Database.Connection, clock: EvakaClock) {
         jamixService.planOrders(db, clock)
+    }
+
+    fun syncJamixDiets(db: Database.Connection, clock: EvakaClock) {
+        jamixService.syncDiets(db, clock)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {

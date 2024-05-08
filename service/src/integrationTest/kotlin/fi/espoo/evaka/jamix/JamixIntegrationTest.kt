@@ -6,30 +6,22 @@ package fi.espoo.evaka.jamix
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.dev.DevAbsence
-import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
-import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevReservation
-import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.specialdiet.SpecialDiet
-import fi.espoo.evaka.specialdiet.setSpecialDiets
+import fi.espoo.evaka.specialdiet.*
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -292,6 +284,89 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `diet sync does not sync empty data`() {
+        val client = TestJamixClient()
+        assertThrows<Exception> { fetchAndUpdateJamixDiets(client, db) }
+    }
+
+    @Test
+    fun `diet sync adds new diets`() {
+        val client =
+            TestJamixClient(
+                specialDiets =
+                    listOf(
+                        JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")),
+                        JamixSpecialDiet(2, JamixSpecialDietFields("Hello World", "Hello"))
+                    )
+            )
+        fetchAndUpdateJamixDiets(client, db)
+        db.transaction { tx ->
+            val diets = tx.getSpecialDiets().toSet()
+            assertEquals(
+                setOf(SpecialDiet(1, "Foobar", "Foo"), SpecialDiet(2, "Hello World", "Hello")),
+                diets
+            )
+        }
+    }
+
+    @Test
+    fun `diet sync nullifies removed diets from child`() {
+        val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
+        db.transaction { tx ->
+            tx.setSpecialDiets(listOf(SpecialDiet(555, "diet name", "diet abbreviation")))
+            tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
+            tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 555))
+        }
+        val client =
+            TestJamixClient(
+                specialDiets = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")))
+            )
+        val warnings = mutableListOf<String>()
+        fetchAndUpdateJamixDiets(client, db) { s -> warnings.add(s) }
+        // assert that logger.warn has been called
+        assertEquals(
+            setOf("Jamix diet list update caused 1 child special diets to be set to null"),
+            warnings.toSet()
+        )
+        db.transaction { tx ->
+            val childAfterSync = tx.getChild(childWithSpecialDiet.id)
+            assertNotNull(childAfterSync)
+            assertNull(childAfterSync.additionalInformation.specialDiet)
+        }
+    }
+
+    @Test
+    fun `diet sync keeps diet selection when diet abbreviation changes`() {
+        val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
+        db.transaction { tx ->
+            tx.setSpecialDiets(
+                listOf(SpecialDiet(1, "diet name with a typo", "diet abbreviation with a typo"))
+            )
+            tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
+            tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
+        }
+        val client =
+            TestJamixClient(
+                specialDiets =
+                    listOf(
+                        JamixSpecialDiet(
+                            1,
+                            JamixSpecialDietFields("diet name fixed", "diet abbreviation fixed")
+                        )
+                    )
+            )
+        fetchAndUpdateJamixDiets(client, db)
+        db.transaction { tx ->
+            val childAfterSync = tx.getChild(childWithSpecialDiet.id)
+            assertNotNull(childAfterSync)
+            assertEquals(
+                SpecialDiet(1, "diet name fixed", "diet abbreviation fixed"),
+                childAfterSync.additionalInformation.specialDiet
+            )
+        }
+    }
+
     private fun sendOrders(
         client: JamixClient,
         customerNumber: Int,
@@ -302,7 +377,10 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 }
 
-class TestJamixClient(val customers: Map<Int, Int> = mapOf()) : JamixClient {
+class TestJamixClient(
+    val customers: Map<Int, Int> = mapOf(),
+    val specialDiets: List<JamixSpecialDiet> = emptyList()
+) : JamixClient {
     val orders = mutableListOf<JamixClient.MealOrder>()
 
     override fun getCustomers(): List<JamixClient.Customer> {
@@ -313,5 +391,9 @@ class TestJamixClient(val customers: Map<Int, Int> = mapOf()) : JamixClient {
 
     override fun createMealOrder(order: JamixClient.MealOrder) {
         orders.add(order)
+    }
+
+    override fun getDiets(): List<JamixSpecialDiet> {
+        return specialDiets
     }
 }

@@ -143,7 +143,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun startBackgroundPolling(
         clock: EvakaClock = RealEvakaClock(),
-        pollingInterval: Duration = Duration.ofMinutes(1)
+        pollingInterval: Duration = Duration.ofSeconds(2)
     ) {
         val newTimer =
             fixedRateTimer("$name.timer", period = pollingInterval.toMillis()) {
