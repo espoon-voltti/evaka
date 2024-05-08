@@ -48,7 +48,31 @@ interface VardaReadClient {
         }
 
         override fun toString(): String =
-            "VardaPersonSearchRequest(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid)"
+            "HaeHenkiloRequest(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid)"
+    }
+
+    fun haeHenkilo(body: HaeHenkiloRequest): HenkiloResponse
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class GetOrCreateHenkiloRequest(
+        val etunimet: String,
+        val sukunimi: String,
+        val henkilotunnus: String?,
+        val henkilo_oid: String?
+    ) {
+        init {
+            check(henkilotunnus != null || henkilo_oid != null) {
+                "Both params henkilotunnus and henkilo_oid must not be null"
+            }
+        }
+
+        override fun toString() =
+            "GetOrCreateHenkiloRequest(" +
+                "etunimet=${maskName(etunimet)}, " +
+                "sukunimi=${maskName(sukunimi)}, " +
+                "henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, " +
+                "henkilo_oid=$henkilo_oid" +
+                ")"
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -61,7 +85,9 @@ interface VardaReadClient {
         val lapsi: List<URI>,
     )
 
-    fun haeHenkilo(body: HaeHenkiloRequest): HenkiloResponse?
+    // Even though this operation may write to Varda, it has to be in VardaReadClient. We need to
+    // have a henkilo to be able to find the corresponding lapsi entries.
+    fun getOrCreateHenkilo(body: GetOrCreateHenkiloRequest): HenkiloResponse
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class LapsiResponse(
@@ -131,26 +157,6 @@ interface VardaReadClient {
 
 interface VardaWriteClient {
     @JsonIgnoreProperties(ignoreUnknown = true) data class CreateResponse(val url: URI)
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class CreateHenkiloRequest(
-        val etunimet: String,
-        val sukunimi: String,
-        val kutsumanimi: String,
-        val henkilotunnus: String?,
-        val henkilo_oid: String?
-    ) {
-        override fun toString() =
-            "CreateHenkiloRequest(" +
-                "etunimet=${maskName(etunimet)}, " +
-                "sukunimi=${maskName(sukunimi)}, " +
-                "kutsumanimi=${maskName(kutsumanimi)}, " +
-                "henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, " +
-                "henkilo_oid=$henkilo_oid" +
-                ")"
-    }
-
-    fun createHenkilo(body: CreateHenkiloRequest): VardaReadClient.HenkiloResponse
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class CreateLapsiRequest(
@@ -245,10 +251,10 @@ class VardaClient(
 
     override fun haeHenkilo(
         body: VardaReadClient.HaeHenkiloRequest
-    ): VardaReadClient.HenkiloResponse? = post(baseUrl.resolve("v1/hae-henkilo/"), body)
+    ): VardaReadClient.HenkiloResponse = post(baseUrl.resolve("v1/hae-henkilo/"), body)
 
-    override fun createHenkilo(
-        body: VardaWriteClient.CreateHenkiloRequest
+    override fun getOrCreateHenkilo(
+        body: VardaReadClient.GetOrCreateHenkiloRequest
     ): VardaReadClient.HenkiloResponse = post(baseUrl.resolve("v1/henkilot/"), body)
 
     override fun createLapsi(

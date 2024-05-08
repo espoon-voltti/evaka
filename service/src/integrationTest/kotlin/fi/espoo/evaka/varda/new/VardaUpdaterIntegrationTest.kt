@@ -1359,7 +1359,16 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         updater.diffAndUpdate(
             client,
-            vardaHenkilo = null,
+            vardaHenkilo =
+                VardaUpdater.VardaHenkiloNode(
+                    henkilo =
+                        VardaReadClient.HenkiloResponse(
+                            url = URI.create("henkilo_0"),
+                            henkilo_oid = null,
+                            lapsi = emptyList()
+                        ),
+                    lapset = emptyList()
+                ),
             evakaHenkilo =
                 VardaUpdater.EvakaHenkiloNode(
                     henkilo =
@@ -1394,14 +1403,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(
-                "Create" to
-                    VardaWriteClient.CreateHenkiloRequest(
-                        etunimet = "Test",
-                        kutsumanimi = "Test",
-                        sukunimi = "Person",
-                        henkilotunnus = "030320A904N",
-                        henkilo_oid = null
-                    ),
                 "Create" to
                     VardaWriteClient.CreateLapsiRequest(
                         lahdejarjestelma = sourceSystem,
@@ -2117,8 +2118,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `state is saved after update`() {
-        val child = DevPerson(ssn = "030320A904N")
+    fun `haeHenkilo is used for children without ssn`() {
+        val child = DevPerson(ssn = null, ophPersonOid = "ophPersonOid")
 
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
@@ -2133,7 +2134,64 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         class TestReadClient : FailEveryOperation() {
             override fun haeHenkilo(
                 body: VardaReadClient.HaeHenkiloRequest
-            ): VardaReadClient.HenkiloResponse? = null
+            ): VardaReadClient.HenkiloResponse =
+                VardaReadClient.HenkiloResponse(
+                    url = URI.create("henkilo"),
+                    henkilo_oid = "henkilo_oid",
+                    lapsi = emptyList()
+                )
+        }
+
+        updater.updateChild(
+            dbc = db,
+            readClient = TestReadClient(),
+            writeClient = DryRunClient(),
+            now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0)),
+            childId = child.id,
+            saveState = true
+        )
+
+        val state =
+            db.read { it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id)) }
+                .values
+                .first()
+
+        assertEquals(
+            VardaUpdater.EvakaHenkiloNode(
+                henkilo =
+                    Henkilo(
+                        etunimet = child.firstName,
+                        sukunimi = child.lastName,
+                        henkilo_oid = "ophPersonOid",
+                        henkilotunnus = null,
+                    ),
+                lapset = emptyList()
+            ),
+            state
+        )
+    }
+
+    @Test
+    fun `state is saved after update`() {
+        val child = DevPerson(ssn = "030320A904N")
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.execute {
+                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
+            }
+        }
+
+        val updater =
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
+
+        class TestReadClient : FailEveryOperation() {
+            override fun getOrCreateHenkilo(body: VardaReadClient.GetOrCreateHenkiloRequest) =
+                VardaReadClient.HenkiloResponse(
+                    url = URI.create("henkilo"),
+                    henkilo_oid = "henkilo_oid",
+                    lapsi = emptyList()
+                )
         }
 
         updater.updateChild(
@@ -2180,7 +2238,9 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : FailEveryOperation() {
-            override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest) =
+            override fun getOrCreateHenkilo(
+                body: VardaReadClient.GetOrCreateHenkiloRequest
+            ): VardaReadClient.HenkiloResponse =
                 VardaReadClient.HenkiloResponse(
                     url = URI.create("henkilo"),
                     henkilo_oid = "henkilo_oid",
@@ -2217,8 +2277,9 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : FailEveryOperation() {
-            override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest) =
-                error("this is an error message")
+            override fun getOrCreateHenkilo(
+                body: VardaReadClient.GetOrCreateHenkiloRequest
+            ): VardaReadClient.HenkiloResponse = error("this is an error message")
         }
 
         updater.updateChild(
@@ -2325,7 +2386,13 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 open class FailEveryOperation : VardaReadClient {
     override fun haeHenkilo(
         body: VardaReadClient.HaeHenkiloRequest
-    ): VardaReadClient.HenkiloResponse? {
+    ): VardaReadClient.HenkiloResponse {
+        throw NotImplementedError()
+    }
+
+    override fun getOrCreateHenkilo(
+        body: VardaReadClient.GetOrCreateHenkiloRequest
+    ): VardaReadClient.HenkiloResponse {
         throw NotImplementedError()
     }
 
