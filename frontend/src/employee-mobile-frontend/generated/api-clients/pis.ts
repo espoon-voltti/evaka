@@ -23,10 +23,6 @@ import { JsonOf } from 'lib-common/json'
 import { MergeRequest } from 'lib-common/generated/api-types/pis'
 import { NewEmployee } from 'lib-common/generated/api-types/pis'
 import { PagedEmployeesWithDaycareRoles } from 'lib-common/generated/api-types/pis'
-import { Parentship } from 'lib-common/generated/api-types/pis'
-import { ParentshipRequest } from 'lib-common/generated/api-types/pis'
-import { ParentshipUpdateRequest } from 'lib-common/generated/api-types/pis'
-import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { Partnership } from 'lib-common/generated/api-types/pis'
 import { PartnershipRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipUpdateRequest } from 'lib-common/generated/api-types/pis'
@@ -47,8 +43,6 @@ import { deserializeJsonEmployeeWithDaycareRoles } from 'lib-common/generated/ap
 import { deserializeJsonFamilyOverview } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFosterParentRelationship } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPagedEmployeesWithDaycareRoles } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonParentship } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonParentshipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPartnership } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonJSON } from 'lib-common/generated/api-types/pis'
@@ -384,111 +378,6 @@ export async function updateFosterParentRelationshipValidity(
     url: uri`/foster-parent/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DateRange>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.createParentship
-*/
-export async function createParentship(
-  request: {
-    body: ParentshipRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ParentshipRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.deleteParentship
-*/
-export async function deleteParentship(
-  request: {
-    id: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships/${request.id}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.getParentship
-*/
-export async function getParentship(
-  request: {
-    id: UUID
-  }
-): Promise<Parentship> {
-  const { data: json } = await client.request<JsonOf<Parentship>>({
-    url: uri`/parentships/${request.id}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonParentship(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.getParentships
-*/
-export async function getParentships(
-  request: {
-    headOfChildId?: UUID | null,
-    childId?: UUID | null
-  }
-): Promise<ParentshipWithPermittedActions[]> {
-  const params = createUrlSearchParams(
-    ['headOfChildId', request.headOfChildId],
-    ['childId', request.childId]
-  )
-  const { data: json } = await client.request<JsonOf<ParentshipWithPermittedActions[]>>({
-    url: uri`/parentships`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonParentshipWithPermittedActions(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.retryParentship
-*/
-export async function retryParentship(
-  request: {
-    id: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships/${request.id}/retry`.toString(),
-    method: 'PUT'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.updateParentship
-*/
-export async function updateParentship(
-  request: {
-    id: UUID,
-    body: ParentshipUpdateRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships/${request.id}`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<ParentshipUpdateRequest>
   })
   return json
 }

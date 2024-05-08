@@ -1,9 +1,12 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.pis.CreationModificationMetadata
+import fi.espoo.evaka.pis.Creator
+import fi.espoo.evaka.pis.Modifier
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.pis.getParentship
@@ -15,8 +18,8 @@ import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -36,13 +39,14 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         childId: ChildId,
         headOfChildId: PersonId,
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
+        creator: Creator
     ): Parentship {
         tx.getPersonById(childId)?.let { child ->
             validateDates(child.dateOfBirth, startDate, endDate)
         }
         return try {
-            tx.createParentship(childId, headOfChildId, startDate, endDate, false).also {
+            tx.createParentship(childId, headOfChildId, startDate, endDate, creator, false).also {
                 tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate)
             }
         } catch (e: Exception) {
@@ -53,6 +57,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     fun updateParentshipDuration(
         tx: Database.Transaction,
         clock: EvakaClock,
+        user: AuthenticatedUser.Employee,
         id: ParentshipId,
         startDate: LocalDate,
         endDate: LocalDate
@@ -61,7 +66,14 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         validateDates(oldParentship.child.dateOfBirth, startDate, endDate)
         try {
-            val success = tx.updateParentshipDuration(id, startDate, endDate)
+            val success =
+                tx.updateParentshipDuration(
+                    id = id,
+                    startDate = startDate,
+                    endDate = endDate,
+                    now = clock.now(),
+                    modifier = Modifier.User(user.evakaUserId)
+                )
             if (!success) throw NotFound("No parentship found with id $id")
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -77,12 +89,17 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         return oldParentship.copy(startDate = startDate, endDate = endDate)
     }
 
-    fun retryParentship(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId) {
+    fun retryParentship(
+        tx: Database.Transaction,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        id: ParentshipId
+    ) {
         try {
             tx.getParentship(id)
                 ?.takeIf { it.conflict }
                 ?.let {
-                    tx.retryParentship(it.id)
+                    tx.retryParentship(id = it.id, now = clock.now(), userId = user.evakaUserId)
                     tx.sendFamilyUpdatedMessage(
                         clock,
                         adultId = it.headOfChildId,
@@ -141,16 +158,26 @@ data class Parentship(
     val conflict: Boolean = false
 )
 
-enum class CreateSource : DatabaseEnum {
-    USER,
-    APPLICATION;
-
-    override val sqlType = "create_source"
-}
-
-enum class ModifySource : DatabaseEnum {
-    USER,
-    DVV;
-
-    override val sqlType = "modify_source"
+data class ParentshipDetailed(
+    val id: ParentshipId,
+    val childId: ChildId,
+    val child: PersonJSON,
+    val headOfChildId: PersonId,
+    val headOfChild: PersonJSON,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val conflict: Boolean = false,
+    val creationModificationMetadata: CreationModificationMetadata
+) {
+    fun withoutDetails() =
+        Parentship(
+            id = id,
+            childId = childId,
+            child = child,
+            headOfChildId = headOfChildId,
+            headOfChild = headOfChild,
+            startDate = startDate,
+            endDate = endDate,
+            conflict = conflict
+        )
 }

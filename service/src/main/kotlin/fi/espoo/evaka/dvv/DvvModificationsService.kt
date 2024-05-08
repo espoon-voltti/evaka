@@ -4,11 +4,12 @@
 
 package fi.espoo.evaka.dvv
 
+import fi.espoo.evaka.pis.Modifier
+import fi.espoo.evaka.pis.ModifySource
 import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonBySSN
-import fi.espoo.evaka.pis.service.ModifySource
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.pis.updatePersonFromVtj
@@ -183,21 +184,29 @@ class DvvModificationsService(
                 )
             }
 
-        tx.getParentships(
+        val parentships =
+            tx.getParentships(
                 headOfChildId = personId,
                 childId = null,
                 includeConflicts = true,
                 period = DateRange(dateOfDeath, dateOfDeath)
-            )
-            .forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
+            ) +
+                tx.getParentships(
+                    headOfChildId = null,
+                    childId = personId,
+                    includeConflicts = true,
+                    period = DateRange(dateOfDeath, dateOfDeath)
+                )
 
-        tx.getParentships(
-                headOfChildId = null,
-                childId = personId,
-                includeConflicts = true,
-                period = DateRange(dateOfDeath, dateOfDeath)
+        parentships.forEach {
+            tx.updateParentshipDuration(
+                id = it.id,
+                startDate = it.startDate,
+                endDate = dateOfDeath,
+                now = clock.now(),
+                modifier = Modifier.DVV
             )
-            .forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
+        }
     }
 
     private fun handleRestrictedInfo(

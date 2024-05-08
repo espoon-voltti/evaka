@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CreationModificationMetadata } from 'lib-common/generated/api-types/pis'
 import {
   TimelineChildDetailed,
   TimelineFeeAlteration,
@@ -154,25 +155,27 @@ export const incomeRenderer: EventRenderer<TimelineIncome> = {
   },
   eventType: 'income'
 }
-interface PartnershipMetadataProps {
-  partnerDetails: TimelinePartnerDetailed
+
+interface FridgeRelationMetadataProps {
+  creationModificationMetadata: CreationModificationMetadata
+  originApplicationAccessible: boolean
 }
 
-const PartnershipMetadata = React.memo(function PartnershipMetadata({
-  partnerDetails: {
+const FridgeRelationMetadata = React.memo(function PartnershipMetadata({
+  creationModificationMetadata: {
     createdAt,
     createdBy,
     createdByName,
     createSource,
-    originApplicationAccessible,
     createdFromApplication,
     createdFromApplicationType,
     createdFromApplicationCreated,
     modifySource,
     modifiedAt,
     modifiedByName
-  }
-}: PartnershipMetadataProps) {
+  },
+  originApplicationAccessible
+}: FridgeRelationMetadataProps) {
   const { i18n } = useTranslation()
   const formatDate = (date: HelsinkiDateTime | null) =>
     date ? date.format() : i18n.timeline.notAvailable
@@ -202,6 +205,8 @@ const PartnershipMetadata = React.memo(function PartnershipMetadata({
       } else {
         return i18n.timeline.notAvailable
       }
+    } else if (createSource === 'DVV') {
+      return i18n.timeline.DVV
     } else {
       return i18n.timeline.unknownSource
     }
@@ -248,12 +253,24 @@ export const partnerRenderer: EventRenderer<TimelinePartnerDetailed> = {
     </FixedSpaceColumn>
   ),
   Metadata: ({ elem: partnerDetails }) => (
-    <PartnershipMetadata partnerDetails={partnerDetails} />
+    <FridgeRelationMetadata
+      creationModificationMetadata={partnerDetails.creationModificationMetadata}
+      originApplicationAccessible={partnerDetails.originApplicationAccessible}
+    />
   ),
   NestedContent: ({ elem: partnerDetails, timelineRange, zoom }) => {
     const nestedRange = getNestedRange(partnerDetails.range, timelineRange)
     if (nestedRange === null)
-      return <PartnershipMetadata partnerDetails={partnerDetails} />
+      return (
+        <FridgeRelationMetadata
+          creationModificationMetadata={
+            partnerDetails.creationModificationMetadata
+          }
+          originApplicationAccessible={
+            partnerDetails.originApplicationAccessible
+          }
+        />
+      )
 
     return (
       <TlNestedContainer>
@@ -373,6 +390,12 @@ export const childRenderer: EventRenderer<TimelineChildDetailed> = {
       </span>
       <span>s. {elem.dateOfBirth.format()}</span>
     </FixedSpaceColumn>
+  ),
+  Metadata: ({ elem: childDetails }) => (
+    <FridgeRelationMetadata
+      creationModificationMetadata={childDetails.creationModificationMetadata}
+      originApplicationAccessible={childDetails.originApplicationAccessible}
+    />
   ),
   NestedContent: ({ elem, timelineRange, zoom }) => {
     const nestedRange = getNestedRange(elem.range, timelineRange)

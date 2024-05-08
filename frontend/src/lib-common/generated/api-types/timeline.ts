@@ -5,18 +5,16 @@
 // GENERATED FILE: no manual modifications
 
 import DateRange from '../../date-range'
-import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
-import { ApplicationType } from './application'
-import { CreateSource } from './pis'
+import { CreationModificationMetadata } from './pis'
 import { FeeAlterationType } from './invoicing'
 import { FeeDecisionStatus } from './invoicing'
 import { IncomeEffect } from './invoicing'
 import { JsonOf } from '../../json'
-import { ModifySource } from './pis'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
 import { VoucherValueDecisionStatus } from './invoicing'
+import { deserializeJsonCreationModificationMetadata } from './pis'
 
 /**
 * Generated from fi.espoo.evaka.timeline.Timeline
@@ -37,12 +35,14 @@ export interface Timeline {
 */
 export interface TimelineChildDetailed {
   childId: UUID
+  creationModificationMetadata: CreationModificationMetadata
   dateOfBirth: LocalDate
   feeAlterations: TimelineFeeAlteration[]
   firstName: string
   id: UUID
   incomes: TimelineIncome[]
   lastName: string
+  originApplicationAccessible: boolean
   placements: TimelinePlacement[]
   range: DateRange
   serviceNeeds: TimelineServiceNeed[]
@@ -84,22 +84,12 @@ export interface TimelineIncome {
 */
 export interface TimelinePartnerDetailed {
   children: TimelineChildDetailed[]
-  createSource: CreateSource | null
-  createdAt: HelsinkiDateTime | null
-  createdBy: UUID | null
-  createdByName: string | null
-  createdFromApplication: UUID | null
-  createdFromApplicationCreated: HelsinkiDateTime | null
-  createdFromApplicationType: ApplicationType | null
+  creationModificationMetadata: CreationModificationMetadata
   feeDecisions: TimelineFeeDecision[]
   firstName: string
   id: UUID
   incomes: TimelineIncome[]
   lastName: string
-  modifiedAt: HelsinkiDateTime | null
-  modifiedBy: UUID | null
-  modifiedByName: string | null
-  modifySource: ModifySource | null
   originApplicationAccessible: boolean
   partnerId: UUID
   range: DateRange
@@ -158,6 +148,7 @@ export function deserializeJsonTimeline(json: JsonOf<Timeline>): Timeline {
 export function deserializeJsonTimelineChildDetailed(json: JsonOf<TimelineChildDetailed>): TimelineChildDetailed {
   return {
     ...json,
+    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     feeAlterations: json.feeAlterations.map(e => deserializeJsonTimelineFeeAlteration(e)),
     incomes: json.incomes.map(e => deserializeJsonTimelineIncome(e)),
@@ -196,11 +187,9 @@ export function deserializeJsonTimelinePartnerDetailed(json: JsonOf<TimelinePart
   return {
     ...json,
     children: json.children.map(e => deserializeJsonTimelineChildDetailed(e)),
-    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
-    createdFromApplicationCreated: (json.createdFromApplicationCreated != null) ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated) : null,
+    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
     feeDecisions: json.feeDecisions.map(e => deserializeJsonTimelineFeeDecision(e)),
     incomes: json.incomes.map(e => deserializeJsonTimelineIncome(e)),
-    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
     range: DateRange.parseJson(json.range),
     valueDecisions: json.valueDecisions.map(e => deserializeJsonTimelineValueDecision(e))
   }

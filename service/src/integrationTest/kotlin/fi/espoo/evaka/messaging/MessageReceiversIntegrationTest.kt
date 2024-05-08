@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ChildId
@@ -100,7 +101,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
                 // Child 4 has no guardians => should not show up in receivers list
                 insertChildToGroup(tx, child4.id, null, group2.id, daycare2.id)
-                tx.createParentship(child4.id, adult3.id, placementStart, placementEnd)
+                tx.createParentship(child4.id, adult3.id, placementStart, placementEnd, Creator.DVV)
 
                 tx.insert(supervisor1)
                 val supervisor1MessageAccount = tx.upsertEmployeeMessageAccount(supervisor1.id)

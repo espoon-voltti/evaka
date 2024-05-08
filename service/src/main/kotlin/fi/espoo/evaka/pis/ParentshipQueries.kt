@@ -5,14 +5,17 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Parentship
+import fi.espoo.evaka.pis.service.ParentshipDetailed
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
@@ -39,7 +42,7 @@ fun Database.Read.getParentships(
     childId: ChildId?,
     includeConflicts: Boolean = false,
     period: DateRange? = null
-): List<Parentship> {
+): List<ParentshipDetailed> {
     if (headOfChildId == null && childId == null)
         throw BadRequest("Must give either headOfChildId or childId")
 
@@ -49,18 +52,25 @@ fun Database.Read.getParentships(
 SELECT
     fc.*,
     ${aliasedPersonColumns("child")},
-    ${aliasedPersonColumns("head")}
+    ${aliasedPersonColumns("head")},
+    created_by_user.name AS created_by_user_name,
+    modified_by_user.name AS modified_by_user_name,
+    created_by_application.type AS created_by_application_type,
+    created_by_application.created AS created_by_application_created
 FROM fridge_child fc
 JOIN person child ON fc.child_id = child.id
 JOIN person head ON fc.head_of_child = head.id
+LEFT JOIN application created_by_application ON fc.created_by_application = created_by_application.id
+LEFT JOIN evaka_user created_by_user ON fc.created_by_user = created_by_user.id
+LEFT JOIN evaka_user modified_by_user ON fc.modified_by_user = modified_by_user.id
 WHERE (${bind(headOfChildId)}::uuid IS NULL OR head_of_child = ${bind(headOfChildId)})
-AND (${bind(childId)}::uuid IS NULL OR child_id = ${bind(childId)})
+AND (${bind(childId)}::uuid IS NULL OR fc.child_id = ${bind(childId)})
 AND daterange(fc.start_date, fc.end_date, '[]') && daterange(${bind(period?.start)}, ${bind(period?.end)}, '[]')
 AND (${bind(includeConflicts)} OR conflict = false)
 """
             )
         }
-        .toList(toParentship("child", "head"))
+        .toList(toParentshipDetailed("child", "head"))
 }
 
 fun Database.Transaction.createParentship(
@@ -68,14 +78,21 @@ fun Database.Transaction.createParentship(
     headOfChildId: PersonId,
     startDate: LocalDate,
     endDate: LocalDate,
+    creator: Creator,
     conflict: Boolean = false
 ): Parentship {
+    val (userId, applicationId) =
+        when (creator) {
+            is Creator.User -> Pair(creator.id.raw, null)
+            is Creator.Application -> Pair(null, creator.id)
+            is Creator.DVV -> Pair(null, null)
+        }
     return createQuery {
             sql(
                 """
 WITH new_fridge_child AS (
-    INSERT INTO fridge_child (child_id, head_of_child, start_date, end_date, conflict)
-    VALUES (${bind(childId)}, ${bind(headOfChildId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)})
+    INSERT INTO fridge_child (child_id, head_of_child, start_date, end_date, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at, conflict)
+    VALUES (${bind(childId)}, ${bind(headOfChildId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(creator.source)}, ${bind(userId)}, ${bind(applicationId)}, NULL, NULL, NULL, ${bind(conflict)})
     RETURNING *
 )
 SELECT
@@ -94,18 +111,48 @@ JOIN person head ON fc.head_of_child = head.id
 fun Database.Transaction.updateParentshipDuration(
     id: ParentshipId,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
+    now: HelsinkiDateTime,
+    modifier: Modifier
 ): Boolean {
+    val userId =
+        when (modifier) {
+            is Modifier.User -> modifier.id.raw
+            is Modifier.DVV -> null
+        }
+
     return createUpdate {
             sql(
-                "UPDATE fridge_child SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)} WHERE id = ${bind(id)}"
+                """
+                UPDATE fridge_child 
+                SET 
+                    start_date = ${bind(startDate)}, 
+                    end_date = ${bind(endDate)},
+                    modify_source = ${bind(modifier.source)},
+                    modified_by_user = ${bind(userId)},
+                    modified_at = ${bind(now)}
+                WHERE id = ${bind(id)}
+            """
             )
         }
         .execute() > 0
 }
 
-fun Database.Transaction.retryParentship(id: ParentshipId) {
-    createUpdate { sql("UPDATE fridge_child SET conflict = false WHERE id = ${bind(id)}") }
+fun Database.Transaction.retryParentship(
+    id: ParentshipId,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId
+) {
+    createUpdate {
+            sql(
+                """
+        UPDATE fridge_child 
+        SET conflict = false, modify_source = 'USER', modified_by_user = ${bind(userId)}, modified_at = ${bind(now)} 
+        WHERE id = ${bind(id)}
+    """
+                    .trimIndent()
+            )
+        }
         .execute()
 }
 
@@ -170,6 +217,36 @@ private val toParentship: (String, String) -> Row.() -> Parentship = { childAlia
         )
     }
 }
+
+private val toParentshipDetailed: (String, String) -> Row.() -> ParentshipDetailed =
+    { childAlias, headAlias ->
+        {
+            ParentshipDetailed(
+                id = ParentshipId(column("id")),
+                childId = ChildId(column("child_id")),
+                child = toPersonJSON(childAlias),
+                headOfChildId = PersonId(column("head_of_child")),
+                headOfChild = toPersonJSON(headAlias),
+                startDate = column("start_date"),
+                endDate = column("end_date"),
+                conflict = column("conflict"),
+                creationModificationMetadata =
+                    CreationModificationMetadata(
+                        createSource = column("create_source"),
+                        createdAt = column("created_at"),
+                        createdBy = column("created_by_user"),
+                        createdByName = column("created_by_user_name"),
+                        modifySource = column("modify_source"),
+                        modifiedAt = column("modified_at"),
+                        modifiedBy = column("modified_by_user"),
+                        modifiedByName = column("modified_by_user_name"),
+                        createdFromApplication = column("created_by_application"),
+                        createdFromApplicationType = column("created_by_application_type"),
+                        createdFromApplicationCreated = column("created_by_application_created")
+                    )
+            )
+        }
+    }
 
 internal val toPersonJSON: Row.(String) -> PersonJSON = { table ->
     PersonJSON(

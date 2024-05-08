@@ -8,6 +8,7 @@ import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
+import { ApplicationType } from './application'
 import { CitizenAuthLevel } from './shared'
 import { CitizenFeatures } from './shared'
 import { EmployeeFeatures } from './shared'
@@ -76,11 +77,29 @@ export interface CreatePersonBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.CreateSource
+* Generated from fi.espoo.evaka.pis.CreateSource
 */
 export type CreateSource =
   | 'USER'
   | 'APPLICATION'
+  | 'DVV'
+
+/**
+* Generated from fi.espoo.evaka.pis.CreationModificationMetadata
+*/
+export interface CreationModificationMetadata {
+  createSource: CreateSource | null
+  createdAt: HelsinkiDateTime | null
+  createdBy: UUID | null
+  createdByName: string | null
+  createdFromApplication: UUID | null
+  createdFromApplicationCreated: HelsinkiDateTime | null
+  createdFromApplicationType: ApplicationType | null
+  modifiedAt: HelsinkiDateTime | null
+  modifiedBy: UUID | null
+  modifiedByName: string | null
+  modifySource: ModifySource | null
+}
 
 /**
 * Generated from fi.espoo.evaka.pis.DaycareGroupRole
@@ -304,7 +323,7 @@ export interface MergeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.ModifySource
+* Generated from fi.espoo.evaka.pis.ModifySource
 */
 export type ModifySource =
   | 'USER'
@@ -356,6 +375,21 @@ export interface Parentship {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.service.ParentshipDetailed
+*/
+export interface ParentshipDetailed {
+  child: PersonJSON
+  childId: UUID
+  conflict: boolean
+  creationModificationMetadata: CreationModificationMetadata
+  endDate: LocalDate
+  headOfChild: PersonJSON
+  headOfChildId: UUID
+  id: UUID
+  startDate: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipRequest
 */
 export interface ParentshipRequest {
@@ -377,7 +411,7 @@ export interface ParentshipUpdateRequest {
 * Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipWithPermittedActions
 */
 export interface ParentshipWithPermittedActions {
-  data: Parentship
+  data: ParentshipDetailed
   permittedActions: Action.Parentship[]
 }
 
@@ -612,6 +646,16 @@ export function deserializeJsonCreatePersonBody(json: JsonOf<CreatePersonBody>):
 }
 
 
+export function deserializeJsonCreationModificationMetadata(json: JsonOf<CreationModificationMetadata>): CreationModificationMetadata {
+  return {
+    ...json,
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
+    createdFromApplicationCreated: (json.createdFromApplicationCreated != null) ? HelsinkiDateTime.parseIso(json.createdFromApplicationCreated) : null,
+    modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null
+  }
+}
+
+
 export function deserializeJsonEmployee(json: JsonOf<Employee>): Employee {
   return {
     ...json,
@@ -678,6 +722,18 @@ export function deserializeJsonParentship(json: JsonOf<Parentship>): Parentship 
 }
 
 
+export function deserializeJsonParentshipDetailed(json: JsonOf<ParentshipDetailed>): ParentshipDetailed {
+  return {
+    ...json,
+    child: deserializeJsonPersonJSON(json.child),
+    creationModificationMetadata: deserializeJsonCreationModificationMetadata(json.creationModificationMetadata),
+    endDate: LocalDate.parseIso(json.endDate),
+    headOfChild: deserializeJsonPersonJSON(json.headOfChild),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
 export function deserializeJsonParentshipRequest(json: JsonOf<ParentshipRequest>): ParentshipRequest {
   return {
     ...json,
@@ -699,7 +755,7 @@ export function deserializeJsonParentshipUpdateRequest(json: JsonOf<ParentshipUp
 export function deserializeJsonParentshipWithPermittedActions(json: JsonOf<ParentshipWithPermittedActions>): ParentshipWithPermittedActions {
   return {
     ...json,
-    data: deserializeJsonParentship(json.data)
+    data: deserializeJsonParentshipDetailed(json.data)
   }
 }
 

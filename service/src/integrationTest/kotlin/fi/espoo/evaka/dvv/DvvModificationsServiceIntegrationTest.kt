@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.dvv
 
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
@@ -395,7 +396,8 @@ class DvvModificationsServiceIntegrationTest :
                 child.id,
                 parent.id,
                 child.dateOfBirth,
-                child.dateOfBirth.plusYears(18).minusDays(1)
+                child.dateOfBirth.plusYears(18).minusDays(1),
+                Creator.DVV
             )
         }
 

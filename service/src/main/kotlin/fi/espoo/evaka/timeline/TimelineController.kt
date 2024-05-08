@@ -5,22 +5,19 @@
 package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.service.generator.WithRange
+import fi.espoo.evaka.pis.CreationModificationMetadata
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.CreateSource
-import fi.espoo.evaka.pis.service.ModifySource
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.IncomeId
@@ -35,7 +32,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -52,7 +48,7 @@ class TimelineController(private val accessControl: AccessControl) {
     @GetMapping
     fun getTimeline(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId,
         @RequestParam from: LocalDate,
@@ -82,13 +78,17 @@ class TimelineController(private val accessControl: AccessControl) {
                             tx.getPartners(personId, range).map { partner ->
                                 val partnerRange = range.intersection(partner.range)!!
                                 val originApplicationAccessible =
-                                    if (partner.createdFromApplication != null)
+                                    if (
+                                        partner.creationModificationMetadata
+                                            .createdFromApplication != null
+                                    )
                                         accessControl
                                             .getPermittedActions<ApplicationId, Action.Application>(
                                                 tx,
                                                 user,
                                                 clock,
-                                                partner.createdFromApplication
+                                                partner.creationModificationMetadata
+                                                    .createdFromApplication
                                             )
                                             .contains(Action.Application.READ)
                                     else false
@@ -108,58 +108,55 @@ class TimelineController(private val accessControl: AccessControl) {
                                             ->
                                             val childRange =
                                                 partnerRange.intersection(child.range)!!
-                                            TimelineChildDetailed(
-                                                id = child.id,
-                                                range = child.range,
-                                                childId = child.childId,
-                                                firstName = child.firstName,
-                                                lastName = child.lastName,
-                                                dateOfBirth = child.dateOfBirth,
-                                                incomes = tx.getIncomes(child.childId, childRange),
-                                                placements =
-                                                    tx.getPlacements(child.childId, childRange),
-                                                serviceNeeds =
-                                                    tx.getServiceNeeds(child.childId, childRange),
-                                                feeAlterations =
-                                                    tx.getFeeAlterations(child.childId, childRange)
-                                            )
+                                            addDetailsToChild(tx, user, clock, child, childRange)
                                         },
-                                    createdAt = partner.createdAt,
-                                    createdBy = partner.createdBy,
-                                    createSource = partner.createSource,
-                                    createdByName = partner.createdByName,
-                                    modifiedAt = partner.modifiedAt,
-                                    modifiedBy = partner.modifiedBy,
-                                    modifySource = partner.modifySource,
-                                    modifiedByName = partner.modifiedByName,
-                                    originApplicationAccessible = originApplicationAccessible,
-                                    createdFromApplication = partner.createdFromApplication,
-                                    createdFromApplicationType = partner.createdFromApplicationType,
-                                    createdFromApplicationCreated =
-                                        partner.createdFromApplicationCreated
+                                    creationModificationMetadata =
+                                        partner.creationModificationMetadata,
+                                    originApplicationAccessible = originApplicationAccessible
                                 )
                             },
                         children =
                             tx.getChildren(personId, range).map { child ->
                                 val childRange = range.intersection(child.range)!!
-                                TimelineChildDetailed(
-                                    id = child.id,
-                                    range = child.range,
-                                    childId = child.childId,
-                                    firstName = child.firstName,
-                                    lastName = child.lastName,
-                                    dateOfBirth = child.dateOfBirth,
-                                    incomes = tx.getIncomes(child.childId, childRange),
-                                    placements = tx.getPlacements(child.childId, childRange),
-                                    serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
-                                    feeAlterations = tx.getFeeAlterations(child.childId, childRange)
-                                )
+                                addDetailsToChild(tx, user, clock, child, childRange)
                             }
                     )
                 }
             }
             .also { Audit.TimelineRead.log(targetId = personId) }
     }
+
+    private fun addDetailsToChild(
+        tx: Database.Read,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        child: TimelineChild,
+        childRange: FiniteDateRange
+    ) =
+        TimelineChildDetailed(
+            id = child.id,
+            range = child.range,
+            childId = child.childId,
+            firstName = child.firstName,
+            lastName = child.lastName,
+            dateOfBirth = child.dateOfBirth,
+            incomes = tx.getIncomes(child.childId, childRange),
+            placements = tx.getPlacements(child.childId, childRange),
+            serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
+            feeAlterations = tx.getFeeAlterations(child.childId, childRange),
+            creationModificationMetadata = child.creationModificationMetadata,
+            originApplicationAccessible =
+                if (child.creationModificationMetadata.createdFromApplication != null)
+                    accessControl
+                        .getPermittedActions<ApplicationId, Action.Application>(
+                            tx,
+                            user,
+                            clock,
+                            child.creationModificationMetadata.createdFromApplication
+                        )
+                        .contains(Action.Application.READ)
+                else false
+        )
 }
 
 data class Timeline(
@@ -240,17 +237,7 @@ data class TimelinePartner(
     val partnerId: PersonId,
     val firstName: String,
     val lastName: String,
-    val createdAt: HelsinkiDateTime?,
-    val createdBy: EvakaUserId?,
-    val createdByName: String?,
-    val createSource: CreateSource?,
-    val modifiedAt: HelsinkiDateTime?,
-    val modifiedBy: EvakaUserId?,
-    val modifiedByName: String?,
-    val modifySource: ModifySource?,
-    val createdFromApplication: ApplicationId?,
-    val createdFromApplicationType: ApplicationType?,
-    val createdFromApplicationCreated: HelsinkiDateTime?
+    val creationModificationMetadata: CreationModificationMetadata
 ) : WithRange
 
 data class TimelinePartnerDetailed(
@@ -263,18 +250,8 @@ data class TimelinePartnerDetailed(
     val valueDecisions: List<TimelineValueDecision>,
     val incomes: List<TimelineIncome>,
     val children: List<TimelineChildDetailed>,
-    val createdAt: HelsinkiDateTime?,
-    val createdBy: EvakaUserId?,
-    val createdByName: String?,
-    val createSource: CreateSource?,
-    val modifiedAt: HelsinkiDateTime?,
-    val modifiedBy: EvakaUserId?,
-    val modifiedByName: String?,
-    val modifySource: ModifySource?,
-    val originApplicationAccessible: Boolean,
-    val createdFromApplication: ApplicationId?,
-    val createdFromApplicationType: ApplicationType?,
-    val createdFromApplicationCreated: HelsinkiDateTime?
+    val creationModificationMetadata: CreationModificationMetadata,
+    val originApplicationAccessible: Boolean
 ) : WithRange
 
 private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange) =
@@ -290,17 +267,7 @@ private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange
                 partnerId = it.person.id,
                 firstName = it.person.firstName,
                 lastName = it.person.lastName,
-                createSource = it.createSource,
-                createdAt = it.createdAt,
-                createdBy = it.createdBy,
-                createdByName = it.createdByName,
-                modifySource = it.modifySource,
-                modifiedAt = it.modifiedAt,
-                modifiedBy = it.modifiedBy,
-                modifiedByName = it.modifiedByName,
-                createdFromApplication = it.createdFromApplication,
-                createdFromApplicationType = it.createdFromApplicationType,
-                createdFromApplicationCreated = it.createdFromApplicationCreated
+                creationModificationMetadata = it.creationModificationMetadata
             )
         }
         .sortedBy { it.range.start }
@@ -311,7 +278,8 @@ data class TimelineChild(
     val childId: PersonId,
     val firstName: String,
     val lastName: String,
-    val dateOfBirth: LocalDate
+    val dateOfBirth: LocalDate,
+    val creationModificationMetadata: CreationModificationMetadata
 ) : WithRange
 
 data class TimelineChildDetailed(
@@ -324,7 +292,9 @@ data class TimelineChildDetailed(
     val incomes: List<TimelineIncome>,
     val placements: List<TimelinePlacement>,
     val serviceNeeds: List<TimelineServiceNeed>,
-    val feeAlterations: List<TimelineFeeAlteration>
+    val feeAlterations: List<TimelineFeeAlteration>,
+    val creationModificationMetadata: CreationModificationMetadata,
+    val originApplicationAccessible: Boolean
 ) : WithRange
 
 private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange) =
@@ -341,7 +311,8 @@ private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange
                 childId = it.child.id,
                 firstName = it.child.firstName,
                 lastName = it.child.lastName,
-                dateOfBirth = it.child.dateOfBirth
+                dateOfBirth = it.child.dateOfBirth,
+                creationModificationMetadata = it.creationModificationMetadata
             )
         }
         .sortedBy { it.range.start }

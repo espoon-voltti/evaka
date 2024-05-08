@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.identity.getDobFromSsn
+import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -37,7 +38,8 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 child.id,
                 parent1.id,
                 startDate1,
-                endDate1
+                endDate1,
+                Creator.DVV
             )
 
             val startDate2 = endDate1.plusDays(1)
@@ -49,7 +51,8 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 child.id,
                 parent2.id,
                 startDate2,
-                endDate2
+                endDate2,
+                Creator.DVV
             )
 
             val headsByChild = tx.getParentships(headOfChildId = null, childId = child.id)

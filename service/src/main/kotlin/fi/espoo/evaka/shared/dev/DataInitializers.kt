@@ -374,13 +374,14 @@ fun Database.Transaction.insertTestParentship(
     childId: ChildId,
     id: ParentshipId = ParentshipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31)
+    endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    createdAt: HelsinkiDateTime = HelsinkiDateTime.now()
 ): ParentshipId {
     createUpdate {
             sql(
                 """
-INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
-VALUES (${bind(id)}, ${bind(headOfChild)}, ${bind(childId)}, ${bind(startDate)}, ${bind(endDate)})
+INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, create_source, created_by_user, created_by_application, created_at, modify_source, modified_by_user, modified_at)
+VALUES (${bind(id)}, ${bind(headOfChild)}, ${bind(childId)}, ${bind(startDate)}, ${bind(endDate)}, NULL, NULL, NULL, ${bind(createdAt)}, NULL, NULL, NULL)
 """
             )
         }
@@ -392,8 +393,8 @@ fun Database.Transaction.insert(row: DevParentship): ParentshipId =
     createUpdate {
             sql(
                 """
-INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
-VALUES (${bind(row.id)}, ${bind(row.headOfChildId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)})
+INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at)
+VALUES (${bind(row.id)}, ${bind(row.headOfChildId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, NULL, NULL, NULL, NULL, NULL, NULL)
 """
             )
         }
@@ -1190,8 +1191,8 @@ fun Database.Transaction.insert(row: DevFridgeChild): ParentshipId =
     createUpdate {
             sql(
                 """
-INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date, conflict)
-VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.headOfChild)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.conflict)})
+INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date, conflict, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at)
+VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.headOfChild)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.conflict)}, NULL, NULL, NULL, NULL, NULL, NULL)
 RETURNING id
 """
             )
