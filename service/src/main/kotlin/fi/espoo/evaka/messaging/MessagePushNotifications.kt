@@ -47,12 +47,15 @@ class MessagePushNotifications(
 SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
+JOIN message m ON mr.message_id = m.id
+JOIN message_thread mt ON m.thread_id = mt.id
 JOIN daycare_group dg ON ma.daycare_group_id = dg.id
 JOIN daycare d ON d.id = dg.daycare_id
 JOIN mobile_device_push_group mdpg ON mdpg.daycare_group = dg.id
 JOIN mobile_device md ON mdpg.device = md.id
 WHERE mr.read_at IS NULL
 AND ma.type = 'GROUP'
+AND mt.is_copy IS FALSE
 AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
 AND 'RECEIVED_MESSAGE' = ANY(md.push_notification_categories)
 AND EXISTS (

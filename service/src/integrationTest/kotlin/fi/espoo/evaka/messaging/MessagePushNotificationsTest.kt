@@ -5,17 +5,21 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -44,10 +48,15 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
     @Autowired private lateinit var messageService: MessageService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    private val area = DevCareArea()
     private lateinit var group: GroupId
     private lateinit var device: MobileDeviceId
     private lateinit var groupAccount: MessageAccountId
     private lateinit var citizenAccount: MessageAccountId
+    private lateinit var municipalAccount: MessageAccountId
+
+    private val testMessage =
+        NewMessageStub(title = "Test", content = "Test", urgent = false, sensitive = false)
 
     @BeforeAll
     override fun beforeAll() {
@@ -59,12 +68,13 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
     fun beforeEach() {
         mockEndpoint.clearData()
         db.transaction { tx ->
-            val area = tx.insert(DevCareArea())
+            tx.insert(area)
             val unit =
                 tx.insert(
                     DevDaycare(
-                        areaId = area,
-                        enabledPilotFeatures = setOf(PilotFeature.PUSH_NOTIFICATIONS)
+                        areaId = area.id,
+                        enabledPilotFeatures =
+                            setOf(PilotFeature.MESSAGING, PilotFeature.PUSH_NOTIFICATIONS)
                     )
                 )
             group = tx.insert(DevDaycareGroup(daycareId = unit))
@@ -80,23 +90,32 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
             tx.upsertPushGroup(clock.now(), device, group)
             val citizen = tx.insert(DevPerson(), DevPersonType.ADULT)
             citizenAccount = tx.getCitizenMessageAccount(citizen)
+            val child = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insertGuardian(guardianId = citizen, childId = child)
+            val placement =
+                DevPlacement(
+                    childId = child,
+                    unitId = unit,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusYears(1)
+                )
+            tx.insert(placement)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placement.id,
+                    daycareGroupId = group,
+                    startDate = placement.startDate,
+                    endDate = placement.endDate
+                )
+            )
+            municipalAccount = tx.createMunicipalMessageAccount()
         }
     }
 
     @Test
     fun `a push notification is sent when a citizen sends a message to a group`() {
         val endpoint = URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234")
-        db.transaction { tx ->
-            tx.upsertPushSubscription(
-                device,
-                WebPushSubscription(
-                    endpoint = endpoint,
-                    expires = null,
-                    ecdhKey = WebPushCrypto.encode(keyPair.publicKey).toList(),
-                    authSecret = listOf(0x00, 0x11, 0x22, 0x33)
-                )
-            )
-        }
+        upsertSubscription(device, endpoint)
 
         db.transaction { tx ->
             messageService.sendMessageAsCitizen(
@@ -105,13 +124,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                 sender = citizenAccount,
                 recipients = setOf(groupAccount),
                 children = emptySet(),
-                msg =
-                    NewMessageStub(
-                        title = "Test",
-                        content = "Test",
-                        urgent = false,
-                        sensitive = false
-                    )
+                msg = testMessage
             )
         }
         clock.tick(Duration.ofMinutes(30))
@@ -124,4 +137,53 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEquals("aes128gcm", request.headers["content-encoding"])
         assertTrue(request.body.isNotEmpty())
     }
+
+    @Test
+    fun `a push notification is not sent for staff copies`() {
+        val endpoint = URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234")
+        upsertSubscription(device, endpoint)
+
+        val contentId =
+            db.transaction { tx ->
+                messageService.sendMessageAsEmployee(
+                    tx,
+                    AuthenticatedUser.SystemInternalUser,
+                    clock.now(),
+                    sender = municipalAccount,
+                    type = MessageType.BULLETIN,
+                    msg = testMessage,
+                    recipients = setOf(MessageRecipient(MessageRecipientType.AREA, area.id)),
+                    recipientNames = listOf("Ryhmä"),
+                    attachments = emptySet(),
+                    relatedApplication = null
+                )
+            }
+        assertNotNull(contentId)
+        clock.tick(Duration.ofMinutes(30))
+        asyncJobRunner.runPendingJobsSync(clock)
+        clock.tick(Duration.ofMinutes(48))
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val copy =
+            db.read { tx ->
+                    tx.getMessageCopiesByAccount(groupAccount, pageSize = 20, page = 1).data
+                }
+                .single()
+        assertEquals(municipalAccount, copy.senderId)
+        assertEquals(testMessage.title, copy.title)
+        assertEquals(0, mockEndpoint.getCapturedRequests("1234").size)
+    }
+
+    private fun upsertSubscription(device: MobileDeviceId, endpoint: URI) =
+        db.transaction { tx ->
+            tx.upsertPushSubscription(
+                device,
+                WebPushSubscription(
+                    endpoint = endpoint,
+                    expires = null,
+                    ecdhKey = WebPushCrypto.encode(keyPair.publicKey).toList(),
+                    authSecret = listOf(0x00, 0x11, 0x22, 0x33)
+                )
+            )
+        }
 }
