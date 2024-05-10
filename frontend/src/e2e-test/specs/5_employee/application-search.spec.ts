@@ -5,7 +5,6 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -16,7 +15,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createApplications,
+  resetServiceState
+} from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
@@ -61,7 +63,9 @@ describe('Employee searches applications', () => {
       id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130224'
     }
 
-    await insertApplications([fixture, duplicateFixture, nonDuplicateFixture])
+    await createApplications({
+      body: [fixture, duplicateFixture, nonDuplicateFixture]
+    })
     const applicationListView = await openPage()
 
     await applicationListView.specialFilterItems.duplicate.click()
@@ -94,7 +98,7 @@ describe('Employee searches applications', () => {
     const app2 = createApplicationForUnit(daycare2.data.id)
     const app3 = createApplicationForUnit(daycare3.data.id)
 
-    await insertApplications([app1, app2, app3])
+    await createApplications({ body: [app1, app2, app3] })
     const applicationListView = await openPage()
 
     await applicationListView.assertApplicationCount(3)
@@ -129,7 +133,7 @@ describe('Employee searches applications', () => {
     const app1 = createApplicationForUnit(daycare1.data.id)
     const app2 = createApplicationForUnit(daycare2.data.id)
 
-    await insertApplications([app1, app2])
+    await createApplications({ body: [app1, app2] })
     const applicationListView = await openPage()
 
     await applicationListView.assertApplicationCount(2)
@@ -181,11 +185,13 @@ describe('Employee searches applications', () => {
       true
     )
 
-    await insertApplications([
-      appWithAssistanceNeeded,
-      appWithoutAssistanceNeeded,
-      appWithAssistanceNeededWrongUnit
-    ])
+    await createApplications({
+      body: [
+        appWithAssistanceNeeded,
+        appWithoutAssistanceNeeded,
+        appWithAssistanceNeededWrongUnit
+      ]
+    })
     const applicationListView = await openPage(specialEducationTeacher)
     await applicationListView.assertApplicationCount(1)
   })
@@ -235,11 +241,13 @@ describe('Employee searches applications', () => {
       id: uuidv4()
     }
 
-    await insertApplications([
-      applicationWithVoucherUnitFirst,
-      applicationWithVoucherUnitSecond,
-      applicationWithNoVoucherUnit
-    ])
+    await createApplications({
+      body: [
+        applicationWithVoucherUnitFirst,
+        applicationWithVoucherUnitSecond,
+        applicationWithNoVoucherUnit
+      ]
+    })
     const applicationListView = await openPage()
 
     await applicationListView.voucherUnitFilter.noFilter.click()
@@ -319,11 +327,9 @@ describe('Employee searches applications', () => {
       ),
       id: uuidv4()
     }
-    await insertApplications([
-      clubApplication,
-      daycareApplication,
-      preschoolApplication
-    ])
+    await createApplications({
+      body: [clubApplication, daycareApplication, preschoolApplication]
+    })
     const applicationListView = await openPage()
 
     await applicationListView.filterByApplicationType('ALL')

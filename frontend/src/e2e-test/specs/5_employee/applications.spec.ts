@@ -5,11 +5,14 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
+import { execSimpleApplicationActions } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import { Family } from '../../dev-api/types'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createApplications,
+  resetServiceState
+} from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
@@ -41,7 +44,7 @@ describe('Applications', () => {
       familyWithDeadGuardian.otherGuardian,
       'DAYCARE'
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
     await execSimpleApplicationActions(
       application.id,
       [
@@ -65,7 +68,7 @@ describe('Applications', () => {
       familyWithDeadGuardian.otherGuardian,
       'DAYCARE'
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
 
     await applicationsPage.toggleApplicationStatusFilter('ALL')
     const applicationDetails = await applicationsPage

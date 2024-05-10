@@ -6,7 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
+import { execSimpleApplicationActions } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -19,6 +19,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
+  createApplications,
   createDefaultServiceNeedOptions,
   getApplicationDecisions,
   resetServiceState
@@ -70,7 +71,7 @@ describe('Application transitions', () => {
       id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
     }
     const applicationId = fixture.id
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await execSimpleApplicationActions(
       applicationId,
@@ -132,7 +133,7 @@ describe('Application transitions', () => {
       id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
     }
     const applicationId = fixture.id
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await execSimpleApplicationActions(
       applicationId,

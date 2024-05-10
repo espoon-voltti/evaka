@@ -6,24 +6,20 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import {
-  execSimpleApplicationAction,
-  insertApplications,
-  runPendingAsyncJobs
-} from '../../dev-api'
+import { execSimpleApplicationAction, runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { Application } from '../../dev-api/types'
 import {
   cleanUpMessages,
   createApplicationPlacementPlan,
+  createApplications,
   getMessages,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevApplicationWithForm, DevEmployee } from '../../generated/api-types'
 import ApplicationDetailsPage from '../../pages/admin/application-details-page'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
@@ -38,10 +34,10 @@ let applicationReadView: ApplicationReadView
 let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 
-let singleParentApplication: Application
-let familyWithTwoGuardiansApplication: Application
-let separatedFamilyApplication: Application
-let restrictedDetailsGuardianApplication: Application
+let singleParentApplication: DevApplicationWithForm
+let familyWithTwoGuardiansApplication: DevApplicationWithForm
+let separatedFamilyApplication: DevApplicationWithForm
+let restrictedDetailsGuardianApplication: DevApplicationWithForm
 
 beforeEach(async () => {
   await resetServiceState()
@@ -80,12 +76,14 @@ beforeEach(async () => {
   }
   await cleanUpMessages()
 
-  await insertApplications([
-    singleParentApplication,
-    familyWithTwoGuardiansApplication,
-    separatedFamilyApplication,
-    restrictedDetailsGuardianApplication
-  ])
+  await createApplications({
+    body: [
+      singleParentApplication,
+      familyWithTwoGuardiansApplication,
+      separatedFamilyApplication,
+      restrictedDetailsGuardianApplication
+    ]
+  })
 
   admin = (await Fixture.employeeAdmin().save()).data
 

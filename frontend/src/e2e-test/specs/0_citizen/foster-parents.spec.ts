@@ -11,7 +11,6 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import {
   execSimpleApplicationActions,
-  insertVasuTemplateFixture,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -361,7 +360,7 @@ test('Foster parent can read a daycare curriculum and give permission to share i
   const vasuDocId = await createVasuDocument({
     body: {
       childId: fosterChild.id,
-      templateId: await insertVasuTemplateFixture()
+      templateId: await Fixture.vasuTemplate().saveAndReturnId()
     }
   })
   await publishVasuDocument({ documentId: vasuDocId })

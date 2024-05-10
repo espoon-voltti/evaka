@@ -7,11 +7,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import {
-  insertChildFixture,
-  insertFeeThresholds,
-  runPendingAsyncJobs
-} from '../../dev-api'
+import { insertChildFixture, runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -58,33 +54,35 @@ beforeEach(async () => {
   fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
   child = fixtures.familyWithTwoGuardians.children[0]
   await insertChildFixture(childZeroYo)
-  await insertFeeThresholds({
-    validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-    minIncomeThreshold2: 210200,
-    minIncomeThreshold3: 271300,
-    minIncomeThreshold4: 308000,
-    minIncomeThreshold5: 344700,
-    minIncomeThreshold6: 381300,
-    maxIncomeThreshold2: 479900,
-    maxIncomeThreshold3: 541000,
-    maxIncomeThreshold4: 577700,
-    maxIncomeThreshold5: 614400,
-    maxIncomeThreshold6: 651000,
-    incomeMultiplier2: 0.107,
-    incomeMultiplier3: 0.107,
-    incomeMultiplier4: 0.107,
-    incomeMultiplier5: 0.107,
-    incomeMultiplier6: 0.107,
-    incomeThresholdIncrease6Plus: 14200,
-    siblingDiscount2: 0.5,
-    siblingDiscount2Plus: 0.8,
-    minFee: 2700,
-    maxFee: 28900,
-    temporaryFee: 2800,
-    temporaryFeePartDay: 1500,
-    temporaryFeeSibling: 1500,
-    temporaryFeeSiblingPartDay: 800
-  })
+  await Fixture.feeThresholds()
+    .with({
+      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
+      minIncomeThreshold2: 210200,
+      minIncomeThreshold3: 271300,
+      minIncomeThreshold4: 308000,
+      minIncomeThreshold5: 344700,
+      minIncomeThreshold6: 381300,
+      maxIncomeThreshold2: 479900,
+      maxIncomeThreshold3: 541000,
+      maxIncomeThreshold4: 577700,
+      maxIncomeThreshold5: 614400,
+      maxIncomeThreshold6: 651000,
+      incomeMultiplier2: 0.107,
+      incomeMultiplier3: 0.107,
+      incomeMultiplier4: 0.107,
+      incomeMultiplier5: 0.107,
+      incomeMultiplier6: 0.107,
+      incomeThresholdIncrease6Plus: 14200,
+      siblingDiscount2: 0.5,
+      siblingDiscount2Plus: 0.8,
+      minFee: 2700,
+      maxFee: 28900,
+      temporaryFee: 2800,
+      temporaryFeePartDay: 1500,
+      temporaryFeeSibling: 1500,
+      temporaryFeeSiblingPartDay: 800
+    })
+    .save()
 
   const admin = await Fixture.employeeAdmin().save()
 

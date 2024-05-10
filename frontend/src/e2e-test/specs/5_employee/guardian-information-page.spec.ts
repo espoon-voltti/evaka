@@ -4,7 +4,6 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { insertApplications, insertInvoiceFixtures } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -24,9 +23,11 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import {
+  createApplications,
   createDaycareGroups,
   createDaycarePlacements,
   createDecisions,
+  createInvoices,
   deleteDaycareCostCenter,
   resetServiceState
 } from '../../generated/api-clients'
@@ -65,7 +66,7 @@ beforeEach(async () => {
 
   const startDate = LocalDate.of(2021, 8, 16)
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
-  await insertApplications([application, application2])
+  await createApplications({ body: [application, application2] })
   await createDecisions({
     body: [
       {
@@ -129,17 +130,19 @@ describe('Employee - Guardian Information', () => {
   })
 
   test('Invoices are listed on the admin UI guardian page', async () => {
-    await insertInvoiceFixtures([
-      invoiceFixture(
-        fixtures.enduserGuardianFixture.id,
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.careAreaFixture.id,
-        fixtures.daycareFixture.id,
-        'DRAFT',
-        LocalDate.of(2020, 1, 1),
-        LocalDate.of(2020, 1, 31)
-      )
-    ])
+    await createInvoices({
+      body: [
+        invoiceFixture(
+          fixtures.enduserGuardianFixture.id,
+          fixtures.enduserChildFixtureJari.id,
+          fixtures.careAreaFixture.id,
+          fixtures.daycareFixture.id,
+          'DRAFT',
+          LocalDate.of(2020, 1, 1),
+          LocalDate.of(2020, 1, 31)
+        )
+      ]
+    })
 
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)

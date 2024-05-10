@@ -5,7 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
+import { execSimpleApplicationActions } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
@@ -16,7 +16,10 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createApplications,
+  resetServiceState
+} from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -38,7 +41,7 @@ beforeEach(async () => {
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture
   )
-  await insertApplications([fixture])
+  await createApplications({ body: [fixture] })
   const serviceWorker = await Fixture.employeeServiceWorker().save()
 
   page = await Page.open()
@@ -120,19 +123,21 @@ describe('Employee application attachments', () => {
       .save()
 
     const applicationId = uuidv4()
-    await insertApplications([
-      {
-        ...applicationFixture(
-          enduserChildFixtureKaarina,
-          enduserGuardianFixture,
-          undefined,
-          'DAYCARE',
-          null,
-          [daycareId]
-        ),
-        id: applicationId
-      }
-    ])
+    await createApplications({
+      body: [
+        {
+          ...applicationFixture(
+            enduserChildFixtureKaarina,
+            enduserGuardianFixture,
+            undefined,
+            'DAYCARE',
+            null,
+            [daycareId]
+          ),
+          id: applicationId
+        }
+      ]
+    })
 
     await page.reload()
 

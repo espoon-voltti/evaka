@@ -225,7 +225,6 @@ const addTestData = async (date: LocalDate) => {
       areaId: bulkFixtures.careAreaFixture.id,
       type: ['CENTRE'],
       providerType: 'MUNICIPAL',
-      operationDays: [1, 2, 3, 4, 5],
       operationTimes: [
         operationTime,
         operationTime,

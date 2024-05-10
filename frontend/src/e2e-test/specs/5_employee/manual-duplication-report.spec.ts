@@ -6,9 +6,11 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { insertApplications } from '../../dev-api'
 import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createApplications,
+  resetServiceState
+} from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
@@ -37,22 +39,24 @@ describe('Manual duplication report', () => {
     })
 
     const application1Id = uuidv4()
-    await insertApplications([
-      {
-        ...applicationFixture(
-          child.data,
-          guardian.data,
-          undefined,
-          'PRESCHOOL',
-          null,
-          [preschool.data.id],
-          true,
-          'SENT',
-          mockedToday
-        ),
-        id: application1Id
-      }
-    ])
+    await createApplications({
+      body: [
+        {
+          ...applicationFixture(
+            child.data,
+            guardian.data,
+            undefined,
+            'PRESCHOOL',
+            null,
+            [preschool.data.id],
+            true,
+            'SENT',
+            mockedToday
+          ),
+          id: application1Id
+        }
+      ]
+    })
     await Fixture.decision()
       .with({
         applicationId: application1Id,
@@ -77,22 +81,24 @@ describe('Manual duplication report', () => {
       .save()
 
     const application2Id = uuidv4()
-    await insertApplications([
-      {
-        ...applicationFixture(
-          child.data,
-          guardian.data,
-          undefined,
-          'PRESCHOOL',
-          null,
-          [preschool.data.id],
-          true,
-          'SENT',
-          mockedToday
-        ),
-        id: application2Id
-      }
-    ])
+    await createApplications({
+      body: [
+        {
+          ...applicationFixture(
+            child.data,
+            guardian.data,
+            undefined,
+            'PRESCHOOL',
+            null,
+            [preschool.data.id],
+            true,
+            'SENT',
+            mockedToday
+          ),
+          id: application2Id
+        }
+      ]
+    })
     await Fixture.decision()
       .with({
         applicationId: application2Id,

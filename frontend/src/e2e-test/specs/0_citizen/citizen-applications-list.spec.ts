@@ -4,13 +4,16 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
+import { execSimpleApplicationActions } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createApplications,
+  resetServiceState
+} from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -51,7 +54,7 @@ describe('Citizen applications list', () => {
       [fixtures.daycareFixture.id],
       true
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
     const { applicationsPage } = await openApplicationsPage(
       fixtures.enduserGuardianFixture
     )
@@ -95,7 +98,7 @@ describe('Citizen applications list', () => {
       [fixtures.daycareFixture.id],
       true
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
     const { applicationsPage } = await openApplicationsPage(otherGuardian)
 
     await applicationsPage.assertChildIsShown(
@@ -120,7 +123,7 @@ describe('Citizen applications list', () => {
       [fixtures.daycareFixture.id],
       true
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
     await execSimpleApplicationActions(
       application.id,
       [
@@ -154,7 +157,7 @@ describe('Citizen applications list', () => {
       true,
       'CREATED'
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
     const { applicationsPage } = await openApplicationsPage(
       fixtures.enduserGuardianFixture
     )
@@ -174,7 +177,7 @@ describe('Citizen applications list', () => {
       true,
       'SENT'
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
     const { applicationsPage } = await openApplicationsPage(
       fixtures.enduserGuardianFixture
     )

@@ -6,7 +6,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { insertIncomeStatements } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -18,6 +17,7 @@ import {
 import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
+  createIncomeStatements,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
@@ -62,15 +62,20 @@ describe('Guardian income statements', () => {
       ]
     })
 
-    await insertIncomeStatements(child.id, [
-      {
-        type: 'CHILD_INCOME',
-        otherInfo: 'Test other info',
-        startDate: mockedNow.toLocalDate(),
-        endDate: mockedNow.toLocalDate(),
-        attachmentIds: []
+    await createIncomeStatements({
+      body: {
+        personId: child.id,
+        data: [
+          {
+            type: 'CHILD_INCOME',
+            otherInfo: 'Test other info',
+            startDate: mockedNow.toLocalDate(),
+            endDate: mockedNow.toLocalDate(),
+            attachmentIds: []
+          }
+        ]
       }
-    ])
+    })
 
     await page.goto(config.employeeUrl + '/profile/' + personId)
     const guardianPage = new GuardianInformationPage(page)

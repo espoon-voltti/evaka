@@ -12,31 +12,14 @@ import axios, {
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
-import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  FeeDecision,
-  FeeThresholds,
-  IncomeNotification,
-  Invoice
-} from 'lib-common/generated/api-types/invoicing'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
-import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
-import { CurriculumType } from 'lib-common/generated/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../config'
-import { MockVtjDataset, VoucherValueDecision } from '../generated/api-types'
+import { MockVtjDataset } from '../generated/api-types'
 
 import { PersonBuilder } from './fixtures'
-import {
-  Application,
-  Child,
-  Daycare,
-  PersonDetail,
-  PlacementPlan
-} from './types'
+import { PersonDetail } from './types'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
@@ -76,16 +59,6 @@ export const devClient = axios.create({
   baseURL: config.devApiGwUrl
 })
 
-export async function insertApplications(
-  fixture: Application[]
-): Promise<void> {
-  try {
-    await devClient.post(`/applications`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 type ApplicationActionSimple =
   | 'move-to-waiting-placement'
   | 'cancel-application'
@@ -123,165 +96,6 @@ export async function execSimpleApplicationActions(
   for (const action of actions) {
     await execSimpleApplicationAction(applicationId, action, mockedTime)
     await runPendingAsyncJobs(mockedTime)
-  }
-}
-
-export async function insertPlacementPlan(
-  fixture: PlacementPlan
-): Promise<void> {
-  try {
-    await devClient.post(`/placement-plan/${fixture.applicationId}`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
-  try {
-    await devClient.post(
-      `/daycares`,
-      fixture.map(
-        ({
-          streetAddress,
-          postalCode,
-          postOffice,
-          decisionDaycareName,
-          decisionPreschoolName,
-          decisionHandler,
-          decisionHandlerAddress,
-          ...daycare
-        }) => ({
-          ...daycare,
-          visitingAddress: {
-            streetAddress,
-            postalCode,
-            postOffice
-          },
-          decisionCustomization: {
-            daycareName: decisionDaycareName,
-            preschoolName: decisionPreschoolName,
-            handler: decisionHandler,
-            handlerAddress: decisionHandlerAddress
-          }
-        })
-      )
-    )
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertChildFixtures(fixture: Child[]): Promise<void> {
-  try {
-    await devClient.post(`/children`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export function insertReservationFixtures(
-  fixtures: DailyReservationRequest[]
-): Promise<void> {
-  try {
-    return devClient.post(`/reservations`, fixtures)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertParentshipFixtures(
-  fixtures: {
-    childId: UUID
-    headOfChildId: UUID
-    startDate: LocalDate
-    endDate: LocalDate | null
-  }[]
-): Promise<void> {
-  try {
-    await devClient.post(`/parentship`, fixtures)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function createDecisionPdf(id: string): Promise<void> {
-  try {
-    await devClient.post(`/decisions/${id}/actions/create-pdf`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function rejectDecisionByCitizen(id: string): Promise<void> {
-  try {
-    await devClient.post(`/decisions/${id}/actions/reject-by-citizen`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertFeeDecisionFixtures(
-  fixture: FeeDecision[]
-): Promise<void> {
-  try {
-    await devClient.post(`/fee-decisions`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertVoucherValueDecisionFixtures(
-  fixture: VoucherValueDecision[]
-): Promise<void> {
-  try {
-    await devClient.post(`/value-decisions`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertInvoiceFixtures(fixture: Invoice[]): Promise<void> {
-  try {
-    await devClient.post(`/invoices`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertFeeThresholds(
-  fixture: FeeThresholds
-): Promise<void> {
-  try {
-    await devClient.post('/fee-thresholds', fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export interface IncomeStatementFixture {
-  type: string
-  startDate: LocalDate
-  endDate: LocalDate | null
-  otherInfo?: string
-  attachmentIds?: UUID[]
-}
-
-export async function insertIncomeStatements(
-  personId: UUID,
-  data: IncomeStatementFixture[]
-): Promise<void> {
-  try {
-    await devClient.post(`/income-statements`, { personId, data })
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertIncomeNotification(fixture: IncomeNotification) {
-  try {
-    await devClient.post('/income-notifications', fixture)
-  } catch (e) {
-    throw new DevApiError(e)
   }
 }
 
@@ -355,22 +169,6 @@ export async function insertPedagogicalDocumentAttachment(
         { headers: form.getHeaders() }
       )
       .then((res) => res.data)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertVasuTemplateFixture(
-  body: Partial<{
-    name: string
-    valid: FiniteDateRange
-    type: CurriculumType
-    language: OfficialLanguage
-  }> = {}
-): Promise<UUID> {
-  try {
-    const { data } = await devClient.post<UUID>('/vasu/template', body)
-    return data
   } catch (e) {
     throw new DevApiError(e)
   }

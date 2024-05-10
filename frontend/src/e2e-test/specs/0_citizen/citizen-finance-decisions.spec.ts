@@ -12,10 +12,6 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  insertFeeDecisionFixtures,
-  insertVoucherValueDecisionFixtures
-} from '../../dev-api'
-import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
@@ -26,7 +22,11 @@ import {
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createFeeDecisions,
+  createVoucherValueDecisions,
+  resetServiceState
+} from '../../generated/api-clients'
 import { VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -138,17 +138,19 @@ async function insertFeeDecision(
   fixture: FeeDecision,
   childIncome: DecisionIncome | null = null
 ) {
-  await insertFeeDecisionFixtures([
-    {
-      ...fixture,
-      children: fixture.children.map((child) => ({
-        ...child,
-        childIncome
-      }))
-    }
-  ])
+  await createFeeDecisions({
+    body: [
+      {
+        ...fixture,
+        children: fixture.children.map((child) => ({
+          ...child,
+          childIncome
+        }))
+      }
+    ]
+  })
 }
 
 async function insertVoucherValueDecision(fixture: VoucherValueDecision) {
-  await insertVoucherValueDecisionFixtures([fixture])
+  await createVoucherValueDecisions({ body: [fixture] })
 }

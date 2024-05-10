@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createApplications,
+  resetServiceState
+} from '../../generated/api-clients'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -34,7 +36,7 @@ describe('Employee reads applications', () => {
       fixtures.enduserChildFixtureJari,
       fixtures.enduserGuardianFixture
     )
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)
     await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
@@ -47,7 +49,7 @@ describe('Employee reads applications', () => {
       undefined,
       'PRESCHOOL'
     )
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)
     await applicationReadView.assertPageTitle('Esiopetushakemus')
@@ -59,7 +61,7 @@ describe('Employee reads applications', () => {
       fixtures.familyWithTwoGuardians.guardian,
       fixtures.familyWithTwoGuardians.otherGuardian
     )
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)
     await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
@@ -81,7 +83,7 @@ describe('Employee reads applications', () => {
       fixtures.enduserChildFixtureKaarina,
       fixtures.enduserGuardianFixture
     )
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)
     await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')

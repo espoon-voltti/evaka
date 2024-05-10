@@ -7,18 +7,22 @@ import LocalTime from 'lib-common/local-time'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { Daycare, PersonDetail } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycareGroup, DevPlacement } from '../../generated/api-types'
+import {
+  DevDaycare,
+  DevDaycareGroup,
+  DevPlacement
+} from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import UnitsPage from '../../pages/employee/units/units'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let unitFixture: Daycare
+let unitFixture: DevDaycare
 let groupFixture: DevDaycareGroup
 let childFixture: PersonDetail
 let placementFixture: DevPlacement
@@ -75,14 +79,14 @@ describe('Employee - Units', () => {
     await unitsPage.assertRowCount(1)
     await unitsPage.nthUnitRow(0).assertFields({
       name: unitFixture.name,
-      visitingAddress: `${unitFixture.streetAddress}, ${unitFixture.postalCode}`
+      visitingAddress: `${unitFixture.visitingAddress.streetAddress}, ${unitFixture.visitingAddress.postalCode}`
     })
 
     const unitPage = await unitsPage.nthUnitRow(0).openUnit()
     const unitInfoPage = await unitPage.openUnitInformation()
     await unitInfoPage.assertUnitName(unitFixture.name)
     await unitInfoPage.assertVisitingAddress(
-      `${unitFixture.streetAddress}, ${unitFixture.postalCode} ${unitFixture.postOffice}`
+      `${unitFixture.visitingAddress.streetAddress}, ${unitFixture.visitingAddress.postalCode} ${unitFixture.visitingAddress.postOffice}`
     )
   })
 

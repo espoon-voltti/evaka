@@ -11,7 +11,7 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { insertVasuTemplateFixture, runPendingAsyncJobs } from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -82,7 +82,9 @@ beforeAll(async () => {
     })
     .save()
 
-  templateId = await insertVasuTemplateFixture()
+  templateId = await Fixture.vasuTemplate()
+    .with({ ...{} })
+    .saveAndReturnId()
 
   await insertGuardians({
     body: [
@@ -141,10 +143,12 @@ describe('Child Information - Vasu language', () => {
         endDate: placementDateRange.end
       })
       .save()
-    await insertVasuTemplateFixture({
-      language: 'SV',
-      valid: placementDateRange
-    })
+    await Fixture.vasuTemplate()
+      .with({
+        language: 'SV',
+        valid: placementDateRange
+      })
+      .saveAndReturnId()
 
     page = await openPage()
     await employeeLogin(page, admin)

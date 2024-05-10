@@ -7,12 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import {
-  insertFeeDecisionFixtures,
-  insertFeeThresholds,
-  insertParentshipFixtures,
-  insertVoucherValueDecisionFixtures
-} from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -28,6 +22,8 @@ import {
 import {
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
+  createFeeDecisions,
+  createVoucherValueDecisions,
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
@@ -58,18 +54,20 @@ describe('Person finance decisions', () => {
     const sentAtThird = sentAtSecond.addDays(1)
 
     const createFeeDecisionFixture = async (sentAt: LocalDate) => {
-      await insertFeeDecisionFixtures([
-        feeDecisionsFixture(
-          'SENT',
-          enduserGuardianFixture,
-          enduserChildFixtureKaarina,
-          daycareFixture.id,
-          null,
-          new DateRange(sentAt, sentAt),
-          sentAt.toHelsinkiDateTime(LocalTime.of(12, 0)),
-          uuidv4()
-        )
-      ])
+      await createFeeDecisions({
+        body: [
+          feeDecisionsFixture(
+            'SENT',
+            enduserGuardianFixture,
+            enduserChildFixtureKaarina,
+            daycareFixture.id,
+            null,
+            new DateRange(sentAt, sentAt),
+            sentAt.toHelsinkiDateTime(LocalTime.of(12, 0)),
+            uuidv4()
+          )
+        ]
+      })
     }
 
     await createFeeDecisionFixture(sentAtFirst)
@@ -90,19 +88,21 @@ describe('Person finance decisions', () => {
     const sentAtThird = sentAtSecond.addDays(1)
 
     const createVoucherValueDecisionFixture = async (sentAt: LocalDate) => {
-      await insertVoucherValueDecisionFixtures([
-        voucherValueDecisionsFixture(
-          uuidv4(),
-          enduserGuardianFixture.id,
-          enduserChildFixtureKaarina.id,
-          daycareFixture.id,
-          null,
-          'SENT',
-          sentAt,
-          sentAt,
-          sentAt.toHelsinkiDateTime(LocalTime.of(12, 0))
-        )
-      ])
+      await createVoucherValueDecisions({
+        body: [
+          voucherValueDecisionsFixture(
+            uuidv4(),
+            enduserGuardianFixture.id,
+            enduserChildFixtureKaarina.id,
+            daycareFixture.id,
+            null,
+            'SENT',
+            sentAt,
+            sentAt,
+            sentAt.toHelsinkiDateTime(LocalTime.of(12, 0))
+          )
+        ]
+      })
     }
 
     await createVoucherValueDecisionFixture(sentAtFirst)
@@ -122,17 +122,17 @@ describe('Person finance decisions', () => {
   test('Retroactive voucher value decisions can be generated on demand', async () => {
     const from = LocalDate.todayInSystemTz().subMonths(2)
 
-    await insertFeeThresholds(Fixture.feeThresholds().data)
+    await Fixture.feeThresholds().save()
     await createVoucherValues()
 
-    await insertParentshipFixtures([
-      {
+    await Fixture.parentship()
+      .with({
         childId: enduserChildFixtureKaarina.id,
         headOfChildId: enduserGuardianFixture.id,
         startDate: enduserChildFixtureKaarina.dateOfBirth,
         endDate: LocalDate.of(2099, 1, 1)
-      }
-    ])
+      })
+      .save()
 
     await createDaycarePlacements({
       body: [

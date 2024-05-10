@@ -5,7 +5,6 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
-import { insertChildFixtures } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -15,7 +14,7 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, PersonDetail } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
 import {
   createBackupPickup,
   createFamilyContact,
@@ -87,14 +86,16 @@ beforeEach(async () => {
 
 describe('Mobile PIN login', () => {
   test('User can login with PIN and see child sensitive info', async () => {
-    const childAdditionalInfo: Child = {
-      id: child.id,
-      allergies: 'Allergies',
-      diet: 'Diets',
-      medication: 'Medications'
-    }
-
-    await insertChildFixtures([childAdditionalInfo])
+    const childAdditionalInfo = (
+      await Fixture.child(child.id)
+        .with({
+          allergies: 'Allergies',
+          diet: 'Diets',
+          medication: 'Medications',
+          additionalInfo: ''
+        })
+        .save()
+    ).data
 
     const parentshipId = uuidv4()
     await createFridgePartner({

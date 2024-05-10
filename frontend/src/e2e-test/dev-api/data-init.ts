@@ -2,31 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { createChildren } from '../generated/api-clients'
+
 import {
   careAreaFixture,
   clubFixture,
+  clubTermFixtures,
   daycareFixture,
-  preschoolFixture,
-  enduserGuardianFixture,
+  daycareFixturePrivateVoucher,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
-  enduserChildJariOtherGuardianFixture,
-  familyWithTwoGuardians,
-  familyWithSeparatedGuardians,
-  restrictedPersonFixture,
-  personFixtureChildZeroYearOld,
-  familyWithRestrictedDetailsGuardian,
-  Fixture,
   enduserChildFixturePorriHatterRestricted,
-  familyWithDeadGuardian,
+  enduserChildJariOtherGuardianFixture,
   enduserDeceasedChildFixture,
+  enduserGuardianFixture,
   enduserNonSsnChildFixture,
-  daycareFixturePrivateVoucher,
+  familyWithDeadGuardian,
+  familyWithRestrictedDetailsGuardian,
+  familyWithSeparatedGuardians,
+  familyWithTwoGuardians,
+  Fixture,
+  personFixtureChildZeroYearOld,
+  preschoolFixture,
   preschoolTermFixtures,
-  clubTermFixtures
+  restrictedPersonFixture
 } from './fixtures'
-
-import * as devApi from '.'
 
 const areaAndPersonFixtures = {
   careAreaFixture,
@@ -107,7 +107,6 @@ export const initializeAreaAndPersonData = async (): Promise<
     .with(areaAndPersonFixtures.enduserNonSsnChildFixture)
     .with({ ssn: undefined })
     .save()
-  await devApi.insertChildFixtures([])
 
   await Promise.all(
     areaAndPersonFixtures.familyWithTwoGuardians.children.map(async (child) => {
@@ -172,16 +171,27 @@ export const initializeAreaAndPersonData = async (): Promise<
     .with(areaAndPersonFixtures.familyWithDeadGuardian.guardian)
     .saveAndUpdateMockVtj()
 
-  await devApi.insertChildFixtures([
-    areaAndPersonFixtures.enduserChildFixtureJari,
-    areaAndPersonFixtures.enduserChildFixtureKaarina,
-    areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted,
-    ...areaAndPersonFixtures.familyWithTwoGuardians.children,
-    ...areaAndPersonFixtures.familyWithSeparatedGuardians.children,
-    ...areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children,
-    ...areaAndPersonFixtures.familyWithDeadGuardian.children,
-    personFixtureChildZeroYearOld
-  ])
+  await createChildren({
+    body: [
+      areaAndPersonFixtures.enduserChildFixtureJari,
+      areaAndPersonFixtures.enduserChildFixtureKaarina,
+      areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted,
+      ...areaAndPersonFixtures.familyWithTwoGuardians.children,
+      ...areaAndPersonFixtures.familyWithSeparatedGuardians.children,
+      ...areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children,
+      ...areaAndPersonFixtures.familyWithDeadGuardian.children,
+      personFixtureChildZeroYearOld
+    ].map(({ id }) => ({
+      id,
+      additionalInfo: '',
+      allergies: '',
+      diet: '',
+      dietId: null,
+      languageAtHome: '',
+      languageAtHomeDetails: '',
+      medication: ''
+    }))
+  })
 
   return areaAndPersonFixtures
 }

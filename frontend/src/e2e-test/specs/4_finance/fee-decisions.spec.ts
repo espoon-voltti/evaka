@@ -8,7 +8,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertFeeDecisionFixtures, runPendingAsyncJobs } from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -22,7 +22,11 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
-import { insertGuardians, resetServiceState } from '../../generated/api-clients'
+import {
+  createFeeDecisions,
+  insertGuardians,
+  resetServiceState
+} from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FeeDecisionsPage,
@@ -58,15 +62,17 @@ const insertFeeDecisionFixtureAndNavigateToIt = async (
     validDuring
   )
 
-  await insertFeeDecisionFixtures([
-    {
-      ...fd,
-      children: fd.children.map((child) => ({
-        ...child,
-        childIncome
-      }))
-    }
-  ])
+  await createFeeDecisions({
+    body: [
+      {
+        ...fd,
+        children: fd.children.map((child) => ({
+          ...child,
+          childIncome
+        }))
+      }
+    ]
+  })
 
   await new EmployeeNav(page).openTab('finance')
   feeDecisionsPage = await new FinancePage(page).selectFeeDecisionsTab()

@@ -5,8 +5,8 @@
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { Daycare } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevDaycare } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   UnitDetailsPage,
@@ -21,7 +21,7 @@ import { employeeLogin } from '../../utils/user'
 describe('Employee - unit details', () => {
   let page: Page
   let unitsPage: UnitsPage
-  let daycare1: Daycare
+  let daycare1: DevDaycare
 
   beforeEach(async () => {
     await resetServiceState()

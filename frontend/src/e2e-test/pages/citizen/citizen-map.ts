@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Daycare } from '../../dev-api/types'
+import { DevDaycare } from '../../generated/api-types'
 import { delay, waitUntilEqual } from '../../utils'
 import {
   Element,
@@ -43,11 +43,11 @@ export default class CitizenMapPage {
     }
   }
 
-  listItemFor(daycare: Daycare) {
+  listItemFor(daycare: DevDaycare) {
     return this.page.find(`[data-qa="map-unit-list-${daycare.id}"]`)
   }
 
-  async testMapPopup(daycare: Daycare) {
+  async testMapPopup(daycare: DevDaycare) {
     await this.listItemFor(daycare).click()
     await this.map.markerFor(daycare).click()
     await waitUntilEqual(() => this.map.popupFor(daycare).name, daycare.name)
@@ -105,11 +105,11 @@ class Map extends Element {
     return this.zoomIn()
   }
 
-  markerFor(daycare: Daycare) {
+  markerFor(daycare: DevDaycare) {
     return this.find(`[title="${daycare.name}"]`)
   }
 
-  popupFor(daycare: Daycare): MapPopup {
+  popupFor(daycare: DevDaycare): MapPopup {
     return new MapPopup(this.find(`[data-qa="map-popup-${daycare.id}"]`))
   }
 }
@@ -140,7 +140,7 @@ class MapSearchInput extends Element {
     await new TextInput(this.find('input')).type(text)
   }
 
-  async clickUnitResult(daycare: Daycare) {
+  async clickUnitResult(daycare: DevDaycare) {
     await this.find(`[data-qa="map-search-${daycare.id}"]`).click()
   }
 

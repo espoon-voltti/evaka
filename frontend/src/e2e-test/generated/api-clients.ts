@@ -1247,31 +1247,6 @@ export async function createParentships(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createPedagogicalDocumentAttachment
-*/
-export async function createPedagogicalDocumentAttachment(
-  request: {
-    pedagogicalDocumentId: UUID,
-    employeeId: UUID
-  }
-): Promise<string> {
-  try {
-    const params = createUrlSearchParams(
-      ['employeeId', request.employeeId]
-    )
-    const { data: json } = await devClient.request<JsonOf<string>>({
-      url: uri`/pedagogical-document-attachment/${request.pedagogicalDocumentId}`.toString(),
-      method: 'POST',
-      params
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.createPedagogicalDocuments
 */
 export async function createPedagogicalDocuments(

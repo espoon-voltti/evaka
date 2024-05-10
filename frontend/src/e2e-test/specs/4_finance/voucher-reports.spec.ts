@@ -7,7 +7,6 @@ import assert from 'assert'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertVoucherValueDecisionFixtures } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -19,6 +18,7 @@ import {
 import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
+  createVoucherValueDecisions,
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
@@ -52,28 +52,30 @@ beforeEach(async () => {
   otherChild = fixtures.enduserChildFixtureJari
   guardian = fixtures.enduserGuardianFixture
 
-  await insertVoucherValueDecisionFixtures([
-    voucherValueDecisionsFixture(
-      'e2d75fa4-7359-406b-81b8-1703785ca649',
-      guardian.id,
-      child.id,
-      fixtures.daycareFixture.id,
-      null,
-      'SENT',
-      startDate,
-      endDate
-    ),
-    voucherValueDecisionsFixture(
-      'ed462aca-f74e-4384-910f-628823201023',
-      guardian.id,
-      otherChild.id,
-      daycare2Fixture.id,
-      null,
-      'SENT',
-      startDate,
-      endDate
-    )
-  ])
+  await createVoucherValueDecisions({
+    body: [
+      voucherValueDecisionsFixture(
+        'e2d75fa4-7359-406b-81b8-1703785ca649',
+        guardian.id,
+        child.id,
+        fixtures.daycareFixture.id,
+        null,
+        'SENT',
+        startDate,
+        endDate
+      ),
+      voucherValueDecisionsFixture(
+        'ed462aca-f74e-4384-910f-628823201023',
+        guardian.id,
+        otherChild.id,
+        daycare2Fixture.id,
+        null,
+        'SENT',
+        startDate,
+        endDate
+      )
+    ]
+  })
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })

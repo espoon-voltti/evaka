@@ -9,7 +9,6 @@ import LocalDate from 'lib-common/local-date'
 import config from '../../config'
 import {
   execSimpleApplicationActions,
-  insertApplications,
   runPendingAsyncJobs
 } from '../../dev-api'
 import {
@@ -18,6 +17,7 @@ import {
 } from '../../dev-api/data-init'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
 import {
+  createApplications,
   getApplicationDecisions,
   resetServiceState
 } from '../../generated/api-clients'
@@ -67,7 +67,7 @@ describe('Citizen application decisions', () => {
       true
     )
     const applicationId = application.id
-    await insertApplications([application])
+    await createApplications({ body: [application] })
 
     await execSimpleApplicationActions(
       applicationId,
@@ -124,7 +124,7 @@ describe('Citizen application decisions', () => {
     await responsePage.assertDecisionData(
       preschoolDecisionId,
       'Päätös esiopetuksesta',
-      fixtures.daycareFixture.decisionPreschoolName,
+      fixtures.daycareFixture.decisionCustomization.preschoolName,
       'Vahvistettavana huoltajalla'
     )
 
@@ -135,7 +135,7 @@ describe('Citizen application decisions', () => {
     await responsePage.assertDecisionData(
       preschoolDaycareDecisionId,
       'Päätös liittyvästä varhaiskasvatuksesta',
-      fixtures.daycareFixture.decisionDaycareName,
+      fixtures.daycareFixture.decisionCustomization.daycareName,
       'Vahvistettavana huoltajalla'
     )
 
@@ -158,7 +158,7 @@ describe('Citizen application decisions', () => {
       true
     )
     const applicationId = application.id
-    await insertApplications([application])
+    await createApplications({ body: [application] })
 
     await execSimpleApplicationActions(
       applicationId,
@@ -228,7 +228,7 @@ describe('Citizen application decisions', () => {
       [fixtures.daycareFixture.id],
       true
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
 
     await execSimpleApplicationActions(
       application.id,
@@ -496,7 +496,7 @@ describe('Citizen assistance decisions', () => {
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.selectedUnit,
-      `${fixtures.daycareFixture.name}\n${fixtures.daycareFixture.streetAddress}\n${fixtures.daycareFixture.postalCode} ${fixtures.daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+      `${fixtures.daycareFixture.name}\n${fixtures.daycareFixture.visitingAddress.streetAddress}\n${fixtures.daycareFixture.visitingAddress.postalCode} ${fixtures.daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.motivationForDecision,

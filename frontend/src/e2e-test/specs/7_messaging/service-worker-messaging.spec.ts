@@ -7,7 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { insertApplications, runPendingAsyncJobs } from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -18,6 +18,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import {
+  createApplications,
   createMessageAccounts,
   resetServiceState
 } from '../../generated/api-clients'
@@ -88,7 +89,7 @@ describe('Service Worker Messaging', () => {
         ),
         sentDate: mockedToday
       }
-      await insertApplications([applFixture])
+      await createApplications({ body: [applFixture] })
     })
 
     it('should be possible for service workers to send messages relating to an application', async () => {
