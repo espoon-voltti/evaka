@@ -24,6 +24,7 @@ import fi.espoo.voltti.logging.loggers.info
 import java.net.URI
 import java.time.LocalDate
 import mu.KotlinLogging
+import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -56,6 +57,30 @@ class VardaUpdateServiceNew(
     //           basic_auth: "<your-municipality-basic-auth-credentials>"
     //           local_dev_port: 65443
     //
+    private val httpClient: OkHttpClient =
+        if (vardaEnv.localDevPort != null) {
+            OkHttpClient.Builder()
+                // Disable ssl certificate check
+                .hostnameVerifier { _, _ -> true }
+                // Rewrite requests to Varda to go through the local port
+                .addInterceptor { chain ->
+                    val originalRequest = chain.request()
+                    val originalUri = originalRequest.url.toUri()
+                    val proxyUri =
+                        originalUri.copy(host = "localhost", port = vardaEnv.localDevPort)
+                    val newRequest =
+                        originalRequest
+                            .newBuilder()
+                            .url(proxyUri.toString())
+                            .header("Host", vardaEnv.url.host)
+                            .build()
+                    chain.proceed(newRequest)
+                }
+                .build()
+        } else {
+            OkHttpClient()
+        }
+
     private val fuel: FuelManager =
         if (vardaEnv.localDevPort != null) {
             // Required to allow overriding the Host header
@@ -79,7 +104,7 @@ class VardaUpdateServiceNew(
     private val vardaClient =
         VardaClient(
             VardaTempTokenProvider(fuel, jsonMapper, vardaEnv),
-            fuel,
+            httpClient,
             jsonMapper,
             vardaEnv.url
         )
