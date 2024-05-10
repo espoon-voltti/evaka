@@ -39,6 +39,8 @@ let childId: UUID
 let staff: DevEmployee
 let unitSupervisor: DevEmployee
 let fixtures: AreaAndPersonFixtures
+let serviceNeedOptionId1: UUID
+let serviceNeedOptionId2: UUID
 
 const mockedDate = LocalDate.of(2022, 5, 21)
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
@@ -71,7 +73,7 @@ beforeEach(async () => {
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.enduserChildFixtureJari.id
 
-  const daycarePlacementFixture = await Fixture.placement()
+  const daycarePlacementFixture1 = await Fixture.placement()
     .with({
       childId,
       unitId,
@@ -81,14 +83,14 @@ beforeEach(async () => {
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycarePlacementId: daycarePlacementFixture1.data.id,
       daycareGroupId: daycareGroupFixture.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
     .save()
 
-  await Fixture.placement()
+  const daycarePlacementFixture2 = await Fixture.placement()
     .with({
       childId: fixtures.enduserChildFixtureKaarina.id,
       unitId,
@@ -96,16 +98,36 @@ beforeEach(async () => {
       endDate: mockedDate.addYears(1)
     })
     .save()
-    .then((placement) =>
-      Fixture.groupPlacement()
-        .with({
-          daycarePlacementId: placement.data.id,
-          daycareGroupId: daycareGroupFixture.id,
-          startDate: mockedDate,
-          endDate: mockedDate.addYears(1)
-        })
-        .save()
-    )
+  await Fixture.groupPlacement()
+    .with({
+      daycarePlacementId: daycarePlacementFixture2.data.id,
+      daycareGroupId: daycareGroupFixture.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
+    })
+    .save()
+
+  const serviceNeedOptionFixture1 = await Fixture.serviceNeedOption().save()
+  const serviceNeedOptionFixture2 = await Fixture.serviceNeedOption().save()
+  serviceNeedOptionId1 = serviceNeedOptionFixture1.data.id
+  serviceNeedOptionId2 = serviceNeedOptionFixture2.data.id
+
+  await Fixture.serviceNeed()
+    .with({
+      placementId: daycarePlacementFixture1.data.id,
+      optionId: serviceNeedOptionFixture1.data.id,
+      confirmedBy: unitSupervisor.id
+    })
+    .save()
+
+  await Fixture.serviceNeed()
+    .with({
+      placementId: daycarePlacementFixture2.data.id,
+      optionId: serviceNeedOptionFixture2.data.id,
+      confirmedBy: unitSupervisor.id,
+      shiftCare: 'FULL'
+    })
+    .save()
 
   await insertGuardians({
     body: [
@@ -143,6 +165,14 @@ async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
   await enduserLogin(citizenPage)
+}
+
+async function initOtherCitizenPage(mockedTime: HelsinkiDateTime) {
+  citizenPage = await Page.open({ mockedTime })
+  await enduserLogin(
+    citizenPage,
+    fixtures.enduserChildJariOtherGuardianFixture.ssn
+  )
 }
 
 async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
@@ -334,9 +364,85 @@ describe('Additional filters', () => {
     await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(unitSupervisorPage)
-    await messagesPage.unitRecieved.click()
+    await messagesPage.unitReceived.click()
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendButton.waitUntilVisible()
     expect(await messageEditor.filtersButtonCount).toBe(0)
+  })
+
+  test('Citizen receives a message when recipient filter matches', async () => {
+    await insertGuardians({
+      body: [
+        {
+          childId: childId,
+          guardianId: fixtures.enduserChildJariOtherGuardianFixture.id
+        }
+      ]
+    })
+    await initUnitSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const message = {
+      title: 'Ilmoitus palveluntarpeelle 1',
+      content: 'Ilmoituksen sisältö palveluntarpeelle 1',
+      receivers: [fixtures.daycareFixture.id],
+      yearsOfBirth: [2016],
+      serviceNeedOptions: [serviceNeedOptionId1]
+    }
+    const messageEditor = await new MessagesPage(
+      unitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage(message)
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    await initOtherCitizenPage(mockedDateAt11)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertThreadContent(message)
+    await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 1)
+  })
+
+  test(`Citizen doesn't receive a message when recipient filter doesn't match`, async () => {
+    await insertGuardians({
+      body: [
+        {
+          childId: childId,
+          guardianId: fixtures.enduserChildJariOtherGuardianFixture.id
+        }
+      ]
+    })
+    await initUnitSupervisorPage(mockedDateAt10)
+    await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+    const message = {
+      title: 'Ilmoitus palveluntarpeelle 2',
+      content: 'Ilmoituksen sisältö palveluntarpeelle 2',
+      receivers: [fixtures.daycareFixture.id]
+    }
+    let messageEditor = await new MessagesPage(
+      unitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...message,
+      yearsOfBirth: [2017]
+    })
+    messageEditor = await new MessagesPage(
+      unitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...message,
+      serviceNeedOptionIds: [serviceNeedOptionId2]
+    })
+    messageEditor = await new MessagesPage(
+      unitSupervisorPage
+    ).openMessageEditor()
+    await messageEditor.sendNewMessage({
+      ...message,
+      shiftcare: true
+    })
+    await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+    await initOtherCitizenPage(mockedDateAt11)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.assertInboxIsEmpty()
   })
 })

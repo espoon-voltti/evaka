@@ -113,7 +113,7 @@ export default React.memo(function MessagesPage({
   }, [selectedDraft])
 
   const [receivers, setReceivers] = useState<MessageReceiversResponse[]>()
-  const serviceNeeds = useQueryResult(serviceNeedsQuery())
+  const serviceNeedOptions = useQueryResult(serviceNeedsQuery())
 
   const hideEditor = useCallback(() => {
     setShowEditor(false)
@@ -234,10 +234,10 @@ export default React.memo(function MessagesPage({
           prefilledOrReceivers &&
           selectedAccount && (
             <>
-              {renderResult(serviceNeeds, (serviceNeeds) => (
+              {renderResult(serviceNeedOptions, (serviceNeedOptions) => (
                 <MessageEditor
                   availableReceivers={prefilledOrReceivers}
-                  serviceNeeds={serviceNeeds}
+                  serviceNeedOptions={serviceNeedOptions}
                   defaultSender={{
                     value: selectedAccount.account.id,
                     label: selectedAccount.account.name

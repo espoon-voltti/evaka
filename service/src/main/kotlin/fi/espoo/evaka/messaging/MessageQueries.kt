@@ -1227,13 +1227,13 @@ fun Database.Read.getMessageAccountsForRecipients(
             if (filters?.yearsOfBirth?.isNotEmpty() == true) {
                 PredicateSql {
                     where(
-                        "date_part('year', p.date_of_birth) = ANY('{${filters.yearsOfBirth.joinToString(",")}}')"
+                        "date_part('year', p.date_of_birth) = ANY(${bind(filters.yearsOfBirth)})"
                     )
                 }
             } else null,
-            if (filters?.serviceNeedIds?.isNotEmpty() == true) {
+            if (filters?.serviceNeedOptionIds?.isNotEmpty() == true) {
                 PredicateSql {
-                    where("sno.id = ANY('{${filters.serviceNeedIds.joinToString(",")}}')")
+                    where("sno.id = ANY(${bind(filters.serviceNeedOptionIds)})")
                 }
             } else null,
             if (filters?.shiftCare == true && filters.intermittentShiftCare) {

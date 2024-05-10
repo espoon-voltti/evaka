@@ -11,13 +11,13 @@ import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -329,7 +329,7 @@ class MessageController(
 
     data class PostMessageFilters(
         val yearsOfBirth: List<Int> = listOf(),
-        val serviceNeedIds: List<Id<*>> = listOf(),
+        val serviceNeedOptionIds: List<ServiceNeedOptionId> = listOf(),
         val shiftCare: Boolean = false,
         val intermittentShiftCare: Boolean = false,
         val familyDaycare: Boolean = false

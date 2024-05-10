@@ -42,7 +42,7 @@ export default class MessagesPage {
   )
   #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
   #unitAccount = this.page.find('[data-qa="unit-accounts"]')
-  unitRecieved = this.#unitAccount.find('[data-qa="message-box-row-received"]')
+  unitReceived = this.#unitAccount.find('[data-qa="message-box-row-received"]')
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
@@ -191,7 +191,7 @@ export class MessageEditor extends Element {
   intermittent = new Checkbox(
     this.findByDataQa('checkbox-intermittent-shiftcare')
   )
-  family = new Checkbox(this.findByDataQa('checkbox-family-daycare'))
+  familyDaycare = new Checkbox(this.findByDataQa('checkbox-family-daycare'))
 
   async sendNewMessage(message: {
     title: string
@@ -202,6 +202,10 @@ export class MessageEditor extends Element {
     sender?: string
     receivers?: string[]
     confirmManyRecipients?: boolean
+    yearsOfBirth?: number[]
+    serviceNeedOptionIds?: string[]
+    shiftcare?: boolean
+    familyDaycare?: boolean
   }) {
     const attachmentCount = message.attachmentCount ?? 0
 
@@ -229,6 +233,39 @@ export class MessageEditor extends Element {
     }
     if (message.sensitive ?? false) {
       await this.sensitive.check()
+    }
+
+    if (
+      message.yearsOfBirth ||
+      message.serviceNeedOptionIds ||
+      message.shiftcare ||
+      message.familyDaycare
+    ) {
+      await this.filtersButton.click()
+    }
+
+    if (message.yearsOfBirth) {
+      await this.yearsOfBirthSelection.open()
+      for (const year of message.yearsOfBirth) {
+        await this.yearsOfBirthSelection.option(String(year)).check()
+      }
+      await this.yearsOfBirthSelection.close()
+    }
+
+    if (message.serviceNeedOptionIds) {
+      await this.serviceNeedSelection.open()
+      for (const serviceNeedOption of message.serviceNeedOptionIds) {
+        await this.serviceNeedSelection.option(serviceNeedOption).check()
+      }
+      await this.serviceNeedSelection.close()
+    }
+
+    if (message.shiftcare ?? false) {
+      await this.shiftcare.check()
+    }
+
+    if (message.familyDaycare ?? false) {
+      await this.familyDaycare.check()
     }
 
     if (attachmentCount > 0) {
@@ -289,6 +326,6 @@ export class MessageEditor extends Element {
     await this.yearsOfBirthSelection.waitUntilVisible()
     await this.serviceNeedSelection.waitUntilVisible()
     await this.shiftcare.waitUntilVisible()
-    await this.family.waitUntilVisible()
+    await this.familyDaycare.waitUntilVisible()
   }
 }

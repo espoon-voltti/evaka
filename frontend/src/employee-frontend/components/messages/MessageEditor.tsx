@@ -4,12 +4,12 @@
 
 import classNames from 'classnames'
 import isEqual from 'lodash/isEqual'
-import range from 'lodash/range'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   AuthorizedMessageAccount,
@@ -20,6 +20,7 @@ import {
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -135,7 +136,7 @@ type Filters = PostMessageFilters
 
 const getEmptyFilters = (): Filters => ({
   yearsOfBirth: [],
-  serviceNeedIds: [],
+  serviceNeedOptionIds: [],
   shiftCare: false,
   intermittentShiftCare: false,
   familyDaycare: false
@@ -187,7 +188,7 @@ interface Props {
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
-  serviceNeeds: ServiceNeedOption[]
+  serviceNeedOptions: ServiceNeedOption[]
 }
 
 export default React.memo(function MessageEditor({
@@ -205,7 +206,7 @@ export default React.memo(function MessageEditor({
   saveMessageAttachment,
   sending,
   defaultTitle = '',
-  serviceNeeds
+  serviceNeedOptions
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -216,17 +217,19 @@ export default React.memo(function MessageEditor({
       draftContent?.recipientIds
     )
   )
-  const [filtersVisible, setFiltersVisible] = useState(false)
+  const [filtersVisible, useFiltersVisible] = useBoolean(false)
   const [yearOfBirthTree, setYearOfBirthTree] = useState<TreeNode[]>(
-    range(0, 7).map<TreeNode>((n) => ({
-      text: new Date().getFullYear() - n + '',
-      key: new Date().getFullYear() - n + '',
+    [...Array(8).keys()].map<TreeNode>((n) => ({
+      text: LocalDate.todayInHelsinkiTz().year - n + '',
+      key: LocalDate.todayInHelsinkiTz().year - n + '',
       checked: false,
       children: []
     }))
   )
-  const [serviceNeedTree, setServiceNeedTree] = useState<TreeNode[]>(
-    serviceNeeds.map<TreeNode>((sno) => ({
+  const [serviceNeedOptionTree, setServiceNeedOptionTree] = useState<
+    TreeNode[]
+  >(
+    serviceNeedOptions.map<TreeNode>((sno) => ({
       text: sno.nameFi,
       key: sno.id,
       checked: false,
@@ -345,16 +348,10 @@ export default React.memo(function MessageEditor({
     },
     [message, senderAccountType, setDraft]
   )
-  const toggleFilters = useCallback(
-    () => setFiltersVisible((prev) => !prev),
-    []
-  )
   const handleBirthYearChange = useCallback(
     (birthYears: TreeNode[]) => {
       setYearOfBirthTree(birthYears)
-      const selected = birthYears.filter((year) => {
-        year.checked
-      })
+      const selected = birthYears.filter((year) => year.checked)
 
       const updatedFilters = {
         ...filters,
@@ -362,22 +359,20 @@ export default React.memo(function MessageEditor({
       }
       setFilters(updatedFilters)
     },
-    [filters]
+    [filters, setFilters]
   )
   const handleServiceNeedChange = useCallback(
-    (serviceNeeds: TreeNode[]) => {
-      setServiceNeedTree(serviceNeeds)
-      const selected = serviceNeeds.filter((need) => {
-        need.checked
-      })
+    (serviceNeedOptions: TreeNode[]) => {
+      setServiceNeedOptionTree(serviceNeedOptions)
+      const selected = serviceNeedOptions.filter((need) => need.checked)
 
       const updatedFilters = {
         ...filters,
-        serviceNeedIds: selected.map((n) => n.key)
+        serviceNeedOptionIds: selected.map((n) => n.key)
       }
       setFilters(updatedFilters)
     },
-    [filters]
+    [filters, setFilters]
   )
 
   const [expandedView, setExpandedView] = useState(false)
@@ -696,7 +691,7 @@ export default React.memo(function MessageEditor({
               <RightAlignedRow>
                 <InlineButton
                   data-qa="filters-btn"
-                  onClick={toggleFilters}
+                  onClick={useFiltersVisible.toggle}
                   text={
                     filtersVisible
                       ? i18n.messages.messageEditor.filters.hideFilters
@@ -730,7 +725,7 @@ export default React.memo(function MessageEditor({
                           {i18n.messages.messageEditor.filters.serviceNeed}
                         </Bold>
                         <TreeDropdown
-                          tree={serviceNeedTree}
+                          tree={serviceNeedOptionTree}
                           onChange={handleServiceNeedChange}
                           placeholder={
                             i18n.messages.messageEditor.selectPlaceholder

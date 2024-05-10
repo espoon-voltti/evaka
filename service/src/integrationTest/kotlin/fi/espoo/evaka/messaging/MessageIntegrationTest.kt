@@ -1227,8 +1227,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 2,
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }
@@ -1250,7 +1249,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
             filters =
                 MessageController.PostMessageFilters(
-                    serviceNeedIds =
+                    serviceNeedOptionIds =
                         listOf(snDefaultPartDayDaycare.id, snDefaultFiveYearOldsPartDayDaycare.id)
                 ),
             user = messager,
@@ -1260,8 +1259,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 3,
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }
@@ -1293,8 +1291,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 3,
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }
@@ -1322,8 +1319,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 2,
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }
@@ -1342,7 +1338,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 filters =
                     MessageController.PostMessageFilters(
                         yearsOfBirth = listOf(2018),
-                        serviceNeedIds = listOf()
+                        serviceNeedOptionIds = listOf()
                     )
             )
         assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 2), response)

@@ -4324,7 +4324,7 @@ export const fi = {
           intermittent: 'Satunnainen vuorohoito'
         },
         familyDaycare: {
-          heading: 'Perhepäivätoito',
+          heading: 'Perhepäivähoito',
           label: 'Perhepäivähoito'
         }
       },
