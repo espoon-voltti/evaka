@@ -28,18 +28,17 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.dev.updateDaycareOperationTimes
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -1781,12 +1780,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `backup care children have correct service needs`() {
         db.transaction { tx ->
             val placementId =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = placementStart,
-                    endDate = placementEnd,
-                    type = PlacementType.DAYCARE
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
             tx.insert(
                 DevBackupCare(
@@ -1859,18 +1860,24 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 )
                 .let { placementId ->
                     if (serviceNeedOptionId != null) {
-                        tx.insertTestServiceNeed(
-                            optionId = serviceNeedOptionId,
-                            period = placementPeriod,
-                            placementId = placementId,
-                            confirmedBy = EvakaUserId(employeeId.raw),
+                        tx.insert(
+                            DevServiceNeed(
+                                placementId = placementId,
+                                startDate = placementPeriod.start,
+                                endDate = placementPeriod.end,
+                                optionId = serviceNeedOptionId,
+                                confirmedBy = EvakaUserId(employeeId.raw),
+                                confirmedAt = HelsinkiDateTime.now()
+                            )
                         )
                     }
-                    tx.insertTestDaycareGroupPlacement(
-                        daycarePlacementId = placementId,
-                        groupId = testDaycareGroup.id,
-                        startDate = placementPeriod.start,
-                        endDate = placementPeriod.end
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = testDaycareGroup.id,
+                            startDate = placementPeriod.start,
+                            endDate = placementPeriod.end
+                        )
                     )
                 }
         }

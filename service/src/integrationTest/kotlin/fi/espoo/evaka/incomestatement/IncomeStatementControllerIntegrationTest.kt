@@ -21,10 +21,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
+import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -262,32 +262,40 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val createdAt = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 0, 0))
 
         db.transaction { tx ->
-            tx.insertTestParentship(
-                citizenId,
-                testChild_1.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = citizenId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId1,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
 
-            tx.insertTestParentship(
-                testAdult_2.id,
-                testChild_2.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestParentship(
-                testAdult_2.id,
-                testChild_3.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_3.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
             tx.insertTestPartnership(
                 testAdult_2.id,
@@ -296,39 +304,47 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 endDate = placementEnd,
                 createdAt = createdAt
             )
-            tx.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare2.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId2,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId3,
-                childId = testChild_3.id,
-                unitId = testDaycare2.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId3,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_3.id,
+                    unitId = testDaycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
 
-            tx.insertTestParentship(
-                testAdult_4.id,
-                testChild_4.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_4.id,
+                    headOfChildId = testAdult_4.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
             tx.insertApplication(testAdult_4, testChild_4)
 
             tx.insertGuardian(testAdult_5.id, testChild_5.id)
-            tx.insertTestPlacement(
-                id = placementId4,
-                childId = testChild_5.id,
-                unitId = testDaycare2.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId4,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_5.id,
+                    unitId = testDaycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
 
@@ -428,34 +444,42 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val placementStart = LocalDate.now().minusDays(30)
         val placementEnd = LocalDate.now().plusDays(30)
         db.transaction { tx ->
-            tx.insertTestParentship(
-                citizenId,
-                testChild_1.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = citizenId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId1,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
 
-            tx.insertTestParentship(
-                testAdult_2.id,
-                testChild_2.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare2.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId2,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
 
@@ -496,34 +520,42 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val placementStart = LocalDate.now().minusDays(30)
         val placementEnd = LocalDate.now().plusDays(30)
         db.transaction { tx ->
-            tx.insertTestParentship(
-                citizenId,
-                testChild_1.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = citizenId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testPurchasedDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId1,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testPurchasedDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
 
-            tx.insertTestParentship(
-                testAdult_2.id,
-                testChild_2.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId2,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
 
@@ -560,34 +592,42 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val placementStart = LocalDate.now().minusDays(30)
         val placementEnd = LocalDate.now().plusDays(30)
         db.transaction { tx ->
-            tx.insertTestParentship(
-                citizenId,
-                testChild_1.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = citizenId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId1,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
 
-            tx.insertTestParentship(
-                testAdult_2.id,
-                testChild_2.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId2,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
 
@@ -662,44 +702,54 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val placement2Start = LocalDate.of(2022, 10, 19)
         val placement2End = LocalDate.of(2023, 1, 17)
         db.transaction { tx ->
-            tx.insertTestParentship(
-                citizenId,
-                testChild_1.id,
-                startDate = placement1Start,
-                endDate = placement1End
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = citizenId,
+                    startDate = placement1Start,
+                    endDate = placement1End
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placement1Start,
-                endDate = placement1End,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId1,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placement1Start,
+                    endDate = placement1End
+                )
             )
 
-            tx.insertTestParentship(
-                testAdult_2.id,
-                testChild_2.id,
-                startDate = placement2Start,
-                endDate = placement2End
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placement2Start,
+                    endDate = placement2End
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = placement2Start,
-                endDate = placement2End,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId2,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = placement2Start,
+                    endDate = placement2End
+                )
             )
 
             tx.insert(DevGuardian(guardianId = testAdult_3.id, childId = testChild_3.id))
-            tx.insertTestPlacement(
-                id = placementId3,
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
-                startDate = placement2Start,
-                endDate = placement2End,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId3,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = placement2Start,
+                    endDate = placement2End
+                )
             )
         }
 
@@ -823,34 +873,42 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val placementStart = LocalDate.now().minusDays(30)
         val placementEnd = LocalDate.now().plusDays(30)
         db.transaction { tx ->
-            tx.insertTestParentship(
-                citizenId,
-                testChild_1.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = citizenId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId1,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
 
-            tx.insertTestParentship(
-                testAdult_2.id,
-                testChild_2.id,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = placementId2,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
 

@@ -32,10 +32,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -70,11 +70,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction {
             it.insertGeneralTestFixtures()
-            it.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_1.id,
-                startDate = testChild_1.dateOfBirth,
-                endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = testChild_1.dateOfBirth,
+                    endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
+                )
             )
             it.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
         }
@@ -395,11 +397,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `Legacy PDF can not be downloaded if head of family has restricted details`() {
         db.transaction {
             // testAdult_7 has restricted details on
-            it.insertTestParentship(
-                headOfChild = testAdult_7.id,
-                childId = testChild_2.id,
-                startDate = testChild_2.dateOfBirth,
-                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_7.id,
+                    startDate = testChild_2.dateOfBirth,
+                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+                )
             )
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
         }
@@ -425,11 +429,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction {
             it.insert(testChildRestricted, DevPersonType.RAW_ROW)
-            it.insertTestParentship(
-                headOfChild = testAdult_3.id,
-                childId = testChildRestricted.id,
-                startDate = testChildRestricted.dateOfBirth,
-                endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    childId = testChildRestricted.id,
+                    headOfChildId = testAdult_3.id,
+                    startDate = testChildRestricted.dateOfBirth,
+                    endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+                )
             )
         }
         createPlacement(startDate, endDate, childId = testChildRestricted.id)
@@ -443,11 +449,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `PDF without contact info can be downloaded even if head of family has restricted details`() {
         db.transaction {
             // testAdult_7 has restricted details on
-            it.insertTestParentship(
-                headOfChild = testAdult_7.id,
-                childId = testChild_2.id,
-                startDate = testChild_2.dateOfBirth,
-                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_7.id,
+                    startDate = testChild_2.dateOfBirth,
+                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+                )
             )
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
         }
@@ -468,11 +476,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction {
             it.insert(testChildRestricted, DevPersonType.RAW_ROW)
-            it.insertTestParentship(
-                headOfChild = testAdult_3.id,
-                childId = testChildRestricted.id,
-                startDate = testChildRestricted.dateOfBirth,
-                endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    childId = testChildRestricted.id,
+                    headOfChildId = testAdult_3.id,
+                    startDate = testChildRestricted.dateOfBirth,
+                    endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+                )
             )
         }
         createPlacement(startDate, endDate, childId = testChildRestricted.id)
@@ -485,11 +495,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `Legacy PDF can be downloaded by admin even if someone in the family has restricted details`() {
         db.transaction {
             // testAdult_7 has restricted details on
-            it.insertTestParentship(
-                headOfChild = testAdult_7.id,
-                childId = testChild_2.id,
-                startDate = testChild_2.dateOfBirth,
-                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_7.id,
+                    startDate = testChild_2.dateOfBirth,
+                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+                )
             )
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
         }

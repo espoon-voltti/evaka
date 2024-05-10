@@ -31,12 +31,11 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -106,30 +105,38 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(DevHoliday(today.plusDays(3)))
 
             placementId =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = placementStart,
-                    endDate = placementEnd
-                )
-            groupPlacementId =
-                tx.insertTestDaycareGroupPlacement(
-                    daycarePlacementId = placementId,
-                    groupId = groupId,
-                    startDate = placementStart,
-                    endDate = placementEnd
-                )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId =
-                    tx.insertTestPlacement(
-                        childId = testChild_2.id,
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
                         endDate = placementEnd
-                    ),
-                groupId = groupId,
-                startDate = placementStart,
-                endDate = placementEnd
+                    )
+                )
+            groupPlacementId =
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId =
+                        tx.insert(
+                            DevPlacement(
+                                childId = testChild_2.id,
+                                unitId = testDaycare.id,
+                                startDate = placementStart,
+                                endDate = placementEnd
+                            )
+                        ),
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
     }
@@ -956,23 +963,29 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insertGuardian(testAdult_3.id, testChild_3.id)
             val placementId =
-                tx.insertTestPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
                     startDate = placementStart,
+                    endDate = backupCareStart.minusDays(1)
+                )
+            )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
+                    startDate = backupCareEnd.plusDays(1),
                     endDate = placementEnd
                 )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                startDate = placementStart,
-                endDate = backupCareStart.minusDays(1)
-            )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                startDate = backupCareEnd.plusDays(1),
-                endDate = placementEnd
             )
         }
         this.backupCareController.createBackupCare(

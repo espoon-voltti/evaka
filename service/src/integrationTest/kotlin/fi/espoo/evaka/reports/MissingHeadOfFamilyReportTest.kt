@@ -15,8 +15,8 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -63,17 +63,21 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `has a head of family for the whole duration of placements`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate.plusDays(3),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate.plusDays(3)
+                )
             )
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate.plusDays(6),
-                endDate = startDate.plusDays(9),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate.plusDays(6),
+                    endDate = startDate.plusDays(9)
+                )
             )
         }
 
@@ -101,17 +105,21 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `has a head of family for a part of placements`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate.plusDays(3),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate.plusDays(3)
+                )
             )
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate.plusDays(6),
-                endDate = startDate.plusDays(9),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate.plusDays(6),
+                    endDate = startDate.plusDays(9)
+                )
             )
         }
 
@@ -143,17 +151,21 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `has a foster parent for the whole duration of placements`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate.plusDays(3),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate.plusDays(3)
+                )
             )
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate.plusDays(6),
-                endDate = startDate.plusDays(9),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate.plusDays(6),
+                    endDate = startDate.plusDays(9)
+                )
             )
         }
 
@@ -181,17 +193,21 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `has a foster parent for a part of placements`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate.plusDays(3),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate.plusDays(3)
+                )
             )
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate.plusDays(6),
-                endDate = startDate.plusDays(9),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate.plusDays(6),
+                    endDate = startDate.plusDays(9)
+                )
             )
         }
 
@@ -223,17 +239,21 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `mixed head of family and foster parent`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate.plusDays(3),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate.plusDays(3)
+                )
             )
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate.plusDays(6),
-                endDate = startDate.plusDays(9),
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate.plusDays(6),
+                    endDate = startDate.plusDays(9)
+                )
             )
         }
 
@@ -351,11 +371,13 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `child with placement without head of family is shown`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate
+                )
             )
         }
 
@@ -368,11 +390,13 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `child with placement who is deceased is not shown`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate
+                )
             )
             @Suppress("DEPRECATION")
             it.createUpdate("UPDATE person set date_of_death = :dod")
@@ -386,11 +410,13 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `child with head of family for each day is not shown`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate
+                )
             )
             it.insert(
                 DevFridgeChild(
@@ -418,11 +444,13 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     )
                 }
                 .execute()
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate
+                )
             )
         }
 
@@ -436,17 +464,21 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `works with multiple children`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = startDate,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = startDate
+                )
             )
-            it.insertTestPlacement(
-                childId = testChild_2.id,
-                unitId = testDaycare2.id,
-                startDate = startDate,
-                endDate = startDate,
+            it.insert(
+                DevPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare2.id,
+                    startDate = startDate,
+                    endDate = startDate
+                )
             )
         }
 

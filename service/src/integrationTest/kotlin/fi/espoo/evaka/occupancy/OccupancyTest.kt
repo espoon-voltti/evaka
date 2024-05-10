@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.dev.DevAssistanceFactor
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -35,7 +36,6 @@ import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.DevStaffAttendance
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestCaretakers
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -91,8 +91,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             it.insert(DevDaycareGroup(id = daycareGroup1, daycareId = daycareInArea1))
             it.insert(DevDaycareGroup(id = daycareGroup2, daycareId = daycareInArea1))
-            it.insertTestCaretakers(groupId = daycareGroup1, amount = 3.0)
-            it.insertTestCaretakers(groupId = daycareGroup2, amount = 3.0)
+            it.insert(DevDaycareCaretaker(groupId = daycareGroup1, amount = 3.0.toBigDecimal()))
+            it.insert(DevDaycareCaretaker(groupId = daycareGroup2, amount = 3.0.toBigDecimal()))
 
             it.insert(
                 DevDaycare(
@@ -104,8 +104,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
             it.insert(DevDaycareGroup(id = familyGroup1, daycareId = familyUnitInArea2))
             it.insert(DevDaycareGroup(id = familyGroup2, daycareId = familyUnitInArea2))
-            it.insertTestCaretakers(groupId = familyGroup1, amount = 3.0)
-            it.insertTestCaretakers(groupId = familyGroup2, amount = 3.0)
+            it.insert(DevDaycareCaretaker(groupId = familyGroup1, amount = 3.0.toBigDecimal()))
+            it.insert(DevDaycareCaretaker(groupId = familyGroup2, amount = 3.0.toBigDecimal()))
         }
     }
 

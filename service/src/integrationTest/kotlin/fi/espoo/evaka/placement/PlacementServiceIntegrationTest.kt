@@ -8,19 +8,19 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testArea2
@@ -86,11 +86,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             daycarePlacementId = oldPlacement.id
 
             groupPlacementId =
-                it.insertTestDaycareGroupPlacement(
-                    daycarePlacementId = daycarePlacementId,
-                    groupId = groupId1,
-                    startDate = placementStart,
-                    endDate = placementEnd
+                it.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = daycarePlacementId,
+                        daycareGroupId = groupId1,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
         }
     }
@@ -869,17 +871,24 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 .first()
         val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
-            it.insertTestDaycareGroupPlacement(
-                groupId = groupId,
-                daycarePlacementId = oldPlacement.id,
-                startDate = oldPlacement.startDate,
-                endDate = oldPlacement.endDate
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = oldPlacement.id,
+                    daycareGroupId = groupId,
+                    startDate = oldPlacement.startDate,
+                    endDate = oldPlacement.endDate
+                )
             )
-            it.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                placementId = oldPlacement.id,
-                period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
-                optionId = snDefaultDaycare.id
+            val period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate)
+            it.insert(
+                DevServiceNeed(
+                    placementId = oldPlacement.id,
+                    startDate = period.start,
+                    endDate = period.end,
+                    optionId = snDefaultDaycare.id,
+                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
         }
 
@@ -935,17 +944,24 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 .first()
         val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
-            it.insertTestDaycareGroupPlacement(
-                groupId = groupId,
-                daycarePlacementId = oldPlacement.id,
-                startDate = oldPlacement.startDate,
-                endDate = oldPlacement.endDate
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = oldPlacement.id,
+                    daycareGroupId = groupId,
+                    startDate = oldPlacement.startDate,
+                    endDate = oldPlacement.endDate
+                )
             )
-            it.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                placementId = oldPlacement.id,
-                period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
-                optionId = snDefaultDaycare.id
+            val period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate)
+            it.insert(
+                DevServiceNeed(
+                    placementId = oldPlacement.id,
+                    startDate = period.start,
+                    endDate = period.end,
+                    optionId = snDefaultDaycare.id,
+                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
         }
 
@@ -1114,13 +1130,15 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val daycarePlacementType = PlacementType.DAYCARE
 
         db.transaction {
-            it.insertTestPlacement(
-                id = daycarePlacementId,
-                childId = testChild_2.id,
-                unitId = testDaycare2.id,
-                startDate = daycarePlacementStartDate,
-                endDate = daycarePlacementEndDate,
-                type = daycarePlacementType
+            it.insert(
+                DevPlacement(
+                    id = daycarePlacementId,
+                    type = daycarePlacementType,
+                    childId = testChild_2.id,
+                    unitId = testDaycare2.id,
+                    startDate = daycarePlacementStartDate,
+                    endDate = daycarePlacementEndDate
+                )
             )
         }
 
@@ -1183,13 +1201,15 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val daycarePlacementType = PlacementType.DAYCARE
 
         db.transaction {
-            it.insertTestPlacement(
-                id = daycarePlacementId,
-                childId = testChild_2.id,
-                unitId = testDaycare2.id,
-                startDate = daycarePlacementStartDate,
-                endDate = daycarePlacementEndDate,
-                type = daycarePlacementType
+            it.insert(
+                DevPlacement(
+                    id = daycarePlacementId,
+                    type = daycarePlacementType,
+                    childId = testChild_2.id,
+                    unitId = testDaycare2.id,
+                    startDate = daycarePlacementStartDate,
+                    endDate = daycarePlacementEndDate
+                )
             )
         }
 
@@ -1210,12 +1230,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         db.transaction { tx ->
             groupPlacementDays.forEachIndexed { index, (startDate, endDate) ->
-                tx.insertTestDaycareGroupPlacement(
-                    id = groupPlacementIds[index],
-                    groupId = groupId1,
-                    daycarePlacementId = daycarePlacementId,
-                    startDate = date(startDate),
-                    endDate = date(endDate)
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        id = groupPlacementIds[index],
+                        daycarePlacementId = daycarePlacementId,
+                        daycareGroupId = groupId1,
+                        startDate = date(startDate),
+                        endDate = date(endDate)
+                    )
                 )
             }
         }
@@ -1347,11 +1369,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         evakaLaunch.plusYears(1),
                         false
                     )
-                tx.insertTestDaycareGroupPlacement(
-                    placement.id,
-                    groupId1,
-                    startDate = evakaLaunch,
-                    endDate = evakaLaunch.plusMonths(6)
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placement.id,
+                        daycareGroupId = groupId1,
+                        startDate = evakaLaunch,
+                        endDate = evakaLaunch.plusMonths(6)
+                    )
                 )
                 placement
             }
@@ -1391,27 +1415,31 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         evakaLaunch.plusYears(1),
                         false
                     )
-                tx.insertTestDaycareGroupPlacement(
-                    placement.id,
-                    groupId1,
-                    startDate = placement.startDate,
-                    endDate = placement.endDate
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placement.id,
+                        daycareGroupId = groupId1,
+                        startDate = placement.startDate,
+                        endDate = placement.endDate
+                    )
                 )
-                tx.insertTestBackUpCare(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = evakaLaunch.minusYears(1),
-                    endDate = evakaLaunch.minusDays(1)
+                tx.insert(
+                    DevBackupCare(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        groupId = null,
+                        period =
+                            FiniteDateRange(evakaLaunch.minusYears(1), evakaLaunch.minusDays(1))
+                    )
                 )
-                val backupCareId = BackupCareId(UUID.randomUUID())
-                tx.insertTestBackUpCare(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = evakaLaunch,
-                    endDate = evakaLaunch.plusYears(1),
-                    id = backupCareId
+                tx.insert(
+                    DevBackupCare(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        groupId = null,
+                        period = FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
+                    )
                 )
-                backupCareId
             }
 
         val result = db.read { tx -> getMissingGroupPlacements(tx, testDaycare2.id) }

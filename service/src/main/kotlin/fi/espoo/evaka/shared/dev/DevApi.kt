@@ -120,6 +120,7 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessage
+import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
@@ -360,12 +361,14 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 placements.forEach {
-                    tx.insertTestDaycareGroupPlacement(
-                        it.daycarePlacementId,
-                        it.daycareGroupId,
-                        it.id,
-                        it.startDate,
-                        it.endDate
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            it.id,
+                            it.daycarePlacementId,
+                            it.daycareGroupId,
+                            it.startDate,
+                            it.endDate
+                        )
                     )
                 }
             }
@@ -384,11 +387,14 @@ class DevApi(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 caretakers.forEach { caretaker ->
-                    tx.insertTestCaretakers(
-                        caretaker.groupId,
-                        amount = caretaker.amount,
-                        startDate = caretaker.startDate,
-                        endDate = caretaker.endDate
+                    tx.insert(
+                        DevDaycareCaretaker(
+                            DaycareCaretakerId(UUID.randomUUID()),
+                            caretaker.groupId,
+                            caretaker.amount.toBigDecimal(),
+                            startDate = caretaker.startDate,
+                            endDate = caretaker.endDate
+                        )
                     )
                 }
             }
@@ -2039,7 +2045,8 @@ data class DevParentship(
     val childId: ChildId,
     val headOfChildId: PersonId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 
 data class DevClubTerm(
@@ -2141,7 +2148,7 @@ data class DevServiceNeed(
     val shiftCare: ShiftCareType = ShiftCareType.NONE,
     val partWeek: Boolean = false,
     val confirmedBy: EvakaUserId,
-    val confirmedAt: LocalDate? = null
+    val confirmedAt: HelsinkiDateTime? = null
 )
 
 data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
@@ -2232,7 +2239,7 @@ data class DevCalendarEventTime(
 )
 
 data class DevAbsence(
-    val id: UUID = UUID.randomUUID(),
+    val id: AbsenceId = AbsenceId(UUID.randomUUID()),
     val childId: ChildId,
     val date: LocalDate,
     val absenceType: AbsenceType = AbsenceType.OTHER_ABSENCE,

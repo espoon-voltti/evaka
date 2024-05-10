@@ -29,10 +29,10 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
@@ -433,11 +433,13 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val validNoteId =
             db.transaction {
-                it.insertTestPlacement(
-                    unitId = testDaycare.id,
-                    childId = testChild_2.id,
-                    startDate = LocalDate.now().minusDays(150),
-                    endDate = LocalDate.now().plusDays(150)
+                it.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = LocalDate.now().minusDays(150),
+                        endDate = LocalDate.now().plusDays(150)
+                    )
                 )
                 it.insert(
                     DevBackupCare(
@@ -540,12 +542,14 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId = testChild_1.id
     ) {
         db.transaction {
-            it.insertTestPlacement(
-                childId = childId,
-                type = type,
-                startDate = dateRange.start,
-                endDate = dateRange.end,
-                unitId = testDaycare.id
+            it.insert(
+                DevPlacement(
+                    type = type,
+                    childId = childId,
+                    unitId = testDaycare.id,
+                    startDate = dateRange.start,
+                    endDate = dateRange.end
+                )
             )
         }
     }

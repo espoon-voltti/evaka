@@ -12,15 +12,15 @@ import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCalendarEvent
 import fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -60,29 +60,35 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testDaycareGroup2)
 
             tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = today.minusYears(1),
-                endDate = today.plusYears(1)
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusYears(1),
+                    endDate = today.plusYears(1)
+                )
             )
 
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
 
             tx.insert(testChild_2, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
-                    startDate = today.minusYears(1),
-                    endDate = today.plusYears(1)
-                )
-                .also { placementId ->
-                    tx.insertTestDaycareGroupPlacement(
-                        groupId = testDaycareGroup.id,
-                        daycarePlacementId = placementId,
+            tx.insert(
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
                         startDate = today.minusYears(1),
                         endDate = today.plusYears(1)
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = testDaycareGroup.id,
+                            startDate = today.minusYears(1),
+                            endDate = today.plusYears(1)
+                        )
                     )
                 }
 
@@ -90,18 +96,22 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_2.id))
 
             tx.insert(testChild_3, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
-                    startDate = today.minusYears(1),
-                    endDate = today.plusYears(1)
-                )
-                .also { placementId ->
-                    tx.insertTestDaycareGroupPlacement(
-                        groupId = testDaycareGroup2.id,
-                        daycarePlacementId = placementId,
+            tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
                         startDate = today.minusYears(1),
                         endDate = today.plusYears(1)
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = testDaycareGroup2.id,
+                            startDate = today.minusYears(1),
+                            endDate = today.plusYears(1)
+                        )
                     )
                 }
 
@@ -193,28 +203,33 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `Notification plus backup care`() {
         db.transaction { tx ->
             // Backup care covers the whole event -> no notification
-            tx.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testDaycare2.id,
-                startDate = today,
-                endDate = today.plusDays(1),
+            tx.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    groupId = null,
+                    period = FiniteDateRange(today, today.plusDays(1))
+                )
             )
 
             // Backup care in the same unit -> notification is sent
-            tx.insertTestBackUpCare(
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                groupId = testDaycareGroup2.id,
-                startDate = today,
-                endDate = today.plusDays(1),
+            tx.insert(
+                DevBackupCare(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    groupId = testDaycareGroup2.id,
+                    period = FiniteDateRange(today, today.plusDays(1))
+                )
             )
 
             // Backup care covers only part of the event -> notification is sent
-            tx.insertTestBackUpCare(
-                childId = testChild_3.id,
-                unitId = testDaycare2.id,
-                startDate = today,
-                endDate = today,
+            tx.insert(
+                DevBackupCare(
+                    childId = testChild_3.id,
+                    unitId = testDaycare2.id,
+                    groupId = null,
+                    period = FiniteDateRange(today, today)
+                )
             )
         }
         createCalendarEvent(
@@ -253,11 +268,13 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
         // testChild_3 is in backup care, but the parent still gets notified about child-specific
         // events
         db.transaction { tx ->
-            tx.insertTestBackUpCare(
-                childId = testChild_3.id,
-                unitId = testDaycare2.id,
-                startDate = today,
-                endDate = today,
+            tx.insert(
+                DevBackupCare(
+                    childId = testChild_3.id,
+                    unitId = testDaycare2.id,
+                    groupId = null,
+                    period = FiniteDateRange(today, today)
+                )
             )
         }
         createCalendarEvent(

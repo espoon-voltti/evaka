@@ -10,7 +10,18 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.dev.*
+import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -144,18 +155,22 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    unitId = daycare.id,
-                    childId = child.id,
-                    startDate = monday,
-                    endDate = tuesday,
-                )
-                .also { placementId ->
-                    tx.insertTestDaycareGroupPlacement(
-                        daycarePlacementId = placementId,
-                        groupId = group1.id,
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group1.id,
+                            startDate = monday,
+                            endDate = tuesday
+                        )
                     )
                 }
             listOf(
@@ -182,18 +197,22 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
-            tx.insertTestPlacement(
-                    unitId = daycare.id,
-                    childId = childWithSpecialDiet.id,
-                    startDate = monday,
-                    endDate = tuesday
-                )
-                .also { placementId ->
-                    tx.insertTestDaycareGroupPlacement(
-                        daycarePlacementId = placementId,
-                        groupId = group2.id,
+            tx.insert(
+                    DevPlacement(
+                        childId = childWithSpecialDiet.id,
+                        unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = group2.id,
+                            startDate = monday,
+                            endDate = tuesday
+                        )
                     )
                 }
             // Lunch only on Monday

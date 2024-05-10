@@ -12,8 +12,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testDaycare
@@ -63,17 +63,21 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             it.insertGeneralTestFixtures()
             it.insert(jimmyNoSsn, DevPersonType.CHILD)
             it.insert(jackieNoSsn, DevPersonType.CHILD)
-            it.insertTestPlacement(
-                childId = jimmyNoSsn.id,
-                unitId = testDaycare.id,
-                startDate = testDay.minusDays(7),
-                endDate = testDay.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = jimmyNoSsn.id,
+                    unitId = testDaycare.id,
+                    startDate = testDay.minusDays(7),
+                    endDate = testDay.plusYears(1)
+                )
             )
-            it.insertTestPlacement(
-                childId = jackieNoSsn.id,
-                unitId = testDaycare2.id,
-                startDate = testDay.minusDays(7),
-                endDate = testDay.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = jackieNoSsn.id,
+                    unitId = testDaycare2.id,
+                    startDate = testDay.minusDays(7),
+                    endDate = testDay.plusYears(1)
+                )
             )
         }
     }

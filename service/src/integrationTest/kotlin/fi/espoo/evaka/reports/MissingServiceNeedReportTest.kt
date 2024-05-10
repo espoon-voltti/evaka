@@ -13,7 +13,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -79,11 +80,13 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
         daycare: DevDaycare
     ) =
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = daycare.id,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
         }
 

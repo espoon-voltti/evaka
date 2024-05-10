@@ -21,19 +21,19 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertServiceNeedOptions
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestHoliday
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -96,11 +96,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `adding two reservations works in a basic case`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
         }
@@ -136,19 +138,23 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `reservation is not added outside placement nor for placements that don't require reservations`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL,
-                startDate = monday,
-                endDate = monday
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday
+                )
             )
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = tuesday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = tuesday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
         }
@@ -194,11 +200,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         val child2 = DevPerson()
         db.transaction {
             it.insert(child2, DevPersonType.CHILD)
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child2.id)
         }
@@ -234,11 +242,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `reservation is not added outside operating days`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday.minusDays(1),
-                endDate = monday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday.minusDays(1),
+                    endDate = monday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
         }
@@ -276,14 +286,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `reservation is not added on holiday`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertTestHoliday(tuesday)
+            it.insert(DevHoliday(tuesday, "holiday"))
         }
 
         // when
@@ -319,24 +331,32 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `absences are removed from days with reservation`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(adult.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(adult.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = child.id,
-                date = tuesday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(adult.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(adult.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -374,11 +394,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `reservations are removed from days with absence in unlocked range`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insert(
@@ -425,11 +447,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         db.transaction {
             it.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
 
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insert(
@@ -482,11 +506,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         db.transaction {
             it.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
 
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             listOf(reservation1, reservation2).forEach { (start, end) ->
@@ -534,18 +560,23 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `absences and reservations are removed from empty days`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(adult.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(adult.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
             it.insert(
                 DevReservation(
@@ -601,25 +632,37 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             // monday: no service need
             // tuesday: contract days
             // wednesday: hour based service need
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    startDate = monday,
-                    endDate = unlockedDate.plusDays(1)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = unlockedDate.plusDays(1)
+                    )
                 )
                 .let { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = FiniteDateRange(tuesday, unlockedDate),
-                        optionId = snDaycareContractDays15.id,
-                        confirmedBy = employee.evakaUserId,
+                    val period = FiniteDateRange(tuesday, unlockedDate)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareContractDays15.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period =
-                            FiniteDateRange(unlockedDate.plusDays(1), unlockedDate.plusDays(1)),
-                        optionId = snDaycareHours120.id,
-                        confirmedBy = employee.evakaUserId,
+                    val period1 =
+                        FiniteDateRange(unlockedDate.plusDays(1), unlockedDate.plusDays(1))
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period1.start,
+                            endDate = period1.end,
+                            optionId = snDaycareHours120.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
             tx.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -680,32 +723,41 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `free absences are not overwritten`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(adult.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(adult.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = child.id,
-                date = tuesday,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.FREE_ABSENCE,
-                modifiedBy = EvakaUserId(adult.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.FREE_ABSENCE,
+                    modifiedBy = EvakaUserId(adult.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = child.id,
-                date = wednesday,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.FREE_ABSENCE,
-                modifiedBy = EvakaUserId(adult.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = wednesday,
+                    absenceType = AbsenceType.FREE_ABSENCE,
+                    modifiedBy = EvakaUserId(adult.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -759,11 +811,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             )
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = wednesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = wednesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertDaycareAclRow(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
@@ -838,11 +892,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `previous reservation is overwritten`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             createReservationsAndAbsences(
@@ -902,19 +958,24 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `reservations without times can be added if reservations are not required (removes absences)`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL, // <-- reservations are not required
-                startDate = monday,
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL, // <-- reservations are not required
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(adult.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(adult.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -951,11 +1012,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, monday)
@@ -996,11 +1059,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
@@ -1052,11 +1117,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = beforeThreshold.toLocalDate().minusDays(2),
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = beforeThreshold.toLocalDate().minusDays(2),
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
@@ -1120,12 +1187,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL, // <-- reservations not required
-                startDate = monday,
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL, // <-- reservations not required
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
@@ -1174,12 +1243,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = monday,
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
@@ -1229,11 +1300,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
@@ -1288,11 +1361,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = monday.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
@@ -1339,24 +1414,32 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `citizen cannot override employee created absences with reservations`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(employee.user.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = child.id,
-                date = tuesday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(employee.user.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -1396,24 +1479,32 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     fun `employee can override employee created absences with reservations`() {
         // given
         db.transaction {
-            it.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                startDate = monday,
-                endDate = tuesday
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(employee.user.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = child.id,
-                date = tuesday,
-                category = AbsenceCategory.BILLABLE,
-                modifiedBy = EvakaUserId(employee.user.id.raw)
+            it.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = tuesday,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(employee.user.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 

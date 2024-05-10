@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -603,11 +602,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = endDate
                     )
                 )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = group.id,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
             child2Placement =
                 tx.insert(

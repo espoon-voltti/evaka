@@ -21,9 +21,9 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
@@ -56,18 +56,22 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestPlacement(
-                id = placementId,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = originalRange.start,
-                endDate = originalRange.end!!
+            tx.insert(
+                DevPlacement(
+                    id = placementId,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = originalRange.start,
+                    endDate = originalRange.end!!
+                )
             )
-            tx.insertTestParentship(
-                testAdult_1.id,
-                testChild_1.id,
-                startDate = originalRange.start.minusYears(1),
-                endDate = originalRange.end!!.plusYears(1)
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = originalRange.start.minusYears(1),
+                    endDate = originalRange.end!!.plusYears(1)
+                )
             )
         }
         generate()
@@ -231,12 +235,14 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
     fun `break in placement on days 14-15`() {
         db.transaction { tx ->
             tx.updatePlacementStartAndEndDate(placementId, day(10), day(13))
-            tx.insertTestPlacement(
-                id = PlacementId(UUID.randomUUID()),
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = day(16),
-                endDate = originalRange.end!!
+            tx.insert(
+                DevPlacement(
+                    id = PlacementId(UUID.randomUUID()),
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = day(16),
+                    endDate = originalRange.end!!
+                )
             )
         }
 
@@ -284,11 +290,13 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         // non identical drafts are not ignored
         val secondParentshipId =
             db.transaction { tx ->
-                tx.insertTestParentship(
-                    testAdult_1.id,
-                    testChild_2.id,
-                    startDate = originalRange.start.minusYears(1),
-                    endDate = originalRange.end!!.plusYears(1)
+                tx.insert(
+                    DevParentship(
+                        childId = testChild_2.id,
+                        headOfChildId = testAdult_1.id,
+                        startDate = originalRange.start.minusYears(1),
+                        endDate = originalRange.end!!.plusYears(1)
+                    )
                 )
             }
         generate()

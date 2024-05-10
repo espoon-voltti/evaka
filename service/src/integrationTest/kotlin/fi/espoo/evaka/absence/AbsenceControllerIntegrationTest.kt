@@ -17,9 +17,9 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -59,12 +59,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.UNIT_SUPERVISOR)
 
             tx.insert(child1, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = daycare.id,
-                startDate = today,
-                endDate = today.plusYears(1),
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = today,
+                    endDate = today.plusYears(1)
+                )
             )
         }
     }
@@ -127,12 +129,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val lastAbsenceDate = today.plusDays(1)
         db.transaction { tx ->
             tx.insert(child2, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                childId = child2.id,
-                unitId = daycare.id,
-                startDate = today,
-                endDate = today.plusYears(1),
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate = today,
+                    endDate = today.plusYears(1)
+                )
             )
 
             FiniteDateRange(firstAbsenceDate, lastAbsenceDate).dates().forEach { date ->

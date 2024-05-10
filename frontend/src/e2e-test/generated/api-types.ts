@@ -659,6 +659,7 @@ export interface DevOtherAssistanceMeasure {
 */
 export interface DevParentship {
   childId: UUID
+  createdAt: HelsinkiDateTime
   endDate: LocalDate
   headOfChildId: UUID
   id: UUID
@@ -782,7 +783,7 @@ export interface DevPreschoolTerm {
 * Generated from fi.espoo.evaka.shared.dev.DevServiceNeed
 */
 export interface DevServiceNeed {
-  confirmedAt: LocalDate | null
+  confirmedAt: HelsinkiDateTime | null
   confirmedBy: UUID
   endDate: LocalDate
   id: UUID
@@ -1352,6 +1353,7 @@ export function deserializeJsonDevOtherAssistanceMeasure(json: JsonOf<DevOtherAs
 export function deserializeJsonDevParentship(json: JsonOf<DevParentship>): DevParentship {
   return {
     ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: LocalDate.parseIso(json.endDate),
     startDate: LocalDate.parseIso(json.startDate)
   }
@@ -1414,7 +1416,7 @@ export function deserializeJsonDevPreschoolTerm(json: JsonOf<DevPreschoolTerm>):
 export function deserializeJsonDevServiceNeed(json: JsonOf<DevServiceNeed>): DevServiceNeed {
   return {
     ...json,
-    confirmedAt: (json.confirmedAt != null) ? LocalDate.parseIso(json.confirmedAt) : null,
+    confirmedAt: (json.confirmedAt != null) ? HelsinkiDateTime.parseIso(json.confirmedAt) : null,
     endDate: LocalDate.parseIso(json.endDate),
     startDate: LocalDate.parseIso(json.startDate)
   }

@@ -34,9 +34,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevFeeDecision
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -900,11 +900,13 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             endDate = decision.validTo!!
                         )
                     )
-                    tx.insertTestParentship(
-                        headOfChild = decision.headOfFamilyId,
-                        childId = part.child.id,
-                        startDate = decision.validFrom,
-                        endDate = decision.validTo!!
+                    tx.insert(
+                        DevParentship(
+                            childId = part.child.id,
+                            headOfChildId = decision.headOfFamilyId,
+                            startDate = decision.validFrom,
+                            endDate = decision.validTo!!
+                        )
                     )
                 }
             }

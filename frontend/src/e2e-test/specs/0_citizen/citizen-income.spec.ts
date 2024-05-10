@@ -101,7 +101,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
         optionId: serviceNeedOption.data.id,
         shiftCare: 'NONE',
         confirmedBy: financeAdmin.data.id,
-        confirmedAt: placementStart
+        confirmedAt: placementStart.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
       .save()
 

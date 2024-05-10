@@ -16,11 +16,11 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestHoliday
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -49,11 +49,13 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = LocalDate.of(2023, 8, 1),
-                    endDate = LocalDate.of(2023, 9, 17)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = LocalDate.of(2023, 8, 1),
+                        endDate = LocalDate.of(2023, 9, 17)
+                    )
                 )
                 Pair(guardianId, childId)
             }
@@ -105,11 +107,13 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = LocalDate.of(2023, 9, 1),
-                    endDate = LocalDate.of(2023, 9, 30)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = LocalDate.of(2023, 9, 1),
+                        endDate = LocalDate.of(2023, 9, 30)
+                    )
                 )
                 tx.insert(
                     DevAbsence(
@@ -145,11 +149,13 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = LocalDate.of(2023, 9, 4),
-                    endDate = LocalDate.of(2023, 9, 17)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = LocalDate.of(2023, 9, 4),
+                        endDate = LocalDate.of(2023, 9, 17)
+                    )
                 )
                 tx.insert(
                     DevAbsence(
@@ -185,11 +191,13 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = LocalDate.of(2023, 9, 1),
-                    endDate = LocalDate.of(2023, 9, 30)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = LocalDate.of(2023, 9, 1),
+                        endDate = LocalDate.of(2023, 9, 30)
+                    )
                 )
                 tx.insert(
                     DevAbsence(
@@ -225,13 +233,15 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = LocalDate.of(2023, 9, 1),
-                    endDate = LocalDate.of(2023, 9, 30)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = LocalDate.of(2023, 9, 1),
+                        endDate = LocalDate.of(2023, 9, 30)
+                    )
                 )
-                tx.insertTestHoliday(date = LocalDate.of(2023, 9, 11))
+                tx.insert(DevHoliday(date = LocalDate.of(2023, 9, 11), description = "holiday"))
                 Pair(guardianId, childId)
             }
 
@@ -258,11 +268,13 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = LocalDate.of(2023, 9, 1),
-                    endDate = LocalDate.of(2023, 9, 30)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = LocalDate.of(2023, 9, 1),
+                        endDate = LocalDate.of(2023, 9, 30)
+                    )
                 )
                 Pair(guardianId, childId)
             }
@@ -287,11 +299,13 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                 val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
                 tx.insertGuardian(guardianId = guardianId, childId = childId)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = LocalDate.of(2023, 8, 1),
-                    endDate = LocalDate.of(2023, 9, 17)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = LocalDate.of(2023, 8, 1),
+                        endDate = LocalDate.of(2023, 9, 17)
+                    )
                 )
                 Pair(guardianId, childId)
             }

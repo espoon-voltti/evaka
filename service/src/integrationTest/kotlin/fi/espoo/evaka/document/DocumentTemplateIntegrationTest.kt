@@ -13,8 +13,8 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -75,11 +75,13 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(testArea)
             tx.insert(testDaycare.copy(language = Language.sv))
             tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = now.today(),
-                endDate = now.today().plusDays(5)
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = now.today(),
+                    endDate = now.today().plusDays(5)
+                )
             )
         }
     }
@@ -346,11 +348,13 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 val areaId = tx.insert(DevCareArea(shortName = "area2"))
                 val daycareId = tx.insert(DevDaycare(areaId = areaId, language = Language.fi))
                 val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = daycareId,
-                    startDate = now.today(),
-                    endDate = now.today().plusDays(5)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        startDate = now.today(),
+                        endDate = now.today().plusDays(5)
+                    )
                 )
                 childId
             }

@@ -15,8 +15,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -71,21 +71,25 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         db.transaction { tx ->
             parentshipId =
-                tx.insertTestParentship(
-                    testAdult_1.id,
-                    testChild_1.id,
-                    startDate = childRange.start,
-                    endDate = childRange.end,
-                    createdAt = createdAt
+                tx.insert(
+                    DevParentship(
+                        childId = testChild_1.id,
+                        headOfChildId = testAdult_1.id,
+                        startDate = childRange.start,
+                        endDate = childRange.end,
+                        createdAt = createdAt
+                    )
                 )
 
             // outside range is ignored
-            tx.insertTestParentship(
-                testAdult_1.id,
-                testChild_1.id,
-                startDate = range.start.minusYears(2),
-                endDate = range.start.minusYears(1),
-                createdAt = createdAt
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = range.start.minusYears(2),
+                    endDate = range.start.minusYears(1),
+                    createdAt = createdAt
+                )
             )
 
             tx.insert(

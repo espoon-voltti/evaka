@@ -26,11 +26,11 @@ import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
@@ -98,11 +98,13 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     )
                 )
             placementId =
-                it.insertTestPlacement(
-                    childId = childId,
-                    unitId = daycareId,
-                    startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2100, 1, 1)
+                it.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        startDate = LocalDate.of(2019, 1, 1),
+                        endDate = LocalDate.of(2100, 1, 1)
+                    )
                 )
             mobileId = it.insert(DevMobileDevice(unitId = daycareId))
         }

@@ -6,9 +6,11 @@ package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.shared.dev.insertTestBackUpCare
+import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
@@ -57,11 +59,13 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val arrived = HelsinkiDateTime.of(LocalDate.of(2020, 10, 25), LocalTime.of(9, 0))
 
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
-                startDate = LocalDate.now().minusDays(1),
-                endDate = LocalDate.now().plusDays(1)
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testRoundTheClockDaycare.id,
+                    startDate = LocalDate.now().minusDays(1),
+                    endDate = LocalDate.now().plusDays(1)
+                )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -84,11 +88,13 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         db.transaction {
             // Placement to the attendance's unit has ended
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
-                startDate = LocalDate.now().minusDays(2),
-                endDate = LocalDate.now().minusDays(1)
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testRoundTheClockDaycare.id,
+                    startDate = LocalDate.now().minusDays(2),
+                    endDate = LocalDate.now().minusDays(1)
+                )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -98,11 +104,13 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
 
             // A placement to another unit is active
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.now(),
-                endDate = LocalDate.now().plusDays(1)
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now().plusDays(1)
+                )
             )
         }
 
@@ -119,18 +127,23 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         db.transaction {
             // Placement to another unit is active
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.now().minusDays(2),
-                endDate = LocalDate.now().plusDays(1)
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.now().minusDays(2),
+                    endDate = LocalDate.now().plusDays(1)
+                )
             )
             // Backup placement to attendance's unit is active
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
-                startDate = LocalDate.now().minusDays(2),
-                endDate = LocalDate.now().plusDays(1)
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testRoundTheClockDaycare.id,
+                    groupId = null,
+                    period =
+                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().plusDays(1))
+                )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -153,25 +166,32 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         db.transaction {
             // Placement to another unit is active
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.now().minusDays(2),
-                endDate = LocalDate.now().plusDays(1)
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.now().minusDays(2),
+                    endDate = LocalDate.now().plusDays(1)
+                )
             )
             // Backup placement to attendance's unit has ended
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testRoundTheClockDaycare.id,
-                startDate = LocalDate.now().minusDays(2),
-                endDate = LocalDate.now().minusDays(1)
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testRoundTheClockDaycare.id,
+                    groupId = null,
+                    period =
+                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().minusDays(1))
+                )
             )
             // Backup placement to another unit has ended
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testDaycare2.id,
-                startDate = LocalDate.now(),
-                endDate = LocalDate.now().plusDays(1)
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    groupId = null,
+                    period = FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1))
+                )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,

@@ -18,10 +18,10 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
@@ -59,18 +59,22 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insertTestPlacement(
-                id = placementId,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = originalRange.start,
-                endDate = originalRange.end!!
+            tx.insert(
+                DevPlacement(
+                    id = placementId,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = originalRange.start,
+                    endDate = originalRange.end!!
+                )
             )
-            tx.insertTestParentship(
-                testAdult_1.id,
-                testChild_1.id,
-                startDate = originalRange.start.minusYears(1),
-                endDate = originalRange.end!!.plusYears(1)
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = originalRange.start.minusYears(1),
+                    endDate = originalRange.end!!.plusYears(1)
+                )
             )
             feeThresholdId =
                 tx.insert(testFeeThresholds.copy(validDuring = originalFeeThresholdRange))

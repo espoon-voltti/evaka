@@ -16,9 +16,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolClub45
@@ -224,29 +225,35 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `application summary can be be filtered by children with existing club placement`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testClub.id,
-                type = PlacementType.CLUB,
-                startDate = now.today().minusMonths(12),
-                endDate = now.today().minusMonths(6)
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.CLUB,
+                    childId = testChild_1.id,
+                    unitId = testClub.id,
+                    startDate = now.today().minusMonths(12),
+                    endDate = now.today().minusMonths(6)
+                )
             )
 
-            it.insertTestPlacement(
-                childId = testChild_2.id,
-                unitId = testClub.id,
-                type = PlacementType.CLUB,
-                startDate = now.today().minusMonths(12),
-                endDate = now.today().plusMonths(6)
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.CLUB,
+                    childId = testChild_2.id,
+                    unitId = testClub.id,
+                    startDate = now.today().minusMonths(12),
+                    endDate = now.today().plusMonths(6)
+                )
             )
 
             // Should not show because club placement is in the future
-            it.insertTestPlacement(
-                childId = testChild_3.id,
-                unitId = testClub.id,
-                type = PlacementType.CLUB,
-                startDate = now.today().plusMonths(1),
-                endDate = now.today().plusMonths(6)
+            it.insert(
+                DevPlacement(
+                    type = PlacementType.CLUB,
+                    childId = testChild_3.id,
+                    unitId = testClub.id,
+                    startDate = now.today().plusMonths(1),
+                    endDate = now.today().plusMonths(6)
+                )
             )
         }
 

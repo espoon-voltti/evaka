@@ -22,11 +22,11 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
@@ -88,15 +88,19 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             tx.insertEmployeeToDaycareGroupAcl(groupId, groupStaffId)
 
             val placementId =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        endDate = LocalDate.MAX
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
                     endDate = LocalDate.MAX
                 )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                endDate = LocalDate.MAX
             )
 
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
@@ -221,10 +225,12 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `supervisor can't read pedagogical document or attachment if child is in another unit`() {
         db.transaction {
-            it.insertTestPlacement(
-                childId = testChild_2.id,
-                unitId = testDaycare2.id,
-                endDate = LocalDate.MAX
+            it.insert(
+                DevPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare2.id,
+                    endDate = LocalDate.MAX
+                )
             )
         }
 

@@ -18,16 +18,17 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -65,19 +66,23 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             tx.insertGeneralTestFixtures()
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))
-            tx.insertTestPlacement(
-                id = daycarePlacementId,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = daycarePlacementId,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
             tx.createMobileDeviceToUnit(mobileUser2.id, testDaycare2.id)
@@ -103,12 +108,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `child is in backup care in another unit`() {
         db.transaction {
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testDaycare2.id,
-                groupId = groupId2,
-                startDate = now.toLocalDate(),
-                endDate = now.toLocalDate()
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    groupId = groupId2,
+                    period = FiniteDateRange(now.toLocalDate(), now.toLocalDate())
+                )
             )
         }
         expectNoChildren()
@@ -118,12 +124,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `child is in backup care in same unit`() {
         db.transaction {
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                groupId = groupId,
-                startDate = now.toLocalDate(),
-                endDate = now.toLocalDate()
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    groupId = groupId,
+                    period = FiniteDateRange(now.toLocalDate(), now.toLocalDate())
+                )
             )
         }
         val child = expectOneChild()
@@ -182,17 +189,21 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `child is absent`() {
         db.transaction {
-            it.insertTestAbsence(
-                childId = testChild_1.id,
-                category = AbsenceCategory.NONBILLABLE,
-                date = now.toLocalDate(),
-                absenceType = AbsenceType.SICKLEAVE
+            it.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = now.toLocalDate(),
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.NONBILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = testChild_1.id,
-                category = AbsenceCategory.BILLABLE,
-                date = now.toLocalDate(),
-                absenceType = AbsenceType.SICKLEAVE
+            it.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = now.toLocalDate(),
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
         val child = expectOneChildAttendance()
@@ -331,12 +342,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val arrived = now.minusDays(1)
         val backupUnitId = testDaycare2.id
         db.transaction {
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = backupUnitId,
-                groupId = groupId2,
-                startDate = now.minusDays(1).toLocalDate(),
-                endDate = now.toLocalDate()
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = backupUnitId,
+                    groupId = groupId2,
+                    period = FiniteDateRange(now.minusDays(1).toLocalDate(), now.toLocalDate())
+                )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -358,12 +370,17 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `endless presence is visible even if placement ended`() {
         val backupUnitId = testDaycare2.id
         db.transaction {
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = backupUnitId,
-                groupId = groupId2,
-                startDate = now.minusDays(2).toLocalDate(),
-                endDate = now.minusDays(1).toLocalDate()
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = backupUnitId,
+                    groupId = groupId2,
+                    period =
+                        FiniteDateRange(
+                            now.minusDays(2).toLocalDate(),
+                            now.minusDays(1).toLocalDate()
+                        )
+                )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -426,12 +443,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val reservationStart = LocalTime.of(8, 0)
         val reservationEnd = LocalTime.of(16, 0)
         db.transaction {
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = backupUnitId,
-                groupId = groupId2,
-                startDate = now.minusDays(1).toLocalDate(),
-                endDate = now.toLocalDate()
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = backupUnitId,
+                    groupId = groupId2,
+                    period = FiniteDateRange(now.minusDays(1).toLocalDate(), now.toLocalDate())
+                )
             )
             it.insert(
                 DevReservation(
