@@ -417,34 +417,40 @@ private fun placementDay(
     val serviceNeed = placement.serviceNeeds.find { it.range.includes(date) }
     val backupPlacementForDate = backupPlacements?.find { it.range.includes(date) }
 
-    // Backup placements take precedence
-    val operationTimes = backupPlacementForDate?.operationTimes ?: placement.operationTimes
-
     val shiftCareType = serviceNeed?.shiftCareType ?: ShiftCareType.NONE
-    val alwaysOpen = operationTimes.all { it != null }
-    val shiftCare = alwaysOpen || shiftCareType == ShiftCareType.INTERMITTENT
+    val operationTimes =
+        when (shiftCareType) {
+            ShiftCareType.NONE -> backupPlacementForDate?.operationTimes ?: placement.operationTimes
+            ShiftCareType.INTERMITTENT,
+            ShiftCareType.FULL ->
+                if (backupPlacementForDate != null) {
+                    backupPlacementForDate.shiftCareOperationTimes
+                        ?: backupPlacementForDate.operationTimes
+                } else {
+                    placement.shiftCareOperationTimes ?: placement.operationTimes
+                }
+        }
+
+    val openOnHolidays = operationTimes.all { it != null }
 
     // null means that the unit is not open today
     val operationTime =
-        if (isHoliday && !alwaysOpen) {
-            null
-        } else {
-            operationTimes[date.dayOfWeek.value - 1]
-        }
+        operationTimes[date.dayOfWeek.value - 1].takeIf { !isHoliday || openOnHolidays }
 
-    return if (operationTime != null || shiftCare) {
+    return if (operationTime != null || shiftCareType == ShiftCareType.INTERMITTENT) {
         PlacementDay(
             placementType = placement.type,
             scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
             isOperationDay = operationTime != null,
-            shiftCare = shiftCare,
+            shiftCare = shiftCareType != ShiftCareType.NONE,
             shiftCareType = shiftCareType,
             daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
             reservableTimeRange =
-                if (shiftCareType == ShiftCareType.INTERMITTENT) {
-                    ReservableTimeRange.IntermittentShiftCare(operationTime)
-                } else {
-                    ReservableTimeRange.Normal(operationTime!!)
+                when (shiftCareType) {
+                    ShiftCareType.NONE -> ReservableTimeRange.Normal(operationTime!!)
+                    ShiftCareType.FULL -> ReservableTimeRange.ShiftCare(operationTime!!)
+                    ShiftCareType.INTERMITTENT ->
+                        ReservableTimeRange.IntermittentShiftCare(operationTime)
                 },
             preschoolTime = placement.dailyPreschoolTime,
             preparatoryTime = placement.dailyPreparatoryTime
@@ -586,6 +592,10 @@ sealed class ReservableTimeRange {
     // Child is in normal daycare: The child can make reservations on days according to the
     // placement unit's operation times
     @JsonTypeName("NORMAL") data class Normal(val range: TimeRange) : ReservableTimeRange()
+
+    // Child is in shift daycare: The child can make reservations on days according to the
+    // placement unit's shift care operation times
+    @JsonTypeName("SHIFT_CARE") data class ShiftCare(val range: TimeRange) : ReservableTimeRange()
 
     // Child is in intermittent shift care: The child can make any reservations on any days, and we
     // return the placement unit's operational times just for showing it as information in the UI.
