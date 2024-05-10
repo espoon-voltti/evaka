@@ -33,13 +33,13 @@ import {
   deleteDraftMessage
 } from '../../generated/api-clients/messaging'
 import { getPersonIdentity } from '../../generated/api-clients/pis'
+import { serviceNeedsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatPersonName } from '../../utils'
 import { footerHeight } from '../Footer'
 import { headerHeight } from '../Header'
 import { renderResult } from '../async-rendering'
-import { serviceNeedsQuery } from '../finance-basics/queries'
 
 import { MessageContext } from './MessageContext'
 import Sidebar from './Sidebar'
