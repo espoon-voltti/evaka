@@ -113,7 +113,7 @@ class VardaUpdateServiceNew(
         logger.info { "Planning Varda child updates" }
 
         val chunkSize = 1000
-        val maxUpdatesPerDay = 1000
+        val maxUpdatesPerDay = 5000
 
         val today = clock.today()
         val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
