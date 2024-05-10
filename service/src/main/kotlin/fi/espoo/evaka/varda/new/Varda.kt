@@ -24,16 +24,6 @@ data class Henkilo(
                 henkilo_oid = data.ophPersonOid,
             )
     }
-
-    fun toVarda() =
-        VardaWriteClient.CreateHenkiloRequest(
-            etunimet = etunimet,
-            kutsumanimi = etunimet.split(" ").first(),
-            sukunimi = sukunimi,
-            // Avoid sending both henkilotunnus and henkilo_oid (error code HE004)
-            henkilotunnus = henkilotunnus.takeIf { henkilo_oid == null },
-            henkilo_oid = henkilo_oid,
-        )
 }
 
 data class Lapsi(

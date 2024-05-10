@@ -32,7 +32,7 @@ private val logger = KotlinLogging.logger {}
 class VardaUpdateServiceNew(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     globalFuel: FuelManager,
-    private val jsonMapper: JsonMapper,
+    jsonMapper: JsonMapper,
     private val ophEnv: OphEnv,
     private val vardaEnv: VardaEnv
 ) {
@@ -113,7 +113,7 @@ class VardaUpdateServiceNew(
         logger.info { "Planning Varda child updates" }
 
         val chunkSize = 1000
-        val maxUpdatesPerDay = 1000
+        val maxUpdatesPerDay = 5000
 
         val today = clock.today()
         val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
@@ -206,16 +206,9 @@ class VardaUpdater(
                 return
             }
 
-            val vardaState =
-                getVardaState(
-                    readClient,
-                    evakaState.henkilo.henkilotunnus,
-                    evakaState.henkilo.henkilo_oid
-                )
+            val vardaState = getVardaState(readClient, evakaState.henkilo)
 
-            logger.info(
-                mapOf("varda" to vardaState?.toString(), "evaka" to evakaState.toString())
-            ) {
+            logger.info(mapOf("varda" to vardaState.toString(), "evaka" to evakaState.toString())) {
                 "Varda state for $childId (see the meta.varda and meta.evaka fields)"
             }
 
@@ -348,71 +341,68 @@ class VardaUpdater(
         )
     }
 
-    fun getVardaState(
+    private fun getVardaState(
         client: VardaReadClient,
-        socialSecurityNumber: String?,
-        ophPersonOid: String?
-    ): VardaHenkiloNode? {
-        return client
-            .haeHenkilo(
-                if (!ophPersonOid.isNullOrBlank()) {
-                    VardaReadClient.HaeHenkiloRequest(
-                        henkilotunnus = null,
-                        henkilo_oid = ophPersonOid
-                    )
-                } else {
-                    VardaReadClient.HaeHenkiloRequest(
-                        henkilotunnus = socialSecurityNumber,
+        evakaHenkilo: Henkilo,
+    ): VardaHenkiloNode {
+        val henkilo =
+            if (evakaHenkilo.henkilotunnus != null) {
+                // Get or create henkilo if they have a henkilotunnus. Varda validates the name of
+                // the person, and in this case the names are probably correct since eVaka got them
+                // from VTJ.
+                client.getOrCreateHenkilo(
+                    VardaReadClient.GetOrCreateHenkiloRequest(
+                        etunimet = evakaHenkilo.etunimet,
+                        sukunimi = evakaHenkilo.sukunimi,
+                        // Avoid sending both henkilotunnus and henkilo_oid (error code HE004)
+                        henkilotunnus = evakaHenkilo.henkilotunnus,
                         henkilo_oid = null
                     )
-                }
-            )
-            ?.let { henkilo ->
-                VardaHenkiloNode(
-                    henkilo = henkilo,
-                    lapset =
-                        henkilo.lapsi.map { lapsiUrl ->
-                            val lapsiResponse = client.getLapsi(lapsiUrl)
-                            val maksutiedotResponse = client.getMaksutiedotByLapsi(lapsiUrl)
-                            val paatoksetResponse =
-                                client.getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl)
-                            val varhaiskasvatussuhteetResponse =
-                                client.getVarhaiskasvatussuhteetByLapsi(lapsiUrl)
-
-                            VardaLapsiNode(
-                                lapsi = lapsiResponse,
-                                varhaiskasvatuspaatokset =
-                                    paatoksetResponse.map { paatos ->
-                                        VardaVarhaiskasvatuspaatosNode(
-                                            varhaiskasvatuspaatos = paatos,
-                                            varhaiskasvatussuhteet =
-                                                varhaiskasvatussuhteetResponse.filter {
-                                                    it.varhaiskasvatuspaatos == paatos.url
-                                                }
-                                        )
-                                    },
-                                maksutiedot = maksutiedotResponse
-                            )
-                        }
+                )
+            } else {
+                // The hae-henkilo endpoint is deprecated and limited to 500 requests/day, so only
+                // use it as a fallback if the child doesn't have a henkilotunnus.
+                client.haeHenkilo(
+                    VardaReadClient.HaeHenkiloRequest(henkilo_oid = evakaHenkilo.henkilo_oid)
                 )
             }
+        return VardaHenkiloNode(
+            henkilo = henkilo,
+            lapset =
+                henkilo.lapsi.map { lapsiUrl ->
+                    val lapsiResponse = client.getLapsi(lapsiUrl)
+                    val maksutiedotResponse = client.getMaksutiedotByLapsi(lapsiUrl)
+                    val paatoksetResponse = client.getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl)
+                    val varhaiskasvatussuhteetResponse =
+                        client.getVarhaiskasvatussuhteetByLapsi(lapsiUrl)
+
+                    VardaLapsiNode(
+                        lapsi = lapsiResponse,
+                        varhaiskasvatuspaatokset =
+                            paatoksetResponse.map { paatos ->
+                                VardaVarhaiskasvatuspaatosNode(
+                                    varhaiskasvatuspaatos = paatos,
+                                    varhaiskasvatussuhteet =
+                                        varhaiskasvatussuhteetResponse.filter {
+                                            it.varhaiskasvatuspaatos == paatos.url
+                                        }
+                                )
+                            },
+                        maksutiedot = maksutiedotResponse
+                    )
+                }
+        )
     }
 
     fun diffAndUpdate(
         client: VardaWriteClient,
-        vardaHenkilo: VardaHenkiloNode?,
+        vardaHenkilo: VardaHenkiloNode,
         evakaHenkilo: EvakaHenkiloNode,
     ): String? {
-        val henkilo =
-            // Create a henkilo if it doesn't exist yet and there are lapsi entries
-            if (vardaHenkilo == null && evakaHenkilo.lapset.isNotEmpty()) {
-                client.createHenkilo(evakaHenkilo.henkilo.toVarda())
-            } else {
-                vardaHenkilo?.henkilo
-            }
+        val henkilo = vardaHenkilo.henkilo
 
         diff(
-            old = vardaHenkilo?.lapset ?: emptyList(),
+            old = vardaHenkilo.lapset,
             new = evakaHenkilo.lapset,
             eq = { vardaNode, evakaNode -> Lapsi.fromVarda(vardaNode.lapsi) == evakaNode.lapsi },
             onDeleted = { client.deleteLapsiDeep(it) },
@@ -468,11 +458,11 @@ class VardaUpdater(
             },
             onAdded = {
                 // If we get here, henkilo has lapsi entries and thus must be non-null
-                client.createLapsiDeep(henkilo!!.url, it)
+                client.createLapsiDeep(henkilo.url, it)
             },
         )
 
-        return henkilo?.henkilo_oid
+        return henkilo.henkilo_oid
     }
 
     /** Like Iterable.all, but runs all the side effects regardless of what they return */
@@ -673,17 +663,6 @@ class DryRunClient : VardaWriteClient {
         val i = ids.getOrDefault(type, 0)
         ids[type] = i + 1
         return URI("${type}_$i")
-    }
-
-    override fun createHenkilo(
-        body: VardaWriteClient.CreateHenkiloRequest
-    ): VardaReadClient.HenkiloResponse {
-        create("henkilo", body)
-        return VardaReadClient.HenkiloResponse(
-            henkilo_oid = null,
-            url = nextUri("henkilo"),
-            lapsi = emptyList()
-        )
     }
 
     override fun createLapsi(
