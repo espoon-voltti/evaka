@@ -117,7 +117,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
     setSubmitting(true)
     createPlacementResult({
       body: {
-        childId: childId,
+        childId,
         type: form.type,
         unitId: form.unit.id,
         startDate: form.startDate,

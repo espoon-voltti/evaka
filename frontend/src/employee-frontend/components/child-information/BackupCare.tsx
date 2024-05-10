@@ -18,11 +18,11 @@ import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
 export interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default function BackupCare({ id, startOpen }: Props) {
+export default function BackupCare({ childId, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { backupCares, loadBackupCares, permittedActions } =
     useContext(ChildContext)
@@ -32,7 +32,7 @@ export default function BackupCare({ id, startOpen }: Props) {
 
   useEffect(() => {
     void loadBackupCares()
-  }, [id, loadBackupCares])
+  }, [childId, loadBackupCares])
 
   return (
     <CollapsibleContentArea
@@ -56,7 +56,7 @@ export default function BackupCare({ id, startOpen }: Props) {
             />
           )}
           {uiMode === 'create-new-backup-care' && (
-            <BackupCareForm childId={id} />
+            <BackupCareForm childId={childId} />
           )}
           {orderBy(
             backupCares.value,
@@ -64,7 +64,7 @@ export default function BackupCare({ id, startOpen }: Props) {
             'desc'
           ).map((backupCare) => (
             <BackupCareRow
-              childId={id}
+              childId={childId}
               key={backupCare.backupCare.id}
               backupCare={backupCare.backupCare}
               permittedActions={backupCare.permittedActions}

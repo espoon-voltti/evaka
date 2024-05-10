@@ -6,31 +6,26 @@ import orderBy from 'lodash/orderBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { wrapResult } from 'lib-common/api'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H3 } from 'lib-components/typography'
 
-import { getFosterParents } from '../../generated/api-clients/pis'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 import StatusLabel from '../common/StatusLabel'
 
-const getFosterParentsResult = wrapResult(getFosterParents)
+import { getFosterParentsQuery } from './queries'
 
 interface Props {
-  id: UUID
+  childId: UUID
 }
 
-export default React.memo(function FosterParents({ id }: Props) {
+export default React.memo(function FosterParents({ childId }: Props) {
   const { i18n } = useTranslation()
-  const [fosterParents] = useApiState(
-    () => getFosterParentsResult({ childId: id }),
-    [id]
-  )
+  const fosterParents = useQueryResult(getFosterParentsQuery({ childId }))
 
   return (
     <>

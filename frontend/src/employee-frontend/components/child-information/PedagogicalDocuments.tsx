@@ -41,12 +41,12 @@ const getChildPedagogicalDocumentsResult = wrapResult(
 const deletePedagogicalDocumentResult = wrapResult(deletePedagogicalDocument)
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
 export default React.memo(function PedagogicalDocuments({
-  id,
+  childId,
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
@@ -54,8 +54,8 @@ export default React.memo(function PedagogicalDocuments({
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
 
   const [pedagogicalDocuments, loadData] = useApiState(
-    () => getChildPedagogicalDocumentsResult({ childId: id }),
-    [id]
+    () => getChildPedagogicalDocumentsResult({ childId }),
+    [childId]
   )
 
   const [open, setOpen] = useState(startOpen)
@@ -96,7 +96,7 @@ export default React.memo(function PedagogicalDocuments({
   }
 
   const createNewDocument = () => {
-    const emptyDocument = { childId: id, description: '', attachmentId: null }
+    const emptyDocument = { childId, description: '', attachmentId: null }
     void createPedagogicalDocumentResult({ body: emptyDocument })
       .then(
         (result) =>

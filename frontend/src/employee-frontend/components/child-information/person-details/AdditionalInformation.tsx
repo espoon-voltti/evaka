@@ -6,13 +6,11 @@ import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
 import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
-import { useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -24,10 +22,6 @@ import { featureFlags } from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
 
 import LabelValueList from '../../../components/common/LabelValueList'
-import {
-  getAdditionalInfo,
-  updateAdditionalInfo
-} from '../../../generated/api-clients/daycare'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext, UiState } from '../../../state/ui'
 import { formatParagraphs } from '../../../utils/html-utils'
@@ -35,6 +29,10 @@ import { RequireRole } from '../../../utils/roles'
 import { renderResult } from '../../async-rendering'
 import { FlexRow } from '../../common/styled/containers'
 import { textAreaRows } from '../../utils'
+import {
+  getAdditionalInfoQuery,
+  updateAdditionalInfoMutation
+} from '../queries'
 
 import { specialDietsQuery } from './queries'
 
@@ -68,18 +66,20 @@ const filterDiets = (
 }
 
 interface Props {
-  id: UUID
+  childId: UUID
 }
 
 function getDietCaption(diet: SpecialDiet) {
   return `${diet.abbreviation}${diet.name ? ` (${diet.name})` : ''} - ${diet.id}`
 }
 
-export default React.memo(function AdditionalInformation({ id }: Props) {
+export default React.memo(function AdditionalInformation({ childId }: Props) {
   const { i18n } = useTranslation()
-  const [additionalInformation, loadData] = useApiState(
-    () => wrapResult(getAdditionalInfo)({ childId: id }),
-    [id]
+  const additionalInformation = useQueryResult(
+    getAdditionalInfoQuery({ childId })
+  )
+  const { mutateAsync: updateAdditionalInfo } = useMutationResult(
+    updateAdditionalInfoMutation
   )
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const [form, setForm] = useState<AdditionalInformation>({
@@ -113,13 +113,9 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
   }, [additionalInformation, toggleUiMode])
 
   const onSubmit = useCallback(
-    () => wrapResult(updateAdditionalInfo)({ childId: id, body: form }),
-    [id, form]
+    () => updateAdditionalInfo({ childId, body: form }),
+    [childId, form, updateAdditionalInfo]
   )
-  const onSuccess = useCallback(() => {
-    clearUiMode()
-    void loadData()
-  }, [clearUiMode, loadData])
 
   const valueWidth = '600px'
 
@@ -323,15 +319,12 @@ export default React.memo(function AdditionalInformation({ id }: Props) {
           {editing && (
             <RightAlignedRow>
               <FixedSpaceRow>
-                <Button
-                  onClick={() => clearUiMode()}
-                  text={i18n.common.cancel}
-                />
+                <Button onClick={clearUiMode} text={i18n.common.cancel} />
                 <AsyncButton
                   primary
                   disabled={false}
                   onClick={onSubmit}
-                  onSuccess={onSuccess}
+                  onSuccess={clearUiMode}
                   data-qa="confirm-edited-child-button"
                   text={i18n.common.confirm}
                 />

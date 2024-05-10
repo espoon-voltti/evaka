@@ -25,11 +25,11 @@ import { PreschoolAssistanceSection } from './assistance/PreschoolAssistanceSect
 import { assistanceQuery } from './queries'
 
 export interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default React.memo(function Assistance({ id, startOpen }: Props) {
+export default React.memo(function Assistance({ childId, startOpen }: Props) {
   const { i18n } = useTranslation()
 
   const { permittedActions, assistanceNeedVoucherCoefficientsEnabled } =
@@ -48,25 +48,25 @@ export default React.memo(function Assistance({ id, startOpen }: Props) {
         data-qa="assistance-collapsible"
       >
         {permittedActions.has('READ_ASSISTANCE') && (
-          <AssistanceContent id={id} permittedActions={permittedActions} />
+          <AssistanceContent id={childId} permittedActions={permittedActions} />
         )}
         {permittedActions.has('READ_ASSISTANCE_NEED_DECISIONS') && (
           <>
             <HorizontalLine dashed slim />
-            <AssistanceNeedDecisionSection id={id} />
+            <AssistanceNeedDecisionSection id={childId} />
           </>
         )}
         {permittedActions.has('READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS') && (
           <>
             <HorizontalLine dashed slim />
-            <AssistanceNeedPreschoolDecisionSection childId={id} />
+            <AssistanceNeedPreschoolDecisionSection childId={childId} />
           </>
         )}
         {assistanceNeedVoucherCoefficientsEnabled.getOrElse(false) &&
           permittedActions.has('READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS') && (
             <>
               <HorizontalLine dashed slim />
-              <AssistanceNeedVoucherCoefficientSection id={id} />
+              <AssistanceNeedVoucherCoefficientSection childId={childId} />
             </>
           )}
       </CollapsibleContentArea>

@@ -3,16 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Loading, Result, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
@@ -21,7 +14,12 @@ import {
 } from 'lib-common/generated/api-types/backupcare'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { first, second, useSelectMutation } from 'lib-common/query'
+import {
+  first,
+  second,
+  useQueryResult,
+  useSelectMutation
+} from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
@@ -32,7 +30,6 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { fontWeights } from 'lib-components/typography'
 
-import { getUnits } from '../../../generated/api-clients/daycare'
 import { ChildContext } from '../../../state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
@@ -45,8 +42,7 @@ import {
   createBackupCareMutation,
   updateBackupCareMutation
 } from '../../unit/queries'
-
-const getUnitsResult = wrapResult(getUnits)
+import { unitsQuery } from '../queries'
 
 export interface Props {
   childId: UUID
@@ -87,15 +83,13 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
   const { backupCares, consecutivePlacementRanges, loadBackupCares } =
     useContext(ChildContext)
 
-  const [units, setUnits] = useState<Result<UnitStub[]>>(Loading.of())
-
-  useEffect(() => {
-    void getUnitsResult({
+  const units = useQueryResult(
+    unitsQuery({
       areaIds: null,
       type: 'DAYCARE',
       from: LocalDate.todayInHelsinkiTz()
-    }).then(setUnits)
-  }, [])
+    })
+  )
 
   const initialFormState: FormState = {
     unit: backupCare?.unit,

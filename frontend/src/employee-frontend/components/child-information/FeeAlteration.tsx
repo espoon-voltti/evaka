@@ -5,11 +5,10 @@
 import React, { useCallback, useContext, useRef, useState } from 'react'
 
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
-import { wrapResult } from 'lib-common/api'
 import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -17,50 +16,53 @@ import { H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  createFeeAlteration,
-  deleteFeeAlteration,
-  getFeeAlterations,
-  updateFeeAlteration
-} from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { renderResult } from '../async-rendering'
 
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
-
-const createFeeAlterationResult = wrapResult(createFeeAlteration)
-const getFeeAlterationsResult = wrapResult(getFeeAlterations)
-const updateFeeAlterationResult = wrapResult(updateFeeAlteration)
-const deleteFeeAlterationResult = wrapResult(deleteFeeAlteration)
+import {
+  createFeeAlterationMutation,
+  deleteFeeAlterationMutation,
+  getFeeAlterationsQuery,
+  updateFeeAlterationMutation
+} from './queries'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
-export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
+export default React.memo(function FeeAlteration({
+  childId,
+  startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
   const { permittedActions } = useContext<ChildState>(ChildContext)
-  const [feeAlterations, loadFeeAlterations] = useApiState(
-    () => getFeeAlterationsResult({ personId: id }),
-    [id]
+
+  const feeAlterations = useQueryResult(
+    getFeeAlterationsQuery({ personId: childId })
+  )
+  const { mutateAsync: createFeeAlteration } = useMutationResult(
+    createFeeAlterationMutation
+  )
+  const { mutateAsync: updateFeeAlteration } = useMutationResult(
+    updateFeeAlterationMutation
+  )
+  const { mutateAsync: deleteFeeAlteration } = useMutationResult(
+    deleteFeeAlterationMutation
   )
 
   const [open, setOpen] = useState(startOpen)
   const [deleted, setDeleted] = useState<FeeAlteration>()
   const refSectionTop = useRef(null)
 
-  const onSuccess = useCallback(() => {
-    clearUiMode()
-    void loadFeeAlterations()
-  }, [clearUiMode, loadFeeAlterations])
   const onFailure = useCallback(() => {
     setErrorMessage({
       type: 'error',
@@ -93,14 +95,14 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
         <Gap size="m" />
         {uiMode === newFeeAlterationUiMode ? (
           <FeeAlterationEditor
-            personId={id}
+            personId={childId}
             cancel={() => clearUiMode()}
             create={(data) =>
-              createFeeAlterationResult({
+              createFeeAlteration({
                 body: { ...data, updatedBy: null, updatedAt: null }
               })
             }
-            onSuccess={onSuccess}
+            onSuccess={clearUiMode}
             onFailure={onFailure}
           />
         ) : null}
@@ -109,14 +111,15 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
             feeAlterations={feeAlterations}
             toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
             isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
-            cancel={onSuccess}
+            cancel={clearUiMode}
             update={(data) =>
-              updateFeeAlterationResult({
+              updateFeeAlteration({
+                personId: childId,
                 feeAlterationId: data.id!,
                 body: data
               })
             }
-            onSuccess={onSuccess}
+            onSuccess={clearUiMode}
             onFailure={onFailure}
             toggleDeleteModal={setDeleted}
           />
@@ -140,20 +143,19 @@ export default React.memo(function FeeAlteration({ id, startOpen }: Props) {
             action: () =>
               deleted &&
               deleted.id !== null &&
-              deleteFeeAlterationResult({ feeAlterationId: deleted.id }).then(
-                (res) => {
-                  setDeleted(undefined)
-                  if (res.isSuccess) {
-                    void loadFeeAlterations()
-                  } else {
-                    setErrorMessage({
-                      type: 'error',
-                      title: i18n.childInformation.feeAlteration.deleteError,
-                      resolveLabel: i18n.common.ok
-                    })
-                  }
+              deleteFeeAlteration({
+                personId: childId,
+                feeAlterationId: deleted.id
+              }).then((res) => {
+                setDeleted(undefined)
+                if (!res.isSuccess) {
+                  setErrorMessage({
+                    type: 'error',
+                    title: i18n.childInformation.feeAlteration.deleteError,
+                    resolveLabel: i18n.common.ok
+                  })
                 }
-              ),
+              }),
             label: i18n.common.remove
           }}
         />

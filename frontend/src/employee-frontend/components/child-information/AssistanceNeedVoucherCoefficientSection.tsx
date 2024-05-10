@@ -7,13 +7,12 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { ChildState, ChildContext } from 'employee-frontend/state/child'
+import { ChildContext, ChildState } from 'employee-frontend/state/child'
 import { UIContext } from 'employee-frontend/state/ui'
-import { wrapResult } from 'lib-common/api'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -21,22 +20,15 @@ import { Table, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import {
-  deleteAssistanceNeedVoucherCoefficient,
-  getAssistanceNeedVoucherCoefficients
-} from '../../generated/api-clients/assistanceneed'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import AssistanceNeedVoucherCoefficientForm from './assistance-need/voucher-coefficient/AssistanceNeedVoucherCoefficientForm'
 import AssistanceNeedVoucherCoefficientRow from './assistance-need/voucher-coefficient/AssistanceNeedVoucherCoefficientRow'
-
-const getAssistanceNeedVoucherCoefficientsResult = wrapResult(
-  getAssistanceNeedVoucherCoefficients
-)
-const deleteAssistanceNeedVoucherCoefficientResult = wrapResult(
-  deleteAssistanceNeedVoucherCoefficient
-)
+import {
+  deleteAssistanceNeedVoucherCoefficientMutation,
+  getAssistanceNeedVoucherCoefficientsQuery
+} from './queries'
 
 const TitleRow = styled.div`
   display: flex;
@@ -46,11 +38,11 @@ const TitleRow = styled.div`
 `
 
 export interface Props {
-  id: UUID
+  childId: UUID
 }
 
 export default React.memo(function AssistanceNeedVoucherCoefficientSection({
-  id
+  childId
 }: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext<ChildState>(ChildContext)
@@ -59,9 +51,8 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
 
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
 
-  const [coefficients, reloadCoefficients] = useApiState(
-    () => getAssistanceNeedVoucherCoefficientsResult({ childId: id }),
-    [id]
+  const coefficients = useQueryResult(
+    getAssistanceNeedVoucherCoefficientsQuery({ childId })
   )
 
   const [activeCoefficient, setActiveCoefficient] =
@@ -72,13 +63,11 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
       {uiMode === 'delete-assistance-need-voucher-coefficient' &&
         activeCoefficient && (
           <DeleteAssistanceNeedVoucherCoefficientModal
+            childId={childId}
             coefficientId={activeCoefficient.id}
-            onClose={(shouldRefresh) => {
+            onClose={() => {
               clearUiMode()
               setActiveCoefficient(undefined)
-              if (shouldRefresh) {
-                void reloadCoefficients()
-              }
             }}
           />
         )}
@@ -110,8 +99,8 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
               <Gap size="s" />
               <div data-qa="create-new-assistance-need-voucher-coefficient">
                 <AssistanceNeedVoucherCoefficientForm
-                  childId={id}
-                  onSuccess={reloadCoefficients}
+                  onSuccess={() => undefined}
+                  childId={childId}
                   coefficients={coefficients.map(
                     ({ voucherCoefficient }) => voucherCoefficient
                   )}
@@ -129,6 +118,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
                   ['desc']
                 ).map(({ voucherCoefficient, permittedActions }) => (
                   <AssistanceNeedVoucherCoefficientRow
+                    childId={childId}
                     key={voucherCoefficient.id}
                     coefficients={coefficients.map(
                       ({ voucherCoefficient }) => voucherCoefficient
@@ -137,7 +127,6 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
                     activeCoefficient={activeCoefficient}
                     setActiveCoefficient={setActiveCoefficient}
                     permittedActions={permittedActions}
-                    reloadCoefficients={reloadCoefficients}
                   />
                 ))}
               </Tbody>
@@ -151,12 +140,16 @@ export default React.memo(function AssistanceNeedVoucherCoefficientSection({
 
 const DeleteAssistanceNeedVoucherCoefficientModal = React.memo(
   function DeleteAssistanceNeedVoucherCoefficientModal({
+    childId,
     coefficientId,
     onClose
   }: {
+    childId: UUID
     coefficientId: UUID
-    onClose: (shouldRefresh: boolean) => void
+    onClose: () => void
   }) {
+    const { mutateAsync: deleteAssistanceNeedVoucherCoefficient } =
+      useMutationResult(deleteAssistanceNeedVoucherCoefficientMutation)
     const { i18n } = useTranslation()
     return (
       <InfoModal
@@ -171,15 +164,16 @@ const DeleteAssistanceNeedVoucherCoefficientModal = React.memo(
         }
         icon={faQuestion}
         reject={{
-          action: () => onClose(false),
+          action: () => onClose(),
           label: i18n.common.cancel
         }}
         resolve={{
           async action() {
-            await deleteAssistanceNeedVoucherCoefficientResult({
+            await deleteAssistanceNeedVoucherCoefficient({
+              childId,
               id: coefficientId
             })
-            onClose(true)
+            onClose()
           },
           label:
             i18n.childInformation.assistanceNeedVoucherCoefficient.deleteModal

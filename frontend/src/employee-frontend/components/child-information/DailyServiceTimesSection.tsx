@@ -6,10 +6,9 @@ import orderBy from 'lodash/orderBy'
 import React, { useContext, useState } from 'react'
 
 import { ChildContext, ChildState } from 'employee-frontend/state/child'
-import { wrapResult } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -20,26 +19,23 @@ import { H2, H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faQuestion } from 'lib-icons'
 
-import {
-  deleteDailyServiceTimes,
-  getDailyServiceTimes
-} from '../../generated/api-clients/dailyservicetimes'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { DailyServiceTimesCreationForm } from './daily-service-times/DailyServiceTimesForms'
 import DailyServiceTimesRow from './daily-service-times/DailyServiceTimesRow'
-
-const getDailyServiceTimesResult = wrapResult(getDailyServiceTimes)
-const deleteDailyServiceTimesResult = wrapResult(deleteDailyServiceTimes)
+import {
+  deleteDailyServiceTimesMutation,
+  getDailyServiceTimesQuery
+} from './queries'
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
 export default React.memo(function DailyServiceTimesSection({
-  id,
+  childId,
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
@@ -47,10 +43,7 @@ export default React.memo(function DailyServiceTimesSection({
 
   const [open, setOpen] = useState(startOpen)
 
-  const [apiData, loadData] = useApiState(
-    () => getDailyServiceTimesResult({ childId: id }),
-    [id]
-  )
+  const apiData = useQueryResult(getDailyServiceTimesQuery({ childId }))
 
   const [creationFormOpen, setCreationFormOpen] = useState(false)
 
@@ -63,13 +56,10 @@ export default React.memo(function DailyServiceTimesSection({
     <>
       {uiMode?.type === 'delete' && (
         <DeleteDailyServiceTimesModal
+          childId={childId}
           dailyServiceTimesId={uiMode.id}
-          onClose={(shouldRefresh) => {
+          onClose={() => {
             setUIMode(undefined)
-
-            if (shouldRefresh) {
-              void loadData()
-            }
           }}
         />
       )}
@@ -110,14 +100,10 @@ export default React.memo(function DailyServiceTimesSection({
             <HorizontalLine slim dashed />
             <H4>{i18n.childInformation.dailyServiceTimes.createNewTimes}</H4>
             <DailyServiceTimesCreationForm
-              onClose={(shouldRefresh) => {
+              onClose={() => {
                 setCreationFormOpen(false)
-
-                if (shouldRefresh) {
-                  void loadData()
-                }
               }}
-              childId={id}
+              childId={childId}
               hasActiveOrUpcomingServiceTimes={apiData
                 .map((rows) =>
                   rows.some(
@@ -146,13 +132,13 @@ export default React.memo(function DailyServiceTimesSection({
                 ({ permittedActions, dailyServiceTimes: { id, times } }) => (
                   <DailyServiceTimesRow
                     key={id}
+                    childId={childId}
                     times={times}
                     permittedActions={permittedActions}
                     onDelete={() => setUIMode({ type: 'delete', id })}
                     onEdit={(open) =>
                       setUIMode(open ? { type: 'modify', id } : undefined)
                     }
-                    onRefresh={loadData}
                     isEditing={uiMode?.id === id && uiMode?.type === 'modify'}
                     id={id}
                   />
@@ -168,13 +154,19 @@ export default React.memo(function DailyServiceTimesSection({
 
 const DeleteDailyServiceTimesModal = React.memo(
   function DeleteDailyServiceTimesModal({
+    childId,
     dailyServiceTimesId,
     onClose
   }: {
+    childId: UUID
     dailyServiceTimesId: UUID
-    onClose: (shouldRefresh: boolean) => void
+    onClose: () => void
   }) {
     const { i18n } = useTranslation()
+
+    const { mutateAsync: deleteDailyServiceTimes } = useMutationResult(
+      deleteDailyServiceTimesMutation
+    )
     return (
       <InfoModal
         type="warning"
@@ -182,13 +174,13 @@ const DeleteDailyServiceTimesModal = React.memo(
         text={i18n.childInformation.dailyServiceTimes.deleteModal.description}
         icon={faQuestion}
         reject={{
-          action: () => onClose(false),
+          action: () => onClose(),
           label: i18n.common.cancel
         }}
         resolve={{
           async action() {
-            await deleteDailyServiceTimesResult({ id: dailyServiceTimesId })
-            onClose(true)
+            await deleteDailyServiceTimes({ childId, id: dailyServiceTimesId })
+            onClose()
           },
           label: i18n.childInformation.dailyServiceTimes.deleteModal.deleteBtn
         }}

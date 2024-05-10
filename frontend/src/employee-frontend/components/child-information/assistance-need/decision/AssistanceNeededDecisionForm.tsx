@@ -7,14 +7,14 @@ import React, { SetStateAction, useCallback, useMemo } from 'react'
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
-import { Result, wrapResult } from 'lib-common/api'
+import { Result } from 'lib-common/api'
 import {
   AssistanceLevel,
   AssistanceNeedDecisionForm,
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee } from 'lib-common/generated/api-types/pis'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
@@ -29,11 +29,8 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { getUnits } from '../../../../generated/api-clients/daycare'
-import { getEmployees } from '../../../../generated/api-clients/pis'
-
-const getUnitsResult = wrapResult(getUnits)
-const getEmployeesResult = wrapResult(getEmployees)
+import { getEmployeesQuery } from '../../../../queries'
+import { unitsQuery } from '../../queries'
 
 const FieldWithInfo = React.memo(function FieldWithInfo({
   info,
@@ -214,11 +211,14 @@ export default React.memo(function AssistanceNeedDecisionForm({
   setFormState,
   fieldInfos
 }: AssistanceNeedDecisionFormProps) {
-  const [units] = useApiState(
-    () => getUnitsResult({ areaIds: null, type: 'ALL', from: null }),
-    []
+  const units = useQueryResult(
+    unitsQuery({
+      areaIds: null,
+      type: 'ALL',
+      from: null
+    })
   )
-  const [employees] = useApiState(() => getEmployeesResult(), [])
+  const employees = useQueryResult(getEmployeesQuery())
 
   const { i18n, lang } = useTranslation()
   const t = useMemo(() => i18n.childInformation.assistanceNeedDecision, [i18n])

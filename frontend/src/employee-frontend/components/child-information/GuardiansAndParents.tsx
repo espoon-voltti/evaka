@@ -18,12 +18,12 @@ import FridgeParents from './FridgeParents'
 import Guardians from './Guardians'
 
 interface Props {
-  id: UUID
+  childId: UUID
   startOpen: boolean
 }
 
 export default React.memo(function GuardiansAndParents({
-  id,
+  childId,
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
@@ -49,7 +49,7 @@ export default React.memo(function GuardiansAndParents({
         {permittedActions.has('READ_FOSTER_PARENTS') && (
           <>
             <Gap size="XL" />
-            <FosterParents id={id} />
+            <FosterParents childId={childId} />
           </>
         )}
       </CollapsibleContentArea>
