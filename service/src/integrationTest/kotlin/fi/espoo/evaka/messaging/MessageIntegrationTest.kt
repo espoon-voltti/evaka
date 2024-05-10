@@ -1227,7 +1227,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 2,
-                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }
@@ -1259,7 +1259,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 3,
-                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }
@@ -1291,7 +1291,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 3,
-                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }
@@ -1319,7 +1319,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 2,
-                it.createQuery{ sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
     }

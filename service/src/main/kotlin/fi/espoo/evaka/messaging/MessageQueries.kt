@@ -1226,15 +1226,11 @@ fun Database.Read.getMessageAccountsForRecipients(
         PredicateSql.allNotNull(
             if (filters?.yearsOfBirth?.isNotEmpty() == true) {
                 PredicateSql {
-                    where(
-                        "date_part('year', p.date_of_birth) = ANY(${bind(filters.yearsOfBirth)})"
-                    )
+                    where("date_part('year', p.date_of_birth) = ANY(${bind(filters.yearsOfBirth)})")
                 }
             } else null,
             if (filters?.serviceNeedOptionIds?.isNotEmpty() == true) {
-                PredicateSql {
-                    where("sno.id = ANY(${bind(filters.serviceNeedOptionIds)})")
-                }
+                PredicateSql { where("sno.id = ANY(${bind(filters.serviceNeedOptionIds)})") }
             } else null,
             if (filters?.shiftCare == true && filters.intermittentShiftCare) {
                 PredicateSql {
