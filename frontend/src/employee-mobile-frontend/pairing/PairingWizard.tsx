@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useState } from 'react'
-import React, { Fragment, useContext, useEffect } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Loading } from 'lib-common/api'
+import { Loading, Result, wrapResult } from 'lib-common/api'
+import { Pairing } from 'lib-common/generated/api-types/pairing'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'
@@ -16,13 +16,12 @@ import { faArrowRight } from 'lib-icons'
 import EvakaLogo from '../assets/EvakaLogo.svg'
 import { UserContext } from '../auth/state'
 import { useTranslation } from '../common/i18n'
-
 import {
-  authMobile,
   getPairingStatus,
-  PairingResponse,
   postPairingChallenge
-} from './api'
+} from '../generated/api-clients/pairing'
+
+import { authMobile } from './api'
 import { FullHeightContainer, WideLinkButton } from './components'
 
 const CenteredColumn = styled.div`
@@ -63,20 +62,25 @@ export const ResponseKey = styled.div`
 
 const Bottom = styled.div``
 
+const getPairingStatusResult = wrapResult(getPairingStatus)
+const postPairingChallengeResult = wrapResult(postPairingChallenge)
+
 export default React.memo(function ParingWizard() {
   const { i18n } = useTranslation()
   const { refreshAuthStatus } = useContext(UserContext)
 
   const [phase, setPhase] = useState<1 | 2 | 3>(1)
   const [challengeKey, setChallengeKey] = useState<string>('')
-  const [pairingResponse, setPairingResponse] = useState<
-    Result<PairingResponse>
-  >(Loading.of())
+  const [pairingResponse, setPairingResponse] = useState<Result<Pairing>>(
+    Loading.of()
+  )
 
   useEffect(() => {
     const polling = setInterval(() => {
       if (pairingResponse.isSuccess) {
-        void getPairingStatus(pairingResponse.value.id).then((status) => {
+        void getPairingStatusResult({
+          id: pairingResponse.value.id
+        }).then((status) => {
           if (status.isSuccess) {
             if (status.value.status === 'READY') {
               if (pairingResponse.value.responseKey) {
@@ -99,7 +103,9 @@ export default React.memo(function ParingWizard() {
   }, [pairingResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function sendRequest() {
-    await postPairingChallenge(challengeKey).then(setPairingResponse)
+    await postPairingChallengeResult({ body: { challengeKey } }).then(
+      setPairingResponse
+    )
     setPhase(2)
   }
 

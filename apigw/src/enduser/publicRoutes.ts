@@ -12,6 +12,7 @@ const proxy = createProxy()
 router.get('/version', (_, res) => {
   res.send({ commitId: appCommit })
 })
+router.all('/citizen/public/*', createProxy())
 router.get('/units', proxy) // deprecated
 router.get('/public/units', proxy)
 router.get('/public/units/*', proxy)

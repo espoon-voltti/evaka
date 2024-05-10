@@ -10,7 +10,6 @@ import { CreateFosterParentRelationshipBody } from 'lib-common/generated/api-typ
 import { CreatePersonBody } from 'lib-common/generated/api-types/pis'
 import { DisableSsnRequest } from 'lib-common/generated/api-types/pis'
 import { Employee } from 'lib-common/generated/api-types/pis'
-import { EmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { EvakaRightsRequest } from 'lib-common/generated/api-types/pis'
 import { FamilyContact } from 'lib-common/generated/api-types/pis'
 import { FamilyContactPriorityUpdate } from 'lib-common/generated/api-types/pis'
@@ -22,7 +21,6 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MergeRequest } from 'lib-common/generated/api-types/pis'
 import { NewEmployee } from 'lib-common/generated/api-types/pis'
-import { PagedEmployeesWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { Partnership } from 'lib-common/generated/api-types/pis'
 import { PartnershipRequest } from 'lib-common/generated/api-types/pis'
 import { PartnershipUpdateRequest } from 'lib-common/generated/api-types/pis'
@@ -32,39 +30,18 @@ import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { PersonPatch } from 'lib-common/generated/api-types/pis'
 import { PersonResponse } from 'lib-common/generated/api-types/pis'
 import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
-import { SearchEmployeeRequest } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
-import { UpsertEmployeeDaycareRolesRequest } from 'lib-common/generated/api-types/pis'
-import { UserRole } from 'lib-common/generated/api-types/shared'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonEmployeeWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFamilyOverview } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonFosterParentRelationship } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonPagedEmployeesWithDaycareRoles } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPartnership } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPartnershipWithPermittedActions } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonJSON } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonResponse } from 'lib-common/generated/api-types/pis'
 import { deserializeJsonPersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { uri } from 'lib-common/uri'
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.activateEmployee
-*/
-export async function activateEmployee(
-  request: {
-    id: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/activate`.toString(),
-    method: 'PUT'
-  })
-  return json
-}
 
 
 /**
@@ -85,75 +62,6 @@ export async function createEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deactivateEmployee
-*/
-export async function deactivateEmployee(
-  request: {
-    id: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/deactivate`.toString(),
-    method: 'PUT'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deleteEmployee
-*/
-export async function deleteEmployee(
-  request: {
-    id: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deleteEmployeeDaycareRoles
-*/
-export async function deleteEmployeeDaycareRoles(
-  request: {
-    id: UUID,
-    daycareId?: UUID | null
-  }
-): Promise<void> {
-  const params = createUrlSearchParams(
-    ['daycareId', request.daycareId]
-  )
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/daycare-roles`.toString(),
-    method: 'DELETE',
-    params
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployeeDetails
-*/
-export async function getEmployeeDetails(
-  request: {
-    id: UUID
-  }
-): Promise<EmployeeWithDaycareRoles> {
-  const { data: json } = await client.request<JsonOf<EmployeeWithDaycareRoles>>({
-    url: uri`/employee/${request.id}/details`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonEmployeeWithDaycareRoles(json)
-}
-
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployees
 */
 export async function getEmployees(): Promise<Employee[]> {
@@ -162,71 +70,6 @@ export async function getEmployees(): Promise<Employee[]> {
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getFinanceDecisionHandlers
-*/
-export async function getFinanceDecisionHandlers(): Promise<Employee[]> {
-  const { data: json } = await client.request<JsonOf<Employee[]>>({
-    url: uri`/employee/finance-decision-handler`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonEmployee(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.searchEmployees
-*/
-export async function searchEmployees(
-  request: {
-    body: SearchEmployeeRequest
-  }
-): Promise<PagedEmployeesWithDaycareRoles> {
-  const { data: json } = await client.request<JsonOf<PagedEmployeesWithDaycareRoles>>({
-    url: uri`/employee/search`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<SearchEmployeeRequest>
-  })
-  return deserializeJsonPagedEmployeesWithDaycareRoles(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.updateEmployeeGlobalRoles
-*/
-export async function updateEmployeeGlobalRoles(
-  request: {
-    id: UUID,
-    body: UserRole[]
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/global-roles`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<UserRole[]>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.upsertEmployeeDaycareRoles
-*/
-export async function upsertEmployeeDaycareRoles(
-  request: {
-    id: UUID,
-    body: UpsertEmployeeDaycareRolesRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/daycare-roles`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<UpsertEmployeeDaycareRolesRequest>
-  })
-  return json
 }
 
 

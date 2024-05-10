@@ -9,7 +9,6 @@ import { JsonOf } from 'lib-common/json'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { PairingStatusRes } from 'lib-common/generated/api-types/pairing'
-import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
 import { RenameRequest } from 'lib-common/generated/api-types/pairing'
@@ -95,7 +94,7 @@ export async function getPairingStatus(
   }
 ): Promise<PairingStatusRes> {
   const { data: json } = await client.request<JsonOf<PairingStatusRes>>({
-    url: uri`/public/pairings/${request.id}/status`.toString(),
+    url: uri`/employee/public/pairings/${request.id}/status`.toString(),
     method: 'GET'
   })
   return json
@@ -114,23 +113,6 @@ export async function postPairing(
     url: uri`/pairings`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostPairingReq>
-  })
-  return deserializeJsonPairing(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.pairing.PairingsController.postPairingChallenge
-*/
-export async function postPairingChallenge(
-  request: {
-    body: PostPairingChallengeReq
-  }
-): Promise<Pairing> {
-  const { data: json } = await client.request<JsonOf<Pairing>>({
-    url: uri`/public/pairings/challenge`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PostPairingChallengeReq>
   })
   return deserializeJsonPairing(json)
 }

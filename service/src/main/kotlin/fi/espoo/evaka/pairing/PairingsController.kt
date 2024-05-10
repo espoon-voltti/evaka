@@ -233,6 +233,7 @@ class PairingsController(
         path =
             [
                 "/public/pairings/{id}/status", // deprecated
+                "/employee/public/pairings/{id}/status",
                 "/employee-mobile/public/pairings/{id}/status"
             ]
     )

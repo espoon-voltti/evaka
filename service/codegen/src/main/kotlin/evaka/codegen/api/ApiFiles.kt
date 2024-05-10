@@ -21,8 +21,8 @@ fun generateApiFiles(): Map<TsFile, String> {
             .filter { it.isJsonEndpoint }
             .filterNot {
                 it.isDeprecated ||
-                    it.path.startsWith("/integration") ||
-                    it.path.startsWith("/system") ||
+                    it.path.startsWith("/integration/") ||
+                    it.path.startsWith("/system/") ||
                     endpointExcludes.contains(it.path)
             }
     endpoints.forEach { it.validate() }
@@ -65,7 +65,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val citizenApiClients =
         endpoints
-            .filter { it.path.startsWith("/citizen") || it.path.startsWith("/public") }
+            .filter { it.path.startsWith("/citizen/") || it.path.startsWith("/public/") }
             .filter {
                 when (it.authenticatedUserType) {
                     typeOf<AuthenticatedUser.Citizen>(),
@@ -89,7 +89,9 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val employeeApiClients =
         endpoints
-            .filterNot { it.path.startsWith("/citizen") }
+            .filterNot {
+                it.path.startsWith("/citizen/") || it.path.startsWith("/employee-mobile/")
+            }
             .filter {
                 when (it.authenticatedUserType) {
                     typeOf<AuthenticatedUser.Employee>(),
@@ -113,7 +115,7 @@ fun generateApiFiles(): Map<TsFile, String> {
 
     val employeeMobileApiClients =
         endpoints
-            .filterNot { it.path.startsWith("/citizen") }
+            .filterNot { it.path.startsWith("/citizen/") || it.path.startsWith("/employee/") }
             .filter {
                 when (it.authenticatedUserType) {
                     typeOf<AuthenticatedUser.MobileDevice>(),

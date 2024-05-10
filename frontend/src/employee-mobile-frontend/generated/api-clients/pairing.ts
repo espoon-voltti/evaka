@@ -100,7 +100,7 @@ export async function getPairingStatus(
   }
 ): Promise<PairingStatusRes> {
   const { data: json } = await client.request<JsonOf<PairingStatusRes>>({
-    url: uri`/public/pairings/${request.id}/status`.toString(),
+    url: uri`/employee-mobile/public/pairings/${request.id}/status`.toString(),
     method: 'GET'
   })
   return json
@@ -116,7 +116,7 @@ export async function postPairingChallenge(
   }
 ): Promise<Pairing> {
   const { data: json } = await client.request<JsonOf<Pairing>>({
-    url: uri`/public/pairings/challenge`.toString(),
+    url: uri`/employee-mobile/public/pairings/challenge`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostPairingChallengeReq>
   })

@@ -7,13 +7,10 @@
 import LocalDate from 'lib-common/local-date'
 import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { ApplicationUnitType } from 'lib-common/generated/api-types/daycare'
 import { AreaJSON } from 'lib-common/generated/api-types/daycare'
 import { CaretakerRequest } from 'lib-common/generated/api-types/daycare'
 import { CaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
-import { ClubTerm } from 'lib-common/generated/api-types/daycare'
 import { CreateDaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { CreateGroupRequest } from 'lib-common/generated/api-types/daycare'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
@@ -26,8 +23,6 @@ import { FullAclInfo } from 'lib-common/generated/api-types/daycare'
 import { GroupUpdateRequest } from 'lib-common/generated/api-types/daycare'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { PreschoolTerm } from 'lib-common/generated/api-types/daycare'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import { TemporaryEmployee } from 'lib-common/generated/api-types/pis'
@@ -43,13 +38,10 @@ import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonChildResponse } from 'lib-common/generated/api-types/daycare'
-import { deserializeJsonClubTerm } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDaycare } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonDaycareResponse } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
-import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/daycare'
-import { deserializeJsonPublicUnit } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonStaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
@@ -397,46 +389,6 @@ export async function updateUnitFeatures(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getAllApplicableUnits
-*/
-export async function getAllApplicableUnits(
-  request: {
-    applicationType: ApplicationType
-  }
-): Promise<PublicUnit[]> {
-  const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
-    url: uri`/public/units/${request.applicationType}`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonPublicUnit(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getApplicationUnits
-*/
-export async function getApplicationUnits(
-  request: {
-    type: ApplicationUnitType,
-    date: LocalDate,
-    shiftCare?: boolean | null
-  }
-): Promise<PublicUnit[]> {
-  const params = createUrlSearchParams(
-    ['type', request.type.toString()],
-    ['date', request.date.formatIso()],
-    ['shiftCare', request.shiftCare?.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<PublicUnit[]>>({
-    url: uri`/public/units`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonPublicUnit(e))
-}
-
-
-/**
 * Generated from fi.espoo.evaka.daycare.controllers.LocationController.getAreas
 */
 export async function getAreas(): Promise<AreaJSON[]> {
@@ -526,30 +478,6 @@ export async function upsertStaffAttendance(
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdate>
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.getClubTerms
-*/
-export async function getClubTerms(): Promise<ClubTerm[]> {
-  const { data: json } = await client.request<JsonOf<ClubTerm[]>>({
-    url: uri`/public/club-terms`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonClubTerm(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.getPreschoolTerms
-*/
-export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
-  const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({
-    url: uri`/public/preschool-terms`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonPreschoolTerm(e))
 }
 
 
