@@ -14,6 +14,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Button from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   SortableTh,
@@ -24,6 +25,7 @@ import {
   Tr
 } from 'lib-components/layout/Table'
 import { Gap } from 'lib-components/white-space'
+import { unitProviderTypes } from 'lib-customizations/employee'
 import { faSearch } from 'lib-icons'
 
 import { useTranslation } from '../state/i18n'
@@ -87,13 +89,16 @@ export default React.memo(function Units() {
       units
         .map((us) =>
           orderedUnits(us)
-            .filter((unit: Daycare) =>
-              unit.name.toLowerCase().includes(filter.toLowerCase())
-            )
             .filter(
-              (unit: Daycare) =>
-                includeClosed ||
-                !unit.closingDate?.isBefore(LocalDate.todayInSystemTz())
+              (unit) =>
+                (filter.text.length === 0 ||
+                  unit.name
+                    .toLowerCase()
+                    .includes(filter.text.toLowerCase())) &&
+                (filter.providerTypes.length === 0 ||
+                  filter.providerTypes.includes(unit.providerType)) &&
+                (includeClosed ||
+                  !unit.closingDate?.isBefore(LocalDate.todayInSystemTz()))
             )
             .map((unit: Daycare) => (
               <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
@@ -136,13 +141,25 @@ export default React.memo(function Units() {
           <div>
             <InputField
               data-qa="unit-name-filter"
-              value={filter}
+              value={filter.text}
               placeholder={i18n.units.findByName}
               onChange={(value) => {
-                setFilter(value)
+                setFilter({ ...filter, text: value })
               }}
               icon={faSearch}
               width="L"
+            />
+            <Gap size="s" />
+            <MultiSelect
+              value={filter.providerTypes}
+              onChange={(value) =>
+                setFilter({ ...filter, providerTypes: value })
+              }
+              options={unitProviderTypes}
+              getOptionId={(opt) => opt}
+              getOptionLabel={(opt) => i18n.common.providerType[opt]}
+              placeholder={i18n.units.selectProviderTypes}
+              data-qa="provider-types-select"
             />
             <Gap size="s" />
             <Checkbox

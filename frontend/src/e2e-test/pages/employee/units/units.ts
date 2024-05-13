@@ -6,7 +6,13 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
-import { Checkbox, Element, Page, TextInput } from '../../../utils/page'
+import {
+  Checkbox,
+  Element,
+  MultiSelect,
+  Page,
+  TextInput
+} from '../../../utils/page'
 
 import { UnitEditor, UnitPage } from './unit'
 
@@ -22,6 +28,10 @@ export default class UnitsPage {
 
   #unitNameFilter = new TextInput(
     this.page.find('[data-qa="unit-name-filter"]')
+  )
+
+  providerTypesSelect = new MultiSelect(
+    this.page.findByDataQa('provider-types-select')
   )
 
   #showClosedUnits = new Checkbox(this.page.find('[data-qa="include-closed"]'))

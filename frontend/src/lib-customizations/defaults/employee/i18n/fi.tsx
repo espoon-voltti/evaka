@@ -2099,6 +2099,7 @@ export const fi = {
     address: 'Osoite',
     type: 'Tyyppi',
     findByName: 'Etsi yksikön nimellä',
+    selectProviderTypes: 'Valitse järjestämismuoto',
     includeClosed: 'Näytä lopetetut yksiköt',
     noResults: 'Ei tuloksia'
   },
