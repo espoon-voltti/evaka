@@ -106,6 +106,9 @@ dependencies {
     implementation("com.github.kittinunf.fuel:fuel")
     implementation("com.github.kittinunf.fuel:fuel-jackson")
 
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp")
+
     // Jackson
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")

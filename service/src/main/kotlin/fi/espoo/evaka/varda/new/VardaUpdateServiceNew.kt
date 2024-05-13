@@ -5,25 +5,23 @@
 package fi.espoo.evaka.varda.new
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.pis.updateOphPersonOid
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.config.FuelManagerConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import fi.espoo.evaka.varda.updateUnits
 import fi.espoo.voltti.logging.loggers.info
 import java.net.URI
 import java.time.LocalDate
 import mu.KotlinLogging
+import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -31,7 +29,6 @@ private val logger = KotlinLogging.logger {}
 @Service
 class VardaUpdateServiceNew(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    globalFuel: FuelManager,
     jsonMapper: JsonMapper,
     private val ophEnv: OphEnv,
     private val vardaEnv: VardaEnv
@@ -56,32 +53,36 @@ class VardaUpdateServiceNew(
     //           basic_auth: "<your-municipality-basic-auth-credentials>"
     //           local_dev_port: 65443
     //
-    private val fuel: FuelManager =
+    private val httpClient: OkHttpClient =
         if (vardaEnv.localDevPort != null) {
-            // Required to allow overriding the Host header
-            System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
-
-            val fuelManager = FuelManagerConfig().noCertCheckFuelManager()
-            fuelManager.addRequestInterceptor { next ->
-                { request ->
-                    val originalUri = request.url.toURI()
+            OkHttpClient.Builder()
+                // Disable ssl certificate check
+                .hostnameVerifier { _, _ -> true }
+                // Rewrite requests to Varda to go through the local port
+                .addInterceptor { chain ->
+                    val originalRequest = chain.request()
+                    val originalUri = originalRequest.url.toUri()
                     val proxyUri =
                         originalUri.copy(host = "localhost", port = vardaEnv.localDevPort)
-                    request.url = proxyUri.toURL()
-                    request.header("Host", vardaEnv.url.host)
-                    next(request)
+                    val newRequest =
+                        originalRequest
+                            .newBuilder()
+                            .url(proxyUri.toString())
+                            .header("Host", vardaEnv.url.host)
+                            .build()
+                    chain.proceed(newRequest)
                 }
-            }
+                .build()
         } else {
-            globalFuel
+            OkHttpClient()
         }
 
     private val vardaClient =
         VardaClient(
-            VardaTempTokenProvider(fuel, jsonMapper, vardaEnv),
-            fuel,
+            httpClient,
             jsonMapper,
-            vardaEnv.url
+            vardaEnv.url,
+            vardaEnv.basicAuth.value,
         )
 
     private val vardaEnabledRange =
