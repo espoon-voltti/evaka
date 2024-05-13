@@ -116,7 +116,9 @@ beforeEach(async () => {
     .with({
       placementId: daycarePlacementFixture1.data.id,
       optionId: serviceNeedOptionFixture1.data.id,
-      confirmedBy: unitSupervisor.id
+      confirmedBy: unitSupervisor.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1)
     })
     .save()
 
@@ -125,6 +127,8 @@ beforeEach(async () => {
       placementId: daycarePlacementFixture2.data.id,
       optionId: serviceNeedOptionFixture2.data.id,
       confirmedBy: unitSupervisor.id,
+      startDate: mockedDate,
+      endDate: mockedDate.addYears(1),
       shiftCare: 'FULL'
     })
     .save()
@@ -385,8 +389,7 @@ describe('Additional filters', () => {
       title: 'Ilmoitus palveluntarpeelle 1',
       content: 'Ilmoituksen sisältö palveluntarpeelle 1',
       receivers: [fixtures.daycareFixture.id],
-      yearsOfBirth: [2016],
-      serviceNeedOptions: [serviceNeedOptionId1]
+      serviceNeedOptionIds: [serviceNeedOptionId1]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
