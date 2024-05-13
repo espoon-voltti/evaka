@@ -74,6 +74,18 @@ data class DaycareFields(
         if (name.isBlank()) {
             throw BadRequest("Name cannot be blank")
         }
+        if (shiftCareOperationTimes != null) {
+            operationTimes.zip(shiftCareOperationTimes).forEach { (normal, shiftCare) ->
+                if (normal != null && shiftCare == null) {
+                    throw BadRequest(
+                        "Shift care operation days must include all normal operation days"
+                    )
+                }
+                if (normal != null && shiftCare != null && !shiftCare.contains(normal)) {
+                    throw BadRequest("Shift care operation time must contain normal operation time")
+                }
+            }
+        }
     }
 }
 

@@ -26,6 +26,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
+import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -212,18 +213,21 @@ const AlertBoxContainer = styled.div`
   flex-direction: column;
   align-items: flex-start;
 `
-const emptyTimeRange: JsonOf<TimeRange> = {
+type EditableTimeRange = JsonOf<TimeRange>
+
+const emptyTimeRange: EditableTimeRange = {
   start: '',
   end: ''
 }
 
-const emptyOperationWeek = [null, null, null, null, null, null, null]
-const roundTheClock = Array(7).map(() => ({
-  start: '00:00',
-  end: '23:59'
-}))
+const roundTheClock: EditableTimeRange[] = Array(7)
+  .fill(null)
+  .map(() => ({
+    start: '00:00',
+    end: '23:59'
+  }))
 
-type EditableTimeRange = JsonOf<TimeRange>
+const emptyOperationWeek = [null, null, null, null, null, null, null]
 
 type FormErrorItem = { key: string; text: string }
 
@@ -556,21 +560,47 @@ function validateForm(
   }
 
   let shiftCareOperationTimes: (TimeRange | null)[] | null = null
-  const shiftCareOperationTimesRangeErrors = form.shiftCareOperationTimes.map(
-    (tr) => (tr ? validateTimeRange(tr) : {})
-  )
-  if (
-    form.providesShiftCare &&
-    !shiftCareOperationTimesRangeErrors.some((r) => r.start || r.end)
-  ) {
-    shiftCareOperationTimes = form.shiftCareOperationTimes.map((tr) =>
-      tr ? TimeRange.parse(tr) : null
-    )
-  } else {
-    errors.push({
-      text: i18n.unitEditor.error.shiftCareOperationTimes,
-      key: 'unit-shift-care-operationtimes'
+  const shiftCareOperationTimesRangeErrors: RangeValidationResult[] =
+    form.shiftCareOperationTimes.map((tr, i) => {
+      if (!form.providesShiftCare) return {}
+
+      if (tr) {
+        const rangeErrors = validateTimeRange(tr)
+        if (!rangeErrors.start && !rangeErrors.end) {
+          if (
+            operationTimes[i]?.start?.isBefore(
+              new TimeRangeEndpoint.Start(LocalTime.parse(tr.start))
+            )
+          ) {
+            rangeErrors.start = 'generic'
+          }
+          if (
+            operationTimes[i]?.end?.isAfter(
+              new TimeRangeEndpoint.End(LocalTime.parse(tr.end))
+            )
+          ) {
+            rangeErrors.end = 'generic'
+          }
+        }
+        return rangeErrors
+      } else {
+        if (operationTimes[i]) {
+          return { start: 'required', end: 'required' }
+        } else return {}
+      }
     })
+
+  if (form.providesShiftCare) {
+    if (shiftCareOperationTimesRangeErrors.some((r) => r.start || r.end)) {
+      errors.push({
+        text: i18n.unitEditor.error.shiftCareOperationTimes,
+        key: 'unit-shift-care-operationtimes'
+      })
+    } else {
+      shiftCareOperationTimes = form.shiftCareOperationTimes.map((tr) =>
+        tr ? TimeRange.parse(tr) : null
+      )
+    }
   }
 
   function parseMealTimeRange(
