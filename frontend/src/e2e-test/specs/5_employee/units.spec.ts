@@ -89,9 +89,9 @@ describe('Employee - Units', () => {
   test('filtering units by provider type', async () => {
     const unitsPage = await UnitsPage.open(page)
     await unitsPage.assertRowCount(4)
-    await unitsPage.unitProviderTypesFilter.fillAndSelectFirst('Yksityinen')
+    await unitsPage.providerTypesSelect.fillAndSelectFirst('Yksityinen')
     await unitsPage.assertRowCount(0)
-    await unitsPage.unitProviderTypesFilter.fillAndSelectFirst('Kunnallinen')
+    await unitsPage.providerTypesSelect.fillAndSelectFirst('Kunnallinen')
     await unitsPage.assertRowCount(3)
   })
 

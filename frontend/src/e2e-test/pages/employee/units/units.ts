@@ -30,7 +30,7 @@ export default class UnitsPage {
     this.page.find('[data-qa="unit-name-filter"]')
   )
 
-  unitProviderTypesFilter = new MultiSelect(
+  providerTypesSelect = new MultiSelect(
     this.page.findByDataQa('provider-types-select')
   )
 
