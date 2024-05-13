@@ -7,7 +7,7 @@ package fi.espoo.evaka.specialdiet
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
-data class SpecialDiet(@PropagateNull val id: Int?, val name: String, val abbreviation: String)
+data class SpecialDiet(@PropagateNull val id: Int?, val abbreviation: String)
 
 /**
  * Sets child's special diets to null if there are some children whose special diet is not contained
@@ -31,14 +31,12 @@ fun Database.Transaction.setSpecialDiets(specialDietList: List<SpecialDiet>): In
     executeBatch(specialDietList) {
         sql(
             """
-INSERT INTO special_diet (id, name, abbreviation)
+INSERT INTO special_diet (id, abbreviation)
 VALUES (
     ${bind{it.id}},
-    ${bind{it.name}},
     ${bind{it.abbreviation}}
 )
 ON CONFLICT (id) DO UPDATE SET
-  name = excluded.name,
   abbreviation = excluded.abbreviation
 """
         )
@@ -47,6 +45,5 @@ ON CONFLICT (id) DO UPDATE SET
 }
 
 fun Database.Transaction.getSpecialDiets(): List<SpecialDiet> {
-    return createQuery { sql("SELECT id, name, abbreviation FROM special_diet") }
-        .toList<SpecialDiet>()
+    return createQuery { sql("SELECT id, abbreviation FROM special_diet") }.toList<SpecialDiet>()
 }

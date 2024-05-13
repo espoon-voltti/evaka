@@ -143,18 +143,16 @@ describe('Child Information - edit additional information', () => {
       body: [
         {
           id: 79,
-          name: 'Laktoositon',
           abbreviation: 'L'
         },
         {
           id: 80,
-          name: 'Gluteeniton Laktoositon',
           abbreviation: 'L G'
         }
       ]
     })
-    const dietCaption = 'L (Laktoositon) - 79'
-    const dietSearchTerm = 'laktoosi'
+    const dietCaption = 'L - 79'
+    const dietSearchTerm = 'L - 79'
     const dietId = 79
 
     await page.goto(

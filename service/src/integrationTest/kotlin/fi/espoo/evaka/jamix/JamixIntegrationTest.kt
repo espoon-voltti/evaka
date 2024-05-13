@@ -178,7 +178,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
                 .forEach { tx.insert(it) }
 
-            tx.setSpecialDiets(listOf(SpecialDiet(1, "diet name", "diet abbreviation")))
+            tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation")))
 
             tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
@@ -303,10 +303,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fetchAndUpdateJamixDiets(client, db)
         db.transaction { tx ->
             val diets = tx.getSpecialDiets().toSet()
-            assertEquals(
-                setOf(SpecialDiet(1, "Foobar", "Foo"), SpecialDiet(2, "Hello World", "Hello")),
-                diets
-            )
+            assertEquals(setOf(SpecialDiet(1, "Foo"), SpecialDiet(2, "Hello")), diets)
         }
     }
 
@@ -314,7 +311,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `diet sync nullifies removed diets from child`() {
         val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
         db.transaction { tx ->
-            tx.setSpecialDiets(listOf(SpecialDiet(555, "diet name", "diet abbreviation")))
+            tx.setSpecialDiets(listOf(SpecialDiet(555, "diet abbreviation")))
             tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 555))
         }
@@ -340,9 +337,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `diet sync keeps diet selection when diet abbreviation changes`() {
         val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
         db.transaction { tx ->
-            tx.setSpecialDiets(
-                listOf(SpecialDiet(1, "diet name with a typo", "diet abbreviation with a typo"))
-            )
+            tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation with a typo")))
             tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
         }
@@ -361,7 +356,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val childAfterSync = tx.getChild(childWithSpecialDiet.id)
             assertNotNull(childAfterSync)
             assertEquals(
-                SpecialDiet(1, "diet name fixed", "diet abbreviation fixed"),
+                SpecialDiet(1, "diet abbreviation fixed"),
                 childAfterSync.additionalInformation.specialDiet
             )
         }

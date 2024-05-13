@@ -15,16 +15,19 @@ class JamixServiceTest {
     fun `cleanupJamixDietList retains normal entries`() {
         val testData = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")))
         val result = cleanupJamixDietList(testData)
-        assertEquals(setOf(SpecialDiet(1, "Foobar", "Foo")), result.toSet())
+        assertEquals(setOf(SpecialDiet(1, "Foo")), result.toSet())
     }
 
     @Test
     fun `cleanupJamixDietList strips whitespace from entries`() {
         val testData =
             listOf(
-                JamixSpecialDiet(1, JamixSpecialDietFields("tsekattava   \nFoobar  ", "ätarkastaFoo"))
+                JamixSpecialDiet(
+                    1,
+                    JamixSpecialDietFields("tsekattava   \nFoobar  ", "ätarkasta   \nFoo")
+                )
             )
         val result = cleanupJamixDietList(testData)
-        assertEquals(setOf(SpecialDiet(1, "tsekattava Foobar", "ätarkastaFoo")), result.toSet())
+        assertEquals(setOf(SpecialDiet(1, "ätarkasta Foo")), result.toSet())
     }
 }

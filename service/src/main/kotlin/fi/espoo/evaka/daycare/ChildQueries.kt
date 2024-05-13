@@ -12,7 +12,7 @@ fun Database.Read.getChild(id: ChildId): Child? {
     // language=SQL
     val sql =
         """
-SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.name as special_diet_name, special_diet.abbreviation as special_diet_abbreviation
+SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.abbreviation as special_diet_abbreviation
 FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id
 WHERE child.id = :id
 """

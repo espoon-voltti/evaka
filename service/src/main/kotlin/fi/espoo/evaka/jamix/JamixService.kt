@@ -294,14 +294,9 @@ private fun LocalDate.weekSpan(): FiniteDateRange {
 }
 
 fun cleanupJamixDietList(specialDietList: List<JamixSpecialDiet>): List<SpecialDiet> {
-    return specialDietList
-        .map {
-            SpecialDiet(
-                it.modelId,
-                cleanupJamixString(it.fields.dietName),
-                cleanupJamixString(it.fields.dietAbbreviation)
-            )
-        }
+    return specialDietList.map {
+        SpecialDiet(it.modelId, cleanupJamixString(it.fields.dietAbbreviation))
+    }
 }
 
 fun cleanupJamixString(s: String): String {

@@ -170,8 +170,8 @@ class MealReportTests {
     @Test
     fun `mealReportData should provide individual rows for meals when child has special diet`() {
         val testDate = LocalDate.of(2023, 5, 10)
-        val glutenFreeDiet = SpecialDiet(id = 101, name = "Gluten-Free", abbreviation = "G")
-        val lactoseFreeDiet = SpecialDiet(id = 42, name = "Lactose-Free", abbreviation = "L")
+        val glutenFreeDiet = SpecialDiet(id = 101, abbreviation = "G")
+        val lactoseFreeDiet = SpecialDiet(id = 42, abbreviation = "L")
         val childInfo =
             listOf(
                 MealReportChildInfo( // child with glutenFreeDiet
@@ -246,7 +246,6 @@ class MealReportTests {
                     143,
                     1,
                     glutenFreeDiet.id,
-                    glutenFreeDiet.name,
                     glutenFreeDiet.abbreviation,
                     "Brown Ella"
                 ),
@@ -255,7 +254,6 @@ class MealReportTests {
                     145,
                     1,
                     glutenFreeDiet.id,
-                    glutenFreeDiet.name,
                     glutenFreeDiet.abbreviation,
                     "Brown Ella"
                 ),
@@ -264,7 +262,6 @@ class MealReportTests {
                     160,
                     1,
                     glutenFreeDiet.id,
-                    glutenFreeDiet.name,
                     glutenFreeDiet.abbreviation,
                     "Brown Ella"
                 )
@@ -284,7 +281,6 @@ class MealReportTests {
                     145,
                     1,
                     glutenFreeDiet.id,
-                    glutenFreeDiet.name,
                     glutenFreeDiet.abbreviation,
                     "Brown Mike"
                 ),
@@ -304,7 +300,6 @@ class MealReportTests {
                     145,
                     1,
                     lactoseFreeDiet.id,
-                    lactoseFreeDiet.name,
                     lactoseFreeDiet.abbreviation,
                     "Mallikas Mikko"
                 ),
