@@ -27,6 +27,10 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.specialdiet.JamixSpecialDiet
+import fi.espoo.evaka.specialdiet.SpecialDiet
+import fi.espoo.evaka.specialdiet.resetSpecialDietsNotContainedWithin
+import fi.espoo.evaka.specialdiet.setSpecialDiets
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
@@ -71,6 +75,34 @@ class JamixService(
             }
             throw e
         }
+    }
+
+    fun syncDiets(db: Database.Connection, clock: EvakaClock) {
+        if (client == null) error("Cannot sync diet list: JamixEnv is not configured")
+        fetchAndUpdateJamixDiets(client, db)
+    }
+}
+
+fun fetchAndUpdateJamixDiets(
+    client: JamixClient,
+    db: Database.Connection,
+    warner: (s: String) -> Unit = { s -> logger.warn(s) }
+) {
+    val dietsFromJamix = client.getDiets()
+
+    val cleanedDietList = cleanupJamixDietList(dietsFromJamix)
+    logger.info(
+        "Jamix returned ${dietsFromJamix.size} cleaned list contains: ${cleanedDietList.size} diets"
+    )
+    if (cleanedDietList.isEmpty()) error("Refusing to sync empty diet list into database")
+    db.transaction { tx ->
+        val nulledChildrenCount = tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
+        if (nulledChildrenCount != 0)
+            warner(
+                "Jamix diet list update caused $nulledChildrenCount child special diets to be set to null"
+            )
+        val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
+        logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
     }
 }
 
@@ -208,6 +240,8 @@ interface JamixClient {
     )
 
     fun createMealOrder(order: MealOrder)
+
+    fun getDiets(): List<JamixSpecialDiet>
 }
 
 class JamixHttpClient(
@@ -220,6 +254,8 @@ class JamixHttpClient(
 
     override fun createMealOrder(order: JamixClient.MealOrder): Unit =
         request(Method.POST, env.url.resolve("v2/mealorders"), order)
+
+    override fun getDiets(): List<JamixSpecialDiet> = request(Method.GET, env.url.resolve("diets"))
 
     private inline fun <reified R> request(method: Method, url: URI, body: Any? = null): R {
         val (request, response, result) =
@@ -255,4 +291,14 @@ private fun LocalDate.weekSpan(): FiniteDateRange {
     val start = this.startOfNextWeek()
     val end = start.plusDays(6)
     return FiniteDateRange(start, end)
+}
+
+fun cleanupJamixDietList(specialDietList: List<JamixSpecialDiet>): List<SpecialDiet> {
+    return specialDietList.map {
+        SpecialDiet(it.modelId, cleanupJamixString(it.fields.dietAbbreviation))
+    }
+}
+
+fun cleanupJamixString(s: String): String {
+    return s.replace(Regex("\\s+"), " ").trim()
 }

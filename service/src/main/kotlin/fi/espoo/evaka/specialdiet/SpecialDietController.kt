@@ -5,6 +5,7 @@
 package fi.espoo.evaka.specialdiet
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.jamix.cleanupJamixDietList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -15,30 +16,6 @@ import org.springframework.web.bind.annotation.*
 data class JamixSpecialDiet(val modelId: Int, val fields: JamixSpecialDietFields)
 
 data class JamixSpecialDietFields(val dietName: String, val dietAbbreviation: String)
-
-fun cleanupJamixDietList(specialDietList: List<JamixSpecialDiet>): List<SpecialDiet> {
-    return specialDietList
-        .map {
-            SpecialDiet(
-                it.modelId,
-                cleanupJamixDietNameString(it.fields.dietName),
-                cleanupJamixDietAbbreviationString(it.fields.dietAbbreviation)
-            )
-        }
-        .filterNot { it.name.contains("POISTA") }
-        .filterNot { it.name.isEmpty() && it.abbreviation.isEmpty() }
-}
-
-fun cleanupJamixDietNameString(s: String): String {
-    return s.replace("tsekattava", "", true)
-        .replace("tsek", "", true)
-        .replace(Regex("\\s+"), " ")
-        .trim()
-}
-
-fun cleanupJamixDietAbbreviationString(s: String): String {
-    return s.replace("ätarkasta", "", true).replace(Regex("\\s+"), " ").trim()
-}
 
 @RestController
 @RequestMapping("/diets")
@@ -63,7 +40,9 @@ class SpecialDietController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.UPDATE_SPECIAL_DIET_LIST
                     )
-                    tx.setSpecialDiets(cleanupJamixDietList(specialDietList))
+                    val cleanedDietList = cleanupJamixDietList(specialDietList)
+                    tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
+                    tx.setSpecialDiets(cleanedDietList)
                 }
             }
             .also { Audit.SpecialDietsUpdate.log() }

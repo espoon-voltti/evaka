@@ -87,7 +87,6 @@ const MealReportData = ({
       mealId: i18n.reports.meals.headings.mealId,
       mealCount: i18n.reports.meals.headings.mealCount,
       dietId: i18n.reports.meals.headings.dietId,
-      dietName: i18n.reports.meals.headings.dietName,
       dietAbbreviation: i18n.reports.meals.headings.dietAbbreviation,
       additionalInfo: i18n.reports.meals.headings.additionalInfo
     }

@@ -70,7 +70,7 @@ interface Props {
 }
 
 function getDietCaption(diet: SpecialDiet) {
-  return `${diet.abbreviation}${diet.name ? ` (${diet.name})` : ''} - ${diet.id}`
+  return `${diet.abbreviation} - ${diet.id}`
 }
 
 export default React.memo(function AdditionalInformation({ childId }: Props) {

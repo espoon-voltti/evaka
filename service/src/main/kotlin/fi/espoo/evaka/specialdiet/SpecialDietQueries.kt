@@ -7,29 +7,43 @@ package fi.espoo.evaka.specialdiet
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
-data class SpecialDiet(@PropagateNull val id: Int?, val name: String, val abbreviation: String)
+data class SpecialDiet(@PropagateNull val id: Int?, val abbreviation: String)
 
-fun Database.Transaction.setSpecialDiets(specialDietList: List<SpecialDiet>) {
+/**
+ * Sets child's special diets to null if there are some children whose special diet is not contained
+ * in the new list. Returns the count of affected rows
+ */
+fun Database.Transaction.resetSpecialDietsNotContainedWithin(
+    specialDietList: List<SpecialDiet>
+): Int {
     val newSpecialDietIds = specialDietList.map { it.id }
-    execute {
+    val affectedRows = execute {
         sql("UPDATE child SET diet_id = null WHERE diet_id != ALL (${bind(newSpecialDietIds)})")
     }
-    execute { sql("DELETE FROM special_diet") }
+    return affectedRows
+}
+/** Replaces special_diet list with the given list. Returns count of removed diets */
+fun Database.Transaction.setSpecialDiets(specialDietList: List<SpecialDiet>): Int {
+    val newSpecialDietIds = specialDietList.map { it.id }
+    val deletedDietCount = execute {
+        sql("DELETE FROM special_diet WHERE id != ALL (${bind(newSpecialDietIds)})")
+    }
     executeBatch(specialDietList) {
         sql(
             """
-INSERT INTO special_diet (id, name, abbreviation)
+INSERT INTO special_diet (id, abbreviation)
 VALUES (
     ${bind{it.id}},
-    ${bind{it.name}},
     ${bind{it.abbreviation}}
 )
+ON CONFLICT (id) DO UPDATE SET
+  abbreviation = excluded.abbreviation
 """
         )
     }
+    return deletedDietCount
 }
 
 fun Database.Transaction.getSpecialDiets(): List<SpecialDiet> {
-    return createQuery { sql("SELECT id, name, abbreviation FROM special_diet") }
-        .toList<SpecialDiet>()
+    return createQuery { sql("SELECT id, abbreviation FROM special_diet") }.toList<SpecialDiet>()
 }

@@ -29,7 +29,6 @@ data class MealReportRow(
     val mealId: Int,
     val mealCount: Int,
     val dietId: Int? = null,
-    val dietName: String? = null,
     val dietAbbreviation: String? = null,
     val additionalInfo: String? = null
 )
@@ -136,7 +135,6 @@ fun mealReportData(
                                     childInfo.lastName + " " + childInfo.firstName
                                 } else null,
                             dietId = childInfo.dietInfo?.id,
-                            dietName = childInfo.dietInfo?.name,
                             dietAbbreviation = childInfo.dietInfo?.abbreviation
                         )
                     }
@@ -150,7 +148,6 @@ fun mealReportData(
             mealTypeMapper.toMealId(it.key.mealType, it.key.dietId != null),
             it.value,
             it.key.dietId,
-            it.key.dietName,
             it.key.dietAbbreviation,
             it.key.additionalInfo
         )

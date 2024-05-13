@@ -26,5 +26,4 @@ export interface JamixSpecialDietFields {
 export interface SpecialDiet {
   abbreviation: string
   id: number | null
-  name: string
 }
