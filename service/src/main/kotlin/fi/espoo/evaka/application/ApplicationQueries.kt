@@ -189,7 +189,14 @@ fun Database.Read.fetchApplicationSummaries(
     val predicates =
         PredicateSql.allNotNull(
             PredicateSql { where("a.status = ANY(${bind(statuses)})") },
-            if (areas.isNotEmpty()) PredicateSql { where("ca.id = ANY(${bind(areas)})") } else null,
+            if (areas.isEmpty()) null
+            else if (distinctions.contains(ApplicationDistinctions.SECONDARY))
+                PredicateSql { where("pua.preferredUnitAreas && ${bind(areas)}") }
+            else PredicateSql { where("ca.id = ANY(${bind(areas)})") },
+            if (units.isEmpty()) null
+            else if (distinctions.contains(ApplicationDistinctions.SECONDARY))
+                PredicateSql { where("pu.preferredUnits && ${bind(units)}") }
+            else PredicateSql { where("d.id = ANY(${bind(units)})") },
             PredicateSql.all(
                 basis.map { applicationBasis ->
                     when (applicationBasis) {
@@ -324,10 +331,6 @@ fun Database.Read.fetchApplicationSummaries(
                     }
                 )
             } else null,
-            if (distinctions.contains(ApplicationDistinctions.SECONDARY))
-                PredicateSql { where("pu.preferredUnits && ${bind(units)}") }
-            else if (units.isNotEmpty()) PredicateSql { where("d.id = ANY(${bind(units)})") }
-            else null,
             PredicateSql.any(
                 assistanceNeeded(true)
                     .and(readWithAssistanceNeed?.forTable("a") ?: PredicateSql.alwaysFalse()),
@@ -493,6 +496,11 @@ fun Database.Read.fetchApplicationSummaries(
             SELECT COALESCE(array_agg(e::UUID) FILTER (WHERE e IS NOT NULL), '{}'::UUID[]) AS preferredUnits
             FROM jsonb_array_elements_text(a.document -> 'apply' -> 'preferredUnits') e
         ) pu ON true
+        LEFT JOIN LATERAL (
+            SELECT COALESCE(array_agg(u2.care_area_id), '{}'::UUID[]) AS preferredUnitAreas
+            FROM daycare u2
+            WHERE u2.id = ANY(pu.preferredUnits)
+        ) pua ON true
         WHERE a.status != 'CREATED'::application_status_type AND ${predicate(predicates)}
         $orderBy LIMIT $pageSize OFFSET ${bind((page - 1) * pageSize)}
         """

@@ -227,7 +227,10 @@ export default React.memo(function ApplicationFilters() {
           <ApplicationDistinctionsFilter
             toggle={toggleApplicationDistinctions}
             toggled={applicationSearchFilters.distinctions}
-            disableSecondary={applicationSearchFilters.units.length === 0}
+            disableSecondary={
+              applicationSearchFilters.area.length === 0 &&
+              applicationSearchFilters.units.length === 0
+            }
           />
           <Gap size="L" />
           <ApplicationTypeFilter
