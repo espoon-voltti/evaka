@@ -107,19 +107,19 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         val features: List<PilotFeature>,
         val operationDays: Set<Int>
     )
-
     val unit =
         createQuery {
                 sql(
                     """
-                    SELECT u.id, u.name, u.enabled_pilot_features AS features, operation_days
+                    SELECT u.id, u.name, 
+                        u.enabled_pilot_features AS features, 
+                        coalesce(shift_care_operation_days, operation_days) AS operation_days
                     FROM daycare u
                     WHERE u.id = ${bind(unitId)}
                     """
                 )
             }
-            .toList<UnitBasics>()
-            .firstOrNull() ?: throw NotFound("Unit $unitId not found")
+            .exactlyOneOrNull<UnitBasics>() ?: throw NotFound("Unit $unitId not found")
 
     val holidays = getHolidays(date.toFiniteDateRange())
 

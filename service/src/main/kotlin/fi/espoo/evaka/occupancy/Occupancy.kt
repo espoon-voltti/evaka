@@ -284,8 +284,8 @@ CROSS JOIN daycare_group g
 JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> t::date
 JOIN care_area a ON a.id = u.care_area_id
 $caretakersJoin
-LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
-WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
+LEFT JOIN holiday h ON t = h.date AND NOT u.shift_care_open_on_holidays
+WHERE date_part('isodow', t) = ANY(coalesce(u.shift_care_operation_days, u.operation_days)) AND h.date IS NULL
 AND daterange(u.opening_date, u.closing_date, '[]') && ${bind(period)}
 AND (${bind(areaId)} IS NULL OR u.care_area_id = ${bind(areaId)})
 AND (${bind(unitId)} IS NULL OR u.id = ${bind(unitId)})

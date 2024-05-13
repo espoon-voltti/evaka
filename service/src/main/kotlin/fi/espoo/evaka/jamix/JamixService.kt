@@ -228,7 +228,17 @@ private fun getChildInfos(
 
     return childData.mapNotNull { child ->
         val unit = units[child.unitId] ?: error("Daycare not found for unitId ${child.unitId}")
-        if (!isUnitOperationDay(unit.operationDays, holidays, date)) return@mapNotNull null
+        if (
+            !isUnitOperationDay(
+                normalOperationDays = unit.operationDays,
+                shiftCareOperationDays = unit.shiftCareOperationDays,
+                shiftCareOpenOnHolidays = unit.shiftCareOpenOnHolidays,
+                holidays = holidays,
+                date = date,
+                childHasShiftCare = child.hasShiftCare
+            )
+        )
+            return@mapNotNull null
 
         MealReportChildInfo(
             placementType = child.placementType,

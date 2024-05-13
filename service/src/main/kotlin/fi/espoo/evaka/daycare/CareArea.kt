@@ -68,9 +68,9 @@ data class Daycare(
     val ophOrganizerOid: String?,
     override val operationDays: Set<Int>,
     val operationTimes: List<TimeRange?>,
-    val shiftCareOperationDays: Set<Int>,
-    val shiftCareOperationTimes: List<TimeRange?>,
-    val roundTheClock: Boolean,
+    override val shiftCareOperationDays: Set<Int>?,
+    val shiftCareOperationTimes: List<TimeRange?>?,
+    override val shiftCareOpenOnHolidays: Boolean,
     val enabledPilotFeatures: List<PilotFeature>,
     val businessId: String,
     val iban: String,
@@ -81,24 +81,28 @@ data class Daycare(
 interface DaycareInfo {
     val name: String
     val operationDays: Set<Int>
+    val shiftCareOperationDays: Set<Int>?
+    val shiftCareOpenOnHolidays: Boolean
     val dailyPreschoolTime: TimeRange?
     val dailyPreparatoryTime: TimeRange?
     val mealTimes: DaycareMealtimes
 }
 
 fun isUnitOperationDay(
-    operationDays: Set<Int>,
+    normalOperationDays: Set<Int>,
+    shiftCareOperationDays: Set<Int>?,
+    shiftCareOpenOnHolidays: Boolean,
     holidays: Set<LocalDate>,
-    date: LocalDate
+    date: LocalDate,
+    childHasShiftCare: Boolean
 ): Boolean {
-    if (!operationDays.contains(date.dayOfWeek.value)) return false
-
-    val isRoundTheClockUnit = operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
-    if (!isRoundTheClockUnit && holidays.contains(date)) {
-        return false
+    val dayOfWeek = date.dayOfWeek.value
+    return if (childHasShiftCare) {
+        (shiftCareOperationDays ?: normalOperationDays).contains(dayOfWeek) &&
+            (shiftCareOpenOnHolidays || !holidays.contains(date))
+    } else {
+        normalOperationDays.contains(dayOfWeek) && !holidays.contains(date)
     }
-
-    return true
 }
 
 data class DaycareMealtimes(

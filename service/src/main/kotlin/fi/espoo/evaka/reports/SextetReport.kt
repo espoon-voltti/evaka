@@ -67,10 +67,10 @@ fun Database.Read.sextetReport(
 WITH operational_days AS (
     SELECT daycare.id AS unit_id, date
     FROM generate_series(${bind(from)}, ${bind(to)}, '1 day'::interval) date
-    JOIN daycare ON extract(isodow from date) = ANY(daycare.operation_days)
+    JOIN daycare ON extract(isodow from date) = ANY(coalesce(daycare.shift_care_operation_days, daycare.operation_days))
     WHERE
        date <> ALL (SELECT date FROM holiday)
-       OR daycare.operation_days = '{1,2,3,4,5,6,7}'::int[]
+       OR daycare.shift_care_open_on_holidays
 ), effective_placements AS (
     SELECT
         od.date AS date,

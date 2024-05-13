@@ -726,22 +726,18 @@ private fun getUnitOperationalDayData(
     includeNonOperationalDays: Boolean
 ): List<UnitAttendanceReservations.OperationalDay> {
     val holidayPeriodDates = holidayPeriods.flatMap { it.period.dates() }.toSet()
-    val isRoundTheClockUnit = unit.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)
     return period
         .dates()
-        .filter {
-            includeNonOperationalDays ||
-                isRoundTheClockUnit ||
-                unit.operationDays.contains(it.dayOfWeek.value)
-        }
+        .filter { includeNonOperationalDays || unit.operationDays.contains(it.dayOfWeek.value) }
         .map { date ->
             UnitAttendanceReservations.OperationalDay(
                 date = date,
                 dateInfo =
                     UnitAttendanceReservations.UnitDateInfo(
                         time = unit.operationTimes[date.dayOfWeek.value - 1],
+                        // TODO: this is badly named at the very least
                         isHoliday =
-                            !isRoundTheClockUnit &&
+                            !unit.shiftCareOpenOnHolidays &&
                                 (holidays.contains(date) ||
                                     !unit.operationDays.contains(date.dayOfWeek.value)),
                         isInHolidayPeriod = holidayPeriodDates.contains(date),

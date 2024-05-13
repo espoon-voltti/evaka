@@ -229,8 +229,8 @@ val testRoundTheClockDaycare =
         name = "Test Ghost Unit Daycare",
         areaId = testArea.id,
         type = setOf(CareType.CENTRE),
-        roundTheClock = true,
-        operationTimes = allWeekOpTimes
+        shiftCareOperationTimes = allWeekOpTimes,
+        shiftCareOpenOnHolidays = true
     )
 
 val testDaycareGroup =

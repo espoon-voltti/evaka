@@ -63,8 +63,8 @@ data class DaycareFields(
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
     val operationTimes: List<TimeRange?>,
-    val shiftCareOperationTimes: List<TimeRange?>,
-    val roundTheClock: Boolean,
+    val shiftCareOperationTimes: List<TimeRange?>?,
+    val shiftCareOpenOnHolidays: Boolean,
     val businessId: String,
     val iban: String,
     val providerId: String,
@@ -123,7 +123,7 @@ SELECT
   daycare.oph_organizer_oid,
   daycare.operation_days,
   daycare.shift_care_operation_days,
-  daycare.round_the_clock,
+  daycare.shift_care_open_on_holidays,
   daycare.enabled_pilot_features,
   daycare.business_id,
   daycare.iban,
@@ -280,12 +280,12 @@ SET
   decision_preschool_name = ${bind(fields.decisionCustomization.preschoolName)},
   oph_unit_oid = ${bind(fields.ophUnitOid)},
   oph_organizer_oid = ${bind(fields.ophOrganizerOid)},
-  round_the_clock = ${bind(fields.roundTheClock)},
   business_id = ${bind(fields.businessId)},
   iban = ${bind(fields.iban)},
   provider_id = ${bind(fields.providerId)},
   operation_times = ${bind(fields.operationTimes)},
   shift_care_operation_times = ${bind(fields.shiftCareOperationTimes)},
+  shift_care_open_on_holidays = ${bind(fields.shiftCareOpenOnHolidays)},
   mealtime_breakfast = ${bind(fields.mealtimes.breakfast)},
   mealtime_lunch = ${bind(fields.mealtimes.lunch)},
   mealtime_snack = ${bind(fields.mealtimes.snack)},
@@ -321,10 +321,10 @@ SELECT
     opening_date,
     closing_date,
     ghost_unit,
-    round_the_clock
+    provides_shift_care
 FROM daycare
 WHERE ${bind(date)} <= COALESCE(closing_date, 'infinity'::date)
-    AND (NOT ${bind(shiftCare ?: false)} OR round_the_clock)
+    AND (NOT ${bind(shiftCare ?: false)} OR provides_shift_care)
     AND (
         (${bind(type == ApplicationUnitType.CLUB)} AND type && '{CLUB}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (club_apply_period @> ${bind(date)})))
         OR (${bind(type == ApplicationUnitType.DAYCARE)} AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (daycare_apply_period @> ${bind(date)})))
@@ -365,7 +365,7 @@ SELECT
     opening_date,
     closing_date,
     ghost_unit,
-    round_the_clock,
+    provides_shift_care,
     club_apply_period,
     daycare_apply_period,
     preschool_apply_period

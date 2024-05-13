@@ -6,8 +6,8 @@ package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
-import fi.espoo.evaka.daycare.getUnitOperationDays
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.placement.getGroupPlacementChildren
 import fi.espoo.evaka.shared.CalendarEventId
@@ -146,7 +146,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
 
                     val holidays = tx.getHolidays(range)
                     val unitOperationDays =
-                        tx.getUnitOperationDays()[unitId]
+                        tx.getDaycare(unitId)?.operationDays
                             ?: throw NotFound("Unit operation days not found")
                     val groupEvents =
                         tx.getCalendarEventsByUnitWithRange(unitId, range).filter {
@@ -168,7 +168,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                                         }
                                         .toSet(),
                                 isHoliday = holidays.contains(day),
-                                isOperationalDay = unitOperationDays.contains(day.dayOfWeek)
+                                isOperationalDay = unitOperationDays.contains(day.dayOfWeek.value)
                             )
                         }
                         .toSet()

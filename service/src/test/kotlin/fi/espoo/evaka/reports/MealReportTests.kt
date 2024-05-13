@@ -4,6 +4,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.daycare.DaycareInfo
 import fi.espoo.evaka.daycare.DaycareMealtimes
 import fi.espoo.evaka.daycare.PreschoolTerm
@@ -13,6 +14,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.ChildData
 import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.reservations.UnitAttendanceReservations
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.data.DateSet
@@ -478,6 +480,8 @@ class MealReportTests {
             object : DaycareInfo {
                 override val name = "Test Daycare"
                 override val operationDays = setOf(1, 2, 3, 4, 5) // Monday to Friday
+                override val shiftCareOperationDays: Set<Int>? = null
+                override val shiftCareOpenOnHolidays: Boolean = false
                 override val mealTimes =
                     DaycareMealtimes(
                         breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
@@ -495,6 +499,7 @@ class MealReportTests {
                 daycare = daycare,
                 holidays = emptySet(),
                 childPlacements = childPlacements,
+                childrenWithShiftCare = emptySet(),
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
@@ -507,7 +512,89 @@ class MealReportTests {
     }
 
     @Test
-    fun `getMealReportForUnit should provide meals based on reservations for a round-the-clock unit on weekends`() {
+    fun `getMealReportForUnit should return no meals on weekends for children without shift care`() {
+        val testDate = LocalDate.of(2023, 5, 14) // May 14, 2023, is a Sunday
+
+        val childId1 = ChildId(UUID.randomUUID())
+        val childId2 = ChildId(UUID.randomUUID())
+
+        val childPlacements =
+            mapOf(childId1 to PlacementType.DAYCARE, childId2 to PlacementType.PRESCHOOL)
+
+        val childData =
+            mapOf(
+                childId1 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "John",
+                                lastName = "Doe",
+                                id = childId1,
+                                serviceNeeds =
+                                    listOf(createServiceNeedInfo(childId1, ShiftCareType.NONE)),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf(),
+                        absences = mapOf(),
+                        attendances = mapOf()
+                    ),
+                childId2 to
+                    ChildData(
+                        child =
+                            UnitAttendanceReservations.Child(
+                                firstName = "Jane",
+                                lastName = "Smith",
+                                id = childId1,
+                                serviceNeeds = emptyList(),
+                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                preferredName = ""
+                            ),
+                        reservations = mapOf(),
+                        absences = mapOf(),
+                        attendances = mapOf()
+                    )
+            )
+
+        val daycare =
+            object : DaycareInfo {
+                override val name = "Test Daycare"
+                override val operationDays = setOf(1, 2, 3, 4, 5)
+                override val shiftCareOperationDays: Set<Int>? = setOf(1, 2, 3, 4, 5, 6, 7)
+                override val shiftCareOpenOnHolidays: Boolean = false
+                override val mealTimes =
+                    DaycareMealtimes(
+                        breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                        lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
+                        snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
+                        supper = null,
+                        eveningSnack = null
+                    )
+                override val dailyPreschoolTime = null
+                override val dailyPreparatoryTime = null
+            }
+
+        val unitData =
+            DaycareUnitData(
+                daycare = daycare,
+                holidays = emptySet(),
+                childPlacements = childPlacements,
+                childrenWithShiftCare = emptySet(),
+                childData = childData,
+                specialDiets = emptyMap(),
+                preschoolTerms = emptyList()
+            )
+
+        val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
+
+        assertTrue(
+            report?.meals.isNullOrEmpty(),
+            "Expected no meals on a Sunday for children without shift care"
+        )
+    }
+
+    @Test
+    fun `getMealReportForUnit should provide meals based on reservations for children with shift care on weekends`() {
         val testDate = LocalDate.of(2023, 5, 13) // May 13, 2023, is a Saturday
 
         val childId1 = ChildId(UUID.randomUUID())
@@ -529,7 +616,8 @@ class MealReportTests {
                                 firstName = "John",
                                 lastName = "Doe",
                                 id = childId1,
-                                serviceNeeds = emptyList(),
+                                serviceNeeds =
+                                    listOf(createServiceNeedInfo(childId1, ShiftCareType.FULL)),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
                                 preferredName = ""
                             ),
@@ -553,7 +641,10 @@ class MealReportTests {
                                 firstName = "Jane",
                                 lastName = "Smith",
                                 id = childId2,
-                                serviceNeeds = emptyList(),
+                                serviceNeeds =
+                                    listOf(
+                                        createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT)
+                                    ),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
                                 preferredName = ""
                             ),
@@ -575,7 +666,9 @@ class MealReportTests {
         val daycare =
             object : DaycareInfo {
                 override val name = "24/7 Daycare"
-                override val operationDays = setOf(1, 2, 3, 4, 5, 6, 7) // Every day
+                override val operationDays = setOf(1, 2, 3, 4, 5)
+                override val shiftCareOperationDays: Set<Int>? = setOf(1, 2, 3, 4, 5, 6, 7)
+                override val shiftCareOpenOnHolidays: Boolean = false
                 override val mealTimes =
                     DaycareMealtimes(
                         breakfast = breakfastTime,
@@ -593,6 +686,7 @@ class MealReportTests {
                 daycare = daycare,
                 holidays = emptySet(),
                 childPlacements = childPlacements,
+                childrenWithShiftCare = setOf(childId1, childId2),
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
@@ -602,7 +696,7 @@ class MealReportTests {
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
         assertFalse(
             report?.meals.isNullOrEmpty(),
-            "Expected meals based on reservations for a round-the-clock unit on weekends"
+            "Expected meals based on reservations for shift care children in a round-the-clock unit on weekends"
         )
         assertEquals(
             3,
@@ -663,6 +757,8 @@ class MealReportTests {
             object : DaycareInfo {
                 override val name = "Regular Daycare"
                 override val operationDays = setOf(1, 2, 3, 4, 5) // Monday to Friday
+                override val shiftCareOperationDays: Set<Int>? = null
+                override val shiftCareOpenOnHolidays: Boolean = false
                 override val mealTimes =
                     DaycareMealtimes(
                         breakfast = breakfastTime,
@@ -680,6 +776,7 @@ class MealReportTests {
                 daycare = daycare,
                 holidays = setOf(testDate),
                 childPlacements = childPlacements,
+                childrenWithShiftCare = emptySet(),
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
@@ -695,7 +792,7 @@ class MealReportTests {
     }
 
     @Test
-    fun `getMealReportForUnit should return set of meals on a holiday for a round the clock unit`() {
+    fun `getMealReportForUnit should return set of meals on a holiday for a children with shift care`() {
         val testDate = LocalDate.of(2023, 12, 25) // December 25, 2023, is a holiday
 
         val childId1 = ChildId(UUID.randomUUID())
@@ -717,7 +814,8 @@ class MealReportTests {
                                 firstName = "John",
                                 lastName = "Doe",
                                 id = childId1,
-                                serviceNeeds = emptyList(),
+                                serviceNeeds =
+                                    listOf(createServiceNeedInfo(childId1, ShiftCareType.FULL)),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
                                 preferredName = ""
                             ),
@@ -732,7 +830,10 @@ class MealReportTests {
                                 firstName = "Jane",
                                 lastName = "Smith",
                                 id = childId2,
-                                serviceNeeds = emptyList(),
+                                serviceNeeds =
+                                    listOf(
+                                        createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT)
+                                    ),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
                                 preferredName = ""
                             ),
@@ -744,8 +845,10 @@ class MealReportTests {
 
         val daycare =
             object : DaycareInfo {
-                override val name = "Regular Daycare"
-                override val operationDays = setOf(1, 2, 3, 4, 5, 6, 7) // Monday to Sun
+                override val name = "Daycare"
+                override val operationDays = setOf(1, 2, 3, 4, 5)
+                override val shiftCareOperationDays: Set<Int>? = setOf(1, 2, 3, 4, 5, 6, 7)
+                override val shiftCareOpenOnHolidays: Boolean = true
                 override val mealTimes =
                     DaycareMealtimes(
                         breakfast = breakfastTime,
@@ -763,6 +866,7 @@ class MealReportTests {
                 daycare = daycare,
                 holidays = setOf(testDate),
                 childPlacements = childPlacements,
+                childrenWithShiftCare = setOf(childId1, childId2),
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
@@ -773,7 +877,18 @@ class MealReportTests {
 
         assertFalse(
             report?.meals.isNullOrEmpty(),
-            "Expected no default meals on a holiday for a round-the-clock unit"
+            "Expected default meals for shift care children in a round-the-clock unit on weekends"
         )
     }
 }
+
+private fun createServiceNeedInfo(childId: ChildId, shiftCare: ShiftCareType) =
+    ChildServiceNeedInfo(
+        childId = childId,
+        hasContractDays = false,
+        daycareHoursPerMonth = null,
+        optionName = "",
+        validDuring = FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2050, 1, 1)),
+        shiftCare = shiftCare,
+        partWeek = false
+    )

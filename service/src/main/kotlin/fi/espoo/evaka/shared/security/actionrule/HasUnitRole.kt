@@ -924,7 +924,7 @@ WHERE employee_id = ${bind(user.id)}
 SELECT attachment.id, role, daycare_acl.daycare_id AS unit_id
 FROM attachment
 JOIN placement_plan ON attachment.application_id = placement_plan.application_id
-JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
+JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.provides_shift_care
 JOIN daycare_acl ON daycare.id = daycare_acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
 AND attachment.type = 'EXTENDED_CARE'

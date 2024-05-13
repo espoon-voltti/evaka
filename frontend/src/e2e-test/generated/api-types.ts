@@ -459,7 +459,8 @@ export interface DevDaycare {
   preschoolApplyPeriod: DateRange | null
   providerId: string
   providerType: ProviderType
-  roundTheClock: boolean | null
+  shiftCareOpenOnHolidays: boolean
+  shiftCareOperationTimes: (TimeRange | null)[] | null
   type: CareType[]
   unitManager: UnitManager
   uploadChildrenToVarda: boolean
@@ -1249,7 +1250,8 @@ export function deserializeJsonDevDaycare(json: JsonOf<DevDaycare>): DevDaycare 
     mealtimeSupper: (json.mealtimeSupper != null) ? TimeRange.parseJson(json.mealtimeSupper) : null,
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
-    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null
+    preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null,
+    shiftCareOperationTimes: (json.shiftCareOperationTimes != null) ? json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null) : null
   }
 }
 

@@ -205,7 +205,7 @@ const filterAndSortUnits = (
             !providerTypes.includes('PRIVATE_SERVICE_VOUCHER')
           ))
     )
-    .filter((u) => !shiftCare || u.roundTheClock)
+    .filter((u) => !shiftCare || u.providesShiftCare)
 
   return sortBy(filteredUnits, (u) => u.name)
 }

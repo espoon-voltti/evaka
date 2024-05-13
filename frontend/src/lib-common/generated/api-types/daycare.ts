@@ -205,9 +205,9 @@ export interface Daycare {
   preschoolApplyPeriod: DateRange | null
   providerId: string
   providerType: ProviderType
-  roundTheClock: boolean
-  shiftCareOperationDays: number[]
-  shiftCareOperationTimes: (TimeRange | null)[]
+  shiftCareOpenOnHolidays: boolean
+  shiftCareOperationDays: number[] | null
+  shiftCareOperationTimes: (TimeRange | null)[] | null
   type: CareType[]
   unitManager: UnitManager
   uploadChildrenToVarda: boolean
@@ -270,8 +270,8 @@ export interface DaycareFields {
   preschoolApplyPeriod: DateRange | null
   providerId: string
   providerType: ProviderType
-  roundTheClock: boolean
-  shiftCareOperationTimes: (TimeRange | null)[]
+  shiftCareOpenOnHolidays: boolean
+  shiftCareOperationTimes: (TimeRange | null)[] | null
   type: CareType[]
   unitManager: UnitManager
   uploadChildrenToVarda: boolean
@@ -439,7 +439,7 @@ export interface PublicUnit {
   postalCode: string
   preschoolApplyPeriod: DateRange | null
   providerType: ProviderType
-  roundTheClock: boolean
+  providesShiftCare: boolean
   streetAddress: string
   type: CareType[]
   url: string | null
@@ -633,7 +633,7 @@ export function deserializeJsonDaycare(json: JsonOf<Daycare>): Daycare {
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null,
-    shiftCareOperationTimes: json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null)
+    shiftCareOperationTimes: (json.shiftCareOperationTimes != null) ? json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null) : null
   }
 }
 
@@ -650,7 +650,7 @@ export function deserializeJsonDaycareFields(json: JsonOf<DaycareFields>): Dayca
     openingDate: (json.openingDate != null) ? LocalDate.parseIso(json.openingDate) : null,
     operationTimes: json.operationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
     preschoolApplyPeriod: (json.preschoolApplyPeriod != null) ? DateRange.parseJson(json.preschoolApplyPeriod) : null,
-    shiftCareOperationTimes: json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null)
+    shiftCareOperationTimes: (json.shiftCareOperationTimes != null) ? json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null) : null
   }
 }
 

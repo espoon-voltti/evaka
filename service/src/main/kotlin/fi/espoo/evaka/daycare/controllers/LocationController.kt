@@ -109,7 +109,7 @@ data class PublicUnit(
     val url: String?,
     val location: Coordinate?,
     val ghostUnit: Boolean?,
-    val roundTheClock: Boolean,
+    val providesShiftCare: Boolean,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
     val clubApplyPeriod: DateRange?

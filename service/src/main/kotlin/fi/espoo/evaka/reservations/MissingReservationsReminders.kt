@@ -109,10 +109,13 @@ FROM (
     FROM unnest(${bind(range.dates().toList())}) t
     JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> t::date
     JOIN daycare d ON p.unit_id = d.id
-    WHERE date_part('isodow', t::date) = ANY(d.operation_days) 
+    LEFT JOIN service_need sn ON sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
+    WHERE date_part('isodow', t::date) = ANY(
+        CASE WHEN sn.shift_care IS NULL OR sn.shift_care = 'NONE' THEN d.operation_days ELSE d.shift_care_operation_days END
+    )
         AND p.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
         AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-        AND (d.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR NOT EXISTS (
+        AND ((d.shift_care_open_on_holidays AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])) OR NOT EXISTS (
             SELECT 1
             FROM holiday h
             WHERE t::date = h.date

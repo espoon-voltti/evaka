@@ -121,12 +121,12 @@ WHERE
             THEN TRUE
             WHEN sn.shift_care = 'FULL'
             THEN (
-                extract(isodow FROM ${bind(it.date)}) = ANY(coalesce(d.shift_care_operation_days, d.operation_days)) AND
-                (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)}))
+                extract(isodow FROM ${bind(it.date)}) = ANY(coalesce(d.shift_care_operation_days, d.operation_days)) AND 
+                (d.shift_care_open_on_holidays OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)}))
             )
             ELSE (
-                extract(isodow FROM ${bind(it.date)}) = ANY(d.operation_days) AND
-                (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)}))
+                extract(isodow FROM ${bind(it.date)}) = ANY(d.operation_days) AND 
+                NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)})
             )
         END
     ) AND

@@ -1,3 +1,5 @@
+-- Make shift_care_operation_times nullable for units that do not have shift care
+
 ALTER TABLE daycare ALTER COLUMN shift_care_operation_times DROP NOT NULL;
 
 ALTER TABLE daycare DROP CONSTRAINT check$full_week_shift_care_operation_times;
@@ -24,3 +26,28 @@ ALTER TABLE daycare
                 )
         END
     ) STORED;
+
+-- Units without shift care should have shift_care_operation_times = NULL
+UPDATE daycare
+SET shift_care_operation_times = NULL
+WHERE round_the_clock = FALSE;
+
+-- Units with shift care must have shift_care_operation_times. Use normal operation times as defaults.
+UPDATE daycare
+SET shift_care_operation_times = operation_times
+WHERE round_the_clock AND
+      (shift_care_operation_times IS NULL OR
+       shift_care_operation_times = '{NULL,NULL,NULL,NULL,NULL,NULL,NULL}'::timerange_non_nullable_range[]);
+
+-- Change round_the_clock into a renamed generated column
+ALTER TABLE daycare DROP round_the_clock;
+ALTER TABLE daycare ADD COLUMN provides_shift_care boolean GENERATED ALWAYS AS (
+    shift_care_operation_times IS NOT NULL
+) STORED;
+
+-- Add an explicit column for whether the unit is open on holidays
+ALTER TABLE daycare ADD COLUMN shift_care_open_on_holidays boolean NOT NULL DEFAULT FALSE;
+UPDATE daycare SET shift_care_open_on_holidays = (cardinality(coalesce(shift_care_operation_days, operation_days)) = 7);
+ALTER TABLE daycare ADD CONSTRAINT check$shift_care_open_on_holidays_only_for_shift_care CHECK (
+    provides_shift_care = TRUE OR shift_care_open_on_holidays = FALSE
+);

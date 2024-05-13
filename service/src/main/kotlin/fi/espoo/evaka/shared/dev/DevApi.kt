@@ -1864,7 +1864,6 @@ data class DevDaycare(
         ),
     val ophUnitOid: String? = "1.2.3.4.5",
     val ophOrganizerOid: String? = "1.2.3.4.5",
-    val roundTheClock: Boolean? = false,
     val operationTimes: List<TimeRange?> =
         listOf(
             TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
@@ -1875,6 +1874,8 @@ data class DevDaycare(
             null,
             null
         ),
+    val shiftCareOperationTimes: List<TimeRange?>? = null,
+    val shiftCareOpenOnHolidays: Boolean = false,
     val enabledPilotFeatures: Set<PilotFeature> = setOf(),
     val financeDecisionHandler: EmployeeId? = null,
     val businessId: String = "",
