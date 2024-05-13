@@ -2724,7 +2724,8 @@ export const fi = {
         dueDate: 'Laskun eräpäivä',
         account: 'Tili',
         accountType: 'Tililaji',
-        agreementType: 'Laskulaji'
+        agreementType: 'Laskulaji',
+        relatedFeeDecisions: 'Liittyvät maksupäätökset'
       },
       rows: {
         title: 'Laskurivit',

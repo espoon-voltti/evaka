@@ -129,7 +129,8 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed =
             },
         number = invoice.number,
         sentBy = invoice.sentBy,
-        sentAt = invoice.sentAt
+        sentAt = invoice.sentAt,
+        relatedFeeDecisions = emptyList()
     )
 
 fun toSummary(invoice: Invoice): InvoiceSummary =

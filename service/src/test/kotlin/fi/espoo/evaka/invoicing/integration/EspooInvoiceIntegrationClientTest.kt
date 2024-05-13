@@ -188,7 +188,8 @@ class EspooInvoiceIntegrationClientTest {
             number = 1L,
             sentBy = null,
             sentAt = null,
-            rows = rows
+            rows = rows,
+            relatedFeeDecisions = emptyList()
         )
 
     private fun testInvoiceRow(child: PersonDetailed = testPerson()) =

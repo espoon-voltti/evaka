@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
@@ -52,6 +53,22 @@ const InvoiceDetailsSection = React.memo(function InvoiceDetailsSection({
           {
             label: i18n.invoice.form.details.agreementType,
             value: invoice.agreementType
+          },
+          {
+            label: i18n.invoice.form.details.relatedFeeDecisions,
+            value: (
+              <div>
+                {invoice.relatedFeeDecisions.map((decision, i) => (
+                  <Link
+                    to={`/finance/fee-decisions/${decision.id}`}
+                    key={decision.id}
+                  >
+                    <span>{decision.decisionNumber}</span>
+                    {i < invoice.relatedFeeDecisions.length - 1 ? ', ' : ''}
+                  </Link>
+                ))}
+              </div>
+            )
           }
         ]}
       />

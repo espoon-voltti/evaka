@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
@@ -21,6 +22,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 
 interface RowWithPrice {
     val price: Int
@@ -72,6 +74,8 @@ data class InvoiceRow(
         get() = amount * unitPrice
 }
 
+data class RelatedFeeDecision(val id: FeeDecisionId, val decisionNumber: Long)
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceDetailed(
     val id: InvoiceId,
@@ -82,12 +86,13 @@ data class InvoiceDetailed(
     val invoiceDate: LocalDate,
     val agreementType: Int?,
     val areaId: AreaId,
-    val headOfFamily: PersonDetailed,
-    val codebtor: PersonDetailed?,
-    val rows: List<InvoiceRowDetailed>,
+    @Nested("head") val headOfFamily: PersonDetailed,
+    @Nested("codebtor") val codebtor: PersonDetailed?,
+    @Json val rows: List<InvoiceRowDetailed>,
     val number: Long?,
     val sentBy: EvakaUserId?,
-    val sentAt: HelsinkiDateTime?
+    val sentAt: HelsinkiDateTime?,
+    @Json val relatedFeeDecisions: List<RelatedFeeDecision>
 ) {
     val account: Int = 3295
     val totalPrice
@@ -97,7 +102,7 @@ data class InvoiceDetailed(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRowDetailed(
     val id: InvoiceRowId,
-    val child: PersonDetailed,
+    @Json val child: PersonDetailed,
     val amount: Int,
     val unitPrice: Int,
     val periodStart: LocalDate,
