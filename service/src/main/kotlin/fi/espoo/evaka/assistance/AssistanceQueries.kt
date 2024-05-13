@@ -106,18 +106,21 @@ fun Database.Transaction.endAssistanceFactorsWhichBelongToPastPlacements(date: L
     createUpdate {
             sql(
                 """
-WITH assistance_factor_with_new_end_date AS (
-    SELECT assistance_factor.id, max(placement.end_date) AS new_end_date
-    FROM assistance_factor
-    JOIN placement ON assistance_factor.child_id = placement.child_id
-     AND assistance_factor.valid_during @> placement.end_date
-    GROUP BY assistance_factor.id
-    HAVING max(placement.end_date) < ${bind(date)}
+WITH
+adjacent_placement AS (
+  SELECT
+    child_id,
+    unnest(range_agg(daterange(start_date, end_date, '[]'))) AS valid_during
+  FROM placement
+  GROUP BY child_id, unit_id
 )
 UPDATE assistance_factor
-SET valid_during = daterange(lower(valid_during), new_end_date, '[]')
-FROM assistance_factor_with_new_end_date
-WHERE assistance_factor_with_new_end_date.id = assistance_factor.id
+SET valid_during = daterange(lower(assistance_factor.valid_during), upper(adjacent_placement.valid_during), '[)')
+FROM adjacent_placement
+WHERE adjacent_placement.child_id = assistance_factor.child_id
+  AND adjacent_placement.valid_during @> lower(assistance_factor.valid_during)
+  AND NOT adjacent_placement.valid_during @> (upper(assistance_factor.valid_during) - interval '1 day')::date
+  AND upper(adjacent_placement.valid_during) = ${bind(date)}
 """
             )
         }

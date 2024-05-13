@@ -58,14 +58,14 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `endAssistanceFactorsWhichBelongToPastPlacements works with multiple placements`() {
+    fun `endAssistanceFactorsWhichBelongToPastPlacements placements to same unit sets end date to latter`() {
         val placement1Start = LocalDate.of(2024, 1, 1)
         val placement1End = LocalDate.of(2024, 1, 31)
         val placement2Start = LocalDate.of(2024, 2, 1)
         val placement2End = LocalDate.of(2024, 2, 29)
         val today = placement2End.plusDays(1)
         val assistanceFactorStart = LocalDate.of(2024, 1, 2)
-        val assistanceFactorEnd = LocalDate.of(2024, 2, 29)
+        val assistanceFactorEnd = LocalDate.of(2024, 12, 31)
         val childId =
             db.transaction { tx ->
                 val areaId = tx.insert(DevCareArea())
@@ -102,6 +102,54 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertThat(db.read { it.getAssistanceFactors(child = childId) })
             .extracting<FiniteDateRange> { it.validDuring }
             .containsExactlyInAnyOrder(FiniteDateRange(assistanceFactorStart, placement2End))
+    }
+
+    @Test
+    fun `endAssistanceFactorsWhichBelongToPastPlacements placements to different units sets end date to former`() {
+        val placement1Start = LocalDate.of(2024, 1, 1)
+        val placement1End = LocalDate.of(2024, 1, 31)
+        val placement2Start = LocalDate.of(2024, 2, 1)
+        val placement2End = LocalDate.of(2024, 2, 29)
+        val today = placement1End.plusDays(1)
+        val assistanceFactorStart = LocalDate.of(2024, 1, 2)
+        val assistanceFactorEnd = LocalDate.of(2024, 12, 31)
+        val childId =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea())
+                val unit1Id = tx.insert(DevDaycare(areaId = areaId))
+                val unit2Id = tx.insert(DevDaycare(areaId = areaId))
+                val childId =
+                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unit1Id,
+                        startDate = placement1Start,
+                        endDate = placement1End
+                    )
+                )
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unit2Id,
+                        startDate = placement2Start,
+                        endDate = placement2End
+                    )
+                )
+                tx.insert(
+                    DevAssistanceFactor(
+                        childId = childId,
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                    )
+                )
+                childId
+            }
+
+        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
+
+        assertThat(db.read { it.getAssistanceFactors(child = childId) })
+            .extracting<FiniteDateRange> { it.validDuring }
+            .containsExactlyInAnyOrder(FiniteDateRange(assistanceFactorStart, placement1End))
     }
 
     @Test
@@ -153,7 +201,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `endAssistanceFactorsWhichBelongToPastPlacements works with placement before assistance factor`() {
+    fun `endAssistanceFactorsWhichBelongToPastPlacements doesn't set end date when placement is before assistance factor`() {
         val placementStart = LocalDate.of(2024, 1, 1)
         val placementEnd = LocalDate.of(2024, 1, 31)
         val today = placementEnd.plusDays(1)
@@ -190,12 +238,48 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `endAssistanceFactorsWhichBelongToPastPlacements doesn't set end date when placement is after assistance factor`() {
+        val placementStart = LocalDate.of(2024, 2, 1)
+        val placementEnd = LocalDate.of(2024, 2, 29)
+        val today = placementEnd.plusDays(1)
+        val assistanceFactorStart = LocalDate.of(2024, 1, 1)
+        val assistanceFactorEnd = LocalDate.of(2024, 1, 31)
+        val childId =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea())
+                val unitId = tx.insert(DevDaycare(areaId = areaId))
+                val childId =
+                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+                tx.insert(
+                    DevAssistanceFactor(
+                        childId = childId,
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                    )
+                )
+                childId
+            }
+
+        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
+
+        assertThat(db.read { it.getAssistanceFactors(child = childId) })
+            .extracting<FiniteDateRange> { it.validDuring }
+            .containsExactlyInAnyOrder(FiniteDateRange(assistanceFactorStart, assistanceFactorEnd))
+    }
+
+    @Test
     fun `endAssistanceFactorsWhichBelongToPastPlacements works with multiple children`() {
         val child1PlacementStart = LocalDate.of(2024, 1, 1)
         val child1PlacementEnd = LocalDate.of(2024, 1, 31)
         val child2PlacementStart = LocalDate.of(2024, 1, 1)
         val child2PlacementEnd = LocalDate.of(2024, 2, 1)
-        val today = child2PlacementEnd.plusDays(1)
         val assistanceFactorStart = LocalDate.of(2024, 1, 2)
         val assistanceFactorEnd = LocalDate.of(2024, 2, 29)
         val unitId =
@@ -244,7 +328,20 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId
             }
 
-        db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
+        db.transaction {
+            it.endAssistanceFactorsWhichBelongToPastPlacements(child1PlacementEnd.plusDays(1))
+        }
+
+        assertThat(db.read { it.getAssistanceFactors(child = child1Id) })
+            .extracting<FiniteDateRange> { it.validDuring }
+            .containsExactlyInAnyOrder(FiniteDateRange(assistanceFactorStart, child1PlacementEnd))
+        assertThat(db.read { it.getAssistanceFactors(child = child2Id) })
+            .extracting<FiniteDateRange> { it.validDuring }
+            .containsExactlyInAnyOrder(FiniteDateRange(assistanceFactorStart, assistanceFactorEnd))
+
+        db.transaction {
+            it.endAssistanceFactorsWhichBelongToPastPlacements(child2PlacementEnd.plusDays(1))
+        }
 
         assertThat(db.read { it.getAssistanceFactors(child = child1Id) })
             .extracting<FiniteDateRange> { it.validDuring }
