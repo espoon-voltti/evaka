@@ -19,23 +19,12 @@ class JamixServiceTest {
     }
 
     @Test
-    fun `cleanupJamixDietList removes POISTA entries`() {
+    fun `cleanupJamixDietList strips whitespace from entries`() {
         val testData =
             listOf(
-                JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")),
-                JamixSpecialDiet(1, JamixSpecialDietFields("POISTA", "Foo"))
+                JamixSpecialDiet(1, JamixSpecialDietFields("tsekattava   \nFoobar  ", "ätarkastaFoo"))
             )
         val result = cleanupJamixDietList(testData)
-        assertEquals(setOf(SpecialDiet(1, "Foobar", "Foo")), result.toSet())
-    }
-
-    @Test
-    fun `cleanupJamixDietList strips ätarkasta, tsekattava and whitespace from entries`() {
-        val testData =
-            listOf(
-                JamixSpecialDiet(1, JamixSpecialDietFields("tsekattava\nFoobar  ", "ätarkastaFoo"))
-            )
-        val result = cleanupJamixDietList(testData)
-        assertEquals(setOf(SpecialDiet(1, "Foobar", "Foo")), result.toSet())
+        assertEquals(setOf(SpecialDiet(1, "tsekattava Foobar", "ätarkastaFoo")), result.toSet())
     }
 }

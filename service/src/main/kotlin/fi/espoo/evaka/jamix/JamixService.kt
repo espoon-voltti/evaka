@@ -298,21 +298,12 @@ fun cleanupJamixDietList(specialDietList: List<JamixSpecialDiet>): List<SpecialD
         .map {
             SpecialDiet(
                 it.modelId,
-                cleanupJamixDietNameString(it.fields.dietName),
-                cleanupJamixDietAbbreviationString(it.fields.dietAbbreviation)
+                cleanupJamixString(it.fields.dietName),
+                cleanupJamixString(it.fields.dietAbbreviation)
             )
         }
-        .filterNot { it.name.contains("POISTA") }
-        .filterNot { it.name.isEmpty() && it.abbreviation.isEmpty() }
 }
 
-fun cleanupJamixDietNameString(s: String): String {
-    return s.replace("tsekattava", "", true)
-        .replace("tsek", "", true)
-        .replace(Regex("\\s+"), " ")
-        .trim()
-}
-
-fun cleanupJamixDietAbbreviationString(s: String): String {
-    return s.replace("ätarkasta", "", true).replace(Regex("\\s+"), " ").trim()
+fun cleanupJamixString(s: String): String {
+    return s.replace(Regex("\\s+"), " ").trim()
 }
