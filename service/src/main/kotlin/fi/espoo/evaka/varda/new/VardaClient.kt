@@ -11,7 +11,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.varda.VardaUnitClient
 import fi.espoo.evaka.varda.VardaUnitRequest
 import fi.espoo.evaka.varda.VardaUnitResponse
-import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import java.net.URI
 import java.time.LocalDate
 import mu.KotlinLogging
@@ -235,11 +234,12 @@ interface VardaEntity {
 }
 
 class VardaClient(
-    private val tokenProvider: VardaTokenProvider,
     private val httpClient: OkHttpClient,
     private val jsonMapper: JsonMapper,
-    vardaBaseUrl: URI
+    vardaBaseUrl: URI,
+    private val basicAuth: String,
 ) : VardaReadClient, VardaWriteClient, VardaUnitClient {
+    private var token: String? = null
     private val baseUrl = vardaBaseUrl.ensureTrailingSlash()
 
     override fun haeHenkilo(
@@ -357,38 +357,60 @@ class VardaClient(
         return result
     }
 
-    /**
-     * Wrapper for Fuel Request.responseString() that handles API token refreshes and retries when
-     * throttled.
-     *
-     * API token refreshes are only attempted once and don't count as a try of the original request.
-     *
-     * TODO: Make API token usage thread-safe. Now nothing prevents another thread from invalidating
-     *   the token about to be used by another thread.
-     */
     private fun <T> OkHttpClient.executeAuthenticated(
         request: Request,
         fn: (response: Response) -> T
-    ): T =
-        tokenProvider.withToken { token, refreshToken ->
-            executeWithToken(request, token).use { response ->
-                if (response.code == 403) {
-                    val errorBody = response.body?.string() ?: ""
-                    if (errorBody.contains("PE007")) {
-                        logger.info {
-                            "Varda API token invalid. Refreshing token and retrying original request."
-                        }
-                        val newToken = refreshToken()
-                        executeWithToken(request, newToken).use { fn(it) }
-                    } else {
-                        fn(response)
-                    }
-                } else {
-                    fn(response)
+    ): T {
+        val token = getToken()
+        return executeWithToken(request, token).use { response ->
+            if (isVardaTokenError(response)) {
+                logger.info {
+                    "Varda API token invalid. Refreshing token and retrying original request."
                 }
+                val newToken = refreshToken()
+                executeWithToken(request, newToken).use { fn(it) }
+            } else {
+                fn(response)
             }
         }
+    }
 
-    private fun OkHttpClient.executeWithToken(request: Request, token: String): Response =
-        this.newCall(request.newBuilder().header("Authorization", "Token $token").build()).execute()
+    private fun OkHttpClient.executeWithToken(request: Request, token: String): Response {
+        return this.newCall(request.newBuilder().header("Authorization", "Token $token").build())
+            .execute()
+    }
+
+    private fun getToken(): String = token ?: refreshToken()
+
+    // Assuming that Varda invalidates the previous token, calling this function could invalidate a
+    // token that is about to be used by a different thread. This may become a problem if we start
+    // doing Varda updates in multiple threads.
+    private fun refreshToken(): String {
+        val req =
+            Request.Builder()
+                .get()
+                .url(baseUrl.resolve("user/apikey/").toString())
+                .header("Authorization", "Basic $basicAuth")
+                .header("Accept", "application/json")
+                .build()
+
+        val newToken =
+            httpClient.newCall(req).execute().use { response ->
+                if (!response.isSuccessful) {
+                    error { "Failed to get Varda API token: status=${response.code}" }
+                }
+                val body = response.body?.string() ?: error("Varda API token response body is null")
+                jsonMapper.readTree(body).get("token").asText()
+            }
+        token = newToken
+        return newToken
+    }
+
+    private fun isVardaTokenError(response: Response): Boolean =
+        response.code == 403 &&
+            response.body?.let { body ->
+                jsonMapper.readTree(body.string()).get("errors")?.any {
+                    it.get("error_code").asText() == "PE007"
+                }
+            } ?: false
 }
