@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.updateUnits
 import fi.espoo.voltti.logging.loggers.info
 import java.net.URI
+import java.time.Duration
 import java.time.LocalDate
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
@@ -54,28 +55,34 @@ class VardaUpdateServiceNew(
     //           local_dev_port: 65443
     //
     private val httpClient: OkHttpClient =
-        if (vardaEnv.localDevPort != null) {
-            OkHttpClient.Builder()
-                // Disable ssl certificate check
-                .hostnameVerifier { _, _ -> true }
-                // Rewrite requests to Varda to go through the local port
-                .addInterceptor { chain ->
-                    val originalRequest = chain.request()
-                    val originalUri = originalRequest.url.toUri()
-                    val proxyUri =
-                        originalUri.copy(host = "localhost", port = vardaEnv.localDevPort)
-                    val newRequest =
-                        originalRequest
-                            .newBuilder()
-                            .url(proxyUri.toString())
-                            .header("Host", vardaEnv.url.host)
-                            .build()
-                    chain.proceed(newRequest)
+        OkHttpClient.Builder()
+            .connectTimeout(Duration.ofMinutes(2))
+            .readTimeout(Duration.ofMinutes(2))
+            .writeTimeout(Duration.ofMinutes(2))
+            .let {
+                if (vardaEnv.localDevPort != null) {
+                    it
+                        // Disable ssl certificate check
+                        .hostnameVerifier { _, _ -> true }
+                        // Rewrite requests to Varda to go through the local port
+                        .addInterceptor { chain ->
+                            val originalRequest = chain.request()
+                            val originalUri = originalRequest.url.toUri()
+                            val proxyUri =
+                                originalUri.copy(host = "localhost", port = vardaEnv.localDevPort)
+                            val newRequest =
+                                originalRequest
+                                    .newBuilder()
+                                    .url(proxyUri.toString())
+                                    .header("Host", vardaEnv.url.host)
+                                    .build()
+                            chain.proceed(newRequest)
+                        }
+                } else {
+                    it
                 }
-                .build()
-        } else {
-            OkHttpClient()
-        }
+            }
+            .build()
 
     private val vardaClient =
         VardaClient(
