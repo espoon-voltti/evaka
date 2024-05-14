@@ -288,15 +288,16 @@ class VardaUpdater(
         // Only fee data after 2019-09-01 can be sent to Varda (error code MA019)
         val vardaFeeDataRange = DateRange(LocalDate.of(2019, 9, 1), null)
 
+        val currentAndPastServiceNeeds = serviceNeeds.filter { it.range.start <= today }
         val processedFeeData =
-            if (serviceNeeds.isNotEmpty()) {
+            if (currentAndPastServiceNeeds.isNotEmpty()) {
                     // Each maksutieto must be within the range of the start of first
                     // varhaiskasvatuspaatos and the end of the last varhaiskasvatuspaatos
                     // (see error codes MA005, MA006, MA007)
                     val serviceNeedRange =
                         FiniteDateRange(
-                            serviceNeeds.minOf { it.range.start },
-                            serviceNeeds.maxOf { it.range.end }
+                            currentAndPastServiceNeeds.minOf { it.range.start },
+                            currentAndPastServiceNeeds.maxOf { it.range.end }
                         )
                     val feeDataRange =
                         vardaEnabledRange
@@ -314,10 +315,12 @@ class VardaUpdater(
                 } else {
                     emptyList()
                 }
-                .filter { fee -> serviceNeeds.any { it.range.overlaps(fee.validDuring) } }
+                .filter { fee ->
+                    currentAndPastServiceNeeds.any { it.range.overlaps(fee.validDuring) }
+                }
 
         val evakaLapsiServiceNeeds =
-            serviceNeeds.groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
+            currentAndPastServiceNeeds.groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
         val evakaFeeData =
             processedFeeData
                 .mapNotNull { fee ->
@@ -332,16 +335,14 @@ class VardaUpdater(
                     EvakaLapsiNode(
                             lapsi = lapsi,
                             varhaiskasvatuspaatokset =
-                                serviceNeedsOfLapsi
-                                    .filter { it.range.start <= today }
-                                    .map { serviceNeed ->
-                                        EvakaVarhaiskasvatuspaatosNode(
-                                            varhaiskasvatuspaatos =
-                                                Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
-                                            varhaiskasvatussuhteet =
-                                                listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
-                                        )
-                                    },
+                                serviceNeedsOfLapsi.map { serviceNeed ->
+                                    EvakaVarhaiskasvatuspaatosNode(
+                                        varhaiskasvatuspaatos =
+                                            Varhaiskasvatuspaatos.fromEvaka(serviceNeed),
+                                        varhaiskasvatussuhteet =
+                                            listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
+                                    )
+                                },
                             maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid()] ?: emptyList()
                         )
                         .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
