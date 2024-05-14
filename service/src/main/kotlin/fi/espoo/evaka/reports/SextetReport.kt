@@ -68,18 +68,17 @@ WITH operational_days AS (
     SELECT daycare.id AS unit_id, date
     FROM generate_series(${bind(from)}, ${bind(to)}, '1 day'::interval) date
     JOIN daycare ON extract(isodow from date) = ANY(coalesce(daycare.shift_care_operation_days, daycare.operation_days))
-    WHERE
-       date <> ALL (SELECT date FROM holiday)
-       OR daycare.shift_care_open_on_holidays
 ), effective_placements AS (
     SELECT
         od.date AS date,
         b.unit_id,
         b.child_id,
-        p.type AS placement_type
+        p.type AS placement_type,
+        sn.shift_care = ANY('{FULL,INTERMITTENT}') AS has_shift_care
     FROM operational_days od
     JOIN backup_care b ON b.unit_id = od.unit_id AND od.date BETWEEN b.start_date AND b.end_date
     JOIN placement p ON p.child_id = b.child_id AND od.date BETWEEN p.start_date AND p.end_date
+    LEFT JOIN service_need sn ON sn.placement_id = p.id AND od.date BETWEEN sn.start_date AND sn.end_date
 
     UNION ALL
 
@@ -87,9 +86,11 @@ WITH operational_days AS (
         od.date AS date,
         p.unit_id,
         p.child_id,
-        p.type AS placement_type
+        p.type AS placement_type,
+        sn.shift_care = ANY('{FULL,INTERMITTENT}') AS has_shift_care
     FROM operational_days od
     JOIN placement p ON p.unit_id = od.unit_id AND od.date BETWEEN p.start_date AND p.end_date
+    LEFT JOIN service_need sn ON sn.placement_id = p.id AND od.date BETWEEN sn.start_date AND sn.end_date
     WHERE NOT EXISTS (
         SELECT 1
         FROM backup_care b
@@ -108,6 +109,10 @@ WHERE NOT EXISTS (
     FROM absence
     WHERE child_id = ep.child_id AND date = ep.date
     HAVING count(category) >= cardinality(absence_categories(ep.placement_type))
+) AND (
+    ep.has_shift_care OR extract(isodow FROM ep.date) = ANY(d.operation_days)
+) AND (
+    (ep.has_shift_care AND d.shift_care_open_on_holidays) OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ep.date)
 )
 AND ep.placement_type = ${bind(placementType)}
 GROUP BY ep.unit_id, d.name, ep.placement_type
