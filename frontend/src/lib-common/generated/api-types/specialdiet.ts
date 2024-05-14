@@ -5,19 +5,11 @@
 // GENERATED FILE: no manual modifications
 
 /**
-* Generated from fi.espoo.evaka.specialdiet.JamixSpecialDiet
+* Generated from fi.espoo.evaka.specialdiet.MealTexture
 */
-export interface JamixSpecialDiet {
-  fields: JamixSpecialDietFields
-  modelId: number
-}
-
-/**
-* Generated from fi.espoo.evaka.specialdiet.JamixSpecialDietFields
-*/
-export interface JamixSpecialDietFields {
-  dietAbbreviation: string
-  dietName: string
+export interface MealTexture {
+  id: number | null
+  name: string
 }
 
 /**

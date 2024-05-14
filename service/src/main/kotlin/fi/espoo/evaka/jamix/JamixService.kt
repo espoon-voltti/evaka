@@ -27,10 +27,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.getHolidays
-import fi.espoo.evaka.specialdiet.JamixSpecialDiet
-import fi.espoo.evaka.specialdiet.SpecialDiet
-import fi.espoo.evaka.specialdiet.resetSpecialDietsNotContainedWithin
-import fi.espoo.evaka.specialdiet.setSpecialDiets
+import fi.espoo.evaka.specialdiet.*
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
@@ -80,6 +77,7 @@ class JamixService(
     fun syncDiets(db: Database.Connection, clock: EvakaClock) {
         if (client == null) error("Cannot sync diet list: JamixEnv is not configured")
         fetchAndUpdateJamixDiets(client, db)
+        fetchAndUpdateJamixTextures(client, db)
     }
 }
 
@@ -103,6 +101,29 @@ fun fetchAndUpdateJamixDiets(
             )
         val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
         logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
+    }
+}
+
+fun fetchAndUpdateJamixTextures(
+    client: JamixClient,
+    db: Database.Connection,
+    warner: (s: String) -> Unit = { s -> logger.warn(s) }
+) {
+    val texturesFromJamix =
+        client.getTextures().map { it -> MealTexture(it.modelId, it.fields.textureName) }
+
+    if (texturesFromJamix.isEmpty())
+        error("Refusing to sync empty meal textures list into database")
+    db.transaction { tx ->
+        val nulledChildrenCount = tx.resetMealTexturesNotContainedWithin(texturesFromJamix)
+        if (nulledChildrenCount != 0)
+            warner(
+                "Jamix meal texture list update caused $nulledChildrenCount child meal texture to be set to null"
+            )
+        val deletedMealTexturesCount = tx.setMealTextures(texturesFromJamix)
+        logger.info(
+            "Deleted: $deletedMealTexturesCount meal textures, inserted ${texturesFromJamix.size}"
+        )
     }
 }
 
@@ -242,6 +263,8 @@ interface JamixClient {
     fun createMealOrder(order: MealOrder)
 
     fun getDiets(): List<JamixSpecialDiet>
+
+    fun getTextures(): List<JamixTexture>
 }
 
 class JamixHttpClient(
@@ -256,6 +279,9 @@ class JamixHttpClient(
         request(Method.POST, env.url.resolve("v2/mealorders"), order)
 
     override fun getDiets(): List<JamixSpecialDiet> = request(Method.GET, env.url.resolve("diets"))
+
+    override fun getTextures(): List<JamixTexture> =
+        request(Method.GET, env.url.resolve("textures"))
 
     private inline fun <reified R> request(method: Method, url: URI, body: Any? = null): R {
         val (request, response, result) =
@@ -304,3 +330,11 @@ fun cleanupJamixDietList(specialDietList: List<JamixSpecialDiet>): List<SpecialD
 fun cleanupJamixString(s: String): String {
     return s.replace(Regex("\\s+"), " ").trim()
 }
+
+data class JamixSpecialDiet(val modelId: Int, val fields: JamixSpecialDietFields)
+
+data class JamixSpecialDietFields(val dietName: String, val dietAbbreviation: String)
+
+data class JamixTexture(val modelId: Int, val fields: JamixTextureFields)
+
+data class JamixTextureFields(val textureName: String)

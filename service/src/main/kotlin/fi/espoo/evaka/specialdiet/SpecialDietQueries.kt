@@ -7,6 +7,8 @@ package fi.espoo.evaka.specialdiet
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
+data class MealTexture(@PropagateNull val id: Int?, val name: String)
+
 data class SpecialDiet(@PropagateNull val id: Int?, val abbreviation: String)
 
 /**
@@ -19,6 +21,18 @@ fun Database.Transaction.resetSpecialDietsNotContainedWithin(
     val newSpecialDietIds = specialDietList.map { it.id }
     val affectedRows = execute {
         sql("UPDATE child SET diet_id = null WHERE diet_id != ALL (${bind(newSpecialDietIds)})")
+    }
+    return affectedRows
+}
+
+fun Database.Transaction.resetMealTexturesNotContainedWithin(
+    mealTextureList: List<MealTexture>
+): Int {
+    val newMealTextureIds = mealTextureList.map { it.id }
+    val affectedRows = execute {
+        sql(
+            "UPDATE child SET meal_texture_id = null WHERE meal_texture_id != ALL (${bind(newMealTextureIds)})"
+        )
     }
     return affectedRows
 }
@@ -44,6 +58,31 @@ ON CONFLICT (id) DO UPDATE SET
     return deletedDietCount
 }
 
+fun Database.Transaction.setMealTextures(mealTextures: List<MealTexture>): Int {
+    val newTextureIds = mealTextures.map { it.id }
+    val deletedTextureCount = execute {
+        sql("DELETE FROM meal_texture WHERE id != ALL (${bind(newTextureIds)})")
+    }
+    executeBatch(mealTextures) {
+        sql(
+            """
+INSERT INTO meal_texture (id, name)
+VALUES (
+    ${bind{it.id}},
+    ${bind{it.name}}
+)
+ON CONFLICT (id) DO UPDATE SET
+  name = excluded.name
+"""
+        )
+    }
+    return deletedTextureCount
+}
+
 fun Database.Transaction.getSpecialDiets(): List<SpecialDiet> {
     return createQuery { sql("SELECT id, abbreviation FROM special_diet") }.toList<SpecialDiet>()
+}
+
+fun Database.Transaction.getMealTextures(): List<MealTexture> {
+    return createQuery { sql("SELECT id, name FROM meal_texture") }.toList<MealTexture>()
 }

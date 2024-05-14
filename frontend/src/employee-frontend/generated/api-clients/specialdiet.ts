@@ -4,12 +4,25 @@
 
 // GENERATED FILE: no manual modifications
 
-import { JamixSpecialDiet } from 'lib-common/generated/api-types/specialdiet'
+import { JamixSpecialDiet } from 'lib-common/generated/api-types/jamix'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MealTexture } from 'lib-common/generated/api-types/specialdiet'
 import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { client } from '../../api/client'
 import { uri } from 'lib-common/uri'
+
+
+/**
+* Generated from fi.espoo.evaka.specialdiet.MealTexturesController.getMealTextures
+*/
+export async function getMealTextures(): Promise<MealTexture[]> {
+  const { data: json } = await client.request<JsonOf<MealTexture[]>>({
+    url: uri`/meal-textures`.toString(),
+    method: 'GET'
+  })
+  return json
+}
 
 
 /**
