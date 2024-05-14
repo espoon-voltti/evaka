@@ -15,10 +15,7 @@ import { useQuery, useQueryResult } from 'lib-common/query'
 import { mockToday } from 'lib-common/utils/helpers'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
-import {
-  Desktop,
-  MobileAndTablet
-} from 'lib-components/layout/responsive-layout'
+import { Desktop, RenderOnlyOn } from 'lib-components/layout/responsive-layout'
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
@@ -148,7 +145,7 @@ const CalendarPage = React.memo(function CalendarPage() {
         ([response, events, holidayPeriodInfo]) => (
           <div data-qa="calendar-page" data-isloading={isLoading(data)}>
             <CalendarNotifications calendarDays={response.days} />
-            <MobileAndTablet>
+            <RenderOnlyOn mobile tablet>
               <ContentArea
                 opaque
                 paddingVertical="zero"
@@ -164,8 +161,8 @@ const CalendarPage = React.memo(function CalendarPage() {
                   events={events}
                 />
               </ContentArea>
-            </MobileAndTablet>
-            <DesktopOnly>
+            </RenderOnlyOn>
+            <RenderOnlyOn desktop>
               <CalendarGridView
                 childData={response.children}
                 calendarDays={response.days}
@@ -182,7 +179,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                 dayIsReservable={dayIsReservable}
                 events={events}
               />
-            </DesktopOnly>
+            </RenderOnlyOn>
             {modalState?.type === 'day' && (
               <DayView
                 date={modalState.date}
