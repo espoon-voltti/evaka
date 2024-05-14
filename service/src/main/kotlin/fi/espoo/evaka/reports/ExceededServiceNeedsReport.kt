@@ -27,14 +27,12 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
-import fi.espoo.evaka.shared.domain.isOperationalDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 import org.springframework.web.bind.annotation.GetMapping
@@ -129,7 +127,6 @@ private fun exceededServiceNeedReport(
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
     val daycare = tx.getDaycare(unitId) ?: throw BadRequest("Daycare $unitId not found")
-    val operationDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
 
     val holidays = tx.getHolidays(range)
     val serviceNeeds = tx.getServiceNeedsByRange(unitId, range)
@@ -156,6 +153,17 @@ private fun exceededServiceNeedReport(
                         }
                     val childAttendances =
                         (attendances[child.id to date] ?: emptyList()).map { it.asTimeInterval() }
+                    val isOperationDayForChild =
+                        when (serviceNeed.shiftCare) {
+                            ShiftCareType.NONE ->
+                                daycare.operationDays.contains(date.dayOfWeek.value) &&
+                                    !holidays.contains(date)
+                            ShiftCareType.INTERMITTENT,
+                            ShiftCareType.FULL ->
+                                (daycare.shiftCareOperationDays ?: daycare.operationDays).contains(
+                                    date.dayOfWeek.value
+                                ) && (daycare.shiftCareOpenOnHolidays || !holidays.contains(date))
+                        }
                     child.id to
                         computeUsedService(
                             today = today,
@@ -164,7 +172,7 @@ private fun exceededServiceNeedReport(
                             placementType = serviceNeed.placementType,
                             preschoolTime = serviceNeed.dailyPreschoolTime,
                             preparatoryTime = serviceNeed.dailyPreparatoryTime,
-                            isOperationDay = date.isOperationalDate(operationDays, holidays),
+                            isOperationDay = isOperationDayForChild,
                             shiftCareType = serviceNeed.shiftCare,
                             absences = childAbsences,
                             reservations = childReservations,
