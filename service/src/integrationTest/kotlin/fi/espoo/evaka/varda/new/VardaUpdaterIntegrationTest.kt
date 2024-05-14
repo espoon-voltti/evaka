@@ -1174,6 +1174,116 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `evaka state - fee data is cut to service need ranges`() {
+        val organizerOid = "organizerOid"
+        val unitOid = "unitOid"
+
+        val area = DevCareArea()
+        val unit =
+            DevDaycare(areaId = area.id, ophOrganizerOid = organizerOid, ophUnitOid = unitOid)
+        val employee = DevEmployee()
+
+        val guardian = DevPerson(ssn = "070644-937X")
+        val child = DevPerson(ssn = "030320A904N")
+
+        val today = LocalDate.of(2021, 12, 1)
+        val placementRanges =
+            listOf(
+                FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31)),
+                FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+            )
+        val feeRanges =
+            listOf(
+                // This overlaps with the current placement => it's cut to the placement range
+                FiniteDateRange(LocalDate.of(2020, 12, 1), LocalDate.of(2021, 1, 31)),
+                // This overlaps with the current and a future placement => it's cut to the current
+                // placement's range
+                FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2022, 1, 31)),
+            )
+        db.transaction { tx ->
+            tx.insertServiceNeedOption(snDaycareFullDay35)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(employee)
+
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(guardian.id, child.id)
+
+            placementRanges.forEach { placementRange ->
+                tx.insertTestPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end,
+                    )
+                    .also { placementId ->
+                        tx.insertTestServiceNeed(
+                            placementId = placementId,
+                            period = placementRange,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                        )
+                    }
+            }
+
+            feeRanges.forEach { feeRange ->
+                tx.insert(
+                        DevFeeDecision(
+                            headOfFamilyId = guardian.id,
+                            validDuring = feeRange,
+                            status = FeeDecisionStatus.SENT
+                        )
+                    )
+                    .also { feeDecisionId ->
+                        tx.insert(
+                            DevFeeDecisionChild(
+                                feeDecisionId = feeDecisionId,
+                                childId = child.id,
+                                placementUnitId = unit.id
+                            )
+                        )
+                    }
+            }
+        }
+
+        val updater =
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, "sourceSystem")
+
+        val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
+        assertEquals(
+            VardaUpdater.EvakaHenkiloNode(
+                henkilo =
+                    Henkilo(
+                        etunimet = child.firstName,
+                        sukunimi = child.lastName,
+                        henkilo_oid = null,
+                        henkilotunnus = child.ssn,
+                    ),
+                lapset =
+                    listOf(
+                        VardaUpdater.EvakaLapsiNode(
+                            lapsi =
+                                Lapsi(
+                                    vakatoimija_oid = organizerOid,
+                                    oma_organisaatio_oid = null,
+                                    paos_organisaatio_oid = null
+                                ),
+                            varhaiskasvatuspaatokset =
+                                // The future placement is not included
+                                listOf(varhaiskasvatuspaatos(unitOid, placementRanges.first())),
+                            maksutiedot =
+                                feeRanges.map { feeRange ->
+                                    maksutieto(feeRange.intersection(placementRanges.first())!!)
+                                }
+                        )
+                    )
+            ),
+            evakaState
+        )
+    }
+
+    @Test
     fun `evaka state - correct application date is picked up`() {
         val organizerOid = "organizerId"
         val unitOid = "unitId"
