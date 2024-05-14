@@ -261,6 +261,8 @@ class JamixHttpClient(
         val (request, response, result) =
             fuel
                 .request(method, url.toString())
+                .timeout(120000)
+                .timeoutRead(120000)
                 .authentication()
                 .basic(env.user, env.password.value)
                 .let { if (body != null) it.jsonBody(jsonMapper.writeValueAsString(body)) else it }
