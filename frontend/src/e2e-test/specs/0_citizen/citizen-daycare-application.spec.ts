@@ -12,6 +12,7 @@ import {
 import {
   applicationFixture,
   daycareFixture,
+  enduserGuardianFixture,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -22,6 +23,7 @@ import {
 } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
+import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
 import {
   fullDaycareForm,
   minimalDaycareForm
@@ -58,6 +60,31 @@ describe('Citizen daycare applications', () => {
     )
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
+  })
+
+  test('If user has no email set the application requires it by default', async () => {
+    await header.selectTab('personal-details')
+    const personalDetailsPage = new CitizenPersonalDetailsPage(page)
+    const section = personalDetailsPage.personalDetailsSection
+    await section.editPersonalData(
+      {
+        preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+        phone: '123123123',
+        backupPhone: '456456',
+        email: null
+      },
+      true
+    )
+
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      fixtures.enduserChildFixtureJari.id,
+      'DAYCARE'
+    )
+    await editorPage.goToVerification()
+    await editorPage.assertErrorsExist()
+    await editorPage.openSection('contactInfo')
+    await page.findByDataQa('guardianEmail-input-info').waitUntilVisible()
   })
 
   test('Minimal valid daycare application can be sent', async () => {
