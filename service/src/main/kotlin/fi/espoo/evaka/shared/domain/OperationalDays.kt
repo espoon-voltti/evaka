@@ -4,7 +4,10 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.data.DateMap
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -64,3 +67,82 @@ fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
             sql("SELECT date FROM holiday WHERE between_start_and_end(${bind(range)}, date)")
         }
         .toSet<LocalDate>()
+
+private data class DaycareOperationDays(
+    val unitId: DaycareId,
+    val operationDays: Set<Int>,
+    val shiftCareOperationDays: Set<Int>?,
+    val shiftCareOpenOnHolidays: Boolean
+)
+
+private data class PlacementRange(val range: FiniteDateRange, val unitId: DaycareId)
+
+fun Database.Read.getOperationalDatesForChild(
+    range: FiniteDateRange,
+    childId: ChildId
+): Set<LocalDate> {
+    val placements: DateMap<DaycareId> =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            daterange(pl.start_date, pl.end_date, '[]') as range, 
+            pl.unit_id
+        FROM placement pl
+        WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
+    """
+                )
+            }
+            .toList<PlacementRange>()
+            .map { it.range to it.unitId }
+            .let { DateMap.of(it) }
+
+    val daycareOperationDays: Map<DaycareId, DaycareOperationDays> =
+        createQuery {
+                sql(
+                    """
+        SELECT id AS unit_id, operation_days, shift_care_operation_days, shift_care_open_on_holidays
+        FROM daycare 
+        WHERE id = ANY(${bind(placements.entries().map { it.second }.toSet())})
+    """
+                )
+            }
+            .toList<DaycareOperationDays>()
+            .associateBy { it.unitId }
+
+    val holidays = getHolidays(range)
+
+    val shiftCareRanges: DateSet =
+        createQuery {
+                sql(
+                    """
+        SELECT daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)}
+        FROM placement pl
+        JOIN service_need sn ON sn.placement_id = pl.id AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
+        WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
+    """
+                )
+            }
+            .toList<FiniteDateRange>()
+            .let { DateSet.of(it) }
+
+    return range
+        .dates()
+        .filter { date ->
+            val unitId = placements.getValue(date) ?: return@filter false
+            val hasShiftCare = shiftCareRanges.includes(date)
+            val operationDays =
+                daycareOperationDays[unitId]?.let {
+                    it.shiftCareOperationDays?.takeIf { hasShiftCare } ?: it.operationDays
+                } ?: return@filter false
+            if (!operationDays.contains(date.dayOfWeek.value)) {
+                return@filter false
+            }
+            if (holidays.contains(date)) {
+                return@filter hasShiftCare &&
+                    (daycareOperationDays[unitId]?.shiftCareOpenOnHolidays ?: false)
+            }
+            true
+        }
+        .toSet()
+}
