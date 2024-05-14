@@ -113,7 +113,12 @@ class MessageController(
                     } else listOf()
                 }
             }
-            .also { Audit.MessagingMyAccountsRead.log(targetId = unitId, objectId = it) }
+            .also { accounts ->
+                Audit.MessagingMyAccountsRead.log(
+                    targetId = accounts.map { it.account.id },
+                    objectId = unitId
+                )
+            }
     }
 
     @GetMapping("/{accountId}/received")
