@@ -52,14 +52,17 @@ if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
   s3download "$DEPLOYMENT_BUCKET" "proxy" /etc/nginx/
 fi
 
-for template in /etc/nginx/conf.d/*.template /etc/nginx/*.template; do
+for template in /etc/nginx/conf.d/*.template /etc/nginx/*.template /internal/*.template; do
     if ! test -f "$template"; then
       continue
     fi
     target=$(echo "$template" | sed -e "s/.template$//")
 
-    erb "$template" > "$target"
+    erb -T - "$template" > "$target"
 done
+
+mkdir -p /static/.well-known
+cp /internal/security.txt /static/.well-known/
 
 if [ "${DEBUG:-false}" = "true" ]; then
   cat /etc/nginx/nginx.conf
