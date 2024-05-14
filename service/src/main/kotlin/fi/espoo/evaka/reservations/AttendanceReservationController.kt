@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.getOperationalDatesForChild
 import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -348,21 +349,18 @@ class AttendanceReservationController(
                             clock.now(),
                             featureConfig.citizenReservationThresholdHours
                         )
-                    val operationalDays = tx.operationalDays(range)
+                    val operationalDays = tx.getOperationalDatesForChild(range, childId)
                     val placements = tx.getPlacementsForChildDuring(childId, range.start, range.end)
                     val reservations = tx.getReservationsForChildInRange(childId, range)
                     val absences = tx.getAbsencesOfChildByRange(childId, range.asDateRange())
                     val dailyServiceTimes = tx.getChildDailyServiceTimes(childId)
-                    range
-                        .dates()
+                    operationalDays
+                        .sorted()
                         .mapNotNull { date ->
                             val placement =
                                 placements.firstOrNull {
                                     FiniteDateRange(it.startDate, it.endDate).includes(date)
                                 } ?: return@mapNotNull null
-                            if (!operationalDays.forUnit(placement.unitId).contains(date)) {
-                                return@mapNotNull null
-                            }
                             val reservationTimes = reservations[date] ?: emptyList()
                             val absence = absences.firstOrNull { it.date == date }
                             val dailyServiceTime =
