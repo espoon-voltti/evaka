@@ -568,6 +568,21 @@ from (SELECT d                                     AS date,
                              (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = ${bind(unitId)})) THEN false
                  WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
                      THEN false
+                 WHEN ( -- holiday without shift care
+                    EXISTS(SELECT 1 FROM holiday h WHERE h.date = d) AND 
+                    NOT (u.shift_care_open_on_holidays AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[]) )
+                 )
+                    THEN FALSE
+                 WHEN ( -- unit not open
+                    NOT (extract(isodow FROM d) = ANY(
+                        CASE 
+                            WHEN sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
+                            THEN coalesce(u.shift_care_operation_days, u.operation_days)
+                            ELSE u.operation_days
+                        END 
+                    ))
+                 )
+                    THEN FALSE
                  ELSE true
                  END                               AS child_in_unit,
              CASE -- service need occupancy coefficient of child

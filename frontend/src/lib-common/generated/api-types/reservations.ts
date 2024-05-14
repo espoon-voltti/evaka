@@ -387,7 +387,9 @@ export interface UnitAttendanceReservations {
 export interface UnitDateInfo {
   isHoliday: boolean
   isInHolidayPeriod: boolean
-  time: TimeRange | null
+  normalOperatingTimes: TimeRange | null
+  shiftCareOpenOnHoliday: boolean
+  shiftCareOperatingTimes: TimeRange | null
 }
 
 /**
@@ -654,7 +656,8 @@ export function deserializeJsonUnitAttendanceReservations(json: JsonOf<UnitAtten
 export function deserializeJsonUnitDateInfo(json: JsonOf<UnitDateInfo>): UnitDateInfo {
   return {
     ...json,
-    time: (json.time != null) ? TimeRange.parseJson(json.time) : null
+    normalOperatingTimes: (json.normalOperatingTimes != null) ? TimeRange.parseJson(json.normalOperatingTimes) : null,
+    shiftCareOperatingTimes: (json.shiftCareOperatingTimes != null) ? TimeRange.parseJson(json.shiftCareOperatingTimes) : null
   }
 }
 

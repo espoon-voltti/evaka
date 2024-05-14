@@ -378,7 +378,7 @@ class AttendanceReservationsControllerIntegrationTest :
             response.days.all {
                 it.dateInfo ==
                     UnitAttendanceReservations.UnitDateInfo(
-                        time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                        normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                         isHoliday = false,
                         isInHolidayPeriod = false
                     )
@@ -780,7 +780,7 @@ class AttendanceReservationsControllerIntegrationTest :
         result.days.forEach { day ->
             assertEquals(
                 UnitAttendanceReservations.UnitDateInfo(
-                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                     isHoliday = false,
                     isInHolidayPeriod = true
                 ),
@@ -801,7 +801,7 @@ class AttendanceReservationsControllerIntegrationTest :
         result.days.forEach { day ->
             assertEquals(
                 UnitAttendanceReservations.UnitDateInfo(
-                    time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                     isHoliday = false,
                     isInHolidayPeriod = true
                 ),
@@ -817,7 +817,7 @@ class AttendanceReservationsControllerIntegrationTest :
         val result = getAttendanceReservations()
         assertEquals(
             UnitAttendanceReservations.UnitDateInfo(
-                time = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                 isHoliday = true,
                 isInHolidayPeriod = false
             ),

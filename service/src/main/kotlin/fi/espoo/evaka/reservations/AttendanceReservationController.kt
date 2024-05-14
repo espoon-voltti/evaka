@@ -42,7 +42,6 @@ import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChild
-import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -615,7 +614,9 @@ class AttendanceReservationController(
                         )
 
                     val nextConfirmedUnitDays =
-                        operationalDays.filter { !it.dateInfo.isHoliday }.map { it.date }
+                        operationalDays
+                            .filter { !it.dateInfo.isHoliday || it.dateInfo.shiftCareOpenOnHoliday }
+                            .map { it.date }
 
                     val rowsByDate =
                         tx.getReservationStatisticsForUnit(
@@ -681,7 +682,9 @@ data class UnitAttendanceReservations(
     )
 
     data class UnitDateInfo(
-        val time: TimeRange?,
+        val normalOperatingTimes: TimeRange?,
+        val shiftCareOperatingTimes: TimeRange?,
+        val shiftCareOpenOnHoliday: Boolean,
         val isHoliday: Boolean,
         val isInHolidayPeriod: Boolean
     )
@@ -726,22 +729,26 @@ private fun getUnitOperationalDayData(
     val holidayPeriodDates = holidayPeriods.flatMap { it.period.dates() }.toSet()
     return period
         .dates()
-        .filter { includeNonOperationalDays || unit.operationDays.contains(it.dayOfWeek.value) }
         .map { date ->
             UnitAttendanceReservations.OperationalDay(
                 date = date,
                 dateInfo =
                     UnitAttendanceReservations.UnitDateInfo(
-                        time = unit.operationTimes[date.dayOfWeek.value - 1],
-                        // TODO: this is badly named at the very least
-                        isHoliday =
-                            !unit.shiftCareOpenOnHolidays &&
-                                (holidays.contains(date) ||
-                                    !unit.operationDays.contains(date.dayOfWeek.value)),
+                        normalOperatingTimes = unit.operationTimes[date.dayOfWeek.value - 1],
+                        shiftCareOperatingTimes =
+                            (unit.shiftCareOperationTimes ?: unit.operationTimes)[
+                                date.dayOfWeek.value - 1],
+                        shiftCareOpenOnHoliday = unit.shiftCareOpenOnHolidays,
+                        isHoliday = holidays.contains(date),
                         isInHolidayPeriod = holidayPeriodDates.contains(date),
                     ),
                 children = emptyList()
             )
+        }
+        .filter {
+            includeNonOperationalDays ||
+                it.dateInfo.normalOperatingTimes != null ||
+                it.dateInfo.shiftCareOperatingTimes != null
         }
         .toList()
 }
