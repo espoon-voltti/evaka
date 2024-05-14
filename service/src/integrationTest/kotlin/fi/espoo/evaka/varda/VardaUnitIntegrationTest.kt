@@ -16,7 +16,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -43,7 +43,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val client = TestClient()
 
         updateUnits(client)
-        assertEquals(2, getVardaUnits(db).size)
+        assertEquals(2, getVardaUnitStates(db).size)
         assertEquals(2, client.units.size)
 
         val uploadedUnit = client.findUnitByName("Päiväkoti 1")
@@ -56,40 +56,26 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
         val closingDate = LocalDate.now()
         db.transaction {
-            it.createUpdate {
-                    sql(
-                        """
-                        ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
-                        UPDATE daycare SET closing_date = ${bind(closingDate)}, updated = ${bind(clock.now())}
-                        WHERE id = ${bind(unitId1)};
-                        ALTER TABLE daycare ENABLE TRIGGER set_timestamp;
-                        """
-                    )
-                }
-                .execute()
+            it.execute {
+                sql(
+                    "UPDATE daycare SET closing_date = ${bind(closingDate)} WHERE id = ${bind(unitId1)}"
+                )
+            }
         }
-        clock.tick()
 
         val client = TestClient()
 
         updateUnits(client)
-        assertEquals(closingDate.toString(), client.findUnitByName("Päiväkoti 1").paattymis_pvm)
+        assertEquals(closingDate, client.findUnitByName("Päiväkoti 1").paattymis_pvm)
 
-        clock.tick()
         db.transaction {
-            it.createUpdate {
-                    sql(
-                        """
-                        ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
-                        UPDATE daycare SET closing_date = NULL, updated = ${bind(clock.now())}
-                        WHERE id = ${bind(unitId1)};
-                        ALTER TABLE daycare ENABLE TRIGGER set_timestamp;
-                        """
-                    )
-                }
-                .execute()
+            it.execute {
+                sql(
+                    "UPDATE daycare SET closing_date = NULL, updated = ${bind(clock.now())} WHERE id = ${bind(unitId1)}"
+                )
+            }
         }
-        val unit = db.read { getNewOrStaleUnits(it) }.find { it.evakaDaycareId == unitId1 }
+        val unit = db.read { it.getVardaUnits() }.find { it.evakaDaycareId == unitId1 }
 
         // Because of too tight serialization annotation the unit closing date removal (setting as
         // null) was dropped out
@@ -106,7 +92,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         )
 
         updateUnits(client)
-        assertEquals(null, client.findUnitByName("Päiväkoti 1").paattymis_pvm)
+        assertNull(client.findUnitByName("Päiväkoti 1").paattymis_pvm)
     }
 
     @Test
@@ -114,7 +100,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val client = TestClient()
 
         updateUnits(client)
-        assertEquals(2, getVardaUnits(db).size)
+        assertEquals(2, getVardaUnitStates(db).size)
 
         db.transaction {
             it.insert(
@@ -128,7 +114,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
         updateUnits(client)
 
-        assertEquals(2, getVardaUnits(db).size)
+        assertEquals(2, getVardaUnitStates(db).size)
     }
 
     @Test
@@ -136,34 +122,53 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val client = TestClient()
 
         updateUnits(client)
-        val unitToStale = getVardaUnits(db)[0]
+        val unitToStale = getVardaUnitStates(db)[0]
         val daycareId = unitToStale.evakaDaycareId
         val vardaId = unitToStale.vardaUnitId
-        val lastSuccessAt = unitToStale.lastSuccessAt
         val createdAt = unitToStale.createdAt
 
-        clock.tick()
         db.transaction {
-            it.createUpdate {
-                    sql(
-                        """
-                        ALTER TABLE daycare DISABLE TRIGGER set_timestamp;
-                        UPDATE daycare SET street_address = 'new address', updated =
-    ${bind(clock.now())}
-                        WHERE id = ${bind(daycareId)};
-                        ALTER TABLE daycare ENABLE TRIGGER set_timestamp;
-                        """
-                    )
-                }
-                .execute()
+            it.execute {
+                sql(
+                    "UPDATE daycare SET street_address = 'new address' WHERE id = ${bind(daycareId)}"
+                )
+            }
+        }
+
+        clock.tick()
+        updateUnits(client)
+
+        val updatedUnit = getVardaUnitStates(db).toList().find { it.evakaDaycareId == daycareId }!!
+        assertEquals(vardaId, updatedUnit.vardaUnitId)
+        assertEquals(createdAt, updatedUnit.createdAt)
+        assertEquals(clock.now(), updatedUnit.lastSuccessAt)
+    }
+
+    @Test
+    fun `unchanged unit is not updated`() {
+        val client = TestClient()
+        updateUnits(client)
+        assertEquals(2, client.numCalls)
+        updateUnits(client)
+        assertEquals(2, client.numCalls)
+    }
+
+    @Test
+    fun `unit with incompatible state is updated`() {
+        val client = TestClient()
+        updateUnits(client)
+        assertEquals(2, client.numCalls)
+
+        db.transaction {
+            it.execute {
+                sql(
+                    """UPDATE varda_unit SET state = '{"foo": "bar"}'::jsonb WHERE evaka_daycare_id = ${bind(unitId1)}"""
+                )
+            }
         }
 
         updateUnits(client)
-
-        val updatedUnit = getVardaUnits(db).toList().find { it.evakaDaycareId == daycareId }!!
-        assertEquals(vardaId, updatedUnit.vardaUnitId)
-        assertEquals(createdAt, updatedUnit.createdAt)
-        assertNotEquals(lastSuccessAt, updatedUnit.lastSuccessAt)
+        assertEquals(3, client.numCalls)
     }
 
     @Test
@@ -178,7 +183,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
         updateUnits(client)
 
-        getVardaUnits(db).also { units ->
+        getVardaUnitStates(db).also { units ->
             assertEquals(2, units.size)
             units.forEach { unit ->
                 assertEquals(clock.now(), unit.erroredAt)
@@ -202,15 +207,18 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
 class TestClient : VardaUnitClient {
     val units = mutableMapOf<Long, VardaUnitRequest>()
+    var numCalls = 0
     private var nextId = 1L
 
     override fun createUnit(unit: VardaUnitRequest): VardaUnitResponse {
+        numCalls++
         val id = nextId++
         units[id] = unit
         return VardaUnitResponse(id, "foo.$id")
     }
 
     override fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse {
+        numCalls++
         if (!units.containsKey(id)) throw IllegalStateException("Unit not found")
         units[id] = unit
         return VardaUnitResponse(id, "foo.$id")
@@ -219,7 +227,7 @@ class TestClient : VardaUnitClient {
     fun findUnitByName(name: String) = units.values.find { it.nimi == name }!!
 }
 
-fun getVardaUnits(db: Database.Connection): List<VardaUnitRow> =
+fun getVardaUnitStates(db: Database.Connection): List<VardaUnitRow> =
     db.read { it.createQuery { sql("SELECT * FROM varda_unit") }.toList<VardaUnitRow>() }
 
 data class VardaUnitRow(

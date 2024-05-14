@@ -5,14 +5,17 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.JsonMappingException
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
+import org.jdbi.v3.core.result.UnableToProduceResultException
 
 private val logger = KotlinLogging.logger {}
 
@@ -26,7 +29,7 @@ interface VardaUnitClient {
 }
 
 fun updateUnits(
-    db: Database.Connection,
+    dbc: Database.Connection,
     clock: EvakaClock,
     client: VardaUnitClient,
     lahdejarjestelma: String,
@@ -34,39 +37,56 @@ fun updateUnits(
     vakajarjestajaUrl: String
 ) {
     val startTime = clock.now()
-    val units = db.read { getNewOrStaleUnits(it) }
 
-    logger.info { "Sending ${units.size} new or updated units to Varda" }
-    units.forEach { unit ->
-        try {
-            val request =
+    val (states, units) =
+        dbc.read {
+            val states = it.getVardaUnitStates<VardaUnitRequest>()
+            val units = it.getVardaUnits()
+            states to units
+        }
+
+    val unitsToSend =
+        units.mapNotNull { unit ->
+            val prevState = states[unit.evakaDaycareId]
+            val currState =
                 unit.toVardaUnitRequest(
                     lahdejarjestelma = lahdejarjestelma,
                     vakajarjestaja = vakajarjestajaUrl,
                     kuntakoodi = kuntakoodi
                 )
+            if (prevState?.state != currState) {
+                Triple(unit.evakaDaycareId, prevState?.vardaUnitId, currState)
+            } else {
+                null
+            }
+        }
+
+    logger.info { "Sending ${unitsToSend.size} new or updated units to Varda" }
+    unitsToSend.forEach { (evakaDaycareId, vardaUnitId, request) ->
+        try {
             val response =
-                if (unit.vardaUnitId == null) {
+                if (vardaUnitId == null) {
                     client.createUnit(request)
                 } else {
-                    client.updateUnit(unit.vardaUnitId, request)
+                    client.updateUnit(vardaUnitId, request)
                 }
-            db.transaction {
+            dbc.transaction {
                 setUnitUploaded(
                     tx = it,
                     now = startTime,
-                    unitId = unit.evakaDaycareId,
+                    unitId = evakaDaycareId,
                     vardaUnitId = response.id,
-                    ophUnitOid = response.organisaatio_oid
+                    ophUnitOid = response.organisaatio_oid,
+                    state = request
                 )
             }
         } catch (e: Exception) {
-            logger.error("Failed to update unit ${unit.name}: $e", e)
-            db.transaction {
+            logger.error("Failed to update unit ${request.nimi}: $e", e)
+            dbc.transaction {
                 setUnitUploadFailed(
                     tx = it,
                     now = startTime,
-                    unitId = unit.evakaDaycareId,
+                    unitId = evakaDaycareId,
                     error = e.localizedMessage
                 )
             }
@@ -74,61 +94,70 @@ fun updateUnits(
     }
 }
 
-fun getNewOrStaleUnits(
-    tx: Database.Read,
-): List<VardaUnit> {
-    return tx.createQuery {
+data class VardaUnitState<T>(val vardaUnitId: Long, val state: T?)
+
+inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, VardaUnitState<T>> =
+    createQuery { sql("SELECT evaka_daycare_id, varda_unit_id, state FROM varda_unit") }
+        .toMap {
+            val id = column<DaycareId>("evaka_daycare_id")
+            val varda_unit_id = column<Long>("varda_unit_id")
+            val state =
+                try {
+                    jsonColumn<T?>("state")
+                } catch (exc: UnableToProduceResultException) {
+                    if (exc.cause is JsonMappingException) {
+                        null
+                    } else {
+                        throw exc
+                    }
+                }
+            id to VardaUnitState(varda_unit_id, state)
+        }
+
+fun Database.Read.getVardaUnits(): List<VardaUnit> =
+    createQuery {
             sql(
                 """
                 SELECT
-                    daycare.id AS evakaDaycareId,
-                    varda_unit.varda_unit_id AS vardaUnitId,
-                    daycare.oph_unit_oid AS ophUnitOid,
-                    daycare.name AS name,
-                    daycare.street_address AS address,
-                    daycare.postal_code AS postalCode,
-                    daycare.post_office AS postOffice,
-                    daycare.mailing_po_box AS mailingStreetAddress,
-                    daycare.mailing_postal_code AS mailingPostalCode,
-                    daycare.mailing_post_office AS mailingPostOffice,
-                    daycare.unit_manager_phone AS phoneNumber,
-                    daycare.unit_manager_email AS email,
-                    daycare.capacity AS capacity,
-                    daycare.provider_type AS unitProviderType,
-                    daycare.type AS unitType,
-                    daycare.language AS language,
-                    daycare.language_emphasis_id AS languageEmphasisId,
-                    daycare.opening_date AS openingDate,
-                    daycare.closing_date AS closingDate
+                    daycare.id AS evaka_daycare_id,
+                    daycare.name,
+                    daycare.street_address,
+                    daycare.postal_code,
+                    daycare.post_office,
+                    daycare.mailing_po_box,
+                    daycare.mailing_postal_code,
+                    daycare.mailing_post_office,
+                    daycare.unit_manager_phone,
+                    daycare.unit_manager_email,
+                    daycare.capacity,
+                    daycare.opening_date,
+                    daycare.closing_date,
+                    daycare.provider_type,
+                    daycare.type,
+                    daycare.language,
+                    daycare.language_emphasis_id
                 FROM daycare
-                LEFT JOIN varda_unit ON varda_unit.evaka_daycare_id = daycare.id
-                WHERE daycare.upload_to_varda IS TRUE
-                    AND (
-                        varda_unit.last_success_at IS NULL OR
-                        daycare.updated > varda_unit.last_success_at OR
-                        daycare.oph_unit_oid IS NULL
-                    )
-                    AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
+                WHERE daycare.upload_to_varda IS TRUE AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
                 """
             )
         }
-        .toList<VardaUnit>()
-}
+        .toList()
 
 fun setUnitUploaded(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
     unitId: DaycareId,
     vardaUnitId: Long?,
-    ophUnitOid: String?
+    ophUnitOid: String?,
+    state: Any
 ) {
     tx.createUpdate {
             sql(
                 """
-                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, last_success_at, errored_at, error)
-                VALUES (${bind(unitId)}, ${bind(vardaUnitId)}, ${bind(now)}, NULL, NULL)
+                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, state, last_success_at, errored_at, error)
+                VALUES (${bind(unitId)}, ${bind(vardaUnitId)}, ${bindJson(state)}, ${bind(now)}, NULL, NULL)
                 ON CONFLICT (evaka_daycare_id)
-                DO UPDATE SET varda_unit_id = ${bind(vardaUnitId)}, last_success_at = ${bind(now)}, errored_at = NULL, error = NULL
+                DO UPDATE SET varda_unit_id = ${bind(vardaUnitId)}, state = ${bindJson(state)}, last_success_at = ${bind(now)}, errored_at = NULL, error = NULL
                 """
             )
         }
@@ -216,23 +245,21 @@ enum class VardaUnitEducationSystem(val vardaCode: String) {
 data class VardaUnitResponse(val id: Long, val organisaatio_oid: String)
 
 data class VardaUnit(
-    val vardaUnitId: Long?,
-    val ophUnitOid: String?,
-    val name: String?,
-    val address: String?,
-    val postalCode: String?,
-    val postOffice: String?,
-    val mailingStreetAddress: String?,
+    val evakaDaycareId: DaycareId,
+    val name: String,
+    val streetAddress: String,
+    val postalCode: String,
+    val postOffice: String,
+    val mailingPoBox: String?,
     val mailingPostalCode: String?,
     val mailingPostOffice: String?,
-    val phoneNumber: String?,
-    val email: String?,
+    val unitManagerPhone: String,
+    val unitManagerEmail: String,
     val capacity: Int,
-    val openingDate: String?,
-    val closingDate: String?,
-    val evakaDaycareId: DaycareId,
-    val unitProviderType: VardaUnitProviderType,
-    val unitType: List<VardaUnitType>,
+    val openingDate: LocalDate?,
+    val closingDate: LocalDate?,
+    val providerType: VardaUnitProviderType,
+    val type: List<VardaUnitType>,
     val language: VardaLanguage,
     val languageEmphasisId: UUID?
 ) {
@@ -242,18 +269,16 @@ data class VardaUnit(
         kuntakoodi: String,
     ) =
         VardaUnitRequest(
-            id = vardaUnitId,
-            organisaatio_oid = ophUnitOid,
             vakajarjestaja = vakajarjestaja,
             nimi = name,
-            kayntiosoite = address,
+            kayntiosoite = streetAddress,
             kayntiosoite_postinumero = postalCode,
             kayntiosoite_postitoimipaikka = postOffice,
-            postiosoite = mailingStreetAddress,
+            postiosoite = mailingPoBox,
             postinumero = mailingPostalCode,
             postitoimipaikka = mailingPostOffice,
-            puhelinnumero = phoneNumber,
-            sahkopostiosoite = email,
+            puhelinnumero = unitManagerPhone,
+            sahkopostiosoite = unitManagerEmail,
             varhaiskasvatuspaikat = capacity,
             alkamis_pvm = openingDate,
             paattymis_pvm = closingDate,
@@ -261,21 +286,14 @@ data class VardaUnit(
             lahdejarjestelma = lahdejarjestelma,
             toiminnallinenpainotus_kytkin = false,
             kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
-            jarjestamismuoto_koodi = listOfNotNull(unitProviderType.vardaCode),
+            jarjestamismuoto_koodi = listOfNotNull(providerType.vardaCode),
             toimintamuoto_koodi =
                 when {
-                    unitType.contains(VardaUnitType.CENTRE) -> {
-                        VardaUnitType.CENTRE.vardaCode
-                    }
-                    unitType.contains(VardaUnitType.FAMILY) -> {
-                        VardaUnitType.FAMILY.vardaCode
-                    }
-                    unitType.contains(VardaUnitType.GROUP_FAMILY) -> {
+                    type.contains(VardaUnitType.CENTRE) -> VardaUnitType.CENTRE.vardaCode
+                    type.contains(VardaUnitType.FAMILY) -> VardaUnitType.FAMILY.vardaCode
+                    type.contains(VardaUnitType.GROUP_FAMILY) ->
                         VardaUnitType.GROUP_FAMILY.vardaCode
-                    }
-                    unitType.contains(VardaUnitType.PRESCHOOL) -> {
-                        VardaUnitType.PRESCHOOL.vardaCode
-                    }
+                    type.contains(VardaUnitType.PRESCHOOL) -> VardaUnitType.PRESCHOOL.vardaCode
                     else -> null
                 },
             toimintakieli_koodi = listOfNotNull(language.vardaCode),
@@ -285,8 +303,6 @@ data class VardaUnit(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class VardaUnitRequest(
-    val id: Long?,
-    val organisaatio_oid: String?,
     val vakajarjestaja: String?,
     val nimi: String?,
     val kayntiosoite: String?,
@@ -298,8 +314,8 @@ data class VardaUnitRequest(
     val puhelinnumero: String?,
     val sahkopostiosoite: String?,
     val varhaiskasvatuspaikat: Int,
-    val alkamis_pvm: String?,
-    @JsonInclude(JsonInclude.Include.ALWAYS) val paattymis_pvm: String?,
+    val alkamis_pvm: LocalDate?,
+    @JsonInclude(JsonInclude.Include.ALWAYS) val paattymis_pvm: LocalDate?,
     val kunta_koodi: String?,
     val lahdejarjestelma: String?,
     val toiminnallinenpainotus_kytkin: Boolean? = false,

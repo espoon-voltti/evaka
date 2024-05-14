@@ -6,6 +6,7 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -48,24 +49,22 @@ class VardaUnitModelTest {
 
 val testUnit =
     VardaUnit(
-        vardaUnitId = null,
-        ophUnitOid = null,
         evakaDaycareId = DaycareId(UUID.randomUUID()),
         name = "Testipäiväkoti",
-        address = "Testiosoite 6",
+        streetAddress = "Testiosoite 6",
         postalCode = "00200",
         postOffice = "Espoo",
-        mailingStreetAddress = "Postiosoite 4",
+        mailingPoBox = "Postiosoite 4",
         mailingPostalCode = "00100",
         mailingPostOffice = "Espoo",
-        phoneNumber = "+3581233222",
-        email = "testi@testi.com",
+        unitManagerPhone = "+3581233222",
+        unitManagerEmail = "testi@testi.com",
         capacity = 21,
-        unitProviderType = VardaUnitProviderType.MUNICIPAL,
-        unitType = listOf(VardaUnitType.CENTRE),
+        providerType = VardaUnitProviderType.MUNICIPAL,
+        type = listOf(VardaUnitType.CENTRE),
         language = VardaLanguage.FI,
         languageEmphasisId = null,
-        openingDate = "2000-01-01",
+        openingDate = LocalDate.of(2000, 1, 1),
         closingDate = null
     )
 
@@ -81,13 +80,12 @@ val testUnitJson =
 {"vakajarjestaja":"http://path.to.organizer","kayntiosoite":"Testiosoite 6","postiosoite":"Postiosoite 4","nimi":"Testipäiväkoti","kayntiosoite_postinumero":"00200","kayntiosoite_postitoimipaikka":"Espoo","postinumero":"00100","postitoimipaikka":"Espoo","kunta_koodi":"049","puhelinnumero":"+3581233222","sahkopostiosoite":"testi@testi.com","kasvatusopillinen_jarjestelma_koodi":"kj98","toimintamuoto_koodi":"tm01","toimintakieli_koodi":["FI"],"jarjestamismuoto_koodi":["jm01"],"varhaiskasvatuspaikat":21,"toiminnallinenpainotus_kytkin":false,"kielipainotus_kytkin":false,"alkamis_pvm":"2000-01-01","lahdejarjestelma":"ss"}
     """
         .trimIndent()
-val testUnitFamily = testUnit.copy(unitType = listOf(VardaUnitType.FAMILY))
-val testUnitGroupFamily = testUnit.copy(unitType = listOf(VardaUnitType.GROUP_FAMILY))
+val testUnitFamily = testUnit.copy(type = listOf(VardaUnitType.FAMILY))
+val testUnitGroupFamily = testUnit.copy(type = listOf(VardaUnitType.GROUP_FAMILY))
 val testUnitPreparatoryFamily =
-    testUnit.copy(unitType = listOf(VardaUnitType.PREPARATORY_EDUCATION, VardaUnitType.FAMILY))
+    testUnit.copy(type = listOf(VardaUnitType.PREPARATORY_EDUCATION, VardaUnitType.FAMILY))
 val testUnitPreschoolFamily =
-    testUnit.copy(unitType = listOf(VardaUnitType.PRESCHOOL, VardaUnitType.FAMILY))
-val testUnitPreparatory = testUnit.copy(unitType = listOf(VardaUnitType.PREPARATORY_EDUCATION))
-val testUnitPreschool = testUnit.copy(unitType = listOf(VardaUnitType.PRESCHOOL))
-val testUnitMunicipalSchool =
-    testUnit.copy(unitProviderType = VardaUnitProviderType.MUNICIPAL_SCHOOL)
+    testUnit.copy(type = listOf(VardaUnitType.PRESCHOOL, VardaUnitType.FAMILY))
+val testUnitPreparatory = testUnit.copy(type = listOf(VardaUnitType.PREPARATORY_EDUCATION))
+val testUnitPreschool = testUnit.copy(type = listOf(VardaUnitType.PRESCHOOL))
+val testUnitMunicipalSchool = testUnit.copy(providerType = VardaUnitProviderType.MUNICIPAL_SCHOOL)
