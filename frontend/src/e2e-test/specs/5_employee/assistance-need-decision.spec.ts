@@ -285,7 +285,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${daycareFixture.name}\n${daycareFixture.streetAddress}\n${daycareFixture.postalCode} ${daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${daycareFixture.name}\n${daycareFixture.visitingAddress.streetAddress}\n${daycareFixture.visitingAddress.postalCode} ${daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,
@@ -414,7 +414,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${daycareFixture.name}\n${daycareFixture.streetAddress}\n${daycareFixture.postalCode} ${daycareFixture.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${daycareFixture.name}\n${daycareFixture.visitingAddress.streetAddress}\n${daycareFixture.visitingAddress.postalCode} ${daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,

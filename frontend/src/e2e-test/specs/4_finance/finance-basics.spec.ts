@@ -6,7 +6,6 @@ import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertFeeThresholds } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -53,8 +52,7 @@ describe('Finance basics', () => {
   })
 
   test('Creating a new set of retroactive fee thresholds ends the previous', async () => {
-    const originalData = Fixture.feeThresholds().data
-    await insertFeeThresholds(originalData)
+    const originalData = (await Fixture.feeThresholds().save()).data
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const newData = {
@@ -98,9 +96,7 @@ describe('Finance basics', () => {
   })
 
   test('Copying existing fee thresholds', async () => {
-    const feeThresholdFixture = Fixture.feeThresholds()
-    const originalData = feeThresholdFixture.data
-    await insertFeeThresholds(originalData)
+    const originalData = (await Fixture.feeThresholds().save()).data
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const originalThresholdsItem = financeBasicsPage.feesSection.item(0)
@@ -137,9 +133,7 @@ describe('Finance basics', () => {
   })
 
   test('Editing existing fee thresholds', async () => {
-    const feeThresholdFixture = Fixture.feeThresholds()
-    const originalData = feeThresholdFixture.data
-    await insertFeeThresholds(originalData)
+    const originalData = (await Fixture.feeThresholds().save()).data
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const thresholdsItem = financeBasicsPage.feesSection.item(0)
@@ -158,13 +152,16 @@ describe('Finance basics', () => {
   })
 
   test('Date overlap on fee thresholds with an end date prevents saving new fee thresholds', async () => {
-    const originalData = Fixture.feeThresholds().with({
-      validDuring: new DateRange(
-        LocalDate.of(2020, 1, 1),
-        LocalDate.of(2020, 12, 31)
-      )
-    }).data
-    await insertFeeThresholds(originalData)
+    const originalData = (
+      await Fixture.feeThresholds()
+        .with({
+          validDuring: new DateRange(
+            LocalDate.of(2020, 1, 1),
+            LocalDate.of(2020, 12, 31)
+          )
+        })
+        .save()
+    ).data
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const newData = {

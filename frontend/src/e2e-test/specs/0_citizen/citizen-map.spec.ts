@@ -10,17 +10,19 @@ import {
   Fixture,
   preschoolFixture
 } from '../../dev-api/fixtures'
-import { Daycare } from '../../dev-api/types'
 import {
   putDigitransitAutocomplete,
   resetServiceState
 } from '../../generated/api-clients'
-import { Feature as DigitransitFeature } from '../../generated/api-types'
+import {
+  DevDaycare,
+  Feature as DigitransitFeature
+} from '../../generated/api-types'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
-const swedishDaycare: Daycare = {
+const swedishDaycare: DevDaycare = {
   ...daycare2Fixture,
   name: 'Svart hål svenska daghem',
   id: '9db9e8f7-2091-4be1-b091-fe107906e1b9',
@@ -43,7 +45,7 @@ const testStreet: DigitransitFeature = {
   }
 }
 
-const privateDaycareWithoutPeriods: Daycare = {
+const privateDaycareWithoutPeriods: DevDaycare = {
   ...daycare2Fixture,
   name: 'Private daycare',
   id: '9db9e8f7-2091-4be1-b091-fe10790e107a',

@@ -5,7 +5,6 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { insertApplications } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
@@ -16,12 +15,17 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Application, Child, Daycare } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
 import {
+  createApplications,
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import {
+  DevApplicationWithForm,
+  DevDaycare,
+  DevEmployee
+} from '../../generated/api-types'
 import {
   ApplicationProcessPage,
   UnitPage
@@ -32,12 +36,12 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
-let child1Fixture: Child
-let child2Fixture: Child
+let child1Fixture: PersonDetail
+let child2Fixture: PersonDetail
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 
-let daycare: Daycare
+let daycare: DevDaycare
 let unitSupervisor: DevEmployee
 const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
@@ -104,18 +108,18 @@ describe('Unit groups - placement plans / proposals', () => {
   test('Placement plan is shown', async () => {
     const today = LocalDate.todayInSystemTz()
 
-    const application1: Application = {
+    const application1: DevApplicationWithForm = {
       ...applicationFixture(enduserChildFixtureJari, enduserGuardianFixture),
       id: uuidv4(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
-    const application2: Application = {
+    const application2: DevApplicationWithForm = {
       ...applicationFixture(enduserChildFixtureKaarina, enduserGuardianFixture),
       id: uuidv4(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
 
-    await insertApplications([application1, application2])
+    await createApplications({ body: [application1, application2] })
 
     await Fixture.placementPlan()
       .with({

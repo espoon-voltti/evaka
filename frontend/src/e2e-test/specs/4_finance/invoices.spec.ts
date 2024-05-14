@@ -7,12 +7,7 @@ import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  insertFeeDecisionFixtures,
-  insertInvoiceFixtures,
-  insertParentshipFixtures,
-  insertPersonFixture
-} from '../../dev-api'
+import { insertPersonFixture } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -27,6 +22,8 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
+  createFeeDecisions,
+  createInvoices,
   resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -48,14 +45,14 @@ beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await insertPersonFixture(adultWithoutSSN)
-  await insertParentshipFixtures([
-    {
+  await Fixture.parentship()
+    .with({
       childId: fixtures.enduserChildFixtureKaarina.id,
       headOfChildId: fixtures.enduserGuardianFixture.id,
       startDate: fixtures.enduserChildFixtureKaarina.dateOfBirth,
       endDate: LocalDate.of(2099, 1, 1)
-    }
-  ])
+    })
+    .save()
 
   feeDecisionFixture = feeDecisionsFixture(
     'SENT',
@@ -68,7 +65,7 @@ beforeEach(async () => {
       LocalDate.todayInSystemTz().withDate(1).subDays(1)
     )
   )
-  await insertFeeDecisionFixtures([feeDecisionFixture])
+  await createFeeDecisions({ body: [feeDecisionFixture] })
   await createDaycarePlacements({
     body: [
       createDaycarePlacementFixture(
@@ -138,22 +135,24 @@ describe('Invoices', () => {
   })
 
   test('Invoices are toggled and sent', async () => {
-    await insertInvoiceFixtures([
-      invoiceFixture(
-        fixtures.enduserGuardianFixture.id,
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.careAreaFixture.id,
-        fixtures.daycareFixture.id,
-        'DRAFT'
-      ),
-      invoiceFixture(
-        fixtures.familyWithRestrictedDetailsGuardian.guardian.id,
-        fixtures.familyWithRestrictedDetailsGuardian.children[0].id,
-        fixtures.careAreaFixture.id,
-        fixtures.daycareFixture.id,
-        'DRAFT'
-      )
-    ])
+    await createInvoices({
+      body: [
+        invoiceFixture(
+          fixtures.enduserGuardianFixture.id,
+          fixtures.enduserChildFixtureJari.id,
+          fixtures.careAreaFixture.id,
+          fixtures.daycareFixture.id,
+          'DRAFT'
+        ),
+        invoiceFixture(
+          fixtures.familyWithRestrictedDetailsGuardian.guardian.id,
+          fixtures.familyWithRestrictedDetailsGuardian.children[0].id,
+          fixtures.careAreaFixture.id,
+          fixtures.daycareFixture.id,
+          'DRAFT'
+        )
+      ]
+    })
     // switch tabs to refresh data
     await financePage.selectFeeDecisionsTab()
     await financePage.selectInvoicesTab()
@@ -167,15 +166,17 @@ describe('Invoices', () => {
   })
 
   test('Sending an invoice with a recipient without a SSN', async () => {
-    await insertInvoiceFixtures([
-      invoiceFixture(
-        adultWithoutSSN.id,
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.careAreaFixture.id,
-        fixtures.daycareFixture.id,
-        'DRAFT'
-      )
-    ])
+    await createInvoices({
+      body: [
+        invoiceFixture(
+          adultWithoutSSN.id,
+          fixtures.enduserChildFixtureJari.id,
+          fixtures.careAreaFixture.id,
+          fixtures.daycareFixture.id,
+          'DRAFT'
+        )
+      ]
+    })
 
     await invoicesPage.freeTextFilter(adultFixtureWihtoutSSN.firstName)
     await invoicesPage.assertInvoiceCount(1)

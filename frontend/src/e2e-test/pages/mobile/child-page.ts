@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Child } from '../../dev-api/types'
+import { DevChild } from '../../generated/api-types'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
@@ -66,7 +66,7 @@ export default class MobileChildPage {
   }
 
   async assertSensitiveInfo(
-    additionalInfo: Child,
+    additionalInfo: DevChild,
     contacts: {
       firstName: string
       lastName: string

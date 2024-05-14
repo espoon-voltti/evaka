@@ -6,12 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import {
-  createDecisionPdf,
-  execSimpleApplicationActions,
-  insertApplications,
-  rejectDecisionByCitizen
-} from '../../dev-api'
+import { execSimpleApplicationActions } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -24,15 +19,17 @@ import {
   preschoolFixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Application } from '../../dev-api/types'
 import {
   cleanUpMessages,
+  createApplications,
+  createDecisionPdf,
   createDecisions,
   createDefaultServiceNeedOptions,
   getApplicationDecisions,
+  rejectDecisionByCitizen,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevApplicationWithForm, DevEmployee } from '../../generated/api-types'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
@@ -75,7 +72,7 @@ describe('Application transitions', () => {
     }
     applicationId = fixture.id
 
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
       [
@@ -104,7 +101,7 @@ describe('Application transitions', () => {
     }
     applicationId = fixture.id
 
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
       [
@@ -137,7 +134,7 @@ describe('Application transitions', () => {
     }
     applicationId = fixture.id
 
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
       ['move-to-waiting-placement', 'create-default-placement-plan'],
@@ -168,7 +165,7 @@ describe('Application transitions', () => {
     }
     applicationId = fixture.id
 
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
     await execSimpleApplicationActions(
       applicationId,
       ['move-to-waiting-placement', 'create-default-placement-plan'],
@@ -244,7 +241,7 @@ describe('Application transitions', () => {
     }
     const applicationId = fixture.id
 
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await execSimpleApplicationActions(
       applicationId,
@@ -300,7 +297,7 @@ describe('Application transitions', () => {
     }
     const applicationId = restrictedDetailsGuardianApplication.id
 
-    await insertApplications([restrictedDetailsGuardianApplication])
+    await createApplications({ body: [restrictedDetailsGuardianApplication] })
 
     await execSimpleApplicationActions(
       applicationId,
@@ -336,7 +333,7 @@ describe('Application transitions', () => {
       id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
     }
     const applicationId = fixture.id
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await execSimpleApplicationActions(
       applicationId,
@@ -398,7 +395,7 @@ describe('Application transitions', () => {
       id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
     }
     const applicationId = fixture.id
-    await insertApplications([fixture])
+    await createApplications({ body: [fixture] })
 
     await execSimpleApplicationActions(
       applicationId,
@@ -465,7 +462,7 @@ describe('Application transitions', () => {
       id: applicationId2
     }
 
-    await insertApplications([fixture1, fixture2])
+    await createApplications({ body: [fixture1, fixture2] })
     await execSimpleApplicationActions(
       applicationId,
       [
@@ -547,7 +544,7 @@ describe('Application transitions', () => {
     }
     applicationId = fixture1.id
 
-    await insertApplications([fixture1])
+    await createApplications({ body: [fixture1] })
 
     const now = mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     await execSimpleApplicationActions(
@@ -601,7 +598,7 @@ describe('Application transitions', () => {
     }
     applicationId = fixture1.id
 
-    await insertApplications([fixture1])
+    await createApplications({ body: [fixture1] })
     await execSimpleApplicationActions(
       applicationId,
       [
@@ -631,7 +628,7 @@ describe('Application transitions', () => {
     }
     applicationId = application.id
 
-    await insertApplications([application])
+    await createApplications({ body: [application] })
 
     const decision = decisionFixture(
       applicationId,
@@ -659,7 +656,7 @@ describe('Application transitions', () => {
 
     // NOTE: No need to wait for pending async jobs as this is synchronous (unlike the normal flow of users creating
     // decisions that would trigger PDF generation as an async job).
-    await createDecisionPdf(decisionId)
+    await createDecisionPdf({ id: decisionId })
 
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -667,7 +664,7 @@ describe('Application transitions', () => {
   })
 
   test('Application rejected by citizen is shown for 2 weeks', async () => {
-    const application1: Application = {
+    const application1: DevApplicationWithForm = {
       ...applicationFixture(
         fixtures.enduserChildFixtureJari,
         fixtures.enduserGuardianFixture
@@ -675,7 +672,7 @@ describe('Application transitions', () => {
       id: uuidv4(),
       status: 'WAITING_CONFIRMATION'
     }
-    const application2: Application = {
+    const application2: DevApplicationWithForm = {
       ...applicationFixture(
         fixtures.enduserChildFixtureKaarina,
         fixtures.enduserGuardianFixture
@@ -685,7 +682,7 @@ describe('Application transitions', () => {
     }
     const placementStartDate = LocalDate.of(2021, 8, 16)
 
-    await insertApplications([application1, application2])
+    await createApplications({ body: [application1, application2] })
 
     await Fixture.placementPlan()
       .with({
@@ -717,7 +714,7 @@ describe('Application transitions', () => {
         .save()
     ).data.id
 
-    await rejectDecisionByCitizen(decisionId)
+    await rejectDecisionByCitizen({ id: decisionId })
 
     const unitSupervisor = (
       await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()

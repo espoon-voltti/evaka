@@ -68,6 +68,7 @@ import {
   createBackupCares,
   createCareAreas,
   createChildDocument,
+  createChildren,
   createClubTerm,
   createDaycareAssistances,
   createDaycareCaretakers,
@@ -75,32 +76,41 @@ import {
   createDaycareGroupPlacement,
   createDaycareGroups,
   createDaycarePlacements,
+  createDaycares,
   createDecisions,
   createDocumentTemplate,
   createEmployee,
   createEmployeePins,
+  createFeeThresholds,
   createFridgeChild,
   createHoliday,
   createHolidayPeriod,
   createHolidayQuestionnaire,
   createIncome,
+  createIncomeNotification,
   createOtherAssistanceMeasures,
+  createParentships,
   createPedagogicalDocuments,
+  createPlacementPlan,
   createPreschoolAssistances,
   createPreschoolTerm,
   createServiceNeedOption,
   createServiceNeeds,
   createVardaReset,
   createVardaServiceNeed,
+  createVasuTemplate,
   insertGuardians,
   postAttendances,
+  postReservations,
   upsertStaffOccupancyCoefficient,
   upsertVtjDataset
 } from '../generated/api-clients'
 import {
   Caretaker,
+  CreateVasuTemplateBody,
   DecisionRequest,
   DevAbsence,
+  DevApplicationWithForm,
   DevAssistanceAction,
   DevAssistanceActionOption,
   DevAssistanceNeedDecision,
@@ -110,10 +120,12 @@ import {
   DevCalendarEventAttendee,
   DevCalendarEventTime,
   DevCareArea,
+  DevChild,
   DevChildAttendance,
   DevChildDocument,
   DevDailyServiceTimeNotification,
   DevDailyServiceTimes,
+  DevDaycare,
   DevDaycareGroup,
   DevDaycareGroupPlacement,
   DevDocumentTemplate,
@@ -122,6 +134,7 @@ import {
   DevFridgeChild,
   DevHoliday,
   DevIncome,
+  DevParentship,
   DevPayment,
   DevPedagogicalDocument,
   DevPlacement,
@@ -132,27 +145,13 @@ import {
   DevUpsertStaffOccupancyCoefficient,
   DevVardaReset,
   DevVardaServiceNeed,
+  PlacementPlan,
   VoucherValueDecision
 } from '../generated/api-types'
 
-import {
-  Application,
-  Child,
-  Daycare,
-  PersonDetail,
-  PersonDetailWithDependants,
-  PlacementPlan
-} from './types'
+import { PersonDetail, PersonDetailWithDependants } from './types'
 
-import {
-  insertChildFixtures,
-  insertDaycareFixtures,
-  insertFeeThresholds,
-  insertIncomeNotification,
-  insertPersonFixture,
-  insertPlacementPlan,
-  insertReservationFixtures
-} from './index'
+import { insertPersonFixture } from './index'
 
 export const uuidv4 = (): string =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -345,7 +344,7 @@ export const careArea2Fixture: DevCareArea = {
   subCostCenter: '98'
 }
 
-export const clubFixture: Daycare = {
+export const clubFixture: DevDaycare = {
   id: '0b5ffd40-2f1a-476a-ad06-2861f433b0d1',
   areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen kerho',
@@ -354,18 +353,21 @@ export const clubFixture: Daycare = {
   dailyPreparatoryTime: null,
   openingDate: LocalDate.of(2020, 1, 1),
   costCenter: '31500',
-  streetAddress: 'Kamreerintie 1',
-  postalCode: '02210',
-  postOffice: 'Espoo',
-  decisionDaycareName: 'Päiväkoti päätöksellä',
-  decisionPreschoolName: '-',
-  decisionHandler: 'Käsittelijä',
-  decisionHandlerAddress: 'Käsittelijän osoite',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti päätöksellä',
+    preschoolName: '-',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
   daycareApplyPeriod: null,
   preschoolApplyPeriod: null,
   clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
   providerType: 'MUNICIPAL',
-  operationDays: [1, 2, 3, 4, 5],
   operationTimes: [
     fullDayTimeRange,
     fullDayTimeRange,
@@ -379,10 +381,43 @@ export const clubFixture: Daycare = {
   enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
   businessId: '',
   iban: '',
-  providerId: ''
+  providerId: '',
+  capacity: 0,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  location: null,
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
 }
 
-export const daycareFixture: Daycare = {
+export const daycareFixture: DevDaycare = {
   id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
   areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen päiväkoti',
@@ -390,15 +425,18 @@ export const daycareFixture: Daycare = {
   dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
   dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
   costCenter: '31500',
-  streetAddress: 'Kamreerintie 1',
-  postalCode: '02210',
-  postOffice: 'Espoo',
-  decisionDaycareName: 'Päiväkoti päätöksellä',
-  decisionPreschoolName: 'Päiväkoti päätöksellä',
-  decisionHandler: 'Käsittelijä',
-  decisionHandlerAddress: 'Käsittelijän osoite',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti päätöksellä',
+    preschoolName: 'Päiväkoti päätöksellä',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
   providerType: 'MUNICIPAL',
-  operationDays: [1, 2, 3, 4, 5],
   operationTimes: [
     fullDayTimeRange,
     fullDayTimeRange,
@@ -423,10 +461,46 @@ export const daycareFixture: Daycare = {
   ],
   businessId: '',
   iban: '',
-  providerId: ''
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
 }
 
-export const daycare2Fixture: Daycare = {
+export const daycare2Fixture: DevDaycare = {
   id: '6f540c39-e7f6-4222-a004-c527403378ec',
   areaId: careArea2Fixture.id,
   name: 'Mustan aukon päiväkoti',
@@ -434,15 +508,18 @@ export const daycare2Fixture: Daycare = {
   dailyPreschoolTime: null,
   dailyPreparatoryTime: null,
   costCenter: '31501',
-  streetAddress: 'Kamreerintie 2',
-  postalCode: '02210',
-  postOffice: 'Espoo',
-  decisionDaycareName: 'Päiväkoti 2 päätöksellä',
-  decisionPreschoolName: 'Päiväkoti 2 päätöksellä',
-  decisionHandler: 'Käsittelijä 2',
-  decisionHandlerAddress: 'Käsittelijän 2 osoite',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 2',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti 2 päätöksellä',
+    preschoolName: 'Päiväkoti 2 päätöksellä',
+    handler: 'Käsittelijä 2',
+    handlerAddress: 'Käsittelijän 2 osoite'
+  },
   providerType: 'MUNICIPAL',
-  operationDays: [1, 2, 3, 4, 5, 6, 7],
   operationTimes: [
     fullDayTimeRange,
     fullDayTimeRange,
@@ -461,10 +538,46 @@ export const daycare2Fixture: Daycare = {
   enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS'],
   businessId: '',
   iban: '',
-  providerId: ''
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
 }
 
-export const daycareFixturePrivateVoucher: Daycare = {
+export const daycareFixturePrivateVoucher: DevDaycare = {
   id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
   areaId: careAreaFixture.id,
   name: 'PS-yksikkö',
@@ -472,15 +585,18 @@ export const daycareFixturePrivateVoucher: Daycare = {
   dailyPreschoolTime: null,
   dailyPreparatoryTime: null,
   costCenter: '31500',
-  streetAddress: 'Kamreerintie 1',
-  postalCode: '02210',
-  postOffice: 'Espoo',
-  decisionDaycareName: 'Päiväkoti päätöksellä',
-  decisionPreschoolName: 'Päiväkoti päätöksellä',
-  decisionHandler: 'Käsittelijä',
-  decisionHandlerAddress: 'Käsittelijän osoite',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti päätöksellä',
+    preschoolName: 'Päiväkoti päätöksellä',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
   providerType: 'PRIVATE_SERVICE_VOUCHER',
-  operationDays: [1, 2, 3, 4, 5],
   operationTimes: [
     fullDayTimeRange,
     fullDayTimeRange,
@@ -506,10 +622,45 @@ export const daycareFixturePrivateVoucher: Daycare = {
   invoicedByMunicipality: false,
   businessId: '',
   iban: '',
-  providerId: ''
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
 }
 
-export const preschoolFixture: Daycare = {
+export const preschoolFixture: DevDaycare = {
   id: 'b53d80e0-319b-4d2b-950c-f5c3c9f834bc',
   areaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen eskari',
@@ -517,15 +668,18 @@ export const preschoolFixture: Daycare = {
   dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
   dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
   costCenter: '31501',
-  streetAddress: 'Kamreerintie 1',
-  postalCode: '02210',
-  postOffice: 'Espoo',
-  decisionDaycareName: 'Eskari päätöksellä',
-  decisionPreschoolName: 'Eskari päätöksellä',
-  decisionHandler: 'Käsittelijä',
-  decisionHandlerAddress: 'Käsittelijän osoite',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Eskari päätöksellä',
+    preschoolName: 'Eskari päätöksellä',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
   providerType: 'MUNICIPAL',
-  operationDays: [1, 2, 3, 4, 5],
   operationTimes: [
     fullDayTimeRange,
     fullDayTimeRange,
@@ -548,7 +702,43 @@ export const preschoolFixture: Daycare = {
   ],
   businessId: '',
   iban: '',
-  providerId: ''
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
 }
 
 export const enduserGuardianFixture: PersonDetail = {
@@ -1019,7 +1209,7 @@ export const applicationFixture = (
   preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
   transferApplication = false,
   assistanceNeeded = false
-): Application => ({
+): DevApplicationWithForm => ({
   id: applicationFixtureId,
   type: type,
   childId: child.id,
@@ -1041,7 +1231,12 @@ export const applicationFixture = (
   hideFromGuardian: false,
   origin: 'ELECTRONIC',
   status,
-  transferApplication
+  transferApplication,
+  allowOtherGuardianAccess: true,
+  createdDate: null,
+  dueDate: null,
+  modifiedDate: null,
+  sentDate: null
 })
 
 const feeThresholds = {
@@ -1289,15 +1484,18 @@ export class Fixture {
         LocalTime.of(14, 0)
       ),
       costCenter: `costCenter_${id}`,
-      streetAddress: `streetAddress_${id}`,
-      postalCode: '02230',
-      postOffice: 'Espoo',
-      decisionDaycareName: `decisionDaycareName_${id}`,
-      decisionPreschoolName: `decisionPreschoolName_${id}`,
-      decisionHandler: `decisionHandler_${id}`,
-      decisionHandlerAddress: `decisionHandlerAddress_${id}`,
+      visitingAddress: {
+        streetAddress: `streetAddress_${id}`,
+        postalCode: '02230',
+        postOffice: 'Espoo'
+      },
+      decisionCustomization: {
+        daycareName: `decisionDaycareName_${id}`,
+        preschoolName: `decisionPreschoolName_${id}`,
+        handler: `decisionHandler_${id}`,
+        handlerAddress: `decisionHandlerAddress_${id}`
+      },
       providerType: 'MUNICIPAL',
-      operationDays: [1, 2, 3, 4, 5],
       operationTimes: [
         fullDayTimeRange,
         fullDayTimeRange,
@@ -1311,7 +1509,44 @@ export class Fixture {
       enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
       businessId: '',
       iban: '',
-      providerId: ''
+      providerId: '',
+      capacity: 0,
+      openingDate: null,
+      closingDate: null,
+      ghostUnit: false,
+      invoicedByMunicipality: true,
+      uploadChildrenToVarda: true,
+      uploadToVarda: true,
+      uploadToKoski: true,
+      language: 'fi',
+      location: null,
+      mailingAddress: {
+        poBox: null,
+        postOffice: null,
+        postalCode: null,
+        streetAddress: null
+      },
+      unitManager: {
+        email: '',
+        name: 'Unit Manager',
+        phone: ''
+      },
+      financeDecisionHandler: null,
+      clubApplyPeriod: null,
+      daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+      preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+      email: null,
+      phone: null,
+      url: null,
+      ophUnitOid: '1.2.3.4.5',
+      ophOrganizerOid: '1.2.3.4.5',
+      additionalInfo: null,
+      dwCostCenter: 'dw-test',
+      mealtimeBreakfast: null,
+      mealtimeLunch: null,
+      mealtimeSnack: null,
+      mealtimeSupper: null,
+      mealtimeEveningSnack: null
     })
   }
 
@@ -1583,7 +1818,16 @@ export class Fixture {
   }
 
   static child(id: string): ChildBuilder {
-    return new ChildBuilder({ id })
+    return new ChildBuilder({
+      id,
+      additionalInfo: '',
+      allergies: '',
+      diet: '',
+      dietId: null,
+      languageAtHome: '',
+      languageAtHomeDetails: '',
+      medication: ''
+    })
   }
 
   static assistanceFactor(): AssistanceFactorBuilder {
@@ -1917,7 +2161,9 @@ export class Fixture {
       applicationId: uuidv4(),
       unitId: uuidv4(),
       periodStart: LocalDate.todayInSystemTz(),
-      periodEnd: LocalDate.todayInSystemTz()
+      periodEnd: LocalDate.todayInSystemTz(),
+      preschoolDaycarePeriodStart: null,
+      preschoolDaycarePeriodEnd: null
     })
   }
 
@@ -2207,6 +2453,28 @@ export class Fixture {
       coefficient: 1.0
     })
   }
+
+  static parentship(): ParentshipBuilder {
+    return new ParentshipBuilder({
+      id: uuidv4(),
+      childId: 'not_set',
+      headOfChildId: 'not_set',
+      startDate: LocalDate.todayInSystemTz(),
+      endDate: LocalDate.todayInSystemTz()
+    })
+  }
+
+  static vasuTemplate(): VasuTemplateBuilder {
+    return new VasuTemplateBuilder({
+      name: 'testipohja',
+      valid: new FiniteDateRange(
+        LocalDate.of(2020, 1, 1),
+        LocalDate.of(2200, 1, 1)
+      ),
+      type: 'DAYCARE',
+      language: 'FI'
+    })
+  }
 }
 
 abstract class FixtureBuilder<T> {
@@ -2225,7 +2493,7 @@ abstract class FixtureBuilder<T> {
   abstract save(): Promise<FixtureBuilder<T>>
 }
 
-export class DaycareBuilder extends FixtureBuilder<Daycare> {
+export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
   id(id: string): DaycareBuilder {
     this.data.id = id
     return this
@@ -2242,7 +2510,7 @@ export class DaycareBuilder extends FixtureBuilder<Daycare> {
   }
 
   async save() {
-    await insertDaycareFixtures([this.data])
+    await createDaycares({ body: [this.data] })
     return this
   }
 
@@ -2565,9 +2833,9 @@ export class ServiceNeedBuilder extends FixtureBuilder<DevServiceNeed> {
   }
 }
 
-export class ChildBuilder extends FixtureBuilder<Child> {
+export class ChildBuilder extends FixtureBuilder<DevChild> {
   async save() {
-    await insertChildFixtures([this.data])
+    await createChildren({ body: [this.data] })
     return this
   }
 
@@ -2762,7 +3030,7 @@ export class IncomeBuilder extends FixtureBuilder<DevIncome> {
 
 export class IncomeNotificationBuilder extends FixtureBuilder<IncomeNotification> {
   async save() {
-    await insertIncomeNotification(this.data)
+    await createIncomeNotification({ body: this.data })
     return this
   }
 
@@ -2795,7 +3063,7 @@ export class VardaServiceNeedBuilder extends FixtureBuilder<DevVardaServiceNeed>
 
 export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
   async save() {
-    await insertFeeThresholds(this.data)
+    await createFeeThresholds({ body: this.data })
     return this
   }
 
@@ -2804,9 +3072,12 @@ export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
   }
 }
 
-export class PlacementPlanBuilder extends FixtureBuilder<PlacementPlan> {
+export class PlacementPlanBuilder extends FixtureBuilder<
+  PlacementPlan & { applicationId: UUID }
+> {
   async save() {
-    await insertPlacementPlan(this.data)
+    const { applicationId, ...body } = this.data
+    await createPlacementPlan({ applicationId, body })
     return this
   }
 
@@ -2976,7 +3247,7 @@ export class StaffAttendancePlanBuilder extends FixtureBuilder<DevStaffAttendanc
 
 export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservationRequest> {
   async save() {
-    await insertReservationFixtures([this.data])
+    await postReservations({ body: [this.data] })
     return this
   }
 
@@ -3074,5 +3345,33 @@ export class AssistanceActionOptionBuilder extends FixtureBuilder<DevAssistanceA
   // Note: shallow copy
   copy() {
     return new AssistanceActionOptionBuilder({ ...this.data })
+  }
+}
+
+export class ParentshipBuilder extends FixtureBuilder<DevParentship> {
+  async save() {
+    await createParentships({ body: [this.data] })
+    return this
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new ParentshipBuilder({ ...this.data })
+  }
+}
+
+export class VasuTemplateBuilder extends FixtureBuilder<CreateVasuTemplateBody> {
+  async save() {
+    await createVasuTemplate({ body: this.data })
+    return this
+  }
+
+  async saveAndReturnId() {
+    return createVasuTemplate({ body: this.data })
+  }
+
+  // Note: shallow copy
+  copy() {
+    return new VasuTemplateBuilder({ ...this.data })
   }
 }

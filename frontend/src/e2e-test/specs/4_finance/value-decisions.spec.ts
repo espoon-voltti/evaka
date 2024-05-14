@@ -6,10 +6,7 @@ import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import {
-  insertVoucherValueDecisionFixtures,
-  runPendingAsyncJobs
-} from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   careArea2Fixture,
@@ -23,7 +20,11 @@ import {
   Fixture,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
-import { insertGuardians, resetServiceState } from '../../generated/api-clients'
+import {
+  createVoucherValueDecisions,
+  insertGuardians,
+  resetServiceState
+} from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -50,28 +51,30 @@ beforeEach(async () => {
 })
 
 const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
-  await insertVoucherValueDecisionFixtures([
-    voucherValueDecisionsFixture(
-      'e2d75fa4-7359-406b-81b8-1703785ca649',
-      enduserGuardianFixture.id,
-      enduserChildFixtureKaarina.id,
-      daycareFixture.id,
-      null,
-      'DRAFT',
-      decision1DateFrom,
-      decision1DateTo
-    ),
-    voucherValueDecisionsFixture(
-      'ed462aca-f74e-4384-910f-628823201023',
-      enduserGuardianFixture.id,
-      enduserChildFixtureJari.id,
-      daycare2Fixture.id,
-      null,
-      'DRAFT',
-      decision2DateFrom,
-      decision2DateTo
-    )
-  ])
+  await createVoucherValueDecisions({
+    body: [
+      voucherValueDecisionsFixture(
+        'e2d75fa4-7359-406b-81b8-1703785ca649',
+        enduserGuardianFixture.id,
+        enduserChildFixtureKaarina.id,
+        daycareFixture.id,
+        null,
+        'DRAFT',
+        decision1DateFrom,
+        decision1DateTo
+      ),
+      voucherValueDecisionsFixture(
+        'ed462aca-f74e-4384-910f-628823201023',
+        enduserGuardianFixture.id,
+        enduserChildFixtureJari.id,
+        daycare2Fixture.id,
+        null,
+        'DRAFT',
+        decision2DateFrom,
+        decision2DateTo
+      )
+    ]
+  })
   await new EmployeeNav(page).openTab('finance')
   valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
 }
@@ -90,12 +93,14 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
     decision1DateTo
   )
 
-  await insertVoucherValueDecisionFixtures([
-    {
-      ...decision,
-      childIncome
-    }
-  ])
+  await createVoucherValueDecisions({
+    body: [
+      {
+        ...decision,
+        childIncome
+      }
+    ]
+  })
   await new EmployeeNav(page).openTab('finance')
   valueDecisionsPage = await new FinancePage(page).selectValueDecisionsTab()
 }

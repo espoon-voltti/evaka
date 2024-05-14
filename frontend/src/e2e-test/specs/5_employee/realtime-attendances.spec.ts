@@ -14,16 +14,16 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, Daycare } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
-  UnitWeekCalendarPage,
-  UnitStaffAttendancesTable
+  UnitStaffAttendancesTable,
+  UnitWeekCalendarPage
 } from '../../pages/employee/units/unit-week-calendar-page'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
@@ -32,9 +32,9 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 let attendancesSection: UnitWeekCalendarPage
-let child1Fixture: Child
+let child1Fixture: PersonDetail
 let child1DaycarePlacementId: UUID
-let daycare: Daycare
+let daycare: DevDaycare
 let unitSupervisor: DevEmployee
 let nonGroupStaff: DevEmployee
 let groupStaff: DevEmployee

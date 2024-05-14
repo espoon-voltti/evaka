@@ -6,7 +6,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { insertIncomeStatements } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -17,6 +16,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
+  createIncomeStatements,
   resetServiceState
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -48,15 +48,20 @@ describe('Child profile income statements', () => {
     )
     await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
-    await insertIncomeStatements(enduserChildFixtureJari.id, [
-      {
-        type: 'CHILD_INCOME',
-        otherInfo: 'Test info',
-        startDate: LocalDate.todayInSystemTz(),
-        endDate: LocalDate.todayInSystemTz(),
-        attachmentIds: []
+    await createIncomeStatements({
+      body: {
+        personId: enduserChildFixtureJari.id,
+        data: [
+          {
+            type: 'CHILD_INCOME',
+            otherInfo: 'Test info',
+            startDate: LocalDate.todayInSystemTz(),
+            endDate: LocalDate.todayInSystemTz(),
+            attachmentIds: []
+          }
+        ]
       }
-    ])
+    })
 
     const profilePage = new ChildInformationPage(page)
     await profilePage.navigateToChild(enduserChildFixtureJari.id)

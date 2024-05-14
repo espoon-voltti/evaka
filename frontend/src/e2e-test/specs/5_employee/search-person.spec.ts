@@ -6,7 +6,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -14,6 +13,7 @@ import {
 import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
 import {
   createApplicationPlacementPlan,
+  createApplications,
   resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
@@ -86,10 +86,9 @@ describe('Search person', () => {
       id: uuidv4()
     }
 
-    await insertApplications([
-      appWithAssistanceNeeded,
-      appWithoutAssistanceNeeded
-    ])
+    await createApplications({
+      body: [appWithAssistanceNeeded, appWithoutAssistanceNeeded]
+    })
 
     await createApplicationPlacementPlan({
       applicationId: appWithAssistanceNeeded.id,

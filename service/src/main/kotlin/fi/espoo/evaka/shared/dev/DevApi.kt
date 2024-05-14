@@ -218,6 +218,7 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.jdbi.v3.json.Json
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -1141,7 +1142,10 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         }
     }
 
-    @PostMapping("/pedagogical-document-attachment/{pedagogicalDocumentId}")
+    @PostMapping(
+        "/pedagogical-document-attachment/{pedagogicalDocumentId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun createPedagogicalDocumentAttachment(
         db: Database,
         clock: EvakaClock,

@@ -14,12 +14,12 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, Daycare } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { DiscussionSurveyReadView } from '../../pages/employee/units/unit-discussion-survey-page'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
@@ -29,10 +29,10 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 let calendarPage: UnitCalendarPage
-let child1Fixture: Child
-let child2Fixture: Child
+let child1Fixture: PersonDetail
+let child2Fixture: PersonDetail
 let child1DaycarePlacementId: UUID
-let daycare: Daycare
+let daycare: DevDaycare
 let unitSupervisor: DevEmployee
 
 // monday

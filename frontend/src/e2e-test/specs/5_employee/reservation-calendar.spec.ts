@@ -18,12 +18,12 @@ import {
   fullDayTimeRange,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Child, Daycare } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
 import { waitUntilEqual } from '../../utils'
@@ -31,9 +31,9 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let child1Fixture: Child
+let child1Fixture: PersonDetail
 let child1DaycarePlacementId: UUID
-let daycare: Daycare
+let daycare: DevDaycare
 let unitSupervisor: DevEmployee
 
 const mockedToday = LocalDate.of(2023, 2, 15) // wed
@@ -59,7 +59,6 @@ const insertTestDataAndLogin = async ({
     .careArea(careArea)
   if (!roundTheClockDaycare) {
     daycareBuilder.with({
-      operationDays: [1, 2, 3, 4, 5],
       operationTimes: [
         fullDayTimeRange,
         fullDayTimeRange,

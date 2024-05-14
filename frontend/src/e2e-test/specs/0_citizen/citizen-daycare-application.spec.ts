@@ -4,7 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { execSimpleApplicationActions, insertApplications } from '../../dev-api'
+import { execSimpleApplicationActions } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -15,6 +15,7 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import {
+  createApplications,
   createDaycarePlacements,
   getApplication,
   resetServiceState
@@ -111,7 +112,7 @@ describe('Citizen daycare applications', () => {
       [fixtures.daycareFixture.id],
       true
     )
-    await insertApplications([application])
+    await createApplications({ body: [application] })
     await execSimpleApplicationActions(
       application.id,
       ['move-to-waiting-placement'],

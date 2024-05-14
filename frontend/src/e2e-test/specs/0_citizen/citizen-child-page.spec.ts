@@ -8,7 +8,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -20,6 +19,7 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import {
+  createApplications,
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
@@ -198,7 +198,7 @@ describe('Citizen children page', () => {
         mockedDate,
         true
       )
-      await insertApplications([application])
+      await createApplications({ body: [application] })
 
       await enduserLogin(page)
       const header = new CitizenHeader(page)

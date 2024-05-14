@@ -7,12 +7,12 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { insertVasuTemplateFixture } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   enduserGuardianFixture,
+  Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
@@ -57,7 +57,7 @@ beforeEach(async () => {
   )
 
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
-  templateId = await insertVasuTemplateFixture()
+  templateId = await Fixture.vasuTemplate().saveAndReturnId()
   vasuDocId = await createVasuDocument({
     body: { childId: child.id, templateId }
   })
@@ -70,7 +70,10 @@ beforeEach(async () => {
 
 const insertVasu = async (childId: string): Promise<string> => {
   vasuDocId = await createVasuDocument({
-    body: { childId, templateId: await insertVasuTemplateFixture() }
+    body: {
+      childId,
+      templateId: await Fixture.vasuTemplate().saveAndReturnId()
+    }
   })
   await publishVasuDocument({ documentId: vasuDocId })
   return vasuDocId

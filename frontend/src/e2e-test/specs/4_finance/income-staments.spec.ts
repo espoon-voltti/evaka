@@ -5,7 +5,6 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import { insertIncomeStatements } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
@@ -17,6 +16,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
+  createIncomeStatements,
   resetServiceState
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -57,18 +57,23 @@ async function navigateToIncomeStatements() {
 
 describe('Income statements', () => {
   test('Income statement can be set handled', async () => {
-    await insertIncomeStatements(enduserGuardianFixture.id, [
-      {
-        type: 'HIGHEST_FEE',
-        startDate: today.addYears(-1),
-        endDate: today.addDays(-1)
-      },
-      {
-        type: 'HIGHEST_FEE',
-        startDate: today,
-        endDate: null
+    await createIncomeStatements({
+      body: {
+        personId: enduserGuardianFixture.id,
+        data: [
+          {
+            type: 'HIGHEST_FEE',
+            startDate: today.addYears(-1),
+            endDate: today.addDays(-1)
+          },
+          {
+            type: 'HIGHEST_FEE',
+            startDate: today,
+            endDate: null
+          }
+        ]
       }
-    ])
+    })
 
     let incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.incomeStatementRows.assertCount(2)
@@ -123,13 +128,18 @@ describe('Income statements', () => {
       ]
     })
 
-    await insertIncomeStatements(enduserGuardianFixture.id, [
-      {
-        type: 'HIGHEST_FEE',
-        startDate,
-        endDate
+    await createIncomeStatements({
+      body: {
+        personId: enduserGuardianFixture.id,
+        data: [
+          {
+            type: 'HIGHEST_FEE',
+            startDate,
+            endDate
+          }
+        ]
       }
-    ])
+    })
 
     const incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.waitUntilLoaded()
@@ -149,15 +159,20 @@ describe('Income statements', () => {
   })
 
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {
-    await insertIncomeStatements(enduserChildFixtureJari.id, [
-      {
-        type: 'CHILD_INCOME',
-        otherInfo: 'Test info',
-        startDate: today,
-        endDate: today,
-        attachmentIds: []
+    await createIncomeStatements({
+      body: {
+        personId: enduserChildFixtureJari.id,
+        data: [
+          {
+            type: 'CHILD_INCOME',
+            otherInfo: 'Test info',
+            startDate: today,
+            endDate: today,
+            attachmentIds: []
+          }
+        ]
       }
-    ])
+    })
 
     const incomeStatementsPage = await navigateToIncomeStatements()
     await incomeStatementsPage.incomeStatementRows.assertCount(1)

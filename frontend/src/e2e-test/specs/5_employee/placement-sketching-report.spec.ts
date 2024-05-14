@@ -6,7 +6,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { insertApplications } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -18,11 +17,12 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { Application } from '../../dev-api/types'
 import {
+  createApplications,
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevApplicationWithForm } from '../../generated/api-types'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -63,7 +63,7 @@ describe('Placement sketching report', () => {
     const sentDate = preferredStartDate.subMonths(4)
     const applicationId = uuidv4()
 
-    const createdApplication: Application = {
+    const createdApplication: DevApplicationWithForm = {
       ...fixture,
       form: {
         ...fixture.form,
@@ -77,7 +77,7 @@ describe('Placement sketching report', () => {
       id: applicationId
     }
 
-    await insertApplications([createdApplication])
+    await createApplications({ body: [createdApplication] })
 
     const preferredUnit = daycareFixture
 
@@ -102,7 +102,7 @@ describe('Placement sketching report', () => {
     const sentDate = preferredStartDate.subMonths(4)
     const applicationId = uuidv4()
 
-    const createdApplication: Application = {
+    const createdApplication: DevApplicationWithForm = {
       ...fixture,
       form: {
         ...fixture.form,
@@ -116,7 +116,7 @@ describe('Placement sketching report', () => {
       id: applicationId
     }
 
-    await insertApplications([createdApplication])
+    await createApplications({ body: [createdApplication] })
 
     const placementStartDate = LocalDate.of(2021, 1, 1)
     const preferredUnit = daycareFixture
@@ -150,7 +150,7 @@ describe('Placement sketching report', () => {
       'PRESCHOOL',
       'AGREED'
     )
-    const applicationWithStatusSent: Application = {
+    const applicationWithStatusSent: DevApplicationWithForm = {
       ...fixtureForStatusSent,
       form: {
         ...fixtureForStatusSent.form,
@@ -171,7 +171,7 @@ describe('Placement sketching report', () => {
       'PRESCHOOL',
       'AGREED'
     )
-    const applicationWithStatusWaitingPlacement: Application = {
+    const applicationWithStatusWaitingPlacement: DevApplicationWithForm = {
       ...fixtureForStatusWaitingPlacement,
       form: {
         ...fixtureForStatusWaitingPlacement.form,
@@ -192,7 +192,7 @@ describe('Placement sketching report', () => {
       'PRESCHOOL',
       'AGREED'
     )
-    const applicationWithStatusActive: Application = {
+    const applicationWithStatusActive: DevApplicationWithForm = {
       ...fixtureForStatusActive,
       form: {
         ...fixtureForStatusActive.form,
@@ -206,11 +206,13 @@ describe('Placement sketching report', () => {
       id: uuidv4()
     }
 
-    await insertApplications([
-      applicationWithStatusSent,
-      applicationWithStatusWaitingPlacement,
-      applicationWithStatusActive
-    ])
+    await createApplications({
+      body: [
+        applicationWithStatusSent,
+        applicationWithStatusWaitingPlacement,
+        applicationWithStatusActive
+      ]
+    })
 
     const report = await openPlacementSketchingReport()
     await report.assertRow(

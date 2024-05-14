@@ -7,7 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import { insertReservationFixtures } from '../../dev-api'
 import {
   careAreaFixture,
   daycareFixture,
@@ -21,6 +20,7 @@ import {
 import {
   createDefaultServiceNeedOptions,
   postAttendances,
+  postReservations,
   resetServiceState
 } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -411,8 +411,8 @@ describe('Employee - Unit month calendar', () => {
     const lastMonthWeekdays = [
       ...new FiniteDateRange(today.addMonths(-1), today.addDays(-1)).dates()
     ].filter((date) => !date.isWeekend())
-    await insertReservationFixtures(
-      lastMonthWeekdays.flatMap((date) =>
+    await postReservations({
+      body: lastMonthWeekdays.flatMap((date) =>
         [enduserChildFixtureKaarina.id, enduserChildFixtureJari.id].map(
           (childId) => ({
             childId,
@@ -423,7 +423,7 @@ describe('Employee - Unit month calendar', () => {
           })
         )
       )
-    )
+    })
     await postAttendances({
       body: lastMonthWeekdays.flatMap((date) =>
         date.isWeekend()

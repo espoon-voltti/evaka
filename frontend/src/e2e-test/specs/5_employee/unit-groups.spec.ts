@@ -8,13 +8,13 @@ import { UUID } from 'lib-common/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, systemInternalUser, uuidv4 } from '../../dev-api/fixtures'
-import { Child, Daycare } from '../../dev-api/types'
+import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -23,14 +23,14 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
-let child1Fixture: Child
-let child2Fixture: Child
-let child3Fixture: Child
+let child1Fixture: PersonDetail
+let child2Fixture: PersonDetail
+let child3Fixture: PersonDetail
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 
-let daycare: Daycare
-let daycare2: Daycare
+let daycare: DevDaycare
+let daycare2: DevDaycare
 let unitSupervisor: DevEmployee
 const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
