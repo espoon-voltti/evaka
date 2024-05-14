@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.withSpan
+import fi.espoo.evaka.shared.withDetachedSpan
 import fi.espoo.voltti.logging.loggers.info
 import io.opentracing.Tracer
 import java.time.Duration
@@ -101,7 +101,7 @@ class ScheduledJobRunner(
             } ?: error("Can't run unknown job ${msg.job}")
         val logMeta = mapOf("jobName" to msg.job)
         logger.info(logMeta) { "Running scheduled job ${msg.job}" }
-        tracer.withSpan("scheduledjob ${msg.job}") { definition.jobFn(db, clock) }
+        tracer.withDetachedSpan("scheduledjob ${msg.job}") { definition.jobFn(db, clock) }
     }
 
     fun getScheduledExecutionsForTask(job: Enum<*>): List<ScheduledExecution<Unit>> =
