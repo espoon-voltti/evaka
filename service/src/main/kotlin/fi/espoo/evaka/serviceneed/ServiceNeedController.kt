@@ -43,10 +43,13 @@ class ServiceNeedController(
         val partWeek: Boolean
     )
 
-    @PostMapping("/service-needs")
+    @PostMapping(
+        "/service-needs", // deprecated
+        "/employee/service-needs"
+    )
     fun postServiceNeed(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ServiceNeedCreateRequest
     ) {
@@ -89,10 +92,13 @@ class ServiceNeedController(
         val partWeek: Boolean
     )
 
-    @PutMapping("/service-needs/{id}")
+    @PutMapping(
+        "/service-needs/{id}", // deprecated
+        "/employee/service-needs/{id}"
+    )
     fun putServiceNeed(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
@@ -131,10 +137,10 @@ class ServiceNeedController(
         Audit.PlacementServiceNeedUpdate.log(targetId = id)
     }
 
-    @DeleteMapping("/service-needs/{id}")
+    @DeleteMapping("/service-needs/{id}", "/employee/service-needs/{id}")
     fun deleteServiceNeed(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ServiceNeedId
     ) {
@@ -150,10 +156,13 @@ class ServiceNeedController(
         Audit.PlacementServiceNeedDelete.log(targetId = id)
     }
 
-    @GetMapping("/service-needs/options")
+    @GetMapping(
+        "/service-needs/options", // deprecated
+        "/employee/service-needs/options"
+    )
     fun getServiceNeedOptions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<ServiceNeedOption> {
         return db.connect { dbc ->

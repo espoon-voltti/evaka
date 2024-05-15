@@ -6,94 +6,12 @@
 
 import { FixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
-import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
 import { deserializeJsonFixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
-import { deserializeJsonHolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { uri } from 'lib-common/uri'
-
-
-/**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.createHolidayPeriod
-*/
-export async function createHolidayPeriod(
-  request: {
-    body: HolidayPeriodBody
-  }
-): Promise<HolidayPeriod> {
-  const { data: json } = await client.request<JsonOf<HolidayPeriod>>({
-    url: uri`/holiday-period`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<HolidayPeriodBody>
-  })
-  return deserializeJsonHolidayPeriod(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.deleteHolidayPeriod
-*/
-export async function deleteHolidayPeriod(
-  request: {
-    id: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/holiday-period/${request.id}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.getHolidayPeriod
-*/
-export async function getHolidayPeriod(
-  request: {
-    id: UUID
-  }
-): Promise<HolidayPeriod> {
-  const { data: json } = await client.request<JsonOf<HolidayPeriod>>({
-    url: uri`/holiday-period/${request.id}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonHolidayPeriod(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.getHolidayPeriods
-*/
-export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
-  const { data: json } = await client.request<JsonOf<HolidayPeriod[]>>({
-    url: uri`/holiday-period`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonHolidayPeriod(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.updateHolidayPeriod
-*/
-export async function updateHolidayPeriod(
-  request: {
-    id: UUID,
-    body: HolidayPeriodBody
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/holiday-period/${request.id}`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<HolidayPeriodBody>
-  })
-  return json
-}
 
 
 /**

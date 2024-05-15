@@ -26,7 +26,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/decisions2")
+@RequestMapping(
+    "/decisions2", // deprecated
+    "/employee/decisions"
+)
 class DecisionController(
     private val decisionService: DecisionService,
     private val accessControl: AccessControl
@@ -34,7 +37,7 @@ class DecisionController(
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam id: PersonId
     ): DecisionListResponse {
@@ -65,7 +68,7 @@ class DecisionController(
     @GetMapping("/by-child")
     fun getDecisionsByChild(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam id: ChildId
     ): DecisionListResponse {
@@ -96,7 +99,7 @@ class DecisionController(
     @GetMapping("/by-application")
     fun getDecisionsByApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam id: ApplicationId
     ): DecisionListResponse {
@@ -128,7 +131,7 @@ class DecisionController(
     @GetMapping("/units")
     fun getDecisionUnits(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<DecisionUnit> {
         return db.connect { dbc ->
@@ -148,7 +151,7 @@ class DecisionController(
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DecisionId
     ): ResponseEntity<Any> {

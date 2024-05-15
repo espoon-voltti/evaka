@@ -25,7 +25,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/pedagogical-document")
+@RequestMapping(
+    "/pedagogical-document", // deprecated
+    "/employee/pedagogical-document"
+)
 class PedagogicalDocumentController(
     private val accessControl: AccessControl,
     private val pedagogicalDocumentNotificationService: PedagogicalDocumentNotificationService
@@ -33,7 +36,7 @@ class PedagogicalDocumentController(
     @PostMapping
     fun createPedagogicalDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
@@ -60,7 +63,7 @@ class PedagogicalDocumentController(
     @PutMapping("/{documentId}")
     fun updatePedagogicalDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
@@ -88,7 +91,7 @@ class PedagogicalDocumentController(
     @GetMapping("/child/{childId}")
     fun getChildPedagogicalDocuments(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
@@ -115,7 +118,7 @@ class PedagogicalDocumentController(
     @DeleteMapping("/{documentId}")
     fun deletePedagogicalDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {

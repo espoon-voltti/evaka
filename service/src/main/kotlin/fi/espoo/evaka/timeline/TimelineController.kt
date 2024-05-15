@@ -43,7 +43,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/timeline")
+@RequestMapping(
+    "/timeline", // deprecated
+    "/employee/timeline"
+)
 class TimelineController(private val accessControl: AccessControl) {
     @GetMapping
     fun getTimeline(

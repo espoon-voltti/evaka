@@ -22,10 +22,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class BackupPickupController(private val accessControl: AccessControl) {
-    @PostMapping("/children/{childId}/backup-pickups")
+    @PostMapping(
+        "/children/{childId}/backup-pickups", // deprecated
+        "/employee/children/{childId}/backup-pickups"
+    )
     fun createBackupPickup(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: ChildBackupPickupContent
@@ -49,10 +52,13 @@ class BackupPickupController(private val accessControl: AccessControl) {
         )
     }
 
-    @GetMapping("/children/{childId}/backup-pickups")
+    @GetMapping(
+        "/children/{childId}/backup-pickups", // deprecated
+        "/employee/children/{childId}/backup-pickups"
+    )
     fun getBackupPickups(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<ChildBackupPickup> {
@@ -76,10 +82,13 @@ class BackupPickupController(private val accessControl: AccessControl) {
             }
     }
 
-    @PutMapping("/backup-pickups/{id}")
+    @PutMapping(
+        "/backup-pickups/{id}", // deprecated
+        "/employee/backup-pickups/{id}"
+    )
     fun updateBackupPickup(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: BackupPickupId,
         @RequestBody body: ChildBackupPickupContent
@@ -93,10 +102,13 @@ class BackupPickupController(private val accessControl: AccessControl) {
         Audit.ChildBackupPickupUpdate.log(targetId = id)
     }
 
-    @DeleteMapping("/backup-pickups/{id}")
+    @DeleteMapping(
+        "/backup-pickups/{id}", // deprecated
+        "/employee/backup-pickups/{id}"
+    )
     fun deleteBackupPickup(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: BackupPickupId
     ) {

@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ApplicationsReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/applications")
+    @GetMapping("/reports/applications", "/employee/reports/applications")
     fun getApplicationsReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

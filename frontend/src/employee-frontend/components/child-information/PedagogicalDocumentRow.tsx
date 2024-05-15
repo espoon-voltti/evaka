@@ -24,13 +24,13 @@ import {
   getAttachmentUrl,
   savePedagogicalDocumentAttachment
 } from '../../api/attachments'
-import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
+import { deleteAttachment } from '../../generated/api-clients/attachment'
 import { updatePedagogicalDocument } from '../../generated/api-clients/pedagogicaldocument'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 
 const updatePedagogicalDocumentResult = wrapResult(updatePedagogicalDocument)
-const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 interface Props {
   id: UUID
@@ -114,7 +114,7 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
 
   const handleAttachmentDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() =>
+      (await deleteAttachmentResult({ attachmentId: id })).map(() =>
         setPedagogicalDocument(({ ...rest }) => ({
           ...rest,
           attachment: null

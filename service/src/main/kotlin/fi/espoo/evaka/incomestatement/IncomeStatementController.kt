@@ -7,7 +7,6 @@ package fi.espoo.evaka.incomestatement
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.SortDirection
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -26,12 +25,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/income-statements")
+@RequestMapping(
+    "/income-statements", // deprecated
+    "/employee/income-statements"
+)
 class IncomeStatementController(private val accessControl: AccessControl) {
     @GetMapping("/person/{personId}")
     fun getIncomeStatements(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
@@ -62,44 +64,10 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping("/child/{childId}")
-    fun getChildIncomeStatements(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId,
-        @RequestParam page: Int,
-        @RequestParam pageSize: Int
-    ): PagedIncomeStatements {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Person.READ_INCOME_STATEMENTS,
-                        PersonId(childId.raw)
-                    )
-                    tx.readIncomeStatementsForPerson(
-                        PersonId(childId.raw),
-                        includeEmployeeContent = true,
-                        page = page,
-                        pageSize = pageSize
-                    )
-                }
-            }
-            .also {
-                Audit.IncomeStatementsOfChild.log(
-                    targetId = childId,
-                    meta = mapOf("total" to it.total)
-                )
-            }
-    }
-
     @GetMapping("/person/{personId}/{incomeStatementId}")
     fun getIncomeStatement(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId
@@ -155,7 +123,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
     @PostMapping("/awaiting-handler")
     fun getIncomeStatementsAwaitingHandler(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest
     ): PagedIncomeStatementsAwaitingHandler {
@@ -187,7 +155,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
     @GetMapping("/guardian/{guardianId}/children")
     fun getIncomeStatementChildren(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable guardianId: PersonId
     ): List<ChildBasicInfo> {

@@ -33,7 +33,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/partnerships")
+@RequestMapping(
+    "/partnerships", // deprecated
+    "/employee/partnerships"
+)
 class PartnershipsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val partnershipService: PartnershipService,
@@ -42,7 +45,7 @@ class PartnershipsController(
     @PostMapping
     fun createPartnership(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: PartnershipRequest
     ) {
@@ -89,7 +92,7 @@ class PartnershipsController(
     @GetMapping
     fun getPartnerships(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
     ): List<PartnershipWithPermittedActions> {
@@ -129,7 +132,7 @@ class PartnershipsController(
     @GetMapping("/{partnershipId}")
     fun getPartnership(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ): Partnership {
@@ -151,7 +154,7 @@ class PartnershipsController(
     @PutMapping("/{partnershipId}")
     fun updatePartnership(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
@@ -200,7 +203,7 @@ class PartnershipsController(
     @PutMapping("/{partnershipId}/retry")
     fun retryPartnership(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {
@@ -235,7 +238,7 @@ class PartnershipsController(
     @DeleteMapping("/{partnershipId}")
     fun deletePartnership(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {

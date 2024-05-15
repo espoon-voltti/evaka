@@ -33,10 +33,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class BackupCareController(private val accessControl: AccessControl) {
-    @GetMapping("/children/{childId}/backup-cares")
+    @GetMapping(
+        "/children/{childId}/backup-cares", // deprecated
+        "/employee/children/{childId}/backup-cares"
+    )
     fun getChildBackupCares(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): ChildBackupCaresResponse {
@@ -73,10 +76,13 @@ class BackupCareController(private val accessControl: AccessControl) {
         )
     }
 
-    @PostMapping("/children/{childId}/backup-cares")
+    @PostMapping(
+        "/children/{childId}/backup-cares", // deprecated
+        "/employee/children/{childId}/backup-cares"
+    )
     fun createBackupCare(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: NewBackupCare
@@ -115,10 +121,13 @@ class BackupCareController(private val accessControl: AccessControl) {
         }
     }
 
-    @PostMapping("/backup-cares/{id}")
+    @PostMapping(
+        "/backup-cares/{id}", // deprecated
+        "/employee/backup-cares/{id}"
+    )
     fun updateBackupCare(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
@@ -218,10 +227,13 @@ class BackupCareController(private val accessControl: AccessControl) {
         }
     }
 
-    @DeleteMapping("/backup-cares/{id}")
+    @DeleteMapping(
+        "/backup-cares/{id}", // deprecated
+        "/employee/backup-cares/{id}"
+    )
     fun deleteBackupCare(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: BackupCareId
     ) {
@@ -242,10 +254,13 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.BackupCareDelete.log(targetId = id)
     }
 
-    @GetMapping("/daycares/{daycareId}/backup-cares")
+    @GetMapping(
+        "/daycares/{daycareId}/backup-cares", // deprecated
+        "/employee/daycares/{daycareId}/backup-cares"
+    )
     fun getUnitBackupCares(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,

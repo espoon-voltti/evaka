@@ -25,10 +25,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class DecisionsReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/decisions")
+    @GetMapping(
+        "/reports/decisions", // deprecated
+        "/employee/reports/decisions"
+    )
     fun getDecisionsReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

@@ -17,13 +17,16 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/settings")
+@RequestMapping(
+    "/settings", // deprecated
+    "/employee/settings"
+)
 class SettingController(private val accessControl: AccessControl) {
 
     @GetMapping
     fun getSettings(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): Map<SettingType, String> {
         return db.connect { dbc ->
@@ -43,7 +46,7 @@ class SettingController(private val accessControl: AccessControl) {
     @PutMapping
     fun putSettings(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody settings: Map<SettingType, String>
     ) {

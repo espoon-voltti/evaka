@@ -21,10 +21,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ManualDuplicationReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/manual-duplication")
+    @GetMapping(
+        "/reports/manual-duplication", // deprecated
+        "/employee/reports/manual-duplication"
+    )
     fun getManualDuplicationReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam viewMode: ManualDuplicationReportViewMode?
     ): List<ManualDuplicationReportRow> {

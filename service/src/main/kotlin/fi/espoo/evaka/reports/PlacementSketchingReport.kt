@@ -36,10 +36,13 @@ private val defaultApplicationStatuses =
 
 @RestController
 class PlacementSketchingReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/placement-sketching")
+    @GetMapping(
+        "/reports/placement-sketching", // deprecated
+        "/employee/reports/placement-sketching"
+    )
     fun getPlacementSketchingReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) placementStartDate: LocalDate,
         @RequestParam

@@ -23,10 +23,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
-    @GetMapping("/reports/assistance-need-decisions")
+    @GetMapping(
+        "/reports/assistance-need-decisions", // deprecated
+        "/employee/reports/assistance-need-decisions"
+    )
     fun getAssistanceNeedDecisionsReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<AssistanceNeedDecisionsReportRow> {
         return db.connect { dbc ->
@@ -54,7 +57,10 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
             .also { Audit.AssistanceNeedDecisionsReportRead.log(meta = mapOf("count" to it.size)) }
     }
 
-    @GetMapping("/reports/assistance-need-decisions/unread-count")
+    @GetMapping(
+        "/reports/assistance-need-decisions/unread-count", // deprecated
+        "/employee/reports/assistance-need-decisions/unread-count"
+    )
     fun getAssistanceNeedDecisionsReportUnreadCount(
         db: Database,
         user: AuthenticatedUser.Employee,

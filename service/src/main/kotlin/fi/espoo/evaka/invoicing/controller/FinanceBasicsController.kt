@@ -40,7 +40,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/finance-basics")
+@RequestMapping(
+    "/finance-basics", // deprecated
+    "/employee/finance-basics"
+)
 class FinanceBasicsController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -48,7 +51,7 @@ class FinanceBasicsController(
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<FeeThresholdsWithId> {
         return db.connect { dbc ->
@@ -68,7 +71,7 @@ class FinanceBasicsController(
     @PostMapping("/fee-thresholds")
     fun createFeeThresholds(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: FeeThresholds
     ) {
@@ -119,7 +122,7 @@ class FinanceBasicsController(
     @PutMapping("/fee-thresholds/{id}")
     fun updateFeeThresholds(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds
@@ -163,7 +166,7 @@ class FinanceBasicsController(
     @PostMapping("/voucher-values")
     fun createVoucherValue(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ServiceNeedOptionVoucherValueRange
     ) {

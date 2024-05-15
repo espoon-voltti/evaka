@@ -64,7 +64,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/value-decisions")
+@RequestMapping(
+    "/value-decisions", // deprecated
+    "/employee/value-decisions"
+)
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
     private val generator: FinanceDecisionGenerator,

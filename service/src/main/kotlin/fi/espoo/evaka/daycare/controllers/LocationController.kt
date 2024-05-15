@@ -36,20 +36,13 @@ class LocationController {
     )
     fun getApplicationUnits(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
     ): List<PublicUnit> {
         return db.connect { dbc ->
-            dbc.read {
-                it.getApplicationUnits(
-                    type,
-                    date,
-                    shiftCare,
-                    onlyApplicable = user is AuthenticatedUser.Citizen
-                )
-            }
+            dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = false) }
         }
     }
 
@@ -67,8 +60,11 @@ class LocationController {
         return db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
     }
 
-    @GetMapping("/areas")
-    fun getAreas(db: Database, user: AuthenticatedUser): List<AreaJSON> {
+    @GetMapping(
+        "/areas", // deprecated
+        "/employee/areas"
+    )
+    fun getAreas(db: Database, user: AuthenticatedUser.Employee): List<AreaJSON> {
         return db.connect { dbc ->
             dbc.read {
                 @Suppress("DEPRECATION")
@@ -77,12 +73,16 @@ class LocationController {
         }
     }
 
-    @GetMapping("/filters/units")
+    @GetMapping(
+        "/filters/units", // deprecated
+        "/employee/filters/units"
+    )
     fun getUnits(
         db: Database,
+        user: AuthenticatedUser.Employee,
         @RequestParam type: UnitTypeFilter,
         @RequestParam areaIds: List<AreaId>?,
-        @RequestParam from: LocalDate?
+        @RequestParam from: LocalDate?,
     ): List<UnitStub> {
         return db.connect { dbc -> dbc.read { it.getUnits(areaIds, type, from) } }
             .sortedBy { it.name.lowercase() }

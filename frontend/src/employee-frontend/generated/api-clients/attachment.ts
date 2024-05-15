@@ -11,9 +11,9 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.deleteAttachmentHandler
+* Generated from fi.espoo.evaka.attachment.AttachmentsController.deleteAttachment
 */
-export async function deleteAttachmentHandler(
+export async function deleteAttachment(
   request: {
     attachmentId: UUID
   }

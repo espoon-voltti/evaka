@@ -75,22 +75,6 @@ export async function deleteHolidayReservations(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.futureAbsencesOfChild
-*/
-export async function futureAbsencesOfChild(
-  request: {
-    childId: UUID
-  }
-): Promise<Absence[]> {
-  const { data: json } = await client.request<JsonOf<Absence[]>>({
-    url: uri`/absences/by-child/${request.childId}/future`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonAbsence(e))
-}
-
-
-/**
 * Generated from fi.espoo.evaka.absence.AbsenceController.getAbsencesOfChild
 */
 export async function getAbsencesOfChild(

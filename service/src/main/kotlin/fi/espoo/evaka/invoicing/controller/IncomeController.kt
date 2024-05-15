@@ -47,7 +47,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/incomes")
+@RequestMapping(
+    "/incomes", // deprecated
+    "/employee/incomes"
+)
 class IncomeController(
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,

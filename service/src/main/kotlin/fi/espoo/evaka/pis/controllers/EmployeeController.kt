@@ -47,11 +47,18 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/employee")
+@RequestMapping(
+    "/employee", // deprecated
+    "/employee/employees"
+)
 class EmployeeController(private val accessControl: AccessControl) {
 
     @GetMapping
-    fun getEmployees(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Employee> {
+    fun getEmployees(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ): List<Employee> {
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -71,7 +78,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @GetMapping("/finance-decision-handler")
     fun getFinanceDecisionHandlers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<Employee> {
         return db.connect { dbc ->
@@ -109,7 +116,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PutMapping("/{id}/global-roles")
     fun updateEmployeeGlobalRoles(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
         @RequestBody body: List<UserRole>
@@ -144,7 +151,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PutMapping("/{id}/daycare-roles")
     fun upsertEmployeeDaycareRoles(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
         @RequestBody body: UpsertEmployeeDaycareRolesRequest
@@ -176,7 +183,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @DeleteMapping("/{id}/daycare-roles")
     fun deleteEmployeeDaycareRoles(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
         @RequestParam daycareId: DaycareId?
@@ -201,7 +208,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PutMapping("/{id}/activate")
     fun activateEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId
     ) {
@@ -218,7 +225,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PutMapping("/{id}/deactivate")
     fun deactivateEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId
     ) {
@@ -235,7 +242,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @GetMapping("/{id}/details")
     fun getEmployeeDetails(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId
     ): EmployeeWithDaycareRoles {
@@ -257,7 +264,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PostMapping("")
     fun createEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody employee: NewEmployee
     ): Employee {
@@ -278,7 +285,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @DeleteMapping("/{id}")
     fun deleteEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId
     ) {
@@ -306,7 +313,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PostMapping("/search")
     fun searchEmployees(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: SearchEmployeeRequest
     ): PagedEmployeesWithDaycareRoles {

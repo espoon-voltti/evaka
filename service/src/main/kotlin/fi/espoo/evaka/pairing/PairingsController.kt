@@ -46,7 +46,10 @@ class PairingsController(
         data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId)
     }
 
-    @PostMapping("/pairings")
+    @PostMapping(
+        "/pairings", // deprecated
+        "/employee/pairings"
+    )
     fun postPairing(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -132,7 +135,10 @@ class PairingsController(
      */
     data class PostPairingResponseReq(val challengeKey: String, val responseKey: String)
 
-    @PostMapping("/pairings/{id}/response")
+    @PostMapping(
+        "/pairings/{id}/response", // deprecated
+        "/employee/pairings/{id}/response"
+    )
     fun postPairingResponse(
         db: Database,
         user: AuthenticatedUser.Employee,

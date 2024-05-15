@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class FamilyConflictReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/family-conflicts")
+    @GetMapping(
+        "/reports/family-conflicts", // deprecated
+        "/employee/reports/family-conflicts"
+    )
     fun getFamilyConflictsReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<FamilyConflictReportRow> {
         return db.connect { dbc ->

@@ -5,51 +5,19 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
-import { AbsenceCategory } from 'lib-common/generated/api-types/absence'
-import { ChildDatePresence } from 'lib-common/generated/api-types/reservations'
 import { ConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
 import { DailyChildReservationResult } from 'lib-common/generated/api-types/reservations'
-import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { DayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
-import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import { UnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonConfirmedRangeDate } from 'lib-common/generated/api-types/reservations'
 import { deserializeJsonDailyChildReservationResult } from 'lib-common/generated/api-types/reservations'
 import { deserializeJsonDayReservationStatisticsResult } from 'lib-common/generated/api-types/reservations'
-import { deserializeJsonUnitAttendanceReservations } from 'lib-common/generated/api-types/reservations'
 import { uri } from 'lib-common/uri'
-
-
-/**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getAttendanceReservations
-*/
-export async function getAttendanceReservations(
-  request: {
-    unitId: UUID,
-    from: LocalDate,
-    to: LocalDate,
-    includeNonOperationalDays?: boolean | null
-  }
-): Promise<UnitAttendanceReservations> {
-  const params = createUrlSearchParams(
-    ['unitId', request.unitId],
-    ['from', request.from.formatIso()],
-    ['to', request.to.formatIso()],
-    ['includeNonOperationalDays', request.includeNonOperationalDays?.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<UnitAttendanceReservations>>({
-    url: uri`/attendance-reservations`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonUnitAttendanceReservations(json)
-}
 
 
 /**
@@ -91,23 +59,6 @@ export async function getConfirmedRangeData(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getExpectedAbsences
-*/
-export async function getExpectedAbsences(
-  request: {
-    body: ExpectedAbsencesRequest
-  }
-): Promise<AbsenceCategory[] | null> {
-  const { data: json } = await client.request<JsonOf<AbsenceCategory[] | null>>({
-    url: uri`/attendance-reservations/child-date/expected-absences`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ExpectedAbsencesRequest>
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getReservationStatisticsForConfirmedDays
 */
 export async function getReservationStatisticsForConfirmedDays(
@@ -124,40 +75,6 @@ export async function getReservationStatisticsForConfirmedDays(
     params
   })
   return json.map(e => deserializeJsonDayReservationStatisticsResult(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.postChildDatePresence
-*/
-export async function postChildDatePresence(
-  request: {
-    body: ChildDatePresence
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendance-reservations/child-date`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ChildDatePresence>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.postReservations
-*/
-export async function postReservations(
-  request: {
-    body: DailyReservationRequest[]
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendance-reservations`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
-  })
-  return json
 }
 
 

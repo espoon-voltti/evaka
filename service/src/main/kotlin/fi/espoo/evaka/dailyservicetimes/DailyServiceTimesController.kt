@@ -35,10 +35,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         val permittedActions: Set<Action.DailyServiceTime>
     )
 
-    @GetMapping("/children/{childId}/daily-service-times")
+    @GetMapping(
+        "" + "/children/{childId}/daily-service-times", // deprecated
+        "/employee/children/{childId}/daily-service-times"
+    )
     fun getDailyServiceTimes(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<DailyServiceTimesResponse> {
@@ -68,10 +71,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
             }
     }
 
-    @PostMapping("/children/{childId}/daily-service-times")
+    @PostMapping(
+        "/children/{childId}/daily-service-times", // deprecated
+        "/employee/children/{childId}/daily-service-times"
+    )
     fun postDailyServiceTimes(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: DailyServiceTimesValue
@@ -111,10 +117,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = childId, objectId = id)
     }
 
-    @PutMapping("/daily-service-times/{id}")
+    @PutMapping(
+        "/daily-service-times/{id}", // deprecated
+        "/employee/daily-service-times/{id}"
+    )
     fun putDailyServiceTimes(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId,
         @RequestBody body: DailyServiceTimesValue
@@ -167,10 +176,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     data class DailyServiceTimesEndDate(val endDate: LocalDate?)
 
-    @PutMapping("/daily-service-times/{id}/end")
+    @PutMapping(
+        "/daily-service-times/{id}/end", // deprecated
+        "/employee/daily-service-times/{id}/end"
+    )
     fun putDailyServiceTimesEnd(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId,
         @RequestBody body: DailyServiceTimesEndDate
@@ -235,10 +247,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = id)
     }
 
-    @DeleteMapping("/daily-service-times/{id}")
+    @DeleteMapping(
+        "/daily-service-times/{id}", // deprecated
+        "/employee/daily-service-times/{id}"
+    )
     fun deleteDailyServiceTimes(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId
     ) {

@@ -44,10 +44,13 @@ class VasuController(
 
     data class CreateDocumentRequest(val templateId: VasuTemplateId)
 
-    @PostMapping("/children/{childId}/vasu")
+    @PostMapping(
+        "/children/{childId}/vasu", // deprecated
+        "/employee/children/{childId}/vasu"
+    )
     fun createDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: CreateDocumentRequest
@@ -87,10 +90,13 @@ class VasuController(
             }
     }
 
-    @GetMapping("/children/{childId}/vasu-summaries")
+    @GetMapping(
+        "/children/{childId}/vasu-summaries", // deprecated
+        "/employee/children/{childId}/vasu-summaries"
+    )
     fun getVasuSummariesByChild(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<VasuDocumentSummaryWithPermittedActions> {
@@ -140,10 +146,13 @@ class VasuController(
 
     data class ChangeDocumentStateRequest(val eventType: VasuDocumentEventType)
 
-    @GetMapping("/vasu/{id}")
+    @GetMapping(
+        "/vasu/{id}", // deprecated
+        "/employee/vasu/{id}"
+    )
     fun getDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
     ): VasuDocumentWithPermittedActions {
@@ -207,10 +216,13 @@ class VasuController(
 
     data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
 
-    @PutMapping("/vasu/{id}")
+    @PutMapping(
+        "/vasu/{id}", // deprecated
+        "/employee/vasu/{id}"
+    )
     fun putDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
@@ -316,7 +328,10 @@ class VasuController(
         }
     }
 
-    @PostMapping("/vasu/{id}/update-state")
+    @PostMapping(
+        "/vasu/{id}/update-state", // deprecated
+        "/employee/vasu/{id}/update-state"
+    )
     fun updateDocumentState(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -351,7 +366,10 @@ class VasuController(
         Audit.VasuDocumentEventCreate.log(targetId = id)
     }
 
-    @DeleteMapping("/vasu/{id}")
+    @DeleteMapping(
+        "/vasu/{id}", // deprecated
+        "/employee/vasu/{id}"
+    )
     fun deleteDocument(
         dbc: Database,
         user: AuthenticatedUser.Employee,

@@ -26,7 +26,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/vasu/templates")
+@RequestMapping(
+    "/vasu/templates", // deprecated
+    "/employee/vasu/templates"
+)
 class VasuTemplateController(
     private val accessControl: AccessControl,
     private val vasuMigratorService: VasuMigratorService
@@ -41,7 +44,7 @@ class VasuTemplateController(
     @PostMapping
     fun postTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: CreateTemplateRequest
     ): VasuTemplateId {
@@ -69,7 +72,7 @@ class VasuTemplateController(
     @PutMapping("/{id}")
     fun editTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: VasuTemplateUpdate
@@ -92,7 +95,7 @@ class VasuTemplateController(
     @PostMapping("/{id}/copy")
     fun copyTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: CopyTemplateRequest
@@ -123,7 +126,7 @@ class VasuTemplateController(
     @GetMapping
     fun getTemplates(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
@@ -144,7 +147,7 @@ class VasuTemplateController(
     @GetMapping("/{id}")
     fun getTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
@@ -166,7 +169,7 @@ class VasuTemplateController(
     @DeleteMapping("/{id}")
     fun deleteTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ) {
@@ -182,7 +185,7 @@ class VasuTemplateController(
     @PutMapping("/{id}/content")
     fun putTemplateContent(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
         @RequestBody content: VasuContent

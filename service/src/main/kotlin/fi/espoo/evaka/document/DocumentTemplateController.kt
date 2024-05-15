@@ -30,12 +30,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/document-templates")
+@RequestMapping(
+    "/document-templates", // deprecated
+    "/employee/document-templates"
+)
 class DocumentTemplateController(private val accessControl: AccessControl) {
     @PostMapping
     fun createTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: DocumentTemplateBasicsRequest
     ): DocumentTemplate {
@@ -56,7 +59,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @PostMapping("/import")
     fun importTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ExportedDocumentTemplate
     ): DocumentTemplate {
@@ -77,7 +80,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @GetMapping
     fun getTemplates(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<DocumentTemplateSummary> {
         return db.connect { dbc ->
@@ -97,7 +100,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @GetMapping("/active")
     fun getActiveTemplates(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam childId: ChildId
     ): List<DocumentTemplateSummary> {
@@ -124,7 +127,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @GetMapping("/{templateId}")
     fun getTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId
     ): DocumentTemplate {
@@ -147,7 +150,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @GetMapping("/{templateId}/export")
     fun exportTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
     ): ResponseEntity<ExportedDocumentTemplate> =
@@ -186,7 +189,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @PostMapping("/{templateId}/duplicate")
     fun duplicateTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DocumentTemplateBasicsRequest
@@ -210,7 +213,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @PutMapping("/{templateId}")
     fun updateDraftTemplateBasics(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DocumentTemplateBasicsRequest
@@ -237,7 +240,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @PutMapping("/{templateId}/content")
     fun updateDraftTemplateContent(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DocumentTemplateContent
@@ -266,7 +269,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @PutMapping("/{templateId}/validity")
     fun updateTemplateValidity(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DateRange
@@ -289,7 +292,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @PutMapping("/{templateId}/publish")
     fun publishTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId
     ) {
@@ -311,7 +314,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
     @DeleteMapping("/{templateId}")
     fun deleteDraftTemplate(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId
     ) {

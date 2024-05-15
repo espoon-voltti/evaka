@@ -23,10 +23,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class PlacementCountReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/placement-count")
+    @GetMapping(
+        "/reports/placement-count", // deprecated
+        "/employee/reports/placement-count"
+    )
     fun getPlacementCountReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam examinationDate: LocalDate,
         @RequestParam providerTypes: List<ProviderType>?,

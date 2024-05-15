@@ -54,7 +54,10 @@ enum class InvoiceSortParam {
 }
 
 @RestController
-@RequestMapping("/invoices")
+@RequestMapping(
+    "/invoices", // deprecated
+    "/employee/invoices"
+)
 class InvoiceController(
     private val service: InvoiceService,
     private val generator: InvoiceGenerator,

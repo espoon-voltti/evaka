@@ -29,12 +29,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/foster-parent")
+@RequestMapping(
+    "/foster-parent", // deprecated
+    "/employee/foster-parent"
+)
 class FosterParentController(private val accessControl: AccessControl) {
     @GetMapping("/by-parent/{parentId}")
     fun getFosterChildren(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable parentId: PersonId
     ): List<FosterParentRelationship> {
@@ -56,7 +59,7 @@ class FosterParentController(private val accessControl: AccessControl) {
     @GetMapping("/by-child/{childId}")
     fun getFosterParents(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: PersonId
     ): List<FosterParentRelationship> {
@@ -78,7 +81,7 @@ class FosterParentController(private val accessControl: AccessControl) {
     @PostMapping
     fun createFosterParentRelationship(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: CreateFosterParentRelationshipBody
     ) {
@@ -106,7 +109,7 @@ class FosterParentController(private val accessControl: AccessControl) {
     @PostMapping("/{id}")
     fun updateFosterParentRelationshipValidity(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FosterParentId,
         @RequestBody validDuring: DateRange
@@ -134,7 +137,7 @@ class FosterParentController(private val accessControl: AccessControl) {
     @DeleteMapping("/{id}")
     fun deleteFosterParentRelationship(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FosterParentId
     ) {

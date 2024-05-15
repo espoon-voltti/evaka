@@ -115,23 +115,14 @@ data class EndpointMetadata(
                     fail("It must include an AuthenticatedUser.Citizen parameter")
                 }
             path.startsWith("/employee/") ->
-                // TODO: enforce exact type with equals instead of isSupertypeOf
-                if (
-                    authenticatedUserType?.isSupertypeOf(typeOf<AuthenticatedUser.Employee>()) !=
-                        true
-                ) {
+                if (authenticatedUserType != typeOf<AuthenticatedUser.Employee>()) {
                     fail("It must include an AuthenticatedUser.Employee parameter")
                 }
             path.startsWith("/employee-mobile/") ->
-                // TODO: enforce exact type with equals instead of isSupertypeOf
-                if (
-                    authenticatedUserType?.isSupertypeOf(
-                        typeOf<AuthenticatedUser.MobileDevice>()
-                    ) != true
-                ) {
+                if (authenticatedUserType != typeOf<AuthenticatedUser.MobileDevice>()) {
                     fail("It must include an AuthenticatedUser.MobileDevice parameter")
                 }
-            else -> {}
+            else -> {} // TODO: legacy endpoints
         }
     }
 }

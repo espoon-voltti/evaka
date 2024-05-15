@@ -29,12 +29,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/mobile/units")
+@RequestMapping(
+    "/mobile/units", // deprecated
+    "/employee-mobile/units"
+)
 class MobileUnitController(private val accessControl: AccessControl) {
     @GetMapping("/{unitId}")
     fun getUnitInfo(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): UnitInfo {
@@ -56,7 +59,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
     @GetMapping("/stats")
     fun getUnitStats(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitIds: List<DaycareId> = emptyList()
     ): List<UnitStats> {

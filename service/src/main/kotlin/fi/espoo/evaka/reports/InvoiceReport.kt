@@ -23,10 +23,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class InvoiceReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/invoices")
+    @GetMapping(
+        "/reports/invoices", // deprecated
+        "/employee/reports/invoices"
+    )
     fun getInvoiceReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): InvoiceReport {

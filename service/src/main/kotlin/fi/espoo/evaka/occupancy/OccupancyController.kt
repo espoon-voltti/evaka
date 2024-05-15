@@ -30,21 +30,22 @@ import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/occupancy")
 class OccupancyController(
     private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService
 ) {
 
-    @GetMapping("/by-unit/{unitId}")
+    @GetMapping(
+        "/occupancy/by-unit/{unitId}", // deprecated
+        "/employee-mobile/occupancy/by-unit/{unitId}"
+    )
     fun getOccupancyPeriods(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -79,10 +80,13 @@ class OccupancyController(
         )
     }
 
-    @GetMapping("/by-unit/{unitId}/speculated/{applicationId}")
+    @GetMapping(
+        "/occupancy/by-unit/{unitId}/speculated/{applicationId}",
+        "/employee/occupancy/by-unit/{unitId}/speculated/{applicationId}"
+    )
     fun getOccupancyPeriodsSpeculated(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable applicationId: ApplicationId,
@@ -167,10 +171,13 @@ class OccupancyController(
             .also { Audit.OccupancySpeculatedRead.log(targetId = listOf(unitId, applicationId)) }
     }
 
-    @GetMapping("/units/{unitId}")
+    @GetMapping(
+        "/occupancy/units/{unitId}", // deprecated
+        "/employee/occupancy/units/{unitId}"
+    )
     fun getUnitOccupancies(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -200,10 +207,13 @@ class OccupancyController(
         return occupancies
     }
 
-    @GetMapping("/by-unit/{unitId}/groups")
+    @GetMapping(
+        "/occupancy/by-unit/{unitId}/groups", // deprecated
+        "/employee-mobile/occupancy/by-unit/{unitId}/groups"
+    )
     fun getOccupancyPeriodsOnGroups(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
