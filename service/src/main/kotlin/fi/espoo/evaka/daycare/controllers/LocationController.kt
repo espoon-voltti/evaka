@@ -31,7 +31,6 @@ class LocationController {
             [
                 "/units", // deprecated
                 "/public/units", // deprecated
-                "/citizen/units",
                 "/employee/units",
             ]
     )
@@ -58,7 +57,6 @@ class LocationController {
         path =
             [
                 "/public/units/{applicationType}", // deprecated
-                "/citizen/public/units/{applicationType}",
                 "/employee/public/units/{applicationType}"
             ]
     )

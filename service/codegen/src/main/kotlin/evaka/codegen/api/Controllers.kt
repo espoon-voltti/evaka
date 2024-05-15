@@ -111,12 +111,8 @@ data class EndpointMetadata(
                     fail("It must include an AuthenticatedUser.Integration parameter")
                 }
             path.startsWith("/citizen/") ->
-                // TODO: enforce exact type with equals instead of isSupertypeOf
-                if (
-                    authenticatedUserType?.isSupertypeOf(typeOf<AuthenticatedUser.Citizen>()) !=
-                        true
-                ) {
-                    fail("Citizen endpoint must include a AuthenticatedUser.Citizen parameter")
+                if (authenticatedUserType != typeOf<AuthenticatedUser.Citizen>()) {
+                    fail("It must include an AuthenticatedUser.Citizen parameter")
                 }
             path.startsWith("/employee/") ->
                 // TODO: enforce exact type with equals instead of isSupertypeOf

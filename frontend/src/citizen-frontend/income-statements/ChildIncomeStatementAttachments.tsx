@@ -11,9 +11,9 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
 
 import { getAttachmentUrl, saveIncomeStatementAttachment } from '../attachments'
-import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
+import { deleteAttachment } from '../generated/api-clients/attachment'
 
-const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function Attachments({
   incomeStatementId,

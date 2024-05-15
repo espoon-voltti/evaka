@@ -455,14 +455,19 @@ class AttachmentsController(
         return id
     }
 
+    @GetMapping("/citizen/attachments/{attachmentId}/download/{requestedFilename}")
+    fun getAttachmentCitizen(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable attachmentId: AttachmentId,
+        @PathVariable requestedFilename: String
+    ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
+
     @GetMapping(
-        value =
-            [
-                "/attachments/{attachmentId}/download/{requestedFilename}", // deprecated
-                "/citizen/attachments/{attachmentId}/download/{requestedFilename}"
-            ]
+        "/attachments/{attachmentId}/download/{requestedFilename}", // deprecated
     )
-    fun getAttachment(
+    fun getAttachmentInternal(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -561,12 +566,19 @@ class AttachmentsController(
         }
     }
 
+    @DeleteMapping("/citizen/attachments/{attachmentId}")
+    fun deleteAttachment(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable attachmentId: AttachmentId
+    ) = deleteAttachmentHandler(db, user, clock, attachmentId)
+
     @DeleteMapping(
         value =
             [
                 "/attachments/{attachmentId}",
                 "/attachments/citizen/{attachmentId}", // deprecated
-                "/citizen/attachments/{attachmentId}",
             ]
     )
     fun deleteAttachmentHandler(
