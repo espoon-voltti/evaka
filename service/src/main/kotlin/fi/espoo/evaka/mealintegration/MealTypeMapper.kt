@@ -14,18 +14,18 @@ object DefaultMealTypeMapper : MealTypeMapper {
             when (mealType) {
                 MealType.BREAKFAST -> 143
                 MealType.LUNCH -> 145
-                MealType.LUNCH_PRESCHOOL -> 24
+                MealType.LUNCH_PRESCHOOL -> 277
                 MealType.SNACK -> 160
-                MealType.SUPPER -> 28
-                MealType.EVENING_SNACK -> 31
+                MealType.SUPPER -> 173
+                MealType.EVENING_SNACK -> 187
             }
         } else
             when (mealType) {
                 MealType.BREAKFAST -> 162
                 MealType.LUNCH -> 175
-                MealType.LUNCH_PRESCHOOL -> 22
+                MealType.LUNCH_PRESCHOOL -> 276
                 MealType.SNACK -> 152
-                MealType.SUPPER -> 27
-                MealType.EVENING_SNACK -> 30
+                MealType.SUPPER -> 354
+                MealType.EVENING_SNACK -> 188
             }
 }
