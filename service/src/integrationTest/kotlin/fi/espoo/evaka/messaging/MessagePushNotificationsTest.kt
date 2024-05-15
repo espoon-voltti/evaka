@@ -155,7 +155,8 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     recipients = setOf(MessageRecipient(MessageRecipientType.AREA, area.id)),
                     recipientNames = listOf("Ryhmä"),
                     attachments = emptySet(),
-                    relatedApplication = null
+                    relatedApplication = null,
+                    filters = null
                 )
             }
         assertNotNull(contentId)
