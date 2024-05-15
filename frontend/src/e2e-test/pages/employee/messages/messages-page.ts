@@ -41,6 +41,8 @@ export default class MessagesPage {
     this.page.find('[data-qa="message-reply-content"]')
   )
   #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
+  #unitAccount = this.page.find('[data-qa="unit-accounts"]')
+  unitReceived = this.#unitAccount.find('[data-qa="message-box-row-received"]')
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
@@ -177,6 +179,20 @@ export class MessageEditor extends Element {
   sendButton = this.findByDataQa('send-message-btn')
   discardButton = this.findByDataQa('discard-draft-btn')
 
+  filtersButton = this.findByDataQa('filters-btn')
+  filtersButtonCount = this.findAllByDataQa('filters-btn').count()
+  yearsOfBirthSelection = new TreeDropdown(
+    this.findByDataQa('select-years-of-birth')
+  )
+  serviceNeedSelection = new TreeDropdown(
+    this.findByDataQa('select-service-needs')
+  )
+  shiftcare = new Checkbox(this.findByDataQa('checkbox-shiftcare'))
+  intermittent = new Checkbox(
+    this.findByDataQa('checkbox-intermittent-shiftcare')
+  )
+  familyDaycare = new Checkbox(this.findByDataQa('checkbox-family-daycare'))
+
   async sendNewMessage(message: {
     title: string
     content: string
@@ -186,6 +202,10 @@ export class MessageEditor extends Element {
     sender?: string
     receivers?: string[]
     confirmManyRecipients?: boolean
+    yearsOfBirth?: number[]
+    serviceNeedOptionIds?: string[]
+    shiftcare?: boolean
+    familyDaycare?: boolean
   }) {
     const attachmentCount = message.attachmentCount ?? 0
 
@@ -213,6 +233,39 @@ export class MessageEditor extends Element {
     }
     if (message.sensitive ?? false) {
       await this.sensitive.check()
+    }
+
+    if (
+      message.yearsOfBirth ||
+      message.serviceNeedOptionIds ||
+      message.shiftcare ||
+      message.familyDaycare
+    ) {
+      await this.filtersButton.click()
+    }
+
+    if (message.yearsOfBirth) {
+      await this.yearsOfBirthSelection.open()
+      for (const year of message.yearsOfBirth) {
+        await this.yearsOfBirthSelection.option(String(year)).check()
+      }
+      await this.yearsOfBirthSelection.close()
+    }
+
+    if (message.serviceNeedOptionIds) {
+      await this.serviceNeedSelection.open()
+      for (const serviceNeedOption of message.serviceNeedOptionIds) {
+        await this.serviceNeedSelection.option(serviceNeedOption).check()
+      }
+      await this.serviceNeedSelection.close()
+    }
+
+    if (message.shiftcare ?? false) {
+      await this.shiftcare.check()
+    }
+
+    if (message.familyDaycare ?? false) {
+      await this.familyDaycare.check()
     }
 
     if (attachmentCount > 0) {
@@ -267,5 +320,12 @@ export class MessageEditor extends Element {
 
   async assertTitle(title: string) {
     return waitUntilEqual(() => this.inputTitle.inputValue, title)
+  }
+
+  async assertFiltersVisible() {
+    await this.yearsOfBirthSelection.waitUntilVisible()
+    await this.serviceNeedSelection.waitUntilVisible()
+    await this.shiftcare.waitUntilVisible()
+    await this.familyDaycare.waitUntilVisible()
   }
 }

@@ -9,22 +9,29 @@ import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
+import { useBoolean } from 'lib-common/form/hooks'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   AuthorizedMessageAccount,
   DraftContent,
   MessageReceiversResponse,
   PostMessageBody,
+  PostMessageFilters,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
+import TreeDropdown, {
+  TreeNode
+} from 'lib-components/atoms/dropdowns/TreeDropdown'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -51,6 +58,7 @@ import { SelectOption } from 'lib-components/molecules/Select'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faDownLeftAndUpRightToCenter,
   faTimes,
@@ -58,6 +66,7 @@ import {
   faUpRightAndDownLeftFromCenter,
   faQuestion
 } from 'lib-icons'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -123,6 +132,16 @@ const shouldSensitiveCheckboxBeEnabled = (
   return senderAccountType === 'PERSONAL'
 }
 
+type Filters = PostMessageFilters
+
+const getEmptyFilters = (): Filters => ({
+  yearsOfBirth: [],
+  serviceNeedOptionIds: [],
+  shiftCare: false,
+  intermittentShiftCare: false,
+  familyDaycare: false
+})
+
 interface FlagProps {
   urgent: boolean
   sensitive: boolean
@@ -169,6 +188,7 @@ interface Props {
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
+  serviceNeedOptions: ServiceNeedOption[]
 }
 
 export default React.memo(function MessageEditor({
@@ -185,7 +205,8 @@ export default React.memo(function MessageEditor({
   saveDraftRaw,
   saveMessageAttachment,
   sending,
-  defaultTitle = ''
+  defaultTitle = '',
+  serviceNeedOptions
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -196,9 +217,29 @@ export default React.memo(function MessageEditor({
       draftContent?.recipientIds
     )
   )
+  const [filtersVisible, useFiltersVisible] = useBoolean(false)
+  const [yearOfBirthTree, setYearOfBirthTree] = useState<TreeNode[]>(
+    [...Array(8).keys()].map<TreeNode>((n) => ({
+      text: LocalDate.todayInHelsinkiTz().year - n + '',
+      key: LocalDate.todayInHelsinkiTz().year - n + '',
+      checked: false,
+      children: []
+    }))
+  )
+  const [serviceNeedOptionTree, setServiceNeedOptionTree] = useState<
+    TreeNode[]
+  >(
+    serviceNeedOptions.map<TreeNode>((sno) => ({
+      text: sno.nameFi,
+      key: sno.id,
+      checked: false,
+      children: []
+    }))
+  )
   const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender, defaultTitle)
   )
+  const [filters, setFilters] = useState<Filters>(() => getEmptyFilters())
   const {
     draftId,
     setDraft,
@@ -243,7 +284,10 @@ export default React.memo(function MessageEditor({
   const preflightResult = useQueryResult(
     createMessagePreflightCheckQuery({
       accountId: message.sender.value,
-      body: { recipients: debouncedReceivers.map((r) => r.messageRecipient) }
+      body: {
+        recipients: debouncedReceivers.map((r) => r.messageRecipient),
+        filters: filters
+      }
     })
   )
 
@@ -304,6 +348,32 @@ export default React.memo(function MessageEditor({
     },
     [message, senderAccountType, setDraft]
   )
+  const handleBirthYearChange = useCallback(
+    (birthYears: TreeNode[]) => {
+      setYearOfBirthTree(birthYears)
+      const selected = birthYears.filter((year) => year.checked)
+
+      const updatedFilters = {
+        ...filters,
+        yearsOfBirth: selected.map((y) => +y.key)
+      }
+      setFilters(updatedFilters)
+    },
+    [filters, setFilters]
+  )
+  const handleServiceNeedChange = useCallback(
+    (serviceNeedOptions: TreeNode[]) => {
+      setServiceNeedOptionTree(serviceNeedOptions)
+      const selected = serviceNeedOptions.filter((need) => need.checked)
+
+      const updatedFilters = {
+        ...filters,
+        serviceNeedOptionIds: selected.map((n) => n.key)
+      }
+      setFilters(updatedFilters)
+    },
+    [filters, setFilters]
+  )
 
   const [expandedView, setExpandedView] = useState(false)
   const toggleExpandedView = useCallback(
@@ -351,9 +421,10 @@ export default React.memo(function MessageEditor({
         ({ messageRecipient }) => messageRecipient
       ),
       recipientNames: selectedReceivers.map(({ text: name }) => name),
-      relatedApplicationId: null
+      relatedApplicationId: null,
+      filters: filters
     })
-  }, [onSend, message, selectedReceivers, draftId])
+  }, [onSend, message, selectedReceivers, draftId, filters])
 
   const handleAttachmentUpload = useCallback(
     async (file: File, onUploadProgress: (percentage: number) => void) =>
@@ -412,6 +483,37 @@ export default React.memo(function MessageEditor({
     areRequiredFieldsFilled(message, selectedReceivers) &&
     isEqual(debouncedReceivers, selectedReceivers) &&
     preflightResult.isSuccess
+
+  const shiftCareCheckBox = (
+    <Checkbox
+      data-qa="checkbox-shiftcare"
+      label={i18n.messages.messageEditor.filters.shiftCare.label}
+      checked={filters.shiftCare}
+      onChange={(shiftCare) => setFilters({ ...filters, shiftCare: shiftCare })}
+    />
+  )
+
+  const intermittentShiftCareCheckBox = (
+    <Checkbox
+      data-qa="checkbox-intermittent-shiftcare"
+      label={i18n.messages.messageEditor.filters.shiftCare.intermittent}
+      checked={filters.intermittentShiftCare}
+      onChange={(intermittentShiftCare) =>
+        setFilters({ ...filters, intermittentShiftCare: intermittentShiftCare })
+      }
+    />
+  )
+
+  const familyDaycareCheckBox = (
+    <Checkbox
+      data-qa="checkbox-family-daycare"
+      label={i18n.messages.messageEditor.filters.familyDaycare.label}
+      checked={filters.familyDaycare}
+      onChange={(familyDaycare) =>
+        setFilters({ ...filters, familyDaycare: familyDaycare })
+      }
+    />
+  )
 
   const urgent = (
     <Checkbox
@@ -550,9 +652,7 @@ export default React.memo(function MessageEditor({
                 <TreeDropdown
                   tree={receiverTree}
                   onChange={handleRecipientChange}
-                  placeholder={
-                    i18n.messages.messageEditor.recipientsPlaceholder
-                  }
+                  placeholder={i18n.messages.messageEditor.selectPlaceholder}
                   data-qa="select-receiver"
                 />
               </HorizontalField>
@@ -584,6 +684,115 @@ export default React.memo(function MessageEditor({
               </ExpandedRightPane>
             )}
           </ExpandableLayout>
+          {(senderAccountType === 'PERSONAL' ||
+            senderAccountType === 'MUNICIPAL') && (
+            <>
+              <Gap size="s" />
+              <RightAlignedRow>
+                <InlineButton
+                  data-qa="filters-btn"
+                  onClick={useFiltersVisible.toggle}
+                  text={
+                    filtersVisible
+                      ? i18n.messages.messageEditor.filters.hideFilters
+                      : i18n.messages.messageEditor.filters.showFilters
+                  }
+                  iconRight
+                  icon={filtersVisible ? faChevronUp : faChevronDown}
+                />
+              </RightAlignedRow>
+              {filtersVisible && (
+                <>
+                  <Gap size="s" />
+                  <ExpandableLayout expandedView={expandedView}>
+                    <Dropdowns expandedView={expandedView}>
+                      <HorizontalField>
+                        <Bold>
+                          {i18n.messages.messageEditor.filters.yearOfBirth}
+                        </Bold>
+                        <TreeDropdown
+                          tree={yearOfBirthTree}
+                          onChange={handleBirthYearChange}
+                          placeholder={
+                            i18n.messages.messageEditor.selectPlaceholder
+                          }
+                          data-qa="select-years-of-birth"
+                        />
+                      </HorizontalField>
+                      <Gap size="s" />
+                      <HorizontalField>
+                        <Bold>
+                          {i18n.messages.messageEditor.filters.serviceNeed}
+                        </Bold>
+                        <TreeDropdown
+                          tree={serviceNeedOptionTree}
+                          onChange={handleServiceNeedChange}
+                          placeholder={
+                            i18n.messages.messageEditor.selectPlaceholder
+                          }
+                          data-qa="select-service-needs"
+                        />
+                      </HorizontalField>
+                    </Dropdowns>
+                    {expandedView && !simpleMode && (
+                      <ExpandedRightPane>
+                        <ExpandedHorizontalField>
+                          <Bold>
+                            {
+                              i18n.messages.messageEditor.filters.shiftCare
+                                .heading
+                            }
+                          </Bold>
+                          {shiftCareCheckBox}
+                          {featureFlags.intermittentShiftCare
+                            ? intermittentShiftCareCheckBox
+                            : null}
+                        </ExpandedHorizontalField>
+                        <Gap size="s" />
+                        <ExpandedHorizontalField>
+                          <Bold>
+                            {
+                              i18n.messages.messageEditor.filters.familyDaycare
+                                .heading
+                            }
+                          </Bold>
+                          {familyDaycareCheckBox}
+                        </ExpandedHorizontalField>
+                      </ExpandedRightPane>
+                    )}
+                    {!expandedView && !simpleMode && (
+                      <>
+                        <Gap size="s" />
+                        <HorizontalField>
+                          <Bold>
+                            {
+                              i18n.messages.messageEditor.filters.shiftCare
+                                .heading
+                            }
+                          </Bold>
+                          {shiftCareCheckBox}
+                          {featureFlags.intermittentShiftCare
+                            ? intermittentShiftCareCheckBox
+                            : null}
+                        </HorizontalField>
+                        <Gap size="s" />
+                        <HorizontalField>
+                          <Bold>
+                            {
+                              i18n.messages.messageEditor.filters.familyDaycare
+                                .heading
+                            }
+                          </Bold>
+                          {familyDaycareCheckBox}
+                        </HorizontalField>
+                      </>
+                    )}
+                  </ExpandableLayout>
+                  <HorizontalLine slim />
+                </>
+              )}
+            </>
+          )}
           <Gap size="s" />
           <HorizontalField>
             <Bold>{i18n.messages.messageEditor.title}</Bold>
@@ -828,7 +1037,7 @@ const ExpandableLayout = styled.div<{ expandedView: boolean }>`
 `
 
 const Dropdowns = styled.div<{ expandedView: boolean }>`
-  ${(props) => (props.expandedView ? 'width: 66%' : '')}
+  ${(props) => (props.expandedView ? 'width: 66%;' : '')}
   flex: 1 1 auto;
 `
 
@@ -847,4 +1056,8 @@ const UlNoMargin = styled.ul`
 `
 const InfoBoxContainer = styled.div`
   overflow: none;
+`
+const RightAlignedRow = styled.div`
+  display: flex;
+  justify-content: end;
 `

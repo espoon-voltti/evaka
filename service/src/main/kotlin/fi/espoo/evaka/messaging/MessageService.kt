@@ -111,10 +111,11 @@ class MessageService(
         recipients: Set<MessageRecipient>,
         recipientNames: List<String>,
         attachments: Set<AttachmentId>,
-        relatedApplication: ApplicationId?
+        relatedApplication: ApplicationId?,
+        filters: MessageController.PostMessageFilters?
     ): MessageContentId? {
         val messageRecipients =
-            tx.getMessageAccountsForRecipients(sender, recipients, now.toLocalDate())
+            tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
         if (messageRecipients.isEmpty()) return null
 
         val staffCopyRecipients = tx.getStaffCopyRecipients(sender, recipients)

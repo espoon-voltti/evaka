@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -331,7 +332,18 @@ class MessageController(
             }
     }
 
-    data class PostMessagePreflightBody(val recipients: Set<MessageRecipient>)
+    data class PostMessageFilters(
+        val yearsOfBirth: List<Int> = listOf(),
+        val serviceNeedOptionIds: List<ServiceNeedOptionId> = listOf(),
+        val shiftCare: Boolean = false,
+        val intermittentShiftCare: Boolean = false,
+        val familyDaycare: Boolean = false
+    )
+
+    data class PostMessagePreflightBody(
+        val recipients: Set<MessageRecipient>,
+        val filters: PostMessageFilters? = null
+    )
 
     data class PostMessagePreflightResponse(val numberOfRecipientAccounts: Int)
 
@@ -353,6 +365,7 @@ class MessageController(
                             tx.getMessageAccountsForRecipients(
                                     accountId = accountId,
                                     recipients = body.recipients,
+                                    filters = body.filters,
                                     date = clock.today()
                                 )
                                 .map { it.first }
@@ -376,7 +389,8 @@ class MessageController(
         val recipientNames: List<String>,
         val attachmentIds: Set<AttachmentId> = setOf(),
         val draftId: MessageDraftId? = null,
-        val relatedApplicationId: ApplicationId? = null
+        val relatedApplicationId: ApplicationId? = null,
+        val filters: PostMessageFilters? = null
     )
 
     @PostMapping("/{accountId}")
@@ -460,7 +474,8 @@ class MessageController(
                             recipients = body.recipients,
                             recipientNames = body.recipientNames,
                             attachments = body.attachmentIds,
-                            relatedApplication = body.relatedApplicationId
+                            relatedApplication = body.relatedApplicationId,
+                            filters = body.filters
                         )
                         .also {
                             if (body.draftId != null) {

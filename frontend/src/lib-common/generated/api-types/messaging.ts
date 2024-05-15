@@ -262,6 +262,7 @@ export interface PostMessageBody {
   attachmentIds: UUID[]
   content: string
   draftId: UUID | null
+  filters: PostMessageFilters | null
   recipientNames: string[]
   recipients: MessageRecipient[]
   relatedApplicationId: UUID | null
@@ -272,9 +273,21 @@ export interface PostMessageBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.PostMessageFilters
+*/
+export interface PostMessageFilters {
+  familyDaycare: boolean
+  intermittentShiftCare: boolean
+  serviceNeedOptionIds: UUID[]
+  shiftCare: boolean
+  yearsOfBirth: number[]
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageController.PostMessagePreflightBody
 */
 export interface PostMessagePreflightBody {
+  filters: PostMessageFilters | null
   recipients: MessageRecipient[]
 }
 
