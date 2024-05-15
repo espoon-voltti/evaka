@@ -2,9 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { query } from 'lib-common/query'
+import { mutation, query } from 'lib-common/query'
 
-import { getVoucherValues } from '../../generated/api-clients/invoicing'
+import {
+  createVoucherValue,
+  getVoucherValues
+} from '../../generated/api-clients/invoicing'
+import { deleteVoucherValue } from '../../generated/api-clients/invoicing'
 import { createQueryKeys } from '../../query'
 
 const queryKeys = createQueryKeys('financeBasics', {
@@ -14,4 +18,14 @@ const queryKeys = createQueryKeys('financeBasics', {
 export const voucherValuesQuery = query({
   api: getVoucherValues,
   queryKey: queryKeys.voucherValues
+})
+
+export const createVoucherValueMutation = mutation({
+  api: createVoucherValue,
+  invalidateQueryKeys: () => [queryKeys.voucherValues()]
+})
+
+export const deleteVoucherValueMutation = mutation({
+  api: deleteVoucherValue,
+  invalidateQueryKeys: () => [queryKeys.voucherValues()]
 })

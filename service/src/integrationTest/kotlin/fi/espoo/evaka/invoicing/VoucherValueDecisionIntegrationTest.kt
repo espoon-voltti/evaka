@@ -80,7 +80,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private val now = HelsinkiDateTime.of(LocalDate.of(2023, 1, 1), LocalTime.of(9, 0))
+    private val now = HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(9, 0))
     private val startDate = now.toLocalDate().minusMonths(1)
     private val endDate = now.toLocalDate().plusMonths(6)
 

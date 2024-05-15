@@ -27,7 +27,9 @@ fun getPlacementDetailsByChild(
         buildFiniteDateRanges(
             *placements.flatMap { it.value }.toTypedArray(),
             *serviceNeeds.flatMap { it.value }.toTypedArray(),
-            *serviceNeedOptionVoucherValues.flatMap { it.value }.toTypedArray()
+            *serviceNeedOptionVoucherValues
+                .flatMap { it.value.map { it.voucherValues } }
+                .toTypedArray()
         )
 
     return childIds.associateWith { childId ->
@@ -50,7 +52,7 @@ fun getPlacementDetailsByChild(
 
             val serviceNeedVoucherValues =
                 serviceNeedOptionVoucherValues[serviceNeedOption.id]?.firstOrNull {
-                    it.range.contains(range)
+                    it.voucherValues.range.contains(range)
                 }
 
             PlacementDetails(
@@ -62,7 +64,7 @@ fun getPlacementDetailsByChild(
                 invoicedUnit = placement.invoicedUnit,
                 hasServiceNeed = serviceNeed != null,
                 serviceNeedOption = serviceNeedOption,
-                serviceNeedVoucherValues = serviceNeedVoucherValues
+                serviceNeedVoucherValues = serviceNeedVoucherValues?.voucherValues
             )
         }
     }

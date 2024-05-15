@@ -4434,6 +4434,7 @@ export const fi = {
     },
     serviceNeeds: {
       title: 'Palveluntarpeet',
+      add: 'Lisää uusi palveluseteliarvo',
       voucherValues: 'Palvelusetelien arvot',
       validity: 'Voimassaoloaika',
       baseValue: (
@@ -4478,6 +4479,11 @@ export const fi = {
           alle 3v (€)
         </>
       )
+    },
+    modals: {
+      deleteVoucherValue: {
+        title: 'Haluatko varmasti poistaa palveluseteliarvon?'
+      }
     }
   },
   documentTemplates: {

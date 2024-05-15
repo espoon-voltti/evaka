@@ -953,11 +953,18 @@ export interface ServiceNeedOptionVoucherValueRange {
   baseValueUnder3y: number
   coefficient: number
   coefficientUnder3y: number
-  id: UUID
   range: DateRange
   serviceNeedOptionId: UUID
   value: number
   valueUnder3y: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
+*/
+export interface ServiceNeedOptionVoucherValueRangeWithId {
+  id: UUID
+  voucherValues: ServiceNeedOptionVoucherValueRange
 }
 
 /**
@@ -1511,6 +1518,14 @@ export function deserializeJsonServiceNeedOptionVoucherValueRange(json: JsonOf<S
   return {
     ...json,
     range: DateRange.parseJson(json.range)
+  }
+}
+
+
+export function deserializeJsonServiceNeedOptionVoucherValueRangeWithId(json: JsonOf<ServiceNeedOptionVoucherValueRangeWithId>): ServiceNeedOptionVoucherValueRangeWithId {
+  return {
+    ...json,
+    voucherValues: deserializeJsonServiceNeedOptionVoucherValueRange(json.voucherValues)
   }
 }
 

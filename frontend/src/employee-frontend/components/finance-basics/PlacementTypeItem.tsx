@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { useBoolean } from 'lib-common/form/hooks'
-import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
+import { ServiceNeedOptionVoucherValueRangeWithId } from 'lib-common/generated/api-types/invoicing'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -18,13 +18,15 @@ import ServiceNeedItem from './ServiceNeedItem'
 export type PlacementTypeItemProps = {
   placementType: PlacementType
   serviceNeedsList: ServiceNeedOption[]
-  voucherValuesMap: Record<string, ServiceNeedOptionVoucherValueRange[]>
+  voucherValuesMap: Record<string, ServiceNeedOptionVoucherValueRangeWithId[]>
+  'data-qa'?: string
 }
 
 export default React.memo(function PlacementTypeItem({
   placementType,
   serviceNeedsList,
-  voucherValuesMap
+  voucherValuesMap,
+  'data-qa': dataQa
 }: PlacementTypeItemProps) {
   const { i18n } = useTranslation()
 
@@ -37,6 +39,7 @@ export default React.memo(function PlacementTypeItem({
       open={open}
       toggleOpen={useOpen.toggle}
       paddingHorizontal="0"
+      data-qa={dataQa}
     >
       {serviceNeedsList
         .filter(
@@ -46,8 +49,12 @@ export default React.memo(function PlacementTypeItem({
         .map((serviceNeed) => (
           <ServiceNeedItem
             key={serviceNeed.id}
-            serviceNeed={serviceNeed.nameFi + ' (oletus)'}
+            serviceNeedId={serviceNeed.id}
+            serviceNeedName={serviceNeed.nameFi + ' (oletus)'}
+            serviceNeedValidityStart={serviceNeed.validFrom}
+            serviceNeedValidityEnd={serviceNeed.validTo}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
+            data-qa="service-need-default"
           />
         ))}
       {serviceNeedsList
@@ -55,11 +62,15 @@ export default React.memo(function PlacementTypeItem({
           (value) =>
             value.validPlacementType == placementType && !value.defaultOption
         )
-        .map((serviceNeed) => (
+        .map((serviceNeed, i) => (
           <ServiceNeedItem
             key={serviceNeed.id}
-            serviceNeed={serviceNeed.nameFi}
+            serviceNeedId={serviceNeed.id}
+            serviceNeedName={serviceNeed.nameFi}
+            serviceNeedValidityStart={serviceNeed.validFrom}
+            serviceNeedValidityEnd={serviceNeed.validTo}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
+            data-qa={`service-need-${i}`}
           />
         ))}
     </CollapsibleContentArea>

@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.math.BigDecimal
@@ -128,7 +127,6 @@ private fun createVoucherBasis(): VoucherBasis {
                 serviceNeedOption = snDaycareFullDay35,
                 serviceNeedVoucherValues =
                     ServiceNeedOptionVoucherValueRange(
-                        id = ServiceNeedOptionVoucherValueId(UUID.randomUUID()),
                         serviceNeedOptionId = snDaycareFullDay35.id,
                         range = DateRange(date(1), null),
                         baseValue = 87000,
