@@ -379,6 +379,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 it.dateInfo ==
                     UnitAttendanceReservations.UnitDateInfo(
                         normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                        shiftCareOperatingTimes =
+                            TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                        shiftCareOpenOnHoliday = false,
                         isHoliday = false,
                         isInHolidayPeriod = false
                     )
@@ -781,6 +784,8 @@ class AttendanceReservationsControllerIntegrationTest :
             assertEquals(
                 UnitAttendanceReservations.UnitDateInfo(
                     normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    shiftCareOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    shiftCareOpenOnHoliday = false,
                     isHoliday = false,
                     isInHolidayPeriod = true
                 ),
@@ -802,6 +807,8 @@ class AttendanceReservationsControllerIntegrationTest :
             assertEquals(
                 UnitAttendanceReservations.UnitDateInfo(
                     normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    shiftCareOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                    shiftCareOpenOnHoliday = false,
                     isHoliday = false,
                     isInHolidayPeriod = true
                 ),
@@ -818,6 +825,8 @@ class AttendanceReservationsControllerIntegrationTest :
         assertEquals(
             UnitAttendanceReservations.UnitDateInfo(
                 normalOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                shiftCareOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
+                shiftCareOpenOnHoliday = false,
                 isHoliday = true,
                 isInHolidayPeriod = false
             ),
