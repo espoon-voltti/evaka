@@ -57,7 +57,6 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         lateinit var guardian: PersonId
         lateinit var guardianAndHouseholdHead: PersonId
         lateinit var fosterParent: PersonId
-        lateinit var householdSibling: PersonId
         lateinit var householdAdult: PersonId
 
         db.transaction { tx ->
@@ -87,17 +86,18 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-            householdSibling =
-                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
-                    tx.insert(
-                        DevFridgeChild(
-                            childId = it,
-                            headOfChild = guardianAndHouseholdHead,
-                            startDate = currentlyValid.start,
-                            endDate = currentlyValid.end
-                        )
+
+            // Householdsibling should not be shown
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = guardianAndHouseholdHead,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end
                     )
-                }
+                )
+            }
             householdAdult =
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
                     tx.insert(
@@ -116,8 +116,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 (guardianAndHouseholdHead to FamilyContactRole.LOCAL_GUARDIAN),
                 (guardian to FamilyContactRole.REMOTE_GUARDIAN),
                 (fosterParent to FamilyContactRole.REMOTE_FOSTER_PARENT),
-                (householdAdult to FamilyContactRole.LOCAL_ADULT),
-                (householdSibling to FamilyContactRole.LOCAL_SIBLING)
+                (householdAdult to FamilyContactRole.LOCAL_ADULT)
             ),
             getFamilyContactSummary().map { (it.id to it.role) }
         )
@@ -158,7 +157,6 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `family contacts do not include people in conflict state`() {
         lateinit var headOfChild: PersonId
-        lateinit var householdSibling: PersonId
 
         db.transaction { tx ->
             headOfChild =
@@ -172,17 +170,17 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-            householdSibling =
-                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
-                    tx.insert(
-                        DevFridgeChild(
-                            childId = it,
-                            headOfChild = headOfChild,
-                            startDate = currentlyValid.start,
-                            endDate = currentlyValid.end
-                        )
+            // Household siblings are not shown
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = headOfChild,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end
                     )
-                }
+                )
+            }
             // conflict head of child
             val conflictHeadOfChild =
                 tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
@@ -244,10 +242,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         }
         assertEquals(
-            listOf(
-                (headOfChild to FamilyContactRole.LOCAL_ADULT),
-                (householdSibling to FamilyContactRole.LOCAL_SIBLING)
-            ),
+            listOf((headOfChild to FamilyContactRole.LOCAL_ADULT)),
             getFamilyContactSummary().map { (it.id to it.role) }
         )
     }
