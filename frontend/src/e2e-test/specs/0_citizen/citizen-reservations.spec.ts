@@ -935,20 +935,36 @@ describe('Citizen calendar child visibility', () => {
 
   test('If other child is in round the clock daycare, the other child is not required to fill in weekends', async () => {
     const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-    await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+    const daycare = await Fixture.daycare()
+      .with(daycare2Fixture)
+      .careArea(careArea)
+      .save()
 
-    // Sibling is in 24/7 daycare
+    // Sibling is in 24/7 daycare with shift care
+    const placement = createDaycarePlacementFixture(
+      uuidv4(),
+      fixtures.enduserChildFixtureKaarina.id,
+      daycare2Fixture.id,
+      placement1start,
+      placement1end
+    )
     await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          uuidv4(),
-          fixtures.enduserChildFixtureKaarina.id,
-          daycare2Fixture.id,
-          placement1start,
-          placement1end
-        )
-      ]
+      body: [placement]
     })
+    const serviceNeedOption = await Fixture.serviceNeedOption().save()
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      daycare.data.id
+    ).save()
+    await Fixture.serviceNeed()
+      .with({
+        placementId: placement.id,
+        startDate: placement.startDate,
+        endDate: placement.endDate,
+        optionId: serviceNeedOption.data.id,
+        confirmedBy: unitSupervisor.data.id,
+        shiftCare: 'FULL'
+      })
+      .save()
 
     await header.selectTab('calendar')
     // Saturday
@@ -963,21 +979,37 @@ describe('Citizen calendar child visibility', () => {
 
   test('Citizen creates a reservation for a child in round the clock daycare for holidays', async () => {
     const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-    await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+    const daycare = await Fixture.daycare()
+      .with(daycare2Fixture)
+      .careArea(careArea)
+      .save()
     const child = fixtures.enduserChildFixtureKaarina
 
-    // 24/7 daycare
+    // Child is in 24/7 daycare with shift care
+    const placement = createDaycarePlacementFixture(
+      uuidv4(),
+      fixtures.enduserChildFixtureKaarina.id,
+      daycare2Fixture.id,
+      placement1start,
+      placement1end
+    )
     await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          uuidv4(),
-          child.id,
-          daycare2Fixture.id,
-          placement1start,
-          placement1end
-        )
-      ]
+      body: [placement]
     })
+    const serviceNeedOption = await Fixture.serviceNeedOption().save()
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      daycare.data.id
+    ).save()
+    await Fixture.serviceNeed()
+      .with({
+        placementId: placement.id,
+        startDate: placement.startDate,
+        endDate: placement.endDate,
+        optionId: serviceNeedOption.data.id,
+        confirmedBy: unitSupervisor.data.id,
+        shiftCare: 'FULL'
+      })
+      .save()
 
     const firstReservationDay = today.addDays(14)
     await Fixture.holiday()

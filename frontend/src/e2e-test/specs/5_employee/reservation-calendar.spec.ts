@@ -4,6 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -15,7 +16,6 @@ import {
   daycare2Fixture,
   daycareFixture,
   Fixture,
-  fullDayTimeRange,
   uuidv4
 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
@@ -48,29 +48,15 @@ beforeEach(async () => {
 })
 
 const insertTestDataAndLogin = async ({
-  roundTheClockDaycare = true
+  childShiftCare = 'NONE'
 }: {
-  roundTheClockDaycare?: boolean
+  childShiftCare?: ShiftCareType
 } = {}) => {
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   const daycareBuilder = Fixture.daycare()
     .with(daycare2Fixture)
     .careArea(careArea)
-  if (!roundTheClockDaycare) {
-    daycareBuilder.with({
-      operationTimes: [
-        fullDayTimeRange,
-        fullDayTimeRange,
-        fullDayTimeRange,
-        fullDayTimeRange,
-        fullDayTimeRange,
-        null,
-        null
-      ],
-      roundTheClock: false
-    })
-  }
   await daycareBuilder.save()
   daycare = daycareBuilder.data
 
@@ -98,7 +84,7 @@ const insertTestDataAndLogin = async ({
 
   child1Fixture = fixtures.familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
-  await Fixture.placement()
+  const placementBuilder = await Fixture.placement()
     .with({
       id: child1DaycarePlacementId,
       childId: child1Fixture.id,
@@ -107,7 +93,17 @@ const insertTestDataAndLogin = async ({
       endDate: placementEndDate
     })
     .save()
-
+  const serviceNeedOption = await Fixture.serviceNeedOption().save()
+  await Fixture.serviceNeed()
+    .with({
+      placementId: placementBuilder.data.id,
+      startDate: placementStartDate,
+      endDate: placementEndDate,
+      optionId: serviceNeedOption.data.id,
+      confirmedBy: unitSupervisor.id,
+      shiftCare: childShiftCare
+    })
+    .save()
   await Fixture.backupCare()
     .with({
       id: uuidv4(),
@@ -240,7 +236,7 @@ describe('Unit group calendar', () => {
     await weekCalendar.changeWeekToDate(backupCareStartDate)
     await waitUntilEqual(
       () => childReservations.childInOtherUnit(child1Fixture.id).count(),
-      7
+      5
     )
   })
 
@@ -256,7 +252,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Missing holiday reservations are shown', async () => {
-    await insertTestDataAndLogin()
+    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod()
@@ -309,7 +305,7 @@ describe('Unit group calendar', () => {
   })
 
   test('Missing holiday reservations are shown if reservation deadline has passed', async () => {
-    await insertTestDataAndLogin()
+    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod()
@@ -516,7 +512,7 @@ describe('Unit group calendar', () => {
 
 describe('Unit group calendar for shift care unit', () => {
   test('Employee can add two reservations for day and sees two rows', async () => {
-    await insertTestDataAndLogin()
+    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const childReservations = (await openWeekCalendar()).childReservations
 
     const reservationModal = await childReservations.openReservationModal(
@@ -542,10 +538,8 @@ describe('Unit group calendar for shift care unit', () => {
     )
   })
 
-  test('Irregular reservation over weekend in normal unit', async () => {
-    await insertTestDataAndLogin({
-      roundTheClockDaycare: false
-    })
+  test('Irregular reservation over weekend without shift care', async () => {
+    await insertTestDataAndLogin({ childShiftCare: 'NONE' })
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
 
@@ -576,7 +570,7 @@ describe('Unit group calendar for shift care unit', () => {
   })
 
   test('Employee sees attendances along reservations', async () => {
-    await insertTestDataAndLogin()
+    await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const childReservations = (await openWeekCalendar()).childReservations
 
     const reservationModal = await childReservations.openReservationModal(

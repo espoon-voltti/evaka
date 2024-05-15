@@ -377,7 +377,8 @@ export const clubFixture: DevDaycare = {
     null,
     null
   ],
-  roundTheClock: true,
+  shiftCareOperationTimes: null,
+  shiftCareOpenOnHolidays: false,
   enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
   businessId: '',
   iban: '',
@@ -446,7 +447,16 @@ export const daycareFixture: DevDaycare = {
     null,
     null
   ],
-  roundTheClock: true,
+  shiftCareOperationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange
+  ],
+  shiftCareOpenOnHolidays: true,
   location: {
     lat: 60.20377343765089,
     lon: 24.655715743526994
@@ -526,15 +536,23 @@ export const daycare2Fixture: DevDaycare = {
     fullDayTimeRange,
     fullDayTimeRange,
     fullDayTimeRange,
+    null,
+    null
+  ],
+  shiftCareOperationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
     fullDayTimeRange,
     fullDayTimeRange
   ],
-  roundTheClock: true,
+  shiftCareOpenOnHolidays: true,
   location: {
     lat: 60.20350901607783,
     lon: 24.669
   },
-
   enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS'],
   businessId: '',
   iban: '',
@@ -606,7 +624,8 @@ export const daycareFixturePrivateVoucher: DevDaycare = {
     null,
     null
   ],
-  roundTheClock: true,
+  shiftCareOperationTimes: null,
+  shiftCareOpenOnHolidays: false,
   location: {
     lat: 60.20377343765089,
     lon: 24.655715743526994
@@ -689,7 +708,8 @@ export const preschoolFixture: DevDaycare = {
     null,
     null
   ],
-  roundTheClock: true,
+  shiftCareOperationTimes: null,
+  shiftCareOpenOnHolidays: false,
   location: {
     lat: 60.2040261560435,
     lon: 24.65517745652623
@@ -1505,7 +1525,8 @@ export class Fixture {
         null,
         null
       ],
-      roundTheClock: true,
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false,
       enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
       businessId: '',
       iban: '',

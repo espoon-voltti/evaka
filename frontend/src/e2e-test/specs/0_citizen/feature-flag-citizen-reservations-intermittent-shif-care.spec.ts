@@ -234,7 +234,8 @@ const addTestData = async (date: LocalDate) => {
         null,
         null
       ],
-      roundTheClock: false,
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false,
       enabledPilotFeatures: ['RESERVATIONS']
     })
     .save()

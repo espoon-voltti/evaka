@@ -1424,7 +1424,7 @@ export default function UnitEditor(props: Props) {
           label={i18n.unitEditor.field.providesShiftCare}
           checked={form.providesShiftCare}
           onChange={(providesShiftCare) => updateForm({ providesShiftCare })}
-          data-qa="round-the-clock"
+          data-qa="provides-shift-care"
         />
       </FormPart>
 

@@ -36,16 +36,7 @@ describe('when placement is ending tomorrow', () => {
     unit = await Fixture.daycare()
       .with({
         areaId: area.data.id,
-        enabledPilotFeatures: ['RESERVATIONS'],
-        operationTimes: [
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          null,
-          null
-        ]
+        enabledPilotFeatures: ['RESERVATIONS']
       })
       .save()
     const group = await Fixture.daycareGroup()
@@ -290,7 +281,7 @@ describe('when child is in preschool only', () => {
   })
 })
 
-describe('when unit is open every day', () => {
+describe('when unit is open every day for shift care child', () => {
   const mockedToday = LocalDate.of(2023, 11, 14) // Tue
   let unit: DaycareBuilder
   let child: PersonBuilder
@@ -302,6 +293,15 @@ describe('when unit is open every day', () => {
         areaId: area.data.id,
         enabledPilotFeatures: ['RESERVATIONS'],
         operationTimes: [
+          fullDayTimeRange,
+          fullDayTimeRange,
+          fullDayTimeRange,
+          fullDayTimeRange,
+          fullDayTimeRange,
+          null,
+          null
+        ],
+        shiftCareOperationTimes: [
           fullDayTimeRange,
           fullDayTimeRange,
           fullDayTimeRange,
@@ -323,6 +323,20 @@ describe('when unit is open every day', () => {
         unitId: unit.data.id,
         startDate: mockedToday,
         endDate: mockedToday.addYears(1)
+      })
+      .save()
+    const serviceNeedOption = await Fixture.serviceNeedOption().save()
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      unit.data.id
+    ).save()
+    await Fixture.serviceNeed()
+      .with({
+        placementId: placement.data.id,
+        startDate: placement.data.startDate,
+        endDate: placement.data.endDate,
+        optionId: serviceNeedOption.data.id,
+        confirmedBy: unitSupervisor.data.id,
+        shiftCare: 'FULL'
       })
       .save()
     await Fixture.groupPlacement()
