@@ -23,8 +23,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
@@ -170,11 +170,13 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         val externalId = ExternalId.of("test", "id")
         val unitSupervisor = DevEmployee(externalId = externalId)
         db.transaction {
-            it.insertTestPlacement(
-                childId = childId,
-                unitId = testDaycare.id,
-                startDate = LocalDate.now(),
-                endDate = LocalDate.now().plusYears(1)
+            it.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now().plusYears(1)
+                )
             )
             it.insert(unitSupervisor)
             it.updateDaycareAcl(testDaycare.id, externalId, UserRole.UNIT_SUPERVISOR)

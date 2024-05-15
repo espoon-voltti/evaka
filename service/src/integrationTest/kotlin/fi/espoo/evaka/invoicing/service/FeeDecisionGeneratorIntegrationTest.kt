@@ -38,6 +38,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -53,13 +54,13 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -3215,12 +3216,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         daycareId: DaycareId
     ): PlacementId {
         return db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = period.start,
-                endDate = period.end!!,
-                type = type
+            tx.insert(
+                DevPlacement(
+                    type = type,
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = period.start,
+                    endDate = period.end!!
+                )
             )
         }
     }
@@ -3232,11 +3235,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
-                tx.insertTestParentship(
-                    headOfFamilyId,
-                    childId,
-                    startDate = period.start,
-                    endDate = period.end!!
+                tx.insert(
+                    DevParentship(
+                        childId = childId,
+                        headOfChildId = headOfFamilyId,
+                        startDate = period.start,
+                        endDate = period.end!!
+                    )
                 )
             }
         }
@@ -3271,11 +3276,17 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         optionId: ServiceNeedOptionId
     ) {
         db.transaction { tx ->
-            tx.insertTestServiceNeed(
-                EvakaUserId(testDecisionMaker_1.id.raw),
-                placementId,
-                period,
-                optionId
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = period.start,
+                    endDate = period.end,
+                    optionId = optionId,
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = false,
+                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
         }
     }

@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevGuardian
@@ -23,7 +25,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -128,10 +129,13 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     fun `reminder is not sent when there are absences`() {
         db.transaction { tx ->
             checkedRange.dates().forEach {
-                tx.insertTestAbsence(
-                    childId = child,
-                    date = it,
-                    category = AbsenceCategory.NONBILLABLE
+                tx.insert(
+                    DevAbsence(
+                        childId = child,
+                        date = it,
+                        absenceType = AbsenceType.SICKLEAVE,
+                        absenceCategory = AbsenceCategory.NONBILLABLE
+                    )
                 )
             }
         }

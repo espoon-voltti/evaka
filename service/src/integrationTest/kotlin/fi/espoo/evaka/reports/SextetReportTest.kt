@@ -6,12 +6,15 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestHoliday
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -32,7 +35,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestHoliday(LocalDate.of(2021, 12, 6))
+            tx.insert(DevHoliday(LocalDate.of(2021, 12, 6), "holiday"))
         }
     }
 
@@ -49,103 +52,133 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             // DAYCARE
 
             // 10
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
 
             // 9
-            tx.insertTestPlacement(
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
-            tx.insertTestAbsence(
-                childId = testChild_2.id,
-                date = LocalDate.of(2021, 12, 1),
-                category = AbsenceCategory.BILLABLE
+            tx.insert(
+                DevAbsence(
+                    childId = testChild_2.id,
+                    date = LocalDate.of(2021, 12, 1),
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
 
             // 10
-            tx.insertTestPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare2.id,
-                type = PlacementType.DAYCARE,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_3.id,
+                    unitId = testDaycare2.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
 
             // Round the clock -> 15
-            tx.insertTestPlacement(
-                childId = testChild_4.id,
-                unitId = testRoundTheClockDaycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_4.id,
+                    unitId = testRoundTheClockDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
 
             // PRESCHOOL_DAYCARE
 
             // 9
-            tx.insertTestPlacement(
-                childId = testChild_5.id,
-                unitId = testDaycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_5.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
             // Does not affect because only half day off
-            tx.insertTestAbsence(
-                childId = testChild_5.id,
-                date = LocalDate.of(2021, 12, 1),
-                category = AbsenceCategory.BILLABLE
+            tx.insert(
+                DevAbsence(
+                    childId = testChild_5.id,
+                    date = LocalDate.of(2021, 12, 1),
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
             // Affects because both halves off
-            tx.insertTestAbsence(
-                childId = testChild_5.id,
-                date = LocalDate.of(2021, 12, 2),
-                category = AbsenceCategory.BILLABLE
+            tx.insert(
+                DevAbsence(
+                    childId = testChild_5.id,
+                    date = LocalDate.of(2021, 12, 2),
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            tx.insertTestAbsence(
-                childId = testChild_5.id,
-                date = LocalDate.of(2021, 12, 2),
-                category = AbsenceCategory.NONBILLABLE
+            tx.insert(
+                DevAbsence(
+                    childId = testChild_5.id,
+                    date = LocalDate.of(2021, 12, 2),
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.NONBILLABLE
+                )
             )
 
             // 5 to daycare 1
-            tx.insertTestPlacement(
-                childId = testChild_6.id,
-                unitId = testDaycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_6.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
             // 5 to daycare 2 (backup care)
-            tx.insertTestBackUpCare(
-                childId = testChild_6.id,
-                unitId = testDaycare2.id,
-                startDate = startDate,
-                endDate = midDate
+            tx.insert(
+                DevBackupCare(
+                    childId = testChild_6.id,
+                    unitId = testDaycare2.id,
+                    groupId = null,
+                    period = FiniteDateRange(startDate, midDate)
+                )
             )
 
             // 10 to daycare 1 (same unit in backup care)
-            tx.insertTestPlacement(
-                childId = testChild_7.id,
-                unitId = testDaycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_7.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
-            tx.insertTestBackUpCare(
-                childId = testChild_7.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = midDate
+            tx.insert(
+                DevBackupCare(
+                    childId = testChild_7.id,
+                    unitId = testDaycare.id,
+                    groupId = null,
+                    period = FiniteDateRange(startDate, midDate)
+                )
             )
         }
 

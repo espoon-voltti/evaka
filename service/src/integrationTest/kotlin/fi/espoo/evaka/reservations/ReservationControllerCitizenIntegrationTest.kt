@@ -27,20 +27,20 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestHoliday
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -129,44 +129,55 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 tx.insertGuardian(adult.id, child.id)
             }
 
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = monday,
-                endDate = tuesday
-            )
-            tx.insertTestPlacement(
-                    childId = child2.id,
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child1.id,
                     unitId = daycare.id,
-                    type = PlacementType.DAYCARE,
-                    startDate = fridayLastWeek,
+                    startDate = monday,
                     endDate = tuesday
+                )
+            )
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child2.id,
+                        unitId = daycare.id,
+                        startDate = fridayLastWeek,
+                        endDate = tuesday
+                    )
                 )
                 .also { placementId ->
                     // contract days on monday and tuesday
-                    tx.insertTestServiceNeed(
-                        confirmedBy = employee.evakaUserId,
-                        placementId = placementId,
-                        period = FiniteDateRange(monday, tuesday),
-                        optionId = snDaycareContractDays10.id,
-                        shiftCare = ShiftCareType.NONE
+                    val period = FiniteDateRange(monday, tuesday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareContractDays10.id,
+                            shiftCare = ShiftCareType.NONE,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
             // Fixed schedule (PRESCHOOL)
-            tx.insertTestPlacement(
-                childId = child3.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL,
-                startDate = monday,
-                endDate = thursday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = child3.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = thursday
+                )
             )
 
             // child4 has no placement
 
             // Holiday on wednesday
-            tx.insertTestHoliday(wednesday)
+            tx.insert(DevHoliday(wednesday, "holiday"))
 
             // Term break on thursday
             tx.insertPreschoolTerm(
@@ -323,33 +334,42 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             }
 
             // Normal shift care
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = roundTheClockDaycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = sundayLastWeek,
-                endDate = tuesday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child1.id,
+                    unitId = roundTheClockDaycare.id,
+                    startDate = sundayLastWeek,
+                    endDate = tuesday
+                )
             )
 
             // Intermittent shift care
-            tx.insertTestPlacement(
-                    childId = child2.id,
-                    unitId = daycare.id,
-                    type = PlacementType.DAYCARE,
-                    startDate = sundayLastWeek,
-                    endDate = wednesday
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child2.id,
+                        unitId = daycare.id,
+                        startDate = sundayLastWeek,
+                        endDate = wednesday
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        confirmedBy = employee.evakaUserId,
-                        placementId = placementId,
-                        period = FiniteDateRange(sundayLastWeek, tuesday),
-                        optionId = snDaycareFullDay35.id,
-                        shiftCare = ShiftCareType.INTERMITTENT,
+                    val period = FiniteDateRange(sundayLastWeek, tuesday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareFullDay35.id,
+                            shiftCare = ShiftCareType.INTERMITTENT,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
-            tx.insertTestHoliday(tuesday)
+            tx.insert(DevHoliday(tuesday, "holiday"))
         }
 
         val res =
@@ -492,19 +512,26 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    type = PlacementType.DAYCARE,
-                    startDate = monday,
-                    endDate = thursday
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = thursday
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = FiniteDateRange(monday, thursday),
-                        optionId = snDaycareHours120.id,
-                        confirmedBy = employee.evakaUserId
+                    val period = FiniteDateRange(monday, thursday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareHours120.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
@@ -717,25 +744,37 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    type = PlacementType.DAYCARE,
-                    startDate = firstOfMonth1,
-                    endDate = lastOfMonth2
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = firstOfMonth1,
+                        endDate = lastOfMonth2
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = FiniteDateRange(firstOfMonth1, lastOfMonth1),
-                        optionId = snDaycareHours120.id,
-                        confirmedBy = employee.evakaUserId
+                    val period = FiniteDateRange(firstOfMonth1, lastOfMonth1)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareHours120.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = FiniteDateRange(firstOfMonth2, lastOfMonth2),
-                        optionId = snDaycareHours147.id,
-                        confirmedBy = employee.evakaUserId
+                    val period1 = FiniteDateRange(firstOfMonth2, lastOfMonth2)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period1.start,
+                            endDate = period1.end,
+                            optionId = snDaycareHours147.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
         }
@@ -793,12 +832,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = monday,
-                endDate = tuesday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
         }
 
@@ -898,19 +939,23 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 tx.insertGuardian(adult.id, child.id)
             }
 
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = monday,
-                endDate = tuesday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
-            tx.insertTestPlacement(
-                childId = child2.id,
-                unitId = daycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = fridayLastWeek,
-                endDate = tuesday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate = fridayLastWeek,
+                    endDate = tuesday
+                )
             )
         }
 
@@ -1036,12 +1081,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = monday,
-                endDate = tuesday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
         }
 
@@ -1118,12 +1165,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = monday,
-                endDate = tuesday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
         }
 
@@ -1167,36 +1216,50 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 tx.insertGuardian(adult.id, child.id)
             }
 
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = monday,
-                endDate = tuesday
-            )
-            tx.insertTestPlacement(
-                    childId = child2.id,
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child1.id,
                     unitId = daycare.id,
-                    type = PlacementType.DAYCARE,
-                    startDate = fridayLastWeek,
+                    startDate = monday,
                     endDate = tuesday
+                )
+            )
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child2.id,
+                        unitId = daycare.id,
+                        startDate = fridayLastWeek,
+                        endDate = tuesday
+                    )
                 )
                 .also { placementId ->
                     // contract days on monday
-                    tx.insertTestServiceNeed(
-                        confirmedBy = employee.evakaUserId,
-                        placementId = placementId,
-                        period = FiniteDateRange(monday, monday),
-                        optionId = snDaycareContractDays10.id,
-                        shiftCare = ShiftCareType.NONE
+                    val period = FiniteDateRange(monday, monday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareContractDays10.id,
+                            shiftCare = ShiftCareType.NONE,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                     // hour based service need on tuesday
-                    tx.insertTestServiceNeed(
-                        confirmedBy = employee.evakaUserId,
-                        placementId = placementId,
-                        period = FiniteDateRange(tuesday, tuesday),
-                        optionId = snDaycareHours120.id,
-                        shiftCare = ShiftCareType.NONE
+                    val period1 = FiniteDateRange(tuesday, tuesday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period1.start,
+                            endDate = period1.end,
+                            optionId = snDaycareHours120.id,
+                            shiftCare = ShiftCareType.NONE,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
         }
@@ -1388,28 +1451,37 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    type = PlacementType.DAYCARE,
-                    startDate = monday,
-                    endDate = tuesday
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday
+                    )
                 )
                 .let { placementId ->
-                    tx.insertTestServiceNeed(
-                        confirmedBy = employee.evakaUserId,
-                        placementId = placementId,
-                        period = FiniteDateRange(monday, tuesday),
-                        optionId = snDaycareContractDays10.id
+                    val period = FiniteDateRange(monday, tuesday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareContractDays10.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = employee.evakaUserId,
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    modifiedBy = employee.evakaUserId,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -1478,35 +1550,46 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    type = PlacementType.PRESCHOOL_DAYCARE,
-                    startDate = monday,
-                    endDate = tuesday
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday
+                    )
                 )
                 .let { placementId ->
-                    tx.insertTestServiceNeed(
-                        confirmedBy = employee.evakaUserId,
-                        placementId = placementId,
-                        period = FiniteDateRange(monday, tuesday),
-                        optionId = snPreschoolDaycareContractDays13.id
+                    val period = FiniteDateRange(monday, tuesday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snPreschoolDaycareContractDays13.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.NONBILLABLE,
-                absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = adult.evakaUserId,
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    modifiedBy = adult.evakaUserId,
+                    absenceCategory = AbsenceCategory.NONBILLABLE
+                )
             )
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = adult.evakaUserId,
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    modifiedBy = adult.evakaUserId,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -1551,27 +1634,33 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = monday,
-                endDate = tuesday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
             )
 
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.NONBILLABLE,
-                absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = adult.evakaUserId,
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    modifiedBy = adult.evakaUserId,
+                    absenceCategory = AbsenceCategory.NONBILLABLE
+                )
             )
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = adult.evakaUserId,
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    modifiedBy = adult.evakaUserId,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -1616,35 +1705,46 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    type = PlacementType.PRESCHOOL_DAYCARE,
-                    startDate = monday,
-                    endDate = tuesday
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = monday,
+                        endDate = tuesday
+                    )
                 )
                 .let { placementId ->
-                    tx.insertTestServiceNeed(
-                        confirmedBy = employee.evakaUserId,
-                        placementId = placementId,
-                        period = FiniteDateRange(monday, tuesday),
-                        optionId = snPreschoolDaycareContractDays13.id,
+                    val period = FiniteDateRange(monday, tuesday)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snPreschoolDaycareContractDays13.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.NONBILLABLE,
-                absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = adult.evakaUserId
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    modifiedBy = adult.evakaUserId,
+                    absenceCategory = AbsenceCategory.NONBILLABLE
+                )
             )
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.PLANNED_ABSENCE,
-                modifiedBy = adult.evakaUserId
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.PLANNED_ABSENCE,
+                    modifiedBy = adult.evakaUserId,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -1729,20 +1829,24 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = monday,
-                endDate = monday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday
+                )
             )
 
-            tx.insertTestAbsence(
-                childId = child.id,
-                date = monday,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.OTHER_ABSENCE,
-                modifiedBy = adult.evakaUserId,
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = monday,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = adult.evakaUserId,
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -1780,12 +1884,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = monday,
-                endDate = monday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday
+                )
             )
 
             tx.insert(
@@ -1832,12 +1938,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
 
-            tx.insertTestPlacement(
-                childId = child.id,
-                unitId = daycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = monday,
-                endDate = monday
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday
+                )
             )
 
             tx.insert(

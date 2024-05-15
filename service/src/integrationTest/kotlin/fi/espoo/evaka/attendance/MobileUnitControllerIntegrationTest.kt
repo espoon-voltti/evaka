@@ -18,12 +18,11 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
@@ -71,43 +70,53 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child
                 ->
                 val daycarePlacementId = PlacementId(UUID.randomUUID())
-                tx.insertTestPlacement(
-                    id = daycarePlacementId,
-                    childId = child.id,
-                    unitId = testDaycare.id,
-                    startDate = placementStart,
-                    endDate = placementEnd,
-                    type = PlacementType.PRESCHOOL_DAYCARE
+                tx.insert(
+                    DevPlacement(
+                        id = daycarePlacementId,
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        childId = child.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
-                tx.insertTestDaycareGroupPlacement(
-                    daycarePlacementId = daycarePlacementId,
-                    groupId = groupId,
-                    startDate = placementStart,
-                    endDate = placementEnd
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = daycarePlacementId,
+                        daycareGroupId = groupId,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
             }
 
             // Add child with multiple group placements
             val daycarePlacementId = PlacementId(UUID.randomUUID())
-            tx.insertTestPlacement(
-                id = daycarePlacementId,
-                childId = testChild_6.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = daycarePlacementId,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_6.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId2,
-                startDate = placementStart,
-                endDate = today.minusDays(1)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId,
+                    daycareGroupId = groupId2,
+                    startDate = placementStart,
+                    endDate = today.minusDays(1)
+                )
             )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId,
-                startDate = today,
-                endDate = placementEnd
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId,
+                    daycareGroupId = groupId,
+                    startDate = today,
+                    endDate = placementEnd
+                )
             )
 
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)

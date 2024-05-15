@@ -17,8 +17,8 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -152,11 +152,13 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         unitId: DaycareId = testDaycare.id
     ) =
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = unitId,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
         }
 

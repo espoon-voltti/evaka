@@ -8,9 +8,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.testAdult_1
@@ -36,11 +36,13 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `it works`() {
         val keepId =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = LocalDate.of(2019, 1, 1),
+                        endDate = LocalDate.of(2019, 12, 31)
+                    )
                 )
 
                 // Before placement starts

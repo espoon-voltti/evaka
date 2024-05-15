@@ -18,8 +18,9 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -125,12 +126,14 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
         daycareId: DaycareId
     ): PlacementId {
         return db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = period.start,
-                endDate = period.end!!,
-                type = type
+            tx.insert(
+                DevPlacement(
+                    type = type,
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = period.start,
+                    endDate = period.end!!
+                )
             )
         }
     }
@@ -142,11 +145,13 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
     ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
-                tx.insertTestParentship(
-                    headOfFamilyId,
-                    childId,
-                    startDate = period.start,
-                    endDate = period.end!!
+                tx.insert(
+                    DevParentship(
+                        childId = childId,
+                        headOfChildId = headOfFamilyId,
+                        startDate = period.start,
+                        endDate = period.end!!
+                    )
                 )
             }
         }

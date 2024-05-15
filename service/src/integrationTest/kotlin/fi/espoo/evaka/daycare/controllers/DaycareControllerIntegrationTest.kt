@@ -25,13 +25,12 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestCaretakers
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -122,7 +121,12 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(placement)
             it.insert(group)
             it.createDaycareGroupMessageAccount(group.id)
-            it.insertTestDaycareGroupPlacement(placement.id, group.id)
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placement.id,
+                    daycareGroupId = group.id
+                )
+            )
         }
 
         assertThrows<Conflict> { deleteDaycareGroup(testDaycare.id, group.id) }
@@ -136,7 +140,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction {
             it.insert(group)
             it.createDaycareGroupMessageAccount(group.id)
-            it.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id)
+            it.insert(DevPlacement(childId = testChild_1.id, unitId = testDaycare.id))
             it.insert(
                 DevBackupCare(
                     childId = testChild_1.id,
@@ -175,50 +179,60 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val placementId3 = PlacementId(UUID.randomUUID())
         db.transaction {
             it.insert(group1)
-            it.insertTestCaretakers(group1.id, amount = 3.0)
+            it.insert(DevDaycareCaretaker(groupId = group1.id, amount = 3.0.toBigDecimal()))
 
             it.insert(group2)
-            it.insertTestCaretakers(group2.id, amount = 1.0)
+            it.insert(DevDaycareCaretaker(groupId = group2.id, amount = 1.0.toBigDecimal()))
 
             // Missing group
-            it.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    id = placementId1,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusYears(1)
+                )
             )
 
             // Ok
-            it.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusYears(1)
+            it.insert(
+                DevPlacement(
+                    id = placementId2,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusYears(1)
+                )
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId2,
-                groupId = group1.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusYears(1),
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId2,
+                    daycareGroupId = group1.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusYears(1)
+                )
             )
 
             // Terminated
-            it.insertTestPlacement(
-                id = placementId3,
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(14),
-                terminationRequestedDate = today.minusDays(5),
-                terminatedBy = EvakaUserId(testAdult_1.id.raw)
+            it.insert(
+                DevPlacement(
+                    id = placementId3,
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(14),
+                    terminationRequestedDate = today.minusDays(5),
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                )
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId3,
-                groupId = group1.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(14),
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId3,
+                    daycareGroupId = group1.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(14)
+                )
             )
         }
 
@@ -262,68 +276,82 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(group)
 
             // Terminated over 2 weeks ago -> not listed
-            it.insertTestPlacement(
-                id = placementId1,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(7),
-                terminationRequestedDate = today.minusDays(15),
-                terminatedBy = EvakaUserId(testAdult_1.id.raw)
+            it.insert(
+                DevPlacement(
+                    id = placementId1,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(7),
+                    terminationRequestedDate = today.minusDays(15),
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                )
             )
 
             // No group
-            it.insertTestPlacement(
-                id = placementId2,
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(7),
-                terminationRequestedDate = today.minusDays(14),
-                terminatedBy = EvakaUserId(testAdult_1.id.raw)
+            it.insert(
+                DevPlacement(
+                    id = placementId2,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(7),
+                    terminationRequestedDate = today.minusDays(14),
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                )
             )
 
             // Has group
-            it.insertTestPlacement(
-                id = placementId3,
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(14),
-                terminationRequestedDate = today.minusDays(5),
-                terminatedBy = EvakaUserId(testAdult_1.id.raw)
+            it.insert(
+                DevPlacement(
+                    id = placementId3,
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(14),
+                    terminationRequestedDate = today.minusDays(5),
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                )
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId3,
-                groupId = group.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(14),
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId3,
+                    daycareGroupId = group.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(14)
+                )
             )
 
             // Connected daycare placement is terminated, preschool continues
-            it.insertTestPlacement(
-                id = placementId4,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                childId = testChild_4.id,
-                unitId = testDaycare.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(15),
-                terminationRequestedDate = today.minusDays(2),
-                terminatedBy = EvakaUserId(testAdult_1.id.raw)
+            it.insert(
+                DevPlacement(
+                    id = placementId4,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_4.id,
+                    unitId = testDaycare.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(15),
+                    terminationRequestedDate = today.minusDays(2),
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                )
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId4,
-                groupId = group.id,
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(15),
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId4,
+                    daycareGroupId = group.id,
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(15)
+                )
             )
-            it.insertTestPlacement(
-                id = placementId5,
-                type = PlacementType.PRESCHOOL,
-                childId = testChild_4.id,
-                unitId = testDaycare.id,
-                startDate = today.plusDays(16),
-                endDate = today.plusYears(1),
+            it.insert(
+                DevPlacement(
+                    id = placementId5,
+                    type = PlacementType.PRESCHOOL,
+                    childId = testChild_4.id,
+                    unitId = testDaycare.id,
+                    startDate = today.plusDays(16),
+                    endDate = today.plusYears(1)
+                )
             )
         }
 

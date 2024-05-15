@@ -25,13 +25,13 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -91,7 +91,14 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testChild_1, DevPersonType.RAW_ROW)
-            tx.insertTestParentship(childId = testChild_1.id, headOfChild = testAdult_1.id)
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
         }
 
         assertCleanedUpPeople(testDate, setOf(testAdult_1.id, testChild_1.id))
@@ -174,8 +181,15 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
-            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
+            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -187,9 +201,23 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(testChild_2, DevPersonType.CHILD)
-            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
-            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_2.id)
-            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
+            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -203,9 +231,23 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(testChild_2, DevPersonType.CHILD)
             tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
-            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
-            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_2.id)
-            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
+            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -219,9 +261,23 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(testChild_2, DevPersonType.CHILD)
             tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
-            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
-            tx.insertTestParentship(headOfChild = testAdult_2.id, childId = testChild_2.id)
-            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
+            tx.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
+            tx.insert(
+                DevParentship(
+                    childId = testChild_2.id,
+                    headOfChildId = testAdult_2.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31)
+                )
+            )
+            tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
         }
 
         assertCleanedUpPeople(testDate, setOf())

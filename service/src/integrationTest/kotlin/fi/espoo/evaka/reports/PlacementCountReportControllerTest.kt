@@ -15,9 +15,9 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -46,22 +46,26 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
             val unitId = tx.insert(DevDaycare(areaId = areaId, openingDate = mockToday.today()))
             val preschoolChildId = tx.insert(DevPerson(), DevPersonType.CHILD)
             val preschoolPlacementId =
-                tx.insertTestPlacement(
-                    childId = preschoolChildId,
-                    unitId = unitId,
-                    startDate = mockToday.today().minusMonths(1),
-                    endDate = mockToday.today().plusMonths(1),
-                    type = PlacementType.PRESCHOOL
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = preschoolChildId,
+                        unitId = unitId,
+                        startDate = mockToday.today().minusMonths(1),
+                        endDate = mockToday.today().plusMonths(1)
+                    )
                 )
-            tx.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(admin.id.raw),
-                placementId = preschoolPlacementId,
-                period =
-                    FiniteDateRange(
-                        mockToday.today().minusMonths(1),
-                        mockToday.today().plusMonths(1)
-                    ),
-                optionId = snDefaultPreschool.id
+            val period =
+                FiniteDateRange(mockToday.today().minusMonths(1), mockToday.today().plusMonths(1))
+            tx.insert(
+                DevServiceNeed(
+                    placementId = preschoolPlacementId,
+                    startDate = period.start,
+                    endDate = period.end,
+                    optionId = snDefaultPreschool.id,
+                    confirmedBy = EvakaUserId(admin.id.raw),
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
 
             val daycareU3yChildId =
@@ -70,22 +74,26 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                     DevPersonType.CHILD
                 )
             val daycarePlacementId =
-                tx.insertTestPlacement(
-                    childId = daycareU3yChildId,
-                    unitId = unitId,
-                    startDate = mockToday.today().minusMonths(1),
-                    endDate = mockToday.today().plusMonths(1),
-                    type = PlacementType.DAYCARE
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = daycareU3yChildId,
+                        unitId = unitId,
+                        startDate = mockToday.today().minusMonths(1),
+                        endDate = mockToday.today().plusMonths(1)
+                    )
                 )
-            tx.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(admin.id.raw),
-                placementId = daycarePlacementId,
-                period =
-                    FiniteDateRange(
-                        mockToday.today().minusMonths(1),
-                        mockToday.today().plusMonths(1)
-                    ),
-                optionId = snDefaultDaycare.id
+            val period1 =
+                FiniteDateRange(mockToday.today().minusMonths(1), mockToday.today().plusMonths(1))
+            tx.insert(
+                DevServiceNeed(
+                    placementId = daycarePlacementId,
+                    startDate = period1.start,
+                    endDate = period1.end,
+                    optionId = snDefaultDaycare.id,
+                    confirmedBy = EvakaUserId(admin.id.raw),
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
         }
         val reportAll =

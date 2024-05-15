@@ -13,11 +13,11 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -271,13 +271,15 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
                 )
             )
-            tx.insertTestAbsence(
-                id = existingAbsenceId,
-                childId = testChild_1.id,
-                date = mondays[3],
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.SICKLEAVE,
-                modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
+            tx.insert(
+                DevAbsence(
+                    id = existingAbsenceId,
+                    childId = testChild_1.id,
+                    date = mondays[3],
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 
@@ -322,14 +324,16 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                 )
             )
 
-            tx.insertTestAbsence(
-                id = existingAbsenceId,
-                childId = testChild_1.id,
-                date = wednesdays[0],
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.SICKLEAVE,
-                modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
-                modifiedAt = now.minusDays(1)
+            tx.insert(
+                DevAbsence(
+                    id = existingAbsenceId,
+                    childId = testChild_1.id,
+                    date = wednesdays[0],
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedAt = now.minusDays(1),
+                    modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
         }
 

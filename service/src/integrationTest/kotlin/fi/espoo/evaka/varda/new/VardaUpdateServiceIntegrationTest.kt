@@ -12,10 +12,10 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -48,17 +48,21 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(child1, DevPersonType.CHILD)
             tx.insert(child2, DevPersonType.CHILD)
 
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = unit.id,
-                startDate = LocalDate.of(2021, 1, 1),
-                endDate = LocalDate.of(2021, 2, 28)
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28)
+                )
             )
-            tx.insertTestPlacement(
-                childId = child2.id,
-                unitId = unit.id,
-                startDate = LocalDate.of(2021, 1, 1),
-                endDate = LocalDate.of(2021, 2, 28)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28)
+                )
             )
         }
 
@@ -82,19 +86,26 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = unit.id,
-                    startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2021, 1, 1),
+                        endDate = LocalDate.of(2021, 2, 28)
+                    )
                 )
                 .let { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period =
-                            FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 2, 28)),
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId
+                    val period =
+                        FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 2, 28))
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
@@ -131,17 +142,21 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(child1, DevPersonType.CHILD)
             tx.insert(child2, DevPersonType.CHILD)
 
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = unit.id,
-                startDate = LocalDate.of(2021, 1, 1),
-                endDate = LocalDate.of(2021, 2, 28)
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28)
+                )
             )
-            tx.insertTestPlacement(
-                childId = child2.id,
-                unitId = unit.id,
-                startDate = LocalDate.of(2021, 1, 1),
-                endDate = LocalDate.of(2021, 2, 28)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28)
+                )
             )
 
             tx.execute {
@@ -170,17 +185,21 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(child1, DevPersonType.CHILD)
             tx.insert(child2, DevPersonType.CHILD)
 
-            tx.insertTestPlacement(
-                childId = child1.id,
-                unitId = unit.id,
-                startDate = LocalDate.of(2021, 1, 1),
-                endDate = LocalDate.of(2021, 2, 28)
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28)
+                )
             )
-            tx.insertTestPlacement(
-                childId = child2.id,
-                unitId = unit.id,
-                startDate = LocalDate.of(2021, 1, 1),
-                endDate = LocalDate.of(2021, 2, 28)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28)
+                )
             )
 
             tx.executeBatch(children.entries) {

@@ -8,17 +8,18 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceCategory.BILLABLE
 import fi.espoo.evaka.absence.AbsenceCategory.NONBILLABLE
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -99,25 +100,36 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun createPlacement(type: PlacementType) {
         db.transaction {
             val placementId =
-                it.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = reportStart,
-                    endDate = reportEnd,
-                    type = type
+                it.insert(
+                    DevPlacement(
+                        type = type,
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = reportStart,
+                        endDate = reportEnd
+                    )
                 )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                startDate = reportStart,
-                endDate = reportEnd
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
+                    startDate = reportStart,
+                    endDate = reportEnd
+                )
             )
         }
     }
 
     private fun addAbsence(date: LocalDate, category: AbsenceCategory) {
         db.transaction {
-            it.insertTestAbsence(childId = testChild_1.id, date = date, category = category)
+            it.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = date,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = category
+                )
+            )
         }
     }
 }

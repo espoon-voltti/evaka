@@ -15,12 +15,13 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
@@ -58,11 +59,13 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             placementId =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = placementStart,
-                    endDate = placementEnd
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
         }
     }
@@ -150,11 +153,15 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             }
         db.transaction { tx ->
-            tx.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                period = serviceNeedPeriod,
-                placementId = placementId,
-                optionId = snDefaultDaycare.id
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = serviceNeedPeriod.start,
+                    endDate = serviceNeedPeriod.end,
+                    optionId = snDefaultDaycare.id,
+                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
         }
         val id = createBackupCareAndAssert(groupId = groupId)

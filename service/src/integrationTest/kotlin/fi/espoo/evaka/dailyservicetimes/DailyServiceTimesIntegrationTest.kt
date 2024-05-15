@@ -23,9 +23,9 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
@@ -84,20 +84,24 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = ""))
-            tx.insertTestPlacement(
-                id = daycarePlacementId,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
+            tx.insert(
+                DevPlacement(
+                    id = daycarePlacementId,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
 
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
     }

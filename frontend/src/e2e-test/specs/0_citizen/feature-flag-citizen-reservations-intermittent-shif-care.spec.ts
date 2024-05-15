@@ -269,7 +269,7 @@ const addTestData = async (date: LocalDate) => {
       optionId: serviceNeedOption.data.id,
       shiftCare: 'INTERMITTENT',
       confirmedBy: unitSupervisor.data.id,
-      confirmedAt: date
+      confirmedAt: date.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     .save()
   await Fixture.groupPlacement()

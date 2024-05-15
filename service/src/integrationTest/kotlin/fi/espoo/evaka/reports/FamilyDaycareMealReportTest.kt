@@ -19,9 +19,9 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -197,12 +197,14 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         DevPerson(firstName = "Mark", lastName = "Multiple"),
                         DevPersonType.CHILD
                     )
-                tx.insertTestPlacement(
-                    childId = childMId,
-                    unitId = testData.daycareBId,
-                    startDate = mockToday.today().minusMonths(1),
-                    endDate = mockToday.today().plusMonths(1),
-                    type = PlacementType.DAYCARE,
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = childMId,
+                        unitId = testData.daycareBId,
+                        startDate = mockToday.today().minusMonths(1),
+                        endDate = mockToday.today().plusMonths(1)
+                    )
                 )
                 tx.insertTestChildAttendance(
                     childMId,
@@ -300,19 +302,23 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         DevPerson(firstName = "Peter", lastName = "Placer"),
                         DevPersonType.CHILD
                     )
-                tx.insertTestPlacement(
-                    childId = childPId,
-                    unitId = testData.daycareBId,
-                    startDate = previousAttendanceDay.minusMonths(1),
-                    endDate = previousAttendanceDay.plusDays(1),
-                    type = PlacementType.DAYCARE,
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = childPId,
+                        unitId = testData.daycareBId,
+                        startDate = previousAttendanceDay.minusMonths(1),
+                        endDate = previousAttendanceDay.plusDays(1)
+                    )
                 )
-                tx.insertTestPlacement(
-                    childId = childPId,
-                    unitId = testData.daycareBId,
-                    startDate = previousAttendanceDay.plusDays(2),
-                    endDate = examinationDay.plusMonths(1),
-                    type = PlacementType.DAYCARE,
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = childPId,
+                        unitId = testData.daycareBId,
+                        startDate = previousAttendanceDay.plusDays(2),
+                        endDate = examinationDay.plusMonths(1)
+                    )
                 )
                 tx.insertTestChildAttendance(
                     childPId,
@@ -415,12 +421,14 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         )
                     )
 
-                tx.insertTestPlacement(
-                    childId = childPId,
-                    unitId = testData.daycareBId,
-                    startDate = previousAttendanceDay.minusMonths(1),
-                    endDate = examinationDay.plusMonths(1),
-                    type = PlacementType.DAYCARE,
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = childPId,
+                        unitId = testData.daycareBId,
+                        startDate = previousAttendanceDay.minusMonths(1),
+                        endDate = examinationDay.plusMonths(1)
+                    )
                 )
 
                 tx.insert(
@@ -582,20 +590,24 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     ),
                     DevPersonType.CHILD
                 )
-            tx.insertTestPlacement(
-                childId = childAId,
-                unitId = daycareAId,
-                startDate = keyDate.minusMonths(1),
-                endDate = keyDate.plusMonths(1),
-                type = PlacementType.DAYCARE
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = childAId,
+                    unitId = daycareAId,
+                    startDate = keyDate.minusMonths(1),
+                    endDate = keyDate.plusMonths(1)
+                )
             )
 
-            tx.insertTestPlacement(
-                childId = childBId,
-                unitId = daycareBId,
-                startDate = keyDate.minusMonths(1),
-                endDate = keyDate.plusMonths(1),
-                type = PlacementType.DAYCARE
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = childBId,
+                    unitId = daycareBId,
+                    startDate = keyDate.minusMonths(1),
+                    endDate = keyDate.plusMonths(1)
+                )
             )
 
             tx.insertTestChildAttendance(

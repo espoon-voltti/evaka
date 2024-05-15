@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -300,11 +299,13 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 val placementStart = mockToday.minusMonths(2)
                 val placementEnd = placementStart.plusMonths(9)
                 val placementId =
-                    tx.insertTestPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
-                        startDate = placementStart,
-                        endDate = placementEnd
+                    tx.insert(
+                        DevPlacement(
+                            childId = testChild_1.id,
+                            unitId = testDaycare.id,
+                            startDate = placementStart,
+                            endDate = placementEnd
+                        )
                     )
                 val groupId1 = tx.insert(testDaycareGroup)
                 tx.checkAndCreateGroupPlacement(
@@ -355,11 +356,13 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             var placementStart = mockToday.minusMonths(1)
             var placementEnd = mockToday.minusDays(1)
             val placementId1 =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = placementStart,
-                    endDate = placementEnd
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
             val groupId1 = tx.insert(testDaycareGroup)
             tx.checkAndCreateGroupPlacement(
@@ -373,11 +376,13 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val placementMiddle = mockToday.plusMonths(1)
             placementEnd = mockToday.plusMonths(2)
             val placementId2 =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = placementStart,
-                    endDate = placementEnd
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
             val groupId2 = tx.insert(testDaycareGroup2)
             tx.checkAndCreateGroupPlacement(

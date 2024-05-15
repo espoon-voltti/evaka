@@ -16,12 +16,12 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestCaretakers
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
@@ -67,7 +67,14 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `No previous placements`() {
         db.transaction { tx ->
             val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
-            tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
+            tx.insert(
+                DevDaycareCaretaker(
+                    groupId = groupId,
+                    amount = 1.0.toBigDecimal(),
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
         }
         val applicationId = createApplication(testChild_1.id)
 
@@ -122,22 +129,33 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `Has previous placements`() {
         db.transaction { tx ->
             val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
-            tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
+            tx.insert(
+                DevDaycareCaretaker(
+                    groupId = groupId,
+                    amount = 1.0.toBigDecimal(),
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
 
             // Under 3 years (coefficient 1.75)
-            tx.insertTestPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
-            tx.insertTestPlacement(
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = startDate.plusMonths(4),
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate.plusMonths(4),
+                    endDate = endDate
+                )
             )
         }
 
@@ -195,22 +213,33 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `Preschool speculation`() {
         db.transaction { tx ->
             val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
-            tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
+            tx.insert(
+                DevDaycareCaretaker(
+                    groupId = groupId,
+                    amount = 1.0.toBigDecimal(),
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
 
             // Under 3 years (coefficient 1.75)
-            tx.insertTestPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.of(2021, 7, 1),
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2021, 7, 1),
+                    endDate = endDate
+                )
             )
         }
 
@@ -273,22 +302,33 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `Preschool and connected daycare speculation`() {
         db.transaction { tx ->
             val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
-            tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
+            tx.insert(
+                DevDaycareCaretaker(
+                    groupId = groupId,
+                    amount = 1.0.toBigDecimal(),
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
 
             // Under 3 years (coefficient 1.75)
-            tx.insertTestPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.of(2021, 7, 1),
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2021, 7, 1),
+                    endDate = endDate
+                )
             )
         }
 
@@ -354,30 +394,43 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `Preschool and connected daycare speculation, child already has a placement`() {
         db.transaction { tx ->
             val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
-            tx.insertTestCaretakers(groupId, amount = 1.0, startDate = startDate, endDate = endDate)
+            tx.insert(
+                DevDaycareCaretaker(
+                    groupId = groupId,
+                    amount = 1.0.toBigDecimal(),
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
 
             // Under 3 years (coefficient 1.75)
-            tx.insertTestPlacement(
-                childId = testChild_3.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.of(2021, 7, 1),
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2021, 7, 1),
+                    endDate = endDate
+                )
             )
 
             // Over 3 years (coefficient 1), will be speculated for preschool
-            tx.insertTestPlacement(
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = startDate,
-                endDate = endDate
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
             )
         }
 

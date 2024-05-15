@@ -19,13 +19,13 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevOtherAssistanceMeasure
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
@@ -1032,11 +1032,13 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             for (period in periods) {
                 for (date in period.dates()) {
-                    tx.insertTestAbsence(
-                        childId = childId,
-                        category = AbsenceCategory.NONBILLABLE,
-                        date = date,
-                        absenceType = absenceType
+                    tx.insert(
+                        DevAbsence(
+                            childId = childId,
+                            date = date,
+                            absenceType = absenceType,
+                            absenceCategory = AbsenceCategory.NONBILLABLE
+                        )
                     )
                 }
             }

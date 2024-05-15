@@ -71,6 +71,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
@@ -79,7 +80,6 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -208,11 +208,16 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getServiceNeeds() {
         val id =
             db.transaction {
-                it.insertTestServiceNeed(
-                    confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    placementId = it.insertTestPlacement(),
-                    period = FiniteDateRange.ofMonth(2019, Month.JANUARY),
-                    optionId = it.insertTestServiceNeedOption(),
+                val period = FiniteDateRange.ofMonth(2019, Month.JANUARY)
+                it.insert(
+                    DevServiceNeed(
+                        placementId = it.insertTestPlacement(),
+                        startDate = period.start,
+                        endDate = period.end,
+                        optionId = it.insertTestServiceNeedOption(),
+                        confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                        confirmedAt = HelsinkiDateTime.now()
+                    )
                 )
             }
         assertSingleRowContainingId(EspooBi.getServiceNeeds, id)

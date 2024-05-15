@@ -15,9 +15,10 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -52,23 +53,32 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
             it.insertGeneralTestFixtures()
 
             val placementId =
-                it.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testVoucherDaycare.id,
-                    startDate = today,
-                    endDate = today.plusDays(30),
+                it.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testVoucherDaycare.id,
+                        startDate = today,
+                        endDate = today.plusDays(30)
+                    )
                 )
-            it.insertTestServiceNeed(
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                placementId = placementId,
-                period = FiniteDateRange(today, today.plusDays(30)),
-                optionId = snDefaultDaycare.id
+            val period = FiniteDateRange(today, today.plusDays(30))
+            it.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = period.start,
+                    endDate = period.end,
+                    optionId = snDefaultDaycare.id,
+                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
-            it.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_1.id,
-                startDate = testChild_1.dateOfBirth,
-                endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    childId = testChild_1.id,
+                    headOfChildId = testAdult_1.id,
+                    startDate = testChild_1.dateOfBirth,
+                    endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
+                )
             )
         }
     }

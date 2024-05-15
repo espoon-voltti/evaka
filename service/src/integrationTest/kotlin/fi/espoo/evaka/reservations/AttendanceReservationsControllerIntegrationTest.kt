@@ -28,18 +28,18 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.dev.DevAbsence
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevMobileDevice
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAbsence
-import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestHoliday
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -112,11 +112,13 @@ class AttendanceReservationsControllerIntegrationTest :
     fun `generates the correct result in all cases`() {
         db.transaction {
             val child1PlacementId =
-                it.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = mon,
-                    endDate = fri
+                it.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = mon,
+                        endDate = fri
+                    )
                 )
             it.insertServiceNeed(
                 placementId = child1PlacementId,
@@ -138,17 +140,21 @@ class AttendanceReservationsControllerIntegrationTest :
                 confirmedBy = null,
                 confirmedAt = null
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = child1PlacementId,
-                groupId = testGroup1.id,
-                startDate = mon,
-                endDate = thu
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = child1PlacementId,
+                    daycareGroupId = testGroup1.id,
+                    startDate = mon,
+                    endDate = thu
+                )
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = child1PlacementId,
-                groupId = testGroup2.id,
-                startDate = fri,
-                endDate = fri
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = child1PlacementId,
+                    daycareGroupId = testGroup2.id,
+                    startDate = fri,
+                    endDate = fri
+                )
             )
             it.insert(
                 DevReservation(
@@ -165,12 +171,14 @@ class AttendanceReservationsControllerIntegrationTest :
                 arrived = HelsinkiDateTime.of(mon, LocalTime.of(8, 15)),
                 departed = HelsinkiDateTime.of(mon, LocalTime.of(16, 5))
             )
-            it.insertTestAbsence(
-                childId = testChild_1.id,
-                date = tue,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.OTHER_ABSENCE,
-                modifiedBy = EvakaUserId(employeeId.raw)
+            it.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = tue,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = EvakaUserId(employeeId.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
             // Reservation with no times
             it.insert(
@@ -185,34 +193,41 @@ class AttendanceReservationsControllerIntegrationTest :
 
             // No group placement -> ungrouped
             // Placement doesn't cover the whole period
-            it.insertTestPlacement(
-                childId = testChild_4.id,
-                unitId = testDaycare.id,
-                startDate = wed,
-                endDate = thu
+            it.insert(
+                DevPlacement(
+                    childId = testChild_4.id,
+                    unitId = testDaycare.id,
+                    startDate = wed,
+                    endDate = thu
+                )
             )
 
             // Placement in other unit, backup in this unit's group 2
             val testChild5PlacementId =
-                it.insertTestPlacement(
-                    childId = testChild_5.id,
-                    unitId = testDaycare2.id,
-                    type = PlacementType.CLUB, // <- reservations not needed
+                it.insert(
+                    DevPlacement(
+                        type = PlacementType.CLUB, // <- reservations not needed
+                        childId = testChild_5.id,
+                        unitId = testDaycare2.id,
+                        startDate = mon,
+                        endDate = fri
+                    )
+                )
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = testChild5PlacementId,
+                    daycareGroupId = testGroupInDaycare2.id,
                     startDate = mon,
                     endDate = fri
                 )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = testChild5PlacementId,
-                groupId = testGroupInDaycare2.id,
-                startDate = mon,
-                endDate = fri
             )
-            it.insertTestBackUpCare(
-                childId = testChild_5.id,
-                unitId = testDaycare.id,
-                groupId = testGroup2.id,
-                startDate = fri,
-                endDate = fri
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_5.id,
+                    unitId = testDaycare.id,
+                    groupId = testGroup2.id,
+                    period = FiniteDateRange(fri, fri)
+                )
             )
             it.insertServiceNeed(
                 placementId = testChild5PlacementId,
@@ -235,33 +250,39 @@ class AttendanceReservationsControllerIntegrationTest :
 
             // Placed to this unit's group 1...
             val child6PlacementId =
-                it.insertTestPlacement(
-                    childId = testChild_6.id,
-                    unitId = testDaycare.id,
+                it.insert(
+                    DevPlacement(
+                        childId = testChild_6.id,
+                        unitId = testDaycare.id,
+                        startDate = wed,
+                        endDate = fri
+                    )
+                )
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = child6PlacementId,
+                    daycareGroupId = testGroup1.id,
                     startDate = wed,
                     endDate = fri
                 )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = child6PlacementId,
-                groupId = testGroup1.id,
-                startDate = wed,
-                endDate = fri
             )
             // ... and has a backup in another group in this unit
-            it.insertTestBackUpCare(
-                childId = testChild_6.id,
-                unitId = testDaycare.id,
-                groupId = testGroup2.id,
-                startDate = thu,
-                endDate = thu
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_6.id,
+                    unitId = testDaycare.id,
+                    groupId = testGroup2.id,
+                    period = FiniteDateRange(thu, thu)
+                )
             )
             // ... and has a backup in another unit
-            it.insertTestBackUpCare(
-                childId = testChild_6.id,
-                unitId = testDaycare2.id,
-                groupId = testGroupInDaycare2.id,
-                startDate = fri,
-                endDate = fri
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_6.id,
+                    unitId = testDaycare2.id,
+                    groupId = testGroupInDaycare2.id,
+                    period = FiniteDateRange(fri, fri)
+                )
             )
             // Reservation is shown in the result because the child is in this unit
             it.insert(
@@ -603,11 +624,13 @@ class AttendanceReservationsControllerIntegrationTest :
     @Test
     fun `two reservations or attendances in the same day`() {
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = mon,
-                endDate = fri
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = mon,
+                    endDate = fri
+                )
             )
             listOf(
                     DevReservation(
@@ -789,7 +812,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @Test
     fun `operational day for holiday`() {
-        db.transaction { tx -> tx.insertTestHoliday(mon) }
+        db.transaction { tx -> tx.insert(DevHoliday(mon, "holiday")) }
 
         val result = getAttendanceReservations()
         assertEquals(
@@ -806,11 +829,13 @@ class AttendanceReservationsControllerIntegrationTest :
     fun `get confirmed range reservations returns correct data`() {
         val mobileDeviceId =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = mon,
-                    endDate = fri
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = mon,
+                        endDate = fri
+                    )
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
             }
@@ -862,12 +887,14 @@ class AttendanceReservationsControllerIntegrationTest :
         val testClock = MockEvakaClock(testNow)
 
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                startDate = mon,
-                endDate = fri
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = mon,
+                    endDate = fri
+                )
             )
         }
 
@@ -1034,11 +1061,13 @@ class AttendanceReservationsControllerIntegrationTest :
     fun `get non-reservable reservations throws forbidden when child has placement to other unit`() {
         val mobileDeviceId =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = mon,
-                    endDate = fri
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        startDate = mon,
+                        endDate = fri
+                    )
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
             }
@@ -1056,11 +1085,13 @@ class AttendanceReservationsControllerIntegrationTest :
     fun `set non-reservable reservations updates correct data`() {
         val mobileDeviceId =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = mon,
-                    endDate = fri
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = mon,
+                        endDate = fri
+                    )
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
             }
@@ -1362,14 +1393,16 @@ class AttendanceReservationsControllerIntegrationTest :
                 DateSet.of(FiniteDateRange(mon, tue))
             )
 
-            it.insertTestHoliday(previousFriday)
+            it.insert(DevHoliday(previousFriday, "holiday"))
 
             val child1PlacementId =
-                it.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = previousFriday,
-                    endDate = fri
+                it.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = previousFriday,
+                        endDate = fri
+                    )
                 )
 
             it.insertServiceNeed(
@@ -1392,20 +1425,24 @@ class AttendanceReservationsControllerIntegrationTest :
                 confirmedBy = null,
                 confirmedAt = null
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = child1PlacementId,
-                groupId = testGroup1.id,
-                startDate = previousFriday,
-                endDate = fri
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = child1PlacementId,
+                    daycareGroupId = testGroup1.id,
+                    startDate = previousFriday,
+                    endDate = fri
+                )
             )
 
             val child2PlacementId =
-                it.insertTestPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
-                    startDate = previousFriday,
-                    endDate = fri,
-                    type = PlacementType.PRESCHOOL
+                it.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = previousFriday,
+                        endDate = fri
+                    )
                 )
             it.insertServiceNeed(
                 placementId = child2PlacementId,
@@ -1417,11 +1454,13 @@ class AttendanceReservationsControllerIntegrationTest :
                 confirmedBy = null,
                 confirmedAt = null
             )
-            it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = child2PlacementId,
-                groupId = testGroup2.id,
-                startDate = previousFriday,
-                endDate = fri
+            it.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = child2PlacementId,
+                    daycareGroupId = testGroup2.id,
+                    startDate = previousFriday,
+                    endDate = fri
+                )
             )
 
             it.insert(
@@ -1442,46 +1481,57 @@ class AttendanceReservationsControllerIntegrationTest :
                     createdBy = EvakaUserId(employeeId.raw)
                 )
             )
-            it.insertTestAbsence(
-                childId = testChild_1.id,
-                date = tue,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.OTHER_ABSENCE,
-                modifiedBy = EvakaUserId(employeeId.raw)
+            it.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = tue,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = EvakaUserId(employeeId.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = testChild_1.id,
-                date = tue,
-                category = AbsenceCategory.NONBILLABLE,
-                absenceType = AbsenceType.OTHER_ABSENCE,
-                modifiedBy = EvakaUserId(employeeId.raw)
+            it.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = tue,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = EvakaUserId(employeeId.raw),
+                    absenceCategory = AbsenceCategory.NONBILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = testChild_1.id,
-                date = fri,
-                category = AbsenceCategory.NONBILLABLE,
-                absenceType = AbsenceType.OTHER_ABSENCE,
-                modifiedBy = EvakaUserId(employeeId.raw)
+            it.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = fri,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = EvakaUserId(employeeId.raw),
+                    absenceCategory = AbsenceCategory.NONBILLABLE
+                )
             )
-            it.insertTestAbsence(
-                childId = testChild_2.id,
-                date = tue,
-                category = AbsenceCategory.BILLABLE,
-                absenceType = AbsenceType.OTHER_ABSENCE,
-                modifiedBy = EvakaUserId(employeeId.raw)
+            it.insert(
+                DevAbsence(
+                    childId = testChild_2.id,
+                    date = tue,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedBy = EvakaUserId(employeeId.raw),
+                    absenceCategory = AbsenceCategory.BILLABLE
+                )
             )
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testDaycare2.id,
-                startDate = wed,
-                endDate = wed
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    groupId = null,
+                    period = FiniteDateRange(wed, wed)
+                )
             )
-            it.insertTestBackUpCare(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = thu,
-                endDate = thu,
-                groupId = testGroup2.id
+            it.insert(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    groupId = testGroup2.id,
+                    period = FiniteDateRange(thu, thu)
+                )
             )
             it.insert(
                 DevDailyServiceTimes(

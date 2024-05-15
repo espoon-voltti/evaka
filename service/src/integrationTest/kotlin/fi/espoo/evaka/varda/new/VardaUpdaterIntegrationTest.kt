@@ -27,13 +27,13 @@ import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevFeeDecisionChild
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.DevVoucherValueDecision
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -169,24 +169,34 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = municipalDaycare1.id,
-                    startDate = mUnit1Range1.start,
-                    endDate = mUnit1Range2.end
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = municipalDaycare1.id,
+                        startDate = mUnit1Range1.start,
+                        endDate = mUnit1Range2.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = mUnit1Range1,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = mUnit1Range1.start,
+                            endDate = mUnit1Range1.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = mUnit1Range2,
-                        optionId = snDaycareFullDayPartWeek25.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = mUnit1Range2.start,
+                            endDate = mUnit1Range2.end,
+                            optionId = snDaycareFullDayPartWeek25.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
             tx.insert(feeDecisionUnit1Range1)
@@ -194,34 +204,46 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(feeDecisionUnit1Range2)
             tx.insert(feeDecisionChildUnit1Range2)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = voucherDaycare.id,
-                    startDate = vUnitRange.start,
-                    endDate = vUnitRange.end,
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = voucherDaycare.id,
+                        startDate = vUnitRange.start,
+                        endDate = vUnitRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = vUnitRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = vUnitRange.start,
+                            endDate = vUnitRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
             tx.insert(voucherValueDecision)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = municipalDaycare2.id,
-                    startDate = mUnit2Range.start,
-                    endDate = mUnit2Range.end,
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = municipalDaycare2.id,
+                        startDate = mUnit2Range.start,
+                        endDate = mUnit2Range.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = mUnit2Range,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = mUnit2Range.start,
+                            endDate = mUnit2Range.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
             tx.insert(feeDecisionUnit2)
@@ -332,18 +354,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = unit.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
         }
@@ -412,21 +440,28 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = unit.id,
-                    startDate = start(0),
-                    endDate = end(serviceNeeds.size)
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = start(0),
+                        endDate = end(serviceNeeds.size)
+                    )
                 )
                 .also { placementId ->
                     serviceNeeds.forEachIndexed { i, (sno, shiftCare) ->
-                        tx.insertTestServiceNeed(
-                            placementId = placementId,
-                            period = range(i),
-                            optionId = sno.id,
-                            shiftCare = shiftCare,
-                            confirmedBy = employee.evakaUserId,
-                            partWeek = sno.partWeek!!
+                        val period = range(i)
+                        tx.insert(
+                            DevServiceNeed(
+                                placementId = placementId,
+                                startDate = period.start,
+                                endDate = period.end,
+                                optionId = sno.id,
+                                shiftCare = shiftCare,
+                                partWeek = sno.partWeek!!,
+                                confirmedBy = employee.evakaUserId,
+                                confirmedAt = HelsinkiDateTime.now()
+                            )
                         )
                     }
                 }
@@ -568,18 +603,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
 
             testItems.forEach {
-                tx.insertTestPlacement(
-                        childId = child.id,
-                        unitId = it.unit.id,
-                        startDate = it.range.start,
-                        endDate = it.range.end
+                tx.insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = it.unit.id,
+                            startDate = it.range.start,
+                            endDate = it.range.end
+                        )
                     )
                     .also { placementId ->
-                        tx.insertTestServiceNeed(
-                            placementId = placementId,
-                            period = it.range,
-                            optionId = snDaycareFullDay35.id,
-                            confirmedBy = employee.evakaUserId,
+                        tx.insert(
+                            DevServiceNeed(
+                                placementId = placementId,
+                                startDate = it.range.start,
+                                endDate = it.range.end,
+                                optionId = snDaycareFullDay35.id,
+                                confirmedBy = employee.evakaUserId,
+                                confirmedAt = HelsinkiDateTime.now()
+                            )
                         )
                     }
             }
@@ -663,19 +704,25 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = unit.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end,
-                    type = PlacementType.DAYCARE_FIVE_YEAR_OLDS
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
@@ -771,18 +818,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    startDate = placementRange1.start,
-                    endDate = placementRange1.end
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = placementRange1.start,
+                        endDate = placementRange1.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange1,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange1.start,
+                            endDate = placementRange1.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
             tx.insert(
@@ -803,18 +856,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    startDate = placementRange2.start,
-                    endDate = placementRange2.end
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = placementRange2.start,
+                        endDate = placementRange2.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange2,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange2.start,
+                            endDate = placementRange2.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
             tx.insert(
@@ -941,18 +1000,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             tx.insert(child, DevPersonType.CHILD)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
         }
@@ -1005,18 +1070,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = unit.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end,
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
@@ -1107,18 +1178,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = unit.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end,
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
@@ -1235,18 +1312,23 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unit2.id to lapsi2placement2range
                 )
                 .forEach { (unitId, range) ->
-                    tx.insertTestPlacement(
-                            childId = child.id,
-                            unitId = unitId,
-                            startDate = range.start,
-                            endDate = range.end
+                    tx.insert(
+                            DevPlacement(
+                                childId = child.id,
+                                unitId = unitId,
+                                startDate = range.start,
+                                endDate = range.end
+                            )
                         )
                         .also { placementId ->
-                            tx.insertTestServiceNeed(
-                                placementId = placementId,
-                                period = range,
-                                optionId = snDaycareFullDay35.id,
-                                confirmedBy = employee.evakaUserId,
+                            tx.insert(
+                                DevServiceNeed(
+                                    placementId = placementId,
+                                    startDate = range.start,
+                                    endDate = range.end,
+                                    optionId = snDaycareFullDay35.id,
+                                    confirmedBy = employee.evakaUserId,
+                                )
                             )
                         }
                 }
@@ -1359,18 +1441,24 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insertTestPlacement(
-                    childId = child.id,
-                    unitId = unit1.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end,
+            tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit1.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
@@ -2224,34 +2312,46 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child1, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    childId = child1.id,
-                    unitId = unit.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end
+            tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = unit.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 
             tx.insert(child2, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                    childId = child2.id,
-                    unitId = unit.id,
-                    startDate = placementRange.start,
-                    endDate = placementRange.end
+            tx.insert(
+                    DevPlacement(
+                        childId = child2.id,
+                        unitId = unit.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = placementRange,
-                        optionId = snDaycareFullDay35.id,
-                        confirmedBy = employee.evakaUserId,
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
         }

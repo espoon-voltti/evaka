@@ -29,11 +29,11 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -125,11 +125,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             it.insert(DevPerson(id = childId), DevPersonType.RAW_ROW)
             it.insert(DevPerson(id = adultId), DevPersonType.RAW_ROW)
             it.insert(DevPerson(id = adultIdDuplicate), DevPersonType.RAW_ROW)
-            it.insertTestParentship(
-                headOfChild = adultId,
-                childId = childId,
-                startDate = LocalDate.of(2015, 1, 1),
-                endDate = LocalDate.of(2030, 1, 1)
+            it.insert(
+                DevParentship(
+                    childId = childId,
+                    headOfChildId = adultId,
+                    startDate = LocalDate.of(2015, 1, 1),
+                    endDate = LocalDate.of(2030, 1, 1)
+                )
             )
             it.insert(
                 DevIncome(
@@ -398,11 +400,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             it.insert(DevPerson(id = adultId), DevPersonType.RAW_ROW)
             it.insert(DevPerson(id = childId), DevPersonType.CHILD)
             it.insert(DevPerson(id = childIdDuplicate), DevPersonType.CHILD)
-            it.insertTestParentship(
-                headOfChild = adultId,
-                childId = childId,
-                startDate = LocalDate.of(2015, 1, 1),
-                endDate = LocalDate.of(2030, 1, 1)
+            it.insert(
+                DevParentship(
+                    childId = childId,
+                    headOfChildId = adultId,
+                    startDate = LocalDate.of(2015, 1, 1),
+                    endDate = LocalDate.of(2030, 1, 1)
+                )
             )
         }
         val placementStart = LocalDate.of(2017, 1, 1)

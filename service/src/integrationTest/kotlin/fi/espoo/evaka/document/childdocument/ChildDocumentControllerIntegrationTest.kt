@@ -26,8 +26,8 @@ import fi.espoo.evaka.shared.dev.DevDocumentTemplate
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
@@ -174,11 +174,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 role = UserRole.UNIT_SUPERVISOR
             )
             tx.insert(testChild_1, DevPersonType.CHILD)
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = clock.today(),
-                endDate = clock.today().plusDays(5)
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5)
+                )
             )
             tx.insert(devTemplatePed)
             tx.insert(devTemplatePedagogicalReport)
@@ -664,11 +666,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val childId =
                     tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = clock.today(),
-                    endDate = clock.today().plusDays(5)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5)
+                    )
                 )
                 childId
             }
@@ -691,11 +695,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 val unitId = tx.insert(DevDaycare(areaId = areaId))
                 val childId =
                     tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = clock.today(),
-                    endDate = clock.today().plusDays(5)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5)
+                    )
                 )
                 childId
             }
@@ -724,11 +730,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     )
                 val childId =
                     tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = clock.today(),
-                    endDate = clock.today().plusDays(5)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5)
+                    )
                 )
                 childId
             }

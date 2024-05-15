@@ -19,12 +19,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -303,11 +303,13 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     endDate = placementEnd
                 )
             )
-        tx.insertTestDaycareGroupPlacement(
-            daycarePlacementId = daycarePlacementId,
-            groupId = groupId,
-            startDate = placementStart,
-            endDate = placementEnd
+        tx.insert(
+            DevDaycareGroupPlacement(
+                daycarePlacementId = daycarePlacementId,
+                daycareGroupId = groupId,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
         )
     }
 }

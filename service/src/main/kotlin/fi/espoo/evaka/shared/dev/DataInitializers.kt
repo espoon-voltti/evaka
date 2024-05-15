@@ -369,6 +369,7 @@ RETURNING id
         }
 }
 
+@Deprecated("use insert(DevParentship(..)) instead")
 fun Database.Transaction.insertTestParentship(
     headOfChild: PersonId,
     childId: ChildId,
@@ -376,25 +377,14 @@ fun Database.Transaction.insertTestParentship(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     createdAt: HelsinkiDateTime = HelsinkiDateTime.now()
-): ParentshipId {
-    createUpdate {
-            sql(
-                """
-INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, create_source, created_by_user, created_by_application, created_at, modify_source, modified_by_user, modified_at)
-VALUES (${bind(id)}, ${bind(headOfChild)}, ${bind(childId)}, ${bind(startDate)}, ${bind(endDate)}, NULL, NULL, NULL, ${bind(createdAt)}, NULL, NULL, NULL)
-"""
-            )
-        }
-        .execute()
-    return id
-}
+): ParentshipId = insert(DevParentship(id, childId, headOfChild, startDate, endDate, createdAt))
 
 fun Database.Transaction.insert(row: DevParentship): ParentshipId =
     createUpdate {
             sql(
                 """
-INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at)
-VALUES (${bind(row.id)}, ${bind(row.headOfChildId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date, created_at, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at)
+VALUES (${bind(row.id)}, ${bind(row.headOfChildId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.createdAt)}, NULL, NULL, NULL, NULL, NULL, NULL)
 """
             )
         }
@@ -540,6 +530,7 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
+@Deprecated("use insert(DevPlacement(..)) instead")
 fun Database.Transaction.insertTestPlacement(
     id: PlacementId = PlacementId(UUID.randomUUID()),
     childId: ChildId = ChildId(UUID.randomUUID()),
@@ -563,18 +554,11 @@ VALUES (${bind(id)}, ${bind(childId)}, ${bind(unitId)}, ${bind(type)}::placement
     return id
 }
 
-fun Database.Transaction.insertTestHoliday(date: LocalDate, description: String = "holiday") {
-    createUpdate {
-            sql(
-                """
-INSERT INTO holiday (date, description)
-VALUES (${bind(date)}, ${bind(description)})
-"""
-            )
-        }
-        .execute()
-}
+@Deprecated("use insert(DevHoliday(..)) instead")
+fun Database.Transaction.insertTestHoliday(date: LocalDate, description: String = "holiday") =
+    insert(DevHoliday(date, description))
 
+@Deprecated("use insert(DevServiceNeed(..)) instead")
 fun Database.Transaction.insertTestServiceNeed(
     confirmedBy: EvakaUserId,
     placementId: PlacementId,
@@ -584,18 +568,20 @@ fun Database.Transaction.insertTestServiceNeed(
     partWeek: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     id: ServiceNeedId = ServiceNeedId(UUID.randomUUID())
-): ServiceNeedId {
-    createUpdate {
-            sql(
-                """
-INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, part_week, confirmed_by, confirmed_at)
-VALUES (${bind(id)}, ${bind(placementId)}, ${bind(period.start)}, ${bind(period.end)}, ${bind(optionId)}, ${bind(shiftCare)}, ${bind(partWeek)}, ${bind(confirmedBy)}, ${bind(confirmedAt)})
-"""
-            )
-        }
-        .execute()
-    return id
-}
+): ServiceNeedId =
+    insert(
+        DevServiceNeed(
+            id,
+            placementId,
+            period.start,
+            period.end,
+            optionId,
+            shiftCare,
+            partWeek,
+            confirmedBy,
+            confirmedAt
+        )
+    )
 
 fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
     createUpdate {
@@ -733,24 +719,15 @@ VALUES (${bind(row.id)}, ${bind(row.daycarePlacementId)}, ${bind(row.daycareGrou
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
+@Deprecated("use insert(DevDaycareGroupPlacement(..)) instead")
 fun Database.Transaction.insertTestDaycareGroupPlacement(
     daycarePlacementId: PlacementId = PlacementId(UUID.randomUUID()),
     groupId: GroupId = GroupId(UUID.randomUUID()),
     id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): GroupPlacementId {
-    createUpdate {
-            sql(
-                """
-INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
-VALUES (${bind(id)}, ${bind(daycarePlacementId)}, ${bind(groupId)}, ${bind(startDate)}, ${bind(endDate)})
-"""
-            )
-        }
-        .execute()
-    return id
-}
+): GroupPlacementId =
+    insert(DevDaycareGroupPlacement(id, daycarePlacementId, groupId, startDate, endDate))
 
 fun Database.Transaction.insertTestPlacementPlan(
     applicationId: ApplicationId,
@@ -826,23 +803,14 @@ RETURNING id
             assert(counts.size == row.actions.size)
         }
 
+@Deprecated("use insert(DevDaycareCaretaker(..)) instead")
 fun Database.Transaction.insertTestCaretakers(
     groupId: GroupId,
-    id: UUID = UUID.randomUUID(),
+    id: DaycareCaretakerId = DaycareCaretakerId(UUID.randomUUID()),
     amount: Double = 3.0,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null
-) {
-    createUpdate {
-            sql(
-                """
-INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
-VALUES (${bind(id)}, ${bind(groupId)}, ${bind(amount)}, ${bind(startDate)}, ${bind(endDate)})
-"""
-            )
-        }
-        .execute()
-}
+) = insert(DevDaycareCaretaker(id, groupId, amount.toBigDecimal(), startDate, endDate))
 
 fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
     decision: DevAssistanceNeedPreschoolDecision
@@ -995,6 +963,7 @@ VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.type)}, ${bind(row.
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
+@Deprecated("use insert(DevAbsence(..)) instead")
 fun Database.Transaction.insertTestAbsence(
     id: AbsenceId = AbsenceId(UUID.randomUUID()),
     childId: ChildId,
@@ -1002,18 +971,8 @@ fun Database.Transaction.insertTestAbsence(
     category: AbsenceCategory,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
     modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
-    modifiedAt: HelsinkiDateTime? = null
-) {
-    createUpdate {
-            sql(
-                """
-INSERT INTO absence (id, child_id, date, category, absence_type, modified_by, modified_at)
-VALUES (${bind(id)}, ${bind(childId)}, ${bind(date)}, ${bind(category)}, ${bind(absenceType)}, ${bind(modifiedBy)}, coalesce(${bind(modifiedAt)}, now()))
-"""
-            )
-        }
-        .execute()
-}
+    modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now()
+) = insert(DevAbsence(id, childId, date, absenceType, modifiedAt, modifiedBy, category))
 
 fun Database.Transaction.insert(row: DevStaffAttendance): StaffAttendanceRealtimeId =
     createUpdate {
@@ -1062,6 +1021,7 @@ VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${b
     }
 }
 
+@Deprecated("use insert(DevBackupCare(..)) instead")
 fun Database.Transaction.insertTestBackUpCare(
     childId: ChildId,
     unitId: DaycareId,
@@ -1069,17 +1029,7 @@ fun Database.Transaction.insertTestBackUpCare(
     endDate: LocalDate,
     groupId: GroupId? = null,
     id: BackupCareId = BackupCareId(UUID.randomUUID())
-) {
-    createUpdate {
-            sql(
-                """
-INSERT INTO backup_care (id, child_id, unit_id, start_date, end_date, group_id)
-VALUES (${bind(id)}, ${bind(childId)}, ${bind(unitId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(groupId)})
-"""
-            )
-        }
-        .execute()
-}
+) = insert(DevBackupCare(id, childId, unitId, groupId, FiniteDateRange(startDate, endDate)))
 
 fun Database.Transaction.insert(row: DevBackupCare): BackupCareId =
     createUpdate {

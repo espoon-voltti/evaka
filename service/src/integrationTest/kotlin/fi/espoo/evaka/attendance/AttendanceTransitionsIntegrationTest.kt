@@ -13,13 +13,13 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -412,19 +412,23 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private fun givenChildPlacement(placementType: PlacementType) {
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                id = daycarePlacementId,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = placementType
+            tx.insert(
+                DevPlacement(
+                    id = daycarePlacementId,
+                    type = placementType,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
         }
     }
@@ -472,11 +476,13 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private fun givenChildAbsent(absenceType: AbsenceType, vararg categories: AbsenceCategory) {
         categories.forEach { category ->
             db.transaction {
-                it.insertTestAbsence(
-                    childId = testChild_1.id,
-                    absenceType = absenceType,
-                    category = category,
-                    date = LocalDate.now()
+                it.insert(
+                    DevAbsence(
+                        childId = testChild_1.id,
+                        date = LocalDate.now(),
+                        absenceType = absenceType,
+                        absenceCategory = category
+                    )
                 )
             }
         }

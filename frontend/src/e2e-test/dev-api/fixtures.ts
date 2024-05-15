@@ -1783,7 +1783,7 @@ export class Fixture {
       shiftCare: 'NONE',
       partWeek: false,
       confirmedBy: 'not set',
-      confirmedAt: LocalDate.todayInSystemTz()
+      confirmedAt: HelsinkiDateTime.now()
     })
   }
 
@@ -2457,6 +2457,7 @@ export class Fixture {
   static parentship(): ParentshipBuilder {
     return new ParentshipBuilder({
       id: uuidv4(),
+      createdAt: HelsinkiDateTime.now(),
       childId: 'not_set',
       headOfChildId: 'not_set',
       startDate: LocalDate.todayInSystemTz(),

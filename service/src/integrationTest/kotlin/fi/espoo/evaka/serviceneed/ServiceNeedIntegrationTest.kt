@@ -13,11 +13,13 @@ import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
@@ -52,11 +54,13 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             placementId =
-                tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = testDate(1),
-                    endDate = testDate(30)
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = testDate(1),
+                        endDate = testDate(30)
+                    )
                 )
         }
     }
@@ -477,11 +481,16 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         optionId: ServiceNeedOptionId = snDefaultDaycare.id
     ): ServiceNeedId {
         return db.transaction { tx ->
-            tx.insertTestServiceNeed(
-                confirmedBy = unitSupervisor.evakaUserId,
-                placementId = placementId,
-                period = FiniteDateRange(testDate(start), testDate(end)),
-                optionId = optionId
+            val period = FiniteDateRange(testDate(start), testDate(end))
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = period.start,
+                    endDate = period.end,
+                    optionId = optionId,
+                    confirmedBy = unitSupervisor.evakaUserId,
+                    confirmedAt = HelsinkiDateTime.now()
+                )
             )
         }
     }

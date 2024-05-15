@@ -10,15 +10,15 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -61,39 +61,55 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
 
             tx.insert(daycareGroup)
 
-            tx.insertTestPlacement(
-                    childId = child1.id,
-                    unitId = daycare.id,
-                    startDate = start,
-                    endDate = end
-                )
-                .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = FiniteDateRange(start, end),
-                        optionId = snDaycareHours120.id,
-                        confirmedBy = admin.evakaUserId,
-                    )
-                    tx.insertTestDaycareGroupPlacement(
-                        placementId,
-                        daycareGroup.id,
+            tx.insert(
+                    DevPlacement(
+                        childId = child1.id,
+                        unitId = daycare.id,
                         startDate = start,
                         endDate = end
                     )
-                }
-
-            tx.insertTestPlacement(
-                    childId = child2.id,
-                    unitId = daycare.id,
-                    startDate = start,
-                    endDate = end
                 )
                 .also { placementId ->
-                    tx.insertTestServiceNeed(
-                        placementId = placementId,
-                        period = FiniteDateRange(start, end),
-                        optionId = snDaycareHours120.id,
-                        confirmedBy = admin.evakaUserId,
+                    val period = FiniteDateRange(start, end)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareHours120.id,
+                            confirmedBy = admin.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
+                    )
+                    tx.insert(
+                        DevDaycareGroupPlacement(
+                            daycarePlacementId = placementId,
+                            daycareGroupId = daycareGroup.id,
+                            startDate = start,
+                            endDate = end
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevPlacement(
+                        childId = child2.id,
+                        unitId = daycare.id,
+                        startDate = start,
+                        endDate = end
+                    )
+                )
+                .also { placementId ->
+                    val period = FiniteDateRange(start, end)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareHours120.id,
+                            confirmedBy = admin.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
                     )
                 }
 

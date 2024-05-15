@@ -34,17 +34,16 @@ import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -138,18 +137,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = placementEnd
                 )
             )
-        tx.insertTestDaycareGroupPlacement(
-            placementId,
-            groupId,
-            startDate = placementStart,
-            endDate = placementEnd
+        tx.insert(
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                daycareGroupId = groupId,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
         )
-        tx.insertTestServiceNeed(
-            confirmedBy = employee1.evakaUserId,
-            placementId = placementId,
-            period = FiniteDateRange(placementStart, placementEnd),
-            optionId = optionId,
-            shiftCare = shiftCare
+        tx.insert(
+            DevServiceNeed(
+                confirmedBy = employee1.evakaUserId,
+                placementId = placementId,
+                startDate = placementStart,
+                endDate = placementEnd,
+                optionId = optionId,
+                shiftCare = shiftCare
+            )
         )
     }
 
@@ -208,9 +212,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 insertChild(tx, it, groupId1, optionId = snDefaultPartDayDaycare.id)
                 tx.insertGuardian(person1.id, it.id)
                 tx.insertGuardian(person2.id, it.id)
-                tx.insertTestParentship(
-                    fridgeHeadId,
-                    it.id
+                tx.insert(
+                    DevParentship(
+                        childId = it.id,
+                        headOfChildId = fridgeHeadId,
+                        startDate = LocalDate.of(2019, 1, 1),
+                        endDate = LocalDate.of(2019, 12, 31)
+                    )
                 ) // parentship alone does not allow messaging if not a guardian
             }
 
@@ -234,7 +242,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             testChild_5.let {
                 insertChild(tx, it, groupId1)
-                tx.insertTestParentship(fridgeHeadId, it.id) // no guardian, no messages
+                tx.insert(
+                    DevParentship(
+                        childId = it.id,
+                        headOfChildId = fridgeHeadId,
+                        startDate = LocalDate.of(2019, 1, 1),
+                        endDate = LocalDate.of(2019, 12, 31)
+                    )
+                ) // no guardian, no messages
             }
 
             // person 3 and 5 are guardian of child 6

@@ -22,10 +22,10 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestBackUpCare
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -79,11 +79,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = placementStart,
-                endDate = placementEnd
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
             tx.insert(testDaycareGroup)
             testPlacement = tx.getDaycarePlacements(daycareId, null, null, null).first()
@@ -1039,21 +1041,25 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `unit supervisor sees placements to her unit only`() {
         val allowedId =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = daycareId,
-                    startDate = LocalDate.now(),
-                    endDate = LocalDate.now().plusDays(1)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        startDate = LocalDate.now(),
+                        endDate = LocalDate.now().plusDays(1)
+                    )
                 )
             }
 
         val restrictedId =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = testDaycare2.id,
-                    startDate = LocalDate.now().minusDays(2),
-                    endDate = LocalDate.now().minusDays(1)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = testDaycare2.id,
+                        startDate = LocalDate.now().minusDays(2),
+                        endDate = LocalDate.now().minusDays(1)
+                    )
                 )
             }
 
@@ -1080,11 +1086,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val allowedId = testPlacement.id
         val restrictedId =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                    childId = childId,
-                    unitId = testDaycare2.id,
-                    startDate = placementEnd.plusDays(1),
-                    endDate = placementEnd.plusMonths(2)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = testDaycare2.id,
+                        startDate = placementEnd.plusDays(1),
+                        endDate = placementEnd.plusMonths(2)
+                    )
                 )
             }
         val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
@@ -1119,11 +1127,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val newEnd = placementEnd.plusDays(1)
         val allowedId = testPlacement.id
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = testDaycare2.id,
-                startDate = newEnd,
-                endDate = newEnd.plusMonths(2)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = testDaycare2.id,
+                    startDate = newEnd,
+                    endDate = newEnd.plusMonths(2)
+                )
             )
         }
         val body =
@@ -1147,11 +1157,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val newEnd = placementEnd.plusDays(1)
         val secondPlacement =
             db.transaction { tx ->
-                tx.insertTestPlacement(
-                        childId = childId,
-                        unitId = testDaycare2.id,
-                        startDate = newEnd,
-                        endDate = newEnd.plusMonths(2)
+                tx.insert(
+                        DevPlacement(
+                            childId = childId,
+                            unitId = testDaycare2.id,
+                            startDate = newEnd,
+                            endDate = newEnd.plusMonths(2)
+                        )
                     )
                     .also {
                         tx.updateDaycareAclWithEmployee(
@@ -1219,11 +1231,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `moving placement end date moves backup care end date`() {
         db.transaction { tx ->
-            tx.insertTestBackUpCare(
-                childId,
-                testDaycare2.id,
-                placementEnd.minusDays(5),
-                placementEnd.minusDays(1)
+            tx.insert(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = testDaycare2.id,
+                    period = FiniteDateRange(placementEnd.minusDays(5), placementEnd.minusDays(1))
+                )
             )
         }
 
@@ -1247,11 +1260,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `moving placement start date moves backup care start date`() {
         db.transaction { tx ->
-            tx.insertTestBackUpCare(
-                childId,
-                testDaycare2.id,
-                placementStart,
-                placementStart.plusDays(4)
+            tx.insert(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = testDaycare2.id,
+                    period = FiniteDateRange(placementStart, placementStart.plusDays(4))
+                )
             )
         }
 
@@ -1275,17 +1289,21 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `can move end date of later of two consecutive placements`() {
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = placementStart.minusDays(10),
-                endDate = placementStart.minusDays(1)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = placementStart.minusDays(10),
+                    endDate = placementStart.minusDays(1)
+                )
             )
-            tx.insertTestBackUpCare(
-                childId,
-                testDaycare2.id,
-                placementStart.minusDays(8),
-                placementStart.plusDays(4)
+            tx.insert(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = testDaycare2.id,
+                    period =
+                        FiniteDateRange(placementStart.minusDays(8), placementStart.plusDays(4))
+                )
             )
         }
 
@@ -1309,11 +1327,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `deleting placement deletes backup care`() {
         db.transaction { tx ->
-            tx.insertTestBackUpCare(
-                childId,
-                testDaycare2.id,
-                placementStart.plusDays(1),
-                placementStart.plusDays(5)
+            tx.insert(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = testDaycare2.id,
+                    period = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(5))
+                )
             )
         }
 
@@ -1347,11 +1366,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         groupPlacementEnd: LocalDate = placementEndDate
     ): DaycarePlacementDetails {
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = placementStartDate,
-                endDate = placementEndDate
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = placementStartDate,
+                    endDate = placementEndDate
+                )
             )
         }
         val placement =

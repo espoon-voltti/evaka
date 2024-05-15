@@ -39,13 +39,13 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestParentship
-import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -1271,11 +1271,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = period.start,
-                endDate = period.end!!
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = period.start,
+                    endDate = period.end!!
+                )
             )
             tx.upsertFeeDecisions(
                 listOf(
@@ -1352,11 +1354,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementPeriod.start,
-                endDate = placementPeriod.end!!
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end!!
+                )
             )
             tx.upsertFeeDecisions(
                 listOf(
@@ -6496,11 +6500,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             val placementId = db.transaction(insertPlacement(child.id, period))
             val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = testDaycare.id)) }
             db.transaction { tx ->
-                tx.insertTestDaycareGroupPlacement(
-                    daycarePlacementId = placementId,
-                    groupId = groupId,
-                    startDate = period.start,
-                    endDate = period.end!!
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
+                        startDate = period.start,
+                        endDate = period.end!!
+                    )
                 )
             }
         }
@@ -6531,12 +6537,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.upsertFeeDecisions(feeDecisions)
             feeDecisions.forEach { decision ->
                 decision.children.forEach { part ->
-                    tx.insertTestPlacement(
-                        childId = part.child.id,
-                        unitId = part.placement.unitId,
-                        startDate = decision.validFrom,
-                        endDate = decision.validTo!!,
-                        type = part.placement.type
+                    tx.insert(
+                        DevPlacement(
+                            type = part.placement.type,
+                            childId = part.child.id,
+                            unitId = part.placement.unitId,
+                            startDate = decision.validFrom,
+                            endDate = decision.validTo!!
+                        )
                     )
                 }
             }
@@ -6547,12 +6555,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         period: DateRange,
         type: PlacementType = PlacementType.DAYCARE
     ) = { tx: Database.Transaction ->
-        tx.insertTestPlacement(
-            childId = childId,
-            unitId = testDaycare.id,
-            startDate = period.start,
-            endDate = period.end!!,
-            type = type
+        tx.insert(
+            DevPlacement(
+                type = type,
+                childId = childId,
+                unitId = testDaycare.id,
+                startDate = period.start,
+                endDate = period.end!!
+            )
         )
     }
 
@@ -6561,11 +6571,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         childId: ChildId,
         period: DateRange
     ) = { tx: Database.Transaction ->
-        tx.insertTestParentship(
-            headOfFamilyId,
-            childId,
-            startDate = period.start,
-            endDate = period.end!!
+        tx.insert(
+            DevParentship(
+                childId = childId,
+                headOfChildId = headOfFamilyId,
+                startDate = period.start,
+                endDate = period.end!!
+            )
         )
     }
 
