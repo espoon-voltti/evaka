@@ -166,7 +166,9 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun initializeUnitSupervisorUserAndRights(childId: ChildId): AuthenticatedUser {
+    private fun initializeUnitSupervisorUserAndRights(
+        childId: ChildId
+    ): AuthenticatedUser.Employee {
         val externalId = ExternalId.of("test", "id")
         val unitSupervisor = DevEmployee(externalId = externalId)
         db.transaction {

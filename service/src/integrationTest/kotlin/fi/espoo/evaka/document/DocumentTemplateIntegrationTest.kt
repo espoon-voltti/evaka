@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: DocumentTemplateController
 
-    lateinit var employeeUser: AuthenticatedUser
+    lateinit var employeeUser: AuthenticatedUser.Employee
 
     val now = MockEvakaClock(2022, 1, 1, 15, 0)
 

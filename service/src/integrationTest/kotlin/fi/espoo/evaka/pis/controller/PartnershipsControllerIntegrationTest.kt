@@ -12,9 +12,7 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.ParentshipId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -22,7 +20,6 @@ import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -105,7 +102,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
-    fun `can create and fetch partnerships`(user: AuthenticatedUser) {
+    fun `can create and fetch partnerships`(user: AuthenticatedUser.Employee) {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
         val reqBody =
@@ -139,7 +136,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
-    private fun canDeletePartnership(user: AuthenticatedUser) {
+    private fun canDeletePartnership(user: AuthenticatedUser.Employee) {
         val partnership1 =
             db.transaction { tx ->
                 tx.createPartnership(
@@ -190,7 +187,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
-    private fun canUpdatePartnershipDuration(user: AuthenticatedUser) {
+    private fun canUpdatePartnershipDuration(user: AuthenticatedUser.Employee) {
         val partnership1 =
             db.transaction { tx ->
                 tx.createPartnership(
@@ -286,81 +283,5 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
             controller.getPartnerships(dbInstance(), testDecisionMakerEmployee, clock, person.id)
         assertEquals(1, getResponse.size)
         with(getResponse.first().data) { assertFalse(this.conflict) }
-    }
-
-    @Test
-    fun `error is thrown if enduser tries to get partnerships`() {
-        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-        db.transaction { tx ->
-            tx.createPartnership(
-                person.id,
-                partner.id,
-                LocalDate.now(),
-                LocalDate.now().plusDays(200),
-                false,
-                Creator.User(partnershipCreator),
-                clock.now()
-            )
-        }
-
-        assertThrows<Forbidden> { controller.getPartnerships(dbInstance(), user, clock, person.id) }
-    }
-
-    @Test
-    fun `error is thrown if enduser tries to create a partnership`() {
-        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-        val startDate = LocalDate.now()
-        val endDate = startDate.plusDays(200)
-        val reqBody =
-            PartnershipsController.PartnershipRequest(person.id, partner.id, startDate, endDate)
-
-        assertThrows<Forbidden> { controller.createPartnership(dbInstance(), user, clock, reqBody) }
-    }
-
-    @Test
-    fun `error is thrown if enduser tries to update partnerships`() {
-        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-        val partnership =
-            db.transaction { tx ->
-                tx.createPartnership(
-                    person.id,
-                    partner.id,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(200),
-                    false,
-                    Creator.User(partnershipCreator),
-                    clock.now()
-                )
-            }
-
-        val requestBody =
-            PartnershipsController.PartnershipUpdateRequest(
-                LocalDate.now(),
-                LocalDate.now().plusDays(999)
-            )
-        assertThrows<Forbidden> {
-            controller.updatePartnership(dbInstance(), user, clock, partnership.id, requestBody)
-        }
-    }
-
-    @Test
-    fun `error is thrown if enduser tries to delete a partnership`() {
-        val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-        val partnership =
-            db.transaction { tx ->
-                tx.createPartnership(
-                    person.id,
-                    partner.id,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(200),
-                    false,
-                    Creator.User(partnershipCreator),
-                    clock.now()
-                )
-            }
-
-        assertThrows<Forbidden> {
-            controller.deletePartnership(dbInstance(), user, clock, partnership.id)
-        }
     }
 }

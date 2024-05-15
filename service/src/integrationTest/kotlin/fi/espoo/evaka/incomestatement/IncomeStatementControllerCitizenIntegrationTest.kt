@@ -941,7 +941,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         Attachment(id, "evaka-logo.png", "image/png", false)
 
     private fun uploadAttachmentAsEmployee(
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         incomeStatementId: IncomeStatementId
     ): AttachmentId {
         return attachmentsController.uploadIncomeStatementAttachmentEmployee(

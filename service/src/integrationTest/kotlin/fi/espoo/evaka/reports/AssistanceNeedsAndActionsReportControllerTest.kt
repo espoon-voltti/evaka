@@ -41,7 +41,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
     @Autowired private lateinit var controller: AssistanceNeedsAndActionsReportController
 
     val featureConfig: FeatureConfig = testFeatureConfig
-    private lateinit var admin: AuthenticatedUser
+    private lateinit var admin: AuthenticatedUser.Employee
 
     @BeforeEach
     fun setup() {

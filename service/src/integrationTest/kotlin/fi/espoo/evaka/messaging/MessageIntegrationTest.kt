@@ -680,12 +680,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         }
         assertThrows<Forbidden> {
-            attachmentsController.deleteAttachmentHandler(
-                dbInstance(),
-                employee2,
-                clock,
-                attachmentId
-            )
+            attachmentsController.deleteAttachment(dbInstance(), employee2, clock, attachmentId)
         }
 
         // then the author can read and delete the attachment
@@ -696,7 +691,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             attachmentId,
             "evaka-logo.png"
         )
-        attachmentsController.deleteAttachmentHandler(dbInstance(), employee1, clock, attachmentId)
+        attachmentsController.deleteAttachment(dbInstance(), employee1, clock, attachmentId)
 
         // a user cannot upload attachments to another user's draft
         assertThrows<Forbidden> { uploadMessageAttachment(employee2, draftId) }

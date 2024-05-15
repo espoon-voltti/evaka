@@ -476,23 +476,23 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     private fun createAssistanceAction(
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         child: ChildId,
         request: AssistanceActionRequest
     ): AssistanceAction =
         controller.createAssistanceAction(dbInstance(), user, clock, child, request)
 
-    private fun getAssistanceActions(user: AuthenticatedUser, child: ChildId) =
+    private fun getAssistanceActions(user: AuthenticatedUser.Employee, child: ChildId) =
         controller.getChildAssistance(dbInstance(), user, clock, child).assistanceActions.map {
             it.action
         }
 
     private fun updateAssistanceAction(
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         id: AssistanceActionId,
         request: AssistanceActionRequest
     ): AssistanceAction = controller.updateAssistanceAction(dbInstance(), user, clock, id, request)
 
-    private fun deleteAssistanceAction(user: AuthenticatedUser, id: AssistanceActionId) =
+    private fun deleteAssistanceAction(user: AuthenticatedUser.Employee, id: AssistanceActionId) =
         controller.deleteAssistanceAction(dbInstance(), user, clock, id)
 }

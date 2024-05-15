@@ -782,7 +782,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     private fun markAssistanceNeedDecisionOpened(
         id: AssistanceNeedPreschoolDecisionId,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Employee
     ) {
         assistanceNeedDecisionController.markAssistanceNeedPreschoolDecisionAsOpened(
             dbInstance(),
@@ -795,7 +795,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     private fun decideDecision(
         id: AssistanceNeedPreschoolDecisionId,
         status: AssistanceNeedDecisionStatus,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
     ) {
         assistanceNeedDecisionController.decideAssistanceNeedPreschoolDecision(
             dbInstance(),
@@ -811,7 +811,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     private fun annulDecision(
         id: AssistanceNeedPreschoolDecisionId,
         reason: String,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
     ) {
         assistanceNeedDecisionController.annulAssistanceNeedPreschoolDecision(
             dbInstance(),
@@ -826,7 +826,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     private fun getDecisionMakerOptions(
         id: AssistanceNeedPreschoolDecisionId,
-        user: AuthenticatedUser = assistanceWorker,
+        user: AuthenticatedUser.Employee = assistanceWorker,
     ): List<Employee> {
         return assistanceNeedDecisionController.getAssistancePreschoolDecisionMakerOptions(
             dbInstance(),
