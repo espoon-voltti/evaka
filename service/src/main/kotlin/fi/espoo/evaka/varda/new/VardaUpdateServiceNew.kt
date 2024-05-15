@@ -286,53 +286,33 @@ class VardaUpdater(
         }
 
         // Only fee data after 2019-09-01 can be sent to Varda (error code MA019)
-        val vardaFeeDataRange = DateRange(LocalDate.of(2019, 9, 1), null)
-
-        val currentAndPastServiceNeeds = serviceNeeds.filter { it.range.start <= today }
-        val processedFeeData =
-            if (currentAndPastServiceNeeds.isNotEmpty()) {
-                    // Each maksutieto must be within the range of the start of first
-                    // varhaiskasvatuspaatos and the end of the last varhaiskasvatuspaatos
-                    // (see error codes MA005, MA006, MA007)
-                    val serviceNeedRange =
-                        FiniteDateRange(
-                            currentAndPastServiceNeeds.minOf { it.range.start },
-                            currentAndPastServiceNeeds.maxOf { it.range.end }
-                        )
-                    val feeDataRange =
-                        vardaEnabledRange
-                            .intersection(vardaFeeDataRange)
-                            ?.intersection(serviceNeedRange)
-                    if (feeDataRange != null) {
-                        feeData.mapNotNull {
-                            it.validDuring.intersection(feeDataRange)?.let { validDuring ->
-                                it.copy(validDuring = validDuring)
-                            }
-                        }
-                    } else {
-                        emptyList()
-                    }
-                } else {
-                    emptyList()
-                }
-                .filter { fee ->
-                    currentAndPastServiceNeeds.any { it.range.overlaps(fee.validDuring) }
-                }
+        val vardaFeeDataRange =
+            vardaEnabledRange.intersection(DateRange(LocalDate.of(2019, 9, 1), null))
 
         val evakaLapsiServiceNeeds =
-            currentAndPastServiceNeeds.groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
-        val evakaFeeData =
-            processedFeeData
-                .mapNotNull { fee ->
-                    Maksutieto.fromEvaka(guardians, fee)?.let { fee.ophOrganizerOid to it }
-                }
-                .groupBy({ it.first }, { it.second })
+            serviceNeeds
+                .filter { it.range.start <= today } // Don't send future service needs to Varda
+                .groupBy { Lapsi.fromEvaka(it, omaOrganisaatioOid) }
 
         return EvakaHenkiloNode(
             henkilo = Henkilo.fromEvaka(child),
             lapset =
                 evakaLapsiServiceNeeds.mapNotNull { (lapsi, serviceNeedsOfLapsi) ->
-                    EvakaLapsiNode(
+                    if (serviceNeedsOfLapsi.isEmpty()) {
+                        null
+                    } else {
+                        // Each maksutieto must be within the range of the start of first
+                        // varhaiskasvatuspaatos and the end of the last varhaiskasvatuspaatos
+                        // of this lapsi (see error codes MA005, MA006, MA007)
+                        val feeDataRange =
+                            vardaFeeDataRange?.intersection(
+                                FiniteDateRange(
+                                    serviceNeedsOfLapsi.minOf { it.range.start },
+                                    serviceNeedsOfLapsi.maxOf { it.range.end }
+                                )
+                            )
+
+                        EvakaLapsiNode(
                             lapsi = lapsi,
                             varhaiskasvatuspaatokset =
                                 serviceNeedsOfLapsi.map { serviceNeed ->
@@ -343,9 +323,27 @@ class VardaUpdater(
                                             listOf(Varhaiskasvatussuhde.fromEvaka(serviceNeed))
                                     )
                                 },
-                            maksutiedot = evakaFeeData[lapsi.effectiveOrganizerOid()] ?: emptyList()
+                            maksutiedot =
+                                if (feeDataRange == null) {
+                                    emptyList()
+                                } else {
+                                    feeData
+                                        .filter { fee ->
+                                            fee.ophOrganizerOid == lapsi.effectiveOrganizerOid()
+                                        }
+                                        .mapNotNull { fee ->
+                                            // Make sure the maksutieto is within the range of
+                                            // varhaiskasvatuspaatokset
+                                            fee.validDuring.intersection(feeDataRange)?.let {
+                                                Maksutieto.fromEvaka(
+                                                    guardians,
+                                                    fee.copy(validDuring = it)
+                                                )
+                                            }
+                                        }
+                                }
                         )
-                        .takeIf { it.varhaiskasvatuspaatokset.isNotEmpty() }
+                    }
                 }
         )
     }
