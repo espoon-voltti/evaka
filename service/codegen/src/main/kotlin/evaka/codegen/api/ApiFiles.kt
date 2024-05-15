@@ -16,8 +16,11 @@ import org.springframework.web.util.UriComponentsBuilder
 private val logger = KotlinLogging.logger {}
 
 fun generateApiFiles(): Map<TsFile, String> {
+    val allEndpoints = scanEndpoints("fi.espoo.evaka")
+    allEndpoints.forEach { it.validate() }
+
     val endpoints =
-        scanEndpoints("fi.espoo.evaka")
+        allEndpoints
             .filter { it.isJsonEndpoint }
             .filterNot {
                 it.isDeprecated ||
@@ -25,7 +28,6 @@ fun generateApiFiles(): Map<TsFile, String> {
                     it.path.startsWith("/system/") ||
                     endpointExcludes.contains(it.path)
             }
-    endpoints.forEach { it.validate() }
 
     val metadata =
         discoverMetadata(

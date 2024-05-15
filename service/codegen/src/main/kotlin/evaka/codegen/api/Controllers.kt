@@ -81,7 +81,7 @@ data class EndpointMetadata(
             RequestMethod.GET,
             RequestMethod.HEAD,
             RequestMethod.DELETE, -> {
-                if (httpMethod == RequestMethod.GET && responseBodyType == null) {
+                if (isJsonEndpoint && httpMethod == RequestMethod.GET && responseBodyType == null) {
                     fail("It should have a response body")
                 }
                 if (requestBodyType != null) {
@@ -93,6 +93,49 @@ data class EndpointMetadata(
             RequestMethod.PATCH -> {}
             RequestMethod.TRACE,
             RequestMethod.OPTIONS -> fail("Method not supported")
+        }
+
+        when {
+            path.startsWith("/citizen/public/") ||
+                path.startsWith("/employee/public/") ||
+                path.startsWith("/employee-mobile/public/") ->
+                if (authenticatedUserType != null) {
+                    fail("It must not include any AuthenticatedUser as a parameter")
+                }
+            path.startsWith("/system/") ->
+                if (authenticatedUserType != typeOf<AuthenticatedUser.SystemInternalUser>()) {
+                    fail("It must include an AuthenticatedUser.SystemInternalUser parameter")
+                }
+            path.startsWith("/integration/") ->
+                if (authenticatedUserType != typeOf<AuthenticatedUser.Integration>()) {
+                    fail("It must include an AuthenticatedUser.Integration parameter")
+                }
+            path.startsWith("/citizen/") ->
+                // TODO: enforce exact type with equals instead of isSupertypeOf
+                if (
+                    authenticatedUserType?.isSupertypeOf(typeOf<AuthenticatedUser.Citizen>()) !=
+                        true
+                ) {
+                    fail("Citizen endpoint must include a AuthenticatedUser.Citizen parameter")
+                }
+            path.startsWith("/employee/") ->
+                // TODO: enforce exact type with equals instead of isSupertypeOf
+                if (
+                    authenticatedUserType?.isSupertypeOf(typeOf<AuthenticatedUser.Employee>()) !=
+                        true
+                ) {
+                    fail("It must include an AuthenticatedUser.Employee parameter")
+                }
+            path.startsWith("/employee-mobile/") ->
+                // TODO: enforce exact type with equals instead of isSupertypeOf
+                if (
+                    authenticatedUserType?.isSupertypeOf(
+                        typeOf<AuthenticatedUser.MobileDevice>()
+                    ) != true
+                ) {
+                    fail("It must include an AuthenticatedUser.MobileDevice parameter")
+                }
+            else -> {}
         }
     }
 }
