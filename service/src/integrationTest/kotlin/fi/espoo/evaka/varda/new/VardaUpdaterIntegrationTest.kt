@@ -19,6 +19,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -1174,81 +1175,108 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `evaka state - fee data is cut to service need ranges`() {
-        val organizerOid = "organizerOid"
-        val unitOid = "unitOid"
+    fun `evaka state - fee data is cut to service need ranges per lapsi`() {
+        val municipalOrganizerOid = "municipalOrganizerOid"
+        val paosOrganizerOid = "organizerOid1"
+        val unitOid1 = "unitOid1"
+        val unitOid2 = "unitOid2"
 
         val area = DevCareArea()
-        val unit =
-            DevDaycare(areaId = area.id, ophOrganizerOid = organizerOid, ophUnitOid = unitOid)
+        val unit1 =
+            DevDaycare(areaId = area.id, ophOrganizerOid = paosOrganizerOid, ophUnitOid = unitOid1)
+        val unit2 =
+            DevDaycare(
+                areaId = area.id,
+                ophOrganizerOid = municipalOrganizerOid,
+                ophUnitOid = unitOid2
+            )
         val employee = DevEmployee()
 
         val guardian = DevPerson(ssn = "070644-937X")
         val child = DevPerson(ssn = "030320A904N")
 
-        val today = LocalDate.of(2021, 12, 1)
-        val placementRanges =
-            listOf(
-                FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31)),
-                FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
-            )
-        val feeRanges =
-            listOf(
-                // This overlaps with the current placement => it's cut to the placement range
-                FiniteDateRange(LocalDate.of(2020, 12, 1), LocalDate.of(2021, 1, 31)),
-                // This overlaps with the current and a future placement => it's cut to the current
-                // placement's range
-                FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2022, 1, 31)),
-            )
+        val today = LocalDate.of(2023, 1, 1)
+        val lapsi1placement1range =
+            FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31))
+        val lapsi1placement2range =
+            FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val lapsi1range = DateSet.of(lapsi1placement1range, lapsi1placement2range).spanningRange()!!
+
+        // This overlaps with a placement => it's cut to the placement's range
+        val lapsi1fee1 = FiniteDateRange(LocalDate.of(2020, 12, 1), LocalDate.of(2021, 1, 31))
+
+        // This overlaps with a placement of lapsi1 and a placement of lapsi2 => it's cut to the
+        // range of lapsi1
+        val lapsi1fee2 = FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2023, 1, 31))
+
+        val lapsi2placement1range =
+            FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
+        val lapsi2placement2range =
+            FiniteDateRange(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31))
+
+        // This only overlaps with a placement that starts in the future => it's not included
+        val lapsi2fee1 = FiniteDateRange(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31))
+
         db.transaction { tx ->
             tx.insertServiceNeedOption(snDaycareFullDay35)
             tx.insert(area)
-            tx.insert(unit)
+            tx.insert(unit1)
+            tx.insert(unit2)
             tx.insert(employee)
 
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            placementRanges.forEach { placementRange ->
-                tx.insertTestPlacement(
-                        childId = child.id,
-                        unitId = unit.id,
-                        startDate = placementRange.start,
-                        endDate = placementRange.end,
-                    )
-                    .also { placementId ->
-                        tx.insertTestServiceNeed(
-                            placementId = placementId,
-                            period = placementRange,
-                            optionId = snDaycareFullDay35.id,
-                            confirmedBy = employee.evakaUserId,
+            listOf(
+                    unit1.id to lapsi1placement1range,
+                    unit1.id to lapsi1placement2range,
+                    unit2.id to lapsi2placement1range,
+                    unit2.id to lapsi2placement2range
+                )
+                .forEach { (unitId, range) ->
+                    tx.insertTestPlacement(
+                            childId = child.id,
+                            unitId = unitId,
+                            startDate = range.start,
+                            endDate = range.end
                         )
-                    }
-            }
-
-            feeRanges.forEach { feeRange ->
-                tx.insert(
-                        DevFeeDecision(
-                            headOfFamilyId = guardian.id,
-                            validDuring = feeRange,
-                            status = FeeDecisionStatus.SENT
-                        )
-                    )
-                    .also { feeDecisionId ->
-                        tx.insert(
-                            DevFeeDecisionChild(
-                                feeDecisionId = feeDecisionId,
-                                childId = child.id,
-                                placementUnitId = unit.id
+                        .also { placementId ->
+                            tx.insertTestServiceNeed(
+                                placementId = placementId,
+                                period = range,
+                                optionId = snDaycareFullDay35.id,
+                                confirmedBy = employee.evakaUserId,
+                            )
+                        }
+                }
+            listOf(unit1.id to lapsi1fee1, unit1.id to lapsi1fee2, unit2.id to lapsi2fee1)
+                .forEach { (unitId, range) ->
+                    tx.insert(
+                            DevFeeDecision(
+                                headOfFamilyId = guardian.id,
+                                validDuring = range,
+                                status = FeeDecisionStatus.SENT
                             )
                         )
-                    }
-            }
+                        .also { feeDecisionId ->
+                            tx.insert(
+                                DevFeeDecisionChild(
+                                    feeDecisionId = feeDecisionId,
+                                    childId = child.id,
+                                    placementUnitId = unitId
+                                )
+                            )
+                        }
+                }
         }
 
         val updater =
-            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), organizerOid, "sourceSystem")
+            VardaUpdater(
+                DateRange(LocalDate.of(2019, 1, 1), null),
+                municipalOrganizerOid,
+                "sourceSystem"
+            )
 
         val evakaState = db.read { updater.getEvakaState(it, today, child.id) }
         assertEquals(
@@ -1265,17 +1293,33 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         VardaUpdater.EvakaLapsiNode(
                             lapsi =
                                 Lapsi(
-                                    vakatoimija_oid = organizerOid,
+                                    vakatoimija_oid = null,
+                                    oma_organisaatio_oid = municipalOrganizerOid,
+                                    paos_organisaatio_oid = paosOrganizerOid
+                                ),
+                            varhaiskasvatuspaatokset =
+                                // The future placement is not included
+                                listOf(
+                                    varhaiskasvatuspaatos(unitOid1, lapsi1placement1range),
+                                    varhaiskasvatuspaatos(unitOid1, lapsi1placement2range)
+                                ),
+                            maksutiedot =
+                                listOf(
+                                    maksutieto(lapsi1fee1.intersection(lapsi1range)!!),
+                                    maksutieto(lapsi1fee2.intersection(lapsi1range)!!)
+                                )
+                        ),
+                        VardaUpdater.EvakaLapsiNode(
+                            lapsi =
+                                Lapsi(
+                                    vakatoimija_oid = municipalOrganizerOid,
                                     oma_organisaatio_oid = null,
                                     paos_organisaatio_oid = null
                                 ),
                             varhaiskasvatuspaatokset =
                                 // The future placement is not included
-                                listOf(varhaiskasvatuspaatos(unitOid, placementRanges.first())),
-                            maksutiedot =
-                                feeRanges.map { feeRange ->
-                                    maksutieto(feeRange.intersection(placementRanges.first())!!)
-                                }
+                                listOf(varhaiskasvatuspaatos(unitOid2, lapsi2placement1range)),
+                            maksutiedot = emptyList()
                         )
                     )
             ),
