@@ -195,7 +195,11 @@ class FinanceBasicsController(
                     tx.insertNewVoucherValue(body).also {
                         asyncJobRunner.plan(
                             tx,
-                            listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.range)),
+                            listOf(
+                                AsyncJob.NotifyFeeThresholdsUpdated(
+                                    DateRange(body.range.start, null)
+                                )
+                            ),
                             runAt = clock.now()
                         )
                     }
@@ -227,13 +231,17 @@ class FinanceBasicsController(
                         throw BadRequest("Can only delete the latest voucher value")
 
                     tx.deleteVoucherValue(id)
-                    tx.updateVoucherValueEndDate(values[1].id, null)
+                    if (values.size > 1) tx.updateVoucherValueEndDate(values[1].id, null)
 
                     asyncJobRunner.plan(
                         tx,
                         listOf(
                             AsyncJob.NotifyFeeThresholdsUpdated(
-                                DateRange(values[1].voucherValues.range.start, null)
+                                DateRange(
+                                    (if (values.size > 1) values[1].voucherValues.range.start
+                                    else LocalDate.of(2019, 1, 1)),
+                                    null
+                                )
                             )
                         ),
                         runAt = clock.now()

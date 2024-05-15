@@ -107,6 +107,16 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `should work when deleting the last remaining voucher value`() {
+        val voucherValues =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedByDescending {
+                it.voucherValues.range.start
+            }
+
+        voucherValues.forEach { deleteVoucherValue(it.id) }
+    }
+
+    @Test
     fun `should insert new voucher value`() {
         val voucherValuesBefore =
             getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
