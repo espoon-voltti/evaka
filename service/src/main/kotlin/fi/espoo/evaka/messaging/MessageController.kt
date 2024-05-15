@@ -81,7 +81,9 @@ class MessageController(
                     )
                 }
             }
-            .also { Audit.MessagingMyAccountsRead.log(targetId = it) }
+            .also { accounts ->
+                Audit.MessagingMyAccountsRead.log(targetId = accounts.map { it.account.id })
+            }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
