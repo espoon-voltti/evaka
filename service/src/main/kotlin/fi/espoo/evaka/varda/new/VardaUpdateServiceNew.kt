@@ -166,9 +166,9 @@ class VardaUpdateServiceNew(
         job: AsyncJob.VardaUpdateChild
     ) {
         val dryRunClient = DryRunClient()
-        val service = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
+        val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
-        service.updateChild(
+        updater.updateChild(
             dbc,
             readClient = vardaClient,
             writeClient = if (job.dryRun) dryRunClient else vardaClient,
@@ -406,8 +406,27 @@ class VardaUpdater(
         vardaHenkilo: VardaHenkiloNode,
         evakaHenkilo: EvakaHenkiloNode,
     ): String? {
-        val henkilo = vardaHenkilo.henkilo
+        // End or delete data from other source systems if needed
+        val dayBeforeEvaka =
+            evakaHenkilo.lapset
+                .asSequence()
+                .flatMap { l -> l.varhaiskasvatuspaatokset.map { it.varhaiskasvatuspaatos } }
+                .minOfOrNull { it.alkamis_pvm }
+                ?.minusDays(1)
+        if (dayBeforeEvaka != null) {
+            vardaHenkilo.lapset
+                .asSequence()
+                .flatMap { lapsi ->
+                    lapsi.maksutiedot +
+                        lapsi.varhaiskasvatuspaatokset.flatMap {
+                            it.varhaiskasvatussuhteet + it.varhaiskasvatuspaatos
+                        }
+                }
+                .filter { it.lahdejarjestelma != lahdejarjestelma }
+                .forEach { client.endOrDeleteIfNeeded(it, dayBeforeEvaka) }
+        }
 
+        // Handle changes in eVaka data
         diff(
             old = vardaHenkilo.lapset,
             new = evakaHenkilo.lapset,
@@ -463,16 +482,13 @@ class VardaUpdater(
                     onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
                 )
             },
-            onAdded = {
-                // If we get here, henkilo has lapsi entries and thus must be non-null
-                client.createLapsiDeep(henkilo.url, it)
-            },
+            onAdded = { client.createLapsiDeep(vardaHenkilo.henkilo.url, it) },
         )
 
-        return henkilo.henkilo_oid
+        return vardaHenkilo.henkilo.henkilo_oid
     }
 
-    /** Like Iterable.all, but runs all the side effects regardless of what they return */
+    /** Like `Iterable.all`, but runs all the side effects regardless of what they return */
     private fun <T> Iterable<T>.allSucceed(sideEffect: (T) -> Boolean): Boolean {
         var result = true
         for (e in this) {
@@ -594,6 +610,24 @@ class VardaUpdater(
         createMaksutieto(evakaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
     }
 
+    private fun VardaWriteClient.endOrDeleteIfNeeded(
+        entity: VardaEntityWithValidity,
+        endDate: LocalDate
+    ) {
+        if (endDate < LocalDate.of(2019, 1, 1)) {
+            // Delete old entries that would be set to end before 2019-01-01, because sending data
+            // before 2019-01-01 is not supported by Varda (error MI021)
+            this.delete(entity)
+        } else if (entity.alkamis_pvm > endDate) {
+            this.delete(entity)
+        } else {
+            val paattymisPvm: LocalDate? = entity.paattymis_pvm
+            if (paattymisPvm == null || paattymisPvm > endDate) {
+                this.setPaattymisPvm(entity.url, VardaWriteClient.SetPaattymisPvmRequest(endDate))
+            }
+        }
+    }
+
     enum class Status {
         UP_TO_DATE,
         NEEDS_UPDATE
@@ -704,6 +738,10 @@ class DryRunClient : VardaWriteClient {
         _operations.add(Operation("Delete", null, data))
     }
 
+    override fun setPaattymisPvm(url: URI, body: VardaWriteClient.SetPaattymisPvmRequest) {
+        _operations.add(Operation("SetPaattymisPvm", null, url to body))
+    }
+
     val operationsHumanReadable: List<String>
         get() = _operations.map { "${it.op} ${it.type ?: ""}: ${it.data}" }
 
@@ -711,9 +749,8 @@ class DryRunClient : VardaWriteClient {
         get() =
             _operations.map {
                 when (it.op) {
-                    "Create" -> Pair("Create", it.data)
                     "Delete" -> Pair("Delete", (it.data as VardaEntity).url)
-                    else -> throw IllegalStateException("Unknown operation ${it.op}")
+                    else -> Pair(it.op, it.data)
                 }
             }
 }

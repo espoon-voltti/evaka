@@ -86,7 +86,7 @@ interface VardaReadClient {
         override val url: URI,
         // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
         // doesn't always include it.
-        val lahdejarjestelma: String?,
+        override val lahdejarjestelma: String?,
         val vakatoimija_oid: String?,
         val oma_organisaatio_oid: String?,
         val paos_organisaatio_oid: String?,
@@ -100,9 +100,9 @@ interface VardaReadClient {
         override val url: URI,
         // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
         // doesn't always include it.
-        val lahdejarjestelma: String?,
-        val alkamis_pvm: LocalDate,
-        val paattymis_pvm: LocalDate?,
+        override val lahdejarjestelma: String?,
+        override val alkamis_pvm: LocalDate,
+        override val paattymis_pvm: LocalDate?,
         val hakemus_pvm: LocalDate,
         val vuorohoito_kytkin: Boolean,
         val tilapainen_vaka_kytkin: Boolean,
@@ -110,7 +110,7 @@ interface VardaReadClient {
         val paivittainen_vaka_kytkin: Boolean,
         val kokopaivainen_vaka_kytkin: Boolean,
         val jarjestamismuoto_koodi: String,
-    ) : VardaEntity
+    ) : VardaEntityWithValidity
 
     fun getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl: URI): List<VarhaiskasvatuspaatosResponse>
 
@@ -119,12 +119,12 @@ interface VardaReadClient {
         override val url: URI,
         // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
         // doesn't always include it.
-        val lahdejarjestelma: String?,
+        override val lahdejarjestelma: String?,
         val varhaiskasvatuspaatos: URI,
         val toimipaikka_oid: String,
-        val alkamis_pvm: LocalDate,
-        val paattymis_pvm: LocalDate?,
-    ) : VardaEntity
+        override val alkamis_pvm: LocalDate,
+        override val paattymis_pvm: LocalDate?,
+    ) : VardaEntityWithValidity
 
     fun getVarhaiskasvatussuhteetByLapsi(lapsiUrl: URI): List<VarhaiskasvatussuhdeResponse>
 
@@ -133,16 +133,16 @@ interface VardaReadClient {
         override val url: URI,
         // Based on Varda's API documentation, lahdejarjestelma is required, but the Varda response
         // doesn't always include it.
-        val lahdejarjestelma: String?,
+        override val lahdejarjestelma: String?,
         val huoltajat: List<Huoltaja>,
         val lapsi: URI,
-        val alkamis_pvm: LocalDate,
-        val paattymis_pvm: LocalDate?,
+        override val alkamis_pvm: LocalDate,
+        override val paattymis_pvm: LocalDate?,
         val maksun_peruste_koodi: String,
         val palveluseteli_arvo: Double?,
         val asiakasmaksu: Double,
         val perheen_koko: Int?,
-    ) : VardaEntity
+    ) : VardaEntityWithValidity
 
     fun getMaksutiedotByLapsi(lapsiUrl: URI): List<MaksutietoResponse>
 }
@@ -205,6 +205,10 @@ interface VardaWriteClient {
     fun createMaksutieto(body: CreateMaksutietoRequest): CreateResponse
 
     fun <T : VardaEntity> delete(data: T)
+
+    data class SetPaattymisPvmRequest(val paattymis_pvm: LocalDate)
+
+    fun setPaattymisPvm(url: URI, body: SetPaattymisPvmRequest)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -231,6 +235,12 @@ data class Huoltaja(
 
 interface VardaEntity {
     val url: URI
+    val lahdejarjestelma: String?
+}
+
+interface VardaEntityWithValidity : VardaEntity {
+    val alkamis_pvm: LocalDate
+    val paattymis_pvm: LocalDate?
 }
 
 class VardaClient(
@@ -281,6 +291,9 @@ class VardaClient(
     override fun getMaksutiedotByLapsi(lapsiUrl: URI): List<VardaReadClient.MaksutietoResponse> =
         getAllPages(lapsiUrl.resolve("maksutiedot/"))
 
+    override fun setPaattymisPvm(url: URI, body: VardaWriteClient.SetPaattymisPvmRequest): Unit =
+        patch(url, body)
+
     fun vakajarjestajaUrl(organizerId: String): String =
         baseUrl.resolve("v1/vakajarjestajat/$organizerId/").toString()
 
@@ -309,6 +322,8 @@ class VardaClient(
         }
         return acc.toList()
     }
+
+    private inline fun <T, reified R> patch(url: URI, body: T): R = request("PATCH", url, body)
 
     private inline fun <T, reified R> post(url: URI, body: T): R = request("POST", url, body)
 
