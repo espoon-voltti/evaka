@@ -216,21 +216,20 @@ class VardaUpdater(
 
             val vardaState = getVardaState(readClient, evakaState.henkilo)
 
+            val henkiloOid = vardaState.henkilo.henkilo_oid
+            dbc.transaction { tx ->
+                if (henkiloOid != null && evakaState.henkilo.henkilo_oid != henkiloOid) {
+                    tx.updateOphPersonOid(childId, henkiloOid)
+                }
+            }
+
             logger.info(mapOf("varda" to vardaState.toString(), "evaka" to evakaState.toString())) {
                 "Varda state for $childId (see the meta.varda and meta.evaka fields)"
             }
 
-            val henkiloOidInVarda = diffAndUpdate(writeClient, vardaState, evakaState)
-
-            dbc.transaction { tx ->
-                if (
-                    henkiloOidInVarda != null && evakaState.henkilo.henkilo_oid != henkiloOidInVarda
-                ) {
-                    tx.updateOphPersonOid(childId, henkiloOidInVarda)
-                }
-                if (saveState) {
-                    tx.setVardaUpdateSuccess(childId, now, evakaState)
-                }
+            diffAndUpdate(writeClient, vardaState, evakaState)
+            if (saveState) {
+                dbc.transaction { it.setVardaUpdateSuccess(childId, now, evakaState) }
             }
             logger.info { "Varda update succeeded for child $childId" }
         } catch (e: Exception) {
@@ -405,7 +404,7 @@ class VardaUpdater(
         client: VardaWriteClient,
         vardaHenkilo: VardaHenkiloNode,
         evakaHenkilo: EvakaHenkiloNode,
-    ): String? {
+    ) {
         // End or delete data from other source systems if needed
         val dayBeforeEvaka =
             evakaHenkilo.lapset
@@ -484,8 +483,6 @@ class VardaUpdater(
             },
             onAdded = { client.createLapsiDeep(vardaHenkilo.henkilo.url, it) },
         )
-
-        return vardaHenkilo.henkilo.henkilo_oid
     }
 
     /** Like `Iterable.all`, but runs all the side effects regardless of what they return */
