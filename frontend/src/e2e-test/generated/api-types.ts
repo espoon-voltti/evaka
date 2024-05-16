@@ -733,6 +733,14 @@ export interface DevPerson {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.DevPersonEmail
+*/
+export interface DevPersonEmail {
+  email: string | null
+  personId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevPersonalMobileDevice
 */
 export interface DevPersonalMobileDevice {

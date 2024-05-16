@@ -1641,6 +1641,23 @@ $form
             }
         }
     }
+
+    data class DevPersonEmail(val personId: PersonId, val email: String?)
+
+    @PostMapping("/person-email")
+    fun setPersonEmail(db: Database, @RequestBody body: DevPersonEmail) =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate {
+                        sql(
+                            """
+UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}            
+"""
+                        )
+                    }
+                    .execute()
+            }
+        }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html

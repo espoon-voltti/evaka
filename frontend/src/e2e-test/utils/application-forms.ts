@@ -93,7 +93,7 @@ export const minimalDaycareForm = ({
 
     assertEquals(null, res.form.guardian.futureAddress)
     assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
-    assertBlank(res.form.guardian.email)
+    assertEquals('', res.form.guardian.email)
 
     if (otherGuardianAgreementStatus) {
       assertEquals(
@@ -323,7 +323,7 @@ export const minimalClubForm: {
 
     assertEquals(null, res.form.guardian.futureAddress)
     assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
-    assertBlank(res.form.guardian.email)
+    assertEquals('', res.form.guardian.email)
 
     assertNull(res.form.secondGuardian)
 
@@ -472,7 +472,7 @@ export const minimalPreschoolForm: {
 
     assertEquals(null, res.form.guardian.futureAddress)
     assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
-    assertBlank(res.form.guardian.email)
+    assertEquals('', res.form.guardian.email)
 
     assertEquals('AGREED', res.form.secondGuardian?.agreementStatus)
     assertBlank(res.form.secondGuardian?.phoneNumber)

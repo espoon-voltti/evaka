@@ -236,7 +236,7 @@ export function apiDataToFormData(
       guardianPhone: application.form.guardian.phoneNumber || '',
       guardianEmail: application.form.guardian.email || '',
       guardianEmailVerification: application.form.guardian.email || '',
-      noGuardianEmail: false,
+      noGuardianEmail: application.form.guardian.email == '',
       guardianFutureAddressExists:
         application.form.guardian.futureAddress !== null,
       guardianFutureAddressEqualsChild:
