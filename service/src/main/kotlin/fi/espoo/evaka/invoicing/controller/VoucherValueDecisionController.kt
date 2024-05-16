@@ -212,6 +212,11 @@ class VoucherValueDecisionController(
                     throw BadRequest("Voucher value decision cannot be marked sent")
                 }
                 tx.markVoucherValueDecisionsSent(ids, clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    ids.map { AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = it) },
+                    runAt = clock.now()
+                )
             }
         }
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)

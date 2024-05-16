@@ -5,8 +5,13 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.data.approveFeeDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
@@ -31,10 +36,12 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.SENT
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus.WAITING_FOR_SENDING
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.validateFinanceDecisionHandler
 import fi.espoo.evaka.pdfgen.PdfGenerator
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
@@ -69,9 +76,16 @@ class FeeDecisionService(
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val env: EvakaEnv,
-    private val bucketEnv: BucketEnv
+    private val bucketEnv: BucketEnv,
+    private val emailEnv: EmailEnv,
+    private val emailMessageProvider: IEmailMessageProvider,
+    private val emailClient: EmailClient,
 ) {
     val bucket = bucketEnv.feeDecisions
+
+    init {
+        asyncJobRunner.registerHandler(::runSendNewFeeDecisionEmail)
+    }
 
     fun confirmDrafts(
         tx: Database.Transaction,
@@ -308,6 +322,11 @@ class FeeDecisionService(
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
+        asyncJobRunner.plan(
+            tx,
+            listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
+            runAt = clock.now()
+        )
         tx.setFeeDecisionSent(clock, listOf(decision.id))
 
         return true
@@ -340,5 +359,46 @@ class FeeDecisionService(
         }
 
         tx.setFeeDecisionType(decisionId, type)
+    }
+
+    fun runSendNewFeeDecisionEmail(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendNewFeeDecisionEmail
+    ) {
+        val feeDecisionId = msg.decisionId
+        val decision =
+            db.read { tx -> tx.getFeeDecision(feeDecisionId) }
+                ?: throw NotFound("Decision not found")
+
+        logger.info { "Sending fee decision emails for (decisionId: $feeDecisionId)" }
+
+        val recipients = listOfNotNull(decision.headOfFamily)
+
+        recipients.forEach { recipient ->
+            val language =
+                if (!recipient.language.isNullOrEmpty())
+                    Language.tryValueOf(recipient.language) ?: Language.en
+                else Language.fi
+            val fromAddress = emailEnv.sender(language)
+            val content =
+                emailMessageProvider.financeDecisionNotification(
+                    language,
+                    FinanceDecisionType.FEE_DECISION
+                )
+            Email.create(
+                    db,
+                    recipient.id,
+                    EmailMessageType.DECISION_NOTIFICATION,
+                    fromAddress,
+                    content,
+                    "$feeDecisionId - ${recipient.id}",
+                )
+                ?.also { emailClient.send(it) }
+        }
+
+        logger.info {
+            "Successfully sent fee decision emails (${recipients.size}) (id: $feeDecisionId)."
+        }
     }
 }

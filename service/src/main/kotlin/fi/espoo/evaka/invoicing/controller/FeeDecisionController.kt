@@ -228,6 +228,13 @@ class FeeDecisionController(
                     feeDecisionIds
                 )
                 service.setSent(it, clock, feeDecisionIds)
+                // emails should be sent only after decisions are actually visible to citizens in
+                // eVaka
+                asyncJobRunner.plan(
+                    it,
+                    feeDecisionIds.map { id -> AsyncJob.SendNewFeeDecisionEmail(decisionId = id) },
+                    runAt = clock.now()
+                )
             }
         }
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)

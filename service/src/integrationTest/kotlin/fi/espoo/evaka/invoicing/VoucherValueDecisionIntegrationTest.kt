@@ -7,13 +7,20 @@ package fi.espoo.evaka.invoicing
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
@@ -42,7 +49,9 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
+import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -63,10 +72,13 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var emailMessageProvider: IEmailMessageProvider
+    @Autowired lateinit var emailEnv: EmailEnv
 
     @BeforeEach
     fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
+        MockEmailClient.clear()
 
         db.transaction {
             it.insertGeneralTestFixtures()
@@ -527,6 +539,123 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
     }
 
+    @Test
+    fun `Email notification is sent to hof when decision in WAITING_FOR_SENDING is set to SENT`() {
+        // optInAdult has an email address, and does not require manual sending of PDF decision
+        val optInAdult =
+            testAdult_6.copy(
+                id = PersonId(UUID.randomUUID()),
+                email = "optin@test.com",
+                forceManualFeeDecisions = false,
+                ssn = "291090-9986",
+                enabledEmailTypes = listOf(EmailMessageType.DECISION_NOTIFICATION)
+            )
+        db.transaction {
+            it.insert(optInAdult, DevPersonType.RAW_ROW)
+            it.insertTestParentship(
+                headOfChild = optInAdult.id,
+                childId = testChild_2.id,
+                startDate = testChild_2.dateOfBirth,
+                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            )
+            it.insertTestPartnership(adult1 = optInAdult.id, adult2 = testAdult_7.id)
+        }
+        createPlacement(startDate, endDate, childId = testChild_2.id)
+        val decisionId = sendAllValueDecisions().first()
+        db.transaction { it.setDocumentContainsContactInfo(decisionId) }
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
+        val emailContent =
+            emailMessageProvider.financeDecisionNotification(
+                Language.fi,
+                FinanceDecisionType.VOUCHER_VALUE_DECISION
+            )
+
+        assertEquals(
+            setOfNotNull(optInAdult.email),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+        assertEquals(emailContent.subject, getEmailFor(optInAdult).content.subject)
+        assertEquals(
+            "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
+            getEmailFor(optInAdult).fromAddress
+        )
+    }
+
+    @Test
+    fun `Email notification is sent to hof when decision in WAITING_FOR_MANUAL_SENDING is set to SENT`() {
+        db.transaction {
+            // testAdult_3 has an email address, but no mail address -> marked for manual sending
+            it.insertTestParentship(
+                headOfChild = testAdult_3.id,
+                childId = testChild_2.id,
+                startDate = testChild_2.dateOfBirth,
+                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            )
+            it.insertTestPartnership(adult1 = testAdult_3.id, adult2 = testAdult_4.id)
+        }
+        createPlacement(startDate, endDate, childId = testChild_2.id)
+        val decisionId = sendAllValueDecisions().first()
+        db.transaction { it.setDocumentContainsContactInfo(decisionId) }
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
+        // assert that no emails sent yet
+        assertEquals(emptySet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+
+        markValueDecisionsSent(listOf(decisionId))
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
+        val emailContent =
+            emailMessageProvider.financeDecisionNotification(
+                Language.fi,
+                FinanceDecisionType.VOUCHER_VALUE_DECISION
+            )
+
+        assertEquals(
+            setOfNotNull(testAdult_3.email),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+        assertEquals(emailContent.subject, getEmailFor(testAdult_3).content.subject)
+        assertEquals(
+            "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
+            getEmailFor(testAdult_3).fromAddress
+        )
+    }
+
+    @Test
+    fun `Email notification is not sent to hof when opted out of decision emails`() {
+        // optOutAdult is eligible, but has elected to not receive decision emails
+        val optOutAdult =
+            testAdult_6.copy(
+                id = PersonId(UUID.randomUUID()),
+                ssn = "291090-9986",
+                email = "optout@test.com",
+                forceManualFeeDecisions = false,
+                enabledEmailTypes = listOf(),
+            )
+        db.transaction {
+            it.insert(optOutAdult, DevPersonType.RAW_ROW)
+
+            // optOutAdult has an email address, and does not require manual sending of PDF decision
+            it.insertTestParentship(
+                headOfChild = optOutAdult.id,
+                childId = testChild_2.id,
+                startDate = testChild_2.dateOfBirth,
+                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            )
+            it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = testAdult_7.id)
+        }
+        createPlacement(startDate, endDate, childId = testChild_2.id)
+        val decisionId = sendAllValueDecisions().first()
+        db.transaction { it.setDocumentContainsContactInfo(decisionId) }
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
+        assertEquals(emptySet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+    }
+
     fun createReliefDecision(forceDaycareHandler: Boolean): VoucherValueDecision {
         createPlacement(startDate, endDate)
         val decision = getAllValueDecisions().getOrNull(0)!!
@@ -719,4 +848,30 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     """
             )
         }
+
+    private fun markValueDecisionsSent(
+        decisionIds: List<VoucherValueDecisionId>,
+        expectedStatusCode: Int = 200,
+        expectedErrorCode: String? = null,
+    ) {
+        http
+            .post("/value-decisions/mark-sent")
+            .objectBody(decisionIds, mapper = jsonMapper)
+            .withMockedTime(now)
+            .asUser(financeWorker)
+            .response()
+            .also { (_, res, _) ->
+                assertEquals(expectedStatusCode, res.statusCode)
+                if (expectedStatusCode == 400) {
+                    val responseJson = res.body().asString("application/json")
+                    val errorCode = jsonMapper.readTree(responseJson).get("errorCode").textValue()
+                    assertEquals(expectedErrorCode, errorCode)
+                }
+            }
+    }
+
+    private fun getEmailFor(person: DevPerson): Email {
+        val address = person.email ?: throw Error("$person has no email")
+        return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
+    }
 }

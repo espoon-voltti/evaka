@@ -79,6 +79,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
@@ -1530,6 +1531,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
         pedagogicalDocumentNotification,
         outdatedIncomeNotification,
         calendarEventNotification,
+        financeDecisionNotification
     }
 
     @GetMapping("/email-content")
@@ -1596,6 +1598,11 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
                                 )
                             ),
                         )
+                    )
+                EmailMessageType.financeDecisionNotification ->
+                    emailMessageProvider.financeDecisionNotification(
+                        Language.fi,
+                        FinanceDecisionType.FEE_DECISION
                     )
             }
         val content =
