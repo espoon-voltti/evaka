@@ -13,11 +13,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 
-fun LocalDate.isOperationalDate(operationalDays: Set<DayOfWeek>, holidays: Set<LocalDate>) =
-    operationalDays.contains(dayOfWeek) &&
-        // Units that are operational every day of the week are also operational during holidays
-        (operationalDays.size == 7 || !holidays.contains(this))
-
+// TODO: Remove
 data class OperationalDays(
     val fullMonth: List<LocalDate>,
     val generalCase: List<LocalDate>,
@@ -26,12 +22,20 @@ data class OperationalDays(
     fun forUnit(id: DaycareId): List<LocalDate> = specialCases[id] ?: generalCase
 }
 
+// TODO: Remove
 fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
     val range = FiniteDateRange.ofMonth(year, month)
     return operationalDays(range)
 }
 
-fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDays {
+// TODO: Remove
+private fun LocalDate.isOperationalDate(operationalDays: Set<DayOfWeek>, holidays: Set<LocalDate>) =
+    operationalDays.contains(dayOfWeek) &&
+        // Units that are operational every day of the week are also operational during holidays
+        (operationalDays.size == 7 || !holidays.contains(this))
+
+// TODO: Remove
+private fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDays {
     val rangeDates = range.dates()
 
     // Only includes units that don't have regular monday to friday operational days
@@ -67,15 +71,6 @@ fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
             sql("SELECT date FROM holiday WHERE between_start_and_end(${bind(range)}, date)")
         }
         .toSet<LocalDate>()
-
-private data class DaycareOperationDays(
-    val unitId: DaycareId,
-    val operationDays: Set<Int>,
-    val shiftCareOperationDays: Set<Int>?,
-    val shiftCareOpenOnHolidays: Boolean
-)
-
-private data class PlacementRange(val range: FiniteDateRange, val unitId: DaycareId)
 
 fun Database.Read.getOperationalDatesForChild(
     range: FiniteDateRange,
@@ -146,3 +141,12 @@ fun Database.Read.getOperationalDatesForChild(
         }
         .toSet()
 }
+
+private data class DaycareOperationDays(
+    val unitId: DaycareId,
+    val operationDays: Set<Int>,
+    val shiftCareOperationDays: Set<Int>?,
+    val shiftCareOpenOnHolidays: Boolean
+)
+
+private data class PlacementRange(val range: FiniteDateRange, val unitId: DaycareId)
