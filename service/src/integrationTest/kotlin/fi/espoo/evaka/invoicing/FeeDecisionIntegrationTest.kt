@@ -32,15 +32,16 @@ import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -2076,11 +2077,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction {
             it.insert(optInAdult, DevPersonType.RAW_ROW)
-            it.insertTestParentship(
-                headOfChild = optInAdult.id,
-                childId = testChild_2.id,
-                startDate = testChild_2.dateOfBirth,
-                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    ParentshipId(UUID.randomUUID()),
+                    testChild_2.id,
+                    optInAdult.id,
+                    testChild_2.dateOfBirth,
+                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    HelsinkiDateTime.now()
+                )
             )
             it.insertTestPartnership(adult1 = optInAdult.id, adult2 = testAdult_7.id)
         }
@@ -2110,11 +2115,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `Email notification is sent to hof when decision in WAITING_FOR_MANUAL_SENDING is set to SENT`() {
         db.transaction {
             // testAdult_3 has an email address, but no mail address -> marked for manual sending
-            it.insertTestParentship(
-                headOfChild = testAdult_3.id,
-                childId = testChild_2.id,
-                startDate = testChild_2.dateOfBirth,
-                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    ParentshipId(UUID.randomUUID()),
+                    testChild_2.id,
+                    testAdult_3.id,
+                    testChild_2.dateOfBirth,
+                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    HelsinkiDateTime.now()
+                )
             )
             it.insertTestPartnership(adult1 = testAdult_3.id, adult2 = testAdult_4.id)
         }
@@ -2166,11 +2175,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction {
             it.insert(optOutAdult, DevPersonType.RAW_ROW)
-            it.insertTestParentship(
-                headOfChild = optOutAdult.id,
-                childId = testChild_2.id,
-                startDate = testChild_2.dateOfBirth,
-                endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+            it.insert(
+                DevParentship(
+                    ParentshipId(UUID.randomUUID()),
+                    testChild_2.id,
+                    optOutAdult.id,
+                    testChild_2.dateOfBirth,
+                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    HelsinkiDateTime.now()
+                )
             )
             it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = testAdult_7.id)
         }
