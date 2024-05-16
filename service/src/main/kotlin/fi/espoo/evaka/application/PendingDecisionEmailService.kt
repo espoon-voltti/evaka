@@ -54,24 +54,25 @@ class PendingDecisionEmailService(
                     setOf(AsyncJobType(AsyncJob.SendPendingDecisionEmail::class))
                 )
 
+                val today = clock.today()
                 val pendingGuardianDecisions =
-                    @Suppress("DEPRECATION")
-                    tx.createQuery(
-                            """
+                    tx.createQuery {
+                            sql(
+                                """
 WITH pending_decisions AS (
 SELECT id, application_id
 FROM decision d
 WHERE d.status = 'PENDING'
 AND d.resolved IS NULL
-AND (d.sent_date < :today - INTERVAL '1 week' AND d.sent_date > :today - INTERVAL '2 month')
+AND (d.sent_date < ${bind(today)} - INTERVAL '1 week' AND d.sent_date > ${bind(today)} - INTERVAL '2 month')
 AND d.pending_decision_emails_sent_count < 2
-AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < :today - INTERVAL '1 week'))
+AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < ${bind(today)} - INTERVAL '1 week'))
 SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
 FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
 GROUP BY application.guardian_id
 """
-                        )
-                        .bind("today", clock.today())
+                            )
+                        }
                         .toList<GuardianDecisions>()
 
                 val createdJobCount =
@@ -138,22 +139,20 @@ GROUP BY application.guardian_id
             )
             ?.also { emailClient.send(it) }
 
+        val now = clock.now()
         db.transaction { tx ->
             // Mark as sent even if the recipient didn't want the email, to stop sending reminders
             // when the count reaches a threshold
             pendingDecision.decisionIds.forEach { decisionId ->
-                @Suppress("DEPRECATION")
-                tx.createUpdate(
+                tx.execute {
+                    sql(
                         """
 UPDATE decision
-SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = :now
-WHERE id = :id
-                    """
-                            .trimIndent()
+SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = ${bind(now)}
+WHERE id = ${bind(decisionId)}
+"""
                     )
-                    .bind("now", clock.now())
-                    .bind("id", decisionId)
-                    .execute()
+                }
             }
         }
     }
