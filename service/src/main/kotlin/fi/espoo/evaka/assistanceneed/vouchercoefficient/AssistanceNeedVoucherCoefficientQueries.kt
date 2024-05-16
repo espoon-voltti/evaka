@@ -13,107 +13,89 @@ import fi.espoo.evaka.shared.domain.NotFound
 fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     childId: ChildId,
     data: AssistanceNeedVoucherCoefficientRequest
-): AssistanceNeedVoucherCoefficient {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO assistance_need_voucher_coefficient (child_id, coefficient, validity_period)
-        VALUES (:childId, :coefficient, :validityPeriod)
-        RETURNING id, child_id, coefficient, validity_period
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bindKotlin(data)
-        .bind("childId", childId)
-        .exactlyOne<AssistanceNeedVoucherCoefficient>()
-}
+): AssistanceNeedVoucherCoefficient =
+    createQuery {
+            sql(
+                """
+INSERT INTO assistance_need_voucher_coefficient (child_id, coefficient, validity_period)
+VALUES (${bind(childId)}, ${bind(data.coefficient)}, ${bind(data.validityPeriod)})
+RETURNING id, child_id, coefficient, validity_period
+"""
+            )
+        }
+        .exactlyOne()
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientById(
     id: AssistanceNeedVoucherCoefficientId
-): AssistanceNeedVoucherCoefficient {
-    // language=sql
-    val sql =
-        """
-        SELECT id, child_id, coefficient, validity_period
-        FROM assistance_need_voucher_coefficient
-        WHERE id = :id
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
-        ?: throw NotFound("Assistance need voucher coefficient $id not found")
-}
+): AssistanceNeedVoucherCoefficient =
+    createQuery {
+            sql(
+                """
+SELECT id, child_id, coefficient, validity_period
+FROM assistance_need_voucher_coefficient
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
     childId: ChildId
-): List<AssistanceNeedVoucherCoefficient> {
-    // language=sql
-    val sql =
-        """
-        SELECT id, child_id, coefficient, validity_period
-        FROM assistance_need_voucher_coefficient
-        WHERE child_id = :childId
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("childId", childId).toList<AssistanceNeedVoucherCoefficient>()
-}
+): List<AssistanceNeedVoucherCoefficient> =
+    createQuery {
+            sql(
+                """
+SELECT id, child_id, coefficient, validity_period
+FROM assistance_need_voucher_coefficient
+WHERE child_id = ${bind(childId)}
+"""
+            )
+        }
+        .toList()
 
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId,
     data: AssistanceNeedVoucherCoefficientRequest
-): AssistanceNeedVoucherCoefficient {
-    // language=sql
-    val sql =
-        """
-        UPDATE assistance_need_voucher_coefficient
-        SET coefficient = :coefficient,
-            validity_period = :validityPeriod
-        WHERE id = :id
-        RETURNING id, child_id, coefficient, validity_period
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bindKotlin(data)
-        .bind("id", id)
-        .exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
-        ?: throw NotFound("Assistance need voucher coefficient $id not found")
-}
+): AssistanceNeedVoucherCoefficient =
+    createQuery {
+            sql(
+                """
+UPDATE assistance_need_voucher_coefficient
+SET coefficient = ${bind(data.coefficient)},
+    validity_period = ${bind(data.validityPeriod)}
+WHERE id = ${bind(id)}
+RETURNING id, child_id, coefficient, validity_period
+"""
+            )
+        }
+        .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
 fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId
-): AssistanceNeedVoucherCoefficient? {
-    val sql =
-        """
-        DELETE FROM assistance_need_voucher_coefficient
-        WHERE id = :id
-        RETURNING id, child_id, coefficient, validity_period
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("id", id).exactlyOneOrNull<AssistanceNeedVoucherCoefficient>()
-}
+): AssistanceNeedVoucherCoefficient? =
+    createQuery {
+            sql(
+                """
+DELETE FROM assistance_need_voucher_coefficient
+WHERE id = ${bind(id)}
+RETURNING id, child_id, coefficient, validity_period
+"""
+            )
+        }
+        .exactlyOneOrNull()
 
 fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
     childId: ChildId,
     range: FiniteDateRange
-): List<AssistanceNeedVoucherCoefficient> {
-    // language=sql
-    val sql =
-        """
-        SELECT id, child_id, coefficient, validity_period
-        FROM assistance_need_voucher_coefficient
-        WHERE child_id = :childId
-          AND :range && validity_period
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("range", range)
-        .toList<AssistanceNeedVoucherCoefficient>()
-}
+): List<AssistanceNeedVoucherCoefficient> =
+    createQuery {
+            sql(
+                """
+SELECT id, child_id, coefficient, validity_period
+FROM assistance_need_voucher_coefficient
+WHERE child_id = ${bind(childId)}
+  AND ${bind(range)} && validity_period
+"""
+            )
+        }
+        .toList()
