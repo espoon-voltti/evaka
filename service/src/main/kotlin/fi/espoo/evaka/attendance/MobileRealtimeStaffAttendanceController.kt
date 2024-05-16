@@ -57,7 +57,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                     CurrentDayStaffAttendanceResponse(
                         staff = tx.getStaffAttendances(unitId, clock.now()),
-                        extraAttendances = tx.getExternalStaffAttendances(unitId, clock.now())
+                        extraAttendances = tx.getExternalStaffAttendances(unitId)
                     )
                 }
             }
@@ -362,7 +362,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         db.connect { dbc ->
             // todo: convert to action auth
             val attendance =
-                dbc.read { it.getExternalStaffAttendance(body.attendanceId, clock.now()) }
+                dbc.read { it.getExternalStaffAttendance(body.attendanceId) }
                     ?: throw NotFound("attendance not found")
             dbc.read {
                 ac.requirePermissionFor(

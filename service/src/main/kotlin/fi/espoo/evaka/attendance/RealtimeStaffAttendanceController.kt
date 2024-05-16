@@ -60,8 +60,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         }
                     val attendanceEmployeeToGroups =
                         tx.getGroupsForEmployees(unitId, attendancesByEmployee.keys)
-                    val staffForAttendanceCalendar =
-                        tx.getCurrentStaffForAttendanceCalendar(unitId, range.start, range.end)
+                    val staffForAttendanceCalendar = tx.getCurrentStaffForAttendanceCalendar(unitId)
                     val noAttendanceEmployeeToGroups =
                         tx.getGroupsForEmployees(
                             unitId,
