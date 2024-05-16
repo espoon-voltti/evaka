@@ -67,7 +67,7 @@ class JamixService(
                 date = job.date
             )
         } catch (e: Exception) {
-            logger.error(e) {
+            logger.warn(e) {
                 "Failed to send meal order to Jamix: date=${job.date}, customerNumber=${job.customerNumber}, customerId=${job.customerId}, error=${e.localizedMessage}"
             }
             throw e
