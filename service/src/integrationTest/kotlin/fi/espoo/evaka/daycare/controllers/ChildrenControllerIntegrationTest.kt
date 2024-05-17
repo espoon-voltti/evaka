@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -44,18 +45,18 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')"
                 )
             }
-            child =
-                tx.createChild(
-                    Child(
-                        id = childId,
-                        additionalInformation =
-                            AdditionalInformation(
-                                allergies = "dghsfhed",
-                                diet = "bcvxnvgmn",
-                                additionalInfo = "fjmhj"
-                            )
-                    )
+            tx.createChild(
+                Child(
+                    id = childId,
+                    additionalInformation =
+                        AdditionalInformation(
+                            allergies = "dghsfhed",
+                            diet = "bcvxnvgmn",
+                            additionalInfo = "fjmhj"
+                        )
                 )
+            )
+            child = tx.getChild(childId)!!
         }
     }
 

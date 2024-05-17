@@ -4,14 +4,23 @@
 
 import { query } from 'lib-common/query'
 
-import { getDiets } from '../../../generated/api-clients/specialdiet'
+import {
+  getDiets,
+  getMealTextures
+} from '../../../generated/api-clients/specialdiet'
 import { createQueryKeys } from '../../../query'
 
 const queryKeys = createQueryKeys('personDetails', {
-  specialDiets: () => ['specialDiets']
+  specialDiets: () => ['specialDiets'],
+  mealTextures: () => ['mealTextures']
 })
 
 export const specialDietsQuery = query({
   api: getDiets,
   queryKey: queryKeys.specialDiets
+})
+
+export const mealTexturesQuery = query({
+  api: getMealTextures,
+  queryKey: queryKeys.mealTextures
 })

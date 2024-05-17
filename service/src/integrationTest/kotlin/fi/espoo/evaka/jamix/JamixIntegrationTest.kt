@@ -393,7 +393,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
 class TestJamixClient(
     val customers: Map<Int, Int> = mapOf(),
-    val specialDiets: List<JamixSpecialDiet> = emptyList()
+    val specialDiets: List<JamixSpecialDiet> = emptyList(),
+    val mealTextures: List<JamixTexture> = emptyList()
 ) : JamixClient {
     val orders = mutableListOf<JamixClient.MealOrder>()
 
@@ -409,5 +410,9 @@ class TestJamixClient(
 
     override fun getDiets(): List<JamixSpecialDiet> {
         return specialDiets
+    }
+
+    override fun getTextures(): List<JamixTexture> {
+        return mealTextures
     }
 }
