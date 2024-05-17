@@ -59,6 +59,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 invoiceCalculationData.period,
                 invoiceCalculationData.areaIds,
                 invoiceCalculationData.operationalDaysDeprecated,
+                invoiceCalculationData.operationalDaysByChild,
                 invoiceCalculationData.feeThresholds,
                 invoiceCalculationData.absences,
                 invoiceCalculationData.plannedAbsences,

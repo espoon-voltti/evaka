@@ -83,6 +83,7 @@ class DraftInvoiceGenerator(
         period: FiniteDateRange,
         daycareCodes: Map<DaycareId, AreaId>,
         operationalDaysDeprecated: OperationalDaysDeprecated,
+        operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
         feeThresholds: FeeThresholds,
         absences: List<AbsenceStub>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
@@ -108,6 +109,7 @@ class DraftInvoiceGenerator(
                     period,
                     daycareCodes,
                     operationalDaysDeprecated,
+                    operationalDaysByChild,
                     feeThresholds,
                     absencesByChild,
                     plannedAbsences,
@@ -144,22 +146,16 @@ class DraftInvoiceGenerator(
         invoicePeriod: FiniteDateRange,
         areaIds: Map<DaycareId, AreaId>,
         operationalDaysDeprecated: OperationalDaysDeprecated,
+        operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
         freeChildren: List<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
-        val childrenPartialMonth =
-            getPartialMonthChildren(placements, decisions, operationalDaysDeprecated)
+        val childrenPartialMonth = getPartialMonthChildren(decisions, operationalDaysByChild)
         val childrenFullMonthAbsences =
-            getFullMonthAbsences(
-                placements,
-                decisions,
-                operationalDaysDeprecated,
-                absences,
-                plannedAbsences
-            )
+            getFullMonthAbsences(decisions, operationalDaysByChild, absences, plannedAbsences)
         val isFreeMonth: (FeeDecisionChild) -> Boolean = { part ->
             part.placement.type == PlacementType.PRESCHOOL_CLUB &&
                 PRESCHOOL_CLUB_FREE_MONTHS.contains(invoicePeriod.start.month)
@@ -451,11 +447,10 @@ class DraftInvoiceGenerator(
     }
 
     private fun getPartialMonthChildren(
-        placementsList: List<Pair<FiniteDateRange, PlacementStub>>,
         decisions: List<FeeDecision>,
-        operationalDaysDeprecated: OperationalDaysDeprecated
+        operationalDaysByChild: Map<ChildId, Set<LocalDate>>
     ): Set<ChildId> {
-        return getOperationalDaysForChildsUnits(placementsList, operationalDaysDeprecated)
+        return operationalDaysByChild
             .mapValues { (childId, childOperationalDays) ->
                 childOperationalDays.any { date -> !childHasFeeDecision(decisions, childId, date) }
             }
@@ -465,9 +460,8 @@ class DraftInvoiceGenerator(
     }
 
     private fun getFullMonthAbsences(
-        placements: List<Pair<FiniteDateRange, PlacementStub>>,
         decisions: List<FeeDecision>,
-        operationalDaysDeprecated: OperationalDaysDeprecated,
+        operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>
     ): Map<ChildId, FullMonthAbsenceType> {
@@ -485,7 +479,7 @@ class DraftInvoiceGenerator(
             } ?: false
         }
 
-        return getOperationalDaysForChildsUnits(placements, operationalDaysDeprecated)
+        return operationalDaysByChild
             .mapValues { (childId, allOperationalDays) ->
                 allOperationalDays.filter { date -> childHasFeeDecision(decisions, childId, date) }
             }
@@ -530,21 +524,6 @@ class DraftInvoiceGenerator(
             decision.validDuring.includes(date) &&
                 decision.children.any { part -> part.child.id == childId }
         }
-    }
-
-    private fun getOperationalDaysForChildsUnits(
-        placements: List<Pair<FiniteDateRange, PlacementStub>>,
-        operationalDaysDeprecated: OperationalDaysDeprecated
-    ): Map<ChildId, Set<LocalDate>> {
-        return placements
-            .map { placement ->
-                val unitOperationalDays = operationalDaysDeprecated.forUnit(placement.second.unit)
-                placement.second.child.id to unitOperationalDays
-            }
-            .groupBy { (childId, _) -> childId }
-            .mapValues { (_, operationalDaysList) ->
-                operationalDaysList.flatMap { (_, operationalDays) -> operationalDays }.toSet()
-            }
     }
 
     private fun isPreschoolClub(row: InvoiceRowStub): Boolean =
