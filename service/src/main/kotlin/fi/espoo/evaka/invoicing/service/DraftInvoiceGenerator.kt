@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.calculateMaxFee
 import fi.espoo.evaka.invoicing.domain.feeAlterationEffect
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.reports.ServiceNeedReport
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -366,6 +367,9 @@ class DraftInvoiceGenerator(
                         )
                     if (logic == InvoiceGenerationLogic.Free) return@flatMap listOf()
 
+                    // In cities that use contract days it is not allowed to change service needs
+                    // during middle of the month, so picking contractDaysPerMonth from the first
+                    // one is safe
                     val contractDaysPerMonth =
                         separatePeriods.first().second.contractDaysPerMonth.takeIf {
                             featureConfig.useContractDaysAsDailyFeeDivisor
@@ -551,25 +555,21 @@ class DraftInvoiceGenerator(
             }
 
         // If this is a full month for a contract day child (not in partialMonthChildren), make sure
-        // that there's
-        // no less than `contractDaysPerMonth` days even if they have more planned absences than
-        // they should
+        // that there's no less than `contractDaysPerMonth` days even if they have more
+        // planned absences than  they should
         return if (
             contractDaysPerMonth != null &&
                 !partialMonthChildren.contains(child.id) &&
                 attendanceDates.size < contractDaysPerMonth
         ) {
-            (attendanceDates +
-                    operationalDaysDeprecated.fullMonth
-                        .filter { date ->
-                            isUnitOperationalDay(
-                                operationalDaysDeprecated,
-                                separatePeriods,
-                                date
-                            ) && !attendanceDates.contains(date)
-                        }
-                        .take(contractDaysPerMonth - attendanceDates.size))
-                .sorted()
+            val extraDatesToAdd = contractDaysPerMonth - attendanceDates.size
+            val operationalDaysWithoutAttendance =
+                operationalDaysDeprecated.fullMonth.filter { date ->
+                    isUnitOperationalDay(operationalDaysDeprecated, separatePeriods, date) &&
+                        !attendanceDates.contains(date)
+                }
+
+            (attendanceDates + operationalDaysWithoutAttendance.take(extraDatesToAdd)).sorted()
         } else {
             attendanceDates
         }
@@ -825,6 +825,7 @@ class DraftInvoiceGenerator(
             }
     }
 
+    private final val serviceNeedReport: ServiceNeedReport = TODO("initialize me")
     private val plannedAbsenceTypes = setOf(AbsenceType.PLANNED_ABSENCE, AbsenceType.FREE_ABSENCE)
 
     private fun surplusContractDays(
