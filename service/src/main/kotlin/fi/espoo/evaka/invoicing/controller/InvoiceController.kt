@@ -23,8 +23,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -135,7 +135,8 @@ class InvoiceController(
                     clock,
                     Action.Global.CREATE_DRAFT_INVOICES
                 )
-                val lastMonth = DateRange.ofMonth(clock.today().withDayOfMonth(1).minusMonths(1))
+                val lastMonth =
+                    FiniteDateRange.ofMonth(clock.today().withDayOfMonth(1).minusMonths(1))
                 generator.createAndStoreAllDraftInvoices(it, lastMonth)
             }
         }
