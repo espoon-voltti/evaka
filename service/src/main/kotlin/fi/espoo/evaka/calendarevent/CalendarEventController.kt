@@ -473,10 +473,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         eventTimeId = body.calendarEventTimeId,
                         childId = body.childId
                     )
-                    tx.deleteCalendarEventTimeReservation(
-                        calendarEventTimeId = body.calendarEventTimeId,
-                        childId = null
-                    )
+                    tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
                     if (body.childId != null) {
                         tx.insertCalendarEventTimeReservation(
                             eventTimeId = body.calendarEventTimeId,
@@ -633,10 +630,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Child.DELETE_CALENDAR_EVENT_TIME_RESERVATION,
                         body.childId
                     )
-                    tx.deleteCalendarEventTimeReservation(
-                        calendarEventTimeId = body.calendarEventTimeId,
-                        childId = body.childId
-                    )
+                    tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
                 }
             }
             .also { Audit.CalendarEventTimeReservationDelete.log(targetId = body) }
