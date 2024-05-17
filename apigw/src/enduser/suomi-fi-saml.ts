@@ -7,6 +7,7 @@ import { SamlConfig, Strategy } from '@node-saml/passport-saml'
 import { citizenLogin } from '../shared/service-client.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
 import { Sessions } from '../shared/session.js'
+import { logWarn } from '../shared/logging.js'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -21,17 +22,22 @@ const Profile = z.object({
   [SUOMI_FI_SURNAME_KEY]: z.string()
 })
 
+const ssnRegex = /^[0-9]{6}[-+ABCDEFUVWXY][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/
+
 export function createSuomiFiStrategy(
   sessions: Sessions,
   config: SamlConfig
 ): Strategy {
   return createSamlStrategy(sessions, config, Profile, async (profile) => {
-    const socialSecurityNumber = profile[SUOMI_FI_SSN_KEY]
+    const socialSecurityNumber = profile[SUOMI_FI_SSN_KEY]?.trim()
     if (!socialSecurityNumber) throw Error('No SSN in SAML data')
+    if (!ssnRegex.test(socialSecurityNumber)) {
+      logWarn('Invalid SSN received from Suomi.fi login')
+    }
     const person = await citizenLogin({
       socialSecurityNumber,
-      firstName: profile[SUOMI_FI_GIVEN_NAME_KEY] ?? '',
-      lastName: profile[SUOMI_FI_SURNAME_KEY] ?? ''
+      firstName: profile[SUOMI_FI_GIVEN_NAME_KEY]?.trim() ?? '',
+      lastName: profile[SUOMI_FI_SURNAME_KEY]?.trim() ?? ''
     })
     return {
       id: person.id,
