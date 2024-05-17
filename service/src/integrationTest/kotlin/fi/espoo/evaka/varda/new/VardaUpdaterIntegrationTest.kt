@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.varda.new
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -18,7 +16,6 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
-import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -50,11 +47,6 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val jsonMapper: JsonMapper =
-        defaultJsonMapperBuilder()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .build()
-
     @Test
     fun `evaka state - multiple placements, service needs, fee decisions and value decisions`() {
         val municipalOrganizerOid = "municipalOrganizerOid"
@@ -2171,6 +2163,236 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `write to varda - data from other source system is set to end the day before first evaka data`() {
+        val henkiloUrl = URI.create("henkilo")
+        val lapsiUrl = URI.create("lapsi")
+
+        val old =
+            object {
+                val sourceSystem = "oldSourceSystem"
+                val organizerOid = "oldOrganizerOid"
+                val unitOid = "oldUnitOid"
+
+                val beforeEvakaRange =
+                    FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 12, 31))
+                val applicationDate = beforeEvakaRange.start.minusMonths(4)
+
+                val varhaiskasvatusPaatosToEndUrl = URI.create("varhaiskasvatuspaatos_to_end")
+                val varhaiskasvatusSuhdeToEndUrl = URI.create("varhaiskasvatussuhde_to_end")
+                val maksutietoToEndUrl = URI.create("maksutieto_to_end")
+
+                val afterEvakaRange =
+                    FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 12, 31))
+                val varhaiskasvatusPaatosToDeleteUrl = URI.create("varhaiskasvatuspaatos_to_delete")
+                val varhaiskasvatusSuhdeToDeleteUrl = URI.create("varhaiskasvatussuhde_to_delete")
+            }
+        val new =
+            object {
+                val sourceSystem = "sourceSystem"
+                val organizerOid = "organizerOid"
+                val unitOid = "unitOid"
+
+                val range = FiniteDateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2022, 12, 31))
+                val applicationDate = range.start.minusDays(22)
+            }
+
+        val vardaHenkilo =
+            VardaUpdater.VardaHenkiloNode(
+                henkilo =
+                    VardaReadClient.HenkiloResponse(
+                        url = henkiloUrl,
+                        henkilo_oid = "henkilo_oid_1",
+                        lapsi = listOf(lapsiUrl)
+                    ),
+                lapset =
+                    listOf(
+                        VardaUpdater.VardaLapsiNode(
+                            lapsi =
+                                VardaReadClient.LapsiResponse(
+                                    url = lapsiUrl,
+                                    lahdejarjestelma = old.sourceSystem,
+                                    vakatoimija_oid = old.organizerOid,
+                                    oma_organisaatio_oid = null,
+                                    paos_organisaatio_oid = null,
+                                    paos_kytkin = false
+                                ),
+                            varhaiskasvatuspaatokset =
+                                listOf(
+                                    VardaUpdater.VardaVarhaiskasvatuspaatosNode(
+                                        varhaiskasvatuspaatos =
+                                            VardaReadClient.VarhaiskasvatuspaatosResponse(
+                                                url = old.varhaiskasvatusPaatosToEndUrl,
+                                                lahdejarjestelma = old.sourceSystem,
+                                                alkamis_pvm = old.beforeEvakaRange.start,
+                                                paattymis_pvm = old.beforeEvakaRange.end,
+                                                hakemus_pvm = old.applicationDate,
+                                                tuntimaara_viikossa = 35.0,
+                                                kokopaivainen_vaka_kytkin = true,
+                                                tilapainen_vaka_kytkin = false,
+                                                paivittainen_vaka_kytkin = true,
+                                                vuorohoito_kytkin = false,
+                                                jarjestamismuoto_koodi = "jm01"
+                                            ),
+                                        varhaiskasvatussuhteet =
+                                            listOf(
+                                                VardaReadClient.VarhaiskasvatussuhdeResponse(
+                                                    url = old.varhaiskasvatusSuhdeToEndUrl,
+                                                    varhaiskasvatuspaatos =
+                                                        old.varhaiskasvatusPaatosToEndUrl,
+                                                    lahdejarjestelma = old.sourceSystem,
+                                                    alkamis_pvm = old.beforeEvakaRange.start,
+                                                    paattymis_pvm = old.beforeEvakaRange.end,
+                                                    toimipaikka_oid = old.unitOid
+                                                )
+                                            )
+                                    ),
+                                    VardaUpdater.VardaVarhaiskasvatuspaatosNode(
+                                        varhaiskasvatuspaatos =
+                                            VardaReadClient.VarhaiskasvatuspaatosResponse(
+                                                url = old.varhaiskasvatusPaatosToDeleteUrl,
+                                                lahdejarjestelma = old.sourceSystem,
+                                                alkamis_pvm = old.afterEvakaRange.start,
+                                                paattymis_pvm = old.afterEvakaRange.end,
+                                                hakemus_pvm = old.applicationDate,
+                                                tuntimaara_viikossa = 35.0,
+                                                kokopaivainen_vaka_kytkin = true,
+                                                tilapainen_vaka_kytkin = false,
+                                                paivittainen_vaka_kytkin = true,
+                                                vuorohoito_kytkin = false,
+                                                jarjestamismuoto_koodi = "jm01"
+                                            ),
+                                        varhaiskasvatussuhteet =
+                                            listOf(
+                                                VardaReadClient.VarhaiskasvatussuhdeResponse(
+                                                    url = old.varhaiskasvatusSuhdeToDeleteUrl,
+                                                    varhaiskasvatuspaatos =
+                                                        old.varhaiskasvatusPaatosToDeleteUrl,
+                                                    lahdejarjestelma = old.sourceSystem,
+                                                    alkamis_pvm = old.afterEvakaRange.start,
+                                                    paattymis_pvm = old.afterEvakaRange.end,
+                                                    toimipaikka_oid = old.unitOid
+                                                )
+                                            )
+                                    )
+                                ),
+                            maksutiedot =
+                                listOf(
+                                    VardaReadClient.MaksutietoResponse(
+                                        url = old.maksutietoToEndUrl,
+                                        lapsi = lapsiUrl,
+                                        lahdejarjestelma = old.sourceSystem,
+                                        alkamis_pvm = old.beforeEvakaRange.start,
+                                        paattymis_pvm = old.beforeEvakaRange.end,
+                                        perheen_koko = 2,
+                                        maksun_peruste_koodi = "MP03",
+                                        asiakasmaksu = 10.0,
+                                        palveluseteli_arvo = 0.0,
+                                        huoltajat =
+                                            listOf(
+                                                Huoltaja(
+                                                    henkilotunnus = null,
+                                                    henkilo_oid = "huoltaja_oid_1",
+                                                    etunimet = "Test",
+                                                    sukunimi = "Person"
+                                                )
+                                            )
+                                    )
+                                )
+                        )
+                    )
+            )
+
+        val evakaHenkilo =
+            VardaUpdater.EvakaHenkiloNode(
+                henkilo =
+                    Henkilo(
+                        etunimet = "Test",
+                        sukunimi = "Person",
+                        henkilo_oid = null,
+                        henkilotunnus = "030320A904N",
+                    ),
+                lapset =
+                    listOf(
+                        VardaUpdater.EvakaLapsiNode(
+                            lapsi =
+                                Lapsi(
+                                    vakatoimija_oid = new.organizerOid,
+                                    oma_organisaatio_oid = null,
+                                    paos_organisaatio_oid = null
+                                ),
+                            varhaiskasvatuspaatokset =
+                                listOf(
+                                    varhaiskasvatuspaatos(
+                                        new.unitOid,
+                                        new.range,
+                                        hakemus_pvm = new.applicationDate
+                                    )
+                                ),
+                            maksutiedot = emptyList()
+                        )
+                    )
+            )
+
+        val client = DryRunClient()
+        val updater =
+            VardaUpdater(
+                DateRange(LocalDate.of(2021, 1, 1), null),
+                new.organizerOid,
+                new.sourceSystem
+            )
+
+        updater.diffAndUpdate(client, vardaHenkilo, evakaHenkilo)
+
+        val dayBeforeEvaka = new.range.start.minusDays(1)
+        assertEquals(
+            listOf(
+                "SetPaattymisPvm" to
+                    (old.maksutietoToEndUrl to
+                        VardaWriteClient.SetPaattymisPvmRequest(dayBeforeEvaka)),
+                "SetPaattymisPvm" to
+                    (old.varhaiskasvatusSuhdeToEndUrl to
+                        VardaWriteClient.SetPaattymisPvmRequest(dayBeforeEvaka)),
+                "SetPaattymisPvm" to
+                    (old.varhaiskasvatusPaatosToEndUrl to
+                        VardaWriteClient.SetPaattymisPvmRequest(dayBeforeEvaka)),
+                "Delete" to old.varhaiskasvatusSuhdeToDeleteUrl,
+                "Delete" to old.varhaiskasvatusPaatosToDeleteUrl,
+                "Create" to
+                    VardaWriteClient.CreateLapsiRequest(
+                        lahdejarjestelma = new.sourceSystem,
+                        henkilo = URI.create("henkilo"),
+                        vakatoimija_oid = new.organizerOid,
+                        oma_organisaatio_oid = null,
+                        paos_organisaatio_oid = null
+                    ),
+                "Create" to
+                    VardaWriteClient.CreateVarhaiskasvatuspaatosRequest(
+                        lapsi = URI.create("lapsi_0"),
+                        hakemus_pvm = new.applicationDate,
+                        alkamis_pvm = new.range.start,
+                        paattymis_pvm = new.range.end,
+                        tuntimaara_viikossa = 35.0,
+                        kokopaivainen_vaka_kytkin = true,
+                        tilapainen_vaka_kytkin = false,
+                        paivittainen_vaka_kytkin = true,
+                        vuorohoito_kytkin = false,
+                        jarjestamismuoto_koodi = "jm01",
+                        lahdejarjestelma = new.sourceSystem
+                    ),
+                "Create" to
+                    VardaWriteClient.CreateVarhaiskasvatussuhdeRequest(
+                        lahdejarjestelma = new.sourceSystem,
+                        varhaiskasvatuspaatos = URI.create("varhaiskasvatuspaatos_0"),
+                        toimipaikka_oid = new.unitOid,
+                        alkamis_pvm = new.range.start,
+                        paattymis_pvm = new.range.end
+                    )
+            ),
+            client.operations
+        )
+    }
+
+    @Test
     fun `write to varda - data created with different source system is not deleted`() {
         val otherSourceSystem = "otherSourceSystem"
         val evakaSourceSystem = "sourceSystem"
@@ -2183,7 +2405,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val keep =
             object {
-                // Starts before vardaStart
                 val range = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 12, 31))
                 val applicationDate = range.start.minusMonths(4)
 
