@@ -7,6 +7,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.specialdiet.MealTexture
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import java.time.LocalDate
 
@@ -36,3 +37,15 @@ WHERE child.id = ANY (${bind(childIds)})
             )
         }
         .toMap { column<ChildId>("child_id") to row<SpecialDiet?>() }
+
+fun Database.Read.mealTexturesForChildren(childIds: Set<ChildId>): Map<ChildId, MealTexture?> =
+    createQuery {
+            sql(
+                """
+SELECT child.id as child_id, meal_texture.*
+FROM child LEFT JOIN meal_texture ON child.meal_texture_id = meal_texture.id
+WHERE child.id = ANY (${bind(childIds)})
+"""
+            )
+        }
+        .toMap { column<ChildId>("child_id") to row<MealTexture?>() }

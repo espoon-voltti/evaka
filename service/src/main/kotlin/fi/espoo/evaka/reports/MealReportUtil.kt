@@ -11,6 +11,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.ChildData
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.specialdiet.MealTexture
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import java.time.LocalDate
 
@@ -30,7 +31,9 @@ data class MealReportRow(
     val mealCount: Int,
     val dietId: Int? = null,
     val dietAbbreviation: String? = null,
-    val additionalInfo: String? = null
+    val additionalInfo: String? = null,
+    val mealTextureId: Int? = null,
+    val mealTextureName: String? = null
 )
 
 data class MealReportData(
@@ -42,8 +45,9 @@ data class MealReportData(
 data class MealInfo(
     val mealType: MealType,
     val dietId: Int? = null,
-    val dietName: String? = null,
     val dietAbbreviation: String? = null,
+    val mealTextureId: Int? = null,
+    val mealTextureName: String? = null,
     val additionalInfo: String? = null
 )
 
@@ -98,6 +102,7 @@ data class MealReportChildInfo(
     val reservations: List<TimeRange>?,
     val absences: Set<AbsenceCategory>?,
     val dietInfo: SpecialDiet?,
+    val mealTextureInfo: MealTexture?,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val mealTimes: DaycareMealtimes
@@ -135,11 +140,15 @@ fun mealReportData(
                         MealInfo(
                             it,
                             additionalInfo =
-                                if (childInfo.dietInfo != null) {
+                                if (
+                                    childInfo.dietInfo != null || childInfo.mealTextureInfo != null
+                                ) {
                                     childInfo.lastName + " " + childInfo.firstName
                                 } else null,
                             dietId = childInfo.dietInfo?.id,
-                            dietAbbreviation = childInfo.dietInfo?.abbreviation
+                            dietAbbreviation = childInfo.dietInfo?.abbreviation,
+                            mealTextureId = childInfo.mealTextureInfo?.id,
+                            mealTextureName = childInfo.mealTextureInfo?.name,
                         )
                     }
             }
@@ -153,7 +162,9 @@ fun mealReportData(
             it.value,
             it.key.dietId,
             it.key.dietAbbreviation,
-            it.key.additionalInfo
+            it.key.additionalInfo,
+            it.key.mealTextureId,
+            it.key.mealTextureName
         )
     }
 }
@@ -164,6 +175,7 @@ data class DaycareUnitData(
     val childPlacements: Map<ChildId, PlacementType>,
     val childData: Map<ChildId, ChildData>,
     val specialDiets: Map<ChildId, SpecialDiet?>,
+    val mealTextures: Map<ChildId, MealTexture?>,
     val preschoolTerms: List<PreschoolTerm>
 )
 
@@ -181,7 +193,6 @@ fun getMealReportForUnit(
     val childrenToPlacementTypeMap = unitData.childPlacements
     val childrenReservationsAndAttendances = unitData.childData
 
-    val dietInfos = unitData.specialDiets
     val childInfos =
         childrenToPlacementTypeMap.map { (childId, placementType) ->
             MealReportChildInfo(
@@ -193,7 +204,8 @@ fun getMealReportForUnit(
                         it.asTimeRange()
                     },
                 absences = childrenReservationsAndAttendances[childId]!!.absences[date]?.keys,
-                dietInfo = dietInfos[childId],
+                dietInfo = unitData.specialDiets[childId],
+                mealTextureInfo = unitData.mealTextures[childId],
                 dailyPreschoolTime = daycare.dailyPreschoolTime,
                 dailyPreparatoryTime = daycare.dailyPreparatoryTime,
                 mealTimes = daycare.mealTimes,

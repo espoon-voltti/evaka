@@ -40,6 +40,7 @@ class MealReportTests {
                     reservations = listOf(), // No reservations
                     absences = setOf(AbsenceCategory.BILLABLE),
                     dietInfo = null,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -77,6 +78,7 @@ class MealReportTests {
                     reservations = emptyList(), // No reservations
                     absences = null, // No absences
                     dietInfo = null,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -165,6 +167,7 @@ class MealReportTests {
                     reservations = listOf(), // No specific reservations
                     absences = null, // No absences
                     dietInfo = null,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 30)),
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -225,6 +228,7 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
                     absences = null, // No absences
                     dietInfo = glutenFreeDiet,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -243,6 +247,7 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(12, 0), LocalTime.of(13, 0))),
                     absences = null, // No absences
                     dietInfo = glutenFreeDiet,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -261,6 +266,7 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(12, 0), LocalTime.of(13, 0))),
                     absences = null, // No absences
                     dietInfo = lactoseFreeDiet,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -369,6 +375,7 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
                     absences = null, // No absences
                     dietInfo = null,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -387,6 +394,7 @@ class MealReportTests {
                     reservations = listOf(TimeRange(LocalTime.of(10, 0), LocalTime.of(16, 0))),
                     absences = null, // No absences
                     dietInfo = null,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
@@ -488,6 +496,7 @@ class MealReportTests {
                 childPlacements = childPlacements,
                 childData = childData,
                 specialDiets = emptyMap(),
+                mealTextures = emptyMap(),
                 preschoolTerms = emptyList()
             )
 
@@ -585,6 +594,7 @@ class MealReportTests {
                 childPlacements = childPlacements,
                 childData = childData,
                 specialDiets = emptyMap(),
+                mealTextures = emptyMap(),
                 preschoolTerms = emptyList()
             )
 
@@ -671,6 +681,7 @@ class MealReportTests {
                 childPlacements = childPlacements,
                 childData = childData,
                 specialDiets = emptyMap(),
+                mealTextures = emptyMap(),
                 preschoolTerms = emptyList()
             )
 
@@ -753,6 +764,7 @@ class MealReportTests {
                 childPlacements = childPlacements,
                 childData = childData,
                 specialDiets = emptyMap(),
+                mealTextures = emptyMap(),
                 preschoolTerms = emptyList()
             )
 

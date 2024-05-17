@@ -463,6 +463,8 @@ export interface MealReportRow {
   dietId: number | null
   mealCount: number
   mealId: number
+  mealTextureId: number | null
+  mealTextureName: string | null
   mealType: MealType
 }
 

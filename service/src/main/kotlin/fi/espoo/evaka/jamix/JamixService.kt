@@ -19,6 +19,7 @@ import fi.espoo.evaka.daycare.isUnitOperationDay
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.MealReportChildInfo
 import fi.espoo.evaka.reports.mealReportData
+import fi.espoo.evaka.reports.mealTexturesForChildren
 import fi.espoo.evaka.reports.specialDietsForChildren
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -221,6 +222,7 @@ private fun getChildInfos(
     val childIds = childData.map { it.childId }.toSet()
 
     val specialDiets = tx.specialDietsForChildren(childIds)
+    val mealTextures = tx.mealTexturesForChildren(childIds)
     val units = tx.getDaycaresById(unitIds)
 
     return childData.mapNotNull { child ->
@@ -234,6 +236,7 @@ private fun getChildInfos(
             reservations = child.reservations,
             absences = child.absences,
             dietInfo = specialDiets[child.childId],
+            mealTextureInfo = mealTextures[child.childId],
             dailyPreschoolTime = unit.dailyPreschoolTime,
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
             mealTimes = unit.mealTimes
