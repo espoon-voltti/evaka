@@ -14,7 +14,7 @@ import java.time.LocalDate
 import java.time.Month
 
 // TODO: Remove
-data class OperationalDays(
+data class OperationalDaysDeprecated(
     val fullMonth: List<LocalDate>,
     val generalCase: List<LocalDate>,
     private val specialCases: Map<DaycareId, List<LocalDate>>
@@ -23,7 +23,7 @@ data class OperationalDays(
 }
 
 // TODO: Remove
-fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
+fun Database.Read.operationalDays(year: Int, month: Month): OperationalDaysDeprecated {
     val range = FiniteDateRange.ofMonth(year, month)
     return operationalDays(range)
 }
@@ -35,7 +35,7 @@ private fun LocalDate.isOperationalDate(operationalDays: Set<DayOfWeek>, holiday
         (operationalDays.size == 7 || !holidays.contains(this))
 
 // TODO: Remove
-private fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDays {
+private fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDaysDeprecated {
     val rangeDates = range.dates()
 
     // Only includes units that don't have regular monday to friday operational days
@@ -63,7 +63,7 @@ private fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDa
             unitId to rangeDates.filter { it.isOperationalDate(operationalDays, holidays) }.toList()
         }
 
-    return OperationalDays(rangeDates.toList(), generalCase, specialCases)
+    return OperationalDaysDeprecated(rangeDates.toList(), generalCase, specialCases)
 }
 
 fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
@@ -72,33 +72,45 @@ fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
         }
         .toSet<LocalDate>()
 
-fun Database.Read.getOperationalDatesForChild(
+fun Database.Read.getOperationalDatesForChildren(
     range: FiniteDateRange,
-    childId: ChildId
-): Set<LocalDate> {
-    val placements: DateMap<DaycareId> =
+    children: Set<ChildId>
+): Map<ChildId, Set<LocalDate>> {
+    data class PlacementRange(
+        val range: FiniteDateRange,
+        val childId: ChildId,
+        val unitId: DaycareId
+    )
+    val placements: Map<ChildId, DateMap<DaycareId>> =
         createQuery {
                 sql(
                     """
-        SELECT 
-            daterange(pl.start_date, pl.end_date, '[]') as range, 
-            pl.unit_id
+        SELECT daterange(pl.start_date, pl.end_date, '[]') as range, pl.child_id, pl.unit_id
         FROM placement pl
-        WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
+        WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
     """
                 )
             }
             .toList<PlacementRange>()
-            .map { it.range to it.unitId }
-            .let { DateMap.of(it) }
+            .groupBy { it.childId }
+            .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
 
-    val daycareOperationDays: Map<DaycareId, DaycareOperationDays> =
+    val daycareIds =
+        placements.values.flatMap { dateMap -> dateMap.entries().map { it.second } }.toSet()
+
+    data class DaycareOperationDays(
+        val unitId: DaycareId,
+        val operationDays: Set<Int>,
+        val shiftCareOperationDays: Set<Int>?,
+        val shiftCareOpenOnHolidays: Boolean
+    )
+    val operationDaysByDaycareId: Map<DaycareId, DaycareOperationDays> =
         createQuery {
                 sql(
                     """
         SELECT id AS unit_id, operation_days, shift_care_operation_days, shift_care_open_on_holidays
         FROM daycare 
-        WHERE id = ANY(${bind(placements.entries().map { it.second }.toSet())})
+        WHERE id = ANY(${bind(daycareIds)})
     """
                 )
             }
@@ -107,46 +119,46 @@ fun Database.Read.getOperationalDatesForChild(
 
     val holidays = getHolidays(range)
 
-    val shiftCareRanges: DateSet =
+    data class ShiftCareRange(val childId: ChildId, val range: FiniteDateRange)
+    val shiftCareRanges: Map<ChildId, DateSet> =
         createQuery {
                 sql(
                     """
-        SELECT daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)}
+        SELECT pl.child_id, daterange(sn.start_date, sn.end_date, '[]') AS range
         FROM placement pl
         JOIN service_need sn ON sn.placement_id = pl.id AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
-        WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
+        WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
     """
                 )
             }
-            .toList<FiniteDateRange>()
-            .let { DateSet.of(it) }
+            .toList<ShiftCareRange>()
+            .groupBy { it.childId }
+            .mapValues { entry -> DateSet.of(entry.value.map { it.range }) }
 
-    return range
-        .dates()
-        .filter { date ->
-            val unitId = placements.getValue(date) ?: return@filter false
-            val hasShiftCare = shiftCareRanges.includes(date)
-            val operationDays =
-                daycareOperationDays[unitId]?.let {
-                    it.shiftCareOperationDays?.takeIf { hasShiftCare } ?: it.operationDays
-                } ?: return@filter false
-            if (!operationDays.contains(date.dayOfWeek.value)) {
-                return@filter false
+    return children.associate { childId ->
+        val operationalDays =
+            range.dates().filter { date ->
+                val unitId = placements[childId]?.getValue(date) ?: return@filter false
+                val hasShiftCare = shiftCareRanges[childId]?.includes(date) ?: false
+                val daycareOperationDays =
+                    operationDaysByDaycareId[unitId]?.let {
+                        it.shiftCareOperationDays?.takeIf { hasShiftCare } ?: it.operationDays
+                    } ?: return@filter false
+                if (!daycareOperationDays.contains(date.dayOfWeek.value)) {
+                    return@filter false
+                }
+                if (holidays.contains(date)) {
+                    return@filter hasShiftCare &&
+                        (operationDaysByDaycareId[unitId]?.shiftCareOpenOnHolidays ?: false)
+                }
+                true
             }
-            if (holidays.contains(date)) {
-                return@filter hasShiftCare &&
-                    (daycareOperationDays[unitId]?.shiftCareOpenOnHolidays ?: false)
-            }
-            true
-        }
-        .toSet()
+
+        childId to operationalDays.toSet()
+    }
 }
 
-private data class DaycareOperationDays(
-    val unitId: DaycareId,
-    val operationDays: Set<Int>,
-    val shiftCareOperationDays: Set<Int>?,
-    val shiftCareOpenOnHolidays: Boolean
-)
-
-private data class PlacementRange(val range: FiniteDateRange, val unitId: DaycareId)
+fun Database.Read.getOperationalDatesForChild(
+    range: FiniteDateRange,
+    childId: ChildId
+): Set<LocalDate> = getOperationalDatesForChildren(range, setOf(childId))[childId] ?: emptySet()
