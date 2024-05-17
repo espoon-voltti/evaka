@@ -578,45 +578,26 @@ $unsubscribeEn
     ): EmailContent {
         return EmailContent.fromHtml(
             subject =
-                "${getFinanceDecisionSubjectText(Language.fi, decisionType)} / ${getFinanceDecisionSubjectText(Language.sv, decisionType)} / ${getFinanceDecisionSubjectText(Language.en, decisionType)}",
+                "Uusi ${getFinanceDecisionTypeDescriptor(Language.fi, decisionType)} eVakassa / Ett nytt ${getFinanceDecisionTypeDescriptor(Language.sv, decisionType)} i eVaka / New ${getFinanceDecisionTypeDescriptor(Language.en, decisionType)} in eVaka",
             html =
                 """
 <p>Sinulle on saapunut uusi ${getFinanceDecisionTypeDescriptor(Language.fi, decisionType)} eVakaan.</p>
+<p>Päätös on nähtävissä eVakassa osoitteessa ${frontPageLink(Language.fi)}.</p>
 $unsubscribeFi
 <hr>
 <p>Du har fått ett nytt ${getFinanceDecisionTypeDescriptor(Language.sv, decisionType)} i eVaka.</p>
+<p>Beslutet finns att se i eVaka på ${frontPageLink(Language.sv)}.</p>
 $unsubscribeSv
 <hr>
 <p>You have received a new ${getFinanceDecisionTypeDescriptor(Language.en, decisionType)} in eVaka.</p>
+<p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
 $unsubscribeEn
             """
                     .trimIndent()
         )
     }
 
-    private fun getFinanceDecisionSubjectText(
-        language: Language,
-        decisionType: FinanceDecisionType
-    ): String {
-        val financeDecisionTypeDescriptor =
-            when (decisionType) {
-                FinanceDecisionType.FEE_DECISION ->
-                    when (language) {
-                        Language.sv -> "Ett nytt betalningsbeslut i eVaka"
-                        Language.fi -> "Uusi maksupäätös eVakassa"
-                        Language.en -> "New fee decision in eVaka"
-                    }
-                FinanceDecisionType.VOUCHER_VALUE_DECISION ->
-                    when (language) {
-                        Language.sv -> "Ett nytt beslut om värdet på servicesedlar i eVaka"
-                        Language.fi -> "Uusi arvosetelipäätös eVakassa"
-                        Language.en -> "New voucher value decision in eVaka"
-                    }
-            }
-        return financeDecisionTypeDescriptor
-    }
-
-    fun getFinanceDecisionTypeDescriptor(
+    private fun getFinanceDecisionTypeDescriptor(
         language: Language,
         decisionType: FinanceDecisionType
     ): String =
