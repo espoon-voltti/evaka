@@ -576,43 +576,35 @@ $unsubscribeEn
         language: Language,
         decisionType: FinanceDecisionType
     ): EmailContent {
+        val (decisionTypeFi, decisionTypeSv, decisionTypeEn) =
+            when (decisionType) {
+                FinanceDecisionType.VOUCHER_VALUE_DECISION ->
+                    Triple(
+                        "arvopäätös",
+                        "beslut om värdet på servicesedlar",
+                        "voucher value decision"
+                    )
+                FinanceDecisionType.FEE_DECISION ->
+                    Triple("maksupäätös", "betalningsbeslut", "fee decision")
+            }
         return EmailContent.fromHtml(
             subject =
-                "Uusi ${getFinanceDecisionTypeDescriptor(Language.fi, decisionType)} eVakassa / Ett nytt ${getFinanceDecisionTypeDescriptor(Language.sv, decisionType)} i eVaka / New ${getFinanceDecisionTypeDescriptor(Language.en, decisionType)} in eVaka",
+                "Uusi $decisionTypeFi eVakassa / Ett nytt $decisionTypeSv i eVaka / New $decisionTypeEn in eVaka",
             html =
                 """
-<p>Sinulle on saapunut uusi ${getFinanceDecisionTypeDescriptor(Language.fi, decisionType)} eVakaan.</p>
+<p>Sinulle on saapunut uusi $decisionTypeFi eVakaan.</p>
 <p>Päätös on nähtävissä eVakassa osoitteessa ${frontPageLink(Language.fi)}.</p>
 $unsubscribeFi
 <hr>
-<p>Du har fått ett nytt ${getFinanceDecisionTypeDescriptor(Language.sv, decisionType)} i eVaka.</p>
+<p>Du har fått ett nytt $decisionTypeSv i eVaka.</p>
 <p>Beslutet finns att se i eVaka på ${frontPageLink(Language.sv)}.</p>
 $unsubscribeSv
 <hr>
-<p>You have received a new ${getFinanceDecisionTypeDescriptor(Language.en, decisionType)} in eVaka.</p>
+<p>You have received a new $decisionTypeEn in eVaka.</p>
 <p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
 $unsubscribeEn
             """
                     .trimIndent()
         )
     }
-
-    private fun getFinanceDecisionTypeDescriptor(
-        language: Language,
-        decisionType: FinanceDecisionType
-    ): String =
-        when (decisionType) {
-            FinanceDecisionType.FEE_DECISION ->
-                when (language) {
-                    Language.sv -> "betalningsbeslut"
-                    Language.fi -> "maksupäätös"
-                    Language.en -> "fee decision"
-                }
-            FinanceDecisionType.VOUCHER_VALUE_DECISION ->
-                when (language) {
-                    Language.sv -> "beslut om värdet på servicesedlar"
-                    Language.fi -> "arvopäätös"
-                    Language.en -> "fee decision"
-                }
-        }
 }
