@@ -41,7 +41,7 @@ class AssistanceNeedDecisionController(
     @PostMapping("/children/{childId}/assistance-needs/decision")
     fun createAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedDecisionRequest
@@ -90,10 +90,13 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @GetMapping("/assistance-need-decision/{id}")
+    @GetMapping(
+        "/assistance-need-decision/{id}", // deprecated
+        "/employee/assistance-need-decision/{id}",
+    )
     fun getAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecisionResponse {
@@ -118,10 +121,13 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionRead.log(targetId = id) }
     }
 
-    @PutMapping("/assistance-need-decision/{id}")
+    @PutMapping(
+        "/assistance-need-decision/{id}", // deprecated
+        "/employee/assistance-need-decision/{id}",
+    )
     fun updateAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
@@ -170,10 +176,13 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id) }
     }
 
-    @PostMapping("/assistance-need-decision/{id}/send")
+    @PostMapping(
+        "/assistance-need-decision/{id}/send", // deprecated
+        "/employee/assistance-need-decision/{id}/send",
+    )
     fun sendAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
@@ -222,10 +231,13 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionSend.log(targetId = id) }
     }
 
-    @PostMapping("/assistance-need-decision/{id}/revert-to-unsent")
+    @PostMapping(
+        "/assistance-need-decision/{id}/revert-to-unsent", // deprecated
+        "/employee/assistance-need-decision/{id}/revert-to-unsent",
+    )
     fun revertToUnsentAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
@@ -263,7 +275,7 @@ class AssistanceNeedDecisionController(
     @GetMapping("/children/{childId}/assistance-needs/decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionBasicsResponse> {
@@ -303,10 +315,13 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @DeleteMapping("/assistance-need-decision/{id}")
+    @DeleteMapping(
+        "/assistance-need-decision/{id}", // deprecated
+        "/employee/assistance-need-decision/{id}",
+    )
     fun deleteAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
@@ -330,10 +345,13 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id) }
     }
 
-    @PostMapping("/assistance-need-decision/{id}/decide")
+    @PostMapping(
+        "/assistance-need-decision/{id}/decide", // deprecated
+        "/employee/assistance-need-decision/{id}/decide",
+    )
     fun decideAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: DecideAssistanceNeedDecisionRequest
@@ -423,10 +441,13 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @PostMapping("/assistance-need-decision/{id}/mark-as-opened")
+    @PostMapping(
+        "/assistance-need-decision/{id}/mark-as-opened", // deprecated
+        "/employee/assistance-need-decision/{id}/mark-as-opened",
+    )
     fun markAssistanceNeedDecisionAsOpened(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
@@ -445,10 +466,13 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id) }
     }
 
-    @PostMapping("/assistance-need-decision/{id}/update-decision-maker")
+    @PostMapping(
+        "/assistance-need-decision/{id}/update-decision-maker", // deprecated
+        "/employee/assistance-need-decision/{id}/update-decision-maker"
+    )
     fun updateAssistanceNeedDecisionDecisionMaker(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
@@ -493,10 +517,13 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id) }
     }
 
-    @GetMapping("/assistance-need-decision/{id}/decision-maker-option")
+    @GetMapping(
+        "/assistance-need-decision/{id}/decision-maker-option", // deprecated
+        "/employee/assistance-need-decision/{id}/decision-maker-option"
+    )
     fun getAssistanceDecisionMakerOptions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
     ): List<Employee> {
@@ -524,10 +551,13 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @PostMapping("/assistance-need-decision/{id}/annul")
+    @PostMapping(
+        "/assistance-need-decision/{id}/annul", // deprecated
+        "/employee/assistance-need-decision/{id}/annul"
+    )
     fun annulAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AnnulAssistanceNeedDecisionRequest

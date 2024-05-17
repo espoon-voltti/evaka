@@ -35,7 +35,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/fee-alterations")
+@RequestMapping(
+    "/fee-alterations", // deprecated
+    "/employee/fee-alterations"
+)
 class FeeAlterationController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl
@@ -43,7 +46,7 @@ class FeeAlterationController(
     @GetMapping
     fun getFeeAlterations(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
     ): List<FeeAlterationWithPermittedActions> {
@@ -85,7 +88,7 @@ class FeeAlterationController(
     @PostMapping
     fun createFeeAlteration(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody feeAlteration: FeeAlteration
     ) {
@@ -126,7 +129,7 @@ class FeeAlterationController(
     @PutMapping("/{feeAlterationId}")
     fun updateFeeAlteration(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId,
         @RequestBody feeAlteration: FeeAlteration
@@ -172,7 +175,7 @@ class FeeAlterationController(
     @DeleteMapping("/{feeAlterationId}")
     fun deleteFeeAlteration(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId
     ) {

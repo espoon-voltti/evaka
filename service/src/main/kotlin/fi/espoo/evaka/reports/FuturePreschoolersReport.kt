@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class FuturePreschoolersReport(private val accessControl: AccessControl) {
-    @GetMapping("/reports/future-preschoolers")
+    @GetMapping(
+        "/reports/future-preschoolers", // deprecated
+        "/employee/reports/future-preschoolers"
+    )
     fun getFuturePreschoolersReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<FuturePreschoolersReportRow> {
         return db.connect { dbc ->
@@ -40,10 +43,13 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
             .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
     }
 
-    @GetMapping("/reports/future-preschoolers/groups")
+    @GetMapping(
+        "/reports/future-preschoolers/groups", // deprecated
+        "/employee/reports/future-preschoolers/groups"
+    )
     fun getFuturePreschoolersGroupsReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam municipal: Boolean
     ): List<PreschoolGroupsReportRow> {

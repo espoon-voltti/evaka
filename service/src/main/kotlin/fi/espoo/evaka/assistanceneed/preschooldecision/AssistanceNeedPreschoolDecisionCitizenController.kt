@@ -50,7 +50,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
     @GetMapping("/children/assistance-need-preschool-decisions/{id}")
     fun getAssistanceNeedPreschoolDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
     ): AssistanceNeedPreschoolDecision {
@@ -78,7 +78,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
     @GetMapping("/children/assistance-need-preschool-decisions/{id}/pdf")
     fun getAssistanceNeedPreschoolDecisionPdf(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
     ): ResponseEntity<Any> {

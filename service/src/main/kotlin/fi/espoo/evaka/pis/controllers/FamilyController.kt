@@ -33,7 +33,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/family")
+@RequestMapping(
+    "/family", // deprecated
+    "/employee/family"
+)
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
     private val personService: PersonService,
@@ -42,7 +45,7 @@ class FamilyController(
     @GetMapping("/by-adult/{id}")
     fun getFamilyByPerson(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId
     ): FamilyOverview {
@@ -82,7 +85,7 @@ class FamilyController(
     @GetMapping("/contacts")
     fun getFamilyContactSummary(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam childId: ChildId
     ): List<FamilyContact> {
@@ -106,7 +109,7 @@ class FamilyController(
     @PostMapping("/contacts")
     fun updateFamilyContactDetails(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: FamilyContactUpdate
     ) {
@@ -141,7 +144,7 @@ class FamilyController(
     @PostMapping("/contacts/priority")
     fun updateFamilyContactPriority(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: FamilyContactPriorityUpdate
     ) {

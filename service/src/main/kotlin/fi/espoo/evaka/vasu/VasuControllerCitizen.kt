@@ -105,7 +105,7 @@ class VasuControllerCitizen(
     @GetMapping("/{id}")
     fun getDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
     ): CitizenGetVasuDocumentResponse {

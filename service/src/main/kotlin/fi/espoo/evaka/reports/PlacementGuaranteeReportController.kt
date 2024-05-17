@@ -22,10 +22,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class PlacementGuaranteeReportController(private val accessControl: AccessControl) {
 
-    @GetMapping("/reports/placement-guarantee")
+    @GetMapping(
+        "/reports/placement-guarantee", // deprecated
+        "/employee/reports/placement-guarantee"
+    )
     fun getPlacementGuaranteeReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam date: LocalDate,
         @RequestParam unitId: DaycareId? = null

@@ -55,21 +55,22 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/attendance-reservations")
 class AttendanceReservationController(
     private val ac: AccessControl,
     private val featureConfig: FeatureConfig,
     private val env: EvakaEnv
 ) {
-    @GetMapping
+    @GetMapping(
+        "/attendance-reservations", // deprecated
+        "/employee/attendance-reservations"
+    )
     fun getAttendanceReservations(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -193,10 +194,13 @@ class AttendanceReservationController(
             }
     }
 
-    @PostMapping
+    @PostMapping(
+        "/attendance-reservations", // deprecated
+        "/employee/attendance-reservations"
+    )
     fun postReservations(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
@@ -234,10 +238,13 @@ class AttendanceReservationController(
         )
     }
 
-    @PostMapping("/child-date")
+    @PostMapping(
+        "/attendance-reservations/child-date", // deprecated
+        "/employee/attendance-reservations/child-date"
+    )
     fun postChildDatePresence(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ChildDatePresence
     ) {
@@ -275,10 +282,13 @@ class AttendanceReservationController(
         val attendances: List<TimeRange>
     )
 
-    @PostMapping("/child-date/expected-absences")
+    @PostMapping(
+        "/attendance-reservations/child-date/expected-absences", // deprecated
+        "/employee/attendance-reservations/child-date/expected-absences"
+    )
     fun getExpectedAbsences(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ExpectedAbsencesRequest
     ): Set<AbsenceCategory>? {
@@ -312,10 +322,13 @@ class AttendanceReservationController(
             }
     }
 
-    @GetMapping("/by-child/{childId}/confirmed-range")
+    @GetMapping(
+        "/attendance-reservations/by-child/{childId}/confirmed-range", // deprecated
+        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range"
+    )
     fun getConfirmedRangeData(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<ConfirmedRangeDate> {
@@ -371,10 +384,13 @@ class AttendanceReservationController(
             .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = childId) }
     }
 
-    @PutMapping("/by-child/{childId}/confirmed-range")
+    @PutMapping(
+        "/attendance-reservations/by-child/{childId}/confirmed-range", // deprecated
+        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range"
+    )
     fun setConfirmedRangeReservations(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: List<ConfirmedRangeDateUpdate>
@@ -447,10 +463,13 @@ class AttendanceReservationController(
         val childReservations: List<ChildReservationInfo>
     )
 
-    @GetMapping("/confirmed-days/daily")
+    @GetMapping(
+        "/attendance-reservations/confirmed-days/daily", // deprecated
+        "/employee-mobile/attendance-reservations/confirmed-days/daily",
+    )
     fun getChildReservationsForDay(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) examinationDate: LocalDate
@@ -559,10 +578,13 @@ class AttendanceReservationController(
         val groupStatistics: List<GroupReservationStatisticResult>
     )
 
-    @GetMapping("/confirmed-days/stats")
+    @GetMapping(
+        "/attendance-reservations/confirmed-days/stats", // deprecated
+        "/employee-mobile/attendance-reservations/confirmed-days/stats"
+    )
     fun getReservationStatisticsForConfirmedDays(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<DayReservationStatisticsResult> {

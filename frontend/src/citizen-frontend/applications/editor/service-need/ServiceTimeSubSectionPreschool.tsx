@@ -33,7 +33,7 @@ import {
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
-import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
+import { deleteAttachment } from '../../../generated/api-clients/attachment'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
@@ -48,7 +48,7 @@ type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 
 const applicationType = 'PRESCHOOL'
 
-const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
   originalPreferredStartDate,

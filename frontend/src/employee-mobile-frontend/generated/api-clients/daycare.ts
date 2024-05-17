@@ -7,7 +7,6 @@
 import LocalDate from 'lib-common/local-date'
 import { AclUpdate } from 'lib-common/generated/api-types/daycare'
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
-import { AreaJSON } from 'lib-common/generated/api-types/daycare'
 import { CaretakerRequest } from 'lib-common/generated/api-types/daycare'
 import { CaretakersResponse } from 'lib-common/generated/api-types/daycare'
 import { ChildResponse } from 'lib-common/generated/api-types/daycare'
@@ -31,8 +30,6 @@ import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { UnitNotifications } from 'lib-common/generated/api-types/daycare'
 import { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
-import { UnitStub } from 'lib-common/generated/api-types/daycare'
-import { UnitTypeFilter } from 'lib-common/generated/api-types/daycare'
 import { UpdateFeaturesRequest } from 'lib-common/generated/api-types/daycare'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -383,42 +380,6 @@ export async function updateUnitFeatures(
     url: uri`/daycares/unit-features`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<UpdateFeaturesRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getAreas
-*/
-export async function getAreas(): Promise<AreaJSON[]> {
-  const { data: json } = await client.request<JsonOf<AreaJSON[]>>({
-    url: uri`/areas`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getUnits
-*/
-export async function getUnits(
-  request: {
-    type: UnitTypeFilter,
-    areaIds?: UUID[] | null,
-    from?: LocalDate | null
-  }
-): Promise<UnitStub[]> {
-  const params = createUrlSearchParams(
-    ['type', request.type.toString()],
-    ...(request.areaIds?.map((e): [string, string | null | undefined] => ['areaIds', e]) ?? []),
-    ['from', request.from?.formatIso()]
-  )
-  const { data: json } = await client.request<JsonOf<UnitStub[]>>({
-    url: uri`/filters/units`.toString(),
-    method: 'GET',
-    params
   })
   return json
 }

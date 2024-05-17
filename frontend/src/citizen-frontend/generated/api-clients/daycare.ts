@@ -20,7 +20,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getAllApplicableUnits
+* Generated from fi.espoo.evaka.daycare.controllers.LocationControllerCitizen.getAllApplicableUnits
 */
 export async function getAllApplicableUnits(
   request: {
@@ -36,7 +36,7 @@ export async function getAllApplicableUnits(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getApplicationUnits
+* Generated from fi.espoo.evaka.daycare.controllers.LocationControllerCitizen.getApplicationUnits
 */
 export async function getApplicationUnits(
   request: {

@@ -49,7 +49,7 @@ class AssistanceNeedDecisionCitizenController(
     @GetMapping("/children/assistance-need-decision/{id}")
     fun getAssistanceNeedDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecision {
@@ -83,7 +83,7 @@ class AssistanceNeedDecisionCitizenController(
     @GetMapping("/children/assistance-need-decision/{id}/pdf")
     fun getAssistanceNeedDecisionPdf(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): ResponseEntity<Any> {

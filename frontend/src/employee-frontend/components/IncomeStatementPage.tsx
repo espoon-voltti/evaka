@@ -38,7 +38,7 @@ import {
   getAttachmentUrl,
   saveIncomeStatementAttachment
 } from '../api/attachments'
-import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
+import { deleteAttachment } from '../generated/api-clients/attachment'
 import {
   getIncomeStatement,
   setIncomeStatementHandled
@@ -49,7 +49,7 @@ import { Translations, useTranslation } from '../state/i18n'
 import { renderResult } from './async-rendering'
 
 const getPersonIdentityResult = wrapResult(getPersonIdentity)
-const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 const getIncomeStatementResult = wrapResult(getIncomeStatement)
 const setIncomeStatementHandledResult = wrapResult(setIncomeStatementHandled)
 
@@ -464,7 +464,7 @@ function EmployeeAttachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() => {
+      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

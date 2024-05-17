@@ -39,10 +39,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class CalendarEventController(private val accessControl: AccessControl) {
-    @GetMapping("/units/{unitId}/calendar-events")
+    @GetMapping(
+        "/units/{unitId}/calendar-events", // deprecated
+        "/employee/units/{unitId}/calendar-events"
+    )
     fun getUnitCalendarEvents(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
@@ -78,7 +81,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping("/units/{unitId}/groups/{groupId}/discussion-surveys")
+    @GetMapping(
+        "/units/{unitId}/groups/{groupId}/discussion-surveys", // deprecated
+        "/employee/units/{unitId}/groups/{groupId}/discussion-surveys"
+    )
     fun getGroupDiscussionSurveys(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -109,7 +115,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping("/units/{unitId}/groups/{groupId}/discussion-reservation-days")
+    @GetMapping(
+        "/units/{unitId}/groups/{groupId}/discussion-reservation-days", // deprecated
+        "/employee/units/{unitId}/groups/{groupId}/discussion-reservation-days"
+    )
     fun getGroupDiscussionReservationDays(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -173,7 +182,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
     }
 
-    @PostMapping("/calendar-event")
+    @PostMapping(
+        "/calendar-event", // deprecated
+        "/employee/calendar-event"
+    )
     fun createCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -241,7 +253,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
         return eventId
     }
 
-    @GetMapping("/calendar-event/{id}")
+    @GetMapping(
+        "/calendar-event/{id}", // deprecated
+        "/employee/calendar-event/{id}"
+    )
     fun getCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -263,7 +278,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also { Audit.CalendarEventRead.log(targetId = id) }
     }
 
-    @DeleteMapping("/calendar-event/{id}")
+    @DeleteMapping(
+        "/calendar-event/{id}", // deprecated
+        "/employee/calendar-event/{id}"
+    )
     fun deleteCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -285,7 +303,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also { Audit.CalendarEventDelete.log(targetId = id) }
     }
 
-    @PatchMapping("/calendar-event/{id}")
+    @PatchMapping(
+        "/calendar-event/{id}", // deprecated
+        "/employee/calendar-event/{id}"
+    )
     fun modifyCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -308,7 +329,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also { Audit.CalendarEventUpdate.log(targetId = id) }
     }
 
-    @PutMapping("/calendar-event/{id}")
+    @PutMapping(
+        "/calendar-event/{id}", // deprecated
+        "/employee/calendar-event/{id}"
+    )
     fun updateCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -343,7 +367,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also { Audit.CalendarEventUpdate.log(targetId = id) }
     }
 
-    @PostMapping("/calendar-event/{id}/time")
+    @PostMapping(
+        "/calendar-event/{id}/time", // deprecated
+        "/employee/calendar-event/{id}/time"
+    )
     fun addCalendarEventTime(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -383,7 +410,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also { Audit.CalendarEventTimeCreate.log(targetId = id) }
     }
 
-    @DeleteMapping("/calendar-event-time/{id}")
+    @DeleteMapping(
+        "/calendar-event-time/{id}", // deprecated
+        "/employee/calendar-event-time/{id}"
+    )
     fun deleteCalendarEventTime(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -419,7 +449,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also { Audit.CalendarEventTimeDelete.log(targetId = id) }
     }
 
-    @PostMapping("/calendar-event/reservation")
+    @PostMapping(
+        "/calendar-event/reservation", // deprecated
+        "/employee/calendar-event/reservation"
+    )
     fun setCalendarEventTimeReservation(
         db: Database,
         user: AuthenticatedUser.Employee,

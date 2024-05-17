@@ -24,13 +24,13 @@ import { Gap } from 'lib-components/white-space'
 
 import DateRangeInput from '../../../components/common/DateRangeInput'
 import LabelValueList from '../../../components/common/LabelValueList'
-import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
+import { deleteAttachment } from '../../../generated/api-clients/attachment'
 import { useTranslation } from '../../../state/i18n'
 import { PartialFeeAlteration } from '../../../types/fee-alteration'
 
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 
-const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const newFeeAlteration = (
   personId: UUID,
@@ -217,7 +217,7 @@ function FeeAlterationAttachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() => {
+      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

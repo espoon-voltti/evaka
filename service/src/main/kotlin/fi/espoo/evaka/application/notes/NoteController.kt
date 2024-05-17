@@ -23,12 +23,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/note")
+@RequestMapping(
+    "/note", // deprecated
+    "/employee/note"
+)
 class NoteController(private val accessControl: AccessControl) {
     @GetMapping("/application/{applicationId}")
     fun getNotes(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): List<ApplicationNoteResponse> {
@@ -83,7 +86,7 @@ class NoteController(private val accessControl: AccessControl) {
     @PostMapping("/application/{applicationId}")
     fun createNote(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest
@@ -106,7 +109,7 @@ class NoteController(private val accessControl: AccessControl) {
     @PutMapping("/{noteId}")
     fun updateNote(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest
@@ -129,7 +132,7 @@ class NoteController(private val accessControl: AccessControl) {
     @DeleteMapping("/{noteId}")
     fun deleteNote(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable noteId: ApplicationNoteId
     ) {
@@ -151,7 +154,7 @@ class NoteController(private val accessControl: AccessControl) {
     @PutMapping("/service-worker/application/{applicationId}")
     fun updateServiceWorkerNote(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest

@@ -97,7 +97,15 @@ class ChildImageController(
         Audit.ChildImageDelete.log(targetId = childId, objectId = imageId)
     }
 
-    @GetMapping(value = ["/child-images/{imageId}", "/citizen/child-images/{imageId}"])
+    @GetMapping("/citizen/child-images/{imageId}")
+    fun getImageCitizen(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable imageId: ChildImageId
+    ): ResponseEntity<Any> = getImage(db, user, clock, imageId)
+
+    @GetMapping("/child-images/{imageId}")
     fun getImage(
         db: Database,
         user: AuthenticatedUser,

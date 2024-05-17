@@ -57,12 +57,12 @@ import {
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
-import { deleteAttachmentHandler } from '../../generated/api-clients/attachment'
+import { deleteAttachment } from '../../generated/api-clients/attachment'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
 
-const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -204,7 +204,7 @@ export default React.memo(function ApplicationEditView({
       })
 
   const onDeleteAttachment = (id: UUID) =>
-    deleteAttachmentHandlerResult({ attachmentId: id }).then((res) => {
+    deleteAttachmentResult({ attachmentId: id }).then((res) => {
       res.isSuccess &&
         setApplication(
           (prev) =>

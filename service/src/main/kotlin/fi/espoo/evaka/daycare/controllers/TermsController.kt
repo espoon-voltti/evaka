@@ -66,7 +66,10 @@ class TermsController(private val accessControl: AccessControl) {
         return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
     }
 
-    @PostMapping("/club-terms")
+    @PostMapping(
+        "/club-terms", // deprecated
+        "/employee/club-terms"
+    )
     fun createClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -90,7 +93,10 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.ClubTermCreate.log(objectId = termId) }
     }
 
-    @PutMapping("/club-terms/{id}")
+    @PutMapping(
+        "/club-terms/{id}", // deprecated
+        "/employee/club-terms/{id}"
+    )
     fun updateClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -112,7 +118,10 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.ClubTermUpdate.log(objectId = termId) }
     }
 
-    @DeleteMapping("/club-terms/{id}")
+    @DeleteMapping(
+        "/club-terms/{id}", // deprecated
+        "/employee/club-terms/{id}"
+    )
     fun deleteClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -136,7 +145,10 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.ClubTermDelete.log(objectId = termId) }
     }
 
-    @PostMapping("/preschool-terms")
+    @PostMapping(
+        "/preschool-terms", // deprecated
+        "/employee/preschool-terms"
+    )
     fun createPreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -166,7 +178,10 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.PreschoolTermCreate.log(objectId = termId) }
     }
 
-    @PutMapping("/preschool-terms/{id}")
+    @PutMapping(
+        "/preschool-terms/{id}", // deprecated
+        "/employee/preschool-terms/{id}"
+    )
     fun updatePreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -201,7 +216,10 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.PreschoolTermUpdate.log(objectId = termId) }
     }
 
-    @DeleteMapping("/preschool-terms/{id}")
+    @DeleteMapping(
+        "/preschool-terms/{id}", // deprecated
+        "/employee/preschool-terms/{id}"
+    )
     fun deletePreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,

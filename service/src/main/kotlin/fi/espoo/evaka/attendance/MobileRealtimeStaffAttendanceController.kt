@@ -34,12 +34,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/mobile/realtime-staff-attendances")
+@RequestMapping(
+    "/mobile/realtime-staff-attendances", // deprecated
+    "/employee-mobile/realtime-staff-attendances"
+)
 class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @GetMapping
     fun getAttendancesByUnit(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): CurrentDayStaffAttendanceResponse {
@@ -82,7 +85,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @PostMapping("/arrival")
     fun markArrival(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestBody body: StaffArrivalRequest
     ) {
@@ -158,7 +161,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @PostMapping("/departure")
     fun markDeparture(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestBody body: StaffDepartureRequest
     ) {
@@ -224,7 +227,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @PutMapping
     fun setAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestBody body: StaffAttendanceUpdateRequest
@@ -306,7 +309,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @PostMapping("/arrival-external")
     fun markExternalArrival(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
@@ -352,7 +355,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @PostMapping("/departure-external")
     fun markExternalDeparture(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestBody body: ExternalStaffDepartureRequest
     ) {

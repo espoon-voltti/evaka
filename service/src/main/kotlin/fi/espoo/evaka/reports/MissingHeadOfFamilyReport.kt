@@ -23,10 +23,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MissingHeadOfFamilyReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/missing-head-of-family")
+    @GetMapping(
+        "/reports/missing-head-of-family", // deprecated
+        "/employee/reports/missing-head-of-family"
+    )
     fun getMissingHeadOfFamilyReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,

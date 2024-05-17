@@ -20,10 +20,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class DuplicatePeopleReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/duplicate-people")
+    @GetMapping(
+        "/reports/duplicate-people", // deprecated
+        "/employee/reports/duplicate-people"
+    )
     fun getDuplicatePeopleReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam showIntentionalDuplicates: Boolean?,
     ): List<DuplicatePeopleReportRow> {

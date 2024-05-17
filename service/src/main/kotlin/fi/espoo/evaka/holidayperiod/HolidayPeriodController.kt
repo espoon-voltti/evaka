@@ -27,12 +27,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/holiday-period")
+@RequestMapping(
+    "/holiday-period", // deprecated
+    "/employee/holiday-period"
+)
 class HolidayPeriodController(private val accessControl: AccessControl) {
     @GetMapping
     fun getHolidayPeriods(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<HolidayPeriod> {
         return db.connect { dbc ->
@@ -52,7 +55,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     @GetMapping("/{id}")
     fun getHolidayPeriod(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayPeriodId
     ): HolidayPeriod {
@@ -73,7 +76,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     @PostMapping
     fun createHolidayPeriod(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: HolidayPeriodBody
     ): HolidayPeriod {
@@ -107,7 +110,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     @PutMapping("/{id}")
     fun updateHolidayPeriod(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayPeriodId,
         @RequestBody body: HolidayPeriodBody
@@ -133,7 +136,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     @DeleteMapping("/{id}")
     fun deleteHolidayPeriod(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayPeriodId
     ) {

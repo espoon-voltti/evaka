@@ -42,7 +42,7 @@ import {
   getAttachmentUrl,
   saveIncomeAttachment
 } from '../../../api/attachments'
-import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
+import { deleteAttachment } from '../../../generated/api-clients/attachment'
 import { useTranslation } from '../../../state/i18n'
 import { IncomeFields } from '../../../types/income'
 import RetroactiveConfirmation, {
@@ -54,7 +54,7 @@ import IncomeTable, {
   tableDataFromIncomeFields
 } from './IncomeTable'
 
-const deleteAttachmentHandlerResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;
@@ -430,7 +430,7 @@ function IncomeAttachments({
 
   const handleDelete = useCallback(
     async (id: UUID) =>
-      (await deleteAttachmentHandlerResult({ attachmentId: id })).map(() => {
+      (await deleteAttachmentResult({ attachmentId: id })).map(() => {
         onDeleted(id)
       }),
     [onDeleted]

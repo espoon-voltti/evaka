@@ -53,10 +53,13 @@ class PlacementController(
 ) {
     private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
 
-    @GetMapping("/placements")
+    @GetMapping(
+        "/placements", // deprecated
+        "/employee/placements"
+    )
     fun getPlacements(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam daycareId: DaycareId? = null,
         @RequestParam childId: ChildId? = null,
@@ -144,10 +147,13 @@ class PlacementController(
             }
     }
 
-    @GetMapping("/placements/plans")
+    @GetMapping(
+        "/placements/plans", // deprecated
+        "/employee/placements/plans"
+    )
     fun getPlacementPlans(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -174,10 +180,13 @@ class PlacementController(
             }
     }
 
-    @PostMapping("/placements")
+    @PostMapping(
+        "/placements", // deprecated
+        "/employee/placements"
+    )
     fun createPlacement(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: PlacementCreateRequestBody
     ) {
@@ -267,10 +276,13 @@ class PlacementController(
         )
     }
 
-    @PutMapping("/placements/{placementId}")
+    @PutMapping(
+        "/placements/{placementId}", // deprecated
+        "/employee/placements/{placementId}"
+    )
     fun updatePlacementById(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
@@ -343,10 +355,13 @@ class PlacementController(
         Audit.PlacementUpdate.log(targetId = placementId)
     }
 
-    @DeleteMapping("/placements/{placementId}")
+    @DeleteMapping(
+        "/placements/{placementId}", // deprecated
+        "/employee/placements/{placementId}"
+    )
     fun deletePlacement(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable placementId: PlacementId
     ) {
@@ -407,10 +422,13 @@ class PlacementController(
             }
     }
 
-    @PostMapping("/placements/{placementId}/group-placements")
+    @PostMapping(
+        "/placements/{placementId}/group-placements", // deprecated
+        "/employee/placements/{placementId}/group-placements"
+    )
     fun createGroupPlacement(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
@@ -441,10 +459,13 @@ class PlacementController(
             }
     }
 
-    @DeleteMapping("/group-placements/{groupPlacementId}")
+    @DeleteMapping(
+        "/group-placements/{groupPlacementId}", // deprecated
+        "/employee/group-placements/{groupPlacementId}"
+    )
     fun deleteGroupPlacement(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable groupPlacementId: GroupPlacementId
     ) {
@@ -463,10 +484,13 @@ class PlacementController(
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
     }
 
-    @PostMapping("/group-placements/{groupPlacementId}/transfer")
+    @PostMapping(
+        "/group-placements/{groupPlacementId}/transfer", // deprecated
+        "/employee/group-placements/{groupPlacementId}/transfer"
+    )
     fun transferGroupPlacement(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody
@@ -489,10 +513,13 @@ class PlacementController(
         )
     }
 
-    @GetMapping("/placements/child-placement-periods/{adultId}")
+    @GetMapping(
+        "/placements/child-placement-periods/{adultId}", // deprecated
+        "/employee/placements/child-placement-periods/{adultId}"
+    )
     fun getChildPlacementPeriods(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable adultId: PersonId
     ): List<FiniteDateRange> {

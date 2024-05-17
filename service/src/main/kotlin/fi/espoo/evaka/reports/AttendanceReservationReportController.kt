@@ -39,11 +39,14 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AttendanceReservationReportController(private val accessControl: AccessControl) {
 
-    @GetMapping("/reports/attendance-reservation/{unitId}")
+    @GetMapping(
+        "/reports/attendance-reservation/{unitId}", // deprecated
+        "/employee/reports/attendance-reservation/{unitId}"
+    )
     fun getAttendanceReservationReportByUnit(
         db: Database,
         clock: EvakaClock,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
@@ -85,11 +88,14 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
             }
     }
 
-    @GetMapping("/reports/attendance-reservation/{unitId}/by-child")
+    @GetMapping(
+        "/reports/attendance-reservation/{unitId}/by-child", // deprecated
+        "/employee/reports/attendance-reservation/{unitId}/by-child"
+    )
     fun getAttendanceReservationReportByUnitAndChild(
         db: Database,
         clock: EvakaClock,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,

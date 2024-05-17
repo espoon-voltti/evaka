@@ -25,7 +25,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/payments")
+@RequestMapping(
+    "/payments", // deprecated
+    "/employee/payments"
+)
 class PaymentController(
     private val accessControl: AccessControl,
     private val paymentService: PaymentService
@@ -33,14 +36,14 @@ class PaymentController(
     @PostMapping("/search")
     fun searchPayments(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestBody params: SearchPaymentsRequest
     ): PagedPayments {
         return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
     }
 
     @PostMapping("/create-drafts")
-    fun createPaymentDrafts(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
+    fun createPaymentDrafts(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -64,7 +67,7 @@ class PaymentController(
     @PostMapping("/delete-drafts")
     fun deleteDraftPayments(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody paymentIds: List<PaymentId>
     ) {

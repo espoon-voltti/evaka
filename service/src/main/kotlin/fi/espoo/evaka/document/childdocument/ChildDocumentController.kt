@@ -29,7 +29,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/child-documents")
+@RequestMapping(
+    "/child-documents", // deprecated
+    "/employee/child-documents"
+)
 class ChildDocumentController(
     private val accessControl: AccessControl,
     private val childDocumentService: ChildDocumentService
@@ -258,7 +261,7 @@ class ChildDocumentController(
     @PutMapping("/{documentId}/publish")
     fun publishDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ) {
@@ -298,7 +301,7 @@ class ChildDocumentController(
     @PutMapping("/{documentId}/next-status")
     fun nextDocumentStatus(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest
@@ -345,7 +348,7 @@ class ChildDocumentController(
     @PutMapping("/{documentId}/prev-status")
     fun prevDocumentStatus(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest
@@ -377,7 +380,7 @@ class ChildDocumentController(
     @DeleteMapping("/{documentId}")
     fun deleteDraftDocument(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ) {

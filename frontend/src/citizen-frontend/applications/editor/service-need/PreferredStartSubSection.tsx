@@ -23,7 +23,7 @@ import {
   getAttachmentUrl,
   saveApplicationAttachment
 } from '../../../attachments'
-import { deleteAttachmentHandler } from '../../../generated/api-clients/attachment'
+import { deleteAttachment } from '../../../generated/api-clients/attachment'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { isValidPreferredStartDate } from '../validations'
@@ -31,7 +31,7 @@ import { isValidPreferredStartDate } from '../validations'
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
-const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,

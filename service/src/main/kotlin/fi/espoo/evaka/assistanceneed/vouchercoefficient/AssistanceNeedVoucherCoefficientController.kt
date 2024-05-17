@@ -103,10 +103,13 @@ class AssistanceNeedVoucherCoefficientController(
             }
     }
 
-    @PutMapping("/assistance-need-voucher-coefficients/{id}")
+    @PutMapping(
+        "/assistance-need-voucher-coefficients/{id}", // deprecated
+        "/employee/assistance-need-voucher-coefficients/{id}"
+    )
     fun updateAssistanceNeedVoucherCoefficient(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedVoucherCoefficientId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
@@ -144,10 +147,13 @@ class AssistanceNeedVoucherCoefficientController(
             .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = id) }
     }
 
-    @DeleteMapping("/assistance-need-voucher-coefficients/{id}")
+    @DeleteMapping(
+        "/assistance-need-voucher-coefficients/{id}", // deprecated
+        "/employee/assistance-need-voucher-coefficients/{id}"
+    )
     fun deleteAssistanceNeedVoucherCoefficient(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedVoucherCoefficientId
     ) {

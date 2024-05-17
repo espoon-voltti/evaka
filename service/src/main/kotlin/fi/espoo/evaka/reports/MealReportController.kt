@@ -51,11 +51,14 @@ class MealReportController(
     private val mealTypeMapper: MealTypeMapper
 ) {
 
-    @GetMapping("/reports/meal/{unitId}")
+    @GetMapping(
+        "/reports/meal/{unitId}", // deprecated
+        "/employee/reports/meal/{unitId}"
+    )
     fun getMealReportByUnit(
         tx: Database,
         clock: EvakaClock,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): MealReportData {

@@ -23,7 +23,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/varda")
+@RequestMapping(
+    "/varda", // deprecated
+    "/employee/varda"
+)
 class VardaController(
     private val vardaService: VardaUpdateService,
     private val vardaResetService: VardaResetService,
@@ -32,7 +35,7 @@ class VardaController(
     private val vardaEnv: VardaEnv
 ) {
     @PostMapping("/start-update")
-    fun runFullVardaUpdate(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
+    fun runFullVardaUpdate(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
         db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -49,7 +52,7 @@ class VardaController(
     }
 
     @PostMapping("/start-reset")
-    fun runFullVardaReset(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
+    fun runFullVardaReset(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
         db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -71,7 +74,7 @@ class VardaController(
     @PostMapping("/child/reset/{childId}")
     fun markChildForVardaReset(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ) {

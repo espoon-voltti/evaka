@@ -26,7 +26,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/absences")
+@RequestMapping(
+    "/absences", // deprecated
+    "/employee/absences"
+)
 class AbsenceController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig
@@ -34,7 +37,7 @@ class AbsenceController(
     @GetMapping("/{groupId}")
     fun groupMonthCalendar(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -63,7 +66,7 @@ class AbsenceController(
     @PostMapping("/{groupId}")
     fun upsertAbsences(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody absences: List<AbsenceUpsert>,
         @PathVariable groupId: GroupId
@@ -129,7 +132,7 @@ class AbsenceController(
     @PostMapping("/{groupId}/present")
     fun addPresences(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable groupId: GroupId,
         @RequestBody deletions: List<Presence>,
@@ -181,7 +184,7 @@ class AbsenceController(
     @PostMapping("/{groupId}/delete-holiday-reservations")
     fun deleteHolidayReservations(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable groupId: GroupId,
         @RequestBody body: List<HolidayReservationsDelete>
@@ -222,7 +225,7 @@ class AbsenceController(
     @PostMapping("/by-child/{childId}/delete")
     fun deleteAbsence(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: DeleteChildAbsenceBody
@@ -250,7 +253,7 @@ class AbsenceController(
     @GetMapping("/by-child/{childId}")
     fun getAbsencesOfChild(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestParam year: Int,
@@ -274,27 +277,5 @@ class AbsenceController(
                     meta = mapOf("year" to year, "month" to month)
                 )
             }
-    }
-
-    @GetMapping("/by-child/{childId}/future")
-    fun futureAbsencesOfChild(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId
-    ): List<Absence> {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Child.READ_FUTURE_ABSENCES,
-                        childId
-                    )
-                    getFutureAbsencesOfChild(it, clock, childId)
-                }
-            }
-            .also { Audit.AbsenceRead.log(targetId = childId) }
     }
 }

@@ -55,12 +55,13 @@ class AttachmentsController(
     private val maxAttachmentsPerUser = evakaEnv.maxAttachmentsPerUser
 
     @PostMapping(
-        "/attachments/applications/{applicationId}",
+        "/attachments/applications/{applicationId}", // deprecated
+        "/employee/attachments/applications/{applicationId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadApplicationAttachmentEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
@@ -97,12 +98,13 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/income-statements/{incomeStatementId}",
+        "/attachments/income-statements/{incomeStatementId}", // deprecated
+        "/employee/attachments/income-statements/{incomeStatementId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadIncomeStatementAttachmentEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestPart("file") file: MultipartFile
@@ -135,12 +137,15 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        value = ["/attachments/income/{incomeId}", "/attachments/income"],
+        "/attachments/income/{incomeId}", // deprecated
+        "/attachments/income", // deprecated
+        "/employee/attachments/income/{incomeId}",
+        "/employee/attachments/income",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadIncomeAttachment(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId?,
         @RequestPart("file") file: MultipartFile
@@ -173,12 +178,13 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/messages/{draftId}",
+        "/attachments/messages/{draftId}", // deprecated
+        "/employee/attachments/messages/{draftId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadMessageAttachment(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable draftId: MessageDraftId,
         @RequestPart("file") file: MultipartFile
@@ -206,12 +212,13 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/pedagogical-documents/{documentId}",
+        "/attachments/pedagogical-documents/{documentId}", // deprecated
+        "/employee/attachments/pedagogical-documents/{documentId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadPedagogicalDocumentAttachment(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestPart("file") file: MultipartFile
@@ -249,11 +256,8 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        value =
-            [
-                "/attachments/citizen/applications/{applicationId}", // deprecated
-                "/citizen/attachments/applications/{applicationId}",
-            ],
+        "/attachments/citizen/applications/{applicationId}", // deprecated
+        "/citizen/attachments/applications/{applicationId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadApplicationAttachmentCitizen(
@@ -290,13 +294,10 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        value =
-            [
-                "/attachments/citizen/income-statements/{incomeStatementId}", // deprecated
-                "/attachments/citizen/income-statements", // deprecated
-                "/citizen/attachments/income-statements/{incomeStatementId}",
-                "/citizen/attachments/income-statements",
-            ],
+        "/attachments/citizen/income-statements/{incomeStatementId}", // deprecated
+        "/attachments/citizen/income-statements", // deprecated
+        "/citizen/attachments/income-statements/{incomeStatementId}",
+        "/citizen/attachments/income-statements",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadIncomeStatementAttachmentCitizen(
@@ -335,12 +336,15 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        value = ["/attachments/fee-alteration/{feeAlterationId}", "/attachments/fee-alteration"],
+        "/attachments/fee-alteration/{feeAlterationId}", // deprecated
+        "/attachments/fee-alteration", // deprecated
+        "/employee/attachments/fee-alteration/{feeAlterationId}", // deprecated
+        "/employee/attachments/fee-alteration", // deprecated
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadFeeAlterationAttachment(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId?,
         @RequestPart("file") file: MultipartFile
@@ -455,14 +459,37 @@ class AttachmentsController(
         return id
     }
 
-    @GetMapping(
-        value =
-            [
-                "/attachments/{attachmentId}/download/{requestedFilename}", // deprecated
-                "/citizen/attachments/{attachmentId}/download/{requestedFilename}"
-            ]
-    )
+    @GetMapping("/citizen/attachments/{attachmentId}/download/{requestedFilename}")
     fun getAttachment(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable attachmentId: AttachmentId,
+        @PathVariable requestedFilename: String
+    ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
+
+    @GetMapping("/employee/attachments/{attachmentId}/download/{requestedFilename}")
+    fun getAttachment(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable attachmentId: AttachmentId,
+        @PathVariable requestedFilename: String
+    ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
+
+    @GetMapping("/employee-mobile/attachments/{attachmentId}/download/{requestedFilename}")
+    fun getAttachment(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable attachmentId: AttachmentId,
+        @PathVariable requestedFilename: String
+    ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
+
+    @GetMapping(
+        "/attachments/{attachmentId}/download/{requestedFilename}", // deprecated
+    )
+    fun getAttachmentInternal(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -561,15 +588,26 @@ class AttachmentsController(
         }
     }
 
+    @DeleteMapping("/citizen/attachments/{attachmentId}")
+    fun deleteAttachment(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable attachmentId: AttachmentId
+    ) = deleteAttachmentHandler(db, user, clock, attachmentId)
+
     @DeleteMapping(
-        value =
-            [
-                "/attachments/{attachmentId}",
-                "/attachments/citizen/{attachmentId}", // deprecated
-                "/citizen/attachments/{attachmentId}",
-            ]
+        "/attachments/{attachmentId}", // deprecated
+        "/employee/attachments/{attachmentId}"
     )
-    fun deleteAttachmentHandler(
+    fun deleteAttachment(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable attachmentId: AttachmentId
+    ) = deleteAttachmentHandler(db, user, clock, attachmentId)
+
+    private fun deleteAttachmentHandler(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

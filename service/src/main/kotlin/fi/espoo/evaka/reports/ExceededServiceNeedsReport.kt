@@ -43,7 +43,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ExceededServiceNeedsReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/exceeded-service-need/units")
+    @GetMapping(
+        "/reports/exceeded-service-need/units", // deprecated
+        "/employee/reports/exceeded-service-need/units"
+    )
     fun getExceededServiceNeedReportUnits(
         db: Database,
         user: AuthenticatedUser.Employee,

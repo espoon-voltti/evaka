@@ -34,10 +34,13 @@ class AssistanceNeedsAndActionsReportController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig
 ) {
-    @GetMapping("/reports/assistance-needs-and-actions")
+    @GetMapping(
+        "/reports/assistance-needs-and-actions", // deprecated
+        "/employee/reports/assistance-needs-and-actions"
+    )
     fun getAssistanceNeedsAndActionsReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {
@@ -87,10 +90,13 @@ class AssistanceNeedsAndActionsReportController(
         val assistanceNeedVoucherCoefficientCount: Int
     )
 
-    @GetMapping("/reports/assistance-needs-and-actions/by-child")
+    @GetMapping(
+        "/reports/assistance-needs-and-actions/by-child", // deprecated
+        "/employee/reports/assistance-needs-and-actions/by-child"
+    )
     fun getAssistanceNeedsAndActionsReportByChild(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReportByChild {

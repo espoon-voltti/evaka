@@ -116,7 +116,10 @@ enum class VoucherApplicationFilter {
 }
 
 @RestController
-@RequestMapping("/v2/applications")
+@RequestMapping(
+    "/v2/applications", // deprecated
+    "/employee/applications",
+)
 class ApplicationControllerV2(
     private val accessControl: AccessControl,
     private val personService: PersonService,
@@ -126,7 +129,7 @@ class ApplicationControllerV2(
     @PostMapping
     fun createPaperApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
     ): ApplicationId {
@@ -207,7 +210,7 @@ class ApplicationControllerV2(
     @PostMapping("/search")
     fun getApplicationSummaries(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: SearchApplicationRequest
     ): PagedApplicationSummaries {
@@ -266,7 +269,7 @@ class ApplicationControllerV2(
     @GetMapping("/by-guardian/{guardianId}")
     fun getGuardianApplicationSummaries(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable guardianId: PersonId
     ): List<PersonApplicationSummary> {
@@ -288,7 +291,7 @@ class ApplicationControllerV2(
     @GetMapping("/by-child/{childId}")
     fun getChildApplicationSummaries(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PersonApplicationSummary> {
@@ -317,7 +320,7 @@ class ApplicationControllerV2(
     @GetMapping("/{applicationId}")
     fun getApplicationDetails(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): ApplicationResponse {
@@ -393,7 +396,7 @@ class ApplicationControllerV2(
     @PutMapping("/{applicationId}")
     fun updateApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
@@ -423,7 +426,7 @@ class ApplicationControllerV2(
     @PostMapping("/{applicationId}/actions/send-application")
     fun sendApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
@@ -437,7 +440,7 @@ class ApplicationControllerV2(
     @GetMapping("/{applicationId}/placement-draft")
     fun getPlacementPlanDraft(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): PlacementPlanDraft {
@@ -463,7 +466,7 @@ class ApplicationControllerV2(
     @GetMapping("/{applicationId}/decision-drafts")
     fun getDecisionDrafts(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): DecisionDraftGroup {
@@ -550,7 +553,7 @@ class ApplicationControllerV2(
     @PutMapping("/{applicationId}/decision-drafts")
     fun updateDecisionDrafts(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftUpdate>
@@ -573,7 +576,7 @@ class ApplicationControllerV2(
     @PostMapping("/placement-proposals/{unitId}/accept")
     fun acceptPlacementProposal(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ) {
@@ -587,7 +590,7 @@ class ApplicationControllerV2(
     @PostMapping("/batch/actions/{action}")
     fun simpleBatchAction(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable action: String,
         @RequestBody body: SimpleBatchRequest
@@ -617,7 +620,7 @@ class ApplicationControllerV2(
     @PostMapping("/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
@@ -650,7 +653,7 @@ class ApplicationControllerV2(
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")
     fun respondToPlacementProposal(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate
@@ -673,7 +676,7 @@ class ApplicationControllerV2(
     @PostMapping("/{applicationId}/actions/accept-decision")
     fun acceptDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
@@ -695,7 +698,7 @@ class ApplicationControllerV2(
     @PostMapping("/{applicationId}/actions/reject-decision")
     fun rejectDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
@@ -716,7 +719,7 @@ class ApplicationControllerV2(
     @PostMapping("/{applicationId}/actions/{action}")
     fun simpleApplicationAction(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
@@ -743,7 +746,7 @@ class ApplicationControllerV2(
     @GetMapping("/units/{unitId}")
     fun getUnitApplications(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): UnitApplications {

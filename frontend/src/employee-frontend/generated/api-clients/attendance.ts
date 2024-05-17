@@ -10,29 +10,19 @@ import { AbsenceRangeRequest } from 'lib-common/generated/api-types/attendance'
 import { ArrivalRequest } from 'lib-common/generated/api-types/attendance'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { ChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
-import { CurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { DepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { ExpectedAbsencesOnDepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
-import { ExternalStaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
-import { ExternalStaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { FullDayAbsenceRequest } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { StaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { StaffAttendanceUpdateRequest } from 'lib-common/generated/api-types/attendance'
-import { StaffAttendanceUpdateResponse } from 'lib-common/generated/api-types/attendance'
-import { StaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
-import { UnitInfo } from 'lib-common/generated/api-types/attendance'
-import { UnitStats } from 'lib-common/generated/api-types/attendance'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
-import { deserializeJsonCurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { uri } from 'lib-common/uri'
 
@@ -236,152 +226,6 @@ export async function returnToPresent(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/attendances/units/${request.unitId}/children/${request.childId}/return-to-present`.toString(),
     method: 'POST'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.getAttendancesByUnit
-*/
-export async function getAttendancesByUnit(
-  request: {
-    unitId: UUID
-  }
-): Promise<CurrentDayStaffAttendanceResponse> {
-  const params = createUrlSearchParams(
-    ['unitId', request.unitId]
-  )
-  const { data: json } = await client.request<JsonOf<CurrentDayStaffAttendanceResponse>>({
-    url: uri`/mobile/realtime-staff-attendances`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonCurrentDayStaffAttendanceResponse(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markArrival
-*/
-export async function markArrival(
-  request: {
-    body: StaffArrivalRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile/realtime-staff-attendances/arrival`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<StaffArrivalRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markDeparture
-*/
-export async function markDeparture(
-  request: {
-    body: StaffDepartureRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile/realtime-staff-attendances/departure`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<StaffDepartureRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markExternalArrival
-*/
-export async function markExternalArrival(
-  request: {
-    body: ExternalStaffArrivalRequest
-  }
-): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/mobile/realtime-staff-attendances/arrival-external`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ExternalStaffArrivalRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markExternalDeparture
-*/
-export async function markExternalDeparture(
-  request: {
-    body: ExternalStaffDepartureRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile/realtime-staff-attendances/departure-external`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ExternalStaffDepartureRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.setAttendances
-*/
-export async function setAttendances(
-  request: {
-    unitId: UUID,
-    body: StaffAttendanceUpdateRequest
-  }
-): Promise<StaffAttendanceUpdateResponse> {
-  const params = createUrlSearchParams(
-    ['unitId', request.unitId]
-  )
-  const { data: json } = await client.request<JsonOf<StaffAttendanceUpdateResponse>>({
-    url: uri`/mobile/realtime-staff-attendances`.toString(),
-    method: 'PUT',
-    params,
-    data: request.body satisfies JsonCompatible<StaffAttendanceUpdateRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileUnitController.getUnitInfo
-*/
-export async function getUnitInfo(
-  request: {
-    unitId: UUID
-  }
-): Promise<UnitInfo> {
-  const { data: json } = await client.request<JsonOf<UnitInfo>>({
-    url: uri`/mobile/units/${request.unitId}`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.MobileUnitController.getUnitStats
-*/
-export async function getUnitStats(
-  request: {
-    unitIds?: UUID[] | null
-  }
-): Promise<UnitStats[]> {
-  const params = createUrlSearchParams(
-    ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
-  )
-  const { data: json } = await client.request<JsonOf<UnitStats[]>>({
-    url: uri`/mobile/units/stats`.toString(),
-    method: 'GET',
-    params
   })
   return json
 }

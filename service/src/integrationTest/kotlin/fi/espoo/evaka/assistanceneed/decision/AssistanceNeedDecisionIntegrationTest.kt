@@ -1160,7 +1160,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     private fun markAssistanceNeedDecisionOpened(
         id: AssistanceNeedDecisionId,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Employee
     ) {
         assistanceNeedDecisionController.markAssistanceNeedDecisionAsOpened(
             dbInstance(),
@@ -1173,7 +1173,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun decideAssistanceNeedDecision(
         id: AssistanceNeedDecisionId,
         request: AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
     ) {
         assistanceNeedDecisionController.decideAssistanceNeedDecision(
             dbInstance(),
@@ -1188,7 +1188,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         id: AssistanceNeedDecisionId,
         request:
             AssistanceNeedDecisionController.UpdateDecisionMakerForAssistanceNeedDecisionRequest,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
     ) {
         assistanceNeedDecisionController.updateAssistanceNeedDecisionDecisionMaker(
             dbInstance(),
@@ -1201,7 +1201,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     private fun getDecisionMakerOptions(
         id: AssistanceNeedDecisionId,
-        user: AuthenticatedUser = assistanceWorker,
+        user: AuthenticatedUser.Employee = assistanceWorker,
     ): List<Employee> {
         return assistanceNeedDecisionController.getAssistanceDecisionMakerOptions(
             dbInstance(),
@@ -1214,7 +1214,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun annulAssistanceNeedDecision(
         id: AssistanceNeedDecisionId,
         reason: String,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Employee
     ) {
         assistanceNeedDecisionController.annulAssistanceNeedDecision(
             dbInstance(),

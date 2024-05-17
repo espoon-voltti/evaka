@@ -32,7 +32,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/parentships")
+@RequestMapping(
+    "/parentships", // deprecated
+    "/employee/parentships"
+)
 class ParentshipController(
     private val parentshipService: ParentshipService,
     private val accessControl: AccessControl

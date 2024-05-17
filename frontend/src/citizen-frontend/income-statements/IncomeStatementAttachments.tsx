@@ -15,12 +15,12 @@ import { H3, H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { getAttachmentUrl, saveIncomeStatementAttachment } from '../attachments'
-import { deleteAttachmentHandler } from '../generated/api-clients/attachment'
+import { deleteAttachment } from '../generated/api-clients/attachment'
 import { useTranslation } from '../localization'
 
 import { AttachmentType } from './types/common'
 
-const deleteAttachmentResult = wrapResult(deleteAttachmentHandler)
+const deleteAttachmentResult = wrapResult(deleteAttachment)
 
 export default React.memo(function Attachments({
   incomeStatementId,

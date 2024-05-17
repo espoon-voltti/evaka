@@ -25,7 +25,10 @@ import org.springframework.web.bind.annotation.RestController
 private val logger = KotlinLogging.logger {}
 
 @RestController
-@RequestMapping("/patu-report")
+@RequestMapping(
+    "/patu-report", // deprecated
+    "/employee/patu-report"
+)
 class PatuReportingController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl
@@ -34,7 +37,7 @@ class PatuReportingController(
     @PostMapping
     fun sendPatuReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate

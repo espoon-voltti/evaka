@@ -17,10 +17,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class UnitsReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/units")
+    @GetMapping(
+        "/reports/units", // deprecated
+        "/employee/reports/units"
+    )
     fun getUnitsReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<UnitsReportRow> {
         return db.connect { dbc ->

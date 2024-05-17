@@ -24,10 +24,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MissingServiceNeedReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/missing-service-need")
+    @GetMapping(
+        "/reports/missing-service-need", // deprecated
+        "/employee/reports/missing-service-need"
+    )
     fun getMissingServiceNeedReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?

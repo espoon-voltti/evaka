@@ -29,10 +29,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class OccupancyReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/occupancy-by-unit")
+    @GetMapping(
+        "/reports/occupancy-by-unit", // deprecated
+        "/employee/reports/occupancy-by-unit"
+    )
     fun getOccupancyUnitReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId?,
@@ -80,10 +83,13 @@ class OccupancyReportController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping("/reports/occupancy-by-group")
+    @GetMapping(
+        "/reports/occupancy-by-group", // deprecated
+        "/employee/reports/occupancy-by-group"
+    )
     fun getOccupancyGroupReport(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: AreaId?,
