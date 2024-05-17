@@ -10,13 +10,13 @@ import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
 fun Database.Read.getChildrenByParent(id: PersonId, today: LocalDate): List<Child> =
-    @Suppress("DEPRECATION")
-    this.createQuery(
-            """
+    createQuery {
+            sql(
+                """
 WITH children AS (
-    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    SELECT child_id FROM guardian WHERE guardian_id = ${bind(id)}
     UNION
-    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+    SELECT child_id FROM foster_parent WHERE parent_id = ${bind(id)} AND valid_during @> ${bind(today)}
 )
 SELECT
     p.id,
@@ -36,34 +36,31 @@ SELECT
 FROM children c
 INNER JOIN person p ON c.child_id = p.id
 LEFT JOIN child_images img ON p.id = img.child_id
-LEFT JOIN placement current_pl ON current_pl.child_id = p.id AND daterange(current_pl.start_date, current_pl.end_date, '[]') @> :today::date
-LEFT JOIN daycare_group_placement dgp ON current_pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
+LEFT JOIN placement current_pl ON current_pl.child_id = p.id AND daterange(current_pl.start_date, current_pl.end_date, '[]') @> ${bind(today)}::date
+LEFT JOIN daycare_group_placement dgp ON current_pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(today)}::date
 LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
 LEFT JOIN daycare u ON u.id = dg.daycare_id
 LEFT JOIN LATERAL (
   SELECT child_id, type
   FROM placement
-  WHERE child_id = p.id AND :today <= end_date
+  WHERE child_id = p.id AND ${bind(today)} <= end_date
   ORDER BY start_date
   LIMIT 1
 ) upcoming_pl ON true
 ORDER BY p.date_of_birth, p.last_name, p.first_name, p.duplicate_of
-        """
-                .trimIndent()
-        )
-        .bind("today", today)
-        .bind("userId", id)
-        .toList<Child>()
+"""
+            )
+        }
+        .toList()
 
 fun Database.Read.getCitizenChildIds(today: LocalDate, userId: PersonId): List<ChildId> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-SELECT child_id FROM guardian WHERE guardian_id = :userId
+    createQuery {
+            sql(
+                """
+SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
 UNION ALL
-SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 """
-        )
-        .bind("today", today)
-        .bind("userId", userId)
-        .toList<ChildId>()
+            )
+        }
+        .toList()
