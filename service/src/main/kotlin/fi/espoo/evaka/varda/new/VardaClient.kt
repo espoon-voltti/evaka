@@ -25,7 +25,8 @@ private val logger = KotlinLogging.logger {}
 private fun maskHenkilotunnus(henkilotunnus: String?): String? =
     henkilotunnus?.let { "${it.slice(0..4)}******" }
 
-private fun maskName(name: String): String = name.take(2) + "*".repeat(name.length - 2)
+private fun maskName(name: String): String =
+    if (name.length > 2) name.take(2) + "*".repeat(name.length - 2) else "**"
 
 interface VardaReadClient {
     @JsonInclude(JsonInclude.Include.NON_NULL)
