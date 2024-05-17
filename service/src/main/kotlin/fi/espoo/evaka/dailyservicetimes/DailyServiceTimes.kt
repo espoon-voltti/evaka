@@ -174,10 +174,10 @@ data class DailyServiceTimeRow(
     val validityPeriod: DateRange
 )
 
-fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimes> {
-    @Suppress("DEPRECATION")
-    return this.createQuery(
-            """
+fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimes> =
+    createQuery {
+            sql(
+                """
 SELECT
     id,
     child_id,
@@ -192,22 +192,20 @@ SELECT
     saturday_times,
     sunday_times
 FROM daily_service_time
-WHERE child_id = :childId
+WHERE child_id = ${bind(childId)}
 ORDER BY lower(validity_period) DESC
-        """
-                .trimIndent()
-        )
-        .bind("childId", childId)
+"""
+            )
+        }
         .mapTo<DailyServiceTimeRow>()
         .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.toList() }
-}
 
 fun Database.Read.getDailyServiceTimesForChildren(
     childIds: Set<ChildId>
 ): Map<ChildId, List<DailyServiceTimesValue>> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
+    createQuery {
+            sql(
+                """
 SELECT
     id,
     child_id,
@@ -222,11 +220,10 @@ SELECT
     saturday_times,
     sunday_times
 FROM daily_service_time
-WHERE child_id = ANY(:childIds)
-        """
-                .trimIndent()
-        )
-        .bind("childIds", childIds)
+WHERE child_id = ANY(${bind(childIds)})
+"""
+            )
+        }
         .mapTo<DailyServiceTimeRow>()
         .useIterable { rows ->
             rows.map { toDailyServiceTimes(it) }.groupBy({ it.childId }, { it.times })
@@ -236,19 +233,17 @@ data class DailyServiceTimesValidity(val childId: ChildId, val validityPeriod: D
 
 fun Database.Read.getDailyServiceTimesValidity(
     id: DailyServiceTimesId
-): DailyServiceTimesValidity? {
-    @Suppress("DEPRECATION")
-    return this.createQuery(
-            """
+): DailyServiceTimesValidity? =
+    createQuery {
+            sql(
+                """
 SELECT child_id, validity_period
 FROM daily_service_time
-WHERE id = :id
-        """
-                .trimIndent()
-        )
-        .bind("id", id)
-        .exactlyOneOrNull<DailyServiceTimesValidity>()
-}
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull()
 
 fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
     return when (row.type) {
@@ -297,26 +292,26 @@ fun Database.Transaction.updateChildDailyServiceTimes(
     id: DailyServiceTimesId,
     times: DailyServiceTimesValue
 ) {
-    val sql =
-        """
-        UPDATE daily_service_time
-        SET 
-            validity_period = :validityPeriod,
-            type = :type,
-            regular_times = :regularTimes,
-            monday_times = :mondayTimes,
-            tuesday_times = :tuesdayTimes,
-            wednesday_times = :wednesdayTimes,
-            thursday_times = :thursdayTimes,
-            friday_times = :fridayTimes,
-            saturday_times = :saturdayTimes,
-            sunday_times = :sundayTimes
-        WHERE id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql).bindKotlin(times.asUpdateRow()).bind("id", id).execute()
+    val u = times.asUpdateRow()
+    execute {
+        sql(
+            """
+UPDATE daily_service_time
+SET 
+    validity_period = ${bind(u.validityPeriod)},
+    type = ${bind(u.type)},
+    regular_times = ${bind(u.regularTimes)},
+    monday_times = ${bind(u.mondayTimes)},
+    tuesday_times = ${bind(u.tuesdayTimes)},
+    wednesday_times = ${bind(u.wednesdayTimes)},
+    thursday_times = ${bind(u.thursdayTimes)},
+    friday_times = ${bind(u.fridayTimes)},
+    saturday_times = ${bind(u.saturdayTimes)},
+    sunday_times = ${bind(u.sundayTimes)}
+WHERE id = ${bind(id)}
+"""
+        )
+    }
 }
 
 fun Database.Transaction.addDailyServiceTimesNotification(
@@ -326,46 +321,33 @@ fun Database.Transaction.addDailyServiceTimesNotification(
     dateFrom: LocalDate,
     hasDeletedReservations: Boolean
 ) {
-    val sql =
-        """
+    execute {
+        sql(
+            """
 WITH recipient AS (
-    SELECT guardian_id AS id FROM guardian WHERE child_id = :childId
+    SELECT guardian_id AS id FROM guardian WHERE child_id = ${bind(childId)}
     UNION
-    SELECT parent_id AS id FROM foster_parent WHERE child_id = :childId AND valid_during @> :today
+    SELECT parent_id AS id FROM foster_parent WHERE child_id = ${bind(childId)} AND valid_during @> ${bind(today)}
 )
 INSERT INTO daily_service_time_notification (guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
-SELECT recipient.id, :id, :dateFrom, :hasDeletedReservations FROM recipient
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql)
-        .bind("today", today)
-        .bind("id", id)
-        .bind("childId", childId)
-        .bind("dateFrom", dateFrom)
-        .bind("hasDeletedReservations", hasDeletedReservations)
-        .execute()
+SELECT recipient.id, ${bind(id)}, ${bind(dateFrom)}, ${bind(hasDeletedReservations)} FROM recipient
+"""
+        )
+    }
 }
 
 fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
-    // language=sql
-    val sql =
-        """
-        DELETE FROM daily_service_time
-        WHERE id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") this.createUpdate(sql).bind("id", id).execute()
+    execute { sql("DELETE FROM daily_service_time WHERE id = ${bind(id)}") }
 }
 
 fun Database.Transaction.createChildDailyServiceTimes(
     childId: ChildId,
     times: DailyServiceTimesValue
 ): DailyServiceTimesId {
-    val sql =
-        """
+    val u = times.asUpdateRow()
+    return createQuery {
+            sql(
+                """
         INSERT INTO daily_service_time (
             child_id, type, 
             regular_times, 
@@ -379,25 +361,21 @@ fun Database.Transaction.createChildDailyServiceTimes(
             validity_period
         )
         VALUES (
-            :childId, :type, 
-            :regularTimes, 
-            :mondayTimes,
-            :tuesdayTimes,
-            :wednesdayTimes,
-            :thursdayTimes,
-            :fridayTimes,
-            :saturdayTimes,
-            :sundayTimes,
-            :validityPeriod
+            ${bind(childId)}, ${bind(u.type)}, 
+            ${bind(u.regularTimes)}, 
+            ${bind(u.mondayTimes)},
+            ${bind(u.tuesdayTimes)},
+            ${bind(u.wednesdayTimes)},
+            ${bind(u.thursdayTimes)},
+            ${bind(u.fridayTimes)},
+            ${bind(u.saturdayTimes)},
+            ${bind(u.sundayTimes)},
+            ${bind(u.validityPeriod)}
         )
         RETURNING id
     """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bindKotlin(times.asUpdateRow())
-        .bind("childId", childId)
+            )
+        }
         .exactlyOne<DailyServiceTimesId>()
 }
 
@@ -409,35 +387,30 @@ data class DailyServiceTimesValidityWithId(
 fun Database.Read.getOverlappingChildDailyServiceTimes(
     childId: ChildId,
     range: DateRange
-): List<DailyServiceTimesValidityWithId> {
-    // language=sql
-    val sql =
-        """
-        SELECT id, validity_period
-        FROM daily_service_time
-        WHERE child_id = :childId
-          AND :range && validity_period
-        """
-            .trimIndent()
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("range", range)
+): List<DailyServiceTimesValidityWithId> =
+    createQuery {
+            sql(
+                """
+SELECT id, validity_period
+FROM daily_service_time
+WHERE child_id = ${bind(childId)}
+  AND ${bind(range)} && validity_period
+"""
+            )
+        }
         .toList<DailyServiceTimesValidityWithId>()
-}
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(
     id: DailyServiceTimesId,
     validityPeriod: DateRange
 ) {
-    val sql =
-        """
-        UPDATE daily_service_time
-        SET validity_period = :validityPeriod
-        WHERE id = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql).bind("id", id).bind("validityPeriod", validityPeriod).execute()
+    execute {
+        sql(
+            """
+UPDATE daily_service_time
+SET validity_period = ${bind(validityPeriod)}
+WHERE id = ${bind(id)}
+"""
+        )
+    }
 }

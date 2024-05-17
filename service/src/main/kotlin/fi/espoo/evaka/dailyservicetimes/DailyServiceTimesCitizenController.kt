@@ -84,26 +84,19 @@ data class DailyServiceTimeNotification(
 fun Database.Read.getDailyServiceTimesNotifications(
     userId: PersonId
 ): List<DailyServiceTimeNotification> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notification WHERE guardian_id = :userId
+    createQuery {
+            sql(
+                """
+SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notification WHERE guardian_id = ${bind(userId)}
     """
-                .trimIndent()
-        )
-        .bind("userId", userId)
+            )
+        }
         .toList<DailyServiceTimeNotification>()
 
 fun Database.Transaction.deleteDailyServiceTimesNotifications(
     notificationIds: List<DailyServiceTimeNotificationId>
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
-            """
-DELETE FROM daily_service_time_notification WHERE id = ANY(:ids)
-        """
-                .trimIndent()
-        )
-        .bind("ids", notificationIds)
-        .execute()
+    execute {
+        sql("DELETE FROM daily_service_time_notification WHERE id = ANY(${bind(notificationIds)})")
+    }
 }
