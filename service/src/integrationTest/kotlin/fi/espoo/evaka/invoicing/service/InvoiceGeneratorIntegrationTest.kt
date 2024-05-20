@@ -29,6 +29,7 @@ import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -44,6 +45,7 @@ import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.domain.DateRange
@@ -491,7 +493,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(
+        insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
                     validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
@@ -556,7 +558,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(
+        insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
                     validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
@@ -626,7 +628,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(
+        insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
                     validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
@@ -725,7 +727,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -811,7 +813,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -897,7 +899,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -964,7 +966,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(
+        insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
                     validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
@@ -1054,7 +1056,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1128,7 +1130,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1210,7 +1212,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2019,7 +2021,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         // 15 operational days first
         // then planned absences
@@ -2183,7 +2185,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 17 operational days in total, the rest are planned absences
         insertAbsences(
@@ -2627,7 +2629,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 14 operational days, the rest are planned absences
         insertAbsences(
@@ -2683,7 +2685,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2715,7 +2717,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2756,7 +2758,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(
+            listOf(decision),
+            shiftCare = ShiftCareType.FULL
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2797,7 +2802,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2838,7 +2843,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2879,7 +2884,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(
+            listOf(decision),
+            shiftCare = ShiftCareType.FULL
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2923,7 +2931,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -2983,7 +2991,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -3055,7 +3063,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -3105,7 +3113,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         insertAbsences(
             testChild_1.id,
@@ -3155,7 +3163,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(
+            listOf(decision),
+            shiftCare = ShiftCareType.FULL
+        )
 
         insertAbsences(
             testChild_1.id,
@@ -3205,7 +3216,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         insertAbsences(
             testChild_1.id,
@@ -3639,7 +3650,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 2 days of planned absences -> total 12 - 2 = 10 attendance days
         insertAbsences(
@@ -3693,7 +3704,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 3 other absences, rest are planned absences
         insertAbsences(
@@ -3757,7 +3768,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 3 sick leaves, rest are planned absences
         insertAbsences(
@@ -3823,7 +3834,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 3 sick leaves, rest are planned absences
         insertAbsences(
@@ -3898,7 +3909,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // Override useContractDaysAsDailyFeeDivisor
         val generator =
@@ -3954,7 +3965,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 2 days of planned absences -> total 12 - 2 = 10 attendance days
         insertAbsences(
@@ -4017,7 +4028,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 3 other absences, rest are planned absences
         insertAbsences(
@@ -4089,7 +4100,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 3 sick leaves, rest are planned absences
         insertAbsences(
@@ -4168,7 +4179,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 17 operational days in total, the rest are planned absences
         insertAbsences(
@@ -4260,7 +4271,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4315,7 +4326,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4455,7 +4466,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
         db.transaction {
             it.insert(
                 DevInvoiceCorrection(
@@ -4838,7 +4849,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
         insertAbsences(testChild_1.id, plannedAbsenceDays)
 
         val generator =
@@ -4900,7 +4911,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4962,7 +4973,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5132,7 +5143,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5181,7 +5192,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
         // configs
@@ -5243,7 +5254,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
         // configs
@@ -5304,7 +5315,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(
+        insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
                     validDuring = period.copy(end = LocalDate.of(2019, 1, 15)).asDateRange()
@@ -5395,7 +5406,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(decisions)
+        insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
         // configs
@@ -5613,7 +5624,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         )
                     )
             )
-        insertDecisionsAndPlacements(listOf(decision))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5698,7 +5709,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision1, decision2))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
@@ -5769,7 +5780,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision1, decision2))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
@@ -5829,7 +5840,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision1, decision2))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
@@ -5886,7 +5897,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision1, decision2))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
@@ -5946,7 +5957,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
             )
-        insertDecisionsAndPlacements(listOf(decision1, decision2))
+        insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
@@ -6452,7 +6463,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 },
                 partnerId = partner
             )
-        insertDecisionsAndPlacements(
+        insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
                 decision.copy(
                     validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
@@ -6590,20 +6601,37 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun insertDecisionsAndPlacements(feeDecisions: List<FeeDecision>) =
+    private fun insertDecisionsAndPlacementsAndServiceNeeds(
+        feeDecisions: List<FeeDecision>,
+        shiftCare: ShiftCareType = ShiftCareType.NONE
+    ) =
         db.transaction { tx ->
             tx.upsertFeeDecisions(feeDecisions)
             feeDecisions.forEach { decision ->
                 decision.children.forEach { part ->
                     tx.insert(
-                        DevPlacement(
-                            type = part.placement.type,
-                            childId = part.child.id,
-                            unitId = part.placement.unitId,
-                            startDate = decision.validFrom,
-                            endDate = decision.validTo!!
+                            DevPlacement(
+                                type = part.placement.type,
+                                childId = part.child.id,
+                                unitId = part.placement.unitId,
+                                startDate = decision.validFrom,
+                                endDate = decision.validTo!!
+                            )
                         )
-                    )
+                        .also { placementId ->
+                            if (part.serviceNeed.optionId != null && !part.serviceNeed.missing) {
+                                tx.insert(
+                                    DevServiceNeed(
+                                        placementId = placementId,
+                                        startDate = decision.validFrom,
+                                        endDate = decision.validTo!!,
+                                        optionId = part.serviceNeed.optionId!!,
+                                        shiftCare = shiftCare,
+                                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                                    )
+                                )
+                            }
+                        }
                 }
             }
         }

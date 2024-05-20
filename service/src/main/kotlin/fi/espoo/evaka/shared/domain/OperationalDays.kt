@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,62 +9,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.Month
-
-// TODO: Remove
-data class OperationalDaysDeprecated(
-    val fullMonth: List<LocalDate>,
-    val generalCase: List<LocalDate>,
-    private val specialCases: Map<DaycareId, List<LocalDate>>
-) {
-    fun forUnit(id: DaycareId): List<LocalDate> = specialCases[id] ?: generalCase
-}
-
-// TODO: Remove
-fun Database.Read.operationalDays(year: Int, month: Month): OperationalDaysDeprecated {
-    val range = FiniteDateRange.ofMonth(year, month)
-    return operationalDays(range)
-}
-
-// TODO: Remove
-private fun LocalDate.isOperationalDate(operationalDays: Set<DayOfWeek>, holidays: Set<LocalDate>) =
-    operationalDays.contains(dayOfWeek) &&
-        // Units that are operational every day of the week are also operational during holidays
-        (operationalDays.size == 7 || !holidays.contains(this))
-
-// TODO: Remove
-private fun Database.Read.operationalDays(range: FiniteDateRange): OperationalDaysDeprecated {
-    val rangeDates = range.dates()
-
-    // Only includes units that don't have regular monday to friday operational days
-    val specialUnitOperationalDays =
-        createQuery {
-                sql(
-                    "SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')"
-                )
-            }
-            .toList {
-                column<DaycareId>("id") to
-                    column<Set<Int>>("operation_days").map { DayOfWeek.of(it) }.toSet()
-            }
-
-    val holidays = getHolidays(range)
-
-    val generalCase =
-        rangeDates
-            .filter { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
-            .filterNot { holidays.contains(it) }
-            .toList()
-
-    val specialCases =
-        specialUnitOperationalDays.associate { (unitId, operationalDays) ->
-            unitId to rangeDates.filter { it.isOperationalDate(operationalDays, holidays) }.toList()
-        }
-
-    return OperationalDaysDeprecated(rangeDates.toList(), generalCase, specialCases)
-}
 
 fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
     createQuery {

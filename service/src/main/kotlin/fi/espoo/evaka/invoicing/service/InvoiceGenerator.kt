@@ -30,11 +30,11 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.OperationalDaysDeprecated
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
+import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.mergePeriods
-import fi.espoo.evaka.shared.domain.operationalDays
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.Month
@@ -58,8 +58,8 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 invoiceCalculationData.temporaryPlacements,
                 invoiceCalculationData.period,
                 invoiceCalculationData.areaIds,
-                invoiceCalculationData.operationalDaysDeprecated,
                 invoiceCalculationData.operationalDaysByChild,
+                invoiceCalculationData.businessDays,
                 invoiceCalculationData.feeThresholds,
                 invoiceCalculationData.absences,
                 invoiceCalculationData.plannedAbsences,
@@ -99,7 +99,6 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val unhandledDecisions =
             effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val areaIds = tx.getAreaIds()
-        val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
         val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
         val plannedAbsences =
@@ -133,6 +132,16 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 permanentPlacements.keys +
                 temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
         val operationalDaysByChild = tx.getOperationalDatesForChildren(range, allChildren)
+        val holidays = tx.getHolidays(range)
+        val businessDays =
+            range
+                .dates()
+                .filter {
+                    it.dayOfWeek != DayOfWeek.SATURDAY &&
+                        it.dayOfWeek != DayOfWeek.SUNDAY &&
+                        !holidays.contains(it)
+                }
+                .toSet()
 
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
@@ -140,8 +149,8 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             temporaryPlacements = temporaryPlacements,
             period = range,
             areaIds = areaIds,
-            operationalDaysDeprecated = operationalDays,
             operationalDaysByChild = operationalDaysByChild,
+            businessDays = businessDays,
             feeThresholds = feeThresholds,
             absences = allAbsences,
             plannedAbsences = plannedAbsences,
@@ -156,8 +165,8 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
         val period: FiniteDateRange,
         val areaIds: Map<DaycareId, AreaId>,
-        val operationalDaysDeprecated: OperationalDaysDeprecated,
         val operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
+        val businessDays: Set<LocalDate>,
         val feeThresholds: FeeThresholds,
         val absences: List<AbsenceStub> = listOf(),
         val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
