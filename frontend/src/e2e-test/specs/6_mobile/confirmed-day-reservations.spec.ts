@@ -305,7 +305,14 @@ async function insertConfirmedDaysTestData() {
     .save()
 
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
-  await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
+  await Fixture.daycare()
+    .with(daycareFixture)
+    .careArea(careArea)
+    .with({
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false
+    })
+    .save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
   await Fixture.daycareGroup().with(daycareGroupFixture).save()
   await Fixture.daycareGroup().with(group2).save()
