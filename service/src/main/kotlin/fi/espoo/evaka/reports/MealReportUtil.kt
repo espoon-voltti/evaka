@@ -64,7 +64,11 @@ private fun childMeals(
         if (fixedScheduleRange != null) listOf(fixedScheduleRange) else reservations
     // if we don't have data about when child will be present, default to breakfast + lunch + snack
     if (presentTimeRanges.isEmpty()) {
-        return setOf(MealType.BREAKFAST, MealType.LUNCH, MealType.SNACK)
+        return setOf(
+            MealType.BREAKFAST,
+            if (usePreschoolMealTypes) MealType.LUNCH_PRESCHOOL else MealType.LUNCH,
+            MealType.SNACK
+        )
     }
     // otherwise check unit meal times against the present time ranges
     val meals = mutableSetOf<MealType>()

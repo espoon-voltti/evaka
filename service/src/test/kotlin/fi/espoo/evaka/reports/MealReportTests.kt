@@ -110,6 +110,50 @@ class MealReportTests {
     }
 
     @Test
+    fun `mealReportData should default to breakfast, preschool lunch, and snack when no reservations for PRESCHOOL_DAYCARE`() {
+        val testDate = LocalDate.of(2023, 5, 10)
+        val childInfo =
+            listOf(
+                MealReportChildInfo(
+                    placementType = PlacementType.PRESCHOOL_DAYCARE,
+                    firstName = "Jane",
+                    lastName = "Smith",
+                    reservations = emptyList(), // No reservations
+                    absences = null, // No absences
+                    dietInfo = null,
+                    dailyPreschoolTime = null,
+                    dailyPreparatoryTime = null,
+                    mealTimes =
+                        DaycareMealtimes(
+                            breakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                            lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
+                            snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
+                            supper = null,
+                            eveningSnack = null
+                        )
+                )
+            )
+        val preschoolTerms = emptyList<PreschoolTerm>()
+
+        val report =
+            mealReportData(
+                children = childInfo,
+                date = testDate,
+                preschoolTerms = preschoolTerms,
+                DefaultMealTypeMapper
+            )
+
+        val expectedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH_PRESCHOOL, MealType.SNACK)
+        val actualMeals = report.map { it.mealType }.toSet()
+
+        assertEquals(
+            expectedMeals,
+            actualMeals,
+            "Expected default meals (breakfast, lunch, snack) when there are no reservations"
+        )
+    }
+
+    @Test
     fun `mealReportData should provide meals during preschool times for preschool type placements`() {
         val testDate = LocalDate.of(2023, 5, 10)
         val childInfo =
