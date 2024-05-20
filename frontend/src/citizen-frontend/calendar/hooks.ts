@@ -4,27 +4,20 @@
 
 import { useCallback, useState, useEffect } from 'react'
 
-import { featureFlags } from 'lib-customizations/citizen'
-
 import { MonthlyTimeSummary } from './MonthlyHoursSummary'
 
 export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {
-  const displayAlert = !!(
-    featureFlags.timeUsageInfo &&
-    childSummaries.some(
-      ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
-        reservedMinutes > serviceNeedMinutes ||
-        usedServiceMinutes > serviceNeedMinutes
-    )
+  const displayAlert = childSummaries.some(
+    ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
+      reservedMinutes > serviceNeedMinutes ||
+      usedServiceMinutes > serviceNeedMinutes
   )
   const [summaryExplicitlyClosed, setSummaryExplicitlyClosed] = useState(false)
-  const [summaryInfoOpen, setSummaryInfoOpen] = useState(
-    () =>
-      featureFlags.timeUsageInfo &&
-      childSummaries.some(
-        ({ reservedMinutes, serviceNeedMinutes }) =>
-          reservedMinutes > serviceNeedMinutes
-      )
+  const [summaryInfoOpen, setSummaryInfoOpen] = useState(() =>
+    childSummaries.some(
+      ({ reservedMinutes, serviceNeedMinutes }) =>
+        reservedMinutes > serviceNeedMinutes
+    )
   )
 
   const toggleSummaryInfo = useCallback(() => {
@@ -39,7 +32,6 @@ export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {
 
   useEffect(() => {
     if (
-      featureFlags.timeUsageInfo &&
       !summaryExplicitlyClosed &&
       childSummaries.some(
         ({ reservedMinutes, serviceNeedMinutes }) =>

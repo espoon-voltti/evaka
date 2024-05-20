@@ -30,7 +30,6 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faCalendar, faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
@@ -288,14 +287,13 @@ const Month = React.memo(function Month({
 }) {
   const i18n = useTranslation()
 
-  const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
   const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
     useSummaryInfo(childSummaries)
   return (
     <ContentArea opaque={false} key={`${month}${year}`}>
       <MonthTitle>
         {`${i18n.common.datetime.months[month - 1]} ${year}`}
-        {displaySummary && (
+        {childSummaries.length > 0 && (
           <InlineInfoButton
             onClick={toggleSummaryInfo}
             aria-label={i18n.common.openExpandingInfo}

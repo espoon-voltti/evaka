@@ -175,7 +175,7 @@ function getHourInfo(child: GroupMonthCalendarChild): {
   showUsedHoursWarning: boolean
 } {
   const { usedService, reservationTotalHours, attendanceTotalHours } = child
-  if (featureFlags.timeUsageInfo && usedService) {
+  if (usedService) {
     return {
       reservedHours: usedService.reservedHours,
       showReservedHoursWarning:

@@ -20,7 +20,6 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../localization'
@@ -74,8 +73,6 @@ export default React.memo(function MonthElem({
 }: MonthProps) {
   const i18n = useTranslation()
 
-  const displaySummary = featureFlags.timeUsageInfo && childSummaries.length > 0
-
   const { summaryInfoOpen, toggleSummaryInfo, displayAlert } =
     useSummaryInfo(childSummaries)
   return (
@@ -83,7 +80,7 @@ export default React.memo(function MonthElem({
       <MonthSummaryContainer>
         <MonthTitle>
           {i18n.common.datetime.months[calendarMonth.monthNumber - 1]}
-          {displaySummary && (
+          {childSummaries.length > 0 && (
             <InlineInfoButton
               onClick={toggleSummaryInfo}
               aria-label={i18n.common.openExpandingInfo}
@@ -156,6 +153,7 @@ export function groupByMonth(days: ReservationResponseDay[]): CalendarMonth[] {
   })
   return months
 }
+
 const titleStyles = css`
   margin: 0;
   display: flex;
