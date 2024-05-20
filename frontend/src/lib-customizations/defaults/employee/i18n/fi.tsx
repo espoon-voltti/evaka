@@ -4049,8 +4049,9 @@ export const fi = {
         mealId: 'Aterian tunniste',
         mealCount: 'kpl-määrä',
         dietId: 'Erityisruokavalion tunniste',
-        dietName: 'Erv. nimi',
         dietAbbreviation: 'Erv. lyhenne',
+        mealTextureId: 'Ruoan rakenteen tunniste',
+        mealTextureName: 'Ruoan rakenne',
         additionalInfo: 'Lisätieto'
       }
     }

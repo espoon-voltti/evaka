@@ -88,6 +88,8 @@ const MealReportData = ({
       mealCount: i18n.reports.meals.headings.mealCount,
       dietId: i18n.reports.meals.headings.dietId,
       dietAbbreviation: i18n.reports.meals.headings.dietAbbreviation,
+      mealTextureId: i18n.reports.meals.headings.mealTextureId,
+      mealTextureName: i18n.reports.meals.headings.mealTextureName,
       additionalInfo: i18n.reports.meals.headings.additionalInfo
     }
     const headers = Object.entries(columns).map(([columnKey, label]) => ({
