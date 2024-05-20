@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/meal-textures")
+@RequestMapping("/employee/meal-textures")
 class MealTexturesController(private val accessControl: AccessControl) {
 
     @GetMapping

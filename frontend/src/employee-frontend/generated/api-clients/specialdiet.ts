@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getMealTextures(): Promise<MealTexture[]> {
   const { data: json } = await client.request<JsonOf<MealTexture[]>>({
-    url: uri`/meal-textures`.toString(),
+    url: uri`/employee/meal-textures`.toString(),
     method: 'GET'
   })
   return json

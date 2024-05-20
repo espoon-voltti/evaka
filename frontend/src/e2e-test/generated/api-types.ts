@@ -341,6 +341,7 @@ export interface DevChild {
   id: UUID
   languageAtHome: string
   languageAtHomeDetails: string
+  mealTextureId: number | null
   medication: string
 }
 
