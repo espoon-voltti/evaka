@@ -581,7 +581,7 @@ $unsubscribeEn
                 FinanceDecisionType.VOUCHER_VALUE_DECISION ->
                     Triple(
                         "arvopäätös",
-                        "beslut om värdet på servicesedlar",
+                        "beslut om servicesedel",
                         "voucher value decision"
                     )
                 FinanceDecisionType.FEE_DECISION ->
@@ -589,7 +589,7 @@ $unsubscribeEn
             }
         return EmailContent.fromHtml(
             subject =
-                "Uusi $decisionTypeFi eVakassa / Ett nytt $decisionTypeSv i eVaka / New $decisionTypeEn in eVaka",
+                "Uusi $decisionTypeFi eVakassa / Nytt $decisionTypeSv i eVaka / New $decisionTypeEn in eVaka",
             html =
                 """
 <p>Sinulle on saapunut uusi $decisionTypeFi eVakaan.</p>
