@@ -579,11 +579,7 @@ $unsubscribeEn
         val (decisionTypeFi, decisionTypeSv, decisionTypeEn) =
             when (decisionType) {
                 FinanceDecisionType.VOUCHER_VALUE_DECISION ->
-                    Triple(
-                        "arvopäätös",
-                        "beslut om servicesedel",
-                        "voucher value decision"
-                    )
+                    Triple("arvopäätös", "beslut om servicesedel", "voucher value decision")
                 FinanceDecisionType.FEE_DECISION ->
                     Triple("maksupäätös", "betalningsbeslut", "fee decision")
             }
