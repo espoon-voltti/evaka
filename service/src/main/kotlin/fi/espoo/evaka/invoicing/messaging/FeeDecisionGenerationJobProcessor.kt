@@ -22,18 +22,7 @@ class FeeDecisionGenerationJobProcessor(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     init {
-        asyncJobRunner.registerHandler<AsyncJob.NotifyFeeThresholdsUpdated>(::runJob)
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)
-    }
-
-    fun runJob(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: AsyncJob.NotifyFeeThresholdsUpdated
-    ) {
-        logger.info {
-            "Ignoring deprecated fee thresholds update event. These mass updates are now handled night by scheduled job GenerateFinanceDecisions."
-        }
     }
 
     fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.GenerateFinanceDecisions) {

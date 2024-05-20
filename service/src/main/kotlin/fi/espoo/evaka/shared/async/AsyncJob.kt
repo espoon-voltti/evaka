@@ -147,10 +147,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class NotifyFeeThresholdsUpdated(val dateRange: DateRange) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class GenerateFinanceDecisions
     private constructor(val person: Person, val dateRange: DateRange) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -344,7 +340,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     NotifyDecisionCreated::class,
                     NotifyFeeDecisionApproved::class,
                     NotifyFeeDecisionPdfGenerated::class,
-                    NotifyFeeThresholdsUpdated::class,
                     NotifyVoucherValueDecisionApproved::class,
                     NotifyVoucherValueDecisionPdfGenerated::class,
                     RunScheduledJob::class,
