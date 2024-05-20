@@ -293,8 +293,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             .also {
                 Audit.StaffAttendanceUpdate.log(
                     targetId = body.employeeId,
-                    objectId = mapOf("inserted" to it.inserted, "deleted" to it.deleted),
-                    meta = mapOf("date" to body.date)
+                    objectId = it.inserted + it.deleted,
+                    meta =
+                        mapOf(
+                            "date" to body.date,
+                            "inserted" to it.inserted,
+                            "deleted" to it.deleted
+                        )
                 )
             }
     }
