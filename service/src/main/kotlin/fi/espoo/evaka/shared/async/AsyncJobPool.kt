@@ -76,7 +76,13 @@ class AsyncJobPool<T : AsyncJobPayload>(
                     start = false,
                     name = "$fullName.worker-${threadNumber.getAndIncrement()}",
                     priority = Thread.MIN_PRIORITY,
-                    block = r::run
+                    block = {
+                        try {
+                            r.run()
+                        } catch (e: Exception) {
+                            logger.error(e) { "Error running pool $fullName worker" }
+                        }
+                    }
                 )
             }
             ThreadPoolExecutor(
