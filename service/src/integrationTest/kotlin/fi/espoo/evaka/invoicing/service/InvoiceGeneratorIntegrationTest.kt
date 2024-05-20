@@ -6528,6 +6528,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         child: DevPerson = testChild_1,
         placementType: PlacementType = PlacementType.DAYCARE,
         serviceNeed: ServiceNeedOption = snDaycareFullDay35,
+        shiftCare: ShiftCareType = ShiftCareType.NONE
     ) {
         periods.forEachIndexed { index, period ->
             val decision =
@@ -6563,12 +6564,21 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
 
-            db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
-            db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
-
-            val placementId = db.transaction(insertPlacement(child.id, period))
-            val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = testDaycare.id)) }
             db.transaction { tx ->
+                insertChildParentRelation(testAdult_1.id, child.id, period)(tx)
+                tx.upsertFeeDecisions(listOf(decision))
+                val placementId = insertPlacement(child.id, period)(tx)
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = period.start,
+                        endDate = period.end,
+                        optionId = serviceNeed.id,
+                        shiftCare = shiftCare,
+                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    )
+                )
+                val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
                 tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = placementId,
