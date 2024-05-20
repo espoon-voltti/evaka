@@ -94,13 +94,13 @@ fun updateUnits(
     }
 }
 
-data class VardaUnitState<T>(val vardaUnitId: Long, val state: T?)
+data class VardaUnitState<T>(val vardaUnitId: Long?, val state: T?)
 
 inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, VardaUnitState<T>> =
     createQuery { sql("SELECT evaka_daycare_id, varda_unit_id, state FROM varda_unit") }
         .toMap {
             val id = column<DaycareId>("evaka_daycare_id")
-            val varda_unit_id = column<Long>("varda_unit_id")
+            val vardaUnitId = column<Long?>("varda_unit_id")
             val state =
                 try {
                     jsonColumn<T?>("state")
@@ -111,7 +111,7 @@ inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, 
                         throw exc
                     }
                 }
-            id to VardaUnitState(varda_unit_id, state)
+            id to VardaUnitState(vardaUnitId, state)
         }
 
 fun Database.Read.getVardaUnits(): List<VardaUnit> =
