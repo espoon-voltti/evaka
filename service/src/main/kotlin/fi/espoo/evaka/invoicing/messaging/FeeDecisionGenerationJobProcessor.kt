@@ -22,19 +22,7 @@ class FeeDecisionGenerationJobProcessor(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     init {
-        asyncJobRunner.registerHandler<AsyncJob.NotifyFeeThresholdsUpdated>(::runJob)
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)
-    }
-
-    fun runJob(
-        db: Database.Connection,
-        clock: EvakaClock,
-        msg: AsyncJob.NotifyFeeThresholdsUpdated
-    ) {
-        logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
-        db.transaction {
-            planFinanceDecisionGeneration(it, clock, asyncJobRunner, msg.dateRange, listOf())
-        }
     }
 
     fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.GenerateFinanceDecisions) {
