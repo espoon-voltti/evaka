@@ -31,9 +31,8 @@ class FeeDecisionGenerationJobProcessor(
         clock: EvakaClock,
         msg: AsyncJob.NotifyFeeThresholdsUpdated
     ) {
-        logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
-        db.transaction {
-            planFinanceDecisionGeneration(it, clock, asyncJobRunner, msg.dateRange, listOf())
+        logger.info {
+            "Ignoring deprecated fee thresholds update event. These mass updates are now handled night by scheduled job GenerateFinanceDecisions."
         }
     }
 

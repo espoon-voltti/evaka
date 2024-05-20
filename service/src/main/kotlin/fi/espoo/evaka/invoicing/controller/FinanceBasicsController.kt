@@ -107,13 +107,7 @@ class FinanceBasicsController(
                         }
                     }
 
-                    val id = mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)),
-                        runAt = clock.now()
-                    )
-                    id
+                    mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
                 }
             }
         Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = id)
@@ -133,11 +127,6 @@ class FinanceBasicsController(
                 accessControl.requirePermissionFor(tx, user, clock, Action.FeeThresholds.UPDATE, id)
 
                 mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)),
-                    runAt = clock.now()
-                )
             }
         }
         Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
@@ -195,17 +184,7 @@ class FinanceBasicsController(
                     if (latest != null && latest.voucherValues.range.end == null)
                         tx.updateVoucherValueEndDate(latest.id, body.range.start)
 
-                    tx.insertNewVoucherValue(body).also {
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.NotifyFeeThresholdsUpdated(
-                                    DateRange(body.range.start, null)
-                                )
-                            ),
-                            runAt = clock.now()
-                        )
-                    }
+                    tx.insertNewVoucherValue(body)
                 }
             }
         Audit.FinanceBasicsVoucherValueCreate.log(targetId = id)
@@ -218,40 +197,25 @@ class FinanceBasicsController(
         clock: EvakaClock,
         @PathVariable id: ServiceNeedOptionVoucherValueId,
     ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.DELETE_VOUCHER_VALUE
-                    )
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.DELETE_VOUCHER_VALUE
+                )
 
-                    val values = tx.getServiceNeedVoucherValuesByVoucherValueRangeId(id)
+                val values = tx.getServiceNeedVoucherValuesByVoucherValueRangeId(id)
 
-                    if (values.isEmpty()) throw NotFound("Voucher value $id not found")
-                    if (values[0].id != id)
-                        throw BadRequest("Can only delete the latest voucher value")
+                if (values.isEmpty()) throw NotFound("Voucher value $id not found")
+                if (values[0].id != id) throw BadRequest("Can only delete the latest voucher value")
 
-                    tx.deleteVoucherValue(id)
-                    if (values.size > 1) tx.updateVoucherValueEndDate(values[1].id, null)
-
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(
-                            AsyncJob.NotifyFeeThresholdsUpdated(
-                                DateRange(
-                                    (if (values.size > 1) values[1].voucherValues.range.start
-                                    else LocalDate.of(2019, 1, 1)),
-                                    null
-                                )
-                            )
-                        ),
-                        runAt = clock.now()
-                    )
-                }
+                tx.deleteVoucherValue(id)
+                if (values.size > 1) tx.updateVoucherValueEndDate(values[1].id, null)
             }
-            .also { Audit.FinanceBasicsVoucherValueDelete.log(targetId = id) }
+        }
+        Audit.FinanceBasicsVoucherValueDelete.log(targetId = id)
     }
 }
 
