@@ -123,6 +123,7 @@ class MealReportTests {
                     reservations = emptyList(), // No reservations
                     absences = null, // No absences
                     dietInfo = null,
+                    mealTextureInfo = null,
                     dailyPreschoolTime = null,
                     dailyPreparatoryTime = null,
                     mealTimes =
