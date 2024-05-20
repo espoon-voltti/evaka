@@ -3142,7 +3142,7 @@ __metadata:
     node-forge: "npm:^1.3.1"
     nodemon: "npm:^3.1.0"
     passport: "npm:^0.7.0"
-    pino: "npm:^9.0.0"
+    pino: "npm:^9.1.0"
     pino-http: "npm:^10.1.0"
     pino-pretty: "npm:^11.0.0"
     prettier: "npm:^3.2.2"
@@ -5703,6 +5703,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pino@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "pino@npm:9.1.0"
+  dependencies:
+    atomic-sleep: "npm:^1.0.0"
+    fast-redact: "npm:^3.1.1"
+    on-exit-leak-free: "npm:^2.1.0"
+    pino-abstract-transport: "npm:^1.2.0"
+    pino-std-serializers: "npm:^7.0.0"
+    process-warning: "npm:^3.0.0"
+    quick-format-unescaped: "npm:^4.0.3"
+    real-require: "npm:^0.2.0"
+    safe-stable-stringify: "npm:^2.3.1"
+    sonic-boom: "npm:^4.0.1"
+    thread-stream: "npm:^3.0.0"
+  bin:
+    pino: bin.js
+  checksum: 10/b7b0bdfdc2d9db017fa690e85f2e8ad2ddda09b1cbccb9868bc55d9a218ab3e9e4d75e6beb9d44fef10c4982d8719db4cf2325ea1f866d2fb37b7dff7f7297b1
+  languageName: node
+  linkType: hard
+
 "pirates@npm:^4.0.4":
   version: 4.0.5
   resolution: "pirates@npm:4.0.5"
@@ -6367,6 +6388,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sonic-boom@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "sonic-boom@npm:4.0.1"
+  dependencies:
+    atomic-sleep: "npm:^1.0.0"
+  checksum: 10/449bdc39f4333a321bb754319e9452c3e94409654b2ddf8e40307a1a413b953bed3b3b092a4992ab3fb7cd1a7c95bdde5a046ac4e0405d7c92c60802452c060c
+  languageName: node
+  linkType: hard
+
 "source-map-support@npm:0.5.13":
   version: 0.5.13
   resolution: "source-map-support@npm:0.5.13"
@@ -6600,6 +6630,15 @@ __metadata:
   dependencies:
     real-require: "npm:^0.2.0"
   checksum: 10/03e743a2ccb2af5fa695d2e4369113336ee9b9f09c4453d50a222cbb4ae3af321bff658e0e5bf8bfbce9d7f5a7bf6262d12a2a365e160f4e76380ec624d32e7b
+  languageName: node
+  linkType: hard
+
+"thread-stream@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "thread-stream@npm:3.0.0"
+  dependencies:
+    real-require: "npm:^0.2.0"
+  checksum: 10/f7a8b8539a75194a5c53c2506da4110ced4b3b7096f4ac7fa1bf07a96a7d0dccbe46d8b87cf1427e09804fcdbd6a51ddf5d1da01c58f7ccb7e4b3baf513bf02e
   languageName: node
   linkType: hard
 
