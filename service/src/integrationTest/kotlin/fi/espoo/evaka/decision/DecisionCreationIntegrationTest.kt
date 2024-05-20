@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -531,29 +530,27 @@ WHERE id = :unitId
             // make sure guardians are up-to-date
             personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, child.id)
 
+            val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
             val applicationId =
                 tx.insertTestApplication(
                     status = ApplicationStatus.WAITING_PLACEMENT,
                     guardianId = adult.id,
                     childId = child.id,
-                    type = type.toApplicationType()
-                )
-            val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
-            tx.insertTestApplicationForm(
-                applicationId,
-                DaycareFormV0(
                     type = type.toApplicationType(),
-                    partTime = type == PlacementType.DAYCARE_PART_TIME,
-                    connectedDaycare = preschoolDaycare,
-                    serviceStart = "08:00".takeIf { preschoolDaycare },
-                    serviceEnd = "16:00".takeIf { preschoolDaycare },
-                    careDetails = CareDetails(preparatory = preparatoryEducation),
-                    child = child.toDaycareFormChild(),
-                    guardian = adult.toDaycareFormAdult(),
-                    apply = Apply(preferredUnits = listOf(unit.id)),
-                    preferredStartDate = period.start
+                    document =
+                        DaycareFormV0(
+                            type = type.toApplicationType(),
+                            partTime = type == PlacementType.DAYCARE_PART_TIME,
+                            connectedDaycare = preschoolDaycare,
+                            serviceStart = "08:00".takeIf { preschoolDaycare },
+                            serviceEnd = "16:00".takeIf { preschoolDaycare },
+                            careDetails = CareDetails(preparatory = preparatoryEducation),
+                            child = child.toDaycareFormChild(),
+                            guardian = adult.toDaycareFormAdult(),
+                            apply = Apply(preferredUnits = listOf(unit.id)),
+                            preferredStartDate = period.start
+                        )
                 )
-            )
 
             applicationStateService.createPlacementPlan(
                 tx,

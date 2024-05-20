@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -59,10 +58,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
                 status = ApplicationStatus.WAITING_CONFIRMATION,
                 childId = childId,
                 guardianId = guardianId,
-                type = ApplicationType.DAYCARE
-            )
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
+                type = ApplicationType.DAYCARE,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )
         }

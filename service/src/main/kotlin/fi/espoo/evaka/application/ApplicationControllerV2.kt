@@ -177,27 +177,20 @@ class ApplicationControllerV2(
                     // row for them yet
                     tx.upsertCitizenUser(guardianId)
 
-                    val id =
-                        tx.insertApplication(
+                    val applicationId =
+                        applicationStateService.createApplication(
+                            tx = tx,
+                            user = user,
+                            now = clock.now(),
                             type = body.type,
-                            guardianId = guardianId,
-                            childId = body.childId,
+                            guardian = guardian,
+                            child = child,
                             origin = ApplicationOrigin.PAPER,
                             hideFromGuardian = body.hideFromGuardian,
                             sentDate = body.sentDate,
                             allowOtherGuardianAccess = true
                         )
-                    applicationStateService.initializeApplicationForm(
-                        tx,
-                        user,
-                        clock.today(),
-                        clock.now(),
-                        id,
-                        body.type,
-                        guardian,
-                        child
-                    )
-                    Pair(guardianId, id)
+                    Pair(guardianId, applicationId)
                 }
             }
         Audit.ApplicationCreate.log(

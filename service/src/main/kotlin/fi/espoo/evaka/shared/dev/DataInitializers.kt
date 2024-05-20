@@ -8,7 +8,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.application.getApplicationType
+import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
@@ -437,13 +437,15 @@ fun Database.Transaction.insertTestApplication(
     hideFromGuardian: Boolean = false,
     additionalDaycareApplication: Boolean = false,
     transferApplication: Boolean = false,
-    allowOtherGuardianAccess: Boolean = true
+    allowOtherGuardianAccess: Boolean = true,
+    document: DatabaseForm,
+    formModified: HelsinkiDateTime = HelsinkiDateTime.now()
 ): ApplicationId {
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access)
-VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)})
+INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, origin, hidefromguardian, additionalDaycareApplication, transferApplication, allow_other_guardian_access, document, form_modified)
+VALUES (${bind(type)}, ${bind(id)}, ${bind(sentDate)}, ${bind(dueDate)}, ${bind(status)}::application_status_type, ${bind(guardianId)}, ${bind(childId)}, 'ELECTRONIC'::application_origin_type, ${bind(hideFromGuardian)}, ${bind(additionalDaycareApplication)}, ${bind(transferApplication)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(formModified)})
 """
             )
         }
@@ -462,44 +464,6 @@ VALUES (${bind(id)}, ${bind(otherGuardianId)})
     }
 
     return id
-}
-
-fun Database.Transaction.insertTestApplicationForm(
-    applicationId: ApplicationId,
-    document: DaycareFormV0
-) {
-    check(getApplicationType(applicationId) == document.type) {
-        "Invalid form type for the application"
-    }
-
-    createUpdate {
-            sql(
-                """
-UPDATE application SET document = ${bindJson(document)}, form_modified = now()
-WHERE id = ${bind(applicationId)}
-"""
-            )
-        }
-        .execute()
-}
-
-fun Database.Transaction.insertTestClubApplicationForm(
-    applicationId: ApplicationId,
-    document: ClubFormV0
-) {
-    check(getApplicationType(applicationId) == document.type) {
-        "Invalid form type for the application"
-    }
-
-    createUpdate {
-            sql(
-                """
-UPDATE application SET document = ${bindJson(document)}, form_modified = now()
-WHERE id = ${bind(applicationId)}
-"""
-            )
-        }
-        .execute()
 }
 
 fun Database.Transaction.insert(row: DevChild): ChildId =
@@ -1045,10 +1009,31 @@ RETURNING id
         .exactlyOne()
 
 fun Database.Transaction.insertApplication(application: DevApplicationWithForm): ApplicationId {
-    createUpdate {
-            sql(
-                """
-INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, allow_other_guardian_access)
+    if (application.type == ApplicationType.CLUB) {
+            ClubFormV0.fromForm2(application.form, false, false)
+        } else {
+            DaycareFormV0.fromForm2(application.form, application.type, false, false)
+        }
+        .let { document ->
+            createUpdate {
+                    sql(
+                        """
+INSERT INTO application(
+    id,
+    type,
+    sentdate,
+    duedate,
+    status,
+    guardian_id,
+    child_id,
+    origin,
+    checkedbyadmin,
+    hidefromguardian,
+    transferapplication,
+    allow_other_guardian_access,
+    document,
+    form_modified
+)
 VALUES (
     ${bind(application.id)},
     ${bind(application.type)},
@@ -1061,31 +1046,17 @@ VALUES (
     ${bind(application.checkedByAdmin)},
     ${bind(application.hideFromGuardian)},
     ${bind(application.transferApplication)},
-    ${bind(application.allowOtherGuardianAccess)}
+    ${bind(application.allowOtherGuardianAccess)},
+    ${bindJson(document)},
+    ${bind(application.formModified)}
 )
 """
-            )
+                    )
+                }
+                .execute()
         }
-        .execute()
 
     return application.id
-}
-
-fun Database.Transaction.insertApplicationForm(applicationForm: DevApplicationForm): UUID {
-    check(getApplicationType(applicationForm.applicationId) == applicationForm.document.type) {
-        "Invalid form type for the application"
-    }
-
-    createUpdate {
-            sql(
-                """
-UPDATE application SET document = ${bindJson(applicationForm.document)}, form_modified = now()
-WHERE id = ${bind(applicationForm.applicationId)}
-"""
-            )
-        }
-        .execute()
-    return applicationForm.id ?: UUID.randomUUID()
 }
 
 data class DevFamilyContact(

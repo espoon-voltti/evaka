@@ -16,6 +16,8 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
+import fi.espoo.evaka.application.persistence.club.ClubFormV0
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.attachment.dissociateAttachmentsByApplicationAndType
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
@@ -81,28 +83,47 @@ class ApplicationStateService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig
 ) {
-    fun initializeApplicationForm(
+    fun createApplication(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        today: LocalDate,
         now: HelsinkiDateTime,
-        applicationId: ApplicationId,
+        origin: ApplicationOrigin,
         type: ApplicationType,
         guardian: PersonDTO,
-        child: PersonDTO
-    ) {
+        child: PersonDTO,
+        hideFromGuardian: Boolean = false,
+        sentDate: LocalDate? = null,
+        allowOtherGuardianAccess: Boolean = false,
+    ): ApplicationId {
         val form =
             ApplicationForm.initForm(type, guardian, child)
-                .let { form -> withDefaultStartDate(tx, today, type, form) }
+                .let { form -> withDefaultStartDate(tx, now.toLocalDate(), type, form) }
                 .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
 
-        tx.updateForm(
-            applicationId,
-            form,
-            type,
-            child.restrictedDetailsEnabled,
-            guardian.restrictedDetailsEnabled,
-            now
+        return tx.insertApplication(
+            now = now,
+            type = type,
+            guardianId = guardian.id,
+            childId = child.id,
+            origin = origin,
+            hideFromGuardian = hideFromGuardian,
+            sentDate = sentDate,
+            allowOtherGuardianAccess = allowOtherGuardianAccess,
+            document =
+                if (type == ApplicationType.CLUB) {
+                    ClubFormV0.fromForm2(
+                        form,
+                        child.restrictedDetailsEnabled,
+                        guardian.restrictedDetailsEnabled
+                    )
+                } else {
+                    DaycareFormV0.fromForm2(
+                        form,
+                        type,
+                        child.restrictedDetailsEnabled,
+                        guardian.restrictedDetailsEnabled
+                    )
+                }
         )
     }
 

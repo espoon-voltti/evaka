@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -118,10 +117,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
             transferApplication = false,
             allowOtherGuardianAccess = true,
             sentDate = sentDate,
-            dueDate = null
-        )
-        tx.insertTestApplicationForm(
-            applicationId = applicationId,
+            dueDate = null,
             document =
                 DaycareFormV0.fromApplication2(validPreschoolApplication)
                     .copy(child = Child(dateOfBirth = child.dateOfBirth))

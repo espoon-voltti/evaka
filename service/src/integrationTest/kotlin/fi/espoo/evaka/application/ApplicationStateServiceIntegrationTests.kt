@@ -30,7 +30,6 @@ import fi.espoo.evaka.preschoolTerms
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -80,12 +79,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
-
-    @MockBean private lateinit var featureConfig: FeatureConfig
-
     @Autowired private lateinit var service: ApplicationStateService
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -111,27 +106,18 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `initialize daycare application form with null service need option`() {
-        db.transaction { tx ->
-            // given
-            tx.insertApplication(
-                appliedType = PlacementType.DAYCARE,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
-            )
-        }
-
-        db.transaction { tx ->
-            service.initializeApplicationForm(
-                tx,
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                today,
-                now,
-                applicationId,
-                ApplicationType.DAYCARE,
-                tx.getPersonById(testChild_1.id)!!,
-                tx.getPersonById(testAdult_1.id)!!
-            )
-        }
+        val applicationId =
+            db.transaction { tx ->
+                service.createApplication(
+                    tx,
+                    AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                    now,
+                    type = ApplicationType.DAYCARE,
+                    child = tx.getPersonById(testChild_1.id)!!,
+                    guardian = tx.getPersonById(testAdult_1.id)!!,
+                    origin = ApplicationOrigin.PAPER
+                )
+            }
 
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
@@ -141,28 +127,20 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `preschool application initialization uses correct term's start as default preferred start date`() {
-        db.transaction { tx ->
-            tx.insertApplication(
-                appliedType = PlacementType.PRESCHOOL,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
-            )
-        }
-
         val (_, secondTerm) = preschoolTerms.sortedBy { it.extendedTerm.start }
 
         db.transaction { tx ->
             val applicationDate = secondTerm.applicationPeriod.start.minusWeeks(1)
-            service.initializeApplicationForm(
-                tx,
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                applicationDate,
-                now,
-                applicationId,
-                ApplicationType.PRESCHOOL,
-                tx.getPersonById(testChild_1.id)!!,
-                tx.getPersonById(testAdult_1.id)!!
-            )
+            val applicationId =
+                service.createApplication(
+                    tx,
+                    AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                    now = HelsinkiDateTime.of(applicationDate, LocalTime.of(12, 0)),
+                    type = ApplicationType.PRESCHOOL,
+                    child = tx.getPersonById(testChild_1.id)!!,
+                    guardian = tx.getPersonById(testAdult_1.id)!!,
+                    origin = ApplicationOrigin.PAPER
+                )
 
             val result = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(null, result.form.preferences.preferredStartDate)
@@ -170,16 +148,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.transaction { tx ->
             val applicationDate = secondTerm.applicationPeriod.start
-            service.initializeApplicationForm(
-                tx,
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                applicationDate,
-                now,
-                applicationId,
-                ApplicationType.PRESCHOOL,
-                tx.getPersonById(testChild_1.id)!!,
-                tx.getPersonById(testAdult_1.id)!!
-            )
+            val applicationId =
+                service.createApplication(
+                    tx,
+                    AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                    now = HelsinkiDateTime.of(applicationDate, LocalTime.of(12, 0)),
+                    type = ApplicationType.PRESCHOOL,
+                    child = tx.getPersonById(testChild_1.id)!!,
+                    guardian = tx.getPersonById(testAdult_1.id)!!,
+                    origin = ApplicationOrigin.PAPER
+                )
 
             val result = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(secondTerm.extendedTerm.start, result.form.preferences.preferredStartDate)

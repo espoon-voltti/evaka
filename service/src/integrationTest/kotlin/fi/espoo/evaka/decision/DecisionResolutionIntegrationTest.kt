@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -411,37 +410,35 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         preschoolDaycareWithoutPreschool: Boolean = false
     ): DataIdentifiers =
         db.transaction { tx ->
+            val preschoolDaycare =
+                type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
             tx.insertTestApplication(
                 id = applicationId,
                 status = status,
                 guardianId = adult.id,
                 childId = child.id,
-                type = type.toApplicationType()
-            )
-            val preschoolDaycare =
-                type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
-            tx.insertTestApplicationForm(
-                applicationId,
-                DaycareFormV0(
-                    type = type.toApplicationType(),
-                    partTime = type == PlacementType.DAYCARE_PART_TIME,
-                    connectedDaycare = preschoolDaycare,
-                    serviceStart = "08:00".takeIf { preschoolDaycare },
-                    serviceEnd = "16:00".takeIf { preschoolDaycare },
-                    careDetails =
-                        CareDetails(
-                            preparatory =
-                                type in
-                                    listOf(
-                                        PlacementType.PREPARATORY,
-                                        PlacementType.PREPARATORY_DAYCARE
-                                    )
-                        ),
-                    child = child.toDaycareFormChild(),
-                    guardian = adult.toDaycareFormAdult(),
-                    apply = Apply(preferredUnits = listOf(unit.id)),
-                    preferredStartDate = period.start
-                )
+                type = type.toApplicationType(),
+                document =
+                    DaycareFormV0(
+                        type = type.toApplicationType(),
+                        partTime = type == PlacementType.DAYCARE_PART_TIME,
+                        connectedDaycare = preschoolDaycare,
+                        serviceStart = "08:00".takeIf { preschoolDaycare },
+                        serviceEnd = "16:00".takeIf { preschoolDaycare },
+                        careDetails =
+                            CareDetails(
+                                preparatory =
+                                    type in
+                                        listOf(
+                                            PlacementType.PREPARATORY,
+                                            PlacementType.PREPARATORY_DAYCARE
+                                        )
+                            ),
+                        child = child.toDaycareFormChild(),
+                        guardian = adult.toDaycareFormAdult(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                        preferredStartDate = period.start
+                    )
             )
             tx.insertTestPlacementPlan(
                 applicationId = applicationId,

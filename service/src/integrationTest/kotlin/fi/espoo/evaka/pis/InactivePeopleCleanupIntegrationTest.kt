@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.syncApplicationOtherGuardians
 import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.messaging.MessageType
@@ -33,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
@@ -158,7 +160,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                 tx.insertTestApplication(
                     type = ApplicationType.DAYCARE,
                     guardianId = applicationOwner,
-                    childId = child
+                    childId = child,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
             tx.syncApplicationOtherGuardians(application, testDate)
             tx.deleteGuardianRelationship(childId = child, guardianId = otherGuardian)

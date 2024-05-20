@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -218,20 +217,18 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 status = ApplicationStatus.WAITING_PLACEMENT,
                 guardianId = guardianId,
                 childId = childId,
-                type = ApplicationType.DAYCARE
-            )
-        tx.insertTestApplicationForm(
-            applicationId,
-            DaycareFormV0(
                 type = ApplicationType.DAYCARE,
-                serviceStart = "08:00",
-                serviceEnd = "16:00",
-                child = Child(dateOfBirth = clock.today().minusYears(3)),
-                guardian = Adult(),
-                apply = Apply(preferredUnits = listOf(unitId)),
-                preferredStartDate = clock.today().plusMonths(5)
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        serviceStart = "08:00",
+                        serviceEnd = "16:00",
+                        child = Child(dateOfBirth = clock.today().minusYears(3)),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(unitId)),
+                        preferredStartDate = clock.today().plusMonths(5)
+                    )
             )
-        )
         applicationStateService.createPlacementPlan(
             tx = tx,
             user = AuthenticatedUser.Employee(serviceWorker, setOf(UserRole.SERVICE_WORKER)),

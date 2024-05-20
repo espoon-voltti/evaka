@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -87,24 +86,21 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            val applicationId =
-                tx.insertTestApplication(
-                    type = ApplicationType.PRESCHOOL,
-                    sentDate = LocalDate.of(2022, 8, 1),
-                    dueDate = LocalDate.of(2022, 12, 1),
-                    guardianId = guardianId,
-                    childId = childId,
-                )
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
-                DaycareFormV0(
-                    type = ApplicationType.PRESCHOOL,
-                    child = Child(dateOfBirth = null),
-                    guardian = Adult(),
-                    preferredStartDate = LocalDate.of(2022, 12, 1),
-                    apply = Apply(preferredUnits = listOf(unitId)),
-                    serviceNeedOption = serviceNeedOption,
-                )
+            tx.insertTestApplication(
+                type = ApplicationType.PRESCHOOL,
+                sentDate = LocalDate.of(2022, 8, 1),
+                dueDate = LocalDate.of(2022, 12, 1),
+                guardianId = guardianId,
+                childId = childId,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.PRESCHOOL,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        preferredStartDate = LocalDate.of(2022, 12, 1),
+                        apply = Apply(preferredUnits = listOf(unitId)),
+                        serviceNeedOption = serviceNeedOption,
+                    )
             )
         }
 
@@ -133,24 +129,21 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            val applicationId =
-                tx.insertTestApplication(
-                    type = ApplicationType.PRESCHOOL,
-                    sentDate = LocalDate.of(2022, 8, 1),
-                    dueDate = LocalDate.of(2022, 12, 1),
-                    guardianId = guardianId,
-                    childId = childId,
-                )
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
-                DaycareFormV0(
-                    type = ApplicationType.PRESCHOOL,
-                    child = Child(dateOfBirth = null),
-                    guardian = Adult(),
-                    preferredStartDate = LocalDate.of(2022, 12, 1),
-                    apply = Apply(preferredUnits = listOf(unitId)),
-                    serviceNeedOption = serviceNeedOption,
-                )
+            tx.insertTestApplication(
+                type = ApplicationType.PRESCHOOL,
+                sentDate = LocalDate.of(2022, 8, 1),
+                dueDate = LocalDate.of(2022, 12, 1),
+                guardianId = guardianId,
+                childId = childId,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.PRESCHOOL,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        preferredStartDate = LocalDate.of(2022, 12, 1),
+                        apply = Apply(preferredUnits = listOf(unitId)),
+                        serviceNeedOption = serviceNeedOption,
+                    )
             )
         }
 

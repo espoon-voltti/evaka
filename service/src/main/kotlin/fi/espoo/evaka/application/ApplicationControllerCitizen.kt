@@ -224,24 +224,15 @@ class ApplicationControllerCitizen(
                         throw IllegalStateException("Child is duplicate")
                     }
 
-                    tx.insertApplication(
-                            type = body.type,
-                            guardianId = user.id,
-                            childId = body.childId,
-                            origin = ApplicationOrigin.ELECTRONIC,
-                        )
-                        .also {
-                            applicationStateService.initializeApplicationForm(
-                                tx,
-                                user,
-                                clock.today(),
-                                clock.now(),
-                                it,
-                                body.type,
-                                guardian,
-                                child
-                            )
-                        }
+                    applicationStateService.createApplication(
+                        tx = tx,
+                        user = user,
+                        now = clock.now(),
+                        origin = ApplicationOrigin.ELECTRONIC,
+                        type = body.type,
+                        guardian = guardian,
+                        child = child
+                    )
                 }
             }
             .also { applicationId ->

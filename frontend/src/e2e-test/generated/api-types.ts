@@ -155,6 +155,7 @@ export interface DevApplicationWithForm {
   createdDate: HelsinkiDateTime | null
   dueDate: LocalDate | null
   form: ApplicationForm
+  formModified: HelsinkiDateTime
   guardianId: UUID
   hideFromGuardian: boolean
   id: UUID
@@ -1098,6 +1099,7 @@ export function deserializeJsonDevApplicationWithForm(json: JsonOf<DevApplicatio
     createdDate: (json.createdDate != null) ? HelsinkiDateTime.parseIso(json.createdDate) : null,
     dueDate: (json.dueDate != null) ? LocalDate.parseIso(json.dueDate) : null,
     form: deserializeJsonApplicationForm(json.form),
+    formModified: HelsinkiDateTime.parseIso(json.formModified),
     modifiedDate: (json.modifiedDate != null) ? HelsinkiDateTime.parseIso(json.modifiedDate) : null,
     sentDate: (json.sentDate != null) ? LocalDate.parseIso(json.sentDate) : null
   }

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -18,6 +19,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
+import fi.espoo.evaka.test.validDaycareApplication
 import java.time.LocalDateTime
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -109,7 +111,8 @@ class AttachmentAccessControlTest : AccessControlTest() {
                 tx.insertTestApplication(
                     guardianId = guardianId,
                     childId = childId,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
             tx.insertAttachment(
                 user,

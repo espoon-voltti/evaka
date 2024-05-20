@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -37,6 +36,8 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toDaycareFormAdult
+import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import java.time.Instant
@@ -83,19 +84,14 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 tx.insertTestApplication(
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            apply =
+                                validDaycareForm.apply.copy(preferredUnits = listOf(testDaycare.id))
+                        )
                 )
             }
-
-        db.transaction { tx ->
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
-                document =
-                    validDaycareForm.copy(
-                        apply = validDaycareForm.apply.copy(preferredUnits = listOf(testDaycare.id))
-                    )
-            )
-        }
 
         val data = getApplication(applicationId)
 
@@ -124,27 +120,21 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 tx.insertTestApplication(
                     childId = childId,
                     guardianId = testAdult_1.id,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            child =
+                                validDaycareForm.child.copy(
+                                    address =
+                                        fi.espoo.evaka.application.persistence.daycare.Address(
+                                            street = "foo",
+                                            postalCode = "00200",
+                                            city = "Espoo"
+                                        )
+                                )
+                        )
                 )
             }
-
-        db.transaction { tx ->
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
-                document =
-                    validDaycareForm.copy(
-                        child =
-                            validDaycareForm.child.copy(
-                                address =
-                                    fi.espoo.evaka.application.persistence.daycare.Address(
-                                        street = "foo",
-                                        postalCode = "00200",
-                                        city = "Espoo"
-                                    )
-                            )
-                    )
-            )
-        }
 
         val data = getApplication(applicationId)
         assertEquals(null, data.application.form.child.address)
@@ -163,27 +153,21 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 tx.insertTestApplication(
                     childId = testChild_1.id,
                     guardianId = guardianId,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            guardian =
+                                validDaycareForm.guardian.copy(
+                                    address =
+                                        fi.espoo.evaka.application.persistence.daycare.Address(
+                                            street = "foo",
+                                            postalCode = "00200",
+                                            city = "Espoo"
+                                        )
+                                )
+                        )
                 )
             }
-
-        db.transaction { tx ->
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
-                document =
-                    validDaycareForm.copy(
-                        guardian =
-                            validDaycareForm.guardian.copy(
-                                address =
-                                    fi.espoo.evaka.application.persistence.daycare.Address(
-                                        street = "foo",
-                                        postalCode = "00200",
-                                        city = "Espoo"
-                                    )
-                            )
-                    )
-            )
-        }
 
         val data = getApplication(applicationId)
         assertEquals(null, data.application.form.guardian.address)
@@ -192,6 +176,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `old drafts are removed`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(0, 0)))
         val (old, id1, id2) =
             db.transaction { tx ->
                 listOf(
@@ -199,18 +185,36 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                         childId = testChild_1.id,
                         guardianId = testAdult_1.id,
                         status = ApplicationStatus.CREATED,
-                        type = ApplicationType.DAYCARE
+                        type = ApplicationType.DAYCARE,
+                        document =
+                            DaycareFormV0(
+                                ApplicationType.DAYCARE,
+                                child = testChild_1.toDaycareFormChild(),
+                                guardian = testAdult_1.toDaycareFormAdult()
+                            )
                     ),
                     tx.insertTestApplication(
                         childId = testChild_2.id,
                         guardianId = testAdult_1.id,
                         status = ApplicationStatus.CREATED,
-                        type = ApplicationType.DAYCARE
+                        type = ApplicationType.DAYCARE,
+                        document =
+                            DaycareFormV0(
+                                ApplicationType.DAYCARE,
+                                child = testChild_2.toDaycareFormChild(),
+                                guardian = testAdult_1.toDaycareFormAdult()
+                            )
                     ),
                     tx.insertTestApplication(
                         childId = testChild_3.id,
                         guardianId = testAdult_1.id,
-                        type = ApplicationType.DAYCARE
+                        type = ApplicationType.DAYCARE,
+                        document =
+                            DaycareFormV0(
+                                ApplicationType.DAYCARE,
+                                child = testChild_3.toDaycareFormChild(),
+                                guardian = testAdult_1.toDaycareFormAdult()
+                            )
                     )
                 )
             }
@@ -232,7 +236,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             assertEquals(3, data.size)
         }
 
-        scheduledJobs.removeOldDraftApplications(db, RealEvakaClock())
+        scheduledJobs.removeOldDraftApplications(db, clock)
 
         db.transaction { tx ->
             @Suppress("DEPRECATION")
@@ -284,39 +288,37 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                    childId = testChild_1.id,
-                    guardianId = testAdult_1.id,
-                    type = ApplicationType.DAYCARE,
-                    otherGuardians = setOf(testAdult_2.id),
-                    allowOtherGuardianAccess = true,
-                )
-            }
-
-        db.transaction { tx ->
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
-                document =
-                    validDaycareForm.copy(
-                        apply =
-                            validDaycareForm.apply.copy(
-                                preferredUnits = listOf(testDaycare.id),
-                                siblingBasis = true,
-                                siblingSsn = "secret",
-                                siblingName = "secret"
-                            ),
-                        hasOtherChildren = true,
-                        otherChildren =
-                            listOf(
-                                OtherPerson(
-                                    firstName = "secret",
-                                    lastName = "secret",
-                                    socialSecurityNumber = "secret"
-                                )
+                        childId = testChild_1.id,
+                        guardianId = testAdult_1.id,
+                        type = ApplicationType.DAYCARE,
+                        otherGuardians = setOf(testAdult_2.id),
+                        allowOtherGuardianAccess = true,
+                        document =
+                            validDaycareForm.copy(
+                                apply =
+                                    validDaycareForm.apply.copy(
+                                        preferredUnits = listOf(testDaycare.id),
+                                        siblingBasis = true,
+                                        siblingSsn = "secret",
+                                        siblingName = "secret"
+                                    ),
+                                hasOtherChildren = true,
+                                otherChildren =
+                                    listOf(
+                                        OtherPerson(
+                                            firstName = "secret",
+                                            lastName = "secret",
+                                            socialSecurityNumber = "secret"
+                                        )
+                                    )
                             )
                     )
-            )
-            tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_1.id))
-        }
+                    .also {
+                        tx.insert(
+                            DevGuardian(guardianId = testAdult_2.id, childId = testChild_1.id)
+                        )
+                    }
+            }
 
         val guardianResult =
             getApplication(
@@ -385,18 +387,13 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     private fun createPlacementProposalWithAttachments(unitId: DaycareId): ApplicationId {
         val applicationId =
             db.transaction { tx ->
-                val applicationId =
-                    tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = citizen.id,
-                        status = ApplicationStatus.CREATED,
-                        type = ApplicationType.DAYCARE
-                    )
-                tx.insertTestApplicationForm(
-                    applicationId = applicationId,
+                tx.insertTestApplication(
+                    childId = testChild_1.id,
+                    guardianId = citizen.id,
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.DAYCARE,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
-                applicationId
             }
         uploadAttachment(applicationId, citizen, AttachmentType.URGENCY)
         uploadAttachment(applicationId, citizen, AttachmentType.EXTENDED_CARE)

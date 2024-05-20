@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.*
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.notes.getApplicationNotes
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.messaging.MessageController.PostMessagePreflightResponse
@@ -49,6 +50,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.test.validDaycareApplication
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -941,7 +943,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insertTestApplication(
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
             }
 
@@ -982,7 +985,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insertTestApplication(
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
             }
 
@@ -1047,7 +1051,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insertTestApplication(
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
             }
 
