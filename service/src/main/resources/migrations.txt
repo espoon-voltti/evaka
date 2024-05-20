@@ -415,3 +415,5 @@ V415__meal_texture.sql
 V416__shift_care_operation_times_improvements.sql
 V417__varda_unit_remove_id.sql
 V418__application_non_nullable_fields.sql
+V419__payment_confirmed_state.sql
+V420__payment_constraint_change.sql

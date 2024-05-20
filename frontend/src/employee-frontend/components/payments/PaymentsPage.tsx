@@ -7,6 +7,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -20,6 +21,8 @@ import Actions from './Actions'
 import PaymentFilters from './PaymentFilters'
 import Payments from './Payments'
 import { PaymentsActions, usePaymentsState } from './payments-state'
+
+export const selectablePaymentStatuses: PaymentStatus[] = ['DRAFT', 'CONFIRMED']
 
 export default React.memo(function PaymentsPage() {
   const {
@@ -57,7 +60,9 @@ export default React.memo(function PaymentsPage() {
           currentPage={page}
           sortBy={sortBy}
           sortDirection={sortDirection}
-          showCheckboxes={searchFilters.status === 'DRAFT'}
+          showCheckboxes={selectablePaymentStatuses.includes(
+            searchFilters.status
+          )}
           checked={checkedPayments}
         />
       </ContentArea>

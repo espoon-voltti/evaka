@@ -383,6 +383,7 @@ enum class Audit(
     PartnerShipsUpdate,
     PartnersInDifferentAddressReportRead,
     PatuReportSend,
+    PaymentsConfirmDrafts,
     PaymentsCreate,
     PaymentsDeleteDrafts,
     PaymentsSend,

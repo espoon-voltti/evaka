@@ -335,6 +335,7 @@ export type Partnership =
   | 'UPDATE'
 
 export type Payment =
+  | 'CONFIRM'
   | 'DELETE'
   | 'SEND'
 

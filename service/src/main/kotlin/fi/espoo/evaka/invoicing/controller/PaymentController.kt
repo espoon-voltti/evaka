@@ -20,21 +20,19 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
+import mu.KotlinLogging
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+private val logger = KotlinLogging.logger {}
+
 @RestController
-@RequestMapping(
-    "/payments", // deprecated
-    "/employee/payments"
-)
 class PaymentController(
     private val accessControl: AccessControl,
     private val paymentService: PaymentService
 ) {
-    @PostMapping("/search")
+    @PostMapping("/payments/search")
     fun searchPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -43,7 +41,7 @@ class PaymentController(
         return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
     }
 
-    @PostMapping("/create-drafts")
+    @PostMapping("/payments/create-drafts")
     fun createPaymentDrafts(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -65,7 +63,7 @@ class PaymentController(
         val paymentIds: List<PaymentId>
     )
 
-    @PostMapping("/delete-drafts")
+    @PostMapping("/payments/delete-drafts")
     fun deleteDraftPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -87,7 +85,7 @@ class PaymentController(
         Audit.PaymentsDeleteDrafts.log(targetId = AuditId(paymentIds))
     }
 
-    @PostMapping("/send")
+    @PostMapping("/payments/send")
     fun sendPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -114,6 +112,28 @@ class PaymentController(
             }
         }
         Audit.PaymentsSend.log(targetId = AuditId(body.paymentIds))
+    }
+
+    @PostMapping("/employee/payments/confirm")
+    fun confirmDraftPayments(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody paymentIds: List<PaymentId>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Payment.CONFIRM,
+                    paymentIds
+                )
+                paymentService.confirmPayments(it, paymentIds)
+            }
+        }
+        Audit.PaymentsConfirmDrafts.log(targetId = paymentIds)
     }
 }
 

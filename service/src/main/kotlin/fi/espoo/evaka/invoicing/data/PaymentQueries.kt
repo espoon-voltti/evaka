@@ -140,7 +140,10 @@ fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
         .execute()
 }
 
-fun Database.Transaction.updatePaymentDraftsAsSent(payments: List<Payment>, now: HelsinkiDateTime) {
+fun Database.Transaction.updateConfirmedPaymentsAsSent(
+    payments: List<Payment>,
+    now: HelsinkiDateTime
+) {
     executeBatch(payments) {
         sql(
             """
@@ -159,4 +162,19 @@ WHERE id = ${bind { it.id }}
 """
         )
     }
+}
+
+fun Database.Transaction.confirmDraftPayments(draftIds: List<PaymentId>) {
+    if (draftIds.isEmpty()) return
+
+    createUpdate {
+            sql(
+                """
+                UPDATE payment set status = ${bind(PaymentStatus.CONFIRMED)}::payment_status 
+                WHERE status = ${bind(PaymentStatus.DRAFT)}::payment_status
+                AND id = ANY (${bind(draftIds)})
+                """
+            )
+        }
+        .execute()
 }

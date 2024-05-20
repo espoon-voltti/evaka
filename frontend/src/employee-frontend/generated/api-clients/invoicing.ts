@@ -785,6 +785,23 @@ export async function updateInvoiceCorrectionNote(
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.confirmDraftPayments
+*/
+export async function confirmDraftPayments(
+  request: {
+    body: UUID[]
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/payments/confirm`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<UUID[]>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.PaymentController.createPaymentDrafts
 */
 export async function createPaymentDrafts(): Promise<void> {
