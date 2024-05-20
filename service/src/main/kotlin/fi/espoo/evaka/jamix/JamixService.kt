@@ -193,7 +193,8 @@ fun createAndSendJamixOrder(
                         orderAmount = it.mealCount,
                         mealTypeID = it.mealId,
                         dietID = it.dietId,
-                        additionalInfo = it.additionalInfo
+                        additionalInfo = it.additionalInfo,
+                        textureID = it.mealTextureId
                     )
                 }
         )
@@ -260,7 +261,8 @@ interface JamixClient {
         val orderAmount: Int,
         val mealTypeID: Int,
         val dietID: Int?,
-        val additionalInfo: String?
+        val additionalInfo: String?,
+        val textureID: Int?
     )
 
     fun createMealOrder(order: MealOrder)

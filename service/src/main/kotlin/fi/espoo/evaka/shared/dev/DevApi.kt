@@ -1810,7 +1810,8 @@ data class DevChild(
     val additionalInfo: String = "",
     val languageAtHome: String = "",
     val languageAtHomeDetails: String = "",
-    val dietId: Int? = null
+    val dietId: Int? = null,
+    val mealTextureId: Int? = null
 )
 
 data class DevHoliday(val date: LocalDate, val description: String = "Test Holiday")
