@@ -34,7 +34,7 @@ Sentry.init({
   dsn: appConfig.sentry?.dsn,
   environment: getEnvironment()
 })
-Sentry.addGlobalEventProcessor(sentryEventFilter)
+Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
