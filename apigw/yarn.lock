@@ -1954,14 +1954,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "axios@npm:1.6.0"
+"axios@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "axios@npm:1.7.0"
   dependencies:
-    follow-redirects: "npm:^1.15.0"
+    follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/f069d938a05d2293e27c7cd6f0c08a1cb764f7cc43a1e637572f8d5928837ecd735890ad67a867d696094ee4b8b4dfdb3727a57aae600845e4c295581cb32f9a
+  checksum: 10/fc97719eb1024626cf3ae716eed136964faea712cd750642c2693c8bf3843d342a9e373704d08319a851931b39ca318d2004f0ab4ca67f434f095754dc4aecee
   languageName: node
   linkType: hard
 
@@ -3136,7 +3136,7 @@ __metadata:
     "@types/tough-cookie": "npm:^4.0.2"
     "@types/uuid": "npm:^9.0.2"
     "@types/xml2js": "npm:^0.4.11"
-    axios: "npm:^1.6.0"
+    axios: "npm:^1.7.0"
     concurrently: "npm:^8.2.0"
     connect-redis: "npm:^7.1.0"
     cookie-parser: "npm:^1.4.6"
@@ -3500,7 +3500,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.15.0":
+"follow-redirects@npm:^1.15.6":
   version: 1.15.6
   resolution: "follow-redirects@npm:1.15.6"
   peerDependenciesMeta:
