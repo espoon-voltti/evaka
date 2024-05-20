@@ -52,14 +52,13 @@ fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? =
         }
         .exactlyOneOrNull()
 
-fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            "SELECT id, term, application_period, term_breaks FROM club_term WHERE term @> :date LIMIT 1"
-        )
-        .bind("date", date)
-        .exactlyOneOrNull<ClubTerm>()
-}
+fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? =
+    createQuery {
+            sql(
+                "SELECT id, term, application_period, term_breaks FROM club_term WHERE term @> ${bind(date)} LIMIT 1"
+            )
+        }
+        .exactlyOneOrNull()
 
 fun Database.Transaction.insertClubTerm(
     term: FiniteDateRange,

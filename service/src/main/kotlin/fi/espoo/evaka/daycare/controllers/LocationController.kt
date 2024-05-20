@@ -67,8 +67,7 @@ class LocationController {
     fun getAreas(db: Database, user: AuthenticatedUser.Employee): List<AreaJSON> {
         return db.connect { dbc ->
             dbc.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT id, name, short_name FROM care_area").toList<AreaJSON>()
+                it.createQuery { sql("SELECT id, name, short_name FROM care_area") }.toList()
             }
         }
     }
@@ -129,25 +128,23 @@ private fun Database.Read.getUnits(
     areaIds: List<AreaId>?,
     type: UnitTypeFilter,
     from: LocalDate?
-): List<UnitStub> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
+): List<UnitStub> {
+    val areaIdsParam = areaIds?.takeIf { it.isNotEmpty() }
+    return createQuery {
+            sql(
+                """
 SELECT unit.id, unit.name, unit.type as care_types
 FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
-WHERE (:areaIds::uuid[] IS NULL OR area.id = ANY(:areaIds))
-AND (:type = 'ALL' OR
-    (:type = 'CLUB' AND 'CLUB' = ANY(unit.type)) OR
-    (:type = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
-    (:type = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
+WHERE (${bind(areaIdsParam)}::uuid[] IS NULL OR area.id = ANY(${bind(areaIdsParam)}))
+AND (${bind(type)} = 'ALL' OR
+    (${bind(type)} = 'CLUB' AND 'CLUB' = ANY(unit.type)) OR
+    (${bind(type)} = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
+    (${bind(type)} = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
 )
-AND (:from::date IS NULL OR daterange(unit.opening_date, unit.closing_date, '[]') && daterange(:from, NULL))
+AND (${bind(from)}::date IS NULL OR daterange(unit.opening_date, unit.closing_date, '[]') && daterange(${bind(from)}, NULL))
     """
-                .trimIndent()
-        )
-        .bind("areaIds", areaIds?.takeIf { it.isNotEmpty() })
-        .bind("type", type)
-        .bind("from", from)
-        .toList<UnitStub>()
+            )
+        }
+        .toList()
+}

@@ -56,13 +56,13 @@ class MealReportController(
         "/employee/reports/meal/{unitId}"
     )
     fun getMealReportByUnit(
-        tx: Database,
+        db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): MealReportData {
-        return tx.connect { dbc ->
+        return db.connect { dbc ->
             dbc.read {
                     accessControl.requirePermissionFor(
                         it,

@@ -606,28 +606,21 @@ private fun Database.Read.fetchChildPlacementBasics(
     childId: ChildId,
     unitId: DaycareId,
     today: LocalDate
-): ChildPlacementBasics {
-    // language=sql
-    val sql =
-        """
-        SELECT rp.placement_type, c.date_of_birth
-        FROM person c 
-        JOIN realized_placement_all(:today) rp
-        ON c.id = rp.child_id
-        WHERE c.id = :childId AND rp.unit_id = :unitId
-        LIMIT 1
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("today", today)
-        .toList<ChildPlacementBasics>()
-        .firstOrNull()
+): ChildPlacementBasics =
+    createQuery {
+            sql(
+                """
+SELECT rp.placement_type, c.date_of_birth
+FROM person c 
+JOIN realized_placement_all(${bind(today)}) rp
+ON c.id = rp.child_id
+WHERE c.id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
+LIMIT 1
+"""
+            )
+        }
+        .exactlyOneOrNull<ChildPlacementBasics>()
         ?: throw BadRequest("Child $childId has no placement in unit $unitId on date $today")
-}
 
 data class PlacementTypeDate(val date: LocalDate, val placementType: PlacementType)
 
@@ -636,25 +629,18 @@ private fun Database.Read.fetchChildPlacementTypeDates(
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate
-): List<PlacementTypeDate> {
-    // language=sql
-    val sql =
-        """
-        SELECT DISTINCT d::date AS date, placement_type
-        FROM generate_series(:startDate, :endDate, '1 day') d
-        JOIN realized_placement_all(d::date) rp ON true
-        WHERE rp.child_id = :childId AND rp.unit_id = :unitId
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("startDate", startDate)
-        .bind("endDate", endDate)
-        .toList<PlacementTypeDate>()
-}
+): List<PlacementTypeDate> =
+    createQuery {
+            sql(
+                """
+SELECT DISTINCT d::date AS date, placement_type
+FROM generate_series(${bind(startDate)}, ${bind(endDate)}, '1 day') d
+JOIN realized_placement_all(d::date) rp ON true
+WHERE rp.child_id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
+"""
+            )
+        }
+        .toList()
 
 private fun getChildAttendanceStatus(
     now: HelsinkiDateTime,

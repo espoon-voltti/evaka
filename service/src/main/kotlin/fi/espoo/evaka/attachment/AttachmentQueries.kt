@@ -95,20 +95,17 @@ fun Database.Transaction.insertAttachment(
         "Unexpected AttachmentForeignKeys field count"
     }
     require(attachTo !is AttachmentParent.MessageContent) { "attachments are saved via draft" }
-    val sql =
-        """
-        INSERT INTO attachment (created, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
-        VALUES (:now, :name, :contentType, :applicationId, :incomeStatementId, :incomeId, :messageDraftId, :pedagogicalDocumentId, :feeAlterationId, :userId, :type)
-        RETURNING id
-        """
-    @Suppress("DEPRECATION")
-    return this.createUpdate(sql)
-        .bind("now", now)
-        .bind("name", name)
-        .bind("contentType", contentType)
-        .bindKotlin(AttachmentForeignKeys(attachTo))
-        .bind("userId", user.evakaUserId)
-        .bind("type", type ?: "")
+
+    val fk = AttachmentForeignKeys(attachTo)
+    return this.createUpdate {
+            sql(
+                """
+INSERT INTO attachment (created, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
+VALUES (${bind(now)}, ${bind(name)}, ${bind(contentType)}, ${bind(fk.applicationId)}, ${bind(fk.incomeStatementId)}, ${bind(fk.incomeId)}, ${bind(fk.messageDraftId)}, ${bind(fk.pedagogicalDocumentId)}, ${bind(fk.feeAlterationId)}, ${bind(user.evakaUserId)}, ${bind(type ?: "")})
+RETURNING id
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<AttachmentId>()
 }
@@ -148,21 +145,19 @@ fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     type: AttachmentType,
     userId: EvakaUserId
 ): List<AttachmentId> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-            UPDATE attachment
-            SET application_id = NULL
-            WHERE application_id = :applicationId 
-            AND type = :type 
-            AND uploaded_by = :userId
-            RETURNING id
-        """
-        )
-        .bind("applicationId", applicationId)
-        .bind("type", type)
-        .bind("userId", userId)
-        .toList<AttachmentId>()
+    createQuery {
+            sql(
+                """
+UPDATE attachment
+SET application_id = NULL
+WHERE application_id = ${bind(applicationId)} 
+AND type = ${bind(type)} 
+AND uploaded_by = ${bind(userId)}
+RETURNING id
+"""
+            )
+        }
+        .toList()
 
 /** Changes the parent of *all attachments* that match the given predicate */
 private fun Database.Transaction.changeParent(

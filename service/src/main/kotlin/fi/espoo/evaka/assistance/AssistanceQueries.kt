@@ -26,8 +26,7 @@ WHERE ${predicate(predicate.forTable("assistance_factor"))}
 }
 
 fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
-    @Suppress("DEPRECATION")
-    createQuery(getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }))
+    createQuery { getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }) }
         .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactorsByChildId(
@@ -41,14 +40,12 @@ SELECT id, child_id, valid_during, capacity_factor, modified, (SELECT name FROM 
 FROM assistance_factor
 WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("assistance_factor"))}
 """
-                    .trimIndent()
             )
         }
         .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
-    @Suppress("DEPRECATION")
-    createQuery(getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }))
+    createQuery { getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }) }
         .exactlyOneOrNull<AssistanceFactor>()
 
 fun Database.Transaction.insertAssistanceFactor(
@@ -335,8 +332,7 @@ LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
 WHERE aa.child_id = ${bind(childId)} AND ${predicate(filter.forTable("aa"))}
 GROUP BY aa.id, child_id, start_date, end_date, other_action
 ORDER BY start_date DESC     
-            """
-                    .trimIndent()
+"""
             )
         }
         .toList<AssistanceAction>()

@@ -15,10 +15,9 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
+    createQuery {
+            sql(
+                """
 SELECT
   backup_care.id,
   daycare.id AS unit_id,
@@ -31,20 +30,19 @@ JOIN daycare
 ON daycare.id = unit_id
 LEFT JOIN daycare_group
 ON daycare_group.id = group_id
-WHERE child_id = :childId
+WHERE child_id = ${bind(childId)}
 """
-        )
-        .bind("childId", childId)
+            )
+        }
         .toList<ChildBackupCare>()
 
 fun Database.Read.getBackupCaresForDaycare(
     daycareId: DaycareId,
     period: FiniteDateRange
 ): List<UnitBackupCare> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
+    createQuery {
+            sql(
+                """
 SELECT
   backup_care.id,
   person.id AS child_id,
@@ -79,12 +77,11 @@ JOIN LATERAL (
   WHERE p.child_id = backup_care.child_id
     AND daterange(p.start_date, p.end_date, '[]') && daterange(backup_care.start_date, backup_care.end_date, '[]')
 ) placement ON TRUE
-WHERE unit_id = :daycareId
-AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
+WHERE unit_id = ${bind(daycareId)}
+AND daterange(backup_care.start_date, backup_care.end_date, '[]') && ${bind(period)}
 """
-        )
-        .bind("daycareId", daycareId)
-        .bind("period", period)
+            )
+        }
         .toList<UnitBackupCare>()
 
 fun Database.Read.getBackupCareChildrenInGroup(
@@ -92,53 +89,50 @@ fun Database.Read.getBackupCareChildrenInGroup(
     groupId: GroupId,
     period: FiniteDateRange
 ): List<ChildId> =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-    SELECT child_id FROM backup_care
-    WHERE unit_id = :daycareId
-      AND group_id = :groupId
-      AND daterange(start_date, end_date, '[]') && :period
-    """
-                .trimIndent()
-        )
-        .bind("daycareId", daycareId)
-        .bind("groupId", groupId)
-        .bind("period", period)
+    createQuery {
+            sql(
+                """
+SELECT child_id FROM backup_care
+WHERE unit_id = ${bind(daycareId)}
+  AND group_id = ${bind(groupId)}
+  AND daterange(start_date, end_date, '[]') && ${bind(period)}
+"""
+            )
+        }
         .toList<ChildId>()
 
 data class BackupCareInfo(val childId: ChildId, val unitId: DaycareId, val period: FiniteDateRange)
 
 fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? =
-    @Suppress("DEPRECATION")
-    createQuery(
-            """
-    SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
-    WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
+    createQuery {
+            sql(
+                """
+SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
+WHERE id = ${bind(id)}
+"""
+            )
+        }
         .exactlyOneOrNull<BackupCareInfo>()
 
 fun Database.Transaction.createBackupCare(
     childId: ChildId,
     backupCare: NewBackupCare
 ): BackupCareId =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO backup_care (child_id, unit_id, group_id, start_date, end_date)
-VALUES (:childId, :unitId, :groupId, :start, :end)
+VALUES (
+  ${bind(childId)},
+  ${bind(backupCare.unitId)},
+  ${bind(backupCare.groupId)},
+  ${bind(backupCare.period.start)},
+  ${bind(backupCare.period.end)}
+)
 RETURNING id
 """
-        )
-        .bind("childId", childId)
-        .bind("unitId", backupCare.unitId)
-        .bind("groupId", backupCare.groupId)
-        .bind("start", backupCare.period.start)
-        .bind("end", backupCare.period.end)
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<BackupCareId>()
 
@@ -146,47 +140,30 @@ fun Database.Transaction.updateBackupCare(
     id: BackupCareId,
     period: FiniteDateRange,
     groupId: GroupId?
-) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+) = execute {
+    sql(
+        """
 UPDATE backup_care
 SET
-  start_date = :start,
-  end_date = :end,
-  group_id = :groupId
-WHERE id = :id
+  start_date = ${bind(period.start)},
+  end_date = ${bind(period.end)},
+  group_id = ${bind(groupId)}
+WHERE id = ${bind(id)}
 """
-        )
-        .bind("id", id)
-        .bind("start", period.start)
-        .bind("end", period.end)
-        .bind("groupId", groupId)
-        .execute()
+    )
+}
 
-fun Database.Transaction.deleteBackupCare(id: BackupCareId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+fun Database.Transaction.deleteBackupCare(id: BackupCareId) = execute {
+    sql("""
 DELETE FROM backup_care
-WHERE id = :id
-"""
-        )
-        .bind("id", id)
-        .execute()
+WHERE id = ${bind(id)}
+""")
+}
 
 fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
-    SELECT child_id FROM backup_care WHERE id = :id
-    """
-                .trimIndent()
-        )
-        .bind("id", id)
+    createQuery { sql("""
+SELECT child_id FROM backup_care WHERE id = ${bind(id)}
+""") }
         .exactlyOne<ChildId>()
 
 /** Recreates backup cares for a child so that they are always within placements. */

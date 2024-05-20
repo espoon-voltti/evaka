@@ -45,7 +45,6 @@ private fun Database.Read.createDecisionQuery(
         WHERE ${predicate(decision.forTable("d"))}
         AND ${predicate(application.forTable("ap"))}
     """
-            .trimIndent()
     )
 }
 
@@ -135,7 +134,6 @@ fun Database.Read.getSentDecisionsByApplication(
                             AND $it.sent_date IS NOT NULL
                             AND ${predicate(filter.forTable(it))}
                         """
-                            .trimIndent()
                     )
                 }
         )
@@ -211,39 +209,34 @@ fun Database.Read.getOwnDecisions(
         }
         .toList()
 
-fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> {
-    // language=sql
-    val sql =
-        """
-            SELECT id, unit_id, type, start_date, end_date, planned
-            FROM decision
-            WHERE application_id = :applicationId AND sent_date IS NULL
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("applicationId", applicationId).toList<DecisionDraft>()
-}
+fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> =
+    createQuery {
+            sql(
+                """
+SELECT id, unit_id, type, start_date, end_date, planned
+FROM decision
+WHERE application_id = ${bind(applicationId)} AND sent_date IS NULL
+"""
+            )
+        }
+        .toList()
 
 fun Database.Transaction.finalizeDecisions(
     applicationId: ApplicationId,
     today: LocalDate
 ): List<DecisionId> {
     // discard unplanned drafts
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false"
+    execute {
+        sql(
+            "DELETE FROM decision WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = false"
         )
-        .bind("applicationId", applicationId)
-        .execute()
+    }
 
-    // confirm planned drafts
-    @Suppress("DEPRECATION")
-    return createQuery(
-            "UPDATE decision SET sent_date = :today WHERE application_id = :applicationId RETURNING id"
-        )
-        .bind("applicationId", applicationId)
-        .bind("today", today)
+    return createQuery {
+            sql(
+                "UPDATE decision SET sent_date = ${bind(today)} WHERE application_id = ${bind(applicationId)} RETURNING id"
+            )
+        }
         .toList<DecisionId>()
 }
 
@@ -251,57 +244,50 @@ fun Database.Transaction.markApplicationDecisionsSent(
     applicationId: ApplicationId,
     sentDate: LocalDate
 ) {
-    @Suppress("DEPRECATION")
-    createUpdate(
+    execute {
+        sql(
             """
-UPDATE decision SET sent_date = :sentDate
-WHERE sent_date IS NULL AND application_id = :applicationId AND planned = true
+UPDATE decision SET sent_date = ${bind(sentDate)}
+WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned = true
 """
         )
-        .bind("applicationId", applicationId)
-        .bind("sentDate", sentDate)
-        .execute()
+    }
 }
 
 fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentDate: LocalDate) {
-    @Suppress("DEPRECATION")
-    createUpdate(
+    execute {
+        sql(
             """
-UPDATE decision SET sent_date = :sentDate
-WHERE sent_date IS NULL AND id = :decisionId AND planned = true
+UPDATE decision SET sent_date = ${bind(sentDate)}
+WHERE sent_date IS NULL AND id = ${bind(decisionId)} AND planned = true
 """
         )
-        .bind("decisionId", decisionId)
-        .bind("sentDate", sentDate)
-        .execute()
+    }
 }
 
 fun Database.Transaction.updateDecisionGuardianDocumentKey(
     decisionId: DecisionId,
     documentKey: String
 ) {
-    // language=SQL
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE decision SET document_key = :documentKey WHERE id = :id")
-        .bind("id", decisionId)
-        .bind("documentKey", documentKey)
-        .execute()
+    execute {
+        sql(
+            "UPDATE decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(decisionId)}"
+        )
+    }
 }
 
-fun Database.Read.isDecisionBlocked(decisionId: DecisionId): Boolean {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            // language=SQL
-            """
+fun Database.Read.isDecisionBlocked(decisionId: DecisionId): Boolean =
+    createQuery {
+            sql(
+                """
 SELECT count(*) > 0 AS blocked
 FROM decision
-WHERE status = 'PENDING' AND type = 'PRESCHOOL' AND id != :id
-AND application_id = (SELECT application_id FROM decision WHERE id = :id)
+WHERE status = 'PENDING' AND type = 'PRESCHOOL' AND id != ${bind(decisionId)}
+AND application_id = (SELECT application_id FROM decision WHERE id = ${bind(decisionId)})
 """
-        )
-        .bind("id", decisionId)
-        .exactlyOne<Boolean>()
-}
+            )
+        }
+        .exactlyOne()
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): OfficialLanguage =
     createQuery {
@@ -325,26 +311,20 @@ fun Database.Transaction.markDecisionAccepted(
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot accept decision that is blocked by a pending primary decision")
     }
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
+    execute {
+        sql(
             """
 UPDATE decision
 SET
   status = 'ACCEPTED',
-  requested_start_date = :requestedStartDate,
-  resolved_by = :userId,
-  resolved = :now
-WHERE id = :id
+  requested_start_date = ${bind(requestedStartDate)},
+  resolved_by = ${bind(user.evakaUserId)},
+  resolved = ${bind(clock.now())}
+WHERE id = ${bind(decisionId)}
 AND status = 'PENDING'
-        """
-                .trimIndent()
+"""
         )
-        .bind("id", decisionId)
-        .bind("now", clock.now())
-        .bind("userId", user.evakaUserId)
-        .bind("requestedStartDate", requestedStartDate)
-        .execute()
+    }
 }
 
 fun Database.Transaction.markDecisionRejected(
@@ -355,22 +335,17 @@ fun Database.Transaction.markDecisionRejected(
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot reject decision that is blocked by a pending primary decision")
     }
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
+    execute {
+        sql(
             """
 UPDATE decision
 SET
   status = 'REJECTED',
-  resolved_by = :userId,
-  resolved = :now
-WHERE id = :id
+  resolved_by = ${bind(user.evakaUserId)},
+  resolved = ${bind(clock.now())}
+WHERE id = ${bind(decisionId)}
 AND status = 'PENDING'
-        """
-                .trimIndent()
+    """
         )
-        .bind("id", decisionId)
-        .bind("now", clock.now())
-        .bind("userId", user.evakaUserId)
-        .execute()
+    }
 }

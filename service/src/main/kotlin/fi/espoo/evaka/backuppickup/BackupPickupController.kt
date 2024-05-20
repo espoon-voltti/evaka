@@ -125,53 +125,40 @@ class BackupPickupController(private val accessControl: AccessControl) {
 fun Database.Transaction.createBackupPickup(
     childId: ChildId,
     data: ChildBackupPickupContent
-): BackupPickupId {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO backup_pickup (child_id, name, phone)
-        VALUES (:childId, :name, :phone)
-        RETURNING id
-    """
-            .trimIndent()
+): BackupPickupId =
+    createQuery {
+            sql(
+                """
+INSERT INTO backup_pickup (child_id, name, phone)
+VALUES (${bind(childId)}, ${bind(data.name)}, ${bind(data.phone)})
+RETURNING id
+"""
+            )
+        }
+        .exactlyOne()
 
-    @Suppress("DEPRECATION")
-    return this.createQuery(sql)
-        .bind("childId", childId)
-        .bind("name", data.name)
-        .bind("phone", data.phone)
-        .exactlyOne<BackupPickupId>()
-}
+fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> =
+    createQuery {
+            sql(
+                "SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = ${bind(childId)}"
+            )
+        }
+        .toList()
 
-fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> {
-    @Suppress("DEPRECATION")
-    return createQuery("SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = :id")
-        .bind("id", childId)
-        .toList<ChildBackupPickup>()
-}
-
-fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBackupPickupContent) {
-    // language=sql
-    val sql =
-        """
-        UPDATE backup_pickup
-        SET name = :name, phone = :phone
-        WHERE id  = :id
-    """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    this.createUpdate(sql)
-        .bind("id", id)
-        .bind("name", data.name)
-        .bind("phone", data.phone)
+fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBackupPickupContent) =
+    createUpdate {
+            sql(
+                """
+UPDATE backup_pickup
+SET name = ${bind(data.name)}, phone = ${bind(data.phone)}
+WHERE id  = ${bind(id)}
+"""
+            )
+        }
         .updateExactlyOne()
-}
 
-fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) {
-    @Suppress("DEPRECATION")
-    this.createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).updateExactlyOne()
-}
+fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) =
+    createUpdate { sql("DELETE FROM backup_pickup WHERE id = ${bind(id)}") }.updateExactlyOne()
 
 data class ChildBackupPickupContent(val name: String, val phone: String)
 

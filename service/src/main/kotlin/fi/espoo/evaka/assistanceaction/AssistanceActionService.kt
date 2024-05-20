@@ -24,7 +24,7 @@ class AssistanceActionService {
         try {
             return db.transaction { tx ->
                 validateActions(data, tx.getAssistanceActionOptions().map { it.value })
-                tx.shortenOverlappingAssistanceAction(user, childId, data.startDate, data.endDate)
+                tx.shortenOverlappingAssistanceAction(user, childId, data.startDate)
                 tx.insertAssistanceAction(user, childId, data)
             }
         } catch (e: JdbiException) {

@@ -87,28 +87,53 @@ data class DecisionDraftUpdate(
     val planned: Boolean
 )
 
-fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> {
-    val sql =
-        """
-            $decisionUnitQuery
-            ORDER BY name
-            """
-            .trimIndent()
-    @Suppress("DEPRECATION") return tx.createQuery(sql).toList<DecisionUnit>()
-}
+fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> =
+    tx.createQuery {
+            sql(
+                """
+SELECT 
+    id,
+    name,
+    decision_daycare_name AS daycareDecisionName,
+    decision_preschool_name AS preschoolDecisionName,
+    decision_handler, 
+    decision_handler_address,
+    unit_manager_name AS manager,
+    street_address, 
+    postal_code, 
+    post_office,
+    phone,
+    provider_type
+FROM daycare u
+ORDER BY name
+"""
+            )
+        }
+        .toList()
 
-fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
-    // language=SQL
-    val sql =
-        """
-             $decisionUnitQuery
-             WHERE u.id = :id
-            """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return tx.createQuery(sql).bind("id", unitId).exactlyOne<DecisionUnit>()
-}
+fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit =
+    tx.createQuery {
+            sql(
+                """
+SELECT 
+    id,
+    name,
+    decision_daycare_name AS daycareDecisionName,
+    decision_preschool_name AS preschoolDecisionName,
+    decision_handler, 
+    decision_handler_address,
+    unit_manager_name AS manager,
+    street_address, 
+    postal_code, 
+    post_office,
+    phone,
+    provider_type
+FROM daycare u
+WHERE u.id = ${bind(unitId)}
+"""
+            )
+        }
+        .exactlyOne()
 
 private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
     return listOf(
@@ -184,29 +209,9 @@ private fun planPreschoolDecisionDrafts(
 }
 
 fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>) {
-    // language=sql
-    val sql =
-        """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL"""
-            .trimIndent()
-
-    @Suppress("DEPRECATION") createUpdate(sql).bind("applicationIds", applicationIds).execute()
+    execute {
+        sql(
+            "DELETE FROM decision WHERE application_id = ANY(${bind(applicationIds)}) AND sent_date IS NULL"
+        )
+    }
 }
-
-private val decisionUnitQuery =
-    """
-SELECT 
-    u.id,
-    u.name,
-    decision_daycare_name AS daycareDecisionName,
-    decision_preschool_name AS preschoolDecisionName,
-    decision_handler, 
-    decision_handler_address,
-    unit_manager_name AS manager,
-    street_address, 
-    postal_code, 
-    post_office,
-    u.phone,
-    provider_type
-FROM daycare u
-    """
-        .trimIndent()

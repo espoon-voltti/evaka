@@ -15,20 +15,18 @@ import java.time.LocalDate
 import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
 
-fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> {
-    // language=sql
-    val sql =
-        """
+fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> =
+    tx.createQuery {
+            sql(
+                """
             SELECT id, group_id, start_date, end_date, amount
             FROM daycare_caretaker
-            WHERE group_id = :groupId
+            WHERE group_id = ${bind(groupId)}
             ORDER BY start_date DESC
         """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return tx.createQuery(sql).bind("groupId", groupId).toList<CaretakerAmount>()
-}
+            )
+        }
+        .toList()
 
 fun insertCaretakers(
     tx: Database.Transaction,
@@ -54,18 +52,15 @@ fun insertCaretakers(
     }
 
     try {
-        @Suppress("DEPRECATION")
-        return tx.createUpdate(
-                """
-            INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
-            VALUES (:groupId, :start, :end, :amount)
-            RETURNING id
-            """
-            )
-            .bind("groupId", groupId)
-            .bind("start", startDate)
-            .bind("end", endDate)
-            .bind("amount", amount)
+        return tx.createUpdate {
+                sql(
+                    """
+INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
+VALUES (${bind(groupId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(amount)})
+RETURNING id
+"""
+                )
+            }
             .executeAndReturnGeneratedKeys()
             .exactlyOne<DaycareCaretakerId>()
     } catch (e: Exception) {
@@ -74,17 +69,15 @@ fun insertCaretakers(
 }
 
 private fun Database.Transaction.endPreviousRow(groupId: GroupId, startDate: LocalDate) {
-    // language=sql
-    val sql =
-        """
-            UPDATE daycare_caretaker
-            SET end_date = :start - interval '1 day'
-            WHERE group_id = :groupId AND daterange(start_date, end_date, '[]') @> :start
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
+    execute {
+        sql(
+            """
+UPDATE daycare_caretaker
+SET end_date = ${bind(startDate)} - interval '1 day'
+WHERE group_id = ${bind(groupId)} AND daterange(start_date, end_date, '[]') @> ${bind(startDate)}
+"""
+        )
+    }
 }
 
 fun updateCaretakers(
@@ -98,24 +91,16 @@ fun updateCaretakers(
     if (endDate != null && endDate.isBefore(startDate))
         throw BadRequest("End date cannot be before start")
 
-    // language=sql
-    val sql =
-        """
-            UPDATE daycare_caretaker
-            SET start_date = :start, end_date = :end, amount = :amount
-            WHERE id = :id AND group_id = :groupId
-        """
-            .trimIndent()
-
     try {
-        @Suppress("DEPRECATION")
-        tx.createUpdate(sql)
-            .bind("groupId", groupId)
-            .bind("id", id)
-            .bind("start", startDate)
-            .bind("end", endDate)
-            .bind("amount", amount)
-            .execute()
+        tx.execute {
+                sql(
+                    """
+UPDATE daycare_caretaker
+SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, amount = ${bind(amount)}
+WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}
+"""
+                )
+            }
             .let { updated -> if (updated == 0) throw NotFound("Caretakers $id not found") }
     } catch (e: Exception) {
         throw mapPSQLException(e)
@@ -123,11 +108,11 @@ fun updateCaretakers(
 }
 
 fun deleteCaretakers(tx: Database.Transaction, groupId: GroupId, id: DaycareCaretakerId) {
-    @Suppress("DEPRECATION")
-    tx.createUpdate("DELETE FROM daycare_caretaker WHERE id = :id AND group_id = :groupId")
-        .bind("groupId", groupId)
-        .bind("id", id)
-        .execute()
+    tx.execute {
+            sql(
+                "DELETE FROM daycare_caretaker WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}"
+            )
+        }
         .let { deleted -> if (deleted == 0) throw NotFound("Caretakers $id not found") }
 }
 

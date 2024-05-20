@@ -554,34 +554,33 @@ class ApplicationStateService(
             unitId
         )
 
-        // language=sql
-        val rejectSQL =
-            """
-            UPDATE placement_plan
-            SET unit_confirmation_status = 'REJECTED'
-            WHERE 
-                unit_id = :unitId AND
-                unit_confirmation_status = 'REJECTED_NOT_CONFIRMED'
-            """
-                .trimIndent()
+        tx.execute {
+            sql(
+                """
+                UPDATE placement_plan
+                SET unit_confirmation_status = 'REJECTED'
+                WHERE 
+                    unit_id = ${bind(unitId)} AND
+                    unit_confirmation_status = 'REJECTED_NOT_CONFIRMED'
+                """
+            )
+        }
 
-        @Suppress("DEPRECATION") tx.createUpdate(rejectSQL).bind("unitId", unitId).execute()
-
-        // language=sql
-        val acceptSQL =
-            """
-            SELECT application_id
-            FROM placement_plan pp
-            JOIN application a ON a.id = pp.application_id
-            WHERE 
-                a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type AND 
-                pp.unit_id = :unitId AND
-                pp.unit_confirmation_status = 'ACCEPTED'
-            """
-                .trimIndent()
-
-        @Suppress("DEPRECATION")
-        val validIds = tx.createQuery(acceptSQL).bind("unitId", unitId).toList<ApplicationId>()
+        val validIds =
+            tx.createQuery {
+                    sql(
+                        """
+                        SELECT application_id
+                        FROM placement_plan pp
+                        JOIN application a ON a.id = pp.application_id
+                        WHERE 
+                            a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type AND 
+                            pp.unit_id = ${bind(unitId)} AND
+                            pp.unit_confirmation_status = 'ACCEPTED'
+                        """
+                    )
+                }
+                .toList<ApplicationId>()
 
         validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
         Audit.PlacementProposalAccept.log(targetId = unitId, objectId = validIds)
@@ -862,9 +861,9 @@ class ApplicationStateService(
     }
 
     private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
-        @Suppress("DEPRECATION")
-        return createQuery("SELECT 1 FROM preschool_term WHERE application_period @> :date")
-            .bind("date", sentDate)
+        return createQuery {
+                sql("SELECT 1 FROM preschool_term WHERE application_period @> ${bind(sentDate)}")
+            }
             .toList<Boolean>()
             .firstOrNull() ?: false
     }
@@ -909,14 +908,16 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         manuallySetDueDate: LocalDate
     ) {
-        @Suppress("DEPRECATION")
-        createUpdate(
-                "UPDATE application SET duedate = :dueDate, duedate_set_manually_at = :dueDateSetManuallyAt WHERE id = :id"
+        execute {
+            sql(
+                """
+                UPDATE application SET
+                    duedate = ${bind(manuallySetDueDate)},
+                    duedate_set_manually_at = ${bind(HelsinkiDateTime.now())}
+                WHERE id = ${bind(applicationId)}
+                """
             )
-            .bind("id", applicationId)
-            .bind("dueDate", manuallySetDueDate)
-            .bind("dueDateSetManuallyAt", HelsinkiDateTime.now())
-            .execute()
+        }
     }
 
     private fun Database.Transaction.calculateAndUpdateDueDate(
@@ -942,11 +943,11 @@ class ApplicationStateService(
 
         if (newDueDate == original.dueDate) return
 
-        @Suppress("DEPRECATION")
-        createUpdate("UPDATE application SET duedate = :dueDate WHERE id = :id")
-            .bind("id", original.id)
-            .bind("dueDate", newDueDate)
-            .execute()
+        execute {
+            sql(
+                "UPDATE application SET duedate = ${bind(newDueDate)} WHERE id = ${bind(original.id)}"
+            )
+        }
     }
 
     fun reCalculateDueDate(

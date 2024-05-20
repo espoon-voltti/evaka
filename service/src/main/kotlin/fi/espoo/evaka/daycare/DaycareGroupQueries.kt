@@ -15,42 +15,35 @@ private fun Database.Read.createDaycareGroupQuery(
     groupId: GroupId?,
     daycareId: DaycareId?,
     period: DateRange?
-) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
+) = createQuery {
+    sql(
+        """
 SELECT
   id, daycare_id, name, start_date, end_date, jamix_customer_number,
   (NOT exists(SELECT 1 FROM backup_care WHERE group_id = daycare_group.id) AND
   NOT exists(SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = daycare_group.id)) AS deletable
 FROM daycare_group
-WHERE (:groupId::uuid IS NULL OR id = :groupId)
-AND (:daycareId::uuid IS NULL OR daycare_id = :daycareId)
-AND (:period::daterange IS NULL OR daterange(start_date, end_date, '[]') && :period)
+WHERE (${bind(groupId)}::uuid IS NULL OR id = ${bind(groupId)})
+AND (${bind(daycareId)}::uuid IS NULL OR daycare_id = ${bind(daycareId)})
+AND (${bind(period)}::daterange IS NULL OR daterange(start_date, end_date, '[]') && ${bind(period)})
 """
-        )
-        .bind("groupId", groupId)
-        .bind("daycareId", daycareId)
-        .bind("period", period)
+    )
+}
 
 fun Database.Transaction.createDaycareGroup(
     daycareId: DaycareId,
     name: String,
     startDate: LocalDate
 ): DaycareGroup =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate {
+            sql(
+                """
 INSERT INTO daycare_group (daycare_id, name, start_date, end_date)
-VALUES (:daycareId, :name, :startDate, NULL)
+VALUES (${bind(daycareId)}, ${bind(name)}, ${bind(startDate)}, NULL)
 RETURNING id, daycare_id, name, start_date, end_date, true AS deletable, jamix_customer_number
 """
-        )
-        .bind("daycareId", daycareId)
-        .bind("name", name)
-        .bind("startDate", startDate)
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<DaycareGroup>()
 
@@ -89,15 +82,11 @@ fun Database.Read.getDaycareGroups(
         )
         .toList<DaycareGroup>()
 
-fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            // language=SQL
-            """
-DELETE FROM group_note WHERE group_id = :groupId;        
-DELETE FROM daycare_group
-WHERE id = :groupId
+fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) = execute {
+    sql(
+        """
+DELETE FROM group_note WHERE group_id = ${bind(groupId)};        
+DELETE FROM daycare_group WHERE id = ${bind(groupId)}
 """
-        )
-        .bind("groupId", groupId)
-        .execute()
+    )
+}

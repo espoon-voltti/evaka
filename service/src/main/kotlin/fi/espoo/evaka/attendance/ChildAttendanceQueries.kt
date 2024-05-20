@@ -31,7 +31,6 @@ fun Database.Transaction.insertAttendance(
     date: LocalDate,
     range: TimeInterval
 ): ChildAttendanceId {
-    // language=sql
     return createUpdate {
             sql(
                 """
@@ -102,13 +101,12 @@ fun Database.Read.getChildOngoingAttendance(
     childId: ChildId,
     unitId: DaycareId
 ): OngoingAttendance? =
-    @Suppress("DEPRECATION")
-    createQuery(
-            "SELECT id, date, start_time FROM child_attendance WHERE child_id = :childId AND unit_id = :unitId AND end_time IS NULL"
-        )
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .exactlyOneOrNull<OngoingAttendance>()
+    createQuery {
+            sql(
+                "SELECT id, date, start_time FROM child_attendance WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)} AND end_time IS NULL"
+            )
+        }
+        .exactlyOneOrNull()
 
 data class ChildBasics(
     val id: ChildId,
@@ -151,109 +149,107 @@ data class ChildBasicsRow(
 }
 
 fun Database.Read.fetchChildrenBasics(unitId: DaycareId, now: HelsinkiDateTime): List<ChildBasics> {
-    // language=sql
-    val sql =
-        """
-        WITH child_group_placement AS (
-            -- Placed to unit
-            SELECT
-                gp.daycare_group_id as group_id,
-                p.child_id,
-                p.type as placement_type,
-                false AS backup
-            FROM daycare_group_placement gp
-            JOIN placement p ON p.id = gp.daycare_placement_id
-            WHERE
-                p.unit_id = :unitId AND 
-                daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') @> :date AND
-                NOT EXISTS (
-                    SELECT 1
-                    FROM backup_care bc
-                    WHERE
-                        bc.child_id = p.child_id AND
-                        daterange(bc.start_date, bc.end_date, '[]') @> :date
-                ) AND
-                NOT EXISTS (
-                    SELECT 1 FROM child_attendance ca
-                    WHERE ca.child_id = p.child_id AND ca.end_time IS NULL
-                )
-
-            UNION ALL
-
-            -- Placed to unit as backup
-            SELECT
-                bc.group_id,
-                p.child_id,
-                p.type as placement_type,
-                true AS backup
+    val date = now.toLocalDate()
+    return createQuery {
+            sql(
+                """
+WITH child_group_placement AS (
+    -- Placed to unit
+    SELECT
+        gp.daycare_group_id as group_id,
+        p.child_id,
+        p.type as placement_type,
+        false AS backup
+    FROM daycare_group_placement gp
+    JOIN placement p ON p.id = gp.daycare_placement_id
+    WHERE
+        p.unit_id = ${bind(unitId)} AND 
+        daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') @> ${bind(date)} AND
+        NOT EXISTS (
+            SELECT 1
             FROM backup_care bc
-            JOIN placement p ON (
-                p.child_id = bc.child_id AND
-                daterange(p.start_date, p.end_date, '[]') @> :date
-            )
             WHERE
-                bc.unit_id = :unitId AND
-                bc.group_id IS NOT NULL AND
-                daterange(bc.start_date, bc.end_date, '[]') @> :date AND
-                NOT EXISTS (
-                    SELECT 1 FROM child_attendance ca
-                    WHERE ca.child_id = p.child_id AND ca.end_time IS NULL
-                )
-
-            UNION ALL
-
-            -- Attendance in the unit
-            SELECT
-                (CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE gp.daycare_group_id END) as group_id,
-                ca.child_id,
-                p.type as placement_type,
-                bc.id IS NOT NULL as backup
-            FROM child_attendance ca
-            JOIN placement p
-                ON ca.child_id = p.child_id
-                AND daterange(p.start_date, p.end_date, '[]') @> ca.date
-            LEFT JOIN daycare_group_placement gp
-                ON gp.daycare_placement_id = p.id
-                AND daterange(gp.start_date, gp.end_date, '[]') @> ca.date
-            LEFT JOIN backup_care bc
-                ON ca.child_id = bc.child_id
-                AND daterange(bc.start_date, bc.end_date, '[]') @> ca.date
-                AND bc.unit_id = ca.unit_id
-            WHERE ca.end_time IS NULL AND ca.unit_id = :unitId
+                bc.child_id = p.child_id AND
+                daterange(bc.start_date, bc.end_date, '[]') @> ${bind(date)}
+        ) AND
+        NOT EXISTS (
+            SELECT 1 FROM child_attendance ca
+            WHERE ca.child_id = p.child_id AND ca.end_time IS NULL
         )
-        SELECT
-            pe.id,
-            pe.first_name,
-            pe.last_name,
-            pe.preferred_name,
-            pe.date_of_birth,
-            dst.id AS dst_id,
-            dst.child_id AS dst_child_id,
-            dst.type AS dst_type,
-            dst.regular_times AS dst_regular_times,
-            dst.monday_times AS dst_monday_times,
-            dst.tuesday_times AS dst_tuesday_times,
-            dst.wednesday_times AS dst_wednesday_times,
-            dst.thursday_times AS dst_thursday_times,
-            dst.friday_times AS dst_friday_times,
-            dst.saturday_times AS dst_saturday_times,
-            dst.sunday_times AS dst_sunday_times,
-            dst.validity_period AS dst_validity_period,
-            cimg.id AS image_id,
-            c.group_id,
-            c.placement_type,
-            c.backup
-        FROM child_group_placement c
-        JOIN person pe ON pe.id = c.child_id
-        LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id AND dst.validity_period @> :date
-        LEFT JOIN child_images cimg ON pe.id = cimg.child_id
-        """
-            .trimIndent()
 
-    @Suppress("DEPRECATION")
-    return createQuery(sql).bind("unitId", unitId).bind("date", now.toLocalDate()).toList {
-        row<ChildBasicsRow>().toChildBasics()
-    }
+    UNION ALL
+
+    -- Placed to unit as backup
+    SELECT
+        bc.group_id,
+        p.child_id,
+        p.type as placement_type,
+        true AS backup
+    FROM backup_care bc
+    JOIN placement p ON (
+        p.child_id = bc.child_id AND
+        daterange(p.start_date, p.end_date, '[]') @> ${bind(date)}
+    )
+    WHERE
+        bc.unit_id = ${bind(unitId)} AND
+        bc.group_id IS NOT NULL AND
+        daterange(bc.start_date, bc.end_date, '[]') @> ${bind(date)} AND
+        NOT EXISTS (
+            SELECT 1 FROM child_attendance ca
+            WHERE ca.child_id = p.child_id AND ca.end_time IS NULL
+        )
+
+    UNION ALL
+
+    -- Attendance in the unit
+    SELECT
+        (CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE gp.daycare_group_id END) as group_id,
+        ca.child_id,
+        p.type as placement_type,
+        bc.id IS NOT NULL as backup
+    FROM child_attendance ca
+    JOIN placement p
+        ON ca.child_id = p.child_id
+        AND daterange(p.start_date, p.end_date, '[]') @> ca.date
+    LEFT JOIN daycare_group_placement gp
+        ON gp.daycare_placement_id = p.id
+        AND daterange(gp.start_date, gp.end_date, '[]') @> ca.date
+    LEFT JOIN backup_care bc
+        ON ca.child_id = bc.child_id
+        AND daterange(bc.start_date, bc.end_date, '[]') @> ca.date
+        AND bc.unit_id = ca.unit_id
+    WHERE ca.end_time IS NULL AND ca.unit_id = ${bind(unitId)}
+)
+SELECT
+    pe.id,
+    pe.first_name,
+    pe.last_name,
+    pe.preferred_name,
+    pe.date_of_birth,
+    dst.id AS dst_id,
+    dst.child_id AS dst_child_id,
+    dst.type AS dst_type,
+    dst.regular_times AS dst_regular_times,
+    dst.monday_times AS dst_monday_times,
+    dst.tuesday_times AS dst_tuesday_times,
+    dst.wednesday_times AS dst_wednesday_times,
+    dst.thursday_times AS dst_thursday_times,
+    dst.friday_times AS dst_friday_times,
+    dst.saturday_times AS dst_saturday_times,
+    dst.sunday_times AS dst_sunday_times,
+    dst.validity_period AS dst_validity_period,
+    cimg.id AS image_id,
+    c.group_id,
+    c.placement_type,
+    c.backup
+FROM child_group_placement c
+JOIN person pe ON pe.id = c.child_id
+LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id AND dst.validity_period @> ${bind(date)}
+LEFT JOIN child_images cimg ON pe.id = cimg.child_id
+"""
+            )
+        }
+        .toList { row<ChildBasicsRow>().toChildBasics() }
 }
 
 private data class UnitChildAttendancesRow(
@@ -319,142 +315,119 @@ private fun mergeOverNightRanges(attendances: List<AttendanceTimes>): List<Atten
 fun Database.Read.getUnitChildAbsences(
     unitId: DaycareId,
     date: LocalDate,
-): Map<ChildId, List<ChildAbsence>> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+): Map<ChildId, List<ChildAbsence>> =
+    createQuery {
+            sql(
+                """
 WITH placed_children AS (
-    SELECT child_id FROM placement WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
+    SELECT child_id FROM placement WHERE unit_id = ${bind(unitId)} AND ${bind(date)} BETWEEN start_date AND end_date
     UNION
-    SELECT child_id FROM backup_care WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
+    SELECT child_id FROM backup_care WHERE unit_id = ${bind(unitId)} AND ${bind(date)} BETWEEN start_date AND end_date
 )
 SELECT 
     a.child_id, 
     jsonb_agg(jsonb_build_object('category', a.category, 'type', a.absence_type)) AS absences
 FROM absence a
-WHERE a.child_id = ANY (SELECT child_id FROM placed_children) AND a.date = :date
+WHERE a.child_id = ANY (SELECT child_id FROM placed_children) AND a.date = ${bind(date)}
 GROUP BY a.child_id
 """
-        )
-        .bind("unitId", unitId)
-        .bind("date", date)
+            )
+        }
         .toMap { column<ChildId>("child_id") to jsonColumn<List<ChildAbsence>>("absences") }
-}
 
 fun Database.Read.getChildPlacementTypes(
     childIds: Set<ChildId>,
     today: LocalDate
-): Map<ChildId, PlacementType> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
+): Map<ChildId, PlacementType> =
+    createQuery {
+            sql(
+                """
 SELECT child_id, type AS placement_type
 FROM placement p
-WHERE p.child_id = ANY(:childIds) AND :today BETWEEN p.start_date AND p.end_date
+WHERE p.child_id = ANY(${bind(childIds)}) AND ${bind(today)} BETWEEN p.start_date AND p.end_date
 """
-        )
-        .bind("childIds", childIds)
-        .bind("today", today)
+            )
+        }
         .toMap { columnPair("child_id", "placement_type") }
-}
 
 fun Database.Read.getChildAttendanceStartDatesByRange(
     childId: ChildId,
     period: DateRange
-): List<LocalDate> {
-    @Suppress("DEPRECATION")
-    return createQuery(
-            """
-        SELECT date
-        FROM child_attendance
-        WHERE between_start_and_end(:period, date)
-        AND child_id = :childId
-        AND start_time != '00:00'::time  -- filter out overnight stays
-    """
-        )
-        .bind("period", period)
-        .bind("childId", childId)
-        .toList<LocalDate>()
-}
+): List<LocalDate> =
+    createQuery {
+            sql(
+                """
+SELECT date
+FROM child_attendance
+WHERE between_start_and_end(${bind(period)}, date)
+AND child_id = ${bind(childId)}
+AND start_time != '00:00'::time  -- filter out overnight stays
+"""
+            )
+        }
+        .toList()
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: ChildAttendanceId) {
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE child_attendance SET end_time = NULL WHERE id = :id")
-        .bind("id", attendanceId)
-        .execute()
+    execute { sql("UPDATE child_attendance SET end_time = NULL WHERE id = ${bind(attendanceId)}") }
 }
 
 fun Database.Transaction.updateAttendanceEnd(attendanceId: ChildAttendanceId, endTime: LocalTime) {
-    @Suppress("DEPRECATION")
-    createUpdate("UPDATE child_attendance SET end_time = :endTime WHERE id = :id")
-        .bind("id", attendanceId)
-        .bind("endTime", endTime)
-        .execute()
+    execute {
+        sql(
+            "UPDATE child_attendance SET end_time = ${bind(endTime)} WHERE id = ${bind(attendanceId)}"
+        )
+    }
 }
 
 fun Database.Transaction.deleteAttendance(id: ChildAttendanceId) {
-    // language=sql
-    val sql =
-        """
+    execute {
+        sql("""
         DELETE FROM child_attendance
-        WHERE id = :id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION") createUpdate(sql).bind("id", id).execute()
+        WHERE id = ${bind(id)}
+        """)
+    }
 }
 
-fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate): List<AbsenceId> {
-    // language=sql
-    val sql =
-        """
+fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate): List<AbsenceId> =
+    createUpdate {
+            sql(
+                """
         DELETE FROM absence
-        WHERE child_id = :childId AND date = :date
+        WHERE child_id = ${bind(childId)} AND date = ${bind(date)}
         RETURNING id
         """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createUpdate(sql)
-        .bind("childId", childId)
-        .bind("date", date)
+            )
+        }
         .executeAndReturnGeneratedKeys()
-        .toList<AbsenceId>()
-}
+        .toList()
 
 fun Database.Transaction.deleteAttendancesByDate(
     childId: ChildId,
     date: LocalDate
 ): List<ChildAttendanceId> =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "DELETE FROM child_attendance WHERE child_id = :childId AND date = :date RETURNING id"
-        )
-        .bind("childId", childId)
-        .bind("date", date)
+    createUpdate {
+            sql(
+                "DELETE FROM child_attendance WHERE child_id = ${bind(childId)} AND date = ${bind(date)} RETURNING id"
+            )
+        }
         .executeAndReturnGeneratedKeys()
-        .toList<ChildAttendanceId>()
+        .toList()
 
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(
     childId: ChildId,
     dateRange: FiniteDateRange
-): List<AbsenceId> {
-    // language=sql
-    val sql =
-        """
-        DELETE FROM absence
-        WHERE child_id = :childId AND between_start_and_end(:dateRange, date)
-        RETURNING id
-        """
-            .trimIndent()
-
-    @Suppress("DEPRECATION")
-    return createUpdate(sql)
-        .bind("childId", childId)
-        .bind("dateRange", dateRange)
+): List<AbsenceId> =
+    createUpdate {
+            sql(
+                """
+DELETE FROM absence
+WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(dateRange)}, date)
+RETURNING id
+"""
+            )
+        }
         .executeAndReturnGeneratedKeys()
-        .toList<AbsenceId>()
-}
+        .toList()
 
 fun Database.Read.childrenHaveAttendanceInRange(
     childIds: Set<PersonId>,
