@@ -287,16 +287,6 @@ WITH child_guardian AS (
 
     UNION ALL
 
-    -- siblings in the same household
-    SELECT sibling.child_id AS id, 'LOCAL_SIBLING' AS role
-    FROM head_of_child hoc
-    JOIN fridge_child sibling ON hoc.id = sibling.head_of_child
-    WHERE sibling.child_id != ${bind(childId)}
-    AND daterange(sibling.start_date, sibling.end_date, '[]') @> ${bind(today)}
-    AND conflict IS FALSE
-
-    UNION ALL
-
     -- guardians in other households
     SELECT id, 'REMOTE_GUARDIAN' AS role
     FROM (SELECT id FROM child_guardian EXCEPT ALL (SELECT id FROM same_household_adult)) adult
