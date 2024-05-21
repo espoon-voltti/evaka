@@ -41,7 +41,7 @@ import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -185,7 +185,13 @@ class PdfGeneratorTest {
 
     @Test
     fun createAddressPagePdfTest() {
-        val document = createAddressPagePdf(pdfGenerator, guardian, RealEvakaClock())
+        val document =
+            createAddressPagePdf(
+                pdfGenerator,
+                LocalDate.of(2024, 1, 1),
+                Rectangle.iPostWindowPosition,
+                guardian
+            )
 
         val file = File.createTempFile("address_page_", ".pdf")
         FileOutputStream(file).use { it.write(document.bytes) }

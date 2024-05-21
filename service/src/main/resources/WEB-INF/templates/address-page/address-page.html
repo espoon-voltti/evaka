@@ -9,97 +9,30 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <head>
     <meta charset="UTF-8"></meta>
     <style>
-        * {
-            line-height: 1.4;
-            font-family: 'Open Sans', sans-serif;
+        @page {
+            size: A4 portrait;
+            margin-left: [[${window.x}]]mm;
+            margin-top: [[${window.y}]]mm;
+            margin-right: 15mm;
+            margin-bottom: 15mm;
         }
 
         body {
             margin: 0;
         }
 
-        @page {
-            size: A4 portrait;
-            margin-top: 55mm; /* ipost first page requirement (20mm) + enough room for header */
-            margin-right: 13mm;
-            margin-bottom: 30mm; /* enough room for footer */
-            margin-left: 21mm; /* ipost first page requirement */
-            @top-left {
-                content: element(headerLeft);
-            }
-            @top-right {
-                content: element(headerRight);
-            }
-            @bottom-center {
-                content: element(footerLeft);
-            }
-        }
-
-        .page {
-            page-break-after: always;
-        }
-
-        .page p, .page div, .page td {
+        .address {
+            width: [[${window.width}]]mm;
+            height: [[${window.height}]]mm;
             font-family: 'Open Sans', sans-serif;
             font-weight: 400;
             font-size: 10pt;
-        }
-
-        .page h1 {
-            font-family: 'Montserrat Medium', sans-serif;
-            font-weight: 500;
-            font-size: 10pt;
-            text-transform: uppercase;
-            margin-bottom: 10mm;
-            padding-bottom: 2rem;
-            page-break-after: avoid;
-        }
-
-        .page h2 {
-            font-family: 'Open Sans SemiBold', sans-serif;
-            font-weight: 600;
-            font-size: 10pt;
-        }
-
-        .page strong.semi {
-            font-family: 'Open Sans SemiBold', sans-serif;
-            font-weight: 600;
-        }
-
-        .page a {
-            text-decoration: underline;
-            color: #0563C1;
-        }
-
-        .page.last-page {
-            page-break-after: avoid;
-        }
-
-        .page.first-page h1 {
-            margin-top: 30mm;
-        }
-
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-
-        @media print {
-            a,
-            a:visited {
-                text-decoration: underline;
-            }
-
-            .page-break {
-                page-break-after: always;
-            }
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
-<div>
-    <div class="page">
+    <div class="address">
         <div th:if="${guardian} != null" th:text="|${guardian.lastName} ${guardian.firstName}|"></div>
         <th:block th:if="${sendAddress} != null">
             <div th:text="${sendAddress.row1}"></div>
@@ -107,6 +40,5 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div th:if="${not #strings.isEmpty(sendAddress.row3)}" th:text="${sendAddress.row3}"></div>
         </th:block>
     </div>
-</div>
 </body>
 </html>
