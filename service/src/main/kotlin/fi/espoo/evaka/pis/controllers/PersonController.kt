@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.controllers.upsertAdditionalInformation
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -67,7 +68,8 @@ class PersonController(
     private val mergeService: MergeService,
     private val accessControl: AccessControl,
     private val fridgeFamilyService: FridgeFamilyService,
-    private val pdfGenerator: PdfGenerator
+    private val pdfGenerator: PdfGenerator,
+    private val evakaEnv: EvakaEnv
 ) {
     @PostMapping
     fun createEmpty(
@@ -660,7 +662,13 @@ class PersonController(
                     )
                     val personData =
                         tx.getPersonById(guardianId) ?: throw NotFound("Person not found")
-                    val doc = createAddressPagePdf(pdfGenerator, personData, clock)
+                    val doc =
+                        createAddressPagePdf(
+                            pdfGenerator,
+                            clock.today(),
+                            evakaEnv.personAddressEnvelopeWindowPosition,
+                            personData
+                        )
                     val resource = ByteArrayResource(doc.bytes)
                     ResponseEntity.ok()
                         .contentLength(resource.contentLength())

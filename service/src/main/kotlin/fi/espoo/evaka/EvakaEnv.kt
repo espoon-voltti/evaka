@@ -5,6 +5,7 @@
 package fi.espoo.evaka
 
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
 import java.net.URI
@@ -37,7 +38,8 @@ data class EvakaEnv(
     val mockClock: Boolean,
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
-    val plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean
+    val plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean,
+    val personAddressEnvelopeWindowPosition: Rectangle,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -81,7 +83,11 @@ data class EvakaEnv(
                     env.lookup("evaka.voucher_value_decision.days_in_advance") ?: 0,
                 plannedAbsenceEnabledForHourBasedServiceNeeds =
                     env.lookup("evaka.planned_absence.enabled_for_hour_based_service_needs")
-                        ?: false
+                        ?: false,
+                personAddressEnvelopeWindowPosition =
+                    env.lookup<String?>("evaka.person_address_envelope_window_position")?.let {
+                        Rectangle.fromString(it)
+                    } ?: Rectangle.iPostWindowPosition
             )
         }
     }

@@ -32,9 +32,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.Rectangle
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
@@ -736,10 +736,10 @@ private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: Ch
 
 fun createAddressPagePdf(
     pdfGenerator: PdfGenerator,
-    guardian: PersonDTO,
-    clock: EvakaClock
+    today: LocalDate,
+    envelopeWindowPosition: Rectangle,
+    guardian: PersonDTO
 ): Document {
-
     // template path hardcoded to prevent need for customization
     val template = "address-page/address-page"
     val personDetails =
@@ -762,13 +762,14 @@ fun createAddressPagePdf(
         Page(
             Template(template),
             Context().apply {
+                setVariable("window", envelopeWindowPosition)
                 setVariable("guardian", personDetails)
                 setVariable("sendAddress", DecisionSendAddress.fromPerson(personDetails))
             }
         )
 
     return Document(
-        name = "osoitesivu_${guardian.lastName}_${clock.today()}.pdf",
+        name = "osoitesivu_${guardian.lastName}_$today.pdf",
         bytes = pdfGenerator.render(page),
         contentType = "application/pdf"
     )
