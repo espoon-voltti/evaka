@@ -20,24 +20,32 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevMobileDevice
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.domain.DateRange
@@ -92,6 +100,8 @@ class AttendanceReservationsControllerIntegrationTest :
     private val testGroup2 = DevDaycareGroup(daycareId = testDaycare.id, name = "Test group 2")
     private val testGroupInDaycare2 =
         DevDaycareGroup(daycareId = testDaycare2.id, name = "Test group 3")
+
+    private val fullDay = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
 
     @BeforeEach
     fun beforeEach() {
@@ -1381,6 +1391,68 @@ class AttendanceReservationsControllerIntegrationTest :
             .containsExactlyInAnyOrderElementsOf(fridayExpectation.childReservations)
     }
 
+    @Test
+    fun `should not include children on their non-operational days unless service need is intermittent`() {
+        val range =
+            FiniteDateRange(
+                LocalDate.of(2024, 5, 20), // Mon
+                LocalDate.of(2024, 5, 26) // Sun
+            )
+        val daycareId =
+            db.transaction { tx ->
+                val areaId = tx.insert(DevCareArea(shortName = "area"))
+                val daycareId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = areaId,
+                            // mon-fri
+                            operationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                            // mon-sat
+                            shiftCareOperationTimes =
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null)
+                        )
+                    )
+                tx.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF)
+                daycareId
+            }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = daycareId)) }
+        val normalChild =
+            db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.NONE) }
+        val shiftCareChild =
+            db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.FULL) }
+        val intermittentShiftCareChild =
+            db.transaction {
+                insertChildData(it, range, daycareId, groupId, ShiftCareType.INTERMITTENT)
+            }
+
+        val result =
+            getAttendanceReservations(
+                range = range,
+                daycareId = daycareId,
+                includeNonOperationalDays = true
+            )
+        assertEquals(7, result.days.size)
+        result.days.take(5).forEach { monToFri ->
+            assertEquals(
+                setOf(normalChild, shiftCareChild, intermittentShiftCareChild),
+                monToFri.children.map { it.childId }.toSet()
+            )
+        }
+        result.days[5].let { saturday ->
+            assertEquals(
+                setOf(shiftCareChild, intermittentShiftCareChild),
+                saturday.children.map { it.childId }.toSet()
+            )
+        }
+        result.days[6].let { sunday ->
+            assertEquals(
+                setOf(intermittentShiftCareChild),
+                sunday.children.map { it.childId }.toSet()
+            )
+        }
+    }
+
     private fun insertMobileDevice(unitId: DaycareId): MobileDeviceId {
         return db.transaction { tx -> tx.insert(DevMobileDevice(unitId = unitId)) }
     }
@@ -1563,16 +1635,19 @@ class AttendanceReservationsControllerIntegrationTest :
     }
 
     private fun getAttendanceReservations(
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
+        range: FiniteDateRange = monFri,
+        daycareId: DaycareId = testDaycare.id,
+        includeNonOperationalDays: Boolean = false
     ): UnitAttendanceReservations =
         attendanceReservationController.getAttendanceReservations(
             dbInstance(),
             AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),
             clock,
-            testDaycare.id,
-            from = mon,
-            to = fri,
-            includeNonOperationalDays = false
+            daycareId,
+            from = range.start,
+            to = range.end,
+            includeNonOperationalDays = includeNonOperationalDays
         )
 
     private fun getConfirmedDailyReservationStats(
@@ -1600,4 +1675,43 @@ class AttendanceReservationsControllerIntegrationTest :
             daycareId,
             date,
         )
+
+    private fun insertChildData(
+        tx: Database.Transaction,
+        range: FiniteDateRange,
+        daycareId: DaycareId,
+        groupId: GroupId,
+        shiftCareType: ShiftCareType
+    ): ChildId {
+        val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+        tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = range.start,
+                    endDate = range.end
+                )
+            )
+            .also { placementId ->
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
+                        startDate = range.start,
+                        endDate = range.end
+                    )
+                )
+                tx.insert(
+                    DevServiceNeed(
+                        placementId = placementId,
+                        startDate = range.start,
+                        endDate = range.end,
+                        optionId = snDaycareFullDay35.id,
+                        shiftCare = shiftCareType,
+                        confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    )
+                )
+            }
+        return childId
+    }
 }

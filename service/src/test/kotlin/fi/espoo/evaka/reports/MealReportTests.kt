@@ -457,7 +457,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
-                        attendances = mapOf()
+                        attendances = mapOf(),
+                        operationalDays = emptySet()
                     ),
                 childId2 to
                     ChildData(
@@ -472,7 +473,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
-                        attendances = mapOf()
+                        attendances = mapOf(),
+                        operationalDays = emptySet()
                     )
             )
 
@@ -537,7 +539,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
-                        attendances = mapOf()
+                        attendances = mapOf(),
+                        operationalDays = emptySet()
                     ),
                 childId2 to
                     ChildData(
@@ -552,7 +555,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
-                        attendances = mapOf()
+                        attendances = mapOf(),
+                        operationalDays = emptySet()
                     )
             )
 
@@ -632,7 +636,8 @@ class MealReportTests {
                                     )
                             ),
                         absences = emptyMap(),
-                        attendances = emptyMap()
+                        attendances = emptyMap(),
+                        operationalDays = setOf(testDate)
                     ),
                 childId2 to
                     ChildData(
@@ -659,7 +664,8 @@ class MealReportTests {
                                     )
                             ),
                         absences = emptyMap(),
-                        attendances = emptyMap()
+                        attendances = emptyMap(),
+                        operationalDays = setOf(testDate)
                     )
             )
 
@@ -734,7 +740,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
-                        attendances = emptyMap()
+                        attendances = emptyMap(),
+                        operationalDays = emptySet()
                     ),
                 childId2 to
                     ChildData(
@@ -749,7 +756,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
-                        attendances = emptyMap()
+                        attendances = emptyMap(),
+                        operationalDays = emptySet()
                     )
             )
 
@@ -821,7 +829,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
-                        attendances = emptyMap()
+                        attendances = emptyMap(),
+                        operationalDays = setOf(testDate)
                     ),
                 childId2 to
                     ChildData(
@@ -839,7 +848,8 @@ class MealReportTests {
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
-                        attendances = emptyMap()
+                        attendances = emptyMap(),
+                        operationalDays = setOf(testDate)
                     )
             )
 

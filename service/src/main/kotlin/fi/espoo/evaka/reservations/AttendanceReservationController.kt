@@ -25,6 +25,7 @@ import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getChildServiceNeedInfos
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -42,6 +43,7 @@ import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChild
+import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -105,7 +107,7 @@ class AttendanceReservationController(
 
                     val holidays = tx.getHolidays(period)
                     val holidayPeriods = tx.getHolidayPeriodsInRange(period)
-                    val operationalDays =
+                    val unitOperationalDays =
                         getUnitOperationalDayData(
                             period,
                             unit,
@@ -124,11 +126,22 @@ class AttendanceReservationController(
                         groups = groups,
                         children = childData.values.map { it.child },
                         days =
-                            operationalDays.map { day ->
+                            unitOperationalDays.map { day ->
                                 val date = day.date
                                 day.copy(
                                     children =
                                         childData.values.mapNotNull { childData ->
+                                            val intermittentShiftCare =
+                                                childData.child.serviceNeeds.any {
+                                                    it.validDuring.includes(date) &&
+                                                        it.shiftCare == ShiftCareType.INTERMITTENT
+                                                }
+                                            if (
+                                                !intermittentShiftCare &&
+                                                    !childData.operationalDays.contains(date)
+                                            ) {
+                                                return@mapNotNull null
+                                            }
                                             val childId = childData.child.id
                                             val placementStatus =
                                                 placementInfo[childId]?.getValue(date)
@@ -911,7 +924,8 @@ data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<ReservationResponse>>,
     val attendances: Map<LocalDate, List<TimeInterval>>,
-    val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>
+    val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>,
+    val operationalDays: Set<LocalDate>
 )
 
 private data class ChildDataQueryResult(
@@ -957,6 +971,7 @@ fun Database.Read.getChildData(
     childIds: Set<ChildId>,
     dateRange: FiniteDateRange
 ): Map<ChildId, ChildData> {
+    val operationalDays = getOperationalDatesForChildren(dateRange, childIds)
     val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
 
     return createQuery {
@@ -1037,6 +1052,7 @@ WHERE p.id = ANY(${bind(childIds)})
                             valueTransform = { it.category to it.absenceTypeResponse }
                         )
                         .mapValues { it.value.toMap() },
+                operationalDays = operationalDays.getOrDefault(row.id, emptySet())
             )
         }
         .associateBy { it.child.id }
