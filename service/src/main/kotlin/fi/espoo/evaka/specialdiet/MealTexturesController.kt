@@ -35,6 +35,6 @@ class MealTexturesController(private val accessControl: AccessControl) {
                     tx.getMealTextures()
                 }
             }
-            .also { Audit.SpecialDietsRead.log() }
+            .also { Audit.MealTexturesRead.log() }
     }
 }

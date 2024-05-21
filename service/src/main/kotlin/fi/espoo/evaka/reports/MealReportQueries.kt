@@ -26,26 +26,26 @@ WHERE unit_id = ${bind(daycareId)}
         }
         .toMap { columnPair("child_id", "placement_type") }
 
-fun Database.Read.specialDietsForChildren(childIds: Set<ChildId>): Map<ChildId, SpecialDiet?> =
+fun Database.Read.specialDietsForChildren(childIds: Set<ChildId>): Map<ChildId, SpecialDiet> =
     createQuery {
             sql(
                 """
 SELECT child.id as child_id, special_diet.*
-FROM child LEFT JOIN special_diet ON child.diet_id = special_diet.id
+FROM child JOIN special_diet ON child.diet_id = special_diet.id
 WHERE child.id = ANY (${bind(childIds)})
 """
             )
         }
-        .toMap { column<ChildId>("child_id") to row<SpecialDiet?>() }
+        .toMap { column<ChildId>("child_id") to row<SpecialDiet>() }
 
-fun Database.Read.mealTexturesForChildren(childIds: Set<ChildId>): Map<ChildId, MealTexture?> =
+fun Database.Read.mealTexturesForChildren(childIds: Set<ChildId>): Map<ChildId, MealTexture> =
     createQuery {
             sql(
                 """
 SELECT child.id as child_id, meal_texture.*
-FROM child LEFT JOIN meal_texture ON child.meal_texture_id = meal_texture.id
+FROM child JOIN meal_texture ON child.meal_texture_id = meal_texture.id
 WHERE child.id = ANY (${bind(childIds)})
 """
             )
         }
-        .toMap { column<ChildId>("child_id") to row<MealTexture?>() }
+        .toMap { column<ChildId>("child_id") to row<MealTexture>() }

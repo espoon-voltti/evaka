@@ -174,8 +174,8 @@ data class DaycareUnitData(
     val holidays: Set<LocalDate>,
     val childPlacements: Map<ChildId, PlacementType>,
     val childData: Map<ChildId, ChildData>,
-    val specialDiets: Map<ChildId, SpecialDiet?>,
-    val mealTextures: Map<ChildId, MealTexture?>,
+    val specialDiets: Map<ChildId, SpecialDiet>,
+    val mealTextures: Map<ChildId, MealTexture>,
     val preschoolTerms: List<PreschoolTerm>
 )
 

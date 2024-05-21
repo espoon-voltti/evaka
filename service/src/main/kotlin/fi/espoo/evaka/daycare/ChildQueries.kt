@@ -21,9 +21,9 @@ WHERE child.id = ${bind(id)}
         .exactlyOneOrNull<Child>()
 
 fun Database.Transaction.createChild(child: Child) {
-    createUpdate {
-            sql(
-                """
+    execute {
+        sql(
+            """
 INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details, diet_id, meal_texture_id) VALUES (
     ${bind(child.id)},
     ${bind(child.additionalInformation.allergies)},
@@ -36,9 +36,8 @@ INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_
     ${bind(child.additionalInformation.mealTexture?.id)}
 )
 """
-            )
-        }
-        .execute()
+        )
+    }
 }
 
 fun Database.Transaction.upsertChild(child: Child) {
