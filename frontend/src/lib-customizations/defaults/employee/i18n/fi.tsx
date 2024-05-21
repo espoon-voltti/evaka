@@ -4439,7 +4439,7 @@ export const fi = {
       validity: 'Voimassaoloaika',
       baseValue: (
         <>
-          Enimmäisarvo,
+          Perusarvo,
           <br />
           3v tai yli (€)
         </>
