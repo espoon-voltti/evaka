@@ -371,7 +371,7 @@ fun Database.Transaction.endActiveAssistanceNeedDecisions(
         sql(
             """
 UPDATE assistance_need_decision
-SET validity_period = daterange(lower(validity_period), ${bind(endDate)}, '[]')
+SET validity_period = daterange(lower(validity_period), ${bind(endDate.minusDays(1))}, '[]')
 WHERE
     id <> ${bind(excludingId)} AND
     (upper(validity_period) IS NULL OR upper(validity_period) > ${bind(endDate.minusDays(1))}) AND
