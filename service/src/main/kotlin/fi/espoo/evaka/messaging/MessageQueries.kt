@@ -1229,9 +1229,6 @@ fun Database.Read.getMessageAccountsForRecipients(
                     where("date_part('year', p.date_of_birth) = ANY(${bind(filters.yearsOfBirth)})")
                 }
             } else null,
-            if (filters?.serviceNeedOptionIds?.isNotEmpty() == true) {
-                PredicateSql { where("sno.id = ANY(${bind(filters.serviceNeedOptionIds)})") }
-            } else null,
             if (filters?.shiftCare == true && filters.intermittentShiftCare) {
                 PredicateSql {
                     where("sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])")
@@ -1257,7 +1254,6 @@ WITH sender AS (
     JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN person p ON p.id = pl.child_id
     LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-    LEFT JOIN service_need_option sno on sn.option_id = sno.id
     WHERE (d.care_area_id = ANY(${bind(areaRecipients)}) OR pl.unit_id = ANY(${bind(unitRecipients)}) OR pl.group_id = ANY(${bind(groupRecipients)}) OR pl.child_id = ANY(${bind(childRecipients)}))
     AND ${predicate(filterPredicates)}
     AND EXISTS (

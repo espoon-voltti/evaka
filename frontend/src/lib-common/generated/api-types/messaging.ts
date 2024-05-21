@@ -278,7 +278,6 @@ export interface PostMessageBody {
 export interface PostMessageFilters {
   familyDaycare: boolean
   intermittentShiftCare: boolean
-  serviceNeedOptionIds: UUID[]
   shiftCare: boolean
   yearsOfBirth: number[]
 }

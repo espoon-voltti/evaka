@@ -18,7 +18,6 @@ import {
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
-import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
@@ -33,13 +32,11 @@ import {
   deleteDraftMessage
 } from '../../generated/api-clients/messaging'
 import { getPersonIdentity } from '../../generated/api-clients/pis'
-import { serviceNeedsQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { formatPersonName } from '../../utils'
 import { footerHeight } from '../Footer'
 import { headerHeight } from '../Header'
-import { renderResult } from '../async-rendering'
 
 import { MessageContext } from './MessageContext'
 import Sidebar from './Sidebar'
@@ -113,7 +110,6 @@ export default React.memo(function MessagesPage({
   }, [selectedDraft])
 
   const [receivers, setReceivers] = useState<MessageReceiversResponse[]>()
-  const serviceNeedOptions = useQueryResult(serviceNeedsQuery())
 
   const hideEditor = useCallback(() => {
     setShowEditor(false)
@@ -233,38 +229,33 @@ export default React.memo(function MessagesPage({
           accounts.isSuccess &&
           prefilledOrReceivers &&
           selectedAccount && (
-            <>
-              {renderResult(serviceNeedOptions, (serviceNeedOptions) => (
-                <MessageEditor
-                  availableReceivers={prefilledOrReceivers}
-                  serviceNeedOptions={serviceNeedOptions}
-                  defaultSender={{
-                    value: selectedAccount.account.id,
-                    label: selectedAccount.account.name
-                  }}
-                  deleteAttachment={deleteAttachmentResult}
-                  draftContent={selectedDraft}
-                  getAttachmentUrl={getAttachmentUrl}
-                  initDraftRaw={(accountId) =>
-                    initDraftMessageResult({ accountId })
-                  }
-                  accounts={accounts.value}
-                  onClose={onHide}
-                  onDiscard={onDiscard}
-                  onSend={onSend}
-                  saveDraftRaw={(params) =>
-                    updateDraftMessageResult({
-                      accountId: params.accountId,
-                      draftId: params.draftId,
-                      body: params.content
-                    })
-                  }
-                  saveMessageAttachment={saveMessageAttachment}
-                  sending={sending}
-                  defaultTitle={prefilledTitle ?? undefined}
-                />
-              ))}
-            </>
+            <MessageEditor
+              availableReceivers={prefilledOrReceivers}
+              defaultSender={{
+                value: selectedAccount.account.id,
+                label: selectedAccount.account.name
+              }}
+              deleteAttachment={deleteAttachmentResult}
+              draftContent={selectedDraft}
+              getAttachmentUrl={getAttachmentUrl}
+              initDraftRaw={(accountId) =>
+                initDraftMessageResult({ accountId })
+              }
+              accounts={accounts.value}
+              onClose={onHide}
+              onDiscard={onDiscard}
+              onSend={onSend}
+              saveDraftRaw={(params) =>
+                updateDraftMessageResult({
+                  accountId: params.accountId,
+                  draftId: params.draftId,
+                  body: params.content
+                })
+              }
+              saveMessageAttachment={saveMessageAttachment}
+              sending={sending}
+              defaultTitle={prefilledTitle ?? undefined}
+            />
           )}
       </PanelContainer>
     </Container>

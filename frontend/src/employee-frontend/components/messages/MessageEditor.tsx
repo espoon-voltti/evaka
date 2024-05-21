@@ -19,7 +19,6 @@ import {
   PostMessageFilters,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -136,7 +135,6 @@ type Filters = PostMessageFilters
 
 const getEmptyFilters = (): Filters => ({
   yearsOfBirth: [],
-  serviceNeedOptionIds: [],
   shiftCare: false,
   intermittentShiftCare: false,
   familyDaycare: false
@@ -188,7 +186,6 @@ interface Props {
   ) => Promise<Result<UUID>>
   sending: boolean
   defaultTitle?: string
-  serviceNeedOptions: ServiceNeedOption[]
 }
 
 export default React.memo(function MessageEditor({
@@ -205,8 +202,7 @@ export default React.memo(function MessageEditor({
   saveDraftRaw,
   saveMessageAttachment,
   sending,
-  defaultTitle = '',
-  serviceNeedOptions
+  defaultTitle = ''
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -222,16 +218,6 @@ export default React.memo(function MessageEditor({
     [...Array(8).keys()].map<TreeNode>((n) => ({
       text: LocalDate.todayInHelsinkiTz().year - n + '',
       key: LocalDate.todayInHelsinkiTz().year - n + '',
-      checked: false,
-      children: []
-    }))
-  )
-  const [serviceNeedOptionTree, setServiceNeedOptionTree] = useState<
-    TreeNode[]
-  >(
-    serviceNeedOptions.map<TreeNode>((sno) => ({
-      text: sno.nameFi,
-      key: sno.id,
       checked: false,
       children: []
     }))
@@ -356,19 +342,6 @@ export default React.memo(function MessageEditor({
       const updatedFilters = {
         ...filters,
         yearsOfBirth: selected.map((y) => +y.key)
-      }
-      setFilters(updatedFilters)
-    },
-    [filters, setFilters]
-  )
-  const handleServiceNeedChange = useCallback(
-    (serviceNeedOptions: TreeNode[]) => {
-      setServiceNeedOptionTree(serviceNeedOptions)
-      const selected = serviceNeedOptions.filter((need) => need.checked)
-
-      const updatedFilters = {
-        ...filters,
-        serviceNeedOptionIds: selected.map((n) => n.key)
       }
       setFilters(updatedFilters)
     },
@@ -717,20 +690,6 @@ export default React.memo(function MessageEditor({
                             i18n.messages.messageEditor.selectPlaceholder
                           }
                           data-qa="select-years-of-birth"
-                        />
-                      </HorizontalField>
-                      <Gap size="s" />
-                      <HorizontalField>
-                        <Bold>
-                          {i18n.messages.messageEditor.filters.serviceNeed}
-                        </Bold>
-                        <TreeDropdown
-                          tree={serviceNeedOptionTree}
-                          onChange={handleServiceNeedChange}
-                          placeholder={
-                            i18n.messages.messageEditor.selectPlaceholder
-                          }
-                          data-qa="select-service-needs"
                         />
                       </HorizontalField>
                     </Dropdowns>

@@ -184,9 +184,6 @@ export class MessageEditor extends Element {
   yearsOfBirthSelection = new TreeDropdown(
     this.findByDataQa('select-years-of-birth')
   )
-  serviceNeedSelection = new TreeDropdown(
-    this.findByDataQa('select-service-needs')
-  )
   shiftcare = new Checkbox(this.findByDataQa('checkbox-shiftcare'))
   intermittent = new Checkbox(
     this.findByDataQa('checkbox-intermittent-shiftcare')
@@ -203,7 +200,6 @@ export class MessageEditor extends Element {
     receivers?: string[]
     confirmManyRecipients?: boolean
     yearsOfBirth?: number[]
-    serviceNeedOptionIds?: string[]
     shiftcare?: boolean
     familyDaycare?: boolean
   }) {
@@ -235,12 +231,7 @@ export class MessageEditor extends Element {
       await this.sensitive.check()
     }
 
-    if (
-      message.yearsOfBirth ||
-      message.serviceNeedOptionIds ||
-      message.shiftcare ||
-      message.familyDaycare
-    ) {
+    if (message.yearsOfBirth || message.shiftcare || message.familyDaycare) {
       await this.filtersButton.click()
     }
 
@@ -250,14 +241,6 @@ export class MessageEditor extends Element {
         await this.yearsOfBirthSelection.option(String(year)).check()
       }
       await this.yearsOfBirthSelection.close()
-    }
-
-    if (message.serviceNeedOptionIds) {
-      await this.serviceNeedSelection.open()
-      for (const serviceNeedOption of message.serviceNeedOptionIds) {
-        await this.serviceNeedSelection.option(serviceNeedOption).check()
-      }
-      await this.serviceNeedSelection.close()
     }
 
     if (message.shiftcare ?? false) {
@@ -324,7 +307,6 @@ export class MessageEditor extends Element {
 
   async assertFiltersVisible() {
     await this.yearsOfBirthSelection.waitUntilVisible()
-    await this.serviceNeedSelection.waitUntilVisible()
     await this.shiftcare.waitUntilVisible()
     await this.familyDaycare.waitUntilVisible()
   }
