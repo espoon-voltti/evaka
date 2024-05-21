@@ -172,7 +172,7 @@ export default React.memo(function VoucherValueEditor({
                 coefficientUnder3y == ''
                   ? '0.00'
                   : (
-                      parseFloat(previousState.baseValue) *
+                      parseFloat(previousState.baseValueUnder3y) *
                       parseFloat(coefficientUnder3y)
                     ).toFixed(2)
             }))
