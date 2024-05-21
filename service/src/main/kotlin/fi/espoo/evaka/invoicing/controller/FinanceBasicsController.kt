@@ -199,12 +199,55 @@ class FinanceBasicsController(
         Audit.FinanceBasicsVoucherValueCreate.log(targetId = AuditId(id))
     }
 
+    @PutMapping("/voucher-values/{id}")
+    fun updateVoucherValue(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: ServiceNeedOptionVoucherValueId,
+        @RequestBody body: ServiceNeedOptionVoucherValueRange
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.UPDATE_VOUCHER_VALUE
+                )
+
+                val values = tx.getServiceNeedVoucherValuesByVoucherValueRangeId(id)
+
+                if (values.isEmpty()) throw NotFound("Voucher value $id not found")
+                if (values[0].id != id) throw BadRequest("Can only update the latest voucher value")
+
+                if (
+                    values.size > 1 &&
+                        values[1].voucherValues.range.end != null &&
+                        body.range.start < values[1].voucherValues.range.end
+                )
+                    tx.updateVoucherValueEndDate(values[1].id, body.range.start.minusDays(1))
+
+                tx.updateVouchervalue(id, body)
+
+                if (
+                    values.size > 1 &&
+                        values[1].voucherValues.range.end != null &&
+                        body.range.start > values[1].voucherValues.range.end
+                )
+                    tx.updateVoucherValueEndDate(values[1].id, body.range.start.minusDays(1))
+            }
+        }
+
+        Audit.FinanceBasicsVoucherValueUpdate.log(targetId = AuditId(id))
+    }
+
     @DeleteMapping("/voucher-values/{id}")
     fun deleteVoucherValue(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: ServiceNeedOptionVoucherValueId,
+        @PathVariable id: ServiceNeedOptionVoucherValueId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -486,6 +529,29 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ServiceNeedOptionVoucherValueId>()
+
+fun Database.Transaction.updateVouchervalue(
+    id: ServiceNeedOptionVoucherValueId,
+    voucherValue: ServiceNeedOptionVoucherValueRange
+) {
+    execute {
+        sql(
+            """
+                UPDATE service_need_option_voucher_value
+                SET
+                    validity = ${bind(voucherValue.range)},
+                    base_value = ${bind(voucherValue.baseValue)},
+                    coefficient = ${bind(voucherValue.coefficient)},
+                    value = ${bind(voucherValue.value)},
+                    base_value_under_3y = ${bind(voucherValue.baseValueUnder3y)},
+                    coefficient_under_3y = ${bind(voucherValue.coefficientUnder3y)},
+                    value_under_3y = ${bind(voucherValue.valueUnder3y)}
+                WHERE id = ${bind(id)}
+            """
+                .trimIndent()
+        )
+    }
+}
 
 fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
     createUpdate {

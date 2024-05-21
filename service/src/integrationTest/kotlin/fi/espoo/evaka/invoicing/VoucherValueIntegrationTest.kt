@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FinanceBasicsController
 import fi.espoo.evaka.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
+import fi.espoo.evaka.invoicing.controller.deleteVoucherValue
 import fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
 import fi.espoo.evaka.invoicing.service.generator.getVoucherValuesByServiceNeedOption
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -170,6 +171,82 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         addVoucherValue(testVoucherValue)
     }
 
+    fun `should update an existing voucher value`() {
+        val voucherValuesBefore =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+
+        val newVoucherValue = voucherValuesBefore[1].voucherValues.copy(value = 89000)
+
+        updateVoucherValue(voucherValuesBefore[1].id, newVoucherValue)
+
+        val voucherValuesAfter =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+
+        assertEquals(89000, voucherValuesAfter[1].voucherValues.value)
+    }
+
+    @Test
+    fun `should update previous voucher value's validity when current validity start is moved later`() {
+        val voucherValuesBefore =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+
+        val newVoucherValue =
+            voucherValuesBefore[1]
+                .voucherValues
+                .copy(
+                    range =
+                        DateRange(
+                            voucherValuesBefore[1].voucherValues.range.start.plusWeeks(2),
+                            voucherValuesBefore[1].voucherValues.range.end
+                        )
+                )
+
+        updateVoucherValue(voucherValuesBefore[1].id, newVoucherValue)
+
+        val voucherValuesAfter =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+
+        assertEquals(
+            newVoucherValue.range.start.minusDays(1),
+            voucherValuesAfter[0].voucherValues.range.end
+        )
+    }
+
+    @Test
+    fun `should update previous voucher value's validity when current validity start is moved earlier`() {
+        val voucherValuesBefore =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+
+        val newVoucherValue =
+            voucherValuesBefore[1]
+                .voucherValues
+                .copy(
+                    range =
+                        DateRange(
+                            voucherValuesBefore[1].voucherValues.range.start.minusWeeks(2),
+                            voucherValuesBefore[1].voucherValues.range.end
+                        )
+                )
+
+        updateVoucherValue(voucherValuesBefore[1].id, newVoucherValue)
+
+        val voucherValuesAfter =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+
+        assertEquals(
+            newVoucherValue.range.start.minusDays(1),
+            voucherValuesAfter[0].voucherValues.range.end
+        )
+    }
+
+    @Test
+    fun `should work when there is only one voucher value`() {
+        val voucherValuesBefore =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+        db.transaction { tx -> tx.deleteVoucherValue(voucherValuesBefore[1].id) }
+        updateVoucherValue(voucherValuesBefore[0].id, voucherValuesBefore[0].voucherValues)
+    }
+
     fun deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
         financeBasicsController.deleteVoucherValue(dbInstance(), financeUser, mockClock, id)
     }
@@ -179,6 +256,19 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             dbInstance(),
             financeUser,
             mockClock,
+            voucherValue
+        )
+    }
+
+    fun updateVoucherValue(
+        id: ServiceNeedOptionVoucherValueId,
+        voucherValue: ServiceNeedOptionVoucherValueRange
+    ) {
+        financeBasicsController.updateVoucherValue(
+            dbInstance(),
+            financeUser,
+            mockClock,
+            id,
             voucherValue
         )
     }
