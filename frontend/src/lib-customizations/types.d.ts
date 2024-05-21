@@ -223,11 +223,6 @@ interface BaseFeatureFlags {
    */
 
   /**
-   * Display time usage info in citizen calendar views
-   */
-  timeUsageInfo?: boolean
-
-  /**
    * Hide option to create a club application in citizen UI
    */
   hideClubApplication?: boolean

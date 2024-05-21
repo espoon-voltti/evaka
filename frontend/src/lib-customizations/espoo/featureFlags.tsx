@@ -39,7 +39,6 @@ const features: Features = {
     citizenAttendanceSummary: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    timeUsageInfo: true,
     discussionReservations: false,
     jamixIntegration: true
   },
@@ -69,7 +68,6 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    timeUsageInfo: true,
     discussionReservations: false,
     jamixIntegration: true
   },
@@ -99,7 +97,6 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    timeUsageInfo: false,
     discussionReservations: false
   }
 }
