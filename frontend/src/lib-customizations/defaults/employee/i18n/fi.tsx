@@ -4319,7 +4319,6 @@ export const fi = {
         showFilters: 'Näytä lisävalinnat',
         hideFilters: 'Piilota lisävalinnat',
         yearOfBirth: 'Syntymävuosi',
-        serviceNeed: 'Palveluntarve',
         shiftCare: {
           heading: 'Vuorohoito',
           label: 'Vuorohoito',

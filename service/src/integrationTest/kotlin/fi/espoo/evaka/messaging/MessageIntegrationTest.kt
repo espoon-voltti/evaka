@@ -1215,7 +1215,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `recipient list can be filtered`() {
+    fun `recipient list can be filtered by yearsOfBirth`() {
         postNewThread(
             title = "Vappu",
             message = "Vappuna paistaa aurinko",
@@ -1243,39 +1243,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `recipient list can be filtered 2`() {
-        postNewThread(
-            title = "Vappu",
-            message = "Vappuna paistaa aurinko",
-            messageType = MessageType.BULLETIN,
-            sender = messagerAccount,
-            recipients =
-                listOf(
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
-                ),
-            filters =
-                MessageController.PostMessageFilters(
-                    serviceNeedOptionIds =
-                        listOf(snDefaultPartDayDaycare.id, snDefaultFiveYearOldsPartDayDaycare.id)
-                ),
-            user = messager,
-            now = sendTime
-        )
-
-        db.read {
-            assertEquals(
-                3,
-                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
-            )
-        }
-    }
-
-    @Test
-    fun `recipient list can be filtered 3`() {
+    fun `recipient list can be filtered by shiftCare`() {
         postNewThread(
             title = "Vappu",
             message = "Vappuna paistaa aurinko",
@@ -1307,7 +1275,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `recipient list can be filtered 4`() {
+    fun `recipient list can be filtered by familyDaycare`() {
         postNewThread(
             title = "Vappu",
             message = "Vappuna paistaa aurinko",
@@ -1345,11 +1313,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
                         MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                     ),
-                filters =
-                    MessageController.PostMessageFilters(
-                        yearsOfBirth = listOf(2018),
-                        serviceNeedOptionIds = listOf()
-                    )
+                filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2018))
             )
         assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 2), response)
     }

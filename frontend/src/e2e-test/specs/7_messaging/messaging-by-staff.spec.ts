@@ -39,10 +39,8 @@ let childId: UUID
 let staff: DevEmployee
 let unitSupervisor: DevEmployee
 let fixtures: AreaAndPersonFixtures
-let serviceNeedOptionId1: UUID
-let serviceNeedOptionId2: UUID
 
-const mockedDate = LocalDate.of(2022, 5, 21)
+const mockedDate = LocalDate.of(2020, 5, 21)
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
   mockedDate,
   LocalTime.of(10, 2)
@@ -71,7 +69,7 @@ beforeEach(async () => {
   ).data
 
   const unitId = fixtures.daycareFixture.id
-  childId = fixtures.enduserChildFixtureJari.id
+  childId = fixtures.enduserChildFixtureJari.id // born 7.7.2014
 
   const daycarePlacementFixture1 = await Fixture.placement()
     .with({
@@ -104,32 +102,6 @@ beforeEach(async () => {
       daycareGroupId: daycareGroupFixture.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
-    })
-    .save()
-
-  const serviceNeedOptionFixture1 = await Fixture.serviceNeedOption().save()
-  const serviceNeedOptionFixture2 = await Fixture.serviceNeedOption().save()
-  serviceNeedOptionId1 = serviceNeedOptionFixture1.data.id
-  serviceNeedOptionId2 = serviceNeedOptionFixture2.data.id
-
-  await Fixture.serviceNeed()
-    .with({
-      placementId: daycarePlacementFixture1.data.id,
-      optionId: serviceNeedOptionFixture1.data.id,
-      confirmedBy: unitSupervisor.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-
-  await Fixture.serviceNeed()
-    .with({
-      placementId: daycarePlacementFixture2.data.id,
-      optionId: serviceNeedOptionFixture2.data.id,
-      confirmedBy: unitSupervisor.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1),
-      shiftCare: 'FULL'
     })
     .save()
 
@@ -386,10 +358,10 @@ describe('Additional filters', () => {
     await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const message = {
-      title: 'Ilmoitus palveluntarpeelle 1',
-      content: 'Ilmoituksen sisältö palveluntarpeelle 1',
+      title: 'Ilmoitus rajatulle joukolle',
+      content: 'Ilmoituksen sisältö rajatulle joukolle',
       receivers: [fixtures.daycareFixture.id],
-      serviceNeedOptionIds: [serviceNeedOptionId1]
+      yearsOfBirth: [2014]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -416,8 +388,8 @@ describe('Additional filters', () => {
     await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const message = {
-      title: 'Ilmoitus palveluntarpeelle 2',
-      content: 'Ilmoituksen sisältö palveluntarpeelle 2',
+      title: 'Ilmoitus rajatulle joukolle',
+      content: 'Ilmoituksen sisältö rajatulle joukolle',
       receivers: [fixtures.daycareFixture.id]
     }
     let messageEditor = await new MessagesPage(
@@ -426,13 +398,6 @@ describe('Additional filters', () => {
     await messageEditor.sendNewMessage({
       ...message,
       yearsOfBirth: [2017]
-    })
-    messageEditor = await new MessagesPage(
-      unitSupervisorPage
-    ).openMessageEditor()
-    await messageEditor.sendNewMessage({
-      ...message,
-      serviceNeedOptionIds: [serviceNeedOptionId2]
     })
     messageEditor = await new MessagesPage(
       unitSupervisorPage
