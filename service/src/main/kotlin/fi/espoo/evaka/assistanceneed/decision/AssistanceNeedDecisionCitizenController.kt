@@ -4,6 +4,7 @@
 package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -43,7 +44,7 @@ class AssistanceNeedDecisionCitizenController(
                     tx.getAssistanceNeedDecisionsForCitizen(clock.today(), user.id)
                 }
             }
-            .also { Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id) }
+            .also { Audit.AssistanceNeedDecisionsListCitizen.log(targetId = AuditId(user.id)) }
     }
 
     @GetMapping("/children/assistance-need-decision/{id}")
@@ -77,7 +78,7 @@ class AssistanceNeedDecisionCitizenController(
                     decision
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/children/assistance-need-decision/{id}/pdf")
@@ -99,7 +100,7 @@ class AssistanceNeedDecisionCitizenController(
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
             }
-            .also { Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = AuditId(id)) }
     }
 
     @PostMapping("/children/assistance-need-decision/{id}/read")
@@ -121,7 +122,7 @@ class AssistanceNeedDecisionCitizenController(
                     tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/children/assistance-need-decisions/unread-counts")
@@ -142,6 +143,10 @@ class AssistanceNeedDecisionCitizenController(
                     tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(clock.today(), user.id)
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(targetId = user.id) }
+            .also {
+                Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(
+                    targetId = AuditId(user.id)
+                )
+            }
     }
 }

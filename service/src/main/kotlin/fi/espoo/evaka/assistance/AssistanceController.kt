@@ -5,6 +5,7 @@
 package fi.espoo.evaka.assistance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.assistanceaction.AssistanceAction
 import fi.espoo.evaka.assistanceaction.AssistanceActionOption
 import fi.espoo.evaka.assistanceaction.AssistanceActionRequest
@@ -207,8 +208,8 @@ class AssistanceController(
             }
             .also { assistanceAction ->
                 Audit.ChildAssistanceActionCreate.log(
-                    targetId = childId,
-                    objectId = assistanceAction.id
+                    targetId = AuditId(childId),
+                    objectId = AuditId(assistanceAction.id)
                 )
             }
     }
@@ -241,7 +242,7 @@ class AssistanceController(
                     data = body
                 )
             }
-            .also { Audit.ChildAssistanceActionUpdate.log(targetId = id) }
+            .also { Audit.ChildAssistanceActionUpdate.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -266,7 +267,7 @@ class AssistanceController(
             }
             assistanceActionService.deleteAssistanceAction(dbc, id)
         }
-        Audit.ChildAssistanceActionDelete.log(targetId = id)
+        Audit.ChildAssistanceActionDelete.log(targetId = AuditId(id))
     }
 
     @GetMapping(
@@ -326,7 +327,9 @@ class AssistanceController(
                     }
                 }
             }
-            .also { id -> Audit.AssistanceFactorCreate.log(targetId = child, objectId = id) }
+            .also { id ->
+                Audit.AssistanceFactorCreate.log(targetId = AuditId(child), objectId = AuditId(id))
+            }
 
     @PostMapping(
         "/assistance-factors/{id}", // deprecated
@@ -367,7 +370,7 @@ class AssistanceController(
                     }
                 }
             }
-            .also { Audit.AssistanceFactorUpdate.log(targetId = id) }
+            .also { Audit.AssistanceFactorUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/assistance-factors/{id}", // deprecated
@@ -411,7 +414,7 @@ class AssistanceController(
                 }
             }
             .also { deletedId ->
-                deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = it) }
+                deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
             }
 
     @PostMapping(
@@ -437,7 +440,9 @@ class AssistanceController(
                     tx.insertDaycareAssistance(user, clock.now(), child, body)
                 }
             }
-            .also { id -> Audit.DaycareAssistanceCreate.log(targetId = child, objectId = id) }
+            .also { id ->
+                Audit.DaycareAssistanceCreate.log(targetId = AuditId(child), objectId = AuditId(id))
+            }
 
     @PostMapping(
         "/daycare-assistances/{id}", // deprecated
@@ -462,7 +467,7 @@ class AssistanceController(
                     tx.updateDaycareAssistance(user, clock.now(), id, body)
                 }
             }
-            .also { Audit.DaycareAssistanceUpdate.log(targetId = id) }
+            .also { Audit.DaycareAssistanceUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/daycare-assistances/{id}", // deprecated
@@ -495,7 +500,7 @@ class AssistanceController(
                 }
             }
             .also { deletedId ->
-                deletedId?.let { Audit.DaycareAssistanceDelete.log(targetId = it) }
+                deletedId?.let { Audit.DaycareAssistanceDelete.log(targetId = AuditId(it)) }
             }
 
     @PostMapping(
@@ -521,7 +526,12 @@ class AssistanceController(
                     tx.insertPreschoolAssistance(user, clock.now(), child, body)
                 }
             }
-            .also { id -> Audit.PreschoolAssistanceCreate.log(targetId = child, objectId = id) }
+            .also { id ->
+                Audit.PreschoolAssistanceCreate.log(
+                    targetId = AuditId(child),
+                    objectId = AuditId(id)
+                )
+            }
 
     @PostMapping(
         "/preschool-assistances/{id}", // deprecated
@@ -546,7 +556,7 @@ class AssistanceController(
                     tx.updatePreschoolAssistance(user, clock.now(), id, body)
                 }
             }
-            .also { Audit.PreschoolAssistanceUpdate.log(targetId = id) }
+            .also { Audit.PreschoolAssistanceUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/preschool-assistances/{id}", // deprecated
@@ -579,7 +589,7 @@ class AssistanceController(
                 }
             }
             .also { deletedId ->
-                deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = it) }
+                deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = AuditId(it)) }
             }
 
     @PostMapping(
@@ -605,7 +615,12 @@ class AssistanceController(
                     tx.insertOtherAssistanceMeasure(user, clock.now(), child, body)
                 }
             }
-            .also { id -> Audit.OtherAssistanceMeasureCreate.log(targetId = child, objectId = id) }
+            .also { id ->
+                Audit.OtherAssistanceMeasureCreate.log(
+                    targetId = AuditId(child),
+                    objectId = AuditId(id)
+                )
+            }
 
     @PostMapping(
         "/other-assistance-measures/{id}", // deprecated
@@ -630,7 +645,7 @@ class AssistanceController(
                     tx.updateOtherAssistanceMeasure(user, clock.now(), id, body)
                 }
             }
-            .also { Audit.OtherAssistanceMeasureUpdate.log(targetId = id) }
+            .also { Audit.OtherAssistanceMeasureUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/other-assistance-measures/{id}", // deprecated
@@ -663,6 +678,6 @@ class AssistanceController(
                 }
             }
             .also { deletedId ->
-                deletedId?.let { Audit.OtherAssistanceMeasureDelete.log(targetId = it) }
+                deletedId?.let { Audit.OtherAssistanceMeasureDelete.log(targetId = AuditId(it)) }
             }
 }

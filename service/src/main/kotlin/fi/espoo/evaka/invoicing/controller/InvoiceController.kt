@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.getDetailedInvoice
 import fi.espoo.evaka.invoicing.data.getHeadOfFamilyInvoices
@@ -162,7 +163,7 @@ class InvoiceController(
                 it.deleteDraftInvoices(invoiceIds)
             }
         }
-        Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
+        Audit.InvoicesDeleteDrafts.log(targetId = AuditId(invoiceIds))
     }
 
     @PostMapping("/send")
@@ -181,7 +182,7 @@ class InvoiceController(
             }
         }
         Audit.InvoicesSend.log(
-            targetId = invoiceIds,
+            targetId = AuditId(invoiceIds),
             meta = mapOf("invoiceDate" to invoiceDate, "dueDate" to dueDate)
         )
     }
@@ -238,7 +239,7 @@ class InvoiceController(
                 it.markManuallySent(user, clock.now(), invoiceIds)
             }
         }
-        Audit.InvoicesMarkSent.log(targetId = invoiceIds)
+        Audit.InvoicesMarkSent.log(targetId = AuditId(invoiceIds))
     }
 
     @GetMapping("/{id}")
@@ -264,7 +265,7 @@ class InvoiceController(
                     InvoiceDetailedResponse(invoice, permittedActions)
                 }
             }
-            .also { Audit.InvoicesRead.log(targetId = id) }
+            .also { Audit.InvoicesRead.log(targetId = AuditId(id)) }
     }
 
     data class InvoiceDetailedResponse(
@@ -291,7 +292,9 @@ class InvoiceController(
                     it.getHeadOfFamilyInvoices(id)
                 }
             }
-            .also { Audit.InvoicesRead.log(targetId = id, meta = mapOf("count" to it.size)) }
+            .also {
+                Audit.InvoicesRead.log(targetId = AuditId(id), meta = mapOf("count" to it.size))
+            }
     }
 
     @PutMapping("/{id}")
@@ -308,7 +311,7 @@ class InvoiceController(
                 service.updateDraftInvoiceRows(it, id, invoice)
             }
         }
-        Audit.InvoicesUpdate.log(targetId = id)
+        Audit.InvoicesUpdate.log(targetId = AuditId(id))
     }
 
     @GetMapping("/codes")

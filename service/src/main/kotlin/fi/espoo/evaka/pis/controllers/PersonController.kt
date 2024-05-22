@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.controllers.upsertAdditionalInformation
 import fi.espoo.evaka.daycare.getChild
@@ -84,7 +85,7 @@ class PersonController(
                 }
             }
             .let { PersonIdentityResponseJSON.from(it) }
-            .also { Audit.PersonCreate.log(targetId = it.id) }
+            .also { Audit.PersonCreate.log(targetId = AuditId(it.id)) }
     }
 
     @GetMapping("/{personId}")
@@ -111,7 +112,7 @@ class PersonController(
                     }
                 } ?: throw NotFound("Person $personId not found")
             }
-            .also { Audit.PersonDetailsRead.log(targetId = personId) }
+            .also { Audit.PersonDetailsRead.log(targetId = AuditId(personId)) }
     }
 
     @PostMapping("/{personId}/duplicate")
@@ -176,7 +177,7 @@ class PersonController(
                     duplicateId
                 }
             }
-            .also { Audit.PersonDuplicate.log(targetId = personId) }
+            .also { Audit.PersonDuplicate.log(targetId = AuditId(personId)) }
     }
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
@@ -217,7 +218,7 @@ class PersonController(
                         .let { PersonJSON.from(it) }
                 }
             }
-            .also { Audit.PersonDetailsRead.log(targetId = personId) }
+            .also { Audit.PersonDetailsRead.log(targetId = AuditId(personId)) }
     }
 
     @GetMapping("/dependants/{personId}")
@@ -241,7 +242,10 @@ class PersonController(
                     ?.children ?: throw NotFound()
             }
             .also {
-                Audit.PersonDependantRead.log(targetId = personId, meta = mapOf("count" to it.size))
+                Audit.PersonDependantRead.log(
+                    targetId = AuditId(personId),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 
@@ -266,7 +270,10 @@ class PersonController(
             }
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
-                Audit.PersonGuardianRead.log(targetId = personId, meta = mapOf("count" to it.size))
+                Audit.PersonGuardianRead.log(
+                    targetId = AuditId(personId),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 
@@ -292,7 +299,7 @@ class PersonController(
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
                 Audit.PersonBlockedGuardiansRead.log(
-                    targetId = personId,
+                    targetId = AuditId(personId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -410,7 +417,7 @@ class PersonController(
                     }
                     .let { PersonJSON.from(it) }
             }
-            .also { Audit.PersonUpdate.log(targetId = personId) }
+            .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
     }
 
     @DeleteMapping("/{personId}")
@@ -426,7 +433,7 @@ class PersonController(
                 mergeService.deleteEmptyPerson(it, personId)
             }
         }
-        Audit.PersonDelete.log(targetId = personId)
+        Audit.PersonDelete.log(targetId = AuditId(personId))
     }
 
     @PutMapping("/{personId}/ssn")
@@ -478,7 +485,7 @@ class PersonController(
                     }
                 )
             }
-            .also { Audit.PersonUpdate.log(targetId = personId) }
+            .also { Audit.PersonUpdate.log(targetId = AuditId(personId)) }
     }
 
     @PutMapping("/{personId}/ssn/disable")
@@ -512,7 +519,7 @@ class PersonController(
                 personService.disableSsn(it, personId, body.disabled)
             }
         }
-        Audit.PersonUpdate.log(targetId = personId)
+        Audit.PersonUpdate.log(targetId = AuditId(personId))
     }
 
     @PostMapping("/details/ssn")
@@ -542,7 +549,7 @@ class PersonController(
                 } ?: throw NotFound()
             }
             .let { PersonJSON.from(it) }
-            .also { Audit.PersonDetailsRead.log(targetId = it.id) }
+            .also { Audit.PersonDetailsRead.log(targetId = AuditId(it.id)) }
     }
 
     @PostMapping("/merge")
@@ -569,7 +576,7 @@ class PersonController(
                 )
             }
         }
-        Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
+        Audit.PersonMerge.log(targetId = AuditId(body.master), objectId = AuditId(body.duplicate))
     }
 
     @PostMapping("/create")
@@ -585,7 +592,7 @@ class PersonController(
                     createPerson(it, body)
                 }
             }
-            .also { personId -> Audit.PersonCreate.log(targetId = personId) }
+            .also { personId -> Audit.PersonCreate.log(targetId = AuditId(personId)) }
     }
 
     @PostMapping("/{personId}/vtj-update")
@@ -607,7 +614,7 @@ class PersonController(
                 }
                 fridgeFamilyService.updateGuardianOrChildFromVtj(dbc, user, clock, personId)
             }
-            .also { Audit.PersonVtjFamilyUpdate.log(targetId = personId) }
+            .also { Audit.PersonVtjFamilyUpdate.log(targetId = AuditId(personId)) }
     }
 
     data class EvakaRightsRequest(val guardianId: PersonId, val denied: Boolean)
@@ -638,8 +645,8 @@ class PersonController(
             }
         }
         Audit.PersonUpdateEvakaRights.log(
-            targetId = childId,
-            objectId = body.guardianId,
+            targetId = AuditId(childId),
+            objectId = AuditId(body.guardianId),
             meta = mapOf("denied" to body.denied)
         )
     }
@@ -680,7 +687,7 @@ class PersonController(
                         .body(resource)
                 }
             }
-            .also { Audit.AddressPageDownloadPdf.log(targetId = guardianId) }
+            .also { Audit.AddressPageDownloadPdf.log(targetId = AuditId(guardianId)) }
 
     data class PersonResponse(val person: PersonJSON, val permittedActions: Set<Action.Person>)
 

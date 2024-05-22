@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.personHasSentApplicationWithId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
@@ -81,7 +82,9 @@ class MessageController(
                 }
             }
             .also { accounts ->
-                Audit.MessagingMyAccountsRead.log(targetId = accounts.map { it.account.id })
+                Audit.MessagingMyAccountsRead.log(
+                    targetId = AuditId(accounts.map { it.account.id })
+                )
             }
     }
 
@@ -117,8 +120,8 @@ class MessageController(
             }
             .also { accounts ->
                 Audit.MessagingMyAccountsRead.log(
-                    targetId = accounts.map { it.account.id },
-                    objectId = unitId
+                    targetId = AuditId(accounts.map { it.account.id }),
+                    objectId = AuditId(unitId)
                 )
             }
     }
@@ -146,7 +149,7 @@ class MessageController(
             }
             .also {
                 Audit.MessagingReceivedMessagesRead.log(
-                    targetId = accountId,
+                    targetId = AuditId(accountId),
                     meta = mapOf("total" to it.total)
                 )
             }
@@ -181,7 +184,7 @@ class MessageController(
             }
             .also {
                 Audit.MessagingMessagesInFolderRead.log(
-                    targetId = accountId,
+                    targetId = AuditId(accountId),
                     meta = mapOf("total" to it.total)
                 )
             }
@@ -202,7 +205,7 @@ class MessageController(
             }
             .also {
                 Audit.MessagingReceivedMessageCopiesRead.log(
-                    targetId = accountId,
+                    targetId = AuditId(accountId),
                     meta = mapOf("total" to it.total)
                 )
             }
@@ -223,7 +226,7 @@ class MessageController(
             }
             .also {
                 Audit.MessagingSentMessagesRead.log(
-                    targetId = accountId,
+                    targetId = AuditId(accountId),
                     meta = mapOf("total" to it.total)
                 )
             }
@@ -248,7 +251,11 @@ class MessageController(
                     )
                 }
             }
-            .also { Audit.MessagingMessageThreadRead.log(targetId = listOf(accountId, threadId)) }
+            .also {
+                Audit.MessagingMessageThreadRead.log(
+                    targetId = AuditId(listOf(accountId, threadId))
+                )
+            }
     }
 
     @GetMapping("/application/{applicationId}")
@@ -276,8 +283,8 @@ class MessageController(
             }
             .let { (accountId, response) ->
                 Audit.MessagingMessageThreadRead.log(
-                    targetId = listOf(accountId, response?.id),
-                    objectId = applicationId
+                    targetId = AuditId(listOf(accountId, response?.id)),
+                    objectId = AuditId(applicationId)
                 )
                 response
             }
@@ -302,7 +309,9 @@ class MessageController(
                 }
             }
             .also { response ->
-                Audit.MessagingUnreadMessagesRead.log(targetId = response.map { it.accountId })
+                Audit.MessagingUnreadMessagesRead.log(
+                    targetId = AuditId(response.map { it.accountId })
+                )
             }
     }
 
@@ -327,8 +336,8 @@ class MessageController(
             }
             .also { response ->
                 Audit.MessagingUnreadMessagesRead.log(
-                    targetId = unitId,
-                    objectId = response.map { it.accountId }
+                    targetId = AuditId(unitId),
+                    objectId = AuditId(response.map { it.accountId })
                 )
             }
     }
@@ -376,7 +385,7 @@ class MessageController(
                     PostMessagePreflightResponse(numberOfRecipientAccounts)
                 }
             }
-            .also { Audit.MessagingNewMessagePreflightCheck.log(targetId = accountId) }
+            .also { Audit.MessagingNewMessagePreflightCheck.log(targetId = AuditId(accountId)) }
     }
 
     data class PostMessageBody(
@@ -484,7 +493,12 @@ class MessageController(
                         }
                 }
             }
-            .also { Audit.MessagingNewMessageWrite.log(targetId = accountId, objectId = it) }
+            .also {
+                Audit.MessagingNewMessageWrite.log(
+                    targetId = AuditId(accountId),
+                    objectId = it?.let(AuditId::invoke)
+                )
+            }
     }
 
     @GetMapping("/{accountId}/drafts")
@@ -500,7 +514,7 @@ class MessageController(
             }
             .also {
                 Audit.MessagingDraftsRead.log(
-                    targetId = accountId,
+                    targetId = AuditId(accountId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -518,7 +532,10 @@ class MessageController(
                 dbc.transaction { it.initDraft(accountId) }
             }
             .also { messageDraftId ->
-                Audit.MessagingCreateDraft.log(targetId = accountId, objectId = messageDraftId)
+                Audit.MessagingCreateDraft.log(
+                    targetId = AuditId(accountId),
+                    objectId = AuditId(messageDraftId)
+                )
             }
     }
 
@@ -535,7 +552,12 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.transaction { it.updateDraft(accountId, draftId, content) }
             }
-            .also { Audit.MessagingUpdateDraft.log(targetId = accountId, objectId = draftId) }
+            .also {
+                Audit.MessagingUpdateDraft.log(
+                    targetId = AuditId(accountId),
+                    objectId = AuditId(draftId)
+                )
+            }
     }
 
     @DeleteMapping("/{accountId}/drafts/{draftId}")
@@ -550,7 +572,12 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.transaction { tx -> tx.deleteDraft(accountId, draftId) }
             }
-            .also { Audit.MessagingDeleteDraft.log(targetId = accountId, objectId = draftId) }
+            .also {
+                Audit.MessagingDeleteDraft.log(
+                    targetId = AuditId(accountId),
+                    objectId = AuditId(draftId)
+                )
+            }
     }
 
     @PostMapping("{accountId}/{messageId}/reply")
@@ -579,8 +606,8 @@ class MessageController(
             }
             .also {
                 Audit.MessagingReplyToMessageWrite.log(
-                    targetId = listOf(accountId, messageId),
-                    objectId = listOf(it.threadId, it.message.id)
+                    targetId = AuditId(listOf(accountId, messageId)),
+                    objectId = AuditId(listOf(it.threadId, it.message.id))
                 )
             }
     }
@@ -597,7 +624,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
-        Audit.MessagingMarkMessagesReadWrite.log(targetId = listOf(accountId, threadId))
+        Audit.MessagingMarkMessagesReadWrite.log(targetId = AuditId(listOf(accountId, threadId)))
     }
 
     @PutMapping("/{accountId}/threads/{threadId}/archive")
@@ -612,7 +639,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.archiveThread(accountId, threadId) }
         }
-        Audit.MessagingArchiveMessageWrite.log(targetId = listOf(accountId, threadId))
+        Audit.MessagingArchiveMessageWrite.log(targetId = AuditId(listOf(accountId, threadId)))
     }
 
     @GetMapping("/receivers")
@@ -634,7 +661,9 @@ class MessageController(
                 }
             }
             .also { response ->
-                Audit.MessagingMessageReceiversRead.log(targetId = response.map { it.accountId })
+                Audit.MessagingMessageReceiversRead.log(
+                    targetId = AuditId(response.map { it.accountId })
+                )
             }
     }
 
@@ -650,7 +679,9 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.transaction { it.undoNewMessages(clock.now(), accountId, contentId) }
             }
-            .also { Audit.MessagingUndoMessage.log(targetId = listOf(accountId, contentId)) }
+            .also {
+                Audit.MessagingUndoMessage.log(targetId = AuditId(listOf(accountId, contentId)))
+            }
     }
 
     @PostMapping("/{accountId}/undo-reply")
@@ -665,7 +696,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.undoMessageReply(clock.now(), accountId, messageId) }
         }
-        Audit.MessagingUndoMessageReply.log(targetId = listOf(accountId, messageId))
+        Audit.MessagingUndoMessageReply.log(targetId = AuditId(listOf(accountId, messageId)))
     }
 
     private fun requireMessageAccountAccess(

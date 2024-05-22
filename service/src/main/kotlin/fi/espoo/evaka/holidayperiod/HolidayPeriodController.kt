@@ -5,6 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.deleteAllCitizenEditableAbsencesInRange
 import fi.espoo.evaka.reservations.deleteAllCitizenReservationsInRange
 import fi.espoo.evaka.shared.HolidayPeriodId
@@ -70,7 +71,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     it.getHolidayPeriod(id)
                 } ?: throw NotFound()
             }
-            .also { Audit.HolidayPeriodRead.log(targetId = id) }
+            .also { Audit.HolidayPeriodRead.log(targetId = AuditId(id)) }
     }
 
     @PostMapping
@@ -104,7 +105,9 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     }
                 }
             }
-            .also { holidayPeriod -> Audit.HolidayPeriodCreate.log(targetId = holidayPeriod.id) }
+            .also { holidayPeriod ->
+                Audit.HolidayPeriodCreate.log(targetId = AuditId(holidayPeriod.id))
+            }
     }
 
     @PutMapping("/{id}")
@@ -130,7 +133,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.HolidayPeriodUpdate.log(targetId = id)
+        Audit.HolidayPeriodUpdate.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/{id}")
@@ -151,6 +154,6 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                 it.deleteHolidayPeriod(id)
             }
         }
-        Audit.HolidayPeriodDelete.log(targetId = id)
+        Audit.HolidayPeriodDelete.log(targetId = AuditId(id))
     }
 }

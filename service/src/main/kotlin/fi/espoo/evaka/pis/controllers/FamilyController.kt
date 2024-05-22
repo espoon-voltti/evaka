@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.FamilyContact
 import fi.espoo.evaka.pis.FamilyContactRole.LOCAL_FOSTER_PARENT
 import fi.espoo.evaka.pis.FamilyContactRole.LOCAL_GUARDIAN
@@ -79,7 +80,7 @@ class FamilyController(
                     }
                 } ?: throw NotFound("No family overview found for person $id")
             }
-            .also { Audit.PisFamilyRead.log(targetId = id) }
+            .also { Audit.PisFamilyRead.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/contacts")
@@ -102,7 +103,10 @@ class FamilyController(
                 }
             }
             .also {
-                Audit.FamilyContactsRead.log(targetId = childId, meta = mapOf("count" to it.size))
+                Audit.FamilyContactsRead.log(
+                    targetId = AuditId(childId),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 
@@ -138,7 +142,10 @@ class FamilyController(
                 )
             }
         }
-        Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
+        Audit.FamilyContactsUpdate.log(
+            targetId = AuditId(body.childId),
+            objectId = AuditId(body.contactPersonId)
+        )
     }
 
     @PostMapping("/contacts/priority")
@@ -165,7 +172,10 @@ class FamilyController(
                 it.updateFamilyContactPriority(body.childId, body.contactPersonId, body.priority)
             }
         }
-        Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
+        Audit.FamilyContactsUpdate.log(
+            targetId = AuditId(body.childId),
+            objectId = AuditId(body.contactPersonId)
+        )
     }
 }
 

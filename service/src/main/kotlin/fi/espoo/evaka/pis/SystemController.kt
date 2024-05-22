@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.anyUnitHasFeature
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -83,8 +84,14 @@ class SystemController(
             .also {
                 Audit.CitizenLogin.log(
                     targetId =
-                        listOf(request.socialSecurityNumber, request.lastName, request.firstName),
-                    objectId = it.id
+                        AuditId(
+                            listOf(
+                                request.socialSecurityNumber,
+                                request.lastName,
+                                request.firstName
+                            )
+                        ),
+                    objectId = AuditId(it.id)
                 )
             }
     }
@@ -105,7 +112,7 @@ class SystemController(
                     val authLevel = CitizenAuthLevel.WEAK // dummy value, which isn't really used
                     CitizenUserResponse(details, accessibleFeatures, authLevel)
                 }
-                .also { Audit.CitizenUserDetailsRead.log(targetId = id) }
+                .also { Audit.CitizenUserDetailsRead.log(targetId = AuditId(id)) }
         }
 
     @PostMapping("/system/employee-login")
@@ -141,14 +148,16 @@ class SystemController(
             .also {
                 Audit.EmployeeLogin.log(
                     targetId =
-                        listOf(
-                            request.externalId,
-                            request.lastName,
-                            request.firstName,
-                            request.email,
-                            it.globalRoles
+                        AuditId(
+                            listOf(
+                                request.externalId,
+                                request.lastName,
+                                request.firstName,
+                                request.email,
+                                it.globalRoles
+                            )
                         ),
-                    objectId = it.id
+                    objectId = AuditId(it.id)
                 )
             }
     }
@@ -251,7 +260,7 @@ class SystemController(
                     }
                 }
             }
-            .also { Audit.EmployeeUserDetailsRead.log(targetId = id) }
+            .also { Audit.EmployeeUserDetailsRead.log(targetId = AuditId(id)) }
     }
 
     data class MobileDeviceTracking(val userAgent: String)
@@ -279,7 +288,7 @@ class SystemController(
                     )
                 }
             }
-            .also { Audit.MobileDevicesRead.log(targetId = id) }
+            .also { Audit.MobileDevicesRead.log(targetId = AuditId(id)) }
 
     @GetMapping("/system/mobile-identity/{token}")
     fun mobileIdentity(
@@ -294,7 +303,9 @@ class SystemController(
                     device
                 }
             }
-            .also { Audit.MobileDevicesRead.log(targetId = token, objectId = it.id) }
+            .also {
+                Audit.MobileDevicesRead.log(targetId = AuditId(token), objectId = AuditId(it.id))
+            }
     }
 
     data class EmployeeLoginRequest(

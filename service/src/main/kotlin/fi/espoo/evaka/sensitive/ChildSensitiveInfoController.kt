@@ -5,6 +5,7 @@
 package fi.espoo.evaka.sensitive
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -42,6 +43,6 @@ class ChildSensitiveInfoController(private val ac: AccessControl) {
                     it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found")
                 }
             }
-            .also { Audit.ChildSensitiveInfoRead.log(targetId = childId) }
+            .also { Audit.ChildSensitiveInfoRead.log(targetId = AuditId(childId)) }
     }
 }

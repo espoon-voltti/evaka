@@ -5,6 +5,7 @@
 package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
@@ -65,7 +66,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.ChildDailyServiceTimesRead.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -114,7 +115,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     id
                 }
             }
-        Audit.ChildDailyServiceTimesEdit.log(targetId = childId, objectId = id)
+        Audit.ChildDailyServiceTimesEdit.log(targetId = AuditId(childId), objectId = AuditId(id))
     }
 
     @PutMapping(
@@ -171,7 +172,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, old.childId)
             }
         }
-        Audit.ChildDailyServiceTimesEdit.log(targetId = id)
+        Audit.ChildDailyServiceTimesEdit.log(targetId = AuditId(id))
     }
 
     data class DailyServiceTimesEndDate(val endDate: LocalDate?)
@@ -244,7 +245,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, old.childId)
             }
         }
-        Audit.ChildDailyServiceTimesEdit.log(targetId = id)
+        Audit.ChildDailyServiceTimesEdit.log(targetId = AuditId(id))
     }
 
     @DeleteMapping(
@@ -280,7 +281,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
             }
         }
 
-        Audit.ChildDailyServiceTimesDelete.log(targetId = id)
+        Audit.ChildDailyServiceTimesDelete.log(targetId = AuditId(id))
     }
 
     private fun updateOverlappingDailyServiceTimes(

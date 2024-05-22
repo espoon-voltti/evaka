@@ -5,6 +5,7 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
@@ -62,7 +63,10 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.CitizenChildrenRead.log(targetId = user.id, meta = mapOf("count" to it.size))
+                Audit.CitizenChildrenRead.log(
+                    targetId = AuditId(user.id),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 
@@ -87,7 +91,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     serviceNeeds + missingServiceNeeds
                 }
             }
-            .also { Audit.CitizenChildServiceNeedRead.log(targetId = childId) }
+            .also { Audit.CitizenChildServiceNeedRead.log(targetId = AuditId(childId)) }
     }
 
     private fun getMissingServiceNeeds(
@@ -153,7 +157,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.CitizenChildAttendanceSummaryRead.log(targetId = childId) }
+            .also { Audit.CitizenChildAttendanceSummaryRead.log(targetId = AuditId(childId)) }
     }
 
     @GetMapping("/{childId}/daily-service-times")
@@ -175,7 +179,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     tx.getChildDailyServiceTimes(childId)
                 }
             }
-            .also { Audit.CitizenChildDailyServiceTimeRead.log(targetId = childId) }
+            .also { Audit.CitizenChildDailyServiceTimeRead.log(targetId = AuditId(childId)) }
     }
 }
 

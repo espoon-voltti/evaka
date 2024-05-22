@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -63,7 +64,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
             .also {
                 Audit.UnitStaffAttendanceRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta =
                         mapOf(
                             "staffCount" to it.staff.size,
@@ -145,8 +146,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 throw mapPSQLException(e)
             }
         Audit.StaffAttendanceArrivalCreate.log(
-            targetId = listOf(body.groupId, body.employeeId),
-            objectId = staffAttendanceIds
+            targetId = AuditId(listOf(body.groupId, body.employeeId)),
+            objectId = AuditId(staffAttendanceIds)
         )
     }
 
@@ -207,8 +208,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 }
             }
         Audit.StaffAttendanceDepartureCreate.log(
-            targetId = listOf(body.groupId, body.employeeId),
-            objectId = staffAttendanceIds
+            targetId = AuditId(listOf(body.groupId, body.employeeId)),
+            objectId = AuditId(staffAttendanceIds)
         )
     }
 
@@ -292,8 +293,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
             .also {
                 Audit.StaffAttendanceUpdate.log(
-                    targetId = body.employeeId,
-                    objectId = it.inserted + it.deleted,
+                    targetId = AuditId(body.employeeId),
+                    objectId = AuditId(it.inserted + it.deleted),
                     meta =
                         mapOf(
                             "date" to body.date,
@@ -346,8 +347,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
             .also { staffAttendanceExternalId ->
                 Audit.StaffAttendanceArrivalExternalCreate.log(
-                    targetId = body.groupId,
-                    objectId = staffAttendanceExternalId
+                    targetId = AuditId(body.groupId),
+                    objectId = AuditId(staffAttendanceExternalId)
                 )
             }
     }
@@ -390,7 +391,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 )
             }
         }
-        Audit.StaffAttendanceDepartureExternalCreate.log(targetId = body.attendanceId)
+        Audit.StaffAttendanceDepartureExternalCreate.log(targetId = AuditId(body.attendanceId))
     }
 
     val ALLOWED_TIME_DRIFT_MINUTES = 1

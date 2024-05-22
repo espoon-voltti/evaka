@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.invoicing.messaging.planFinanceDecisionGeneration
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -56,6 +57,6 @@ class FeeDecisionGeneratorController(
                 )
             }
         }
-        Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
+        Audit.FeeDecisionGenerate.log(targetId = AuditId(data.targetHeads))
     }
 }

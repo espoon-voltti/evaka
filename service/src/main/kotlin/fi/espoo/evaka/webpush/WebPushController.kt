@@ -5,6 +5,7 @@
 package fi.espoo.evaka.webpush
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -46,7 +47,7 @@ class WebPushController(private val accessControl: AccessControl) {
     ) {
         db.connect { dbc -> dbc.transaction { it.upsertPushSubscription(user.id, subscription) } }
         Audit.PushSubscriptionUpsert.log(
-            targetId = user.id,
+            targetId = AuditId(user.id),
             meta = mapOf("endpoint" to subscription.endpoint, "expires" to subscription.expires)
         )
     }
@@ -80,7 +81,7 @@ class WebPushController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.PushSettingsRead.log(targetId = user.id) }
+            .also { Audit.PushSettingsRead.log(targetId = AuditId(user.id)) }
 
     @PutMapping(
         "/mobile-devices/push-settings", // deprecated
@@ -106,7 +107,7 @@ class WebPushController(private val accessControl: AccessControl) {
             }
         }
         Audit.PushSettingsSet.log(
-            targetId = user.id,
+            targetId = AuditId(user.id),
             meta =
                 mapOf(
                     "categories" to settings.categories,

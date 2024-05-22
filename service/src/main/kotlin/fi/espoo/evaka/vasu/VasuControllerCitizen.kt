@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -53,7 +54,7 @@ class VasuControllerCitizen(
             }
             .also {
                 Audit.ChildVasuDocumentsReadByGuardian.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.data.size)
                 )
             }
@@ -93,7 +94,7 @@ class VasuControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ChildVasuDocumentsReadByGuardian.log(targetId = user.id) }
+            .also { Audit.ChildVasuDocumentsReadByGuardian.log(targetId = AuditId(user.id)) }
     }
 
     data class CitizenGetVasuDocumentResponse(
@@ -132,7 +133,7 @@ class VasuControllerCitizen(
                     )
                 }
             }
-            .also { Audit.VasuDocumentReadByGuardian.log(targetId = id) }
+            .also { Audit.VasuDocumentReadByGuardian.log(targetId = AuditId(id)) }
     }
 
     @PostMapping("/{id}/give-permission-to-share")
@@ -154,6 +155,6 @@ class VasuControllerCitizen(
                     it.setVasuGuardianHasGivenPermissionToShare(id, user.id)
                 }
             }
-            .also { Audit.VasuDocumentGivePermissionToShareByGuardian.log(targetId = id) }
+            .also { Audit.VasuDocumentGivePermissionToShareByGuardian.log(targetId = AuditId(id)) }
     }
 }

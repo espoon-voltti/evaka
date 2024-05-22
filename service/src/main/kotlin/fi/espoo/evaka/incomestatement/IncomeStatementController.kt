@@ -5,6 +5,7 @@
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.shared.IncomeStatementId
@@ -58,7 +59,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.IncomeStatementsOfPerson.log(
-                    targetId = personId,
+                    targetId = AuditId(personId),
                     meta = mapOf("total" to it.total)
                 )
             }
@@ -88,7 +89,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     )
                 } ?: throw NotFound("No such income statement")
             }
-            .also { Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId) }
+            .also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
     }
 
     data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)
@@ -117,7 +118,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                 )
             }
         }
-        Audit.IncomeStatementUpdateHandled.log(targetId = incomeStatementId)
+        Audit.IncomeStatementUpdateHandled.log(targetId = AuditId(incomeStatementId))
     }
 
     @PostMapping("/awaiting-handler")
@@ -173,7 +174,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.GuardianChildrenRead.log(
-                    targetId = guardianId,
+                    targetId = AuditId(guardianId),
                     meta = mapOf("count" to it.size)
                 )
             }

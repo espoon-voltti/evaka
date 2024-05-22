@@ -5,6 +5,7 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.getDaycare
@@ -71,7 +72,10 @@ class OccupancyController(
                     )
                 }
             }
-        Audit.OccupancyRead.log(targetId = unitId, meta = mapOf("count" to occupancies.size))
+        Audit.OccupancyRead.log(
+            targetId = AuditId(unitId),
+            meta = mapOf("count" to occupancies.size)
+        )
 
         return OccupancyResponse(
             occupancies = occupancies,
@@ -168,7 +172,9 @@ class OccupancyController(
                     )
                 }
             }
-            .also { Audit.OccupancySpeculatedRead.log(targetId = listOf(unitId, applicationId)) }
+            .also {
+                Audit.OccupancySpeculatedRead.log(targetId = AuditId(listOf(unitId, applicationId)))
+            }
     }
 
     @GetMapping(
@@ -203,7 +209,7 @@ class OccupancyController(
                     )
                 }
             }
-        Audit.OccupancyRead.log(targetId = unitId)
+        Audit.OccupancyRead.log(targetId = AuditId(unitId))
         return occupancies
     }
 
@@ -239,7 +245,10 @@ class OccupancyController(
                     )
                 }
             }
-        Audit.OccupancyRead.log(targetId = unitId, meta = mapOf("count" to occupancies.size))
+        Audit.OccupancyRead.log(
+            targetId = AuditId(unitId),
+            meta = mapOf("count" to occupancies.size)
+        )
 
         return occupancies
             .groupBy({ it.groupId }) {

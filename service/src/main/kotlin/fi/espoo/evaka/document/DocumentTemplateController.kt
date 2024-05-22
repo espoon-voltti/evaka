@@ -5,6 +5,7 @@
 package fi.espoo.evaka.document
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.placement.getChildPlacementUnitLanguage
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -53,7 +54,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.insertTemplate(body)
                 }
             }
-            .also { Audit.DocumentTemplateCreate.log(targetId = it.id) }
+            .also { Audit.DocumentTemplateCreate.log(targetId = AuditId(it.id)) }
     }
 
     @PostMapping("/import")
@@ -74,7 +75,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.importTemplate(body)
                 }
             }
-            .also { Audit.DocumentTemplateCreate.log(targetId = it.id) }
+            .also { Audit.DocumentTemplateCreate.log(targetId = AuditId(it.id)) }
     }
 
     @GetMapping
@@ -143,7 +144,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.getTemplate(templateId)
                 }
             }
-            ?.also { Audit.DocumentTemplateRead.log(targetId = templateId) }
+            ?.also { Audit.DocumentTemplateRead.log(targetId = AuditId(templateId)) }
             ?: throw NotFound("Document template $templateId not found")
     }
 
@@ -183,7 +184,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     )
                     .body(template)
             }
-            ?.also { Audit.DocumentTemplateRead.log(targetId = templateId) }
+            ?.also { Audit.DocumentTemplateRead.log(targetId = AuditId(templateId)) }
             ?: throw NotFound("Document template $templateId not found")
 
     @PostMapping("/{templateId}/duplicate")
@@ -207,7 +208,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.duplicateTemplate(templateId, body)
                 }
             }
-            .also { Audit.DocumentTemplateCopy.log(targetId = templateId) }
+            .also { Audit.DocumentTemplateCopy.log(targetId = AuditId(templateId)) }
     }
 
     @PutMapping("/{templateId}")
@@ -233,7 +234,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
 
                     tx.updateDraftTemplateBasics(templateId, body)
                 }
-                .also { Audit.DocumentTemplateUpdateBasics.log(targetId = templateId) }
+                .also { Audit.DocumentTemplateUpdateBasics.log(targetId = AuditId(templateId)) }
         }
     }
 
@@ -262,7 +263,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
 
                     tx.updateDraftTemplateContent(templateId, body)
                 }
-                .also { Audit.DocumentTemplateUpdateContent.log(targetId = templateId) }
+                .also { Audit.DocumentTemplateUpdateContent.log(targetId = AuditId(templateId)) }
         }
     }
 
@@ -286,7 +287,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.updateTemplateValidity(templateId, body)
                 }
             }
-            .also { Audit.DocumentTemplateUpdateValidity.log(targetId = templateId) }
+            .also { Audit.DocumentTemplateUpdateValidity.log(targetId = AuditId(templateId)) }
     }
 
     @PutMapping("/{templateId}/publish")
@@ -308,7 +309,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.publishTemplate(templateId)
                 }
             }
-            .also { Audit.DocumentTemplatePublish.log(targetId = templateId) }
+            .also { Audit.DocumentTemplatePublish.log(targetId = AuditId(templateId)) }
     }
 
     @DeleteMapping("/{templateId}")
@@ -334,7 +335,7 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
                     tx.deleteDraftTemplate(templateId)
                 }
             }
-            .also { Audit.DocumentTemplateDelete.log(targetId = templateId) }
+            .also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
     }
 }
 

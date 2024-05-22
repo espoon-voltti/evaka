@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
 import fi.espoo.evaka.application.ApplicationStatus.CANCELLED
 import fi.espoo.evaka.application.ApplicationStatus.CREATED
@@ -263,7 +264,7 @@ class ApplicationStateService(
 
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, SENT)
-        Audit.ApplicationSend.log(targetId = applicationId)
+        Audit.ApplicationSend.log(targetId = AuditId(applicationId))
     }
 
     fun moveToWaitingPlacement(
@@ -303,7 +304,7 @@ class ApplicationStateService(
         )
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
-        Audit.ApplicationVerify.log(targetId = applicationId)
+        Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
     }
 
     fun returnToSent(
@@ -324,7 +325,7 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_PLACEMENT)
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, SENT)
-        Audit.ApplicationReturnToSent.log(targetId = applicationId)
+        Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))
     }
 
     fun cancelApplication(
@@ -344,7 +345,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
         tx.updateApplicationStatus(application.id, CANCELLED)
-        Audit.ApplicationCancel.log(targetId = applicationId)
+        Audit.ApplicationCancel.log(targetId = AuditId(applicationId))
     }
 
     fun setVerified(
@@ -364,7 +365,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.setApplicationVerified(applicationId, true)
-        Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
+        Audit.ApplicationAdminDetailsUpdate.log(targetId = AuditId(applicationId))
     }
 
     fun setUnverified(
@@ -384,7 +385,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.setApplicationVerified(applicationId, false)
-        Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
+        Audit.ApplicationAdminDetailsUpdate.log(targetId = AuditId(applicationId))
     }
 
     fun createPlacementPlan(
@@ -427,7 +428,7 @@ class ApplicationStateService(
         tx.clearDecisionDrafts(listOf(application.id))
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
-        Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
+        Audit.ApplicationReturnToWaitingPlacement.log(targetId = AuditId(applicationId))
     }
 
     fun sendDecisionsWithoutProposal(
@@ -448,8 +449,8 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_DECISION)
         val decisionIds = finalizeDecisions(tx, user, clock, application)
         Audit.ApplicationSendDecisionsWithoutProposal.log(
-            targetId = applicationId,
-            objectId = decisionIds
+            targetId = AuditId(applicationId),
+            objectId = AuditId(decisionIds)
         )
     }
 
@@ -471,7 +472,7 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_DECISION)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_UNIT_CONFIRMATION)
-        Audit.PlacementProposalCreate.log(targetId = applicationId)
+        Audit.PlacementProposalCreate.log(targetId = AuditId(applicationId))
     }
 
     fun withdrawPlacementProposal(
@@ -492,7 +493,7 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
-        Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
+        Audit.ApplicationReturnToWaitingDecision.log(targetId = AuditId(applicationId))
     }
 
     fun respondToPlacementProposal(
@@ -537,7 +538,10 @@ class ApplicationStateService(
         } else {
             tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
-        Audit.PlacementPlanRespond.log(targetId = applicationId, meta = mapOf("status" to status))
+        Audit.PlacementPlanRespond.log(
+            targetId = AuditId(applicationId),
+            meta = mapOf("status" to status)
+        )
     }
 
     fun confirmPlacementProposalChanges(
@@ -583,7 +587,7 @@ class ApplicationStateService(
                 .toList<ApplicationId>()
 
         validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
-        Audit.PlacementProposalAccept.log(targetId = unitId, objectId = validIds)
+        Audit.PlacementProposalAccept.log(targetId = AuditId(unitId), objectId = AuditId(validIds))
     }
 
     fun confirmDecisionMailed(
@@ -605,7 +609,7 @@ class ApplicationStateService(
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
         tx.markApplicationDecisionsSent(application.id, clock.today())
-        Audit.ApplicationConfirmDecisionsMailed.log(targetId = applicationId)
+        Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
     }
 
     fun acceptDecision(
@@ -703,7 +707,7 @@ class ApplicationStateService(
             tx.updateApplicationStatus(application.id, ACTIVE)
         }
         Audit.DecisionAccept.log(
-            targetId = decisionId,
+            targetId = AuditId(decisionId),
             meta =
                 mapOf(
                     "applicationId" to applicationId,
@@ -761,7 +765,10 @@ class ApplicationStateService(
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, REJECTED)
         }
-        Audit.DecisionReject.log(targetId = decisionId, meta = mapOf("childId" to decision.childId))
+        Audit.DecisionReject.log(
+            targetId = AuditId(decisionId),
+            meta = mapOf("childId" to decision.childId)
+        )
     }
 
     // CONTENT UPDATE

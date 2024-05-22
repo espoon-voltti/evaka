@@ -5,6 +5,7 @@
 package fi.espoo.evaka.note
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesForGroup
 import fi.espoo.evaka.note.child.sticky.ChildStickyNote
@@ -48,7 +49,7 @@ class NotesController(private val ac: AccessControl) {
             }
             .also {
                 Audit.NotesByGroupRead.log(
-                    targetId = groupId,
+                    targetId = AuditId(groupId),
                     meta =
                         mapOf(
                             "childDailyNoteCount" to it.childDailyNotes.size,

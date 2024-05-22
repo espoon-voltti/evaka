@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -66,7 +67,9 @@ class VasuTemplateController(
                     )
                 }
             }
-            .also { vasuTemplateId -> Audit.VasuTemplateCreate.log(targetId = vasuTemplateId) }
+            .also { vasuTemplateId ->
+                Audit.VasuTemplateCreate.log(targetId = AuditId(vasuTemplateId))
+            }
     }
 
     @PutMapping("/{id}")
@@ -87,7 +90,7 @@ class VasuTemplateController(
                 tx.updateVasuTemplate(id, body)
             }
         }
-        Audit.VasuTemplateEdit.log(targetId = id)
+        Audit.VasuTemplateEdit.log(targetId = AuditId(id))
     }
 
     data class CopyTemplateRequest(val name: String, val valid: FiniteDateRange)
@@ -120,7 +123,7 @@ class VasuTemplateController(
                     )
                 }
             }
-            .also { Audit.VasuTemplateCopy.log(targetId = id) }
+            .also { Audit.VasuTemplateCopy.log(targetId = AuditId(id)) }
     }
 
     @GetMapping
@@ -163,7 +166,7 @@ class VasuTemplateController(
                     tx.getVasuTemplate(id)
                 } ?: throw NotFound("template $id not found")
             }
-            .also { Audit.VasuTemplateRead.log(targetId = id) }
+            .also { Audit.VasuTemplateRead.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping("/{id}")
@@ -179,7 +182,7 @@ class VasuTemplateController(
                 it.deleteUnusedVasuTemplate(id)
             }
         }
-        Audit.VasuTemplateDelete.log(targetId = id)
+        Audit.VasuTemplateDelete.log(targetId = AuditId(id))
     }
 
     @PutMapping("/{id}/content")
@@ -200,7 +203,7 @@ class VasuTemplateController(
                 tx.updateVasuTemplateContent(id, content)
             }
         }
-        Audit.VasuTemplateUpdate.log(targetId = id)
+        Audit.VasuTemplateUpdate.log(targetId = AuditId(id))
     }
 
     @PutMapping("/{id}/migrate")
@@ -216,6 +219,6 @@ class VasuTemplateController(
                 vasuMigratorService.planMigrationJobs(tx, clock.now(), id)
             }
         }
-        Audit.VasuTemplateMigrate.log(targetId = id)
+        Audit.VasuTemplateMigrate.log(targetId = AuditId(id))
     }
 }

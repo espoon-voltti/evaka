@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -200,8 +201,8 @@ class ApplicationControllerV2(
                 }
             }
         Audit.ApplicationCreate.log(
-            targetId = body.childId,
-            objectId = applicationId,
+            targetId = AuditId(body.childId),
+            objectId = AuditId(applicationId),
             meta = mapOf("guardianId" to guardianId, "applicationType" to body.type)
         )
         return applicationId
@@ -285,7 +286,7 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = guardianId) }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(guardianId)) }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -314,7 +315,7 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForChild(childId, filter)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = childId) }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(childId)) }
     }
 
     @GetMapping("/{applicationId}")
@@ -385,9 +386,9 @@ class ApplicationControllerV2(
                 }
             }
             .also {
-                Audit.ApplicationRead.log(targetId = applicationId)
+                Audit.ApplicationRead.log(targetId = AuditId(applicationId))
                 Audit.DecisionReadByApplication.log(
-                    targetId = applicationId,
+                    targetId = AuditId(applicationId),
                     meta = mapOf("count" to it.decisions.size)
                 )
             }
@@ -420,7 +421,7 @@ class ApplicationControllerV2(
                 )
             }
         }
-        Audit.ApplicationUpdate.log(targetId = applicationId)
+        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
     }
 
     @PostMapping("/{applicationId}/actions/send-application")
@@ -460,7 +461,7 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { Audit.PlacementPlanDraftRead.log(targetId = applicationId) }
+            .also { Audit.PlacementPlanDraftRead.log(targetId = AuditId(applicationId)) }
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
@@ -544,7 +545,7 @@ class ApplicationControllerV2(
             }
             .also {
                 Audit.DecisionDraftRead.log(
-                    targetId = applicationId,
+                    targetId = AuditId(applicationId),
                     meta = mapOf("count" to it.decisions.size)
                 )
             }
@@ -570,7 +571,10 @@ class ApplicationControllerV2(
                 updateDecisionDrafts(it, applicationId, body)
             }
         }
-        Audit.DecisionDraftUpdate.log(targetId = applicationId, objectId = body.map { it.id })
+        Audit.DecisionDraftUpdate.log(
+            targetId = AuditId(applicationId),
+            objectId = AuditId(body.map { it.id })
+        )
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
@@ -645,8 +649,8 @@ class ApplicationControllerV2(
                 }
             }
         Audit.PlacementPlanCreate.log(
-            targetId = listOf(applicationId, body.unitId),
-            objectId = placementPlanId
+            targetId = AuditId(listOf(applicationId, body.unitId)),
+            objectId = AuditId(placementPlanId)
         )
     }
 
@@ -787,7 +791,7 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { Audit.UnitApplicationsRead.log(targetId = unitId) }
+            .also { Audit.UnitApplicationsRead.log(targetId = AuditId(unitId)) }
     }
 }
 

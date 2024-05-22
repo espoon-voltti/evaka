@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.OccupancyCoefficientUpsert
 import fi.espoo.evaka.attendance.getOccupancyCoefficientForEmployeeInUnit
@@ -87,10 +88,13 @@ class UnitAclController(private val accessControl: AccessControl) {
                             )
                     }
 
-                Audit.UnitAclRead.log(targetId = daycareId, meta = mapOf("count" to aclRows.size))
+                Audit.UnitAclRead.log(
+                    targetId = AuditId(daycareId),
+                    meta = mapOf("count" to aclRows.size)
+                )
                 if (hasOccupancyPermission) {
                     Audit.StaffOccupancyCoefficientRead.log(
-                        targetId = daycareId,
+                        targetId = AuditId(daycareId),
                         meta = mapOf("count" to aclRows.size)
                     )
                 }
@@ -120,7 +124,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 removeDaycareAclForRole(it, daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
             }
         }
-        Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
+        Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
     @DeleteMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
@@ -149,7 +153,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 )
             }
         }
-        Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
+        Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
     @DeleteMapping("/daycares/{daycareId}/earlychildhoodeducationsecretary/{employeeId}")
@@ -178,7 +182,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 )
             }
         }
-        Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
+        Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
     @DeleteMapping("/daycares/{daycareId}/staff/{employeeId}")
@@ -202,7 +206,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                 removeDaycareAclForRole(it, daycareId, employeeId, UserRole.STAFF)
             }
         }
-        Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
+        Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}/groups")
@@ -254,13 +258,16 @@ class UnitAclController(private val accessControl: AccessControl) {
                 }
             }
         if (update.groupIds != null) {
-            Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
+            Audit.UnitGroupAclUpdate.log(
+                targetId = AuditId(daycareId),
+                objectId = AuditId(employeeId)
+            )
         }
 
         if (update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
-                targetId = listOf(daycareId, employeeId),
-                objectId = occupancyCoefficientId
+                targetId = AuditId(listOf(daycareId, employeeId)),
+                objectId = occupancyCoefficientId?.let(AuditId::invoke)
             )
         }
     }
@@ -313,14 +320,17 @@ class UnitAclController(private val accessControl: AccessControl) {
                     occupancyCoefficientId
                 }
             }
-        Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
+        Audit.UnitAclCreate.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
         if (aclInfo.update.groupIds != null) {
-            Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
+            Audit.UnitGroupAclUpdate.log(
+                targetId = AuditId(daycareId),
+                objectId = AuditId(employeeId)
+            )
         }
         if (aclInfo.update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
-                targetId = listOf(daycareId, employeeId),
-                objectId = occupancyCoefficientId
+                targetId = AuditId(listOf(daycareId, employeeId)),
+                objectId = occupancyCoefficientId?.let(AuditId::invoke)
             )
         }
     }
@@ -397,7 +407,10 @@ class UnitAclController(private val accessControl: AccessControl) {
                     employee.id
                 }
             }
-        Audit.TemporaryEmployeeCreate.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
+        Audit.TemporaryEmployeeCreate.log(
+            targetId = AuditId(employeeId),
+            meta = mapOf("unitId" to unitId)
+        )
         return employeeId
     }
 
@@ -440,7 +453,10 @@ class UnitAclController(private val accessControl: AccessControl) {
                     )
                 }
             }
-        Audit.TemporaryEmployeeRead.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
+        Audit.TemporaryEmployeeRead.log(
+            targetId = AuditId(employeeId),
+            meta = mapOf("unitId" to unitId)
+        )
         return employee
     }
 
@@ -471,7 +487,10 @@ class UnitAclController(private val accessControl: AccessControl) {
                 setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
             }
         }
-        Audit.TemporaryEmployeeUpdate.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
+        Audit.TemporaryEmployeeUpdate.log(
+            targetId = AuditId(employeeId),
+            meta = mapOf("unitId" to unitId)
+        )
     }
 
     @DeleteMapping("/daycares/{unitId}/temporary/{employeeId}/acl")
@@ -496,8 +515,8 @@ class UnitAclController(private val accessControl: AccessControl) {
             }
         }
         Audit.TemporaryEmployeeDeleteAcl.log(
-            meta = mapOf("unitId" to unitId),
-            targetId = employeeId
+            targetId = AuditId(employeeId),
+            meta = mapOf("unitId" to unitId)
         )
     }
 
@@ -523,7 +542,10 @@ class UnitAclController(private val accessControl: AccessControl) {
                 deleteTemporaryEmployeeAcl(tx, unitId, employee)
             }
         }
-        Audit.TemporaryEmployeeDelete.log(meta = mapOf("unitId" to unitId), targetId = employeeId)
+        Audit.TemporaryEmployeeDelete.log(
+            targetId = AuditId(employeeId),
+            meta = mapOf("unitId" to unitId)
+        )
     }
 
     private fun setTemporaryEmployeeDetails(

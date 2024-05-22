@@ -7,6 +7,7 @@ package fi.espoo.evaka.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.Absence
 import fi.espoo.evaka.absence.AbsenceCategory
@@ -229,7 +230,7 @@ class ReservationControllerCitizen(
             }
             .also {
                 Audit.AttendanceReservationCitizenRead.log(
-                    targetId = user.id,
+                    targetId = AuditId(user.id),
                     meta = mapOf("from" to from, "to" to to)
                 )
             }
@@ -278,7 +279,7 @@ class ReservationControllerCitizen(
                 }
             }
         Audit.AttendanceReservationCitizenCreate.log(
-            targetId = children,
+            targetId = AuditId(children),
             meta =
                 mapOf(
                     "deletedAbsences" to result.deletedAbsences,
@@ -383,8 +384,8 @@ class ReservationControllerCitizen(
                 }
             }
         Audit.AbsenceCitizenCreate.log(
-            targetId = body.childIds,
-            objectId = insertedAbsences,
+            targetId = AuditId(body.childIds),
+            objectId = AuditId(insertedAbsences),
             meta =
                 mapOf(
                     "deletedAbsences" to deletedAbsences,

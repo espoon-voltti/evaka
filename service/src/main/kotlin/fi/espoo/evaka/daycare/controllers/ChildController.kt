@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
@@ -75,7 +76,7 @@ class ChildController(
                     )
                 }
             }
-            .also { Audit.PersonDetailsRead.log(targetId = childId) }
+            .also { Audit.PersonDetailsRead.log(targetId = AuditId(childId)) }
     }
 
     @GetMapping("/children/{childId}/additional-information")
@@ -97,7 +98,7 @@ class ChildController(
                     it.getAdditionalInformation(childId)
                 }
             }
-            .also { Audit.ChildAdditionalInformationRead.log(targetId = childId) }
+            .also { Audit.ChildAdditionalInformationRead.log(targetId = AuditId(childId)) }
     }
 
     @PutMapping("/children/{childId}/additional-information")
@@ -120,7 +121,7 @@ class ChildController(
                 it.upsertAdditionalInformation(childId, data)
             }
         }
-        Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
+        Audit.ChildAdditionalInformationUpdate.log(targetId = AuditId(childId))
     }
 
     data class ChildResponse(

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.children.getChildrenByParent
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -45,7 +46,7 @@ class MessageControllerCitizen(
     @GetMapping("/my-account")
     fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MessageAccountId {
         return db.connect { dbc -> dbc.read { it.getCitizenMessageAccount(user.id) } }
-            .also { Audit.MessagingMyAccountsRead.log(targetId = it) }
+            .also { Audit.MessagingMyAccountsRead.log(targetId = AuditId(it)) }
     }
 
     @GetMapping("/unread-count")
@@ -80,7 +81,9 @@ class MessageControllerCitizen(
                 accountId
             }
             .also { accountId ->
-                Audit.MessagingMarkMessagesReadWrite.log(targetId = listOf(accountId, threadId))
+                Audit.MessagingMarkMessagesReadWrite.log(
+                    targetId = AuditId(listOf(accountId, threadId))
+                )
             }
     }
 
@@ -96,7 +99,9 @@ class MessageControllerCitizen(
                 accountId
             }
             .also { accountId ->
-                Audit.MessagingArchiveMessageWrite.log(targetId = listOf(accountId, threadId))
+                Audit.MessagingArchiveMessageWrite.log(
+                    targetId = AuditId(listOf(accountId, threadId))
+                )
             }
     }
 
@@ -131,7 +136,7 @@ class MessageControllerCitizen(
             }
             .let { (accountId, response) ->
                 Audit.MessagingReceivedMessagesRead.log(
-                    targetId = accountId,
+                    targetId = AuditId(accountId),
                     meta = mapOf("total" to response.total)
                 )
                 response
@@ -163,7 +168,7 @@ class MessageControllerCitizen(
             }
             .let { (accountId, response) ->
                 Audit.MessagingCitizenFetchReceiversForAccount.log(
-                    targetId = accountId,
+                    targetId = AuditId(accountId),
                     meta = mapOf("count" to response.messageAccounts.size)
                 )
                 response
@@ -195,7 +200,9 @@ class MessageControllerCitizen(
                 accountId to response
             }
             .let { (accountId, response) ->
-                Audit.MessagingReplyToMessageWrite.log(targetId = listOf(accountId, messageId))
+                Audit.MessagingReplyToMessageWrite.log(
+                    targetId = AuditId(listOf(accountId, messageId))
+                )
                 response
             }
     }
@@ -249,7 +256,9 @@ class MessageControllerCitizen(
                 }
             }
             .let { (senderId, messageThreadId) ->
-                Audit.MessagingCitizenSendMessage.log(targetId = listOf(senderId, messageThreadId))
+                Audit.MessagingCitizenSendMessage.log(
+                    targetId = AuditId(listOf(senderId, messageThreadId))
+                )
                 messageThreadId
             }
     }

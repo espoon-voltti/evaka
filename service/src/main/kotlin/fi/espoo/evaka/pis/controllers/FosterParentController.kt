@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.PersonSummary
 import fi.espoo.evaka.pis.createFosterParentRelationship
 import fi.espoo.evaka.pis.deleteFosterParentRelationship
@@ -53,7 +54,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     tx.getFosterChildren(parentId)
                 }
             }
-            .also { Audit.FosterParentReadChildren.log(targetId = parentId) }
+            .also { Audit.FosterParentReadChildren.log(targetId = AuditId(parentId)) }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -75,7 +76,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     tx.getFosterParents(childId)
                 }
             }
-            .also { Audit.FosterParentReadParents.log(targetId = childId) }
+            .also { Audit.FosterParentReadParents.log(targetId = AuditId(childId)) }
     }
 
     @PostMapping
@@ -99,8 +100,8 @@ class FosterParentController(private val accessControl: AccessControl) {
             }
             .also { id ->
                 Audit.FosterParentCreateRelationship.log(
-                    targetId = body.parentId,
-                    objectId = body.childId,
+                    targetId = AuditId(body.parentId),
+                    objectId = AuditId(body.childId),
                     meta = mapOf("fosterParentId" to id)
                 )
             }
@@ -128,7 +129,7 @@ class FosterParentController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.FosterParentUpdateRelationship.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta = mapOf("validDuring" to validDuring)
                 )
             }
@@ -153,7 +154,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     tx.deleteFosterParentRelationship(id)
                 }
             }
-            .also { Audit.FosterParentDeleteRelationship.log(targetId = id) }
+            .also { Audit.FosterParentDeleteRelationship.log(targetId = AuditId(id)) }
     }
 }
 

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
@@ -75,7 +76,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.UnitCalendarEventsRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta = mapOf("start" to start, "end" to end, "count" to it.size)
                 )
             }
@@ -109,7 +110,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.GroupCalendarEventsRead.log(
-                    targetId = groupId,
+                    targetId = AuditId(groupId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -176,7 +177,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.GroupDiscussionReservationCalendarDaysRead.log(
-                    targetId = groupId,
+                    targetId = AuditId(groupId),
                     meta = mapOf("start" to start, "end" to end, "count" to it.size)
                 )
             }
@@ -249,7 +250,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.createCalendarEvent(body, clock.now(), user.evakaUserId)
                 }
             }
-        Audit.CalendarEventCreate.log(targetId = body.unitId, objectId = eventId)
+        Audit.CalendarEventCreate.log(targetId = AuditId(body.unitId), objectId = AuditId(eventId))
         return eventId
     }
 
@@ -275,7 +276,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.getCalendarEventById(id) ?: throw NotFound()
                 }
             }
-            .also { Audit.CalendarEventRead.log(targetId = id) }
+            .also { Audit.CalendarEventRead.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -300,7 +301,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.deleteCalendarEvent(id)
                 }
             }
-            .also { Audit.CalendarEventDelete.log(targetId = id) }
+            .also { Audit.CalendarEventDelete.log(targetId = AuditId(id)) }
     }
 
     @PatchMapping(
@@ -326,7 +327,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.updateCalendarEvent(id, clock.now(), body)
                 }
             }
-            .also { Audit.CalendarEventUpdate.log(targetId = id) }
+            .also { Audit.CalendarEventUpdate.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -364,7 +365,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.createCalendarEventAttendees(id, event.unitId, body.tree)
                 }
             }
-            .also { Audit.CalendarEventUpdate.log(targetId = id) }
+            .also { Audit.CalendarEventUpdate.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -407,7 +408,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     cetId
                 }
             }
-            .also { Audit.CalendarEventTimeCreate.log(targetId = id) }
+            .also { Audit.CalendarEventTimeCreate.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -446,7 +447,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.CalendarEventTimeDelete.log(targetId = id) }
+            .also { Audit.CalendarEventTimeDelete.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -483,7 +484,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         )
                     }
                 }
-                .also { Audit.CalendarEventTimeReservationUpdate.log(targetId = body) }
+                .also { Audit.CalendarEventTimeReservationUpdate.log(targetId = AuditId(body)) }
         }
     }
 
@@ -542,7 +543,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.UnitCalendarEventsRead.log(
-                    targetId = user.id,
+                    targetId = AuditId(user.id),
                     meta = mapOf("start" to start, "end" to end, "count" to it.size)
                 )
             }
@@ -570,8 +571,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.CalendarEventTimeRead.log(
-                    targetId = eventId,
-                    objectId = mapOf("childId" to childId)
+                    targetId = AuditId(eventId),
+                    objectId = AuditId(mapOf("childId" to childId))
                 )
             }
     }
@@ -609,7 +610,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     }
                 }
             }
-            .also { Audit.CalendarEventTimeReservationCreate.log(targetId = body) }
+            .also { Audit.CalendarEventTimeReservationCreate.log(targetId = AuditId(body)) }
     }
 
     @DeleteMapping("/citizen/calendar-event/reservation")
@@ -633,7 +634,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
                 }
             }
-            .also { Audit.CalendarEventTimeReservationDelete.log(targetId = body) }
+            .also { Audit.CalendarEventTimeReservationDelete.log(targetId = AuditId(body)) }
     }
 }
 

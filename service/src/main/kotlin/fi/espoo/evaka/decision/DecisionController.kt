@@ -5,6 +5,7 @@
 package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.ApplicationId
@@ -61,7 +62,7 @@ class DecisionController(
                     it.getDecisionsByGuardian(id, filter)
                 }
             }
-        Audit.DecisionRead.log(targetId = id, meta = mapOf("count" to decisions.size))
+        Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -92,7 +93,7 @@ class DecisionController(
                     it.getDecisionsByChild(id, filter)
                 }
             }
-        Audit.DecisionRead.log(targetId = id, meta = mapOf("count" to decisions.size))
+        Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -123,7 +124,7 @@ class DecisionController(
                     it.getDecisionsByApplication(id, filter)
                 }
             }
-        Audit.DecisionReadByApplication.log(targetId = id)
+        Audit.DecisionReadByApplication.log(targetId = AuditId(id))
 
         return DecisionListResponse(decisions)
     }
@@ -197,7 +198,7 @@ class DecisionController(
                     }
                 decisionService.getDecisionPdf(dbc, decision)
             }
-            .also { Audit.DecisionDownloadPdf.log(targetId = id) }
+            .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
     }
 }
 

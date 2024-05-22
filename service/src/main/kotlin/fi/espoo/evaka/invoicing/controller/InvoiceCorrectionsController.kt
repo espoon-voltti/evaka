@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.ChildId
@@ -90,7 +91,7 @@ WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
             }
             .also {
                 Audit.InvoiceCorrectionsRead.log(
-                    targetId = personId,
+                    targetId = AuditId(personId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -132,8 +133,8 @@ RETURNING id
                 }
             }
         Audit.InvoiceCorrectionsCreate.log(
-            targetId = listOf(body.headOfFamilyId, body.childId),
-            objectId = invoiceCorrectionId
+            targetId = AuditId(listOf(body.headOfFamilyId, body.childId)),
+            objectId = AuditId(invoiceCorrectionId)
         )
     }
 
@@ -177,7 +178,7 @@ DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
                 }
             }
         }
-        Audit.InvoiceCorrectionsDelete.log(targetId = id)
+        Audit.InvoiceCorrectionsDelete.log(targetId = AuditId(id))
     }
 
     data class NoteUpdateBody(val note: String)
@@ -207,7 +208,7 @@ DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
                     .execute()
             }
         }
-        Audit.InvoiceCorrectionsNoteUpdate.log(targetId = id)
+        Audit.InvoiceCorrectionsNoteUpdate.log(targetId = AuditId(id))
     }
 }
 

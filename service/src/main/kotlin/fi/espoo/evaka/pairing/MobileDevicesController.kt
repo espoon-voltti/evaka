@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -46,7 +47,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.MobileDevicesList.log(targetId = unitId, meta = mapOf("count" to it.size))
+                Audit.MobileDevicesList.log(
+                    targetId = AuditId(unitId),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 
@@ -68,7 +72,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.MobileDevicesList.log(targetId = user.id, meta = mapOf("count" to it.size))
+                Audit.MobileDevicesList.log(
+                    targetId = AuditId(user.id),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 
@@ -94,7 +101,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                 it.renameDevice(id, body.name)
             }
         }
-        Audit.MobileDevicesRename.log(targetId = id)
+        Audit.MobileDevicesRename.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/mobile-devices/{id}")
@@ -110,7 +117,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                 it.deleteDevice(id)
             }
         }
-        Audit.MobileDevicesDelete.log(targetId = id)
+        Audit.MobileDevicesDelete.log(targetId = AuditId(id))
     }
 
     @PostMapping("/mobile-devices/pin-login")
@@ -144,7 +151,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.PinLogin.log(
-                    targetId = params.employeeId,
+                    targetId = AuditId(params.employeeId),
                     meta = mapOf("status" to it.status)
                 )
             }

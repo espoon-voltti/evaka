@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
@@ -158,7 +159,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
+        Audit.FeeDecisionConfirm.log(targetId = AuditId(feeDecisionIds))
     }
 
     @PostMapping("/ignore")
@@ -180,7 +181,7 @@ class FeeDecisionController(
                 service.ignoreDrafts(tx, feeDecisionIds, clock.today())
             }
         }
-        Audit.FeeDecisionIgnore.log(targetId = feeDecisionIds)
+        Audit.FeeDecisionIgnore.log(targetId = AuditId(feeDecisionIds))
     }
 
     @PostMapping("/unignore")
@@ -212,7 +213,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionUnignore.log(targetId = feeDecisionIds)
+        Audit.FeeDecisionUnignore.log(targetId = AuditId(feeDecisionIds))
     }
 
     @PostMapping("/mark-sent")
@@ -234,7 +235,7 @@ class FeeDecisionController(
                 service.setSent(it, clock, feeDecisionIds)
             }
         }
-        Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
+        Audit.FeeDecisionMarkSent.log(targetId = AuditId(feeDecisionIds))
     }
 
     @GetMapping("/pdf/{decisionId}")
@@ -276,7 +277,7 @@ class FeeDecisionController(
                 }
                 service.getFeeDecisionPdfResponse(dbc, decisionId)
             }
-            .also { Audit.FeeDecisionPdfRead.log(targetId = decisionId) }
+            .also { Audit.FeeDecisionPdfRead.log(targetId = AuditId(decisionId)) }
     }
 
     @GetMapping("/{id}")
@@ -293,7 +294,7 @@ class FeeDecisionController(
             }
         }
             ?: throw NotFound("No fee decision found with given ID ($id)").also {
-                Audit.FeeDecisionRead.log(targetId = id)
+                Audit.FeeDecisionRead.log(targetId = AuditId(id))
             }
     }
 
@@ -318,7 +319,7 @@ class FeeDecisionController(
             }
             .also {
                 Audit.FeeDecisionHeadOfFamilyRead.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -344,7 +345,7 @@ class FeeDecisionController(
                 generator.createRetroactiveFeeDecisions(it, id, body.from)
             }
         }
-        Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
+        Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = AuditId(id))
     }
 
     @PostMapping("/set-type/{id}")
@@ -361,7 +362,7 @@ class FeeDecisionController(
                 service.setType(it, id, request.type)
             }
         }
-        Audit.FeeDecisionSetType.log(targetId = id, meta = mapOf("type" to request.type))
+        Audit.FeeDecisionSetType.log(targetId = AuditId(id), meta = mapOf("type" to request.type))
     }
 }
 

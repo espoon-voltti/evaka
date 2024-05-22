@@ -5,6 +5,7 @@
 package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.reservations.clearOldReservations
 import fi.espoo.evaka.reservations.deleteReservationsFromHolidayPeriodDates
 import fi.espoo.evaka.reservations.getReservableRange
@@ -57,7 +58,7 @@ class AbsenceController(
             }
             .also {
                 Audit.AbsenceRead.log(
-                    targetId = groupId,
+                    targetId = AuditId(groupId),
                     meta = mapOf("year" to year, "month" to month)
                 )
             }
@@ -123,8 +124,8 @@ class AbsenceController(
                 }
             }
         Audit.AbsenceUpsert.log(
-            targetId = groupId,
-            objectId = upserted,
+            targetId = AuditId(groupId),
+            objectId = AuditId(upserted),
             meta = mapOf("children" to children)
         )
     }
@@ -165,8 +166,8 @@ class AbsenceController(
             }
             .also { (deleted, reservations) ->
                 Audit.AbsenceDelete.log(
-                    targetId = groupId,
-                    objectId = deleted,
+                    targetId = AuditId(groupId),
+                    objectId = AuditId(deleted),
                     meta =
                         mapOf(
                             "children" to children,
@@ -209,7 +210,7 @@ class AbsenceController(
             }
             .also { (deletedReservations, deletedAbsences) ->
                 Audit.AttendanceReservationDelete.log(
-                    targetId = groupId,
+                    targetId = AuditId(groupId),
                     meta =
                         mapOf(
                             "children" to children,
@@ -244,8 +245,8 @@ class AbsenceController(
                 }
             }
         Audit.AbsenceDelete.log(
-            targetId = childId,
-            objectId = deleted,
+            targetId = AuditId(childId),
+            objectId = AuditId(deleted),
             meta = mapOf("date" to body.date)
         )
     }
@@ -273,7 +274,7 @@ class AbsenceController(
             }
             .also {
                 Audit.AbsenceRead.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("year" to year, "month" to month)
                 )
             }

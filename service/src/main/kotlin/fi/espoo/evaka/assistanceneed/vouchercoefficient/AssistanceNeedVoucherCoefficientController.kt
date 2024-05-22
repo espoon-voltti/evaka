@@ -5,6 +5,7 @@
 package fi.espoo.evaka.assistanceneed.vouchercoefficient
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -64,8 +65,8 @@ class AssistanceNeedVoucherCoefficientController(
             }
             .also { coefficient ->
                 Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(
-                    targetId = childId,
-                    objectId = coefficient.id
+                    targetId = AuditId(childId),
+                    objectId = AuditId(coefficient.id)
                 )
             }
     }
@@ -97,7 +98,7 @@ class AssistanceNeedVoucherCoefficientController(
             }
             .also {
                 Audit.ChildAssistanceNeedVoucherCoefficientRead.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -144,7 +145,7 @@ class AssistanceNeedVoucherCoefficientController(
                     }
                 }
             }
-            .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -184,7 +185,7 @@ class AssistanceNeedVoucherCoefficientController(
                 )
             }
         }
-        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(targetId = id)
+        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(targetId = AuditId(id))
     }
 
     private fun adjustExistingCoefficients(

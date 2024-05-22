@@ -5,6 +5,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.getEmployeeNamesByIds
 import fi.espoo.evaka.pis.getPersonDuplicateOf
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
@@ -86,7 +87,10 @@ class VasuController(
                 }
             }
             .also { documentId ->
-                Audit.VasuDocumentCreate.log(targetId = childId, objectId = documentId)
+                Audit.VasuDocumentCreate.log(
+                    targetId = AuditId(childId),
+                    objectId = AuditId(documentId)
+                )
             }
     }
 
@@ -133,7 +137,7 @@ class VasuController(
             }
             .also {
                 Audit.ChildVasuDocumentsRead.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -206,7 +210,7 @@ class VasuController(
                     )
                 }
             }
-            .also { Audit.VasuDocumentRead.log(targetId = id) }
+            .also { Audit.VasuDocumentRead.log(targetId = AuditId(id)) }
     }
 
     data class VasuDocumentWithPermittedActions(
@@ -305,7 +309,7 @@ class VasuController(
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
-        Audit.VasuDocumentUpdate.log(targetId = id)
+        Audit.VasuDocumentUpdate.log(targetId = AuditId(id))
     }
 
     private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
@@ -363,7 +367,7 @@ class VasuController(
                 }
             }
         }
-        Audit.VasuDocumentEventCreate.log(targetId = id)
+        Audit.VasuDocumentEventCreate.log(targetId = AuditId(id))
     }
 
     @DeleteMapping(
@@ -386,6 +390,6 @@ class VasuController(
                 tx.deleteVasuDocument(id)
             }
         }
-        Audit.VasuDocumentDelete.log(targetId = id)
+        Audit.VasuDocumentDelete.log(targetId = AuditId(id))
     }
 }

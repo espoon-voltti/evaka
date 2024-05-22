@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
@@ -121,7 +122,7 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = user.id) }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
     }
 
     @GetMapping("/applications/children")
@@ -142,7 +143,7 @@ class ApplicationControllerCitizen(
                     tx.getCitizenChildren(clock.today(), user.id)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = user.id) }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
     }
 
     @GetMapping("/applications/{applicationId}")
@@ -171,7 +172,7 @@ class ApplicationControllerCitizen(
                     )
                 }
             }
-        Audit.ApplicationRead.log(targetId = applicationId)
+        Audit.ApplicationRead.log(targetId = AuditId(applicationId))
 
         return if (application?.hideFromGuardian == false) {
             if (user.id == application.guardianId) {
@@ -245,8 +246,8 @@ class ApplicationControllerCitizen(
             }
             .also { applicationId ->
                 Audit.ApplicationCreate.log(
-                    targetId = body.childId,
-                    objectId = applicationId,
+                    targetId = AuditId(body.childId),
+                    objectId = AuditId(applicationId),
                     meta = mapOf("guardianId" to user.id, "applicationType" to body.type)
                 )
             }
@@ -281,7 +282,12 @@ class ApplicationControllerCitizen(
                         .toMap()
                 }
             }
-            .also { Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId) }
+            .also {
+                Audit.ApplicationReadDuplicates.log(
+                    targetId = AuditId(user.id),
+                    objectId = AuditId(childId)
+                )
+            }
     }
 
     @GetMapping("/applications/active-placements/{childId}")
@@ -312,7 +318,7 @@ class ApplicationControllerCitizen(
                         .toMap()
                 }
             }
-            .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = childId) }
+            .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = AuditId(childId)) }
     }
 
     @PutMapping("/applications/{applicationId}")
@@ -341,7 +347,7 @@ class ApplicationControllerCitizen(
                 )
             }
         }
-        Audit.ApplicationUpdate.log(targetId = applicationId)
+        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
     }
 
     @PutMapping("/applications/{applicationId}/draft")
@@ -371,7 +377,7 @@ class ApplicationControllerCitizen(
                 )
             }
         }
-        Audit.ApplicationUpdate.log(targetId = applicationId)
+        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
     }
 
     @DeleteMapping("/applications/{applicationId}")
@@ -409,7 +415,7 @@ class ApplicationControllerCitizen(
                 }
             }
         }
-        Audit.ApplicationDelete.log(targetId = applicationId)
+        Audit.ApplicationDelete.log(targetId = AuditId(applicationId))
     }
 
     @PostMapping("/applications/{applicationId}/actions/send-application")
@@ -464,7 +470,7 @@ class ApplicationControllerCitizen(
             }
             .also {
                 Audit.DecisionRead.log(
-                    targetId = user.id,
+                    targetId = AuditId(user.id),
                     meta = mapOf("count" to it.decisions.size)
                 )
             }
@@ -527,7 +533,7 @@ class ApplicationControllerCitizen(
             }
             .also {
                 Audit.DecisionReadByApplication.log(
-                    targetId = applicationId,
+                    targetId = AuditId(applicationId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -599,7 +605,7 @@ class ApplicationControllerCitizen(
                     } ?: throw NotFound("Decision $id does not exist")
                 decisionService.getDecisionPdf(dbc, decision)
             }
-            .also { Audit.DecisionDownloadPdf.log(targetId = id) }
+            .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/applications/by-guardian/notifications")
@@ -620,7 +626,7 @@ class ApplicationControllerCitizen(
                     tx.fetchApplicationNotificationCountForCitizen(user.id)
                 }
             }
-            .also { Audit.ApplicationReadNotifications.log(targetId = user.id) }
+            .also { Audit.ApplicationReadNotifications.log(targetId = AuditId(user.id)) }
     }
 
     @GetMapping("/finance-decisions/by-liable-citizen")
@@ -716,7 +722,7 @@ class ApplicationControllerCitizen(
             }
             .also {
                 Audit.FinanceDecisionCitizenRead.log(
-                    targetId = user.id,
+                    targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -741,7 +747,7 @@ class ApplicationControllerCitizen(
                 }
                 feeDecisionService.getFeeDecisionPdfResponse(dbc, id)
             }
-            .also { Audit.CitizenFeeDecisionDownloadPdf.log(targetId = id) }
+            .also { Audit.CitizenFeeDecisionDownloadPdf.log(targetId = AuditId(id)) }
     }
 
     @GetMapping(
@@ -766,7 +772,7 @@ class ApplicationControllerCitizen(
                 }
                 voucherValueDecisionService.getDecisionPdfResponse(dbc, id)
             }
-            .also { Audit.CitizenVoucherValueDecisionDownloadPdf.log(targetId = id) }
+            .also { Audit.CitizenVoucherValueDecisionDownloadPdf.log(targetId = AuditId(id)) }
     }
 
     private fun getDecidableApplications(

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
@@ -90,8 +91,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForApplication.log(
-                    targetId = applicationId,
-                    objectId = attachmentId,
+                    targetId = AuditId(applicationId),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("type" to type.name, "size" to file.size)
                 )
             }
@@ -129,8 +130,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
-                    targetId = incomeStatementId,
-                    objectId = attachmentId,
+                    targetId = AuditId(incomeStatementId),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
@@ -170,8 +171,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncome.log(
-                    targetId = incomeId,
-                    objectId = attachmentId,
+                    targetId = incomeId?.let(AuditId::invoke),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
@@ -204,8 +205,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForMessageDraft.log(
-                    targetId = draftId,
-                    objectId = attachmentId,
+                    targetId = AuditId(draftId),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
@@ -248,8 +249,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForPedagogicalDocument.log(
-                    targetId = documentId,
-                    objectId = attachmentId,
+                    targetId = AuditId(documentId),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
@@ -286,8 +287,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForApplication.log(
-                    targetId = applicationId,
-                    objectId = attachmentId,
+                    targetId = AuditId(applicationId),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("type" to type.name, "size" to file.size)
                 )
             }
@@ -328,8 +329,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
-                    targetId = incomeStatementId,
-                    objectId = attachmentId,
+                    targetId = incomeStatementId?.let(AuditId::invoke),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
@@ -369,8 +370,8 @@ class AttachmentsController(
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForFeeAlteration.log(
-                    targetId = feeAlterationId,
-                    objectId = attachmentId,
+                    targetId = feeAlterationId?.let(AuditId::invoke),
+                    objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
@@ -584,7 +585,7 @@ class AttachmentsController(
             throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
 
         return documentClient.responseInline(filesBucket, "$attachmentId", attachment.name).also {
-            Audit.AttachmentsRead.log(targetId = attachmentId)
+            Audit.AttachmentsRead.log(targetId = AuditId(attachmentId))
         }
     }
 
@@ -691,7 +692,7 @@ class AttachmentsController(
                 }
                 .also { attachment -> attachmentsService.deleteAttachment(dbc, attachment.id) }
         }
-        Audit.AttachmentsDelete.log(targetId = attachmentId)
+        Audit.AttachmentsDelete.log(targetId = AuditId(attachmentId))
     }
 
     private val defaultAllowedAttachmentContentTypes =

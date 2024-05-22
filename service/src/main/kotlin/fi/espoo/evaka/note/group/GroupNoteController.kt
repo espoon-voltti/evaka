@@ -5,6 +5,7 @@
 package fi.espoo.evaka.note.group
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -36,7 +37,10 @@ class GroupNoteController(private val ac: AccessControl) {
                 }
             }
             .also { notes ->
-                Audit.GroupNoteRead.log(targetId = groupId, objectId = notes.map { it.id })
+                Audit.GroupNoteRead.log(
+                    targetId = AuditId(groupId),
+                    objectId = AuditId(notes.map { it.id })
+                )
             }
     }
 
@@ -55,7 +59,9 @@ class GroupNoteController(private val ac: AccessControl) {
                     it.createGroupNote(groupId, body)
                 }
             }
-            .also { noteId -> Audit.GroupNoteCreate.log(targetId = groupId, objectId = noteId) }
+            .also { noteId ->
+                Audit.GroupNoteCreate.log(targetId = AuditId(groupId), objectId = AuditId(noteId))
+            }
     }
 
     @PutMapping("/group-notes/{noteId}")
@@ -72,7 +78,7 @@ class GroupNoteController(private val ac: AccessControl) {
                     it.updateGroupNote(clock, noteId, body)
                 }
             }
-            .also { Audit.GroupNoteUpdate.log(targetId = noteId) }
+            .also { Audit.GroupNoteUpdate.log(targetId = AuditId(noteId)) }
     }
 
     @DeleteMapping("/group-notes/{noteId}")
@@ -88,6 +94,6 @@ class GroupNoteController(private val ac: AccessControl) {
                     it.deleteGroupNote(noteId)
                 }
             }
-            .also { Audit.GroupNoteDelete.log(targetId = noteId) }
+            .also { Audit.GroupNoteDelete.log(targetId = AuditId(noteId)) }
     }
 }

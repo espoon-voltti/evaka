@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -42,7 +43,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.MessagingBlocklistRead.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -75,6 +76,6 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.MessagingBlocklistEdit.log(targetId = childId, objectId = personId)
+        Audit.MessagingBlocklistEdit.log(targetId = AuditId(childId), objectId = AuditId(personId))
     }
 }

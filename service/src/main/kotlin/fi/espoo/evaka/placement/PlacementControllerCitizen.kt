@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.cancelAllActiveTransferApplications
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.shared.ChildId
@@ -63,7 +64,7 @@ class PlacementControllerCitizen(
             }
             .also {
                 Audit.PlacementSearch.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.placements.size)
                 )
             }
@@ -168,8 +169,8 @@ class PlacementControllerCitizen(
                     terminatablePlacementGroup.placements +
                         terminatablePlacementGroup.additionalPlacements
                 Audit.PlacementTerminate.log(
-                    targetId = listOf(body.unitId, body.type, childId),
-                    objectId = placements.map { it.id } + cancelableTransferApplicationIds,
+                    targetId = AuditId(listOf(body.unitId, body.type, childId)),
+                    objectId = AuditId(placements.map { it.id } + cancelableTransferApplicationIds),
                     meta =
                         mapOf(
                             "placementIds" to placements.map { it.id },

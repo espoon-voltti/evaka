@@ -5,6 +5,7 @@
 package fi.espoo.evaka.note.child.daily
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ChildDailyNoteId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -48,7 +49,10 @@ class ChildDailyNoteController(private val ac: AccessControl) {
                     }
                 }
                 .also { noteId ->
-                    Audit.ChildDailyNoteCreate.log(targetId = childId, objectId = noteId)
+                    Audit.ChildDailyNoteCreate.log(
+                        targetId = AuditId(childId),
+                        objectId = AuditId(noteId)
+                    )
                 }
         } catch (e: Exception) {
             val error = mapPSQLException(e)
@@ -72,7 +76,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
                     it.updateChildDailyNote(clock, noteId, body)
                 }
             }
-            .also { Audit.ChildDailyNoteUpdate.log(targetId = noteId) }
+            .also { Audit.ChildDailyNoteUpdate.log(targetId = AuditId(noteId)) }
     }
 
     @DeleteMapping("/child-daily-notes/{noteId}")
@@ -88,6 +92,6 @@ class ChildDailyNoteController(private val ac: AccessControl) {
                 it.deleteChildDailyNote(noteId)
             }
         }
-        Audit.ChildDailyNoteDelete.log(targetId = noteId)
+        Audit.ChildDailyNoteDelete.log(targetId = AuditId(noteId))
     }
 }

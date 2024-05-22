@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.service.StaffAttendanceForDates
 import fi.espoo.evaka.daycare.service.StaffAttendanceService
 import fi.espoo.evaka.daycare.service.StaffAttendanceUpdate
@@ -50,7 +51,7 @@ class StaffAttendanceController(
                 }
                 staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today())
             }
-            .also { Audit.UnitStaffAttendanceRead.log(targetId = unitId) }
+            .also { Audit.UnitStaffAttendanceRead.log(targetId = AuditId(unitId)) }
     }
 
     @GetMapping("/group/{groupId}")
@@ -74,7 +75,7 @@ class StaffAttendanceController(
                 }
                 staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId)
             }
-            .also { Audit.StaffAttendanceRead.log(targetId = groupId) }
+            .also { Audit.StaffAttendanceRead.log(targetId = AuditId(groupId)) }
     }
 
     @PostMapping("/group/{groupId}")
@@ -103,6 +104,6 @@ class StaffAttendanceController(
                 staffAttendance.copy(groupId = groupId)
             )
         }
-        Audit.StaffAttendanceUpdate.log(targetId = groupId)
+        Audit.StaffAttendanceUpdate.log(targetId = AuditId(groupId))
     }
 }

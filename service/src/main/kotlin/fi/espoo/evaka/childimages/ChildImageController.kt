@@ -5,6 +5,7 @@
 package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.checkFileContentType
@@ -68,8 +69,8 @@ class ChildImageController(
                 replaceImage(dbc, documentClient, bucket, childId, file, contentType)
             }
         Audit.ChildImageUpload.log(
-            targetId = childId,
-            objectId = imageId,
+            targetId = AuditId(childId),
+            objectId = AuditId(imageId),
             meta = mapOf("size" to file.size, "contentType" to contentType)
         )
     }
@@ -94,7 +95,10 @@ class ChildImageController(
                 }
                 dbc.transaction { tx -> removeImage(tx, documentClient, bucket, childId) }
             }
-        Audit.ChildImageDelete.log(targetId = childId, objectId = imageId)
+        Audit.ChildImageDelete.log(
+            targetId = AuditId(childId),
+            objectId = imageId?.let(AuditId::invoke)
+        )
     }
 
     @GetMapping("/citizen/child-images/{imageId}")
@@ -126,7 +130,7 @@ class ChildImageController(
 
         val key = "$childImagesBucketPrefix$imageId"
         return documentClient.responseInline(bucket, key, null).also {
-            Audit.ChildImageDownload.log(targetId = imageId)
+            Audit.ChildImageDownload.log(targetId = AuditId(imageId))
         }
     }
 }

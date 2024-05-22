@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
@@ -110,7 +111,7 @@ class FinanceBasicsController(
                     mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
                 }
             }
-        Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = id)
+        Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = AuditId(id))
     }
 
     @PutMapping("/fee-thresholds/{id}")
@@ -129,7 +130,7 @@ class FinanceBasicsController(
                 mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
             }
         }
-        Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
+        Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = AuditId(id))
     }
 
     @GetMapping("/voucher-values")
@@ -187,7 +188,7 @@ class FinanceBasicsController(
                     tx.insertNewVoucherValue(body)
                 }
             }
-        Audit.FinanceBasicsVoucherValueCreate.log(targetId = id)
+        Audit.FinanceBasicsVoucherValueCreate.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/voucher-values/{id}")
@@ -215,7 +216,7 @@ class FinanceBasicsController(
                 if (values.size > 1) tx.updateVoucherValueEndDate(values[1].id, null)
             }
         }
-        Audit.FinanceBasicsVoucherValueDelete.log(targetId = id)
+        Audit.FinanceBasicsVoucherValueDelete.log(targetId = AuditId(id))
     }
 }
 
