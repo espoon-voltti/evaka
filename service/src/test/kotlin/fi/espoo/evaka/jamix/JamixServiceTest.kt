@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.jamix
 
-import fi.espoo.evaka.specialdiet.JamixSpecialDiet
-import fi.espoo.evaka.specialdiet.JamixSpecialDietFields
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import kotlin.test.Test
 import kotlin.test.assertEquals

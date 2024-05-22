@@ -29,18 +29,18 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')"
                 )
             }
-            child =
-                tx.createChild(
-                    Child(
-                        id = childId,
-                        additionalInformation =
-                            AdditionalInformation(
-                                allergies = "Pähkinäallergia",
-                                diet = "Kasvisruokavalio",
-                                additionalInfo = "Ei osaa solmia kengännauhoja"
-                            )
-                    )
+            tx.createChild(
+                Child(
+                    id = childId,
+                    additionalInformation =
+                        AdditionalInformation(
+                            allergies = "Pähkinäallergia",
+                            diet = "Kasvisruokavalio",
+                            additionalInfo = "Ei osaa solmia kengännauhoja"
+                        )
                 )
+            )
+            child = tx.getChild(childId)!!
         }
     }
 

@@ -1824,6 +1824,7 @@ export class Fixture {
       allergies: '',
       diet: '',
       dietId: null,
+      mealTextureId: null,
       languageAtHome: '',
       languageAtHomeDetails: '',
       medication: ''

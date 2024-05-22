@@ -12,19 +12,19 @@ fun Database.Read.getChild(id: ChildId): Child? =
     createQuery {
             sql(
                 """
-SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.abbreviation as special_diet_abbreviation
-FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id
+SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.abbreviation as special_diet_abbreviation, meal_texture.name AS meal_texture_name
+FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id LEFT JOIN meal_texture on child.meal_texture_id = meal_texture.id
 WHERE child.id = ${bind(id)}
 """
             )
         }
         .exactlyOneOrNull<Child>()
 
-fun Database.Transaction.createChild(child: Child): Child =
-    createQuery {
-            sql(
-                """
-INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details, diet_id) VALUES (
+fun Database.Transaction.createChild(child: Child) {
+    execute {
+        sql(
+            """
+INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details, diet_id, meal_texture_id) VALUES (
     ${bind(child.id)},
     ${bind(child.additionalInformation.allergies)},
     ${bind(child.additionalInformation.diet)},
@@ -32,13 +32,13 @@ INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_
     ${bind(child.additionalInformation.medication)},
     ${bind(child.additionalInformation.languageAtHome)},
     ${bind(child.additionalInformation.languageAtHomeDetails)},
-    ${bind(child.additionalInformation.specialDiet?.id)}
+    ${bind(child.additionalInformation.specialDiet?.id)},
+    ${bind(child.additionalInformation.mealTexture?.id)}
 )
-RETURNING *
 """
-            )
-        }
-        .exactlyOne<Child>()
+        )
+    }
+}
 
 fun Database.Transaction.upsertChild(child: Child) {
     execute {
@@ -62,7 +62,8 @@ UPDATE child SET
     medication = ${bind(child.additionalInformation.medication)}, 
     language_at_home = ${bind(child.additionalInformation.languageAtHome)}, 
     language_at_home_details = ${bind(child.additionalInformation.languageAtHomeDetails)}, 
-    diet_id = ${bind(child.additionalInformation.specialDiet?.id)}
+    diet_id = ${bind(child.additionalInformation.specialDiet?.id)}, 
+    meal_texture_id = ${bind(child.additionalInformation.mealTexture?.id)}
 WHERE id = ${bind(child.id)}
 """
         )

@@ -598,10 +598,12 @@ export const fi = {
       familyLink: 'Perheen tiedot',
       languageAtHome: 'Kotikieli, jos muu kuin VTJ:ssä mainittu',
       specialDiet: 'Ruokatilausintegraatiossa käytettävä erityisruokavalio',
+      mealTexture: 'Ruokatilausintegraatiossa käytettävä ruoan rakenne',
       placeholder: {
         languageAtHome: 'Valitse kieli',
         languageAtHomeDetails: 'Lisätiedot kotikielestä',
-        specialDiet: 'Valitse erityisruokavalio'
+        specialDiet: 'Valitse erityisruokavalio',
+        mealTexture: 'Valitse ruoan rakenne'
       }
     },
     familyContacts: {
@@ -4047,8 +4049,9 @@ export const fi = {
         mealId: 'Aterian tunniste',
         mealCount: 'kpl-määrä',
         dietId: 'Erityisruokavalion tunniste',
-        dietName: 'Erv. nimi',
         dietAbbreviation: 'Erv. lyhenne',
+        mealTextureId: 'Ruoan rakenteen tunniste',
+        mealTextureName: 'Ruoan rakenne',
         additionalInfo: 'Lisätieto'
       }
     }

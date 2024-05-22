@@ -33,6 +33,7 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
     val childIds = childPlacements.keys
     val childData = tx.getChildData(unitId, childIds, date.toFiniteDateRange())
     val specialDiets = tx.specialDietsForChildren(childIds)
+    val mealTextures = tx.mealTexturesForChildren(childIds)
     val preschoolTerms = tx.getPreschoolTerms()
 
     return DaycareUnitData(
@@ -41,6 +42,7 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
         childPlacements,
         childData,
         specialDiets,
+        mealTextures,
         preschoolTerms
     )
 }

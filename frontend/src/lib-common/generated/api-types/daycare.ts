@@ -13,6 +13,7 @@ import { Action } from '../action'
 import { Coordinate } from './shared'
 import { DaycarePlacementWithDetails } from './placement'
 import { JsonOf } from '../../json'
+import { MealTexture } from './specialdiet'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
@@ -47,6 +48,7 @@ export interface AdditionalInformation {
   diet: string
   languageAtHome: string
   languageAtHomeDetails: string
+  mealTexture: MealTexture | null
   medication: string
   preferredName: string
   specialDiet: SpecialDiet | null

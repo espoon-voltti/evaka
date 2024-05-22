@@ -187,6 +187,7 @@ export const initializeAreaAndPersonData = async (): Promise<
       allergies: '',
       diet: '',
       dietId: null,
+      mealTextureId: null,
       languageAtHome: '',
       languageAtHomeDetails: '',
       medication: ''

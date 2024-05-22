@@ -194,9 +194,10 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .forEach { tx.insert(it) }
 
             tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation")))
+            tx.setMealTextures(listOf(MealTexture(42, "Sosemainen")))
 
             tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
+            tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1, mealTextureId = 42))
             tx.insert(
                     DevPlacement(
                         childId = childWithSpecialDiet.id,
@@ -256,19 +257,22 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 orderAmount = 1,
                                 mealTypeID = 162,
                                 dietID = null,
-                                additionalInfo = null
+                                additionalInfo = null,
+                                textureID = null
                             ),
                             JamixClient.MealOrderRow(
                                 orderAmount = 1,
                                 mealTypeID = 175,
                                 dietID = null,
-                                additionalInfo = null
+                                additionalInfo = null,
+                                textureID = null
                             ),
                             JamixClient.MealOrderRow(
                                 orderAmount = 1,
                                 mealTypeID = 152,
                                 dietID = null,
-                                additionalInfo = null
+                                additionalInfo = null,
+                                textureID = null
                             )
                         )
                 ),
@@ -281,7 +285,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 orderAmount = 1,
                                 mealTypeID = 162,
                                 dietID = null,
-                                additionalInfo = null
+                                additionalInfo = null,
+                                textureID = null
                             ),
                         )
                 ),
@@ -294,7 +299,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 orderAmount = 1,
                                 mealTypeID = 145,
                                 dietID = 1,
-                                additionalInfo = "Johnson Diet"
+                                additionalInfo = "Johnson Diet",
+                                textureID = 42
                             )
                         )
                 )
@@ -393,7 +399,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
 class TestJamixClient(
     val customers: Map<Int, Int> = mapOf(),
-    val specialDiets: List<JamixSpecialDiet> = emptyList()
+    val specialDiets: List<JamixSpecialDiet> = emptyList(),
+    val mealTextures: List<JamixTexture> = emptyList()
 ) : JamixClient {
     val orders = mutableListOf<JamixClient.MealOrder>()
 
@@ -409,5 +416,9 @@ class TestJamixClient(
 
     override fun getDiets(): List<JamixSpecialDiet> {
         return specialDiets
+    }
+
+    override fun getTextures(): List<JamixTexture> {
+        return mealTextures
     }
 }

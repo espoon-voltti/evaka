@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.specialdiet.MealTexture
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.GetMapping
@@ -158,5 +159,6 @@ data class AdditionalInformation(
     val medication: String = "",
     val languageAtHome: String = "",
     val languageAtHomeDetails: String = "",
-    @Nested("special_diet") val specialDiet: SpecialDiet? = null
+    @Nested("special_diet") val specialDiet: SpecialDiet? = null,
+    @Nested("meal_texture") val mealTexture: MealTexture? = null
 )

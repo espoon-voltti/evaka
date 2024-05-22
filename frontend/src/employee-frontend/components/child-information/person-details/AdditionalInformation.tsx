@@ -7,7 +7,10 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { AdditionalInformation } from 'lib-common/generated/api-types/daycare'
-import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
+import {
+  MealTexture,
+  SpecialDiet
+} from 'lib-common/generated/api-types/specialdiet'
 import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -34,7 +37,7 @@ import {
   updateAdditionalInfoMutation
 } from '../queries'
 
-import { specialDietsQuery } from './queries'
+import { mealTexturesQuery, specialDietsQuery } from './queries'
 
 const TextAreaInput = styled(TextArea)`
   width: 100%;
@@ -65,12 +68,26 @@ const filterDiets = (
   )
 }
 
+const filterMealTextures = (
+  input: string,
+  mealTextures: readonly MealTexture[]
+): MealTexture[] => {
+  const filter = input.toLowerCase()
+  return mealTextures.filter((mealTexture) =>
+    getMealTextureCaption(mealTexture).toLowerCase().includes(filter)
+  )
+}
+
 interface Props {
   childId: UUID
 }
 
 function getDietCaption(diet: SpecialDiet) {
   return `${diet.abbreviation} - ${diet.id}`
+}
+
+function getMealTextureCaption(mealTexture: MealTexture) {
+  return `${mealTexture.name} - ${mealTexture.id}`
 }
 
 export default React.memo(function AdditionalInformation({ childId }: Props) {
@@ -90,7 +107,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     medication: '',
     languageAtHome: '',
     languageAtHomeDetails: '',
-    specialDiet: null
+    specialDiet: null,
+    mealTexture: null
   })
 
   const editing = uiMode == 'child-additional-details-editing'
@@ -106,7 +124,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
         languageAtHome: additionalInformation.value.languageAtHome,
         languageAtHomeDetails:
           additionalInformation.value.languageAtHomeDetails,
-        specialDiet: additionalInformation.value.specialDiet
+        specialDiet: additionalInformation.value.specialDiet,
+        mealTexture: additionalInformation.value.mealTexture
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -124,6 +143,9 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
     []
   )
   const specialDiets = useQueryResult(specialDietsQuery(), {
+    enabled: editing
+  }).getOrElse([])
+  const mealTextures = useQueryResult(mealTexturesQuery(), {
     enabled: editing
   }).getOrElse([])
 
@@ -307,6 +329,40 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                           <div data-qa="diet-value-display">
                             {data.specialDiet
                               ? getDietCaption(data.specialDiet)
+                              : '-'}
+                          </div>
+                        </>
+                      )
+                    },
+                    {
+                      label: i18n.childInformation.personDetails.mealTexture,
+                      value: editing ? (
+                        <>
+                          <Combobox
+                            data-qa="meal-texture-input"
+                            items={mealTextures}
+                            getItemDataQa={(item) => `meal-texture-${item.id}`}
+                            selectedItem={form.mealTexture}
+                            onChange={(mealTexture) =>
+                              setForm({
+                                ...form,
+                                mealTexture: mealTexture ?? null
+                              })
+                            }
+                            filterItems={filterMealTextures}
+                            getItemLabel={getMealTextureCaption}
+                            placeholder={
+                              i18n.childInformation.personDetails.placeholder
+                                .mealTexture
+                            }
+                            clearable={true}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <div data-qa="meal-texture-value-display">
+                            {data.mealTexture
+                              ? getMealTextureCaption(data.mealTexture)
                               : '-'}
                           </div>
                         </>

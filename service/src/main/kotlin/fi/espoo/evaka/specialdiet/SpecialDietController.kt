@@ -5,6 +5,7 @@
 package fi.espoo.evaka.specialdiet
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.jamix.JamixSpecialDiet
 import fi.espoo.evaka.jamix.cleanupJamixDietList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -12,10 +13,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.*
-
-data class JamixSpecialDiet(val modelId: Int, val fields: JamixSpecialDietFields)
-
-data class JamixSpecialDietFields(val dietName: String, val dietAbbreviation: String)
 
 @RestController
 @RequestMapping("/diets")
