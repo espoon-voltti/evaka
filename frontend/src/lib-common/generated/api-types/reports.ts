@@ -661,6 +661,7 @@ export interface RawReportRow {
   absenceFree: AbsenceType | null
   absencePaid: AbsenceType | null
   age: number
+  assistanceNeedVoucherCoefficient: number | null
   backupGroupId: UUID | null
   backupUnitId: UUID | null
   capacity: number

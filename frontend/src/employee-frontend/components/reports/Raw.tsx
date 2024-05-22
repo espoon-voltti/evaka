@@ -117,6 +117,9 @@ export default React.memo(function Raw() {
                 shiftCare: mapYesNo(row.shiftCare),
                 hoursPerWeek: mapFloat(row.hoursPerWeek),
                 hasAssistanceNeed: mapYesNo(row.hasAssistanceNeed),
+                assistanceNeedVoucherCoefficient: mapFloat(
+                  row.assistanceNeedVoucherCoefficient
+                ),
                 capacityFactor: mapFloat(row.capacityFactor),
                 groupSize: mapFloat(row.capacity),
                 realizedCapacity: mapFloat(row.realizedCapacity),
@@ -160,6 +163,10 @@ export default React.memo(function Raw() {
                 { label: 'Vuorohoito', key: 'shiftCare' },
                 { label: 'Tunteja viikossa', key: 'hoursPerWeek' },
                 { label: 'Tuentarve', key: 'hasAssistanceNeed' },
+                {
+                  label: 'Palvelusetelikerroin',
+                  key: 'assistanceNeedVoucherCoefficient'
+                },
                 { label: 'Tuentarpeen kerroin', key: 'capacityFactor' },
                 { label: 'Lapsen kapasiteetti', key: 'capacity' },
                 {
