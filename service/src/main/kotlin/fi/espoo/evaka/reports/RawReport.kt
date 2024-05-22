@@ -125,6 +125,7 @@ SELECT
         OR EXISTS(SELECT FROM daycare_assistance da WHERE da.child_id = pl.child_id AND da.valid_during @> t::date)
         OR EXISTS(SELECT FROM preschool_assistance pa WHERE pa.child_id = pl.child_id AND pa.valid_during @> t::date)
     ) AS has_assistance_need,
+    anvc.coefficient as assistance_need_voucher_coefficient,
 
     coalesce(an.capacity_factor, 1.0) as capacity_factor,
     coalesce(an.capacity_factor, 1.0) * (CASE
@@ -159,6 +160,7 @@ LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date
 LEFT JOIN service_need_option sno on sn.option_id = sno.id
 LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
 LEFT JOIN assistance_factor an ON an.child_id = p.id AND an.valid_during @> t::date
+LEFT JOIN assistance_need_voucher_coefficient anvc ON anvc.child_id = p.id AND anvc.validity_period @> t::date AND anvc.coefficient <> 1
 LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date AND ab1.category = 'BILLABLE'
 LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date AND ab2.category = 'NONBILLABLE'
 LEFT JOIN holiday ON t = holiday.date AND NOT (u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR bcu.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7])
@@ -201,6 +203,7 @@ data class RawReportRow(
     val shiftCare: Boolean,
     val hoursPerWeek: Double,
     val hasAssistanceNeed: Boolean,
+    val assistanceNeedVoucherCoefficient: Double?,
     val capacityFactor: Double,
     val capacity: Double,
     val realizedCapacity: Double,
