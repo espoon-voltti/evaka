@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
@@ -47,6 +48,7 @@ import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {
   areas: () => ['areas'],
+  daycareGroups: () => ['groups'],
   units: (arg: Arg0<typeof getDaycares>) => ['units', arg],
   unit: (unitId: UUID) => ['unit', unitId],
   unitNotifications: (unitId: UUID) => ['unitNotifications', unitId],
@@ -86,6 +88,11 @@ export const areaQuery = query({
 export const unitsQuery = query({
   api: getDaycares,
   queryKey: queryKeys.units
+})
+
+export const customerNumbersQuery = query({
+  api: (): Promise<DaycareGroup[]> => Promise.resolve([]),
+  queryKey: queryKeys.daycareGroups
 })
 
 export const unitQuery = query({

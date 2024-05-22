@@ -218,7 +218,8 @@ function Combobox<T>(props: ComboboxProps<T>) {
   )
 
   const itemToString = useCallback(
-    (item: T | null) => (item ? getItemLabel(item) : ''),
+    (item: T | null) =>
+      item !== null && item !== undefined ? getItemLabel(item) : '',
     [getItemLabel]
   )
   const [currentFilter, setCurrentFilter] = useState('')

@@ -18,19 +18,25 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
-import { unitsQuery } from '../unit/queries'
+import { unitsQuery, customerNumbersQuery } from '../unit/queries'
 
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { mealReportByUnitQuery } from './queries'
 
+enum ReportType {
+  CustomerNumber,
+  Unit
+}
 export default React.memo(function MealReport() {
   const { lang, i18n } = useTranslation()
 
+  const [reportType, setReportType] = useState<ReportType>(ReportType.Unit)
   const [selectedUnit, setSelectedUnit] = useState<Daycare | null>(null)
   const units = useQueryResult(unitsQuery({ includeClosed: false })).getOrElse(
     []
   )
+  const customerNumbers = useQueryResult(customerNumbersQuery({})).getOrElse([])
   const [date, setDate] = useState<LocalDate | null>(
     LocalDate.todayInHelsinkiTz()
   )
@@ -41,40 +47,95 @@ export default React.memo(function MealReport() {
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.meals.title}</Title>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <FilterLabel>Raporttityyppi</FilterLabel>
           <FlexRow>
             <Combobox
-              items={units}
-              onChange={setSelectedUnit}
-              selectedItem={selectedUnit}
-              getItemLabel={(item) => item.name}
-              placeholder={i18n.filters.unitPlaceholder}
+              items={[ReportType.Unit, ReportType.CustomerNumber]}
+              getItemLabel={(option) =>
+                option === ReportType.Unit ? 'Yksikkö' : 'Jamix asiakasnumero'
+              }
+              onChange={(selectedOption) => {
+                setReportType(selectedOption!)
+                setSelectedUnit(null)
+                setSelectedCustomerNumber(null)
+              }}
+              selectedItem={reportType}
+              clearable={false}
             />
           </FlexRow>
         </FilterRow>
+        {reportType === ReportType.Unit ? (
+          <FilterRow>
+            <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+            <FlexRow>
+              <Combobox
+                items={units}
+                onChange={setSelectedUnit}
+                selectedItem={selectedUnit}
+                getItemLabel={(item) => item.name}
+                placeholder={i18n.filters.unitPlaceholder}
+              />
+            </FlexRow>
+          </FilterRow>
+        ) : (
+          <FilterRow>
+            <FilterLabel>{i18n.reports.meals.customerNumber}</FilterLabel>
+            <FlexRow>
+              <Combobox
+                items={customerNumbers}
+                onChange={setSelectedCustomerNumber}
+                selectedItem={selectedCustomerNumber}
+                getItemLabel={(item) => item}
+                placeholder={i18n.filters.customerNumberPlaceholder}
+              />
+            </FlexRow>
+          </FilterRow>
+        )}
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <FilterLabel>{i18n.reports.common.date}</FilterLabel>
           <FlexRow>
             <DatePicker date={date} onChange={setDate} locale={lang} />
           </FlexRow>
         </FilterRow>
-        {date && selectedUnit && (
-          <MealReportData date={date} unitId={selectedUnit.id} />
-        )}
+        {date &&
+          ((selectedUnit && reportType === ReportType.Unit) ||
+          (selectedCustomerNumber &&
+            reportType === ReportType.CustomerNumber) ? (
+            <MealReportData
+              date={date}
+              unitId={selectedUnit?.id ?? undefined}
+              customerNumber={selectedCustomerNumber ?? undefined}
+            />
+          ) : null)}
       </ContentArea>
     </Container>
   )
 })
 
+interface MealReportDataProps {
+  date: LocalDate
+  unitId?: string
+  customerNumber?: string
+}
+
+type ValidMealReportDataProps =
+  | { date: LocalDate; unitId: string; customerNumber?: never }
+  | { date: LocalDate; unitId?: never; customerNumber: string }
+
 const MealReportData = ({
   date,
-  unitId
-}: {
-  date: LocalDate
-  unitId: string
-}) => {
+  unitId,
+  customerNumber
+}: ValidMealReportDataProps) => {
   const { i18n } = useTranslation()
-  const reportResult = useQueryResult(mealReportByUnitQuery({ date, unitId }))
+  const reportResult = useQueryResult(
+    unitId
+      ? mealReportByUnitQuery({ date, unitId })
+      : mealReportByCustomerNumberQuery({
+          date,
+          customerNumber: customerNumber!
+        })
+  )
   return renderResult(reportResult, (report) => {
     const tableData = report.meals.map((mealRow) => ({
       ...mealRow,
@@ -116,15 +177,17 @@ const MealReportData = ({
               tableData.map((row, rowIndex) => (
                 <Tr key={`${rowIndex}`}>
                   {Object.keys(columns).map((columnKey, columnIndex) => (
-                    <Th key={columnIndex}>
+                    <Td key={columnIndex}>
                       {row[columnKey as keyof typeof columns]}
-                    </Th>
+                    </Td>
                   ))}
                 </Tr>
               ))
             ) : (
               <Tr>
-                <Td colSpan={4}>{i18n.common.noResults}</Td>
+                <Td colSpan={Object.keys(columns).length}>
+                  {i18n.common.noResults}
+                </Td>
               </Tr>
             )}
           </Tbody>
