@@ -333,6 +333,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    class SyncJamixDiets : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -357,6 +361,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendAssistanceNeedPreschoolDecisionSfiMessage::class,
                     SendDecision::class,
                     SendJamixOrder::class,
+                    SyncJamixDiets::class,
                     SendPatuReport::class,
                     UpdateFromVtj::class,
                     UploadToKoski::class,
