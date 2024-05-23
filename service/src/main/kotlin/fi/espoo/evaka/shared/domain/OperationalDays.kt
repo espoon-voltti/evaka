@@ -26,6 +26,7 @@ fun Database.Read.getOperationalDatesForChildren(
         val childId: ChildId,
         val unitId: DaycareId
     )
+
     val placements: Map<ChildId, DateMap<DaycareId>> =
         createQuery {
                 sql(
@@ -40,8 +41,28 @@ fun Database.Read.getOperationalDatesForChildren(
             .groupBy { it.childId }
             .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
 
+    val backupPlacements: Map<ChildId, DateMap<DaycareId>> =
+        createQuery {
+                sql(
+                    """
+        SELECT daterange(bc.start_date, bc.end_date, '[]') as range, bc.child_id, bc.unit_id
+        FROM backup_care bc
+        WHERE bc.child_id = ANY(${bind(children)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
+    """
+                )
+            }
+            .toList<PlacementRange>()
+            .groupBy { it.childId }
+            .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
+
+    val realizedPlacements: Map<ChildId, DateMap<DaycareId>> =
+        placements.mapValues { (childId, placementDateMap) ->
+            val backupDateMap = backupPlacements[childId] ?: return@mapValues placementDateMap
+            placementDateMap.setAll(backupDateMap)
+        }
+
     val daycareIds =
-        placements.values.flatMap { dateMap -> dateMap.entries().map { it.second } }.toSet()
+        realizedPlacements.values.flatMap { dateMap -> dateMap.entries().map { it.second } }.toSet()
 
     data class DaycareOperationDays(
         val unitId: DaycareId,
@@ -83,7 +104,7 @@ fun Database.Read.getOperationalDatesForChildren(
     return children.associate { childId ->
         val operationalDays =
             range.dates().filter { date ->
-                val unitId = placements[childId]?.getValue(date) ?: return@filter false
+                val unitId = realizedPlacements[childId]?.getValue(date) ?: return@filter false
                 val hasShiftCare = shiftCareRanges[childId]?.includes(date) ?: false
                 val daycareOperationDays =
                     operationDaysByDaycareId[unitId]?.let {
