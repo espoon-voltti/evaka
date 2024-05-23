@@ -484,7 +484,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         )
                     }
                 }
-                .also { Audit.CalendarEventTimeReservationUpdate.log(targetId = AuditId(body)) }
+                .also {
+                    Audit.CalendarEventTimeReservationUpdate.log(
+                        targetId = AuditId(body.calendarEventTimeId),
+                        objectId = body.childId?.let(AuditId::invoke)
+                    )
+                }
         }
     }
 
@@ -572,7 +577,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also {
                 Audit.CalendarEventTimeRead.log(
                     targetId = AuditId(eventId),
-                    objectId = AuditId(mapOf("childId" to childId))
+                    objectId = AuditId(childId)
                 )
             }
     }
@@ -610,7 +615,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     }
                 }
             }
-            .also { Audit.CalendarEventTimeReservationCreate.log(targetId = AuditId(body)) }
+            .also {
+                Audit.CalendarEventTimeReservationCreate.log(
+                    targetId = AuditId(body.calendarEventTimeId),
+                    objectId = AuditId(body.childId)
+                )
+            }
     }
 
     @DeleteMapping("/citizen/calendar-event/reservation")
@@ -634,7 +644,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
                 }
             }
-            .also { Audit.CalendarEventTimeReservationDelete.log(targetId = AuditId(body)) }
+            .also {
+                Audit.CalendarEventTimeReservationDelete.log(
+                    targetId = AuditId(body.calendarEventTimeId),
+                    objectId = AuditId(body.childId)
+                )
+            }
     }
 }
 
