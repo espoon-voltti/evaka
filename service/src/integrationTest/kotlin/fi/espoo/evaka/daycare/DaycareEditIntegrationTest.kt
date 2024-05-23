@@ -99,11 +99,11 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     standardOpTime,
                     standardOpTime,
                     standardOpTime,
-                    null,
-                    null
+                    standardOpTime,
+                    standardOpTime
                 ),
+            shiftCareOpenOnHolidays = true,
             financeDecisionHandlerId = null,
-            roundTheClock = false,
             businessId = "Y-123456789",
             iban = "FI123456789",
             providerId = "123456789",
@@ -200,10 +200,17 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(fields.ophOrganizerOid, daycare.ophOrganizerOid)
         assertEquals(fields.ophUnitOid, daycare.ophUnitOid)
         assertEquals(fields.operationTimes, daycare.operationTimes)
+        assertEquals(fields.shiftCareOperationTimes, daycare.shiftCareOperationTimes)
+        assertEquals(fields.shiftCareOpenOnHolidays, daycare.shiftCareOpenOnHolidays)
         val calculatedOpDays =
             fields.operationTimes
                 .mapIndexedNotNull { index, tr -> if (tr != null) index + 1 else null }
                 .toSet()
         assertEquals(calculatedOpDays, daycare.operationDays)
+        val calculatedShiftCareOpDays =
+            fields.shiftCareOperationTimes
+                ?.mapIndexedNotNull { index, tr -> if (tr != null) index + 1 else null }
+                ?.toSet()
+        assertEquals(calculatedShiftCareOpDays, daycare.shiftCareOperationDays)
     }
 }

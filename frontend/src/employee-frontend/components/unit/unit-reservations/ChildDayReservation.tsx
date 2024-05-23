@@ -67,7 +67,18 @@ export default React.memo(function ChildDayReservation({
   const { i18n } = useTranslation()
 
   const intermittent = serviceNeedInfo?.shiftCare === 'INTERMITTENT'
-  if (dateInfo.isHoliday && !reservation && !intermittent) return null
+  const hasShiftCare = intermittent || serviceNeedInfo?.shiftCare === 'FULL'
+
+  const actualOperationTimes = hasShiftCare
+    ? dateInfo.isHoliday && !dateInfo.shiftCareOpenOnHoliday
+      ? null
+      : dateInfo.shiftCareOperatingTimes ?? dateInfo.normalOperatingTimes
+    : dateInfo.isHoliday
+      ? null
+      : dateInfo.normalOperatingTimes
+
+  if (actualOperationTimes === null && !intermittent && !reservation)
+    return null
 
   const serviceTimeOfDay =
     dailyServiceTimes === null || isVariableTime(dailyServiceTimes)
@@ -80,17 +91,15 @@ export default React.memo(function ChildDayReservation({
 
   const unitIsNotOpenOnReservationStart =
     reservation !== undefined &&
-    (dateInfo.time === null ||
-      dateInfo.isHoliday ||
+    (actualOperationTimes === null ||
       (reservation.type === 'TIMES' &&
-        !dateInfo.time.includes(reservation.range.start)))
+        !actualOperationTimes.includes(reservation.range.start)))
 
   const unitIsNotOpenOnReservationEnd =
     reservation !== undefined &&
-    (dateInfo.time === null ||
-      dateInfo.isHoliday ||
+    (actualOperationTimes === null ||
       (reservation.type === 'TIMES' &&
-        !dateInfo.time.includes(reservation.range.end)))
+        !actualOperationTimes.includes(reservation.range.end)))
 
   return (
     <ReservationDateCell>

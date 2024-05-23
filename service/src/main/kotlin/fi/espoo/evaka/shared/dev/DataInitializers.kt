@@ -184,7 +184,7 @@ INSERT INTO daycare (
     location, mailing_street_address, mailing_po_box, mailing_postal_code, mailing_post_office,
     unit_manager_name, unit_manager_phone, unit_manager_email,
     decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
-    oph_unit_oid, oph_organizer_oid, round_the_clock, operation_times, enabled_pilot_features,
+    oph_unit_oid, oph_organizer_oid, operation_times, shift_care_operation_times, shift_care_open_on_holidays, enabled_pilot_features,
     finance_decision_handler, business_id, iban, provider_id, mealtime_breakfast, mealtime_lunch, mealtime_snack,
     mealtime_supper, mealtime_evening_snack
 ) VALUES (
@@ -198,8 +198,8 @@ INSERT INTO daycare (
     ${bind(row.mailingAddress.streetAddress)}, ${bind(row.mailingAddress.poBox)}, ${bind(row.mailingAddress.postalCode)},
     ${bind(row.mailingAddress.postOffice)}, ${bind(row.unitManager.name)}, ${bind(row.unitManager.phone)}, ${bind(row.unitManager.email)},
     ${bind(row.decisionCustomization.daycareName)}, ${bind(row.decisionCustomization.preschoolName)}, ${bind(row.decisionCustomization.handler)},
-    ${bind(row.decisionCustomization.handlerAddress)}, ${bind(row.ophUnitOid)}, ${bind(row.ophOrganizerOid)}, ${bind(row.roundTheClock)},
-    ${bind(row.operationTimes)}, ${bind(row.enabledPilotFeatures)}::pilot_feature[], ${bind(row.financeDecisionHandler)}, ${bind(row.businessId)},
+    ${bind(row.decisionCustomization.handlerAddress)}, ${bind(row.ophUnitOid)}, ${bind(row.ophOrganizerOid)},
+    ${bind(row.operationTimes)}, ${bind(row.shiftCareOperationTimes)}, ${bind(row.shiftCareOpenOnHolidays)}, ${bind(row.enabledPilotFeatures)}::pilot_feature[], ${bind(row.financeDecisionHandler)}, ${bind(row.businessId)},
     ${bind(row.iban)}, ${bind(row.providerId)}, ${bind(row.mealtimeBreakfast)}, ${bind(row.mealtimeLunch)}, ${bind(row.mealtimeSnack)},
     ${bind(row.mealtimeSupper)}, ${bind(row.mealtimeEveningSnack)}
 )

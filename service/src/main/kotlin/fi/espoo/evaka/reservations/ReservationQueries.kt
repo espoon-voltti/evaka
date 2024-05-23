@@ -115,11 +115,21 @@ FROM realized_placement_all(${bind(it.date)}) rp
 JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(it.date)}
 WHERE 
-    rp.child_id = ${bind(it.childId)} AND
-    (sn.shift_care = 'INTERMITTENT' OR (
-        extract(isodow FROM ${bind(it.date)}) = ANY(d.operation_days) AND
-        (d.round_the_clock OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)}))
-    )) AND
+    rp.child_id = ${bind(it.childId)} AND (
+        CASE
+            WHEN sn.shift_care = 'INTERMITTENT'
+            THEN TRUE
+            WHEN sn.shift_care = 'FULL'
+            THEN (
+                extract(isodow FROM ${bind(it.date)}) = ANY(coalesce(d.shift_care_operation_days, d.operation_days)) AND 
+                (d.shift_care_open_on_holidays OR NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)}))
+            )
+            ELSE (
+                extract(isodow FROM ${bind(it.date)}) = ANY(d.operation_days) AND 
+                NOT EXISTS(SELECT 1 FROM holiday h WHERE h.date = ${bind(it.date)})
+            )
+        END
+    ) AND
     NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = ${bind(it.childId)} AND ab.date = ${bind(it.date)})
 ON CONFLICT DO NOTHING
 RETURNING id
@@ -295,6 +305,8 @@ data class ReservationPlacement(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
+    val shiftCareOperationTimes: List<TimeRange?>?,
+    val shiftCareOpenOnHolidays: Boolean,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val serviceNeeds: List<ReservationServiceNeed>
@@ -312,6 +324,8 @@ data class ReservationPlacementRow(
     val range: FiniteDateRange,
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
+    val shiftCareOperationTimes: List<TimeRange?>?,
+    val shiftCareOpenOnHolidays: Boolean,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val shiftCareType: ShiftCareType?,
@@ -332,6 +346,8 @@ SELECT
     daterange(pl.start_date, pl.end_date, '[]') AS range,
     pl.type,
     u.operation_times,
+    u.shift_care_operation_times,
+    u.shift_care_open_on_holidays,
     u.daily_preschool_time,
     u.daily_preparatory_time,
     sn.shift_care AS shift_care_type,
@@ -356,6 +372,8 @@ WHERE
                 range = rows[0].range,
                 type = rows[0].type,
                 operationTimes = rows[0].operationTimes,
+                shiftCareOperationTimes = rows[0].shiftCareOperationTimes,
+                shiftCareOpenOnHolidays = rows[0].shiftCareOpenOnHolidays,
                 dailyPreschoolTime = rows[0].dailyPreschoolTime,
                 dailyPreparatoryTime = rows[0].dailyPreparatoryTime,
                 serviceNeeds =
@@ -379,7 +397,9 @@ WHERE
 data class ReservationBackupPlacement(
     val childId: ChildId,
     val range: FiniteDateRange,
-    val operationTimes: List<TimeRange>
+    val operationTimes: List<TimeRange>,
+    val shiftCareOperationTimes: List<TimeRange?>?,
+    val shiftCareOpenOnHolidays: Boolean
 )
 
 fun Database.Read.getReservationBackupPlacements(
@@ -392,7 +412,9 @@ fun Database.Read.getReservationBackupPlacements(
 SELECT
     bc.child_id,
     daterange(bc.start_date, bc.end_date, '[]') * ${bind(range)} AS range,
-    u.operation_times
+    u.operation_times,
+    u.shift_care_operation_times,
+    u.shift_care_open_on_holidays
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
 
@@ -552,6 +574,21 @@ from (SELECT d                                     AS date,
                              (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = ${bind(unitId)})) THEN false
                  WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
                      THEN false
+                 WHEN ( -- holiday without shift care
+                    EXISTS(SELECT 1 FROM holiday h WHERE h.date = d) AND 
+                    NOT (u.shift_care_open_on_holidays AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[]) )
+                 )
+                    THEN FALSE
+                 WHEN ( -- unit not open
+                    NOT (extract(isodow FROM d) = ANY(
+                        CASE 
+                            WHEN sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
+                            THEN coalesce(u.shift_care_operation_days, u.operation_days)
+                            ELSE u.operation_days
+                        END 
+                    ))
+                 )
+                    THEN FALSE
                  ELSE true
                  END                               AS child_in_unit,
              CASE -- service need occupancy coefficient of child

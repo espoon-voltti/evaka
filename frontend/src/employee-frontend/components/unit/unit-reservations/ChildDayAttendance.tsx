@@ -83,14 +83,23 @@ export default React.memo(function ChildDayAttendance({
   )
 
   const intermittent = serviceNeedInfo?.shiftCare === 'INTERMITTENT'
-  if (dateInfo.isHoliday && !attendance && !intermittent) return null
+  const hasShiftCare = intermittent || serviceNeedInfo?.shiftCare === 'FULL'
+
+  const actualOperationTimes = hasShiftCare
+    ? dateInfo.isHoliday && !dateInfo.shiftCareOpenOnHoliday
+      ? null
+      : dateInfo.shiftCareOperatingTimes ?? dateInfo.normalOperatingTimes
+    : dateInfo.isHoliday
+      ? null
+      : dateInfo.normalOperatingTimes
+
+  if (actualOperationTimes === null && !intermittent && !attendance) return null
 
   const unitIsNotOpenOnReservation = reservations.some(
     (reservation) =>
-      dateInfo.time === null ||
-      dateInfo.isHoliday ||
+      actualOperationTimes === null ||
       (reservation.type === 'TIMES' &&
-        !dateInfo.time.contains(reservation.range))
+        !actualOperationTimes.contains(reservation.range))
   )
 
   const requiresBackupCare =

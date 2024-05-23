@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -457,7 +456,7 @@ WHERE id = ${bind { it.id }}
     }
 }
 
-fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {
+fun Database.Transaction.deleteDraftInvoicesByDateRange(range: FiniteDateRange) {
 
     createUpdate {
             sql(

@@ -156,7 +156,7 @@ export default React.memo(function UnitDetailsPanel({
             <Label>{t.map.shiftCareTitle}</Label>
             <Gap size="xs" />
             <div>
-              {unit.roundTheClock ? t.map.shiftCareYes : t.map.shiftCareNo}
+              {unit.providesShiftCare ? t.map.shiftCareYes : t.map.shiftCareNo}
             </div>
             {!!unit.url && (
               <>

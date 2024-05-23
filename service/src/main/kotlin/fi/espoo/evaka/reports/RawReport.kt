@@ -163,8 +163,8 @@ LEFT JOIN assistance_factor an ON an.child_id = p.id AND an.valid_during @> t::d
 LEFT JOIN assistance_need_voucher_coefficient anvc ON anvc.child_id = p.id AND anvc.validity_period @> t::date AND anvc.coefficient <> 1
 LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date AND ab1.category = 'BILLABLE'
 LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date AND ab2.category = 'NONBILLABLE'
-LEFT JOIN holiday ON t = holiday.date AND NOT (u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR bcu.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7])
-WHERE (date_part('isodow', t) = ANY(u.operation_days) OR date_part('isodow', t) = ANY(bcu.operation_days)) AND holiday.date IS NULL
+LEFT JOIN holiday ON t = holiday.date AND NOT (u.shift_care_open_on_holidays OR bcu.shift_care_open_on_holidays)
+WHERE (date_part('isodow', t) = ANY(coalesce(u.shift_care_operation_days, u.operation_days)) OR date_part('isodow', t) = ANY(coalesce(bcu.shift_care_operation_days, bcu.operation_days))) AND holiday.date IS NULL
 ORDER BY p.id, t
 """
             )

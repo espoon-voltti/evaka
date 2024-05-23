@@ -148,25 +148,25 @@ describe('Employee - unit editor validations and warnings', () => {
     await unitEditorPage.assertWarningIsNotVisible(
       'shift-care-unit-operationtimes'
     )
-    await unitEditorPage.fillShiftCareDayTimeRange(2, '10:00', '10:66')
+    await unitEditorPage.fillShiftCareDayTimeRange(6, '10:00', '10:66')
     await unitEditorPage.assertWarningIsVisible(
       'unit-shift-care-operationtimes'
     )
-    await unitEditorPage.clearShiftCareDayTimeRange(2)
+    await unitEditorPage.clearShiftCareDayTimeRange(6)
     await unitEditorPage.assertWarningIsNotVisible(
       'unit-shift-care-operationtimes'
     )
 
-    await unitEditorPage.fillShiftCareDayTimeRange(3, '12:00', '10:00')
+    await unitEditorPage.fillShiftCareDayTimeRange(6, '12:00', '10:00')
     await unitEditorPage.assertWarningIsVisible(
       'unit-shift-care-operationtimes'
     )
-    await unitEditorPage.clearShiftCareDayTimeRange(3)
+    await unitEditorPage.clearShiftCareDayTimeRange(6)
     await unitEditorPage.assertWarningIsNotVisible(
       'unit-shift-care-operationtimes'
     )
 
-    await unitEditorPage.fillShiftCareDayTimeRange(4, '16:00', '22:00')
+    await unitEditorPage.fillShiftCareDayTimeRange(7, '16:00', '22:00')
 
     await unitEditorPage.fillManagerData(
       'Päiväkodin Johtaja',
@@ -175,28 +175,8 @@ describe('Employee - unit editor validations and warnings', () => {
     )
 
     await unitEditorPage.submit()
-    await unitDetailsPage.assertShiftCareOperationTime(2, '')
-    await unitDetailsPage.assertShiftCareOperationTime(3, '')
-    await unitDetailsPage.assertShiftCareOperationTime(4, '16:00 - 22:00')
-  })
-
-  test('Shift care operation times are reset if round the clock is set to false', async () => {
-    await unitEditorPage.fillShiftCareDayTimeRange(1, '16:00', '22:00')
-
-    await unitEditorPage.fillManagerData(
-      'Päiväkodin Johtaja',
-      '01234567',
-      'manager@example.com'
-    )
-
-    await unitEditorPage.submit()
-    await unitDetailsPage.assertShiftCareOperationTime(1, '16:00 - 22:00')
-    unitEditorPage = await unitDetailsPage.edit()
-    await unitEditorPage.setRoundTheClock(false)
-    await unitEditorPage.submit()
-    unitEditorPage = await unitDetailsPage.edit()
-    await unitEditorPage.setRoundTheClock(true)
-    await unitEditorPage.assertShiftCareOperationChecked(1, false)
+    await unitDetailsPage.assertShiftCareOperationTime(6, '')
+    await unitDetailsPage.assertShiftCareOperationTime(7, '16:00 - 22:00')
   })
 
   test('Varda unit warning is shown for non varda units', async () => {

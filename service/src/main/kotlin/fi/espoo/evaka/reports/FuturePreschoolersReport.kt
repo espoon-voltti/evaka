@@ -155,7 +155,7 @@ SELECT dg.id,
     d.post_office as post_office, 
     (SELECT count(id) FROM daycare_caretaker WHERE group_id = dg.id AND start_date < :today AND end_date >= :today) * 7 AS group_size,
     NULL AS among_school, -- cannot be obtained from current dataset 
-    d.round_the_clock AS shift_care,
+    d.provides_shift_care AS shift_care,
     NULL AS language_emphaseis -- cannot be obtained from current dataset
 FROM daycare d
 JOIN daycare_group dg on d.id = dg.daycare_id

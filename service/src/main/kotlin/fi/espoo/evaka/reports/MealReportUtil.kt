@@ -173,6 +173,7 @@ data class DaycareUnitData(
     val daycare: DaycareInfo?,
     val holidays: Set<LocalDate>,
     val childPlacements: Map<ChildId, PlacementType>,
+    val childrenWithShiftCare: Set<ChildId>,
     val childData: Map<ChildId, ChildData>,
     val specialDiets: Map<ChildId, SpecialDiet>,
     val mealTextures: Map<ChildId, MealTexture>,
@@ -186,30 +187,37 @@ fun getMealReportForUnit(
 ): MealReportData? {
     val daycare = unitData.daycare ?: return null
 
-    if (!isUnitOperationDay(daycare.operationDays, unitData.holidays, date)) {
-        return MealReportData(date, daycare.name, emptyList())
-    }
-
     val childrenToPlacementTypeMap = unitData.childPlacements
     val childrenReservationsAndAttendances = unitData.childData
 
     val childInfos =
-        childrenToPlacementTypeMap.map { (childId, placementType) ->
-            MealReportChildInfo(
-                placementType = placementType,
-                firstName = childrenReservationsAndAttendances[childId]!!.child.firstName,
-                lastName = childrenReservationsAndAttendances[childId]!!.child.lastName,
-                reservations =
-                    childrenReservationsAndAttendances[childId]!!.reservations[date]?.mapNotNull {
-                        it.asTimeRange()
-                    },
-                absences = childrenReservationsAndAttendances[childId]!!.absences[date]?.keys,
-                dietInfo = unitData.specialDiets[childId],
-                mealTextureInfo = unitData.mealTextures[childId],
-                dailyPreschoolTime = daycare.dailyPreschoolTime,
-                dailyPreparatoryTime = daycare.dailyPreparatoryTime,
-                mealTimes = daycare.mealTimes,
-            )
+        childrenToPlacementTypeMap.mapNotNull { (childId, placementType) ->
+            if (
+                isUnitOperationDay(
+                    normalOperationDays = daycare.operationDays,
+                    shiftCareOperationDays = daycare.shiftCareOperationDays,
+                    shiftCareOpenOnHolidays = daycare.shiftCareOpenOnHolidays,
+                    holidays = unitData.holidays,
+                    date = date,
+                    childHasShiftCare = unitData.childrenWithShiftCare.contains(childId)
+                )
+            ) {
+                MealReportChildInfo(
+                    placementType = placementType,
+                    firstName = childrenReservationsAndAttendances[childId]!!.child.firstName,
+                    lastName = childrenReservationsAndAttendances[childId]!!.child.lastName,
+                    reservations =
+                        childrenReservationsAndAttendances[childId]!!
+                            .reservations[date]
+                            ?.mapNotNull { it.asTimeRange() },
+                    absences = childrenReservationsAndAttendances[childId]!!.absences[date]?.keys,
+                    dietInfo = unitData.specialDiets[childId],
+                    mealTextureInfo = unitData.mealTextures[childId],
+                    dailyPreschoolTime = daycare.dailyPreschoolTime,
+                    dailyPreparatoryTime = daycare.dailyPreparatoryTime,
+                    mealTimes = daycare.mealTimes,
+                )
+            } else null
         }
 
     val preschoolTerms = unitData.preschoolTerms

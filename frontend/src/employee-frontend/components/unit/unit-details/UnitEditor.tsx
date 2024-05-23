@@ -26,6 +26,7 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
+import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -74,7 +75,6 @@ type FormData = {
   preschoolApplyPeriod: DateRange | null
   clubApplyPeriod: DateRange | null
   providerType: ProviderType
-  roundTheClock: boolean
   capacity: string
   language: Language
   ghostUnit: boolean
@@ -97,7 +97,9 @@ type FormData = {
   ophUnitOid: string
   ophOrganizerOid: string
   operationTimes: (EditableTimeRange | null)[]
+  providesShiftCare: boolean
   shiftCareOperationTimes: (EditableTimeRange | null)[]
+  shiftCareOpenOnHolidays: boolean
   businessId: string
   iban: string
   providerId: string
@@ -211,14 +213,21 @@ const AlertBoxContainer = styled.div`
   flex-direction: column;
   align-items: flex-start;
 `
-const emptyTimeRange: JsonOf<TimeRange> = {
+type EditableTimeRange = JsonOf<TimeRange>
+
+const emptyTimeRange: EditableTimeRange = {
   start: '',
   end: ''
 }
 
-const emptyOperationWeek = [null, null, null, null, null, null, null]
+const roundTheClock: EditableTimeRange[] = Array(7)
+  .fill(null)
+  .map(() => ({
+    start: '00:00',
+    end: '23:59'
+  }))
 
-type EditableTimeRange = JsonOf<TimeRange>
+const emptyOperationWeek = [null, null, null, null, null, null, null]
 
 type FormErrorItem = { key: string; text: string }
 
@@ -550,19 +559,48 @@ function validateForm(
     })
   }
 
-  let shiftCareOperationTimes: (TimeRange | null)[] = []
-  const shiftCareOperationTimesRangeErrors = form.shiftCareOperationTimes.map(
-    (tr) => (tr ? validateTimeRange(tr) : {})
-  )
-  if (!shiftCareOperationTimesRangeErrors.some((r) => r.start || r.end)) {
-    shiftCareOperationTimes = form.shiftCareOperationTimes.map((tr) =>
-      tr && form.roundTheClock ? TimeRange.parse(tr) : null
-    )
-  } else {
-    errors.push({
-      text: i18n.unitEditor.error.shiftCareOperationTimes,
-      key: 'unit-shift-care-operationtimes'
+  let shiftCareOperationTimes: (TimeRange | null)[] | null = null
+  const shiftCareOperationTimesRangeErrors: RangeValidationResult[] =
+    form.shiftCareOperationTimes.map((tr, i) => {
+      if (!form.providesShiftCare) return {}
+
+      if (tr) {
+        const rangeErrors = validateTimeRange(tr)
+        if (!rangeErrors.start && !rangeErrors.end) {
+          if (
+            operationTimes[i]?.start?.isBefore(
+              new TimeRangeEndpoint.Start(LocalTime.parse(tr.start))
+            )
+          ) {
+            rangeErrors.start = 'generic'
+          }
+          if (
+            operationTimes[i]?.end?.isAfter(
+              new TimeRangeEndpoint.End(LocalTime.parse(tr.end))
+            )
+          ) {
+            rangeErrors.end = 'generic'
+          }
+        }
+        return rangeErrors
+      } else {
+        if (operationTimes[i]) {
+          return { start: 'required', end: 'required' }
+        } else return {}
+      }
     })
+
+  if (form.providesShiftCare) {
+    if (shiftCareOperationTimesRangeErrors.some((r) => r.start || r.end)) {
+      errors.push({
+        text: i18n.unitEditor.error.shiftCareOperationTimes,
+        key: 'unit-shift-care-operationtimes'
+      })
+    } else {
+      shiftCareOperationTimes = form.shiftCareOperationTimes.map((tr) =>
+        tr ? TimeRange.parse(tr) : null
+      )
+    }
   }
 
   function parseMealTimeRange(
@@ -609,7 +647,6 @@ function validateForm(
     preschoolApplyPeriod,
     clubApplyPeriod,
     providerType,
-    roundTheClock,
     language,
     ghostUnit,
     financeDecisionHandlerId,
@@ -621,7 +658,9 @@ function validateForm(
     ophOrganizerOid,
     businessId,
     iban,
-    providerId
+    providerId,
+    providesShiftCare,
+    shiftCareOpenOnHolidays
   } = form
 
   if (
@@ -643,7 +682,6 @@ function validateForm(
         preschoolApplyPeriod,
         clubApplyPeriod,
         providerType,
-        roundTheClock,
         capacity,
         language,
         ghostUnit,
@@ -676,6 +714,7 @@ function validateForm(
         ophOrganizerOid,
         operationTimes,
         shiftCareOperationTimes,
+        shiftCareOpenOnHolidays: providesShiftCare && shiftCareOpenOnHolidays,
         businessId,
         iban,
         providerId,
@@ -751,7 +790,6 @@ function toFormData(unit: Daycare | undefined): FormData {
     preschoolApplyPeriod: unit?.preschoolApplyPeriod ?? null,
     clubApplyPeriod: unit?.clubApplyPeriod ?? null,
     providerType: unit?.providerType ?? 'MUNICIPAL',
-    roundTheClock: unit?.roundTheClock ?? false,
     capacity: (unit?.capacity ?? 0).toString(),
     language: unit?.language ?? 'fi',
     ghostUnit: unit?.ghostUnit ?? false,
@@ -790,14 +828,16 @@ function toFormData(unit: Daycare | undefined): FormData {
       phone: unit?.unitManager?.phone ?? '',
       email: unit?.unitManager?.email ?? ''
     },
+    providesShiftCare: !!unit?.shiftCareOperationTimes,
     operationTimes: (unit?.operationTimes ?? emptyOperationWeek).map((range) =>
       range ? { start: range.formatStart(), end: range.formatEnd() } : null
     ),
-    shiftCareOperationTimes: (
-      unit?.shiftCareOperationTimes ?? emptyOperationWeek
-    ).map((range) =>
-      range ? { start: range.formatStart(), end: range.formatEnd() } : null
-    ),
+    shiftCareOperationTimes: unit?.shiftCareOperationTimes
+      ? unit.shiftCareOperationTimes.map((range) =>
+          range ? { start: range.formatStart(), end: range.formatEnd() } : null
+        )
+      : roundTheClock,
+    shiftCareOpenOnHolidays: unit?.shiftCareOpenOnHolidays ?? false,
     businessId: unit?.businessId ?? '',
     iban: unit?.iban ?? '',
     providerId: unit?.providerId ?? '',
@@ -1378,17 +1418,17 @@ export default function UnitEditor(props: Props) {
       </FormPart>
 
       <FormPart>
-        <div>{i18n.unitEditor.label.roundTheClock}</div>
+        <div>{i18n.unitEditor.label.shiftCare}</div>
         <Checkbox
           disabled={!props.editable}
-          label={i18n.unitEditor.field.roundTheClock}
-          checked={form.roundTheClock}
-          onChange={(roundTheClock) => updateForm({ roundTheClock })}
-          data-qa="round-the-clock"
+          label={i18n.unitEditor.field.providesShiftCare}
+          checked={form.providesShiftCare}
+          onChange={(providesShiftCare) => updateForm({ providesShiftCare })}
+          data-qa="provides-shift-care"
         />
       </FormPart>
 
-      {form.roundTheClock && (
+      {form.providesShiftCare && (
         <FormPart>
           <div>
             {showRequired(i18n.unitEditor.label.shiftCareOperationDays)}
@@ -1449,6 +1489,15 @@ export default function UnitEditor(props: Props) {
                 </FixedSpaceRow>
               )
             })}
+            <Checkbox
+              disabled={!props.editable}
+              label={i18n.unitEditor.field.shiftCareOpenOnHolidays}
+              checked={form.shiftCareOpenOnHolidays}
+              onChange={(shiftCareOpenOnHolidays) =>
+                updateForm({ shiftCareOpenOnHolidays })
+              }
+              data-qa="shift-care-open-on-holidays"
+            />
           </FixedSpaceColumn>
         </FormPart>
       )}

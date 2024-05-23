@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
+import fi.espoo.evaka.allDayTimeRange
 import fi.espoo.evaka.allWeekOpTimes
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
@@ -312,8 +313,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             DevDaycare(
                 areaId = area.id,
                 enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                roundTheClock = true,
-                operationTimes = allWeekOpTimes,
+                shiftCareOperationTimes = allWeekOpTimes,
+                shiftCareOpenOnHolidays = true
             )
         val employee = DevEmployee()
 
@@ -334,15 +335,28 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             }
 
             // Normal shift care
+
             tx.insert(
-                DevPlacement(
-                    type = PlacementType.DAYCARE,
-                    childId = child1.id,
-                    unitId = roundTheClockDaycare.id,
-                    startDate = sundayLastWeek,
-                    endDate = tuesday
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child1.id,
+                        unitId = roundTheClockDaycare.id,
+                        startDate = sundayLastWeek,
+                        endDate = tuesday
+                    )
                 )
-            )
+                .also { placementId ->
+                    tx.insert(
+                        DevServiceNeed(
+                            confirmedBy = employee.evakaUserId,
+                            placementId = placementId,
+                            startDate = sundayLastWeek,
+                            endDate = tuesday,
+                            optionId = snDaycareFullDay35.id,
+                            shiftCare = ShiftCareType.FULL,
+                        )
+                    )
+                }
 
             // Intermittent shift care
             tx.insert(
@@ -420,6 +434,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         dayChild(
                                             child1.id,
                                             shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.ShiftCare(allDayTimeRange)
                                         ),
                                         dayChild(
                                             child2.id,
@@ -441,6 +457,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         dayChild(
                                             child1.id,
                                             shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.ShiftCare(allDayTimeRange)
                                         ),
                                         dayChild(
                                             child2.id,
@@ -462,6 +480,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                         dayChild(
                                             child1.id,
                                             shiftCare = true,
+                                            reservableTimeRange =
+                                                ReservableTimeRange.ShiftCare(allDayTimeRange)
                                         ),
                                         dayChild(
                                             child2.id,

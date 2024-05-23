@@ -4086,7 +4086,7 @@ export const fi = {
         6: 'LA',
         7: 'SU'
       },
-      roundTheClock: 'Ilta- ja vuorohoito',
+      shiftCare: 'Ilta- ja vuorohoito',
       capacity: 'Yksikön laskennallinen lapsimäärä',
       language: 'Yksikön kieli',
       ghostUnit: 'Haamuyksikkö',
@@ -4131,7 +4131,8 @@ export const fi = {
       canApplyDaycare: 'Varhaiskasvatushaussa',
       canApplyPreschool: 'Esiopetushaussa',
       canApplyClub: 'Kerhohaussa',
-      roundTheClock: 'Yksikkö tarjoaa ilta- ja vuorohoitoa',
+      providesShiftCare: 'Yksikkö tarjoaa ilta- ja vuorohoitoa',
+      shiftCareOpenOnHolidays: 'Vuorohoito on auki myös pyhäpäivinä',
       capacity: 'henkilöä',
       ghostUnit: 'Yksikkö on haamuyksikkö',
       uploadToVarda: 'Yksikön tiedot lähetetään Vardaan',

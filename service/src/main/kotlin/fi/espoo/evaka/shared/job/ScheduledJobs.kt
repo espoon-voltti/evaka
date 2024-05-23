@@ -248,7 +248,8 @@ WITH attendances_to_end AS (
     FROM child_attendance ca
     JOIN daycare u ON u.id = ca.unit_id
     WHERE ca.end_time IS NULL AND (
-        NOT u.round_the_clock OR
+        -- Not a shift care unit that is open through midnight today
+        u.shift_care_operation_times[extract(isodow FROM ${bind(today)})].end != '23:59'::time OR
         -- No placement to this unit anymore, as of today
         NOT EXISTS (
             SELECT 1 FROM placement p

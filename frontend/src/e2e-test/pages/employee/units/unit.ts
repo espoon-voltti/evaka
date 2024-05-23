@@ -222,8 +222,8 @@ export class UnitEditor {
   )
   readonly #areaSelect = new Combobox(this.page.find('[data-qa="area-select"]'))
 
-  readonly roundTheClock: Checkbox = new Checkbox(
-    this.page.findByDataQa('round-the-clock')
+  readonly providesShiftCare: Checkbox = new Checkbox(
+    this.page.findByDataQa('provides-shift-care')
   )
 
   #timeInput(dayNumber: number, startEnd: 'start' | 'end') {
@@ -269,8 +269,10 @@ export class UnitEditor {
     await checkbox.waitUntilChecked(checked)
   }
 
-  async setRoundTheClock(on: boolean) {
-    on ? await this.roundTheClock.check() : await this.roundTheClock.uncheck()
+  async setProvidesShiftCare(on: boolean) {
+    on
+      ? await this.providesShiftCare.check()
+      : await this.providesShiftCare.uncheck()
   }
 
   async clearDayTimeRange(dayNumber: number) {

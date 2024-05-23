@@ -63,7 +63,9 @@ beforeEach(async () => {
         fullDayTimeRange,
         null,
         null
-      ]
+      ],
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false
     })
     .save()
 

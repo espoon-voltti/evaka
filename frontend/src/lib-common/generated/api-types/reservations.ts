@@ -239,12 +239,20 @@ export namespace ReservableTimeRange {
     type: 'NORMAL'
     range: TimeRange
   }
+
+  /**
+  * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.ShiftCare
+  */
+  export interface ShiftCare {
+    type: 'SHIFT_CARE'
+    range: TimeRange
+  }
 }
 
 /**
 * Generated from fi.espoo.evaka.reservations.ReservableTimeRange
 */
-export type ReservableTimeRange = ReservableTimeRange.IntermittentShiftCare | ReservableTimeRange.Normal
+export type ReservableTimeRange = ReservableTimeRange.IntermittentShiftCare | ReservableTimeRange.Normal | ReservableTimeRange.ShiftCare
 
 
 
@@ -379,7 +387,9 @@ export interface UnitAttendanceReservations {
 export interface UnitDateInfo {
   isHoliday: boolean
   isInHolidayPeriod: boolean
-  time: TimeRange | null
+  normalOperatingTimes: TimeRange | null
+  shiftCareOpenOnHoliday: boolean
+  shiftCareOperatingTimes: TimeRange | null
 }
 
 /**
@@ -550,10 +560,18 @@ export function deserializeJsonReservableTimeRangeNormal(json: JsonOf<Reservable
     range: TimeRange.parseJson(json.range)
   }
 }
+
+export function deserializeJsonReservableTimeRangeShiftCare(json: JsonOf<ReservableTimeRange.ShiftCare>): ReservableTimeRange.ShiftCare {
+  return {
+    ...json,
+    range: TimeRange.parseJson(json.range)
+  }
+}
 export function deserializeJsonReservableTimeRange(json: JsonOf<ReservableTimeRange>): ReservableTimeRange {
   switch (json.type) {
     case 'INTERMITTENT_SHIFT_CARE': return deserializeJsonReservableTimeRangeIntermittentShiftCare(json)
     case 'NORMAL': return deserializeJsonReservableTimeRangeNormal(json)
+    case 'SHIFT_CARE': return deserializeJsonReservableTimeRangeShiftCare(json)
     default: return json
   }
 }
@@ -638,7 +656,8 @@ export function deserializeJsonUnitAttendanceReservations(json: JsonOf<UnitAtten
 export function deserializeJsonUnitDateInfo(json: JsonOf<UnitDateInfo>): UnitDateInfo {
   return {
     ...json,
-    time: (json.time != null) ? TimeRange.parseJson(json.time) : null
+    normalOperatingTimes: (json.normalOperatingTimes != null) ? TimeRange.parseJson(json.normalOperatingTimes) : null,
+    shiftCareOperatingTimes: (json.shiftCareOperatingTimes != null) ? TimeRange.parseJson(json.shiftCareOperatingTimes) : null
   }
 }
 

@@ -609,7 +609,7 @@ fun Database.Read.getDetailedFeeDecisionsByIds(
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
     return createQuery(feeDecisionDetailedQuery(Predicate { where("$it.id = ${bind(uuid)}") }))
         .exactlyOneOrNull<FeeDecisionDetailed>()
-        ?.let { it ->
+        ?.let {
             it.copy(
                 partnerIsCodebtor =
                     partnerIsCodebtor(

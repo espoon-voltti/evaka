@@ -27,7 +27,7 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.OperationalDays
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
 import java.math.BigDecimal
@@ -77,11 +77,12 @@ class DraftInvoiceGenerator(
     fun generateDraftInvoices(
         tx: Database.Read,
         decisions: Map<PersonId, List<FeeDecision>>,
-        permanentPlacements: Map<ChildId, List<Pair<DateRange, PlacementStub>>>,
-        temporaryPlacements: Map<PersonId, List<Pair<DateRange, PlacementStub>>>,
-        period: DateRange,
+        permanentPlacements: Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>>,
+        temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
+        period: FiniteDateRange,
         daycareCodes: Map<DaycareId, AreaId>,
-        operationalDays: OperationalDays,
+        operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
+        businessDays: Set<LocalDate>,
         feeThresholds: FeeThresholds,
         absences: List<AbsenceStub>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
@@ -106,7 +107,8 @@ class DraftInvoiceGenerator(
                     feeDecisionPlacements + (temporaryPlacements[headOfFamilyId] ?: listOf()),
                     period,
                     daycareCodes,
-                    operationalDays,
+                    operationalDaysByChild,
+                    businessDays,
                     feeThresholds,
                     absencesByChild,
                     plannedAbsences,
@@ -139,19 +141,20 @@ class DraftInvoiceGenerator(
         tx: Database.Read,
         headOfFamily: PersonId,
         decisions: List<FeeDecision>,
-        placements: List<Pair<DateRange, PlacementStub>>,
-        invoicePeriod: DateRange,
+        placements: List<Pair<FiniteDateRange, PlacementStub>>,
+        invoicePeriod: FiniteDateRange,
         areaIds: Map<DaycareId, AreaId>,
-        operationalDays: OperationalDays,
+        operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
+        businessDays: Set<LocalDate>,
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
         freeChildren: List<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
-        val childrenPartialMonth = getPartialMonthChildren(placements, decisions, operationalDays)
+        val childrenPartialMonth = getPartialMonthChildren(decisions, businessDays)
         val childrenFullMonthAbsences =
-            getFullMonthAbsences(placements, decisions, operationalDays, absences, plannedAbsences)
+            getFullMonthAbsences(decisions, operationalDaysByChild, absences, plannedAbsences)
         val isFreeMonth: (FeeDecisionChild) -> Boolean = { part ->
             part.placement.type == PlacementType.PRESCHOOL_CLUB &&
                 PRESCHOOL_CLUB_FREE_MONTHS.contains(invoicePeriod.start.month)
@@ -220,10 +223,9 @@ class DraftInvoiceGenerator(
             } else {
                 childDecisionMaxFees
                     .map { (dateRange, maxFee) ->
-                        val daysInRange =
-                            operationalDays.generalCase.filter { dateRange.includes(it) }.size
+                        val daysInRange = businessDays.filter { dateRange.includes(it) }.size
                         (BigDecimal(maxFee) * BigDecimal(daysInRange)).divide(
-                            BigDecimal(operationalDays.generalCase.size),
+                            BigDecimal(businessDays.size),
                             2,
                             RoundingMode.HALF_UP
                         )
@@ -241,7 +243,7 @@ class DraftInvoiceGenerator(
                 .flatMapIndexed { index, (child, placements) ->
                     placements.flatMap { (placementDateRange, placement) ->
                         val relevantPeriod =
-                            DateRange(
+                            FiniteDateRange(
                                 maxOf(invoicePeriod.start, placementDateRange.start),
                                 minOf(orMax(invoicePeriod.end), orMax(placementDateRange.end))
                             )
@@ -281,7 +283,7 @@ class DraftInvoiceGenerator(
                                     }
                                     .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                                     .map { (decisionPeriod, part) ->
-                                        DateRange(
+                                        FiniteDateRange(
                                             maxOf(relevantPeriod.start, decisionPeriod.start),
                                             minOf(
                                                 orMax(relevantPeriod.end),
@@ -338,13 +340,18 @@ class DraftInvoiceGenerator(
                 .flatMap { (child, childStubs) ->
                     val separatePeriods =
                         mergePeriods(
-                            childStubs,
-                            { olderValue, newerValue ->
-                                if (isPreschoolClub(olderValue) && isPreschoolClub(newerValue)) true
-                                else olderValue == newerValue
-                            },
-                            ::isPreschoolClub
-                        )
+                                childStubs.map { it.first.asDateRange() to it.second },
+                                { olderValue, newerValue ->
+                                    if (isPreschoolClub(olderValue) && isPreschoolClub(newerValue))
+                                        true
+                                    else olderValue == newerValue
+                                },
+                                ::isPreschoolClub
+                            )
+                            .map {
+                                it.first.asFiniteDateRange(defaultEnd = invoicePeriod.end) to
+                                    it.second
+                            }
 
                     val logic =
                         invoiceGenerationLogicChooser.logicForMonth(
@@ -355,6 +362,9 @@ class DraftInvoiceGenerator(
                         )
                     if (logic == InvoiceGenerationLogic.Free) return@flatMap listOf()
 
+                    // In cities that use contract days it is not allowed to change service needs
+                    // during middle of the month, so picking contractDaysPerMonth from the first
+                    // one is safe
                     val contractDaysPerMonth =
                         separatePeriods.first().second.contractDaysPerMonth.takeIf {
                             featureConfig.useContractDaysAsDailyFeeDivisor
@@ -364,13 +374,16 @@ class DraftInvoiceGenerator(
                     val dailyFeeDivisor =
                         contractDaysPerMonth
                             ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
-                            ?: operationalDays.generalCase.size
+                            ?: businessDays.size
+
+                    val childOperationalDays =
+                        operationalDaysByChild.getOrDefault(child.id, emptySet()).toSet()
 
                     val attendanceDates =
                         getAttendanceDates(
                             child,
-                            operationalDays,
-                            separatePeriods,
+                            invoicePeriod,
+                            childOperationalDays,
                             contractDaysPerMonth,
                             childPlannedAbsences,
                             childrenPartialMonth
@@ -378,7 +391,7 @@ class DraftInvoiceGenerator(
 
                     val relevantAbsences =
                         (absences[child.id] ?: listOf()).filter { absence ->
-                            isUnitOperationalDay(operationalDays, separatePeriods, absence.date)
+                            childOperationalDays.contains(absence.date)
                         }
 
                     val fullMonthAbsenceType =
@@ -395,7 +408,7 @@ class DraftInvoiceGenerator(
                                     rowStub.placement.unit,
                                     dailyFeeDivisor,
                                     minOf(
-                                        contractDaysPerMonth ?: operationalDays.generalCase.size,
+                                        contractDaysPerMonth ?: businessDays.size,
                                         dailyFeeDivisor
                                     ),
                                     attendanceDates,
@@ -422,7 +435,7 @@ class DraftInvoiceGenerator(
             id = InvoiceId(UUID.randomUUID()),
             status = InvoiceStatus.DRAFT,
             periodStart = invoicePeriod.start,
-            periodEnd = invoicePeriod.end!!,
+            periodEnd = invoicePeriod.end,
             areaId = areaId,
             headOfFamily = headOfFamily,
             codebtor = codebtors[headOfFamily],
@@ -431,23 +444,20 @@ class DraftInvoiceGenerator(
     }
 
     private fun getPartialMonthChildren(
-        placementsList: List<Pair<DateRange, PlacementStub>>,
         decisions: List<FeeDecision>,
-        operationalDays: OperationalDays
+        businessDays: Set<LocalDate>
     ): Set<ChildId> {
-        return getOperationalDaysForChildsUnits(placementsList, operationalDays)
-            .mapValues { (childId, childOperationalDays) ->
-                childOperationalDays.any { date -> !childHasFeeDecision(decisions, childId, date) }
+        val children = decisions.flatMap { it.children.map { child -> child.child.id } }.toSet()
+        return children
+            .filter { childId ->
+                businessDays.any { date -> !childHasFeeDecision(decisions, childId, date) }
             }
-            .filter { (_, partialMonth) -> partialMonth }
-            .map { (childId, _) -> childId }
             .toSet()
     }
 
     private fun getFullMonthAbsences(
-        placements: List<Pair<DateRange, PlacementStub>>,
         decisions: List<FeeDecision>,
-        operationalDays: OperationalDays,
+        operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>
     ): Map<ChildId, FullMonthAbsenceType> {
@@ -465,7 +475,7 @@ class DraftInvoiceGenerator(
             } ?: false
         }
 
-        return getOperationalDaysForChildsUnits(placements, operationalDays)
+        return operationalDaysByChild
             .mapValues { (childId, allOperationalDays) ->
                 allOperationalDays.filter { date -> childHasFeeDecision(decisions, childId, date) }
             }
@@ -512,35 +522,19 @@ class DraftInvoiceGenerator(
         }
     }
 
-    private fun getOperationalDaysForChildsUnits(
-        placements: List<Pair<DateRange, PlacementStub>>,
-        operationalDays: OperationalDays
-    ): Map<ChildId, Set<LocalDate>> {
-        return placements
-            .map { placement ->
-                val unitOperationalDays = operationalDays.forUnit(placement.second.unit)
-                placement.second.child.id to unitOperationalDays
-            }
-            .groupBy { (childId, _) -> childId }
-            .mapValues { (_, operationalDaysList) ->
-                operationalDaysList.flatMap { (_, operationalDays) -> operationalDays }.toSet()
-            }
-    }
-
     private fun isPreschoolClub(row: InvoiceRowStub): Boolean =
         row.placement.type == PlacementType.PRESCHOOL_CLUB
 
     private fun getAttendanceDates(
         child: ChildWithDateOfBirth,
-        operationalDays: OperationalDays,
-        separatePeriods: List<Pair<DateRange, InvoiceRowStub>>,
+        period: FiniteDateRange,
+        childOperationalDays: Set<LocalDate>,
         contractDaysPerMonth: Int?,
         childPlannedAbsences: Set<LocalDate>,
         partialMonthChildren: Set<ChildId>
     ): List<LocalDate> {
         val attendanceDates =
-            operationalDatesByWeek(operationalDays, separatePeriods).flatMap { weekOperationalDates
-                ->
+            operationalDatesByWeek(period, childOperationalDays).flatMap { weekOperationalDates ->
                 if (contractDaysPerMonth != null) {
                     // Use real attendance dates (with no planned absences) for contract day
                     // children
@@ -552,57 +546,42 @@ class DraftInvoiceGenerator(
             }
 
         // If this is a full month for a contract day child (not in partialMonthChildren), make sure
-        // that there's
-        // no less than `contractDaysPerMonth` days even if they have more planned absences than
-        // they should
+        // that there's no less than `contractDaysPerMonth` days even if they have more
+        // planned absences than  they should
         return if (
             contractDaysPerMonth != null &&
                 !partialMonthChildren.contains(child.id) &&
                 attendanceDates.size < contractDaysPerMonth
         ) {
-            (attendanceDates +
-                    operationalDays.fullMonth
-                        .filter { date ->
-                            isUnitOperationalDay(operationalDays, separatePeriods, date) &&
-                                !attendanceDates.contains(date)
-                        }
-                        .take(contractDaysPerMonth - attendanceDates.size))
-                .sorted()
+            val extraDatesToAdd = contractDaysPerMonth - attendanceDates.size
+            val operationalDaysWithoutAttendance =
+                childOperationalDays.filter { date -> !attendanceDates.contains(date) }.sorted()
+
+            (attendanceDates + operationalDaysWithoutAttendance.take(extraDatesToAdd)).sorted()
         } else {
             attendanceDates
         }
     }
 
     private fun operationalDatesByWeek(
-        operationalDays: OperationalDays,
-        separatePeriods: List<Pair<DateRange, InvoiceRowStub>>
+        period: FiniteDateRange,
+        operationalDays: Set<LocalDate>
     ): List<List<LocalDate>> {
-        return operationalDays.fullMonth
-            .fold(listOf<List<LocalDate>>()) { weeks, date ->
+        return period
+            .dates()
+            .fold<LocalDate, List<List<LocalDate>>>(listOf()) { weeks, date ->
                 if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) {
                     weeks.plusElement(listOf(date))
                 } else {
                     weeks.dropLast(1).plusElement(weeks.last() + date)
                 }
             }
-            .map { week ->
-                week.filter { date -> isUnitOperationalDay(operationalDays, separatePeriods, date) }
-            }
-    }
-
-    private fun isUnitOperationalDay(
-        operationalDays: OperationalDays,
-        separatePeriods: List<Pair<DateRange, InvoiceRowStub>>,
-        date: LocalDate
-    ): Boolean {
-        return separatePeriods.any { (period, feeData) ->
-            period.includes(date) && operationalDays.forUnit(feeData.placement.unit).contains(date)
-        }
+            .map { week -> week.filter { date -> operationalDays.contains(date) } }
     }
 
     private fun toInvoiceRows(
         accumulatedRows: List<InvoiceRow>,
-        period: DateRange,
+        period: FiniteDateRange,
         invoiceRowStub: InvoiceRowStub,
         unitId: DaycareId,
         dailyFeeDivisor: Int,
@@ -650,7 +629,7 @@ class DraftInvoiceGenerator(
         BigDecimal(price).divide(BigDecimal(dailyFeeDivisor), 0, RoundingMode.HALF_UP).toInt()
 
     private fun toTemporaryPlacementInvoiceRows(
-        period: DateRange,
+        period: FiniteDateRange,
         child: ChildWithDateOfBirth,
         placement: PlacementStub,
         price: Int,
@@ -673,7 +652,7 @@ class DraftInvoiceGenerator(
                 InvoiceRow(
                     id = InvoiceRowId(UUID.randomUUID()),
                     periodStart = period.start,
-                    periodEnd = period.end!!,
+                    periodEnd = period.end,
                     child = child.id,
                     amount = amount,
                     unitPrice = price,
@@ -687,7 +666,7 @@ class DraftInvoiceGenerator(
 
     private fun toPermanentPlacementInvoiceRows(
         accumulatedRows: List<InvoiceRow>,
-        period: DateRange,
+        period: FiniteDateRange,
         child: ChildWithDateOfBirth,
         placement: PlacementStub,
         price: Int,
@@ -735,7 +714,7 @@ class DraftInvoiceGenerator(
                     id = InvoiceRowId(UUID.randomUUID()),
                     child = child.id,
                     periodStart = period.start,
-                    periodEnd = period.end!!,
+                    periodEnd = period.end,
                     amount = amount,
                     unitPrice = unitPrice(price),
                     unitId = unitId,
@@ -824,7 +803,7 @@ class DraftInvoiceGenerator(
 
     private fun surplusContractDays(
         accumulatedRows: List<InvoiceRow>,
-        period: DateRange,
+        period: FiniteDateRange,
         child: ChildWithDateOfBirth,
         monthlyPrice: Int,
         invoiceRowSum: Int,
@@ -879,7 +858,7 @@ class DraftInvoiceGenerator(
                     accumulatedInvoiceRowSum + totalAddition > maxPrice ->
                         1 to (maxPrice - accumulatedInvoiceRowSum)
                     // total attendances days is over the max contract day surplus threshold
-                    featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE <
+                    (featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE) <
                         attendanceDays -> 1 to (maxPrice - accumulatedInvoiceRowSum)
                     else -> surplusAttendanceDays to surplusDailyPrice
                 }
@@ -891,7 +870,7 @@ class DraftInvoiceGenerator(
                     InvoiceRow(
                         id = InvoiceRowId(UUID.randomUUID()),
                         periodStart = period.start,
-                        periodEnd = period.end!!,
+                        periodEnd = period.end,
                         child = child.id,
                         product = productProvider.contractSurplusDay,
                         unitId = unitId,
@@ -909,7 +888,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun dailyAbsenceRefund(
-        period: DateRange,
+        period: FiniteDateRange,
         rows: List<InvoiceRow>,
         child: ChildWithDateOfBirth,
         absences: List<AbsenceStub>,
@@ -941,7 +920,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun getRefundedDays(
-        period: DateRange,
+        period: FiniteDateRange,
         child: ChildWithDateOfBirth,
         absences: List<AbsenceStub>,
         dailyFeeDivisor: Int
@@ -1007,7 +986,7 @@ class DraftInvoiceGenerator(
     private fun applyRoundingRows(
         invoiceRows: List<InvoiceRow>,
         feeDecisions: List<FeeDecision>,
-        invoicePeriod: DateRange
+        invoicePeriod: FiniteDateRange
     ): List<InvoiceRow> {
         return invoiceRows
             .groupBy { it.child }
@@ -1031,7 +1010,7 @@ class DraftInvoiceGenerator(
                                 .copy(
                                     id = InvoiceRowId(UUID.randomUUID()),
                                     periodStart = invoicePeriod.start,
-                                    periodEnd = invoicePeriod.end!!,
+                                    periodEnd = invoicePeriod.end,
                                     amount = 1,
                                     unitPrice = difference
                                 )

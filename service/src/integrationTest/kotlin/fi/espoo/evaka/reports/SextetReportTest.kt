@@ -9,12 +9,15 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -24,6 +27,7 @@ import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -94,14 +98,26 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             // Round the clock -> 15
             tx.insert(
-                DevPlacement(
-                    type = PlacementType.DAYCARE,
-                    childId = testChild_4.id,
-                    unitId = testRoundTheClockDaycare.id,
-                    startDate = startDate,
-                    endDate = endDate
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = testChild_4.id,
+                        unitId = testRoundTheClockDaycare.id,
+                        startDate = startDate,
+                        endDate = endDate
+                    )
                 )
-            )
+                .also { placementId ->
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = startDate,
+                            endDate = endDate,
+                            optionId = snDaycareFullDay35.id,
+                            shiftCare = ShiftCareType.FULL,
+                            confirmedBy = testDecisionMaker_1.evakaUserId
+                        )
+                    )
+                }
 
             // PRESCHOOL_DAYCARE
 

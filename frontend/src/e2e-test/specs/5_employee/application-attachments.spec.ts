@@ -119,7 +119,12 @@ describe('Employee application attachments', () => {
   test('Extended care attachment is not visible to non-around-the-clock unit supervisor', async () => {
     const daycareId = uuidv4()
     await Fixture.daycare()
-      .with({ ...daycareFixture, roundTheClock: false, id: daycareId })
+      .with({
+        ...daycareFixture,
+        shiftCareOperationTimes: null,
+        shiftCareOpenOnHolidays: false,
+        id: daycareId
+      })
       .save()
 
     const applicationId = uuidv4()

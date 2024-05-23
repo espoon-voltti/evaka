@@ -552,12 +552,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
     ): List<Invoice> {
         val period = FiniteDateRange.ofMonth(2020, month)
         return generator
-            .applyCorrections(
-                this,
-                invoices,
-                period.asDateRange(),
-                mapOf(testDaycare.id to testArea.id)
-            )
+            .applyCorrections(this, invoices, period, mapOf(testDaycare.id to testArea.id))
             .shuffled() // randomize order to expose assumptions
     }
 

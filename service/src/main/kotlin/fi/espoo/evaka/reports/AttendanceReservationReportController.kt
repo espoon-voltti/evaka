@@ -481,7 +481,7 @@ children AS (
   LEFT JOIN daycare_group g ON g.daycare_id = u.id AND g.id = coalesce(bc.group_id, dgp.daycare_group_id)
   WHERE u.id = ${bind(unitId)}
     AND (${bind(groupIds)}::uuid[] IS NULL OR g.id = ANY(${bind(groupIds)}))
-    AND extract(isodow FROM date) = ANY(u.operation_days)
+    AND extract(isodow FROM date) = ANY(coalesce(u.shift_care_operation_days, u.operation_days))
 )
 SELECT
   ${if (groupIds != null) "c.group_id, c.group_name" else "NULL AS group_id, NULL as group_name"},

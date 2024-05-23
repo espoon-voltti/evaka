@@ -17,6 +17,7 @@ data class JamixChildData(
     val childId: ChildId,
     val unitId: DaycareId,
     val placementType: PlacementType,
+    val hasShiftCare: Boolean,
     val firstName: String,
     val lastName: String,
     @Json val reservations: List<TimeRange>,
@@ -42,6 +43,7 @@ SELECT
     rp.child_id,
     rp.unit_id,
     rp.placement_type,
+    (sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE') AS has_shift_care,
     p.first_name,
     p.last_name,
     coalesce((
@@ -62,6 +64,7 @@ SELECT
 FROM realized_placement_one(${bind(date)}) rp
 JOIN daycare_group dg ON dg.id = rp.group_id
 JOIN person p ON p.id = rp.child_id
+LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.jamix_customer_number = ${bind(jamixCustomerNumber)}
                     """
             )

@@ -95,8 +95,9 @@ class MissingHolidayReservationsReminders(
                 sql(
                     """
 WITH reservable_placements AS
-     (SELECT p.child_id, p.unit_id
+     (SELECT p.child_id, p.unit_id, sn.shift_care
       FROM placement p
+      LEFT JOIN service_need sn ON sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(theDate)}
       WHERE daterange(p.start_date, p.end_date, '[]') @> ${bind(theDate)}
         AND p.type = ANY
             (${bind(PlacementType.requiringAttendanceReservations)})
@@ -104,7 +105,9 @@ WITH reservable_placements AS
 SELECT p.child_id
 FROM reservable_placements p
      JOIN daycare d ON d.id = p.unit_id 
-        AND extract(isodow FROM ${bind(theDate)}) = ANY(d.operation_days) 
+        AND extract(isodow FROM ${bind(theDate)}) = ANY(
+            CASE WHEN p.shift_care IS NULL OR p.shift_care = 'NONE' THEN d.operation_days ELSE d.shift_care_operation_days END
+        ) 
         AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
 WHERE
     NOT EXISTS (

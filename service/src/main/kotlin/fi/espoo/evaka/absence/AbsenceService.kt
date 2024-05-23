@@ -34,11 +34,9 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
-import fi.espoo.evaka.shared.domain.isOperationalDate
 import fi.espoo.evaka.shared.security.PilotFeature
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 
@@ -69,23 +67,25 @@ fun getGroupMonthCalendar(
     val attendances = allAttendances.groupBy { it.childId to it.date }
     val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
 
-    val operationDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
     val holidays = tx.getHolidays(range)
-    val operationDates =
-        range.dates().filter { it.isOperationalDate(operationDays, holidays) }.toSet()
-
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
 
     val usedServiceByChild = mutableMapOf<ChildId, UsedServiceData>()
 
     val days =
-        FiniteDateRange.ofMonth(year, Month.of(month))
+        range
             .dates()
             .map { date ->
+                val isOperationDay =
+                    daycare.operationDays.contains(date.dayOfWeek.value) && !holidays.contains(date)
+                val isShiftCareOperationDay =
+                    (daycare.shiftCareOperationDays ?: daycare.operationDays).contains(
+                        date.dayOfWeek.value
+                    ) && (daycare.shiftCareOpenOnHolidays || !holidays.contains(date))
                 val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
                 GroupMonthCalendarDay(
                     date = date,
-                    isOperationDay = operationDates.contains(date),
+                    isOperationDay = isOperationDay || isShiftCareOperationDay,
                     isInHolidayPeriod = isHolidayPeriodDate,
                     children =
                         placementList
@@ -114,7 +114,13 @@ fun getGroupMonthCalendar(
                                             placementType = placement.type,
                                             preschoolTime = placement.preschoolTime,
                                             preparatoryTime = placement.preparatoryTime,
-                                            isOperationDay = operationDates.contains(date),
+                                            isOperationDay =
+                                                when (shiftCare) {
+                                                    ShiftCareType.NONE -> isOperationDay
+                                                    ShiftCareType.FULL,
+                                                    ShiftCareType.INTERMITTENT ->
+                                                        isShiftCareOperationDay
+                                                },
                                             shiftCareType = shiftCare,
                                             absences =
                                                 childAbsences.map { it.absenceType to it.category },
@@ -191,7 +197,23 @@ fun getGroupMonthCalendar(
                     placementDateRanges
                         .flatMap { it.dates() }
                         .filterNot { absenceDates.contains(it) }
-                        .filter { operationDates.contains(it) }
+                        .filter { date ->
+                            val shiftCare =
+                                actualServiceNeeds[child.id]
+                                    ?.find { it.validDuring.includes(date) }
+                                    ?.shiftCare ?: ShiftCareType.NONE
+                            when (shiftCare) {
+                                ShiftCareType.NONE ->
+                                    daycare.operationDays.contains(date.dayOfWeek.value) &&
+                                        !holidays.contains(date)
+                                ShiftCareType.FULL,
+                                ShiftCareType.INTERMITTENT ->
+                                    (daycare.shiftCareOperationDays ?: daycare.operationDays)
+                                        .contains(date.dayOfWeek.value) &&
+                                        (daycare.shiftCareOpenOnHolidays ||
+                                            !holidays.contains(date))
+                            }
+                        }
 
                 val supplementedReservations =
                     supplementReservationsWithDailyServiceTimes(

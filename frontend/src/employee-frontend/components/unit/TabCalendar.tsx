@@ -130,7 +130,9 @@ export default React.memo(function TabCalendar() {
             realtimeStaffAttendanceEnabled={unitInformation.daycare.enabledPilotFeatures.includes(
               'REALTIME_STAFF_ATTENDANCE'
             )}
-            shiftCareUnit={unitInformation.daycare.roundTheClock}
+            shiftCareUnit={
+              unitInformation.daycare.shiftCareOperationDays !== null
+            }
           />
           <Gap size="s" />
         </>

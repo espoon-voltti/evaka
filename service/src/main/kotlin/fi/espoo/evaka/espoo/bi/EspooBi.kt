@@ -26,7 +26,7 @@ SELECT
           WHEN 'FAMILY' = ANY(type) THEN 'FAMILY'
           WHEN 'CENTRE' = ANY(type) THEN 'DAYCARE'
      END) AS daycare,
-     opening_date, closing_date, language, unit_manager_name, round_the_clock
+     opening_date, closing_date, language, unit_manager_name, provides_shift_care AS round_the_clock
 FROM daycare
 """
             )

@@ -14,12 +14,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.getHolidays
-import fi.espoo.evaka.shared.domain.isOperationalDate
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
-import java.time.DayOfWeek
 import java.time.LocalDate
 import kotlin.math.roundToInt
 import org.springframework.web.bind.annotation.GetMapping
@@ -105,26 +103,27 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         val id: DaycareId,
         val name: String,
         val features: List<PilotFeature>,
-        val operationDays: Set<Int>
+        val operationDays: Set<Int>,
+        val shiftCareOperationDays: Set<Int>?,
+        val shiftCareOpenOnHolidays: Boolean
     )
 
     val unit =
         createQuery {
                 sql(
                     """
-                    SELECT u.id, u.name, u.enabled_pilot_features AS features, operation_days
-                    FROM daycare u
-                    WHERE u.id = ${bind(unitId)}
-                    """
+        SELECT id, name, enabled_pilot_features AS features, 
+            operation_days, shift_care_operation_days, shift_care_open_on_holidays
+        FROM daycare u
+        WHERE u.id = ${bind(unitId)}
+        """
                 )
             }
-            .toList<UnitBasics>()
-            .firstOrNull() ?: throw NotFound("Unit $unitId not found")
-
-    val holidays = getHolidays(date.toFiniteDateRange())
+            .exactlyOneOrNull<UnitBasics>() ?: throw NotFound("Unit $unitId not found")
 
     val isOperationalDate =
-        date.isOperationalDate(unit.operationDays.map { DayOfWeek.of(it) }.toSet(), holidays)
+        (unit.shiftCareOperationDays ?: unit.operationDays).contains(date.dayOfWeek.value) &&
+            (unit.shiftCareOpenOnHolidays || !getHolidays(date.toFiniteDateRange()).contains(date))
 
     data class TempGroupInfo(
         val id: GroupId,

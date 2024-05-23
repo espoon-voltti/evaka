@@ -9,6 +9,8 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reservations.getChildData
+import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.serviceneed.getChildServiceNeedInfos
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -30,6 +32,11 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
     val daycare = tx.getDaycare(unitId)
     val holidays = tx.getHolidays(FiniteDateRange(date, date))
     val childPlacements = tx.childPlacementsForDay(unitId, date)
+    val childrenWithShiftCare =
+        tx.getChildServiceNeedInfos(unitId, childPlacements.keys, FiniteDateRange(date, date))
+            .filter { it.shiftCare != ShiftCareType.NONE }
+            .map { it.childId }
+            .toSet()
     val childIds = childPlacements.keys
     val childData = tx.getChildData(unitId, childIds, date.toFiniteDateRange())
     val specialDiets = tx.specialDietsForChildren(childIds)
@@ -40,6 +47,7 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
         daycare,
         holidays,
         childPlacements,
+        childrenWithShiftCare,
         childData,
         specialDiets,
         mealTextures,
