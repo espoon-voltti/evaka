@@ -53,7 +53,7 @@ export default React.memo(function MealReport() {
           </FlexRow>
         </FilterRow>
         <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <FilterLabel>{i18n.reports.common.date}</FilterLabel>
           <FlexRow>
             <DatePicker date={date} onChange={setDate} locale={lang} />
           </FlexRow>
@@ -116,9 +116,9 @@ const MealReportData = ({
               tableData.map((row, rowIndex) => (
                 <Tr key={`${rowIndex}`}>
                   {Object.keys(columns).map((columnKey, columnIndex) => (
-                    <Th key={columnIndex}>
+                    <Td key={columnIndex}>
                       {row[columnKey as keyof typeof columns]}
-                    </Th>
+                    </Td>
                   ))}
                 </Tr>
               ))
