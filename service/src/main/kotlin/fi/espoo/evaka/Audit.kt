@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.shared.Id
 import fi.espoo.voltti.logging.loggers.audit
+import java.util.UUID
 import mu.KotlinLogging
 
 sealed interface AuditId {
@@ -15,9 +17,13 @@ sealed interface AuditId {
     @JvmInline value class Many(override val value: List<Any>) : AuditId
 
     companion object {
-        operator fun invoke(value: Any): AuditId = One(value)
+        operator fun invoke(value: Id<*>): AuditId = One(value)
 
-        operator fun invoke(value: List<Any>): AuditId = Many(value)
+        operator fun invoke(value: UUID): AuditId = One(value)
+
+        operator fun invoke(value: String): AuditId = One(value)
+
+        operator fun invoke(value: Collection<Id<*>>): AuditId = Many(value.toList())
     }
 }
 
