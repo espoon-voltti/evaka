@@ -586,6 +586,7 @@ class MealReportTests {
                 childrenWithShiftCare = emptySet(),
                 childData = childData,
                 specialDiets = emptyMap(),
+                mealTextures = emptyMap(),
                 preschoolTerms = emptyList()
             )
 
