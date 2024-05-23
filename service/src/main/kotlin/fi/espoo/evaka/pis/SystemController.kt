@@ -85,13 +85,10 @@ class SystemController(
                 Audit.CitizenLogin.log(
                     targetId =
                         AuditId(
-                            listOf(
-                                request.socialSecurityNumber,
-                                request.lastName,
-                                request.firstName
-                            )
+                            request.socialSecurityNumber,
                         ),
-                    objectId = AuditId(it.id)
+                    objectId = AuditId(it.id),
+                    meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName)
                 )
             }
     }
@@ -149,15 +146,16 @@ class SystemController(
                 Audit.EmployeeLogin.log(
                     targetId =
                         AuditId(
-                            listOf(
-                                request.externalId,
-                                request.lastName,
-                                request.firstName,
-                                request.email,
-                                it.globalRoles
-                            )
+                            request.externalId.toString(),
                         ),
-                    objectId = AuditId(it.id)
+                    objectId = AuditId(it.id),
+                    meta =
+                        mapOf(
+                            "lastName" to request.lastName,
+                            "firstName" to request.firstName,
+                            "email" to request.email,
+                            "globalRoles" to it.globalRoles
+                        )
                 )
             }
     }
