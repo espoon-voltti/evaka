@@ -951,13 +951,11 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             )
         )
 
-        assertTrue(
-            capturedOutput.out.contains("\"targetId\":[\"$daycareId\",\"DAYCARE\",\"${child.id}")
-        )
+        assertTrue(capturedOutput.out.contains("\"targetId\":[\"$daycareId\",\"${child.id}"))
         assertTrue(capturedOutput.out.contains("\"objectId\":[\"$terminatedPlacementId\"]"))
         assertTrue(
             capturedOutput.out.contains(
-                "\"meta\":{\"placementIds\":[\"$terminatedPlacementId\"],\"transferApplicationIds\":[]}"
+                "\"meta\":{\"type\":\"DAYCARE\",\"placementIds\":[\"$terminatedPlacementId\"],\"transferApplicationIds\":[]}"
             )
         )
     }

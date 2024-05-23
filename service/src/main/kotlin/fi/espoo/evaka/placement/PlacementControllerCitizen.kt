@@ -169,10 +169,11 @@ class PlacementControllerCitizen(
                     terminatablePlacementGroup.placements +
                         terminatablePlacementGroup.additionalPlacements
                 Audit.PlacementTerminate.log(
-                    targetId = AuditId(listOf(body.unitId, body.type, childId)),
+                    targetId = AuditId(listOf(body.unitId, childId)),
                     objectId = AuditId(placements.map { it.id } + cancelableTransferApplicationIds),
                     meta =
                         mapOf(
+                            "type" to body.type,
                             "placementIds" to placements.map { it.id },
                             "transferApplicationIds" to cancelableTransferApplicationIds
                         )
