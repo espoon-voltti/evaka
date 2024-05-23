@@ -431,7 +431,10 @@ private fun placementDay(
                 }
         }
 
-    val openOnHolidays = operationTimes.all { it != null }
+    val shiftCare = shiftCareType != ShiftCareType.NONE
+    val openOnHolidays =
+        shiftCare &&
+            (backupPlacementForDate?.shiftCareOpenOnHolidays ?: placement.shiftCareOpenOnHolidays)
 
     // null means that the unit is not open today
     val operationTime =
@@ -442,7 +445,7 @@ private fun placementDay(
             placementType = placement.type,
             scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
             isOperationDay = operationTime != null,
-            shiftCare = shiftCareType != ShiftCareType.NONE,
+            shiftCare = shiftCare,
             shiftCareType = shiftCareType,
             daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
             reservableTimeRange =

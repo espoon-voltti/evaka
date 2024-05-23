@@ -306,6 +306,7 @@ data class ReservationPlacement(
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
     val shiftCareOperationTimes: List<TimeRange?>?,
+    val shiftCareOpenOnHolidays: Boolean,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val serviceNeeds: List<ReservationServiceNeed>
@@ -324,6 +325,7 @@ data class ReservationPlacementRow(
     val type: PlacementType,
     val operationTimes: List<TimeRange?>,
     val shiftCareOperationTimes: List<TimeRange?>?,
+    val shiftCareOpenOnHolidays: Boolean,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
     val shiftCareType: ShiftCareType?,
@@ -345,6 +347,7 @@ SELECT
     pl.type,
     u.operation_times,
     u.shift_care_operation_times,
+    u.shift_care_open_on_holidays,
     u.daily_preschool_time,
     u.daily_preparatory_time,
     sn.shift_care AS shift_care_type,
@@ -370,6 +373,7 @@ WHERE
                 type = rows[0].type,
                 operationTimes = rows[0].operationTimes,
                 shiftCareOperationTimes = rows[0].shiftCareOperationTimes,
+                shiftCareOpenOnHolidays = rows[0].shiftCareOpenOnHolidays,
                 dailyPreschoolTime = rows[0].dailyPreschoolTime,
                 dailyPreparatoryTime = rows[0].dailyPreparatoryTime,
                 serviceNeeds =
@@ -394,7 +398,8 @@ data class ReservationBackupPlacement(
     val childId: ChildId,
     val range: FiniteDateRange,
     val operationTimes: List<TimeRange>,
-    val shiftCareOperationTimes: List<TimeRange?>?
+    val shiftCareOperationTimes: List<TimeRange?>?,
+    val shiftCareOpenOnHolidays: Boolean
 )
 
 fun Database.Read.getReservationBackupPlacements(
@@ -408,7 +413,8 @@ SELECT
     bc.child_id,
     daterange(bc.start_date, bc.end_date, '[]') * ${bind(range)} AS range,
     u.operation_times,
-    u.shift_care_operation_times
+    u.shift_care_operation_times,
+    u.shift_care_open_on_holidays
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
 
