@@ -178,3 +178,18 @@ fun Database.Transaction.confirmDraftPayments(draftIds: List<PaymentId>) {
         }
         .execute()
 }
+
+fun Database.Transaction.revertPaymentsToDrafts(paymentIds: List<PaymentId>) {
+    if (paymentIds.isEmpty()) return
+
+    createUpdate {
+            sql(
+                """
+                UPDATE payment set status = ${bind(PaymentStatus.DRAFT)}::payment_status 
+                WHERE status = ${bind(PaymentStatus.CONFIRMED)}::payment_status
+                AND id = ANY (${bind(paymentIds)})
+                """
+            )
+        }
+        .execute()
+}

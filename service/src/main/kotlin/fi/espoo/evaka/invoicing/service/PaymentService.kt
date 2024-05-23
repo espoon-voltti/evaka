@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.invoicing.data.confirmDraftPayments
 import fi.espoo.evaka.invoicing.data.getMaxPaymentNumber
 import fi.espoo.evaka.invoicing.data.readPaymentsByIdsWithFreshUnitData
+import fi.espoo.evaka.invoicing.data.revertPaymentsToDrafts
 import fi.espoo.evaka.invoicing.data.updateConfirmedPaymentsAsSent
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
@@ -102,5 +103,19 @@ class PaymentService(
         }
 
         tx.confirmDraftPayments(paymentIds)
+    }
+
+    fun revertPaymentsToDrafts(
+        tx: Database.Transaction,
+        paymentIds: List<PaymentId>,
+    ) {
+        val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
+
+        val notConfirmed = payments.filterNot { it.status == PaymentStatus.CONFIRMED }
+        if (notConfirmed.isNotEmpty()) {
+            throw BadRequest("Some payments are not confirmed")
+        }
+
+        tx.revertPaymentsToDrafts(paymentIds)
     }
 }

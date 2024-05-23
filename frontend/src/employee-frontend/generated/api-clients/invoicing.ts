@@ -831,6 +831,23 @@ export async function deleteDraftPayments(
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.revertPaymentsToDrafts
+*/
+export async function revertPaymentsToDrafts(
+  request: {
+    body: UUID[]
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/payments/revert-to-draft`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<UUID[]>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.PaymentController.searchPayments
 */
 export async function searchPayments(

@@ -135,6 +135,28 @@ class PaymentController(
         }
         Audit.PaymentsConfirmDrafts.log(targetId = paymentIds)
     }
+
+    @PostMapping("/employee/payments/revert-to-draft")
+    fun revertPaymentsToDrafts(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody paymentIds: List<PaymentId>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Payment.REVERT_TO_DRAFT,
+                    paymentIds
+                )
+                paymentService.revertPaymentsToDrafts(it, paymentIds)
+            }
+        }
+        Audit.PaymentsRevertToDrafts.log(targetId = paymentIds)
+    }
 }
 
 data class SearchPaymentsRequest(

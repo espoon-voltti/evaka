@@ -1745,7 +1745,8 @@ sealed interface Action {
         ScopedAction<PaymentId> {
         SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        CONFIRM(HasGlobalRole(ADMIN, FINANCE_ADMIN));
+        CONFIRM(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
+        REVERT_TO_DRAFT(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

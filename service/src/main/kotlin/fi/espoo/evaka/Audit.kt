@@ -386,6 +386,7 @@ enum class Audit(
     PaymentsConfirmDrafts,
     PaymentsCreate,
     PaymentsDeleteDrafts,
+    PaymentsRevertToDrafts,
     PaymentsSend,
     PedagogicalDocumentCreate(securityEvent = true, securityLevel = "high"),
     PedagogicalDocumentCountUnread,

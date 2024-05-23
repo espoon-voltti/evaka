@@ -337,6 +337,7 @@ export type Partnership =
 export type Payment =
   | 'CONFIRM'
   | 'DELETE'
+  | 'REVERT_TO_DRAFT'
   | 'SEND'
 
 export type Person =

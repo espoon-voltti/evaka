@@ -2935,7 +2935,13 @@ export const fi = {
       checked: (count: number) =>
         count === 1 ? `${count} rivi valittu` : `${count} riviä valittu`,
       confirmPayments: (count: number) =>
-        count === 1 ? `Tarkasta ${count} maksu` : `Tarkasta ${count} maksua`,
+        count === 1
+          ? `Merkitse ${count} maksu tarkastetuksi`
+          : `Merkitse ${count} maksua tarkastetuksi`,
+      revertPayments: (count: number) =>
+        count === 1
+          ? `Palauta ${count} maksu luonnokseksi`
+          : `Palauta ${count} maksua luonnoksiksi`,
       sendPayments: (count: number) =>
         count === 1 ? `Siirrä ${count} maksu` : `Siirrä ${count} maksua`,
       deletePayment: (count: number) =>

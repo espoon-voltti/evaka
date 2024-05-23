@@ -15,7 +15,8 @@ import colors from 'lib-customizations/common'
 
 import {
   confirmDraftPayments,
-  deleteDraftPayments
+  deleteDraftPayments,
+  revertPaymentsToDrafts
 } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
@@ -25,6 +26,7 @@ import { PaymentsActions } from './payments-state'
 
 const deleteDraftPaymentsResult = wrapResult(deleteDraftPayments)
 const confirmDraftPaymentsResult = wrapResult(confirmDraftPayments)
+const revertPaymentsResult = wrapResult(revertPaymentsToDrafts)
 
 const CheckedRowsInfo = styled.div`
   color: ${colors.grayscale.g35};
@@ -58,38 +60,51 @@ const Actions = React.memo(function Actions({
           <Gap size="s" horizontal />
         </>
       ) : null}
-      {status === 'DRAFT' && (
-        <AsyncButton
-          text={i18n.payments.buttons.deletePayment(checkedIds.length)}
-          disabled={checkedIds.length === 0}
-          onClick={() => deleteDraftPaymentsResult({ body: checkedIds })}
-          onSuccess={() => {
-            actions.clearChecked()
-            reloadPayments()
-          }}
-          data-qa="delete-payments"
-        />
-      )}
-      <Gap size="s" horizontal />
       {status === 'DRAFT' ? (
-        <AsyncButton
-          text={i18n.payments.buttons.confirmPayments(checkedIds.length)}
-          disabled={checkedIds.length === 0}
-          onClick={() => confirmDraftPaymentsResult({ body: checkedIds })}
-          onSuccess={() => {
-            actions.clearChecked()
-            reloadPayments()
-          }}
-          data-qa="delete-payments"
-        />
+        <>
+          <AsyncButton
+            text={i18n.payments.buttons.deletePayment(checkedIds.length)}
+            disabled={checkedIds.length === 0}
+            onClick={() => deleteDraftPaymentsResult({ body: checkedIds })}
+            onSuccess={() => {
+              actions.clearChecked()
+              reloadPayments()
+            }}
+            data-qa="delete-payments"
+          />
+          <Gap size="s" horizontal />
+          <AsyncButton
+            text={i18n.payments.buttons.confirmPayments(checkedIds.length)}
+            disabled={checkedIds.length === 0}
+            onClick={() => confirmDraftPaymentsResult({ body: checkedIds })}
+            onSuccess={() => {
+              actions.clearChecked()
+              reloadPayments()
+            }}
+            data-qa="confirm-payments"
+          />
+        </>
       ) : status === 'CONFIRMED' ? (
-        <Button
-          primary
-          disabled={checkedIds.length === 0}
-          text={i18n.payments.buttons.sendPayments(checkedIds.length)}
-          onClick={actions.openModal}
-          data-qa="open-send-payments-dialog"
-        />
+        <>
+          <AsyncButton
+            text={i18n.payments.buttons.revertPayments(checkedIds.length)}
+            disabled={checkedIds.length === 0}
+            onClick={() => revertPaymentsResult({ body: checkedIds })}
+            onSuccess={() => {
+              actions.clearChecked()
+              reloadPayments()
+            }}
+            data-qa="revert-payments"
+          />
+          <Gap size="s" horizontal />
+          <Button
+            primary
+            disabled={checkedIds.length === 0}
+            text={i18n.payments.buttons.sendPayments(checkedIds.length)}
+            onClick={actions.openModal}
+            data-qa="open-send-payments-dialog"
+          />
+        </>
       ) : null}
     </StickyActionBar>
   ) : null

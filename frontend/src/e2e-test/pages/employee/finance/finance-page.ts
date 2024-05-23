@@ -563,4 +563,12 @@ export class PaymentsPage {
   async deletePayments() {
     await this.page.findByDataQa('delete-payments').click()
   }
+
+  async confirmPayments() {
+    await this.page.findByDataQa('confirm-payments').click()
+  }
+
+  async revertPayments() {
+    await this.page.findByDataQa('revert-payments').click()
+  }
 }
