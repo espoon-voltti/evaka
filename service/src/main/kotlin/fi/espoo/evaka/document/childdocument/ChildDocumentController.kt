@@ -343,7 +343,7 @@ class ChildDocumentController(
             .also {
                 Audit.ChildDocumentNextStatus.log(
                     targetId = AuditId(documentId),
-                    objectId = AuditId(body.newStatus)
+                    meta = mapOf("newStatus" to body.newStatus)
                 )
                 Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
             }
@@ -379,7 +379,7 @@ class ChildDocumentController(
             .also {
                 Audit.ChildDocumentPrevStatus.log(
                     targetId = AuditId(documentId),
-                    objectId = AuditId(body.newStatus)
+                    meta = mapOf("newStatus" to body.newStatus)
                 )
             }
     }
