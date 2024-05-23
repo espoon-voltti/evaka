@@ -283,7 +283,7 @@ class MessageController(
             }
             .let { (accountId, response) ->
                 Audit.MessagingMessageThreadRead.log(
-                    targetId = AuditId(listOf(accountId, response?.id)),
+                    targetId = AuditId(listOfNotNull(accountId, response?.id)),
                     objectId = AuditId(applicationId)
                 )
                 response

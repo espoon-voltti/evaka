@@ -123,7 +123,7 @@ class ParentshipController(
             }
             .also {
                 Audit.ParentShipsRead.log(
-                    targetId = AuditId(listOf(headOfChildId, childId)),
+                    targetId = AuditId(listOfNotNull(headOfChildId, childId)),
                     meta = mapOf("count" to it.size)
                 )
             }

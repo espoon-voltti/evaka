@@ -57,6 +57,6 @@ class FeeDecisionGeneratorController(
                 )
             }
         }
-        Audit.FeeDecisionGenerate.log(targetId = AuditId(data.targetHeads))
+        Audit.FeeDecisionGenerate.log(targetId = AuditId(data.targetHeads.filterNotNull()))
     }
 }
