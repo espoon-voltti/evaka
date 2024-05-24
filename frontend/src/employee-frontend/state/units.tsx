@@ -10,11 +10,15 @@ import React, {
   useState
 } from 'react'
 
-import { ProviderType } from 'lib-common/generated/api-types/daycare'
+import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
 
 import { SearchOrder } from '../types'
 
-type UnitFilter = { text: string; providerTypes: ProviderType[] }
+type UnitFilter = {
+  text: string
+  providerTypes: ProviderType[]
+  careTypes: CareType[]
+}
 
 export interface UnitsState {
   filter: UnitFilter
@@ -28,7 +32,7 @@ export interface UnitsState {
 }
 
 const defaultState: UnitsState = {
-  filter: { text: '', providerTypes: [] },
+  filter: { text: '', providerTypes: [], careTypes: [] },
   setFilter: () => undefined,
   sortColumn: 'name',
   setSortColumn: () => undefined,

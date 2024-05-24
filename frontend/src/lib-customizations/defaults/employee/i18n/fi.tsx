@@ -2102,6 +2102,7 @@ export const fi = {
     type: 'Tyyppi',
     findByName: 'Etsi yksikön nimellä',
     selectProviderTypes: 'Valitse järjestämismuoto',
+    selectCareTypes: 'Valitse toimintamuoto',
     includeClosed: 'Näytä lopetetut yksiköt',
     noResults: 'Ei tuloksia'
   },

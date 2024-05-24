@@ -99,6 +99,15 @@ describe('Employee - Units', () => {
     await unitsPage.assertRowCount(3)
   })
 
+  test('filtering units by care type', async () => {
+    const unitsPage = await UnitsPage.open(page)
+    await unitsPage.assertRowCount(4)
+    await unitsPage.careTypesSelect.fillAndSelectFirst('Esiopetus')
+    await unitsPage.assertRowCount(2)
+    await unitsPage.careTypesSelect.fillAndSelectFirst('Kerho')
+    await unitsPage.assertRowCount(3)
+  })
+
   test('daycare has an empty group', async () => {
     const unitPage = await UnitPage.openUnit(page, unitFixture.id)
     const groupsPage = await unitPage.openGroupsPage()

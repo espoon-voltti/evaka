@@ -7,7 +7,7 @@ import React, { useCallback, useContext } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Daycare } from 'lib-common/generated/api-types/daycare'
+import { careTypes, Daycare } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
@@ -97,6 +97,8 @@ export default React.memo(function Units() {
                     .includes(filter.text.toLowerCase())) &&
                 (filter.providerTypes.length === 0 ||
                   filter.providerTypes.includes(unit.providerType)) &&
+                (filter.careTypes.length === 0 ||
+                  filter.careTypes.some((ct) => unit.type.includes(ct))) &&
                 (includeClosed ||
                   !unit.closingDate?.isBefore(LocalDate.todayInSystemTz()))
             )
@@ -160,6 +162,16 @@ export default React.memo(function Units() {
               getOptionLabel={(opt) => i18n.common.providerType[opt]}
               placeholder={i18n.units.selectProviderTypes}
               data-qa="provider-types-select"
+            />
+            <Gap size="s" />
+            <MultiSelect
+              value={filter.careTypes}
+              onChange={(value) => setFilter({ ...filter, careTypes: value })}
+              options={careTypes}
+              getOptionId={(opt) => opt}
+              getOptionLabel={(opt) => i18n.common.types[opt]}
+              placeholder={i18n.units.selectCareTypes}
+              data-qa="care-types-select"
             />
             <Gap size="s" />
             <Checkbox
