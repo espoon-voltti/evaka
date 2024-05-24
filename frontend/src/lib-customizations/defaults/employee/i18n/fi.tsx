@@ -3550,6 +3550,20 @@ export const fi = {
       reservationStartTime: 'Tulo',
       reservationEndTime: 'Lähtö'
     },
+    customerFees: {
+      title: 'Asiakasmaksut',
+      description: 'Raportti lapsikohtaisten asiakasmaksujen summista.',
+      date: 'Päivämäärä',
+      area: 'Palvelualue',
+      unit: 'Yksikkö',
+      type: 'Päätöstyyppi',
+      types: {
+        FEE_DECISION: 'Maksupäätökset',
+        VOUCHER_VALUE_DECISION: 'Arvopäätökset'
+      },
+      fee: 'Lapsikohtainen maksu',
+      count: 'Lukumäärä'
+    },
     duplicatePeople: {
       title: 'Monistuneet kuntalaiset',
       description:

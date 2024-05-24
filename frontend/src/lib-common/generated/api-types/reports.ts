@@ -207,6 +207,14 @@ export interface Contact {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.CustomerFeesReport.CustomerFeesReportRow
+*/
+export interface CustomerFeesReportRow {
+  count: number
+  feeAmount: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.DecisionsReportRow
 */
 export interface DecisionsReportRow {
@@ -720,6 +728,7 @@ export type Report =
   | 'ATTENDANCE_RESERVATION'
   | 'CHILD_AGE_LANGUAGE'
   | 'CHILDREN_IN_DIFFERENT_ADDRESS'
+  | 'CUSTOMER_FEES'
   | 'DECISIONS'
   | 'DUPLICATE_PEOPLE'
   | 'ENDED_PLACEMENTS'

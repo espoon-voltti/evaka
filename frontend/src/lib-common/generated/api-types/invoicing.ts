@@ -362,9 +362,12 @@ export interface FeeThresholdsWithId {
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 */
-export type FinanceDecisionType =
-  | 'FEE_DECISION'
-  | 'VOUCHER_VALUE_DECISION'
+export const financeDecisionTypes = [
+  'FEE_DECISION',
+  'VOUCHER_VALUE_DECISION'
+] as const
+
+export type FinanceDecisionType = typeof financeDecisionTypes[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.GenerateDecisionsBody

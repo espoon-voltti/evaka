@@ -185,6 +185,7 @@ enum class Audit(
     ClubTermUpdate,
     ClubTermDelete,
     ClubTermRead,
+    CustomerFeesReportRead,
     DaycareAssistanceCreate,
     DaycareAssistanceUpdate,
     DaycareAssistanceDelete,

@@ -255,6 +255,14 @@ export default React.memo(function Reports() {
                 i18n={i18n.reports.invoices}
               />
             )}
+            {reports.has('CUSTOMER_FEES') && (
+              <Report
+                path="/reports/customer-fees"
+                color={colors.main.m2}
+                icon={faEuroSign}
+                i18n={i18n.reports.customerFees}
+              />
+            )}
             {reports.has('STARTING_PLACEMENTS') && (
               <Report
                 path="/reports/starting-placements"
