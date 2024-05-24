@@ -47,7 +47,8 @@ ALTER TABLE daycare ADD COLUMN provides_shift_care boolean GENERATED ALWAYS AS (
 
 -- Add an explicit column for whether the unit is open on holidays
 ALTER TABLE daycare ADD COLUMN shift_care_open_on_holidays boolean NOT NULL DEFAULT FALSE;
-UPDATE daycare SET shift_care_open_on_holidays = (cardinality(coalesce(shift_care_operation_days, operation_days)) = 7);
+UPDATE daycare SET shift_care_open_on_holidays = provides_shift_care AND
+    (cardinality(coalesce(shift_care_operation_days, operation_days)) = 7);
 ALTER TABLE daycare ADD CONSTRAINT check$shift_care_open_on_holidays_only_for_shift_care CHECK (
     provides_shift_care = TRUE OR shift_care_open_on_holidays = FALSE
 );
