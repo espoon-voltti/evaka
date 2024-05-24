@@ -93,17 +93,28 @@ fun getGroupMonthCalendar(
                                 val placement =
                                     placements.find { it.range.includes(date) }
                                         ?: return@mapNotNull null
-                                val serviceNeed =
-                                    actualServiceNeeds[child.id]?.find {
-                                        it.validDuring.includes(date)
-                                    }
+
                                 val childAbsences = absences[child.id to date] ?: emptyList()
                                 val childAttendances = attendances[child.id to date] ?: emptyList()
                                 val childReservations =
                                     reservations[child.id to date] ?: emptyList()
                                 val scheduleType =
                                     placement.type.scheduleType(date, clubTerms, preschoolTerms)
+
+                                val serviceNeed =
+                                    actualServiceNeeds[child.id]?.find {
+                                        it.validDuring.includes(date)
+                                    }
                                 val shiftCare = serviceNeed?.shiftCare ?: ShiftCareType.NONE
+                                val isChildOperationDay =
+                                    when (shiftCare) {
+                                        ShiftCareType.INTERMITTENT -> true
+                                        ShiftCareType.FULL -> isShiftCareOperationDay
+                                        ShiftCareType.NONE -> isOperationDay
+                                    }
+                                if (!isChildOperationDay && childAbsences.isEmpty()) {
+                                    return@mapNotNull null
+                                }
 
                                 serviceNeed?.daycareHoursPerMonth?.let { daycareHoursPerMonth ->
                                     val usedService =
