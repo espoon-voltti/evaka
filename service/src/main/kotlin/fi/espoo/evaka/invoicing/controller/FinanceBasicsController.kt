@@ -177,13 +177,17 @@ class FinanceBasicsController(
                     if (serviceNeedOption == null)
                         throw BadRequest("Invalid service need option ID")
 
-                    val currentVoucherValues =
-                        tx.getVoucherValuesByServiceNeedOption()[body.serviceNeedOptionId]!!
+                    val currentVoucherValues = tx.getVoucherValuesByServiceNeedOption()
 
-                    val latest = currentVoucherValues.maxByOrNull { it.voucherValues.range.start }
+                    if (currentVoucherValues.containsKey(body.serviceNeedOptionId)) {
+                        val latest =
+                            currentVoucherValues[body.serviceNeedOptionId]!!.maxBy {
+                                it.voucherValues.range.start
+                            }
 
-                    if (latest != null && latest.voucherValues.range.end == null)
-                        tx.updateVoucherValueEndDate(latest.id, body.range.start)
+                        if (latest.voucherValues.range.end == null)
+                            tx.updateVoucherValueEndDate(latest.id, body.range.start)
+                    }
 
                     tx.insertNewVoucherValue(body)
                 }
