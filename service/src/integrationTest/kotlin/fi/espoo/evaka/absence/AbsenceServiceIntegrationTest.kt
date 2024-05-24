@@ -46,6 +46,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.snDaycareContractDays15
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareHours120
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testArea
@@ -55,6 +56,7 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDaycareGroup
+import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.user.EvakaUserType
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -286,18 +288,43 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `calendar has correct absence categories`() {
-        db.transaction { tx ->
-            tx.insertPreschoolTerm(
-                finnishPreschool = FiniteDateRange(placementStart, placementEnd),
-                swedishPreschool = FiniteDateRange(placementStart, placementEnd),
-                extendedTerm = FiniteDateRange(placementStart, placementEnd),
-                applicationPeriod = FiniteDateRange(placementStart, placementEnd),
-                termBreaks = DateSet.empty()
-            )
-        }
-        insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL)
-        insertGroupPlacement(testChild_2.id, PlacementType.PRESCHOOL_DAYCARE)
-        insertGroupPlacement(testChild_3.id, PlacementType.DAYCARE)
+        val roundTheClockGroupId =
+            db.transaction { tx ->
+                tx.insertPreschoolTerm(
+                    finnishPreschool = FiniteDateRange(placementStart, placementEnd),
+                    swedishPreschool = FiniteDateRange(placementStart, placementEnd),
+                    extendedTerm = FiniteDateRange(placementStart, placementEnd),
+                    applicationPeriod = FiniteDateRange(placementStart, placementEnd),
+                    termBreaks = DateSet.empty()
+                )
+                tx.insert(
+                    DevDaycareGroup(
+                        daycareId = testRoundTheClockDaycare.id,
+                        startDate = placementStart,
+                        name = "testiryhmä"
+                    )
+                )
+            }
+        insertGroupPlacement(
+            childId = testChild_1.id,
+            placementType = PlacementType.PRESCHOOL,
+            unitId = testRoundTheClockDaycare.id,
+            groupId = roundTheClockGroupId
+        )
+        insertGroupPlacement(
+            childId = testChild_2.id,
+            placementType = PlacementType.PRESCHOOL_DAYCARE,
+            unitId = testRoundTheClockDaycare.id,
+            groupId = roundTheClockGroupId
+        )
+        insertGroupPlacement(
+            testChild_3.id,
+            PlacementType.DAYCARE,
+            unitId = testRoundTheClockDaycare.id,
+            groupId = roundTheClockGroupId,
+            serviceNeedOptionId = snDaycareFullDay35.id,
+            shiftCareType = ShiftCareType.FULL
+        )
 
         val placementDate = placementStart
         val result =
@@ -305,7 +332,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 getGroupMonthCalendar(
                     it,
                     placementDate,
-                    testDaycareGroup.id,
+                    roundTheClockGroupId,
                     placementDate.year,
                     placementDate.monthValue
                 )
@@ -313,16 +340,31 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         assertEquals(
             GroupMonthCalendar(
-                groupId = testDaycareGroup.id,
-                groupName = testDaycareGroup.name,
-                daycareName = testDaycare.name,
-                daycareOperationTimes = testDaycare.operationTimes,
+                groupId = roundTheClockGroupId,
+                groupName = "testiryhmä",
+                daycareName = testRoundTheClockDaycare.name,
+                daycareOperationTimes = testRoundTheClockDaycare.operationTimes,
                 children =
                     listOf(
                         // Sorted by lastName firstName
                         child(testChild_2),
                         child(testChild_1),
-                        child(testChild_3),
+                        child(testChild_3)
+                            .copy(
+                                actualServiceNeeds =
+                                    listOf(
+                                        ChildServiceNeedInfo(
+                                            childId = testChild_3.id,
+                                            hasContractDays = false,
+                                            daycareHoursPerMonth = null,
+                                            optionName = snDaycareFullDay35.nameFi,
+                                            validDuring =
+                                                FiniteDateRange(placementStart, placementEnd),
+                                            shiftCare = ShiftCareType.FULL,
+                                            partWeek = false
+                                        )
+                                    )
+                            ),
                     ),
                 days =
                     FiniteDateRange.ofMonth(placementDate.year, placementDate.month)
@@ -330,28 +372,33 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         .map { date ->
                             GroupMonthCalendarDay(
                                 date = date,
-                                isOperationDay = !date.isWeekend(),
+                                isOperationDay = true,
                                 isInHolidayPeriod = false,
                                 children =
-                                    listOf(
-                                            emptyDayChild.copy(
-                                                childId = testChild_1.id,
-                                                scheduleType = ScheduleType.FIXED_SCHEDULE,
-                                                absenceCategories =
-                                                    setOf(AbsenceCategory.NONBILLABLE),
-                                            ),
-                                            emptyDayChild.copy(
-                                                childId = testChild_2.id,
-                                                absenceCategories =
-                                                    setOf(
-                                                        AbsenceCategory.BILLABLE,
-                                                        AbsenceCategory.NONBILLABLE
-                                                    ),
-                                            ),
+                                    listOfNotNull(
+                                            emptyDayChild
+                                                .copy(
+                                                    childId = testChild_1.id,
+                                                    scheduleType = ScheduleType.FIXED_SCHEDULE,
+                                                    absenceCategories =
+                                                        setOf(AbsenceCategory.NONBILLABLE),
+                                                )
+                                                .takeIf { !date.isWeekend() },
+                                            emptyDayChild
+                                                .copy(
+                                                    childId = testChild_2.id,
+                                                    absenceCategories =
+                                                        setOf(
+                                                            AbsenceCategory.BILLABLE,
+                                                            AbsenceCategory.NONBILLABLE
+                                                        ),
+                                                )
+                                                .takeIf { !date.isWeekend() },
                                             emptyDayChild.copy(
                                                 childId = testChild_3.id,
                                                 absenceCategories = setOf(AbsenceCategory.BILLABLE),
-                                            )
+                                                shiftCare = ShiftCareType.FULL
+                                            ) // shift care child, include weekends
                                         )
                                         .sortedBy { it.childId }
                             )
@@ -404,14 +451,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                 isOperationDay = !date.isWeekend(),
                                 isInHolidayPeriod = false,
                                 children =
-                                    listOf(
-                                        emptyDayChild.copy(
-                                            childId = testChild_1.id,
-                                            scheduleType =
-                                                if (date == placementStart) ScheduleType.TERM_BREAK
-                                                else ScheduleType.FIXED_SCHEDULE,
-                                            absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
-                                        ),
+                                    listOfNotNull(
+                                        emptyDayChild
+                                            .copy(
+                                                childId = testChild_1.id,
+                                                scheduleType =
+                                                    if (date == placementStart)
+                                                        ScheduleType.TERM_BREAK
+                                                    else ScheduleType.FIXED_SCHEDULE,
+                                                absenceCategories =
+                                                    setOf(AbsenceCategory.NONBILLABLE),
+                                            )
+                                            .takeIf { !date.isWeekend() },
                                     )
                             )
                         }
@@ -457,11 +508,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         isOperationDay = !date.isWeekend(),
                         isInHolidayPeriod = false,
                         children =
-                            listOf(
-                                emptyDayChild.copy(
-                                    childId = testChild_1.id,
-                                    backupCare = true,
-                                )
+                            listOfNotNull(
+                                emptyDayChild
+                                    .copy(
+                                        childId = testChild_1.id,
+                                        backupCare = true,
+                                    )
+                                    .takeIf { !date.isWeekend() }
                             )
                     )
                 } +
@@ -471,11 +524,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             isOperationDay = !date.isWeekend(),
                             isInHolidayPeriod = false,
                             children =
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        backupCare = false,
-                                    )
+                                listOfNotNull(
+                                    emptyDayChild
+                                        .copy(
+                                            childId = testChild_1.id,
+                                            backupCare = false,
+                                        )
+                                        .takeIf { !date.isWeekend() }
                                 )
                         )
                     })
@@ -554,11 +609,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         isOperationDay = !date.isWeekend(),
                         isInHolidayPeriod = true,
                         children =
-                            listOf(
-                                emptyDayChild.copy(
-                                    childId = testChild_1.id,
-                                    missingHolidayReservation = true
-                                )
+                            listOfNotNull(
+                                emptyDayChild
+                                    .copy(
+                                        childId = testChild_1.id,
+                                        missingHolidayReservation = true
+                                    )
+                                    .takeIf { !date.isWeekend() }
                             )
                     )
                 } +
@@ -569,23 +626,26 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             isOperationDay = !holidayPeriod.end.minusDays(2).isWeekend(),
                             isInHolidayPeriod = true,
                             children =
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        missingHolidayReservation = false,
-                                        reservations =
-                                            listOf(
-                                                ChildReservation(
-                                                    reservation = Reservation.NoTimes,
-                                                    created =
-                                                        HelsinkiDateTime.of(
-                                                            placementStart,
-                                                            LocalTime.of(8, 0)
-                                                        ),
-                                                    createdByEvakaUserType = EvakaUserType.EMPLOYEE,
-                                                )
-                                            ),
-                                    )
+                                listOfNotNull(
+                                    emptyDayChild
+                                        .copy(
+                                            childId = testChild_1.id,
+                                            missingHolidayReservation = false,
+                                            reservations =
+                                                listOf(
+                                                    ChildReservation(
+                                                        reservation = Reservation.NoTimes,
+                                                        created =
+                                                            HelsinkiDateTime.of(
+                                                                placementStart,
+                                                                LocalTime.of(8, 0)
+                                                            ),
+                                                        createdByEvakaUserType =
+                                                            EvakaUserType.EMPLOYEE,
+                                                    )
+                                                ),
+                                        )
+                                        .takeIf { !holidayPeriod.end.minusDays(2).isWeekend() }
                                 )
                         ),
                         GroupMonthCalendarDay(
@@ -593,29 +653,32 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             isOperationDay = !holidayPeriod.end.minusDays(1).isWeekend(),
                             isInHolidayPeriod = true,
                             children =
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        missingHolidayReservation = false,
-                                        reservations =
-                                            listOf(
-                                                ChildReservation(
-                                                    reservation =
-                                                        Reservation.Times(
-                                                            TimeRange(
-                                                                LocalTime.of(8, 0),
-                                                                LocalTime.of(16, 0)
-                                                            )
-                                                        ),
-                                                    created =
-                                                        HelsinkiDateTime.of(
-                                                            placementStart,
-                                                            LocalTime.of(9, 0)
-                                                        ),
-                                                    createdByEvakaUserType = EvakaUserType.EMPLOYEE,
-                                                )
-                                            ),
-                                    )
+                                listOfNotNull(
+                                    emptyDayChild
+                                        .copy(
+                                            childId = testChild_1.id,
+                                            missingHolidayReservation = false,
+                                            reservations =
+                                                listOf(
+                                                    ChildReservation(
+                                                        reservation =
+                                                            Reservation.Times(
+                                                                TimeRange(
+                                                                    LocalTime.of(8, 0),
+                                                                    LocalTime.of(16, 0)
+                                                                )
+                                                            ),
+                                                        created =
+                                                            HelsinkiDateTime.of(
+                                                                placementStart,
+                                                                LocalTime.of(9, 0)
+                                                            ),
+                                                        createdByEvakaUserType =
+                                                            EvakaUserType.EMPLOYEE,
+                                                    )
+                                                ),
+                                        )
+                                        .takeIf { !holidayPeriod.end.minusDays(1).isWeekend() }
                                 )
                         ),
                         GroupMonthCalendarDay(
@@ -623,24 +686,26 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             isOperationDay = !holidayPeriod.end.isWeekend(),
                             isInHolidayPeriod = true,
                             children =
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        missingHolidayReservation = false,
-                                        absences =
-                                            listOf(
-                                                AbsenceWithModifierInfo(
-                                                    category = AbsenceCategory.BILLABLE,
-                                                    absenceType = AbsenceType.OTHER_ABSENCE,
-                                                    modifiedByStaff = true,
-                                                    modifiedAt =
-                                                        HelsinkiDateTime.of(
-                                                            placementStart,
-                                                            LocalTime.of(10, 0)
-                                                        )
-                                                )
-                                            ),
-                                    )
+                                listOfNotNull(
+                                    emptyDayChild
+                                        .copy(
+                                            childId = testChild_1.id,
+                                            missingHolidayReservation = false,
+                                            absences =
+                                                listOf(
+                                                    AbsenceWithModifierInfo(
+                                                        category = AbsenceCategory.BILLABLE,
+                                                        absenceType = AbsenceType.OTHER_ABSENCE,
+                                                        modifiedByStaff = true,
+                                                        modifiedAt =
+                                                            HelsinkiDateTime.of(
+                                                                placementStart,
+                                                                LocalTime.of(10, 0)
+                                                            )
+                                                    )
+                                                ),
+                                        )
+                                        .takeIf { !holidayPeriod.end.isWeekend() }
                                 )
                         ),
                     ) +
@@ -651,11 +716,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             isOperationDay = !date.isWeekend(),
                             isInHolidayPeriod = false,
                             children =
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        missingHolidayReservation = false,
-                                    )
+                                listOfNotNull(
+                                    emptyDayChild
+                                        .copy(
+                                            childId = testChild_1.id,
+                                            missingHolidayReservation = false,
+                                        )
+                                        .takeIf { !date.isWeekend() }
                                 )
                         )
                     })
@@ -705,13 +772,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         isOperationDay = !date.isWeekend(),
                         isInHolidayPeriod = true,
                         children =
-                            listOf(
-                                emptyDayChild.copy(
-                                    childId = testChild_1.id,
-                                    missingHolidayReservation = false,
-                                    absenceCategories = setOf(AbsenceCategory.BILLABLE),
-                                    scheduleType = ScheduleType.RESERVATION_REQUIRED
-                                )
+                            listOfNotNull(
+                                emptyDayChild
+                                    .copy(
+                                        childId = testChild_1.id,
+                                        missingHolidayReservation = false,
+                                        absenceCategories = setOf(AbsenceCategory.BILLABLE),
+                                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                                    )
+                                    .takeIf { !date.isWeekend() }
                             )
                     )
                 }
@@ -753,13 +822,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         isOperationDay = !date.isWeekend(),
                         isInHolidayPeriod = true,
                         children =
-                            listOf(
-                                emptyDayChild.copy(
-                                    childId = testChild_1.id,
-                                    missingHolidayReservation = false,
-                                    absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
-                                    scheduleType = ScheduleType.TERM_BREAK
-                                )
+                            listOfNotNull(
+                                emptyDayChild
+                                    .copy(
+                                        childId = testChild_1.id,
+                                        missingHolidayReservation = false,
+                                        absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
+                                        scheduleType = ScheduleType.TERM_BREAK
+                                    )
+                                    .takeIf { !date.isWeekend() }
                             )
                     )
                 }
@@ -811,12 +882,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         isOperationDay = !date.isWeekend(),
                         isInHolidayPeriod = false,
                         children =
-                            listOf(
-                                emptyDayChild.copy(
-                                    childId = testChild_1.id,
-                                    dailyServiceTimes =
-                                        TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-                                )
+                            listOfNotNull(
+                                emptyDayChild
+                                    .copy(
+                                        childId = testChild_1.id,
+                                        dailyServiceTimes =
+                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                                    )
+                                    .takeIf { !date.isWeekend() }
                             )
                     )
                 } +
@@ -826,12 +899,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             isOperationDay = !date.isWeekend(),
                             isInHolidayPeriod = false,
                             children =
-                                listOf(
-                                    emptyDayChild.copy(
-                                        childId = testChild_1.id,
-                                        dailyServiceTimes =
-                                            TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
-                                    )
+                                listOfNotNull(
+                                    emptyDayChild
+                                        .copy(
+                                            childId = testChild_1.id,
+                                            dailyServiceTimes =
+                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
+                                        )
+                                        .takeIf { !date.isWeekend() }
                                 )
                         )
                     })
@@ -1846,13 +1921,16 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         childId: ChildId,
         placementType: PlacementType = PlacementType.DAYCARE,
         placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd),
-        serviceNeedOptionId: ServiceNeedOptionId? = null
+        serviceNeedOptionId: ServiceNeedOptionId? = null,
+        shiftCareType: ShiftCareType = ShiftCareType.NONE,
+        unitId: DaycareId = testDaycare.id,
+        groupId: GroupId = testDaycareGroup.id
     ) {
         db.transaction { tx ->
             tx.insert(
                     DevPlacement(
                         childId = childId,
-                        unitId = testDaycare.id,
+                        unitId = unitId,
                         type = placementType,
                         startDate = placementPeriod.start,
                         endDate = placementPeriod.end
@@ -1866,6 +1944,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                 startDate = placementPeriod.start,
                                 endDate = placementPeriod.end,
                                 optionId = serviceNeedOptionId,
+                                shiftCare = shiftCareType,
                                 confirmedBy = EvakaUserId(employeeId.raw),
                                 confirmedAt = HelsinkiDateTime.now()
                             )
@@ -1874,7 +1953,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
-                            daycareGroupId = testDaycareGroup.id,
+                            daycareGroupId = groupId,
                             startDate = placementPeriod.start,
                             endDate = placementPeriod.end
                         )
