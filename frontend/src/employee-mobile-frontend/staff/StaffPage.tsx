@@ -5,7 +5,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { combine, Success } from 'lib-common/api'
+import { combine, Success, wrapResult } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdate } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
@@ -16,16 +16,19 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
 import { PageWithNavigation } from '../common/PageWithNavigation'
-import { UnitOrGroup, toUnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
+import {
+  getAttendancesByUnit,
+  upsertStaffAttendance
+} from '../generated/api-clients/daycare'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffAttendanceEditor from './StaffAttendanceEditor'
-import {
-  getRealizedOccupancyToday,
-  getUnitStaffAttendances,
-  postStaffAttendance
-} from './api'
+import { getRealizedOccupancyToday } from './api'
 import { staffAttendanceForGroupOrUnit } from './utils'
+
+const getAttendancesByUnitResult = wrapResult(getAttendancesByUnit)
+const upsertStaffAttendanceResult = wrapResult(upsertStaffAttendance)
 
 export default React.memo(function StaffPage({
   unitOrGroup
@@ -48,7 +51,7 @@ export default React.memo(function StaffPage({
   )
 
   const [staffResponse, reloadStaff] = useApiState(
-    () => getUnitStaffAttendances(unitId),
+    () => getAttendancesByUnitResult({ unitId }),
     [unitId]
   )
 
@@ -76,7 +79,10 @@ export default React.memo(function StaffPage({
 
   const updateAttendance = useCallback(
     async (attendance: StaffAttendanceUpdate) => {
-      await postStaffAttendance(attendance)
+      await upsertStaffAttendanceResult({
+        groupId: attendance.groupId,
+        body: attendance
+      })
       void reloadStaff()
       void reloadRealizedOccupancyToday()
       return Success.of()

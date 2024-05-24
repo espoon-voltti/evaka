@@ -47,7 +47,9 @@ export default React.memo(function StaffAttendancesPage({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
-  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId })
+  )
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {

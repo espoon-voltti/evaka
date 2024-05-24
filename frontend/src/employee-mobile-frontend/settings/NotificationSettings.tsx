@@ -291,7 +291,9 @@ const SettingsSectionsEditor = React.memo(function SettingsSectionsEditor({
           type="submit"
           text={i18n.common.save}
           mutation={pushSettingsMutation}
-          onClick={form.value}
+          onClick={() => ({
+            body: form.value()
+          })}
           onSuccess={stopEditing}
         />
       </FixedSpaceRow>

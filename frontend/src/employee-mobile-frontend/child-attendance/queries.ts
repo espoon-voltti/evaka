@@ -2,32 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ConfirmedRangeDateUpdate } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 
+import { futureAbsencesOfChild } from '../generated/api-clients/absence'
+import {
+  cancelFullDayAbsence,
+  getAttendanceStatuses,
+  getChildExpectedAbsencesOnDeparture,
+  postArrival,
+  postDeparture,
+  postFullDayAbsence,
+  returnToComing,
+  returnToPresent
+} from '../generated/api-clients/attendance'
+import { deleteImage } from '../generated/api-clients/childimages'
+import {
+  getChildReservationsForDay,
+  getConfirmedRangeData,
+  getReservationStatisticsForConfirmedDays,
+  setConfirmedRangeReservations
+} from '../generated/api-clients/reservations'
 import { createQueryKeys } from '../query'
 
-import {
-  createArrival,
-  createDeparture,
-  createFullDayAbsence,
-  getFutureAbsencesByChildPlain,
-  getConfirmedRange,
-  getUnitAttendanceStatuses,
-  getUnitChildren,
-  putConfirmedRange,
-  returnToComing,
-  returnToPresent,
-  deleteChildImage,
-  uploadChildImage,
-  getChildExpectedAbsencesOnDeparture,
-  getUnitConfirmedDayReservations,
-  getUnitConfirmedDaysReservationStatistics,
-  cancelFullDayAbsence
-} from './api'
+import { getUnitChildren, uploadChildImage } from './api'
 
 const queryKeys = createQueryKeys('childAttendance', {
   children: (unitId: string) => ['children', unitId],
@@ -69,8 +69,8 @@ export const childrenQuery = query({
 })
 
 export const attendanceStatusesQuery = query({
-  api: getUnitAttendanceStatuses,
-  queryKey: queryKeys.attendanceStatuses,
+  api: getAttendanceStatuses,
+  queryKey: ({ unitId }) => queryKeys.attendanceStatuses(unitId),
   options: {
     staleTime: 5 * 60 * 1000
   }
@@ -78,33 +78,28 @@ export const attendanceStatusesQuery = query({
 
 export const childExpectedAbsencesOnDepartureQuery = query({
   api: getChildExpectedAbsencesOnDeparture,
-  queryKey: ({ unitId, childId, departed }) =>
+  queryKey: ({ unitId, childId, body: { departed } }) =>
     queryKeys.childDeparture({ unitId, childId, departed })
 })
 
 export const confirmedDayReservationsQuery = query({
-  api: getUnitConfirmedDayReservations,
-  queryKey: queryKeys.confirmedDayReservations
+  api: getChildReservationsForDay,
+  queryKey: ({ unitId, examinationDate }) =>
+    queryKeys.confirmedDayReservations(unitId, examinationDate)
 })
 
 export const confirmedDaysReservationsStatisticsQuery = query({
-  api: getUnitConfirmedDaysReservationStatistics,
-  queryKey: queryKeys.confirmedDaysReservationStatistics
+  api: getReservationStatisticsForConfirmedDays,
+  queryKey: ({ unitId }) => queryKeys.confirmedDaysReservationStatistics(unitId)
 })
 
 export const getConfirmedRangeQuery = query({
-  api: getConfirmedRange,
-  queryKey: queryKeys.confirmedRangeReservations
+  api: getConfirmedRangeData,
+  queryKey: ({ childId }) => queryKeys.confirmedRangeReservations(childId)
 })
 
 export const setConfirmedRangeMutation = mutation({
-  api: ({
-    childId,
-    body
-  }: {
-    childId: UUID
-    body: ConfirmedRangeDateUpdate[]
-  }) => putConfirmedRange(childId, body),
+  api: setConfirmedRangeReservations,
   invalidateQueryKeys: ({ childId }) => [
     queryKeys.confirmedRangeReservations(childId),
     queryKeys.futureAbsencesByChild(childId)
@@ -112,49 +107,49 @@ export const setConfirmedRangeMutation = mutation({
 })
 
 export const getFutureAbsencesByChildQuery = query({
-  api: getFutureAbsencesByChildPlain,
-  queryKey: queryKeys.futureAbsencesByChild
+  api: futureAbsencesOfChild,
+  queryKey: ({ childId }) => queryKeys.futureAbsencesByChild(childId)
 })
 
 export const createFullDayAbsenceMutation = mutation({
-  api: createFullDayAbsence,
+  api: postFullDayAbsence,
   invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery(unitId).queryKey
+    attendanceStatusesQuery({ unitId }).queryKey
   ]
 })
 
 export const createArrivalMutation = mutation({
-  api: createArrival,
+  api: postArrival,
   invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery(unitId).queryKey
+    attendanceStatusesQuery({ unitId }).queryKey
   ]
 })
 
 export const createDepartureMutation = mutation({
-  api: createDeparture,
+  api: postDeparture,
   invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery(unitId).queryKey
+    attendanceStatusesQuery({ unitId }).queryKey
   ]
 })
 
 export const returnToPresentMutation = mutation({
   api: returnToPresent,
   invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery(unitId).queryKey
+    attendanceStatusesQuery({ unitId }).queryKey
   ]
 })
 
 export const returnToComingMutation = mutation({
   api: returnToComing,
   invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery(unitId).queryKey
+    attendanceStatusesQuery({ unitId }).queryKey
   ]
 })
 
 export const cancelAbsenceMutation = mutation({
   api: cancelFullDayAbsence,
   invalidateQueryKeys: ({ unitId }) => [
-    attendanceStatusesQuery(unitId).queryKey
+    attendanceStatusesQuery({ unitId }).queryKey
   ]
 })
 
@@ -165,7 +160,6 @@ export const uploadChildImageMutation = mutation({
 })
 
 export const deleteChildImageMutation = mutation({
-  api: ({ childId }: { unitId: UUID; childId: UUID }) =>
-    deleteChildImage(childId),
+  api: (arg: Arg0<typeof deleteImage> & { unitId: UUID }) => deleteImage(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })

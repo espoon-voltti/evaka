@@ -87,7 +87,10 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
   }, [childLatestDeparture, time])
 
   const groupNotes = useQueryResult(
-    queryOrDefault(groupNotesQuery, [])(child.groupId)
+    queryOrDefault(
+      groupNotesQuery,
+      []
+    )(child.groupId ? { groupId: child.groupId } : null)
   )
 
   return (
@@ -127,7 +130,11 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
                   text={i18n.common.confirm}
                   disabled={!isValidTime()}
                   onClick={() =>
-                    createArrival({ unitId, childId: child.id, arrived: time })
+                    createArrival({
+                      unitId,
+                      childId: child.id,
+                      body: { arrived: time }
+                    })
                   }
                   onSuccess={() => {
                     navigate(-2)
@@ -198,7 +205,7 @@ const JustifyContainer = styled.div`
 export default React.memo(function MarkPresent({ unitId }: { unitId: UUID }) {
   const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 
   return renderResult(
     combine(child, attendanceStatuses),

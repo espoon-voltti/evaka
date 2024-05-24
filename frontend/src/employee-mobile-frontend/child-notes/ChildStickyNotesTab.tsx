@@ -61,12 +61,12 @@ export const ChildStickyNotesTab = React.memo(function ChildStickyNotesTab({
   const onSave = useCallback(
     ({ id, ...body }: EditedNote) =>
       id
-        ? updateChildStickyNote({ unitId, id, body })
+        ? updateChildStickyNote({ unitId, noteId: id, body })
         : createChildStickyNote({ unitId, childId, body }),
     [updateChildStickyNote, createChildStickyNote, unitId, childId]
   )
   const onRemove = useCallback(
-    (id: UUID) => deleteChildStickyNote({ unitId, id }),
+    (noteId: UUID) => deleteChildStickyNote({ unitId, noteId }),
     [deleteChildStickyNote, unitId]
   )
   const labels = useMemo<StickyNoteTabLabels>(

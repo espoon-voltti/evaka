@@ -62,7 +62,9 @@ export default React.memo(function AttendanceChildPage({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { data: groupNotes } = useQuery(
-    groupNotesQuery(unitOrGroup.type === 'group' ? unitOrGroup.id : ''),
+    groupNotesQuery({
+      groupId: unitOrGroup.type === 'group' ? unitOrGroup.id : ''
+    }),
     {
       enabled: unitOrGroup.type === 'group'
     }
@@ -72,7 +74,7 @@ export default React.memo(function AttendanceChildPage({
       ? false
       : !!(groupNotes && groupNotes.length > 1)
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 
   const [uiMode, setUiMode] = useState<
     | 'default'

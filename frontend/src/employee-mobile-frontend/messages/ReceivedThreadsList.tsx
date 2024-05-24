@@ -65,7 +65,7 @@ export default React.memo(function ReceivedThreadsList({
         (m) => !m.readAt && m.sender.id !== accountId
       )
       if (hasUnreadMessages) {
-        markThreadRead({ accountId, id: thread.id })
+        markThreadRead({ accountId, threadId: thread.id })
         transform((t) => markMatchingThreadRead(t, thread.id))
       }
     },

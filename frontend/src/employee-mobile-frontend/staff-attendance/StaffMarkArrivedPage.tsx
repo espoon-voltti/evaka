@@ -308,7 +308,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
                 if (time !== undefined && attendanceGroup) {
                   return {
                     unitId,
-                    request: {
+                    body: {
                       employeeId,
                       groupId: attendanceGroup,
                       time,
@@ -358,7 +358,9 @@ export default React.memo(function StaffMarkArrivedPage({
     refetchOnMount: 'always'
   })
 
-  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId })
+  )
 
   const staffMember = useMemo(
     () =>

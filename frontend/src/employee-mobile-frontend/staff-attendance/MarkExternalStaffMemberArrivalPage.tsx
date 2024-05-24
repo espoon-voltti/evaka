@@ -153,7 +153,7 @@ export default function MarkExternalStaffMemberArrivalPage({
                     form.group
                       ? {
                           unitId,
-                          request: {
+                          body: {
                             arrived: LocalTime.parse(form.arrived),
                             groupId: form.group.id,
                             name: form.name.trim(),

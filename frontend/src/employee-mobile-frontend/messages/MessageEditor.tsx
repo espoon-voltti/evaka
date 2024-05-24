@@ -128,7 +128,7 @@ export default React.memo(function MessageEditor({
 
   useEffect(() => {
     if (!draftId) {
-      void init(account.id).then(setDraftId)
+      void init({ accountId: account.id }).then(setDraftId)
     }
   }, [account.id, draftId, init])
 
@@ -164,7 +164,7 @@ export default React.memo(function MessageEditor({
             debouncedSaveDraft({
               accountId: account.id,
               draftId,
-              content: result.value.draftContent()
+              body: result.value.draftContent()
             })
           }
         }

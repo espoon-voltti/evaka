@@ -54,8 +54,9 @@ export default React.memo(function StaffMarkDepartedPage({
     refetchOnMount: 'always'
   })
 
-  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
-
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId })
+  )
   const staffMember = useMemo(
     () =>
       staffAttendanceResponse.map((res) =>
@@ -289,7 +290,7 @@ export default React.memo(function StaffMarkDepartedPage({
                         if (groupId && time !== undefined) {
                           return {
                             unitId,
-                            request: {
+                            body: {
                               employeeId,
                               groupId,
                               time,

@@ -15,8 +15,8 @@ import React, {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { mockNow } from 'lib-common/utils/helpers'
 
-import { upsertPushSubscription } from '../auth/api'
 import { UserContext } from '../auth/state'
+import { upsertPushSubscription } from '../generated/api-clients/webpush'
 
 interface ServiceWorkerState {
   registration: ServiceWorkerRegistration | undefined
@@ -124,12 +124,14 @@ export class PushNotifications {
     const ecdhKey = sub?.getKey('p256dh')
     if (sub && authSecret && ecdhKey) {
       await upsertPushSubscription({
-        endpoint: sub.endpoint,
-        expires: sub.expirationTime
-          ? HelsinkiDateTime.fromSystemTzDate(new Date(sub.expirationTime))
-          : null,
-        authSecret: Array.from(new Uint8Array(authSecret)),
-        ecdhKey: Array.from(new Uint8Array(ecdhKey))
+        body: {
+          endpoint: sub.endpoint,
+          expires: sub.expirationTime
+            ? HelsinkiDateTime.fromSystemTzDate(new Date(sub.expirationTime))
+            : null,
+          authSecret: Array.from(new Uint8Array(authSecret)),
+          ecdhKey: Array.from(new Uint8Array(ecdhKey))
+        }
       })
       return true
     }

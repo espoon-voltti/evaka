@@ -34,7 +34,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
-  const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId))
+  const { data: unreadCounts = [] } = useQuery(unreadCountsQuery({ unitId }))
 
   return renderResult(combine(unitInfoResponse, user), ([unit, user]) => (
     <ContentArea

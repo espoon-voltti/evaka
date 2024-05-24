@@ -55,7 +55,7 @@ export default React.memo(function MarkAbsent({ unitId }: { unitId: UUID }) {
 
   const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
   const groupNotes = useQueryResult(
-    queryOrDefault(groupNotesQuery, [])(groupId)
+    queryOrDefault(groupNotesQuery, [])(groupId ? { groupId } : null)
   )
 
   return (
@@ -105,7 +105,9 @@ export default React.memo(function MarkAbsent({ unitId }: { unitId: UUID }) {
                       createAbsence({
                         unitId,
                         childId,
-                        absenceType: selectedAbsenceType
+                        body: {
+                          absenceType: selectedAbsenceType
+                        }
                       })
                     }
                     onSuccess={() => {

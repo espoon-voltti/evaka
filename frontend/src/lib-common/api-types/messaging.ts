@@ -4,14 +4,7 @@
 
 import { UUID } from 'lib-common/types'
 
-import {
-  Message,
-  MessageRecipientType,
-  MessageThread,
-  ThreadReply
-} from '../generated/api-types/messaging'
-import HelsinkiDateTime from '../helsinki-date-time'
-import { JsonOf } from '../json'
+import { MessageRecipientType } from '../generated/api-types/messaging'
 
 export type MessageReceiver =
   | MessageReceiverBase // unit in area, or child, or citizen
@@ -38,26 +31,6 @@ interface MessageReceiverUnit extends MessageReceiverBase {
 interface MessageReceiverGroup extends MessageReceiverBase {
   receivers: MessageReceiverBase[]
 }
-
-export const deserializeMessage = (message: JsonOf<Message>): Message => ({
-  ...message,
-  sentAt: HelsinkiDateTime.parseIso(message.sentAt),
-  readAt: message.readAt ? HelsinkiDateTime.parseIso(message.readAt) : null
-})
-
-export const deserializeMessageThread = (
-  json: JsonOf<MessageThread>
-): MessageThread => ({
-  ...json,
-  messages: json.messages.map(deserializeMessage)
-})
-
-export const deserializeReplyResponse = (
-  responseData: JsonOf<ThreadReply>
-): ThreadReply => ({
-  threadId: responseData.threadId,
-  message: deserializeMessage(responseData.message)
-})
 
 export const sortReceivers = (
   receivers: MessageReceiver[]

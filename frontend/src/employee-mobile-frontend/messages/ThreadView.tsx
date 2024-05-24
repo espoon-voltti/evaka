@@ -60,7 +60,7 @@ export const ReceivedThreadView = React.memo(function ReceivedThreadView({
   threadId,
   onBack
 }: ReceivedThreadViewProps) {
-  const thread = useQueryResult(threadQuery(accountId, threadId))
+  const thread = useQueryResult(threadQuery({ accountId, threadId }))
   return renderResult(thread, (thread) => (
     <ReceivedThread
       accountId={accountId}
@@ -138,11 +138,13 @@ const ReceivedThread = React.memo(function ReceivedThread({
             onSubmit={() => ({
               accountId,
               threadId,
-              content: replyContent,
               messageId: messages.slice(-1)[0].id,
-              recipientAccountIds: recipients
-                .filter((r) => r.selected)
-                .map((r) => r.id)
+              body: {
+                content: replyContent,
+                recipientAccountIds: recipients
+                  .filter((r) => r.selected)
+                  .map((r) => r.id)
+              }
             })}
             onUpdateContent={onUpdateContent}
             onDiscard={onDiscard}
