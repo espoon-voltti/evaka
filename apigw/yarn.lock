@@ -3144,7 +3144,7 @@ __metadata:
     passport: "npm:^0.7.0"
     pino: "npm:^9.1.0"
     pino-http: "npm:^10.1.0"
-    pino-pretty: "npm:^11.0.0"
+    pino-pretty: "npm:^11.1.0"
     prettier: "npm:^3.2.2"
     pump: "npm:^3.0.0"
     query-string: "npm:^9.0.0"
@@ -3317,6 +3317,13 @@ __metadata:
   version: 3.0.1
   resolution: "fast-copy@npm:3.0.1"
   checksum: 10/2f655f1e84440f990cddf7895f0acce38b2eb090a27dc0f97f1654cd6f2e38f67d9603471856c2af13e0bfbdf04c2c0b8d446fee1dd1f6f485992e4cc4693c7a
+  languageName: node
+  linkType: hard
+
+"fast-copy@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "fast-copy@npm:3.0.2"
+  checksum: 10/97e1022e2aaa27acf4a986d679310bfd66bfb87fe8da9dd33b698e3e50189484001cf1eeb9670e19b59d9d299828ed86c8da354c954f125995ab2a6331c5f290
   languageName: node
   linkType: hard
 
@@ -5644,7 +5651,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-pretty@npm:*, pino-pretty@npm:^11.0.0":
+"pino-pretty@npm:*":
   version: 11.0.0
   resolution: "pino-pretty@npm:11.0.0"
   dependencies:
@@ -5665,6 +5672,30 @@ __metadata:
   bin:
     pino-pretty: bin.js
   checksum: 10/0d63dd92b3bd0c5ac85ded7fa5667c72998efd6b431f4ee89d27ec37758c1e44c5d458ad65e09757926bfef618b3ac51cb1126a3d9c0a1aaa4e4f1d34a97856b
+  languageName: node
+  linkType: hard
+
+"pino-pretty@npm:^11.1.0":
+  version: 11.1.0
+  resolution: "pino-pretty@npm:11.1.0"
+  dependencies:
+    colorette: "npm:^2.0.7"
+    dateformat: "npm:^4.6.3"
+    fast-copy: "npm:^3.0.2"
+    fast-safe-stringify: "npm:^2.1.1"
+    help-me: "npm:^5.0.0"
+    joycon: "npm:^3.1.1"
+    minimist: "npm:^1.2.6"
+    on-exit-leak-free: "npm:^2.1.0"
+    pino-abstract-transport: "npm:^1.0.0"
+    pump: "npm:^3.0.0"
+    readable-stream: "npm:^4.0.0"
+    secure-json-parse: "npm:^2.4.0"
+    sonic-boom: "npm:^4.0.1"
+    strip-json-comments: "npm:^3.1.1"
+  bin:
+    pino-pretty: bin.js
+  checksum: 10/f1c5964bffd421a57c6fec5f621c0720b149e412f78b7df882ae5decd8fc7b79ea3cb0f0cbb1c9a2863dc0128c5d39c1e09999af58244d9f822ccae7200e08fa
   languageName: node
   linkType: hard
 
