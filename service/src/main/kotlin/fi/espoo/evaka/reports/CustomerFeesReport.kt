@@ -77,6 +77,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     JOIN daycare d ON d.id = fdc.placement_unit_id
                     WHERE fd.status = 'SENT' AND ${predicate(predicates)}
                     GROUP BY fdc.final_fee
+                    ORDER BY fdc.final_fee
                 """
                 )
             }
