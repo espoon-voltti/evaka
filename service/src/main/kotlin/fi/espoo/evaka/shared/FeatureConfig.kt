@@ -134,4 +134,7 @@ data class FeatureConfig(
 
     /** Enable use of special five-year-old daycare placement types */
     val fiveYearsOldDaycareEnabled: Boolean,
+
+    /** Controls whether absences give a daily refund for TEMPORARY_DAYCARE_PART_DAY */
+    val temporaryDaycarePartDayAbsenceGivesADailyRefund: Boolean = true,
 )
