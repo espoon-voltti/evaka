@@ -328,7 +328,7 @@ describe('Unit group calendar', () => {
 
   test('Tooltip for attendance reservation is shown', async () => {
     await insertTestDataAndLogin()
-    const holidayPeriodStart = LocalDate.of(2023, 3, 13)
+    const holidayPeriodStart = LocalDate.of(2023, 3, 14) // Tuesday
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
     await Fixture.holidayPeriod()
       .with({
@@ -346,7 +346,7 @@ describe('Unit group calendar', () => {
       })
       .save()
 
-    const attendanceReservationBeforeHolidayDate = holidayPeriodStart.subDays(1)
+    const attendanceReservationBeforeHolidayDate = holidayPeriodStart.subDays(1) // Monday
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       childId: child1Fixture.id,
