@@ -395,6 +395,15 @@ export default React.memo(function Reports() {
                 data-qa="report-placement-sketching"
               />
             )}
+            {reports.has('PRESCHOOL_ABSENCES') && (
+              <Report
+                data-qa="preschoo-absences-report"
+                path="/reports/preschool-absence"
+                color={colors.main.m2}
+                icon={faChild}
+                i18n={i18n.reports.preschoolAbsences}
+              />
+            )}
             {reports.has('FAMILY_DAYCARE_MEAL_REPORT') && (
               <Report
                 data-qa="family-daycare-meal-report"

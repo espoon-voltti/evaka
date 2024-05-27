@@ -36,6 +36,7 @@ enum class Report {
     PLACEMENT_COUNT,
     PLACEMENT_GUARANTEE,
     PLACEMENT_SKETCHING,
+    PRESCHOOL_ABSENCES,
     PRESENCE,
     RAW,
     SERVICE_NEED,
@@ -198,6 +199,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     },
                     Report.MEALS.takeIf {
                         permittedActionsForSomeUnit.contains(Action.Unit.READ_MEAL_REPORT)
+                    },
+                    Report.PRESCHOOL_ABSENCES.takeIf {
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT
+                        )
                     }
                 )
             }

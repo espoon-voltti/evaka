@@ -14,6 +14,7 @@ import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
+import { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
@@ -693,6 +694,30 @@ export async function getPlacementSketchingReport(
     params
   })
   return json.map(e => deserializeJsonPlacementSketchingReportRow(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.PreschoolAbsenceReport.getPreschoolAbsenceReportRows
+*/
+export async function getPreschoolAbsenceReportRows(
+  request: {
+    unitId: UUID,
+    groupId?: UUID | null,
+    termId: UUID
+  }
+): Promise<ChildPreschoolAbsenceRow[]> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['groupId', request.groupId],
+    ['termId', request.termId]
+  )
+  const { data: json } = await client.request<JsonOf<ChildPreschoolAbsenceRow[]>>({
+    url: uri`/employee/reports/preschool-absence`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
 }
 
 

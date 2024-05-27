@@ -92,6 +92,7 @@ import ReportPartnersInDifferentAddress from './components/reports/PartnersInDif
 import PlacementCount from './components/reports/PlacementCount'
 import PlacementGuarantee from './components/reports/PlacementGuarantee'
 import PlacementSketching from './components/reports/PlacementSketching'
+import PreschoolAbsenceReport from './components/reports/PreschoolAbsenceReport'
 import ReportPresences from './components/reports/PresenceReport'
 import ReportRaw from './components/reports/Raw'
 import ReportServiceNeeds from './components/reports/ServiceNeeds'
@@ -757,6 +758,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <FamilyDaycareMealCount />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/preschool-absence',
+          element: (
+            <EmployeeRoute title="reports">
+              <PreschoolAbsenceReport />
             </EmployeeRoute>
           )
         },
