@@ -170,21 +170,23 @@ CREATE FUNCTION daily_service_time_for_date(the_date date, the_child uuid) RETUR
 AS
 $$
 SELECT (
-           CASE
-               WHEN dst.type = 'REGULAR' THEN dst.regular_times
-               ELSE CASE extract(dow FROM the_date)
-                       WHEN 0 THEN dst.sunday_times
-                       WHEN 1 THEN dst.monday_times
-                       WHEN 2 THEN dst.tuesday_times
-                       WHEN 3 THEN dst.wednesday_times
-                       WHEN 4 THEN dst.thursday_times
-                       WHEN 5 THEN dst.friday_times
-                       WHEN 6 THEN dst.saturday_times
-                    END
-           END
-    )
+    CASE dst.type
+        WHEN 'REGULAR'
+        THEN CASE WHEN extract(dow FROM the_date) IN (1, 2, 3, 4, 5) THEN dst.regular_times END
+        WHEN 'IRREGULAR'
+        THEN CASE extract(dow FROM the_date)
+            WHEN 0 THEN dst.sunday_times
+            WHEN 1 THEN dst.monday_times
+            WHEN 2 THEN dst.tuesday_times
+            WHEN 3 THEN dst.wednesday_times
+            WHEN 4 THEN dst.thursday_times
+            WHEN 5 THEN dst.friday_times
+            WHEN 6 THEN dst.saturday_times
+        END
+    END
+)
 FROM person p
-         LEFT JOIN daily_service_time dst ON dst.child_id = p.id AND dst.validity_period @> the_date
+LEFT JOIN daily_service_time dst ON dst.child_id = p.id AND dst.validity_period @> the_date
 WHERE p.id = the_child
 $$;
 COMMENT ON FUNCTION daily_service_time_for_date IS
