@@ -34,6 +34,8 @@ export default class UnitsPage {
     this.page.findByDataQa('provider-types-select')
   )
 
+  careTypesSelect = new MultiSelect(this.page.findByDataQa('care-types-select'))
+
   #showClosedUnits = new Checkbox(this.page.find('[data-qa="include-closed"]'))
 
   async filterByName(text: string) {
