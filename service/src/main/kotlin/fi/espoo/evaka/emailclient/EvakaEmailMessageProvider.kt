@@ -572,10 +572,7 @@ $unsubscribeEn
         )
     }
 
-    override fun financeDecisionNotification(
-        language: Language,
-        decisionType: FinanceDecisionType
-    ): EmailContent {
+    override fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent {
         val (decisionTypeFi, decisionTypeSv, decisionTypeEn) =
             when (decisionType) {
                 FinanceDecisionType.VOUCHER_VALUE_DECISION ->

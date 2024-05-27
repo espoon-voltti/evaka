@@ -92,10 +92,7 @@ interface IEmailMessageProvider {
         events: List<CalendarEventNotificationData>
     ): EmailContent
 
-    fun financeDecisionNotification(
-        language: Language,
-        decisionType: FinanceDecisionType
-    ): EmailContent
+    fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 }
 
 data class CalendarEventNotificationData(

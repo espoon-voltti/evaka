@@ -264,7 +264,6 @@ class VoucherValueDecisionService(
             val fromAddress = emailEnv.sender(language)
             val content =
                 emailMessageProvider.financeDecisionNotification(
-                    language,
                     FinanceDecisionType.VOUCHER_VALUE_DECISION
                 )
             Email.create(

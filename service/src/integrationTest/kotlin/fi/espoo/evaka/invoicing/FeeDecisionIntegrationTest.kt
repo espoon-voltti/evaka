@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -2094,10 +2093,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val emailContent =
-            emailMessageProvider.financeDecisionNotification(
-                Language.fi,
-                FinanceDecisionType.FEE_DECISION
-            )
+            emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
 
         // assert that only hof has mail
         assertEquals(
@@ -2145,10 +2141,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val emailContent =
-            emailMessageProvider.financeDecisionNotification(
-                Language.fi,
-                FinanceDecisionType.FEE_DECISION
-            )
+            emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
 
         // assert that only hof has mail
         assertEquals(

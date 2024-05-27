@@ -9,7 +9,6 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -573,7 +572,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailContent =
             emailMessageProvider.financeDecisionNotification(
-                Language.fi,
                 FinanceDecisionType.VOUCHER_VALUE_DECISION
             )
 
@@ -618,7 +616,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailContent =
             emailMessageProvider.financeDecisionNotification(
-                Language.fi,
                 FinanceDecisionType.VOUCHER_VALUE_DECISION
             )
 

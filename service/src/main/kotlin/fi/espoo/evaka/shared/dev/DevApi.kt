@@ -1601,7 +1601,6 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
                     )
                 EmailMessageType.financeDecisionNotification ->
                     emailMessageProvider.financeDecisionNotification(
-                        Language.fi,
                         FinanceDecisionType.FEE_DECISION
                     )
             }

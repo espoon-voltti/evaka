@@ -382,10 +382,7 @@ class FeeDecisionService(
                 else Language.fi
             val fromAddress = emailEnv.sender(language)
             val content =
-                emailMessageProvider.financeDecisionNotification(
-                    language,
-                    FinanceDecisionType.FEE_DECISION
-                )
+                emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
             Email.create(
                     db,
                     recipient.id,
