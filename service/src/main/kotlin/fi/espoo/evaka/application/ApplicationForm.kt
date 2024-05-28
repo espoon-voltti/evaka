@@ -131,7 +131,7 @@ data class ApplicationForm(
                                                 !guardianRestricted
                                         },
                                 phoneNumber = v0.guardian.phoneNumber ?: "",
-                                email = v0.guardian.email ?: ""
+                                email = v0.guardian.email
                             ),
                         secondGuardian =
                             if (v0.guardian2 != null) {
@@ -366,7 +366,7 @@ data class ApplicationForm(
                             ),
                         futureAddress = null,
                         phoneNumber = guardian.phone,
-                        email = guardian.email ?: ""
+                        email = guardian.email
                     ),
                 secondGuardian = null,
                 otherPartner = null,
@@ -456,13 +456,13 @@ data class Guardian(
     val address: Address?,
     val futureAddress: FutureAddress?,
     val phoneNumber: String,
-    val email: String
+    val email: String?
 )
 
 data class GuardianUpdate(
     val futureAddress: FutureAddress?,
     val phoneNumber: String,
-    val email: String
+    val email: String?
 )
 
 data class SecondGuardian(

@@ -523,7 +523,7 @@ export interface FutureAddress {
 */
 export interface Guardian {
   address: Address | null
-  email: string
+  email: string | null
   futureAddress: FutureAddress | null
   person: PersonBasics
   phoneNumber: string
@@ -544,7 +544,7 @@ export interface GuardianInfo {
 * Generated from fi.espoo.evaka.application.GuardianUpdate
 */
 export interface GuardianUpdate {
-  email: string
+  email: string | null
   futureAddress: FutureAddress | null
   phoneNumber: string
 }

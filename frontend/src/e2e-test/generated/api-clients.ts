@@ -59,6 +59,7 @@ import { DevParentship } from './api-types'
 import { DevPayment } from './api-types'
 import { DevPedagogicalDocument } from './api-types'
 import { DevPerson } from './api-types'
+import { DevPersonEmail } from './api-types'
 import { DevPersonalMobileDevice } from './api-types'
 import { DevPlacement } from './api-types'
 import { DevPreschoolAssistance } from './api-types'
@@ -2130,6 +2131,27 @@ export async function runJobs(): Promise<void> {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/run-jobs`.toString(),
       method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.setPersonEmail
+*/
+export async function setPersonEmail(
+  request: {
+    body: DevPersonEmail
+  }
+): Promise<number> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<number>>({
+      url: uri`/person-email`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevPersonEmail>
     })
     return json
   } catch (e) {

@@ -390,7 +390,7 @@ RETURNING *
 
 fun Database.Transaction.updatePersonBasicContactInfo(
     id: PersonId,
-    email: String,
+    email: String?,
     phone: String
 ): Boolean {
     return createQuery {

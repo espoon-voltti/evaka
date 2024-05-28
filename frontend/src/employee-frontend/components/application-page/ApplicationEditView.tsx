@@ -957,7 +957,7 @@ export default React.memo(function ApplicationEditView({
               <Label>{i18n.application.person.email}</Label>
               <InputField
                 width="m"
-                value={guardian.email}
+                value={guardian.email ?? ''}
                 onChange={(value) => {
                   setApplication(set('form.guardian.email', value))
                 }}

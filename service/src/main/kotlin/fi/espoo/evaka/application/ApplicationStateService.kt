@@ -202,11 +202,14 @@ class ApplicationStateService(
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
         tx.getPersonById(application.guardianId)?.let {
-            val email = application.form.guardian.email.ifBlank { it.email }
+            val email =
+                if (!application.form.guardian.email.isNullOrBlank())
+                    application.form.guardian.email
+                else it.email
 
             tx.updatePersonBasicContactInfo(
                 id = application.guardianId,
-                email = email ?: "",
+                email = email,
                 phone = application.form.guardian.phoneNumber
             )
         }
