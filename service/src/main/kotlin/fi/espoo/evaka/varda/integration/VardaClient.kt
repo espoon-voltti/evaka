@@ -31,8 +31,10 @@ import fi.espoo.evaka.varda.VardaPlacement
 import fi.espoo.evaka.varda.VardaPlacementResponse
 import fi.espoo.evaka.varda.VardaUnitClient
 import fi.espoo.evaka.varda.VardaUnitRequest
-import fi.espoo.evaka.varda.VardaUnitResponse
+import fi.espoo.evaka.varda.new.VardaEntity
 import fi.espoo.voltti.logging.loggers.error
+import java.net.URI
+import java.net.URLEncoder
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -368,7 +370,15 @@ class VardaClient(
         }
     }
 
-    override fun createUnit(unit: VardaUnitRequest): VardaUnitResponse {
+    override fun findToimipaikkaByOid(oid: String): VardaEntity {
+        val escapedOid = URLEncoder.encode(oid, Charsets.UTF_8)
+        return getAllPages("$unitUrl?organisaatio_oid=$escapedOid") {
+                jsonMapper.readValue<PaginatedResponse<VardaEntity>>(it)
+            }
+            .single()
+    }
+
+    override fun createToimipaikka(unit: VardaUnitRequest): VardaUnitClient.ToimipaikkaResponse {
         logger.info("VardaUpdate: client sending new unit ${unit.nimi}")
         val (request, _, result) =
             fuel
@@ -389,12 +399,14 @@ class VardaClient(
         }
     }
 
-    override fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse {
+    override fun updateToimipaikka(
+        url: URI,
+        unit: VardaUnitRequest
+    ): VardaUnitClient.ToimipaikkaResponse {
         logger.info("VardaUpdate: client updating unit ${unit.nimi}")
-        val url = "$unitUrl$id/"
         val (request, _, result) =
             fuel
-                .put(url)
+                .put(url.toString())
                 .jsonBody(jsonMapper.writeValueAsString(unit))
                 .authenticatedResponseStringWithRetries()
 

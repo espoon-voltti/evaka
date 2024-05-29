@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.varda.VardaUnitClient
 import fi.espoo.evaka.varda.VardaUnitRequest
-import fi.espoo.evaka.varda.VardaUnitResponse
 import java.net.URI
+import java.net.URLEncoder
 import java.time.LocalDate
 import mu.KotlinLogging
 import okhttp3.MediaType.Companion.toMediaType
@@ -298,11 +298,26 @@ class VardaClient(
     fun vakajarjestajaUrl(organizerId: String): String =
         baseUrl.resolve("v1/vakajarjestajat/$organizerId/").toString()
 
-    override fun createUnit(unit: VardaUnitRequest): VardaUnitResponse =
+    override fun findToimipaikkaByOid(oid: String): VardaEntity {
+        class FindToimipaikkaResponse(
+            override val url: URI,
+            override val lahdejarjestelma: String?
+        ) : VardaEntity
+
+        val escapedOid = URLEncoder.encode(oid, Charsets.UTF_8)
+        return getAllPages<FindToimipaikkaResponse>(
+                baseUrl.resolve("v1/toimipaikat/?organisaatio_oid=$escapedOid")
+            )
+            .singleOrNull() ?: error("Toimipaikka not found with oid $oid")
+    }
+
+    override fun createToimipaikka(unit: VardaUnitRequest): VardaUnitClient.ToimipaikkaResponse =
         post(baseUrl.resolve("v1/toimipaikat/"), unit)
 
-    override fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse =
-        put(baseUrl.resolve("v1/toimipaikat/$id/"), unit)
+    override fun updateToimipaikka(
+        url: URI,
+        unit: VardaUnitRequest
+    ): VardaUnitClient.ToimipaikkaResponse = put(url, unit)
 
     private inline fun <reified R> get(url: URI): R = request("GET", url)
 

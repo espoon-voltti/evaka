@@ -12,6 +12,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.varda.new.VardaEntity
+import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
@@ -23,9 +25,13 @@ val unitTypesToUpload =
     listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
 interface VardaUnitClient {
-    fun createUnit(unit: VardaUnitRequest): VardaUnitResponse
+    fun findToimipaikkaByOid(oid: String): VardaEntity
 
-    fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse
+    data class ToimipaikkaResponse(val organisaatio_oid: String)
+
+    fun createToimipaikka(unit: VardaUnitRequest): ToimipaikkaResponse
+
+    fun updateToimipaikka(url: URI, unit: VardaUnitRequest): ToimipaikkaResponse
 }
 
 fun updateUnits(
@@ -54,28 +60,28 @@ fun updateUnits(
                     vakajarjestaja = vakajarjestajaUrl,
                     kuntakoodi = kuntakoodi
                 )
-            if (prevState?.state != currState) {
-                Triple(unit.evakaDaycareId, prevState?.vardaUnitId, currState)
+            if (prevState != currState) {
+                Triple(unit.evakaDaycareId, unit.ophUnitOid, currState)
             } else {
                 null
             }
         }
 
     logger.info { "Sending ${unitsToSend.size} new or updated units to Varda" }
-    unitsToSend.forEach { (evakaDaycareId, vardaUnitId, request) ->
+    unitsToSend.forEach { (evakaDaycareId, organisaatioOid, request) ->
         try {
             val response =
-                if (vardaUnitId == null) {
-                    client.createUnit(request)
+                if (organisaatioOid.isNullOrBlank()) {
+                    client.createToimipaikka(request)
                 } else {
-                    client.updateUnit(vardaUnitId, request)
+                    val entity = client.findToimipaikkaByOid(organisaatioOid)
+                    client.updateToimipaikka(entity.url, request)
                 }
             dbc.transaction {
                 setUnitUploaded(
                     tx = it,
                     now = startTime,
                     unitId = evakaDaycareId,
-                    vardaUnitId = response.id,
                     ophUnitOid = response.organisaatio_oid,
                     state = request
                 )
@@ -94,13 +100,10 @@ fun updateUnits(
     }
 }
 
-data class VardaUnitState<T>(val vardaUnitId: Long?, val state: T?)
-
-inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, VardaUnitState<T>> =
-    createQuery { sql("SELECT evaka_daycare_id, varda_unit_id, state FROM varda_unit") }
+inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, T?> =
+    createQuery { sql("SELECT evaka_daycare_id, state FROM varda_unit") }
         .toMap {
             val id = column<DaycareId>("evaka_daycare_id")
-            val vardaUnitId = column<Long?>("varda_unit_id")
             val state =
                 try {
                     jsonColumn<T?>("state")
@@ -111,7 +114,7 @@ inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, 
                         throw exc
                     }
                 }
-            id to VardaUnitState(vardaUnitId, state)
+            id to state
         }
 
 fun Database.Read.getVardaUnits(): List<VardaUnit> =
@@ -120,6 +123,7 @@ fun Database.Read.getVardaUnits(): List<VardaUnit> =
                 """
                 SELECT
                     daycare.id AS evaka_daycare_id,
+                    daycare.oph_unit_oid,
                     daycare.name,
                     daycare.street_address,
                     daycare.postal_code,
@@ -147,17 +151,16 @@ fun setUnitUploaded(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
     unitId: DaycareId,
-    vardaUnitId: Long?,
     ophUnitOid: String?,
     state: Any
 ) {
     tx.createUpdate {
             sql(
                 """
-                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, state, last_success_at, errored_at, error)
-                VALUES (${bind(unitId)}, ${bind(vardaUnitId)}, ${bindJson(state)}, ${bind(now)}, NULL, NULL)
+                INSERT INTO varda_unit (evaka_daycare_id, state, last_success_at, errored_at, error)
+                VALUES (${bind(unitId)}, ${bindJson(state)}, ${bind(now)}, NULL, NULL)
                 ON CONFLICT (evaka_daycare_id)
-                DO UPDATE SET varda_unit_id = ${bind(vardaUnitId)}, state = ${bindJson(state)}, last_success_at = ${bind(now)}, errored_at = NULL, error = NULL
+                DO UPDATE SET state = ${bindJson(state)}, last_success_at = ${bind(now)}, errored_at = NULL, error = NULL
                 """
             )
         }
@@ -180,8 +183,8 @@ fun setUnitUploadFailed(
     tx.createUpdate {
             sql(
                 """
-                INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, last_success_at, errored_at, error)
-                VALUES (${bind(unitId)}, NULL, NULL, ${bind(now)}, ${bind(error)})
+                INSERT INTO varda_unit (evaka_daycare_id, last_success_at, errored_at, error)
+                VALUES (${bind(unitId)}, NULL, ${bind(now)}, ${bind(error)})
                 ON CONFLICT (evaka_daycare_id)
                 DO UPDATE SET errored_at = ${bind(now)}, error = ${bind(error)}
                 """
@@ -242,10 +245,9 @@ enum class VardaUnitEducationSystem(val vardaCode: String) {
     OTHER("kj99")
 }
 
-data class VardaUnitResponse(val id: Long, val organisaatio_oid: String)
-
 data class VardaUnit(
     val evakaDaycareId: DaycareId,
+    val ophUnitOid: String?,
     val name: String,
     val streetAddress: String,
     val postalCode: String,

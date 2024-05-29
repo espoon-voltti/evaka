@@ -18,8 +18,8 @@ internal fun insertVardaUnit(
         it.execute {
             sql(
                 """
-INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, created_at, last_success_at)
-VALUES (${bind(unitId)}, 1, ${bind(HelsinkiDateTime.now())}, ${bind(HelsinkiDateTime.now())})
+INSERT INTO varda_unit (evaka_daycare_id, created_at, last_success_at)
+VALUES (${bind(unitId)}, ${bind(HelsinkiDateTime.now())}, ${bind(HelsinkiDateTime.now())})
 """
             )
         }

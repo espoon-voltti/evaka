@@ -50,6 +50,7 @@ class VardaUnitModelTest {
 val testUnit =
     VardaUnit(
         evakaDaycareId = DaycareId(UUID.randomUUID()),
+        ophUnitOid = "1.2.3.4.5",
         name = "Testipäiväkoti",
         streetAddress = "Testiosoite 6",
         postalCode = "00200",

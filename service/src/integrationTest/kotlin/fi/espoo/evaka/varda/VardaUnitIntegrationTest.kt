@@ -12,6 +12,8 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.varda.new.VardaEntity
+import java.net.URI
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -33,8 +35,12 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
         db.transaction { tx ->
             tx.insert(area)
-            tx.insert(DevDaycare(areaId = area.id, id = unitId1, name = "Päiväkoti 1"))
-            tx.insert(DevDaycare(areaId = area.id, id = unitId2, name = "Päiväkoti 2"))
+            tx.insert(
+                DevDaycare(areaId = area.id, id = unitId1, name = "Päiväkoti 1", ophUnitOid = null)
+            )
+            tx.insert(
+                DevDaycare(areaId = area.id, id = unitId2, name = "Päiväkoti 2", ophUnitOid = null)
+            )
         }
     }
 
@@ -122,6 +128,8 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val client = TestClient()
 
         updateUnits(client)
+
+        assertEquals(client.units.size, 2)
         val unitToStale = getVardaUnitStates(db)[0]
         val daycareId = unitToStale.evakaDaycareId
         val vardaId = unitToStale.vardaUnitId
@@ -138,6 +146,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         clock.tick()
         updateUnits(client)
 
+        assertEquals(client.units.size, 2)
         val updatedUnit = getVardaUnitStates(db).toList().find { it.evakaDaycareId == daycareId }!!
         assertEquals(vardaId, updatedUnit.vardaUnitId)
         assertEquals(createdAt, updatedUnit.createdAt)
@@ -175,9 +184,13 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
     fun `unit update error is saved`() {
         val client =
             object : VardaUnitClient {
-                override fun createUnit(unit: VardaUnitRequest) = error("unit creation failed")
+                override fun findToimipaikkaByOid(oid: String): VardaEntity =
+                    error("unit find failed")
 
-                override fun updateUnit(id: Long, unit: VardaUnitRequest) =
+                override fun createToimipaikka(unit: VardaUnitRequest) =
+                    error("unit creation failed")
+
+                override fun updateToimipaikka(url: URI, unit: VardaUnitRequest) =
                     error("unit update failed")
             }
 
@@ -210,21 +223,39 @@ class TestClient : VardaUnitClient {
     var numCalls = 0
     private var nextId = 1L
 
-    override fun createUnit(unit: VardaUnitRequest): VardaUnitResponse {
+    private fun idToOid(id: Long) = "foo.$id"
+
+    private fun oidToId(oid: String) = oid.removePrefix("foo.").toLong()
+
+    private fun idToUri(id: Long) = URI.create("http://uri/$id")
+
+    private fun uriToId(url: URI) = url.path.substringAfterLast('/').toLong()
+
+    override fun findToimipaikkaByOid(oid: String) =
+        object : VardaEntity {
+            override val url = idToUri(oidToId(oid))
+            override val lahdejarjestelma = "sourceSystem"
+        }
+
+    override fun createToimipaikka(unit: VardaUnitRequest): VardaUnitClient.ToimipaikkaResponse {
         numCalls++
         val id = nextId++
         units[id] = unit
-        return VardaUnitResponse(id, "foo.$id")
+        return VardaUnitClient.ToimipaikkaResponse(idToOid(id))
     }
 
-    override fun updateUnit(id: Long, unit: VardaUnitRequest): VardaUnitResponse {
+    override fun updateToimipaikka(
+        url: URI,
+        unit: VardaUnitRequest
+    ): VardaUnitClient.ToimipaikkaResponse {
         numCalls++
+        val id = uriToId(url)
         if (!units.containsKey(id)) throw IllegalStateException("Unit not found")
         units[id] = unit
-        return VardaUnitResponse(id, "foo.$id")
+        return VardaUnitClient.ToimipaikkaResponse(idToOid(id))
     }
 
-    fun findUnitByName(name: String) = units.values.find { it.nimi == name }!!
+    fun findUnitByName(name: String): VardaUnitRequest = units.values.find { it.nimi == name }!!
 }
 
 fun getVardaUnitStates(db: Database.Connection): List<VardaUnitRow> =
