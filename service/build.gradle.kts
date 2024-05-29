@@ -201,7 +201,11 @@ allprojects {
         description = "Resolves all dependencies"
         doLast {
             configurations
-                .matching { it.isCanBeResolved }
+                .matching {
+                    it.isCanBeResolved &&
+                    // ignore configurations that fetch sources (e.g. Java source code)
+                    !it.name.endsWith("dependencySources", ignoreCase = true)
+                }
                 .map {
                     val files = it.resolve()
                     it.name to files.size
