@@ -321,7 +321,7 @@ val productKeyColumnMapper = ColumnMapper { rs, columnNumber, _ ->
 class CustomArgumentFactory<T>(
     private val clazz: Class<T>,
     private val sqlType: Int,
-    private inline val f: (T) -> Argument?
+    private val f: (T) -> Argument?
 ) : ArgumentFactory.Preparable {
     init {
         check(sqlType != Types.OTHER) {
@@ -341,10 +341,8 @@ class CustomArgumentFactory<T>(
         )
 }
 
-class PgObjectArgumentFactory<T>(
-    private val clazz: Class<T>,
-    private inline val f: (T?) -> PGobject
-) : ArgumentFactory.Preparable {
+class PgObjectArgumentFactory<T>(private val clazz: Class<T>, private val f: (T?) -> PGobject) :
+    ArgumentFactory.Preparable {
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> =
         Optional.ofNullable(
             if (clazz.isAssignableFrom(GenericTypes.getErasedType(type))) {
@@ -380,7 +378,7 @@ inline fun <reified T> pgObjectArgumentFactory(noinline serializer: (T?) -> PGob
 inline fun <reified T> toStringArgumentFactory() =
     customArgumentFactory<T>(Types.VARCHAR) { CustomStringArgument(it.toString()) }
 
-class PgObjectColumnMapper<T>(private inline val deserializer: (PGobject) -> T?) : ColumnMapper<T> {
+class PgObjectColumnMapper<T>(val deserializer: (PGobject) -> T?) : ColumnMapper<T> {
     override fun map(r: ResultSet, columnNumber: Int, ctx: StatementContext): T? =
         r.getObject(columnNumber)?.let { deserializer(it as PGobject) }
 }
