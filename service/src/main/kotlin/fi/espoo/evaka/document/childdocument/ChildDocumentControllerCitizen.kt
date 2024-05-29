@@ -5,6 +5,7 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.children.getCitizenChildIds
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
@@ -47,7 +48,7 @@ class ChildDocumentControllerCitizen(
                     tx.getChildDocumentCitizenSummaries(user, childId)
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = childId) }
+            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
     }
 
     @GetMapping("/{documentId}")
@@ -71,7 +72,7 @@ class ChildDocumentControllerCitizen(
                         ?: throw NotFound("Document $documentId not found")
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = documentId) }
+            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
     }
 
     @GetMapping("/{documentId}/pdf")
@@ -93,7 +94,7 @@ class ChildDocumentControllerCitizen(
                     childDocumentService.getPdfResponse(tx, documentId)
                 }
             }
-            .also { Audit.ChildDocumentDownload.log(targetId = documentId) }
+            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
     }
 
     @PutMapping("/{documentId}/read")
@@ -116,7 +117,7 @@ class ChildDocumentControllerCitizen(
                     tx.markChildDocumentAsRead(user, documentId, clock.now())
                 }
             }
-            .also { Audit.ChildDocumentMarkRead.log(targetId = documentId) }
+            .also { Audit.ChildDocumentMarkRead.log(targetId = AuditId(documentId)) }
     }
 
     @GetMapping("/unread-count")
@@ -141,6 +142,6 @@ class ChildDocumentControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ChildDocumentUnreadCount.log(targetId = user.id) }
+            .also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
     }
 }

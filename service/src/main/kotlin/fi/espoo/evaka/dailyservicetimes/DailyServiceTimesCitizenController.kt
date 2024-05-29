@@ -5,6 +5,7 @@
 package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.DailyServiceTimeNotificationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -42,7 +43,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
             }
             .also {
                 Audit.ChildDailyServiceTimeNotificationsRead.log(
-                    targetId = user.id,
+                    targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -71,7 +72,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
                         .also { tx.deleteDailyServiceTimesNotifications(it) }
                 }
             }
-            .also { Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = it) }
+            .also { Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = AuditId(it)) }
     }
 }
 

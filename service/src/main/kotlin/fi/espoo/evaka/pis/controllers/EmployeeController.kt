@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.deactivatePersonalMessageAccountIfNeeded
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Employee
@@ -110,7 +111,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     it.getEmployee(id)
                 } ?: throw NotFound()
             }
-            .also { Audit.EmployeeRead.log(targetId = id) }
+            .also { Audit.EmployeeRead.log(targetId = AuditId(id)) }
     }
 
     @PutMapping("/{id}/global-roles")
@@ -134,7 +135,10 @@ class EmployeeController(private val accessControl: AccessControl) {
                 it.updateEmployeeGlobalRoles(id = id, globalRoles = body)
             }
         }
-        Audit.EmployeeUpdateGlobalRoles.log(targetId = id, meta = mapOf("globalRoles" to body))
+        Audit.EmployeeUpdateGlobalRoles.log(
+            targetId = AuditId(id),
+            meta = mapOf("globalRoles" to body)
+        )
     }
 
     data class UpsertEmployeeDaycareRolesRequest(
@@ -175,7 +179,7 @@ class EmployeeController(private val accessControl: AccessControl) {
             }
         }
         Audit.EmployeeUpdateDaycareRoles.log(
-            targetId = id,
+            targetId = AuditId(id),
             meta = mapOf("daycareIds" to body.daycareIds, "role" to body.role)
         )
     }
@@ -202,7 +206,10 @@ class EmployeeController(private val accessControl: AccessControl) {
                 deactivatePersonalMessageAccountIfNeeded(tx, id)
             }
         }
-        Audit.EmployeeDeleteDaycareRoles.log(targetId = id, meta = mapOf("daycareId" to daycareId))
+        Audit.EmployeeDeleteDaycareRoles.log(
+            targetId = AuditId(id),
+            meta = mapOf("daycareId" to daycareId)
+        )
     }
 
     @PutMapping("/{id}/activate")
@@ -219,7 +226,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 it.updateEmployeeActive(id = id, active = true)
             }
         }
-        Audit.EmployeeActivate.log(targetId = id)
+        Audit.EmployeeActivate.log(targetId = AuditId(id))
     }
 
     @PutMapping("/{id}/deactivate")
@@ -236,7 +243,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 tx.deactivateEmployeeRemoveRolesAndPin(id)
             }
         }
-        Audit.EmployeeDeactivate.log(targetId = id)
+        Audit.EmployeeDeactivate.log(targetId = AuditId(id))
     }
 
     @GetMapping("/{id}/details")
@@ -258,7 +265,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     it.getEmployeeWithRoles(id)
                 } ?: throw NotFound("employee $id not found")
             }
-            .also { Audit.EmployeeRead.log(targetId = id) }
+            .also { Audit.EmployeeRead.log(targetId = AuditId(id)) }
     }
 
     @PostMapping("")
@@ -279,7 +286,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     it.createEmployee(employee)
                 }
             }
-            .also { Audit.EmployeeCreate.log(targetId = it.id) }
+            .also { Audit.EmployeeCreate.log(targetId = AuditId(it.id)) }
     }
 
     @DeleteMapping("/{id}")
@@ -295,19 +302,19 @@ class EmployeeController(private val accessControl: AccessControl) {
                 it.deleteEmployee(id)
             }
         }
-        Audit.EmployeeDelete.log(targetId = id)
+        Audit.EmployeeDelete.log(targetId = AuditId(id))
     }
 
     @PostMapping("/pin-code")
     fun upsertPinCode(db: Database, user: AuthenticatedUser.Employee, @RequestBody body: PinCode) {
         db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(user.id, body) } }
-        Audit.PinCodeUpdate.log(targetId = user.id)
+        Audit.PinCodeUpdate.log(targetId = AuditId(user.id))
     }
 
     @GetMapping("/pin-code/is-pin-locked")
     fun isPinLocked(db: Database, user: AuthenticatedUser.Employee): Boolean {
         return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(user.id) } }
-            .also { Audit.PinCodeLockedRead.log(targetId = user.id) }
+            .also { Audit.PinCodeLockedRead.log(targetId = AuditId(user.id)) }
     }
 
     @PostMapping("/search")
@@ -355,7 +362,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.EmployeePreferredFirstNameRead.log(targetId = user.id) }
+            .also { Audit.EmployeePreferredFirstNameRead.log(targetId = AuditId(user.id)) }
     }
 
     data class EmployeeSetPreferredFirstNameUpdateRequest(val preferredFirstName: String?)
@@ -380,7 +387,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.EmployeePreferredFirstNameUpdate.log(targetId = user.id)
+        Audit.EmployeePreferredFirstNameUpdate.log(targetId = AuditId(user.id))
     }
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
@@ -136,7 +137,7 @@ class VoucherValueDecisionController(
             }
         }
             ?: throw NotFound("No voucher value decision found with given ID ($id)").also {
-                Audit.VoucherValueDecisionRead.log(targetId = id)
+                Audit.VoucherValueDecisionRead.log(targetId = AuditId(id))
             }
     }
 
@@ -159,7 +160,9 @@ class VoucherValueDecisionController(
                     it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
                 }
             }
-            .also { Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId) }
+            .also {
+                Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = AuditId(headOfFamilyId))
+            }
     }
 
     @PostMapping("/send")
@@ -191,7 +194,7 @@ class VoucherValueDecisionController(
                 )
             }
         }
-        Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
+        Audit.VoucherValueDecisionSend.log(targetId = AuditId(decisionIds))
     }
 
     @PostMapping("/mark-sent")
@@ -217,7 +220,7 @@ class VoucherValueDecisionController(
                 tx.markVoucherValueDecisionsSent(ids, clock.now())
             }
         }
-        Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
+        Audit.VoucherValueDecisionMarkSent.log(targetId = AuditId(ids))
     }
 
     @GetMapping("/pdf/{decisionId}")
@@ -261,7 +264,7 @@ class VoucherValueDecisionController(
 
                 valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
             }
-            .also { Audit.VoucherValueDecisionPdfRead.log(targetId = decisionId) }
+            .also { Audit.VoucherValueDecisionPdfRead.log(targetId = AuditId(decisionId)) }
     }
 
     @PostMapping("/ignore")
@@ -283,7 +286,7 @@ class VoucherValueDecisionController(
                 valueDecisionService.ignoreDrafts(tx, voucherValueDecisionIds, clock.today())
             }
         }
-        Audit.VoucherValueDecisionIgnore.log(targetId = voucherValueDecisionIds)
+        Audit.VoucherValueDecisionIgnore.log(targetId = AuditId(voucherValueDecisionIds))
     }
 
     @PostMapping("/unignore")
@@ -316,7 +319,7 @@ class VoucherValueDecisionController(
                 )
             }
         }
-        Audit.VoucherValueDecisionUnignore.log(targetId = voucherValueDecisionIds)
+        Audit.VoucherValueDecisionUnignore.log(targetId = AuditId(voucherValueDecisionIds))
     }
 
     @PostMapping("/set-type/{id}")
@@ -339,7 +342,7 @@ class VoucherValueDecisionController(
                 valueDecisionService.setType(it, id, request.type)
             }
         }
-        Audit.VoucherValueDecisionSetType.log(targetId = id)
+        Audit.VoucherValueDecisionSetType.log(targetId = AuditId(id))
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
@@ -362,7 +365,7 @@ class VoucherValueDecisionController(
                 generator.createRetroactiveValueDecisions(it, id, body.from)
             }
         }
-        Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
+        Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = AuditId(id))
     }
 }
 

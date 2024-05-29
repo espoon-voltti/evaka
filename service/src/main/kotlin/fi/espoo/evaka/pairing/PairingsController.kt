@@ -6,6 +6,7 @@ package fi.espoo.evaka.pairing
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
@@ -88,7 +89,7 @@ class PairingsController(
                     }
                 }
             }
-            .also { Audit.PairingInit.log(targetId = body.id, objectId = it.id) }
+            .also { Audit.PairingInit.log(targetId = AuditId(body.id), objectId = AuditId(it.id)) }
     }
 
     /**
@@ -119,7 +120,7 @@ class PairingsController(
             }
             .also {
                 Audit.PairingChallenge.log(
-                    targetId = it.id,
+                    targetId = AuditId(it.id),
                     meta = mapOf("challengeKey" to body.challengeKey)
                 )
             }
@@ -179,7 +180,7 @@ class PairingsController(
             }
             .also {
                 Audit.PairingResponse.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta =
                         mapOf(
                             "challengeKey" to body.challengeKey,
@@ -216,7 +217,7 @@ class PairingsController(
             }
             .also {
                 Audit.PairingValidation.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta =
                         mapOf(
                             "challengeKey" to body.challengeKey,
@@ -250,7 +251,12 @@ class PairingsController(
     ): PairingStatusRes {
         return PairingStatusRes(
             db.connect { dbc -> dbc.read { it.fetchPairingStatus(clock, id) } }
-                .also { Audit.PairingStatusRead.log(targetId = id, meta = mapOf("status" to it)) }
+                .also {
+                    Audit.PairingStatusRead.log(
+                        targetId = AuditId(id),
+                        meta = mapOf("status" to it)
+                    )
+                }
         )
     }
 }

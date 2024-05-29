@@ -4,6 +4,7 @@
 package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
@@ -58,8 +59,8 @@ class AssistanceNeedPreschoolDecisionController(
             }
             .also { assistanceNeedDecision ->
                 Audit.ChildAssistanceNeedPreschoolDecisionCreate.log(
-                    targetId = childId,
-                    objectId = assistanceNeedDecision.id
+                    targetId = AuditId(childId),
+                    objectId = AuditId(assistanceNeedDecision.id)
                 )
             }
     }
@@ -91,7 +92,7 @@ class AssistanceNeedPreschoolDecisionController(
                     )
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionRead.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionRead.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -118,7 +119,7 @@ class AssistanceNeedPreschoolDecisionController(
                     tx.updateAssistanceNeedPreschoolDecision(id, body)
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionUpdate.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionUpdate.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -147,7 +148,7 @@ class AssistanceNeedPreschoolDecisionController(
                     tx.updateAssistanceNeedPreschoolDecisionToSent(id, clock.today())
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionSend.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionSend.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -173,7 +174,9 @@ class AssistanceNeedPreschoolDecisionController(
                     tx.updateAssistanceNeedPreschoolDecisionToNotSent(id)
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionRevertToUnsent.log(targetId = id) }
+            .also {
+                Audit.ChildAssistanceNeedPreschoolDecisionRevertToUnsent.log(targetId = AuditId(id))
+            }
     }
 
     @PutMapping(
@@ -199,7 +202,7 @@ class AssistanceNeedPreschoolDecisionController(
                     tx.markAssistanceNeedPreschoolDecisionAsOpened(id)
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionOpened.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionOpened.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -281,7 +284,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
             .also {
                 Audit.ChildAssistanceNeedPreschoolDecisionDecide.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta = mapOf("status" to body.status)
                 )
             }
@@ -321,7 +324,7 @@ class AssistanceNeedPreschoolDecisionController(
                     tx.annulAssistanceNeedPreschoolDecision(id, body.reason)
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionAnnul.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionAnnul.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/children/{childId}/assistance-need-preschool-decisions")
@@ -362,7 +365,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
             .also {
                 Audit.ChildAssistanceNeedPreschoolDecisionsList.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -395,7 +398,7 @@ class AssistanceNeedPreschoolDecisionController(
                     }
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionDelete.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedPreschoolDecisionDelete.log(targetId = AuditId(id)) }
     }
 
     // TODO: Unused endpoint?
@@ -437,7 +440,9 @@ class AssistanceNeedPreschoolDecisionController(
                     )
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id) }
+            .also {
+                Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = AuditId(id))
+            }
     }
 
     @GetMapping(
@@ -467,7 +472,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
             .also {
                 Audit.ChildAssistanceNeedPreschoolDecisionReadDecisionMakerOptions.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta = mapOf("count" to it.size)
                 )
             }

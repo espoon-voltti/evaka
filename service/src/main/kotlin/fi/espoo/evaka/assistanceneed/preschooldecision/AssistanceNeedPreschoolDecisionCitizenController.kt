@@ -4,6 +4,7 @@
 package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -44,7 +45,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                     tx.getAssistanceNeedPreschoolDecisionsForCitizen(clock.today(), user.id)
                 }
             }
-            .also { Audit.AssistanceNeedPreschoolDecisionsListCitizen.log(targetId = user.id) }
+            .also {
+                Audit.AssistanceNeedPreschoolDecisionsListCitizen.log(targetId = AuditId(user.id))
+            }
     }
 
     @GetMapping("/children/assistance-need-preschool-decisions/{id}")
@@ -72,7 +75,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                     decision
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionReadCitizen.log(targetId = id) }
+            .also {
+                Audit.ChildAssistanceNeedPreschoolDecisionReadCitizen.log(targetId = AuditId(id))
+            }
     }
 
     @GetMapping("/children/assistance-need-preschool-decisions/{id}/pdf")
@@ -94,7 +99,11 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionDownloadCitizen.log(targetId = id) }
+            .also {
+                Audit.ChildAssistanceNeedPreschoolDecisionDownloadCitizen.log(
+                    targetId = AuditId(id)
+                )
+            }
     }
 
     @PutMapping("/children/assistance-need-preschool-decisions/{id}/read")
@@ -116,7 +125,11 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                     tx.markAssistanceNeedPreschoolDecisionAsReadByGuardian(id, user.id)
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionMarkReadCitizen.log(targetId = id) }
+            .also {
+                Audit.ChildAssistanceNeedPreschoolDecisionMarkReadCitizen.log(
+                    targetId = AuditId(id)
+                )
+            }
     }
 
     @GetMapping("/children/assistance-need-preschool-decisions/unread-counts")
@@ -142,7 +155,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
             }
             .also {
                 Audit.ChildAssistanceNeedPreschoolDecisionGetUnreadCountCitizen.log(
-                    targetId = user.id
+                    targetId = AuditId(user.id)
                 )
             }
     }

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -63,7 +64,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     it.getFixedPeriodQuestionnaire(id) ?: throw NotFound()
                 }
             }
-            .also { Audit.HolidayQuestionnaireRead.log(targetId = id) }
+            .also { Audit.HolidayQuestionnaireRead.log(targetId = AuditId(id)) }
     }
 
     @PostMapping
@@ -89,7 +90,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     }
                 }
             }
-        Audit.HolidayQuestionnaireCreate.log(targetId = id)
+        Audit.HolidayQuestionnaireCreate.log(targetId = AuditId(id))
     }
 
     @PutMapping("/{id}")
@@ -115,7 +116,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.HolidayQuestionnaireUpdate.log(targetId = id)
+        Audit.HolidayQuestionnaireUpdate.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/{id}")
@@ -136,6 +137,6 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                 it.deleteHolidayQuestionnaire(id)
             }
         }
-        Audit.HolidayQuestionnaireDelete.log(targetId = id)
+        Audit.HolidayQuestionnaireDelete.log(targetId = AuditId(id))
     }
 }

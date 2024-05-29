@@ -5,6 +5,7 @@
 package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.attachment.dissociateAttachmentsOfParent
@@ -60,7 +61,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             }
             .also {
                 Audit.IncomeStatementsOfPerson.log(
-                    targetId = user.id,
+                    targetId = AuditId(user.id),
                     meta = mapOf("total" to it.total)
                 )
             }
@@ -94,7 +95,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             }
             .also {
                 Audit.IncomeStatementsOfChild.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("total" to it.total)
                 )
             }
@@ -121,7 +122,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             }
             .also {
                 Audit.IncomeStatementStartDatesOfChild.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -147,7 +148,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             }
             .also {
                 Audit.IncomeStatementStartDates.log(
-                    targetId = user.id,
+                    targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -176,7 +177,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     ) ?: throw NotFound("No such income statement")
                 }
             }
-            .also { Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId) }
+            .also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
     }
 
     @GetMapping("/child/{childId}/{incomeStatementId}")
@@ -203,7 +204,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     ) ?: throw NotFound("No such child income statement")
                 }
             }
-            .also { Audit.IncomeStatementReadOfChild.log(targetId = incomeStatementId) }
+            .also { Audit.IncomeStatementReadOfChild.log(targetId = AuditId(incomeStatementId)) }
     }
 
     @PostMapping
@@ -226,7 +227,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }
                 createIncomeStatement(dbc, user.id, user, body)
             }
-        Audit.IncomeStatementCreate.log(targetId = user.id, objectId = id)
+        Audit.IncomeStatementCreate.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
 
     @PostMapping("/child/{childId}")
@@ -250,7 +251,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }
                 createIncomeStatement(dbc, childId, user, body)
             }
-        Audit.IncomeStatementCreateForChild.log(targetId = user.id, objectId = id)
+        Audit.IncomeStatementCreateForChild.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
 
     @PutMapping("/{incomeStatementId}")
@@ -290,7 +291,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }
                 .let { success -> if (!success) throw NotFound("Income statement not found") }
         }
-        Audit.IncomeStatementUpdate.log(targetId = incomeStatementId)
+        Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))
     }
 
     @PutMapping("/child/{childId}/{incomeStatementId}")
@@ -337,7 +338,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }
                 .let { success -> if (!success) throw NotFound("Income statement not found") }
         }
-        Audit.IncomeStatementUpdateForChild.log(targetId = incomeStatementId)
+        Audit.IncomeStatementUpdateForChild.log(targetId = AuditId(incomeStatementId))
     }
 
     @DeleteMapping("/{id}")
@@ -360,7 +361,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 tx.removeIncomeStatement(id)
             }
         }
-        Audit.IncomeStatementDelete.log(targetId = id)
+        Audit.IncomeStatementDelete.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/child/{childId}/{id}")
@@ -384,7 +385,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 tx.removeIncomeStatement(id)
             }
         }
-        Audit.IncomeStatementDeleteOfChild.log(targetId = id)
+        Audit.IncomeStatementDeleteOfChild.log(targetId = AuditId(id))
     }
 
     @GetMapping("/children")
@@ -407,7 +408,10 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }
             }
             .also {
-                Audit.CitizenChildrenRead.log(targetId = personId, meta = mapOf("count" to it.size))
+                Audit.CitizenChildrenRead.log(
+                    targetId = AuditId(personId),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 

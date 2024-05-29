@@ -5,6 +5,7 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.placement.childPlacementsHasConsecutiveRange
 import fi.espoo.evaka.placement.clearCalendarEventAttendees
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -69,7 +70,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                 }
                 .also {
                     Audit.ChildBackupCareRead.log(
-                        targetId = childId,
+                        targetId = AuditId(childId),
                         meta = mapOf("count" to it.size)
                     )
                 }
@@ -114,7 +115,10 @@ class BackupCareController(private val accessControl: AccessControl) {
                         tx.createBackupCare(childId, body)
                     }
                 }
-            Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
+            Audit.ChildBackupCareCreate.log(
+                targetId = AuditId(childId),
+                objectId = AuditId(body.unitId)
+            )
             return BackupCareCreateResponse(id)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -221,7 +225,10 @@ class BackupCareController(private val accessControl: AccessControl) {
                     tx.updateBackupCare(id, body.period, body.groupId)
                 }
             }
-            Audit.BackupCareUpdate.log(targetId = id, objectId = body.groupId)
+            Audit.BackupCareUpdate.log(
+                targetId = AuditId(id),
+                objectId = body.groupId?.let(AuditId::invoke)
+            )
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
@@ -251,7 +258,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                 tx.deleteBackupCare(id)
             }
         }
-        Audit.BackupCareDelete.log(targetId = id)
+        Audit.BackupCareDelete.log(targetId = AuditId(id))
     }
 
     @GetMapping(
@@ -280,7 +287,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                 }
             }
         Audit.DaycareBackupCareRead.log(
-            targetId = daycareId,
+            targetId = AuditId(daycareId),
             meta =
                 mapOf("startDate" to startDate, "endDate" to endDate, "count" to backupCares.size)
         )

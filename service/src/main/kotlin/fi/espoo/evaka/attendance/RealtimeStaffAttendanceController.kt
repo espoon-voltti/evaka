@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -137,7 +138,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             }
             .also {
                 Audit.StaffAttendanceRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta =
                         mapOf(
                             "staffCount" to it.staff.size,
@@ -221,8 +222,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                 }
             }
         Audit.StaffAttendanceUpdate.log(
-            targetId = body.unitId,
-            objectId = staffAttendanceIds,
+            targetId = AuditId(body.unitId),
+            objectId = AuditId(staffAttendanceIds),
             meta = mapOf("date" to body.date)
         )
     }
@@ -296,8 +297,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                 }
             }
         Audit.StaffAttendanceExternalUpdate.log(
-            targetId = body.unitId,
-            objectId = externalAttendanceIds,
+            targetId = AuditId(body.unitId),
+            objectId = AuditId(externalAttendanceIds),
             meta = mapOf("date" to body.date)
         )
     }
@@ -322,7 +323,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                 tx.deleteStaffAttendance(attendanceId)
             }
         }
-        Audit.StaffAttendanceDelete.log(targetId = attendanceId)
+        Audit.StaffAttendanceDelete.log(targetId = AuditId(attendanceId))
     }
 
     @DeleteMapping("/{unitId}/external/{attendanceId}")
@@ -345,6 +346,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                 tx.deleteExternalStaffAttendance(attendanceId)
             }
         }
-        Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
+        Audit.StaffAttendanceExternalDelete.log(targetId = AuditId(attendanceId))
     }
 }

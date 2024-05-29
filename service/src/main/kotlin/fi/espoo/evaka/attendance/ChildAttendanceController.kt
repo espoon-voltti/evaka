@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -108,7 +109,7 @@ class ChildAttendanceController(
             }
             .also {
                 Audit.ChildAttendanceChildrenRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta = mapOf("childCount" to it.size)
                 )
             }
@@ -175,7 +176,7 @@ class ChildAttendanceController(
             }
             .also {
                 Audit.ChildAttendanceStatusesRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta = mapOf("childCount" to it.size)
                 )
             }
@@ -216,7 +217,10 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesArrivalCreate.log(targetId = childId, objectId = unitId)
+        Audit.ChildAttendancesArrivalCreate.log(
+            targetId = AuditId(childId),
+            objectId = AuditId(unitId)
+        )
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
@@ -242,7 +246,10 @@ class ChildAttendanceController(
                 if (attendance != null) tx.deleteAttendance(attendance.id)
             }
         }
-        Audit.ChildAttendancesReturnToComing.log(targetId = childId, objectId = unitId)
+        Audit.ChildAttendancesReturnToComing.log(
+            targetId = AuditId(childId),
+            objectId = AuditId(unitId)
+        )
     }
 
     data class ExpectedAbsencesOnDepartureRequest(
@@ -282,7 +289,12 @@ class ChildAttendanceController(
                     )
                 }
             }
-            .also { Audit.ChildAttendancesDepartureRead.log(targetId = childId, objectId = unitId) }
+            .also {
+                Audit.ChildAttendancesDepartureRead.log(
+                    targetId = AuditId(childId),
+                    objectId = AuditId(unitId)
+                )
+            }
     }
 
     data class DepartureRequest(
@@ -366,7 +378,10 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesDepartureCreate.log(targetId = childId, objectId = unitId)
+        Audit.ChildAttendancesDepartureCreate.log(
+            targetId = AuditId(childId),
+            objectId = AuditId(unitId)
+        )
     }
 
     private fun validateAndSetAbsences(
@@ -424,7 +439,10 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesReturnToPresent.log(targetId = childId, objectId = unitId)
+        Audit.ChildAttendancesReturnToPresent.log(
+            targetId = AuditId(childId),
+            objectId = AuditId(unitId)
+        )
     }
 
     data class FullDayAbsenceRequest(val absenceType: AbsenceType)
@@ -471,7 +489,10 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId, objectId = unitId)
+        Audit.ChildAttendancesFullDayAbsenceCreate.log(
+            targetId = AuditId(childId),
+            objectId = AuditId(unitId)
+        )
     }
 
     @DeleteMapping("/units/{unitId}/children/{childId}/full-day-absence")
@@ -508,8 +529,8 @@ class ChildAttendanceController(
             }
 
         Audit.ChildAttendancesFullDayAbsenceDelete.log(
-            targetId = childId,
-            objectId = unitId,
+            targetId = AuditId(childId),
+            objectId = AuditId(unitId),
             meta = mapOf("deletedAbsences" to deletedAbsences, "date" to today)
         )
     }
@@ -566,7 +587,10 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId, objectId = unitId)
+        Audit.ChildAttendancesAbsenceRangeCreate.log(
+            targetId = AuditId(childId),
+            objectId = AuditId(unitId)
+        )
     }
 
     @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")
@@ -593,8 +617,8 @@ class ChildAttendanceController(
                 }
             }
         Audit.AbsenceDeleteRange.log(
-            targetId = childId,
-            objectId = deleted,
+            targetId = AuditId(childId),
+            objectId = AuditId(deleted),
             meta = mapOf("from" to from, "to" to to)
         )
     }

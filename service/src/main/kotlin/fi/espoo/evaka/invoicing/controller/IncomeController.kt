@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.invoicing.data.deleteIncome
@@ -96,7 +97,7 @@ class IncomeController(
             }
             .also { incomes ->
                 Audit.PersonIncomeRead.log(
-                    targetId = personId,
+                    targetId = AuditId(personId),
                     meta = mapOf("count" to incomes.size)
                 )
             }
@@ -158,7 +159,10 @@ class IncomeController(
                 }
             }
             .also { incomeId ->
-                Audit.PersonIncomeCreate.log(targetId = income.personId, objectId = incomeId)
+                Audit.PersonIncomeCreate.log(
+                    targetId = AuditId(income.personId),
+                    objectId = AuditId(incomeId)
+                )
             }
     }
 
@@ -215,7 +219,7 @@ class IncomeController(
                 )
             }
         }
-        Audit.PersonIncomeUpdate.log(targetId = incomeId)
+        Audit.PersonIncomeUpdate.log(targetId = AuditId(incomeId))
     }
 
     @DeleteMapping("/{incomeId}")
@@ -251,7 +255,7 @@ class IncomeController(
                 )
             }
         }
-        Audit.PersonIncomeDelete.log(targetId = incomeId)
+        Audit.PersonIncomeDelete.log(targetId = AuditId(incomeId))
     }
 
     data class IncomeOption(
@@ -335,7 +339,7 @@ class IncomeController(
             }
             .also { incomeNotifications ->
                 Audit.PersonIncomeNotificationRead.log(
-                    targetId = personId,
+                    targetId = AuditId(personId),
                     meta = mapOf("count" to incomeNotifications.size)
                 )
             }

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -51,7 +52,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
                     tx.fetchUnitInfo(unitId, clock.today())
                 }
             }
-            .also { Audit.UnitRead.log(targetId = unitId) }
+            .also { Audit.UnitRead.log(targetId = AuditId(unitId)) }
     }
 
     @GetMapping("/stats")
@@ -73,7 +74,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
                     tx.fetchUnitStats(unitIds, clock.today())
                 }
             }
-            .also { Audit.UnitRead.log(targetId = unitIds) }
+            .also { Audit.UnitRead.log(targetId = AuditId(unitIds)) }
     }
 }
 

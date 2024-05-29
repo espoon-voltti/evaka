@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.EmailNotificationSettings
 import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.getEnabledEmailTypes
@@ -71,7 +72,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                 tx.updatePersonalDetails(user.id, body)
             }
         }
-        Audit.PersonalDataUpdate.log(targetId = user.id)
+        Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
     }
 
     @GetMapping("/notification-settings")
@@ -94,7 +95,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.CitizenNotificationSettingsRead.log(targetId = user.id) }
+            .also { Audit.CitizenNotificationSettingsRead.log(targetId = AuditId(user.id)) }
     }
 
     @PutMapping("/notification-settings")
@@ -116,6 +117,6 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                 tx.updateEnabledEmailTypes(user.id, body.toNotificationTypes())
             }
         }
-        Audit.PersonalDataUpdate.log(targetId = user.id)
+        Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
     }
 }

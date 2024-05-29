@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.invoicing.data.deleteFeeAlteration
@@ -74,7 +75,7 @@ class FeeAlterationController(
             }
             .also {
                 Audit.ChildFeeAlterationsRead.log(
-                    targetId = personId,
+                    targetId = AuditId(personId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -123,7 +124,10 @@ class FeeAlterationController(
                 )
             }
         }
-        Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId, objectId = id)
+        Audit.ChildFeeAlterationsCreate.log(
+            targetId = AuditId(feeAlteration.personId),
+            objectId = AuditId(id)
+        )
     }
 
     @PutMapping("/{feeAlterationId}")
@@ -169,7 +173,7 @@ class FeeAlterationController(
                 )
             }
         }
-        Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
+        Audit.ChildFeeAlterationsUpdate.log(targetId = AuditId(feeAlterationId))
     }
 
     @DeleteMapping("/{feeAlterationId}")
@@ -205,6 +209,6 @@ class FeeAlterationController(
                 }
             }
         }
-        Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
+        Audit.ChildFeeAlterationsDelete.log(targetId = AuditId(feeAlterationId))
     }
 }

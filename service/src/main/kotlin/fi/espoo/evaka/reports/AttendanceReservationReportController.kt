@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.CareType
@@ -76,7 +77,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
             }
             .also {
                 Audit.AttendanceReservationReportRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta =
                         mapOf(
                             "groupIds" to groupIds,
@@ -121,7 +122,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
             }
             .also {
                 Audit.AttendanceReservationReportRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta =
                         mapOf(
                             "groupIds" to groupIds,

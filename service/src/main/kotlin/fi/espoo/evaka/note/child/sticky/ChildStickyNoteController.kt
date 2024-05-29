@@ -5,6 +5,7 @@
 package fi.espoo.evaka.note.child.sticky
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -47,7 +48,10 @@ class ChildStickyNoteController(private val ac: AccessControl) {
                 }
             }
             .also { noteId ->
-                Audit.ChildStickyNoteCreate.log(targetId = childId, objectId = noteId)
+                Audit.ChildStickyNoteCreate.log(
+                    targetId = AuditId(childId),
+                    objectId = AuditId(noteId)
+                )
             }
     }
 
@@ -67,7 +71,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
                     it.updateChildStickyNote(clock, noteId, body)
                 }
             }
-            .also { Audit.ChildStickyNoteUpdate.log(targetId = noteId) }
+            .also { Audit.ChildStickyNoteUpdate.log(targetId = AuditId(noteId)) }
     }
 
     @DeleteMapping("/child-sticky-notes/{noteId}")
@@ -83,7 +87,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
                     it.deleteChildStickyNote(noteId)
                 }
             }
-            .also { Audit.ChildStickyNoteDelete.log(targetId = noteId) }
+            .also { Audit.ChildStickyNoteDelete.log(targetId = AuditId(noteId)) }
     }
 
     private fun validateExpiration(evakaClock: EvakaClock, expires: LocalDate) {

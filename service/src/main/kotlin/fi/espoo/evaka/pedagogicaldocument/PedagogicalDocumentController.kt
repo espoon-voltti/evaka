@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -57,7 +58,12 @@ class PedagogicalDocumentController(
                     }
                 }
             }
-            .also { Audit.PedagogicalDocumentCreate.log(targetId = body.childId, objectId = it.id) }
+            .also {
+                Audit.PedagogicalDocumentCreate.log(
+                    targetId = AuditId(body.childId),
+                    objectId = AuditId(it.id)
+                )
+            }
     }
 
     @PutMapping("/{documentId}")
@@ -85,7 +91,7 @@ class PedagogicalDocumentController(
                     }
                 }
             }
-            .also { Audit.PedagogicalDocumentUpdate.log(targetId = documentId) }
+            .also { Audit.PedagogicalDocumentUpdate.log(targetId = AuditId(documentId)) }
     }
 
     @GetMapping("/child/{childId}")
@@ -109,7 +115,7 @@ class PedagogicalDocumentController(
             }
             .also {
                 Audit.PedagogicalDocumentRead.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -134,7 +140,7 @@ class PedagogicalDocumentController(
                 it.deleteDocument(documentId)
             }
         }
-        Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
+        Audit.PedagogicalDocumentUpdate.log(targetId = AuditId(documentId))
     }
 }
 

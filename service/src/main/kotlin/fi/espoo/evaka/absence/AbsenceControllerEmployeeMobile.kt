@@ -5,6 +5,7 @@
 package fi.espoo.evaka.absence
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -39,6 +40,6 @@ class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) 
                     getFutureAbsencesOfChild(it, clock, childId)
                 }
             }
-            .also { Audit.AbsenceRead.log(targetId = childId) }
+            .also { Audit.AbsenceRead.log(targetId = AuditId(childId)) }
     }
 }

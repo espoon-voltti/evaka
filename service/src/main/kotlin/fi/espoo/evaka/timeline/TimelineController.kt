@@ -5,6 +5,7 @@
 package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -126,7 +127,7 @@ class TimelineController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.TimelineRead.log(targetId = personId) }
+            .also { Audit.TimelineRead.log(targetId = AuditId(personId)) }
     }
 
     private fun addDetailsToChild(

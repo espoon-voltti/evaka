@@ -5,6 +5,7 @@
 package fi.espoo.evaka.document.childdocument
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
@@ -72,7 +73,7 @@ class ChildDocumentController(
                     tx.insertChildDocument(body, clock.now(), user.id)
                 }
             }
-            .also { Audit.ChildDocumentCreate.log(targetId = it) }
+            .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
     }
 
     @GetMapping
@@ -112,7 +113,7 @@ class ChildDocumentController(
                         .filter { user.isAdmin || !it.data.type.isMigrated() }
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = childId) }
+            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
     }
 
     data class ChildDocumentSummaryWithPermittedActions(
@@ -156,7 +157,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = documentId) }
+            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
     }
 
     @PutMapping("/{documentId}/content")
@@ -202,7 +203,7 @@ class ChildDocumentController(
                         user.id
                     )
                 }
-                .also { Audit.ChildDocumentUpdateContent.log(targetId = documentId) }
+                .also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
         }
     }
 
@@ -237,7 +238,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = documentId) }
+            .also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = AuditId(documentId)) }
     }
 
     private fun validateContentAgainstTemplate(
@@ -290,7 +291,7 @@ class ChildDocumentController(
                     }
                 }
             }
-            .also { Audit.ChildDocumentPublish.log(targetId = documentId) }
+            .also { Audit.ChildDocumentPublish.log(targetId = AuditId(documentId)) }
     }
 
     data class StatusChangeRequest(
@@ -340,8 +341,11 @@ class ChildDocumentController(
                 }
             }
             .also {
-                Audit.ChildDocumentNextStatus.log(targetId = documentId, objectId = body.newStatus)
-                Audit.ChildDocumentPublish.log(targetId = documentId)
+                Audit.ChildDocumentNextStatus.log(
+                    targetId = AuditId(documentId),
+                    meta = mapOf("newStatus" to body.newStatus)
+                )
+                Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
             }
     }
 
@@ -373,7 +377,10 @@ class ChildDocumentController(
                 }
             }
             .also {
-                Audit.ChildDocumentPrevStatus.log(targetId = documentId, objectId = body.newStatus)
+                Audit.ChildDocumentPrevStatus.log(
+                    targetId = AuditId(documentId),
+                    meta = mapOf("newStatus" to body.newStatus)
+                )
             }
     }
 
@@ -396,6 +403,6 @@ class ChildDocumentController(
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }
-            .also { Audit.ChildDocumentDelete.log(targetId = documentId) }
+            .also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
     }
 }

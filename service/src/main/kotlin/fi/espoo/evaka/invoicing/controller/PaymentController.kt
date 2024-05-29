@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.invoicing.data.PagedPayments
 import fi.espoo.evaka.invoicing.data.deleteDraftPayments
 import fi.espoo.evaka.invoicing.data.searchPayments
@@ -83,7 +84,7 @@ class PaymentController(
                 it.deleteDraftPayments(paymentIds)
             }
         }
-        Audit.PaymentsDeleteDrafts.log(targetId = paymentIds)
+        Audit.PaymentsDeleteDrafts.log(targetId = AuditId(paymentIds))
     }
 
     @PostMapping("/send")
@@ -112,7 +113,7 @@ class PaymentController(
                 )
             }
         }
-        Audit.PaymentsSend.log(targetId = body.paymentIds)
+        Audit.PaymentsSend.log(targetId = AuditId(body.paymentIds))
     }
 }
 

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.CaretakerAmount
@@ -140,7 +141,7 @@ class DaycareController(
                 }
             }
         }
-        Audit.UnitFeaturesUpdate.log(targetId = request.unitIds)
+        Audit.UnitFeaturesUpdate.log(targetId = AuditId(request.unitIds))
     }
 
     @GetMapping("/{daycareId}")
@@ -177,7 +178,7 @@ class DaycareController(
                     }
                 } ?: throw NotFound("daycare $daycareId not found")
             }
-            .also { Audit.UnitRead.log(targetId = daycareId) }
+            .also { Audit.UnitRead.log(targetId = AuditId(daycareId)) }
     }
 
     @GetMapping("/{daycareId}/groups")
@@ -203,7 +204,7 @@ class DaycareController(
             }
             .also {
                 Audit.UnitGroupsSearch.log(
-                    targetId = daycareId,
+                    targetId = AuditId(daycareId),
                     meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
             }
@@ -235,7 +236,12 @@ class DaycareController(
                     )
                 }
             }
-            .also { group -> Audit.UnitGroupsCreate.log(targetId = daycareId, objectId = group.id) }
+            .also { group ->
+                Audit.UnitGroupsCreate.log(
+                    targetId = AuditId(daycareId),
+                    objectId = AuditId(group.id)
+                )
+            }
     }
 
     data class GroupUpdateRequest(
@@ -266,7 +272,7 @@ class DaycareController(
                 )
             }
         }
-        Audit.UnitGroupsUpdate.log(targetId = groupId)
+        Audit.UnitGroupsUpdate.log(targetId = AuditId(groupId))
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}")
@@ -283,7 +289,7 @@ class DaycareController(
                 daycareService.deleteGroup(it, groupId)
             }
         }
-        Audit.UnitGroupsDelete.log(targetId = groupId)
+        Audit.UnitGroupsDelete.log(targetId = AuditId(groupId))
     }
 
     @GetMapping("/{daycareId}/groups/{groupId}/caretakers")
@@ -312,7 +318,7 @@ class DaycareController(
             }
             .also {
                 Audit.UnitGroupsCaretakersRead.log(
-                    targetId = groupId,
+                    targetId = AuditId(groupId),
                     meta = mapOf("count" to it.caretakers.size)
                 )
             }
@@ -346,7 +352,10 @@ class DaycareController(
                     )
                 }
             }
-        Audit.UnitGroupsCaretakersCreate.log(targetId = groupId, objectId = daycareCaretakerId)
+        Audit.UnitGroupsCaretakersCreate.log(
+            targetId = AuditId(groupId),
+            objectId = AuditId(daycareCaretakerId)
+        )
     }
 
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
@@ -378,7 +387,7 @@ class DaycareController(
                 )
             }
         }
-        Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
+        Audit.UnitGroupsCaretakersUpdate.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
@@ -402,7 +411,7 @@ class DaycareController(
                 deleteCaretakers(it, groupId = groupId, id = id)
             }
         }
-        Audit.UnitGroupsCaretakersDelete.log(targetId = id)
+        Audit.UnitGroupsCaretakersDelete.log(targetId = AuditId(id))
     }
 
     @PutMapping("/{daycareId}")
@@ -427,7 +436,7 @@ class DaycareController(
                     it.updateDaycare(daycareId, fields)
                 }
             }
-            .also { Audit.UnitUpdate.log(targetId = daycareId) }
+            .also { Audit.UnitUpdate.log(targetId = AuditId(daycareId)) }
     }
 
     @PostMapping
@@ -453,7 +462,7 @@ class DaycareController(
                         id
                     }
                 }
-                .also { unitId -> Audit.UnitCreate.log(targetId = unitId) }
+                .also { unitId -> Audit.UnitCreate.log(targetId = AuditId(unitId)) }
         )
     }
 
@@ -599,7 +608,7 @@ class DaycareController(
                     )
                 }
             }
-            .also { Audit.UnitView.log(targetId = unitId) }
+            .also { Audit.UnitView.log(targetId = AuditId(unitId)) }
     }
 
     @GetMapping("/{daycareId}/notifications")
@@ -639,7 +648,7 @@ class DaycareController(
                     )
                 }
             }
-            .also { Audit.UnitCounters.log(targetId = daycareId) }
+            .also { Audit.UnitCounters.log(targetId = AuditId(daycareId)) }
     }
 
     data class CreateDaycareResponse(val id: DaycareId)

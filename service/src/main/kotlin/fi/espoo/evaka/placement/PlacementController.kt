@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.deleteFutureNonGeneratedAbsencesByCategoryInRange
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
@@ -140,7 +141,7 @@ class PlacementController(
             }
             .also {
                 Audit.PlacementSearch.log(
-                    targetId = daycareId ?: childId,
+                    targetId = daycareId?.let(AuditId::invoke) ?: childId?.let(AuditId::invoke),
                     meta =
                         mapOf("startDate" to from, "endDate" to to, "count" to it.placements.size)
                 )
@@ -174,7 +175,7 @@ class PlacementController(
             }
             .also {
                 Audit.PlacementPlanSearch.log(
-                    targetId = daycareId,
+                    targetId = AuditId(daycareId),
                     meta = mapOf("startDate" to from, "endDate" to to, "count" to it.size)
                 )
             }
@@ -271,8 +272,8 @@ class PlacementController(
                 }
             }
         Audit.PlacementCreate.log(
-            targetId = listOf(body.childId, body.unitId),
-            objectId = placements.map { it.id }
+            targetId = AuditId(listOf(body.childId, body.unitId)),
+            objectId = AuditId(placements.map { it.id })
         )
     }
 
@@ -352,7 +353,7 @@ class PlacementController(
                 )
             }
         }
-        Audit.PlacementUpdate.log(targetId = placementId)
+        Audit.PlacementUpdate.log(targetId = AuditId(placementId))
     }
 
     @DeleteMapping(
@@ -416,8 +417,8 @@ class PlacementController(
             }
             .also {
                 Audit.PlacementCancel.log(
-                    targetId = placementId,
-                    objectId = listOf(it.childId, it.unitId)
+                    targetId = AuditId(placementId),
+                    objectId = AuditId(listOf(it.childId, it.unitId))
                 )
             }
     }
@@ -452,8 +453,8 @@ class PlacementController(
             }
             .also { groupPlacementId ->
                 Audit.DaycareGroupPlacementCreate.log(
-                    targetId = placementId,
-                    objectId = groupPlacementId,
+                    targetId = AuditId(placementId),
+                    objectId = AuditId(groupPlacementId),
                     meta = mapOf("groupId" to body.groupId)
                 )
             }
@@ -481,7 +482,7 @@ class PlacementController(
                 it.deleteGroupPlacement(groupPlacementId)
             }
         }
-        Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
+        Audit.DaycareGroupPlacementDelete.log(targetId = AuditId(groupPlacementId))
     }
 
     @PostMapping(
@@ -508,8 +509,8 @@ class PlacementController(
             }
         }
         Audit.DaycareGroupPlacementTransfer.log(
-            targetId = groupPlacementId,
-            objectId = body.groupId
+            targetId = AuditId(groupPlacementId),
+            objectId = AuditId(body.groupId)
         )
     }
 
@@ -557,7 +558,7 @@ JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_da
             }
             .also {
                 Audit.PlacementChildPlacementPeriodsRead.log(
-                    targetId = adultId,
+                    targetId = AuditId(adultId),
                     meta = mapOf("count" to it.size)
                 )
             }

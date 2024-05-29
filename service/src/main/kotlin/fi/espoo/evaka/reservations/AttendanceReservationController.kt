@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
@@ -201,7 +202,7 @@ class AttendanceReservationController(
             }
             .also {
                 Audit.UnitAttendanceReservationsRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta = mapOf("from" to from, "to" to to)
                 )
             }
@@ -240,7 +241,7 @@ class AttendanceReservationController(
                 }
             }
         Audit.AttendanceReservationEmployeeCreate.log(
-            targetId = children,
+            targetId = AuditId(children),
             meta =
                 mapOf(
                     "deletedAbsences" to result.deletedAbsences,
@@ -276,7 +277,7 @@ class AttendanceReservationController(
             }
             .also { result ->
                 Audit.ChildDatePresenceUpsert.log(
-                    targetId = body.childId,
+                    targetId = AuditId(body.childId),
                     meta =
                         mapOf(
                             "date" to body.date,
@@ -329,7 +330,7 @@ class AttendanceReservationController(
             }
             .also {
                 Audit.ChildDatePresenceExpectedAbsencesCheck.log(
-                    targetId = body.childId,
+                    targetId = AuditId(body.childId),
                     meta = mapOf("date" to body.date)
                 )
             }
@@ -391,7 +392,7 @@ class AttendanceReservationController(
                         .toList()
                 }
             }
-            .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = childId) }
+            .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = AuditId(childId)) }
     }
 
     @PutMapping(
@@ -446,7 +447,7 @@ class AttendanceReservationController(
                     )
                 }
             }
-            .also { Audit.ChildConfirmedRangeReservationsUpdate.log(targetId = childId) }
+            .also { Audit.ChildConfirmedRangeReservationsUpdate.log(targetId = AuditId(childId)) }
     }
 
     data class ReservationChildInfo(
@@ -570,7 +571,7 @@ class AttendanceReservationController(
             }
             .also {
                 Audit.ChildReservationStatusRead.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta = mapOf("childCount" to it.children.size)
                 )
             }
@@ -665,7 +666,7 @@ class AttendanceReservationController(
             }
             .also {
                 Audit.UnitDailyReservationStatistics.log(
-                    targetId = unitId,
+                    targetId = AuditId(unitId),
                     meta = mapOf("dayCount" to it.size)
                 )
             }

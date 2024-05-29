@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -81,7 +82,10 @@ class ServiceNeedController(
                         }
                 }
             }
-        Audit.PlacementServiceNeedCreate.log(targetId = body.placementId, objectId = serviceNeedId)
+        Audit.PlacementServiceNeedCreate.log(
+            targetId = AuditId(body.placementId),
+            objectId = AuditId(serviceNeedId)
+        )
     }
 
     data class ServiceNeedUpdateRequest(
@@ -134,7 +138,7 @@ class ServiceNeedController(
                 )
             }
         }
-        Audit.PlacementServiceNeedUpdate.log(targetId = id)
+        Audit.PlacementServiceNeedUpdate.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/service-needs/{id}", "/employee/service-needs/{id}")
@@ -153,7 +157,7 @@ class ServiceNeedController(
                 notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
             }
         }
-        Audit.PlacementServiceNeedDelete.log(targetId = id)
+        Audit.PlacementServiceNeedDelete.log(targetId = AuditId(id))
     }
 
     @GetMapping(

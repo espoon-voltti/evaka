@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.deleteFutureClubTerm
@@ -90,7 +91,7 @@ class TermsController(private val accessControl: AccessControl) {
                     tx.insertClubTerm(body.term, body.applicationPeriod, body.termBreaks)
                 }
             }
-            .also { termId -> Audit.ClubTermCreate.log(objectId = termId) }
+            .also { termId -> Audit.ClubTermCreate.log(targetId = AuditId(termId)) }
     }
 
     @PutMapping(
@@ -115,7 +116,7 @@ class TermsController(private val accessControl: AccessControl) {
                     tx.updateClubTerm(id, body.term, body.applicationPeriod, body.termBreaks)
                 }
             }
-            .also { termId -> Audit.ClubTermUpdate.log(objectId = termId) }
+            .also { Audit.ClubTermUpdate.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -142,7 +143,7 @@ class TermsController(private val accessControl: AccessControl) {
                     tx.deleteFutureClubTerm(clock, id)
                 }
             }
-            .also { termId -> Audit.ClubTermDelete.log(objectId = termId) }
+            .also { Audit.ClubTermDelete.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -175,7 +176,7 @@ class TermsController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { termId -> Audit.PreschoolTermCreate.log(objectId = termId) }
+            .also { termId -> Audit.PreschoolTermCreate.log(targetId = AuditId(termId)) }
     }
 
     @PutMapping(
@@ -213,7 +214,7 @@ class TermsController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { termId -> Audit.PreschoolTermUpdate.log(objectId = termId) }
+            .also { Audit.PreschoolTermUpdate.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -250,7 +251,7 @@ class TermsController(private val accessControl: AccessControl) {
                     tx.deleteFuturePreschoolTerm(clock, id)
                 }
             }
-            .also { termId -> Audit.PreschoolTermDelete.log(objectId = termId) }
+            .also { Audit.PreschoolTermDelete.log(targetId = AuditId(id)) }
     }
 
     private fun validateClubTermRequest(

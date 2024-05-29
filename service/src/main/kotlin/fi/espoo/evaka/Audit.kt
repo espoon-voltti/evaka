@@ -4,8 +4,28 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.shared.Id
 import fi.espoo.voltti.logging.loggers.audit
+import java.util.UUID
 import mu.KotlinLogging
+
+sealed interface AuditId {
+    val value: Any
+
+    @JvmInline value class One(override val value: Any) : AuditId
+
+    @JvmInline value class Many(override val value: List<Any>) : AuditId
+
+    companion object {
+        operator fun invoke(value: Id<*>): AuditId = One(value)
+
+        operator fun invoke(value: UUID): AuditId = One(value)
+
+        operator fun invoke(value: String): AuditId = One(value)
+
+        operator fun invoke(value: Collection<Id<*>>): AuditId = Many(value.toList())
+    }
+}
 
 enum class Audit(
     private val securityEvent: Boolean = false,
@@ -509,15 +529,15 @@ enum class Audit(
     fun log(
         // This is a hack to force passing all real parameters by name
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
-        targetId: Any? = null,
-        objectId: Any? = null,
+        targetId: AuditId? = null,
+        objectId: AuditId? = null,
         meta: Map<String, Any?> = emptyMap()
     ) {
         logger.audit(
             mapOf(
                 "eventCode" to eventCode,
-                "targetId" to targetId,
-                "objectId" to objectId,
+                "targetId" to targetId?.value,
+                "objectId" to objectId?.value,
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent,
             ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()

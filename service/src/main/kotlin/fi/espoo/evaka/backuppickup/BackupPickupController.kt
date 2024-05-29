@@ -5,6 +5,7 @@
 package fi.espoo.evaka.backuppickup
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.BackupPickupId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -47,7 +48,10 @@ class BackupPickupController(private val accessControl: AccessControl) {
                     }
                 }
                 .also { backupPickupId ->
-                    Audit.ChildBackupPickupCreate.log(targetId = childId, objectId = backupPickupId)
+                    Audit.ChildBackupPickupCreate.log(
+                        targetId = AuditId(childId),
+                        objectId = AuditId(backupPickupId)
+                    )
                 }
         )
     }
@@ -76,7 +80,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.ChildBackupPickupRead.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -99,7 +103,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
                 tx.updateBackupPickup(id, body)
             }
         }
-        Audit.ChildBackupPickupUpdate.log(targetId = id)
+        Audit.ChildBackupPickupUpdate.log(targetId = AuditId(id))
     }
 
     @DeleteMapping(
@@ -118,7 +122,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
                 tx.deleteBackupPickup(id)
             }
         }
-        Audit.ChildBackupPickupDelete.log(targetId = id)
+        Audit.ChildBackupPickupDelete.log(targetId = AuditId(id))
     }
 }
 

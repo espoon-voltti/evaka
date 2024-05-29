@@ -4,6 +4,7 @@
 package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
@@ -84,8 +85,8 @@ class AssistanceNeedDecisionController(
             }
             .also { assistanceNeedDecision ->
                 Audit.ChildAssistanceNeedDecisionCreate.log(
-                    targetId = childId,
-                    objectId = assistanceNeedDecision.id
+                    targetId = AuditId(childId),
+                    objectId = AuditId(assistanceNeedDecision.id)
                 )
             }
     }
@@ -118,7 +119,7 @@ class AssistanceNeedDecisionController(
                     )
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionRead.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionRead.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -173,7 +174,7 @@ class AssistanceNeedDecisionController(
                     )
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -228,7 +229,7 @@ class AssistanceNeedDecisionController(
                     )
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionSend.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionSend.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -269,7 +270,7 @@ class AssistanceNeedDecisionController(
                     )
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionRevertToUnsent.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionRevertToUnsent.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/children/{childId}/assistance-needs/decisions")
@@ -309,7 +310,7 @@ class AssistanceNeedDecisionController(
             }
             .also {
                 Audit.ChildAssistanceNeedDecisionsList.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -342,7 +343,7 @@ class AssistanceNeedDecisionController(
                     }
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionDelete.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -435,7 +436,7 @@ class AssistanceNeedDecisionController(
             }
             .also {
                 Audit.ChildAssistanceNeedDecisionDecide.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta = mapOf("status" to body.status)
                 )
             }
@@ -463,7 +464,7 @@ class AssistanceNeedDecisionController(
                     tx.markAssistanceNeedDecisionAsOpened(id)
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionOpened.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -514,7 +515,9 @@ class AssistanceNeedDecisionController(
                     )
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id) }
+            .also {
+                Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = AuditId(id))
+            }
     }
 
     @GetMapping(
@@ -545,7 +548,7 @@ class AssistanceNeedDecisionController(
             }
             .also {
                 Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(
-                    targetId = id,
+                    targetId = AuditId(id),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -581,7 +584,7 @@ class AssistanceNeedDecisionController(
                     tx.annulAssistanceNeedDecision(id, body.reason)
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionAnnul.log(targetId = id) }
+            .also { Audit.ChildAssistanceNeedDecisionAnnul.log(targetId = AuditId(id)) }
     }
 
     private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {

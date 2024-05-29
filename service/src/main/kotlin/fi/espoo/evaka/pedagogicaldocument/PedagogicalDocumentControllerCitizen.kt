@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pedagogicaldocument
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -46,7 +47,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
             }
             .also {
                 Audit.PedagogicalDocumentReadByGuardian.log(
-                    targetId = childId,
+                    targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -71,7 +72,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                 it.markDocumentReadByGuardian(clock, documentId, user.id)
             }
         }
-        Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
+        Audit.PedagogicalDocumentUpdate.log(targetId = AuditId(documentId))
     }
 
     @GetMapping("/pedagogical-documents/unread-count")
@@ -92,7 +93,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                     it.countUnreadDocumentsByUser(clock.today(), user.id)
                 }
             }
-            .also { Audit.PedagogicalDocumentCountUnread.log(targetId = user.id) }
+            .also { Audit.PedagogicalDocumentCountUnread.log(targetId = AuditId(user.id)) }
     }
 }
 

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
@@ -69,8 +70,8 @@ class ParentshipController(
                 }
             }
         Audit.ParentShipsCreate.log(
-            targetId = listOf(body.headOfChildId, body.childId),
-            objectId = parentship.id
+            targetId = AuditId(listOf(body.headOfChildId, body.childId)),
+            objectId = AuditId(parentship.id)
         )
     }
 
@@ -122,7 +123,7 @@ class ParentshipController(
             }
             .also {
                 Audit.ParentShipsRead.log(
-                    targetId = listOf(headOfChildId, childId),
+                    targetId = AuditId(listOfNotNull(headOfChildId, childId)),
                     meta = mapOf("count" to it.size)
                 )
             }
@@ -141,7 +142,7 @@ class ParentshipController(
                     it.getParentship(id)
                 } ?: throw NotFound()
             }
-            .also { Audit.ParentShipsRead.log(targetId = id) }
+            .also { Audit.ParentShipsRead.log(targetId = AuditId(id)) }
     }
 
     @PutMapping("/{id}")
@@ -166,7 +167,7 @@ class ParentshipController(
             }
         }
         Audit.ParentShipsUpdate.log(
-            targetId = id,
+            targetId = AuditId(id),
             meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
         )
     }
@@ -184,7 +185,7 @@ class ParentshipController(
                 parentshipService.retryParentship(it, user, clock, id)
             }
         }
-        Audit.ParentShipsRetry.log(targetId = id)
+        Audit.ParentShipsRetry.log(targetId = AuditId(id))
     }
 
     @DeleteMapping("/{id}")
@@ -219,7 +220,7 @@ class ParentshipController(
                 parentshipService.deleteParentship(tx, clock, id)
             }
         }
-        Audit.ParentShipsDelete.log(targetId = id)
+        Audit.ParentShipsDelete.log(targetId = AuditId(id))
     }
 
     data class ParentshipRequest(

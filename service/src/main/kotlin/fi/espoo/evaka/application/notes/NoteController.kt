@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application.notes
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
@@ -80,7 +81,12 @@ class NoteController(private val accessControl: AccessControl) {
                     }
                 }
             }
-            .also { Audit.NoteRead.log(targetId = applicationId, meta = mapOf("count" to it.size)) }
+            .also {
+                Audit.NoteRead.log(
+                    targetId = AuditId(applicationId),
+                    meta = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PostMapping("/application/{applicationId}")
@@ -103,7 +109,9 @@ class NoteController(private val accessControl: AccessControl) {
                     it.createApplicationNote(applicationId, note.text, user.evakaUserId)
                 }
             }
-            .also { Audit.NoteCreate.log(targetId = applicationId, objectId = it.id) }
+            .also {
+                Audit.NoteCreate.log(targetId = AuditId(applicationId), objectId = AuditId(it.id))
+            }
     }
 
     @PutMapping("/{noteId}")
@@ -126,7 +134,7 @@ class NoteController(private val accessControl: AccessControl) {
                 tx.updateApplicationNote(noteId, note.text, user.evakaUserId)
             }
         }
-        Audit.NoteUpdate.log(targetId = noteId)
+        Audit.NoteUpdate.log(targetId = AuditId(noteId))
     }
 
     @DeleteMapping("/{noteId}")
@@ -148,7 +156,7 @@ class NoteController(private val accessControl: AccessControl) {
                 tx.deleteApplicationNote(noteId)
             }
         }
-        Audit.NoteDelete.log(targetId = noteId)
+        Audit.NoteDelete.log(targetId = AuditId(noteId))
     }
 
     @PutMapping("/service-worker/application/{applicationId}")
@@ -170,7 +178,7 @@ class NoteController(private val accessControl: AccessControl) {
                 tx.updateServiceWorkerApplicationNote(applicationId, note.text)
             }
         }
-        Audit.ServiceWorkerNoteUpdate.log(targetId = applicationId)
+        Audit.ServiceWorkerNoteUpdate.log(targetId = AuditId(applicationId))
     }
 }
 

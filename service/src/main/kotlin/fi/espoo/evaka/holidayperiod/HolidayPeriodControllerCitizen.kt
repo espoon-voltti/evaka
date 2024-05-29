@@ -5,6 +5,7 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.upsertFullDayAbsences
@@ -189,7 +190,7 @@ class HolidayPeriodControllerCitizen(
                 )
             }
         }
-        Audit.HolidayAbsenceCreate.log(targetId = id, objectId = childIds.toSet())
+        Audit.HolidayAbsenceCreate.log(targetId = AuditId(id), objectId = AuditId(childIds.toSet()))
     }
 }
 

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.Partnership
@@ -84,8 +85,8 @@ class PartnershipsController(
                 }
             }
         Audit.PartnerShipsCreate.log(
-            targetId = listOf(body.person1Id, body.person2Id),
-            objectId = partnership.id
+            targetId = AuditId(listOf(body.person1Id, body.person2Id)),
+            objectId = AuditId(partnership.id)
         )
     }
 
@@ -125,7 +126,10 @@ class PartnershipsController(
                 }
             }
             .also {
-                Audit.PartnerShipsRead.log(targetId = personId, meta = mapOf("count" to it.size))
+                Audit.PartnerShipsRead.log(
+                    targetId = AuditId(personId),
+                    meta = mapOf("count" to it.size)
+                )
             }
     }
 
@@ -148,7 +152,7 @@ class PartnershipsController(
                     it.getPartnership(partnershipId)
                 } ?: throw NotFound()
             }
-            .also { Audit.PartnerShipsRead.log(targetId = partnershipId) }
+            .also { Audit.PartnerShipsRead.log(targetId = AuditId(partnershipId)) }
     }
 
     @PutMapping("/{partnershipId}")
@@ -195,7 +199,7 @@ class PartnershipsController(
             }
         }
         Audit.PartnerShipsUpdate.log(
-            targetId = partnershipId,
+            targetId = AuditId(partnershipId),
             meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
         )
     }
@@ -232,7 +236,7 @@ class PartnershipsController(
                     }
             }
         }
-        Audit.PartnerShipsRetry.log(targetId = partnershipId)
+        Audit.PartnerShipsRetry.log(targetId = AuditId(partnershipId))
     }
 
     @DeleteMapping("/{partnershipId}")
@@ -265,7 +269,7 @@ class PartnershipsController(
                 }
             }
         }
-        Audit.PartnerShipsDelete.log(targetId = partnershipId)
+        Audit.PartnerShipsDelete.log(targetId = AuditId(partnershipId))
     }
 
     data class PartnershipRequest(
