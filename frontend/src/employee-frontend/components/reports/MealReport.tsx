@@ -11,9 +11,11 @@ import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { H2 } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -23,6 +25,10 @@ import { unitsQuery } from '../unit/queries'
 import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { mealReportByUnitQuery } from './queries'
+
+function getWeekDates(date: LocalDate) {
+  return Array.from({ length: 7 }, (_, i) => date.startOfWeek().addDays(i))
+}
 
 export default React.memo(function MealReport() {
   const { lang, i18n } = useTranslation()
@@ -34,6 +40,7 @@ export default React.memo(function MealReport() {
   const [date, setDate] = useState<LocalDate | null>(
     LocalDate.todayInHelsinkiTz()
   )
+  const [wholeWeek, setWholeWeek] = useState<boolean>(false)
 
   return (
     <Container>
@@ -58,9 +65,22 @@ export default React.memo(function MealReport() {
             <DatePicker date={date} onChange={setDate} locale={lang} />
           </FlexRow>
         </FilterRow>
-        {date && selectedUnit && (
-          <MealReportData date={date} unitId={selectedUnit.id} />
-        )}
+        <FilterRow>
+          <FilterLabel>{i18n.reports.meals.wholeWeekLabel}</FilterLabel>
+          <FlexRow>
+            <Checkbox
+              label={i18n.reports.meals.wholeWeekLabel}
+              hiddenLabel={true}
+              checked={wholeWeek}
+              onChange={setWholeWeek}
+            />
+          </FlexRow>
+        </FilterRow>
+        {date &&
+          selectedUnit &&
+          (wholeWeek ? getWeekDates(date) : [date]).map((adate, idx) => (
+            <MealReportData key={idx} date={adate} unitId={selectedUnit.id} />
+          ))}
       </ContentArea>
     </Container>
   )
@@ -98,6 +118,10 @@ const MealReportData = ({
     }))
     return (
       <>
+        <H2>
+          {i18n.common.datetime.weekdays[report.date.getIsoDayOfWeek()]}{' '}
+          {report.date.format()}
+        </H2>
         <ReportDownload
           data={tableData}
           headers={headers}

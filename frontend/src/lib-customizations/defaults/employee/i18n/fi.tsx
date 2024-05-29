@@ -4037,6 +4037,7 @@ export const fi = {
       title: 'Ruokailijamäärät',
       description:
         'Laskee varauksiin perustuvat ruokailijamäärät yksikkökohtaisesti.',
+      wholeWeekLabel: 'Koko viikko',
       mealName: {
         BREAKFAST: 'Aamupala',
         LUNCH: 'Lounas',
