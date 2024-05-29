@@ -4548,7 +4548,11 @@ export const fi = {
       language: 'Lomakkeen kieli',
       confidential: 'Lomake on salassapidettävä',
       legalBasis: 'Lait joihin lomake perustuu (vapaaehtoinen)',
-      validity: 'Voimassa ajalla'
+      validity: 'Voimassa ajalla',
+      processDefinitionNumber: 'Tehtäväluokka',
+      processDefinitionNumberInfo:
+        'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos lomaketta ei arkistoida.',
+      archiveDurationMonths: 'Arkistointiaika (kuukautta)'
     },
     templateEditor: {
       confidential: 'Salassapidettävä',

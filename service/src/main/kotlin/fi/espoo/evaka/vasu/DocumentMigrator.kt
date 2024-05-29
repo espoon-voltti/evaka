@@ -176,7 +176,9 @@ private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
                 CurriculumType.DAYCARE -> translations.lawVasu
                 CurriculumType.PRESCHOOL -> translations.lawLeops
             },
-        validity = vasu.templateRange.asDateRange()
+        validity = vasu.templateRange.asDateRange(),
+        processDefinitionNumber = null,
+        archiveDurationMonths = null
     )
 }
 

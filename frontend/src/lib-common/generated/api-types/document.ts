@@ -213,12 +213,14 @@ export type DocumentStatus =
 * Generated from fi.espoo.evaka.document.DocumentTemplate
 */
 export interface DocumentTemplate {
+  archiveDurationMonths: number | null
   confidential: boolean
   content: DocumentTemplateContent
   id: UUID
   language: OfficialLanguage
   legalBasis: string
   name: string
+  processDefinitionNumber: string | null
   published: boolean
   type: DocumentType
   validity: DateRange
@@ -228,10 +230,12 @@ export interface DocumentTemplate {
 * Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest
 */
 export interface DocumentTemplateBasicsRequest {
+  archiveDurationMonths: number | null
   confidential: boolean
   language: OfficialLanguage
   legalBasis: string
   name: string
+  processDefinitionNumber: string | null
   type: DocumentType
   validity: DateRange
 }
@@ -283,11 +287,13 @@ export interface DocumentWriteLock {
 * Generated from fi.espoo.evaka.document.ExportedDocumentTemplate
 */
 export interface ExportedDocumentTemplate {
+  archiveDurationMonths: number | null
   confidential: boolean
   content: DocumentTemplateContent
   language: OfficialLanguage
   legalBasis: string
   name: string
+  processDefinitionNumber: string | null
   type: DocumentType
   validity: DateRange
 }

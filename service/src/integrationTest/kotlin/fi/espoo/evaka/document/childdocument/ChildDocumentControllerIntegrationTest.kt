@@ -225,6 +225,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 legalBasis = devTemplatePed.legalBasis,
                                 validity = devTemplatePed.validity,
                                 published = devTemplatePed.published,
+                                processDefinitionNumber = null,
+                                archiveDurationMonths = null,
                                 content = templateContent
                             )
                     ),

@@ -35,6 +35,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -219,6 +220,16 @@ const BasicsSection = React.memo(function BasicsSection({
               {
                 label: i18n.documentTemplates.templateModal.type,
                 value: i18n.documentTemplates.documentTypes[template.type]
+              },
+              {
+                label:
+                  i18n.documentTemplates.templateModal.processDefinitionNumber,
+                value: template.processDefinitionNumber
+              },
+              {
+                label:
+                  i18n.documentTemplates.templateModal.archiveDurationMonths,
+                value: template.archiveDurationMonths ?? '-'
               }
             ]}
           />
@@ -279,15 +290,25 @@ const BasicsEditor = React.memo(function BasicsEditor({
       },
       confidential: template.confidential,
       legalBasis: template.legalBasis,
-      validity: openEndedLocalDateRange.fromRange(template.validity)
+      validity: openEndedLocalDateRange.fromRange(template.validity),
+      processDefinitionNumber: template.processDefinitionNumber ?? '',
+      archiveDurationMonths: template.archiveDurationMonths?.toString() ?? '0'
     }),
     {
       ...i18n.validationErrors
     }
   )
 
-  const { name, type, language, confidential, legalBasis, validity } =
-    useFormFields(form)
+  const {
+    name,
+    type,
+    language,
+    confidential,
+    legalBasis,
+    validity,
+    processDefinitionNumber,
+    archiveDurationMonths
+  } = useFormFields(form)
 
   return (
     <FixedSpaceColumn>
@@ -311,6 +332,31 @@ const BasicsEditor = React.memo(function BasicsEditor({
           bind={confidential}
           label={i18n.documentTemplates.templateModal.confidential}
         />
+        <Gap />
+        <ExpandingInfo
+          info={
+            i18n.documentTemplates.templateModal.processDefinitionNumberInfo
+          }
+          width="auto"
+        >
+          <Label>
+            {i18n.documentTemplates.templateModal.processDefinitionNumber}
+          </Label>
+        </ExpandingInfo>
+        <InputFieldF bind={processDefinitionNumber} hideErrorsBeforeTouched />
+        {processDefinitionNumber.value().trim().length > 0 && (
+          <>
+            <Gap />
+            <Label>
+              {i18n.documentTemplates.templateModal.archiveDurationMonths}
+            </Label>
+            <InputFieldF
+              bind={archiveDurationMonths}
+              type="number"
+              hideErrorsBeforeTouched
+            />
+          </>
+        )}
       </div>
       <FixedSpaceRow justifyContent="flex-end">
         <Button onClick={onClose} text={i18n.common.cancel} />
