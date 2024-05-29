@@ -23,8 +23,8 @@ fun Database.Transaction.insertChildDocument(
     return createQuery {
             sql(
                 """
-INSERT INTO child_document(child_id, template_id, status, content, modified_at, content_modified_at, content_modified_by)
-VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)})
+INSERT INTO child_document(child_id, template_id, status, content, modified_at, content_modified_at, content_modified_by, created_by)
+VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)})
 RETURNING id
 """
             )

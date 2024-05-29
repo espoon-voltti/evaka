@@ -47,6 +47,7 @@ CREATE UNIQUE INDEX uniq$process_step ON archived_process_history (process_id, s
 
 -- assume a 1-to-1 relationship between child_document and archived_process for now
 ALTER TABLE child_document
-    ADD COLUMN process_id uuid REFERENCES archived_process;
+    ADD COLUMN process_id uuid REFERENCES archived_process,
+    ADD COLUMN created_by uuid REFERENCES employee;
 
 CREATE INDEX fk$child_document_process_id ON child_document(process_id);

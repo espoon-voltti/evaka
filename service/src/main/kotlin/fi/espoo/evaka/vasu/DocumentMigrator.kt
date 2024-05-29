@@ -148,8 +148,8 @@ private fun Database.Transaction.insertMigratedChildDocument(
     createUpdate {
             sql(
                 """
-INSERT INTO child_document(id, child_id, template_id, status, content, published_content, modified_at, published_at, content_modified_at, content_modified_by)
-VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, 'COMPLETED', ${bind(content)}, ${bind(content)}, ${bind(modifiedAt)}, ${bind(publishedAt)}, ${bind(modifiedAt)}, null)
+INSERT INTO child_document(id, child_id, template_id, status, content, published_content, modified_at, published_at, content_modified_at, content_modified_by, created_by)
+VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, 'COMPLETED', ${bind(content)}, ${bind(content)}, ${bind(modifiedAt)}, ${bind(publishedAt)}, ${bind(modifiedAt)}, null, null)
 """
             )
         }
