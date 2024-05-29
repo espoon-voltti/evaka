@@ -76,7 +76,13 @@ class AsyncJobPool<T : AsyncJobPayload>(
                     start = false,
                     name = "$fullName.worker-${threadNumber.getAndIncrement()}",
                     priority = Thread.MIN_PRIORITY,
-                    block = r::run
+                    block = {
+                        try {
+                            r.run()
+                        } catch (e: Exception) {
+                            logger.error(e) { "Error running pool $fullName worker" }
+                        }
+                    }
                 )
             }
             ThreadPoolExecutor(
@@ -135,6 +141,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                 while (maxCount - executed > 0 && !executor.isTerminating) {
                     val job =
                         dbc.transaction { tx ->
+                            tx.setStatementTimeout(Duration.ofSeconds(120))
                             // In the worst case we need to wait for the duration of (N service
                             // instances) * (M workers per pool) * (throttle interval) if every
                             // worker in the cluster is queuing and every one sleeps.
