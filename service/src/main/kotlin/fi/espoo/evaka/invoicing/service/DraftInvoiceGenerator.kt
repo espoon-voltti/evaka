@@ -602,7 +602,12 @@ class DraftInvoiceGenerator(
                     unitId,
                     dailyFeeDivisor,
                     attendanceDates,
-                    absences
+                    if (
+                        invoiceRowStub.placement.type != PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
+                            featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
+                    )
+                        absences
+                    else emptyList()
                 )
             else ->
                 toPermanentPlacementInvoiceRows(
