@@ -288,10 +288,6 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .toList<MessageId>()
 
-fun Database.Read.getMessageAuthor(content: MessageContentId): MessageAccountId? =
-    createQuery { sql("SELECT author_id FROM message_content WHERE id = ${bind(content)}") }
-        .exactlyOneOrNull<MessageAccountId>()
-
 fun Database.Transaction.insertThreadsWithMessages(
     count: Int,
     now: HelsinkiDateTime,

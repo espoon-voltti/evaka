@@ -13,12 +13,10 @@ import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.JobParams
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
-import kotlin.random.Random
 import org.springframework.stereotype.Service
 
 @Service
@@ -70,22 +68,15 @@ WHERE m.id = ANY(${bind(messageIds)})
     fun scheduleSendingMessageNotifications(
         tx: Database.Transaction,
         messageIds: List<MessageId>,
-        runAt: HelsinkiDateTime,
-        spreadSeconds: Long = 0
+        runAt: HelsinkiDateTime
     ) {
-        val asyncJobs =
-            getMessageNotifications(tx, messageIds).map { payload ->
-                JobParams(
-                    payload = payload,
-                    retryCount = 10,
-                    retryInterval = Duration.ofMinutes(5),
-                    runAt =
-                        if (spreadSeconds == 0L) runAt
-                        else runAt.plusSeconds(Random.nextLong(spreadSeconds))
-                )
-            }
-
-        asyncJobRunner.plan(tx, asyncJobs)
+        asyncJobRunner.plan(
+            tx,
+            getMessageNotifications(tx, messageIds),
+            retryCount = 10,
+            retryInterval = Duration.ofMinutes(5),
+            runAt = runAt
+        )
     }
 
     private fun getLanguage(languageStr: String?): Language {

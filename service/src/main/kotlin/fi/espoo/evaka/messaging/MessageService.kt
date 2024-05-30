@@ -35,10 +35,6 @@ class MessageService(
         asyncJobRunner.registerHandler(::handleMarkMessageAsSent)
     }
 
-    companion object {
-        val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 12
-    }
-
     fun handleMarkMessageAsSent(
         db: Database.Connection,
         clock: EvakaClock,
@@ -46,17 +42,9 @@ class MessageService(
     ) {
         db.transaction { tx ->
             tx.lockMessageContentForUpdate(msg.messageContentId)
-            val sender = tx.getMessageAuthor(msg.messageContentId) ?: return@transaction
             tx.upsertReceiverThreadParticipants(msg.messageContentId, msg.sentAt)
             val messages = tx.markMessagesAsSent(msg.messageContentId, msg.sentAt)
-            val senderAccountType = tx.getMessageAccountType(sender)
-            notificationEmailService.scheduleSendingMessageNotifications(
-                tx,
-                messages,
-                clock.now(),
-                if (senderAccountType == AccountType.MUNICIPAL) SPREAD_MESSAGE_NOTIFICATION_SECONDS
-                else 0
-            )
+            notificationEmailService.scheduleSendingMessageNotifications(tx, messages, clock.now())
             asyncJobRunner.plan(
                 tx,
                 messagePushNotifications.getAsyncJobs(tx, messages),
