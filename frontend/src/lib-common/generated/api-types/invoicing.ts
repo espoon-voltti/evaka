@@ -13,6 +13,7 @@ import { CareType } from './daycare'
 import { IncomeAttachment } from './attachment'
 import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
+import { ProviderType } from './daycare'
 import { UUID } from '../../types'
 
 /**
@@ -639,6 +640,7 @@ export interface InvoiceRowDetailed {
   unitId: UUID
   unitName: string
   unitPrice: number
+  unitProviderType: ProviderType
 }
 
 /**

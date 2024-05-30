@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.integration
 
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
@@ -203,6 +204,7 @@ class EspooInvoiceIntegrationClientTest {
             product = EspooInvoiceProducts.Product.DAYCARE.key,
             unitId = DaycareId(UUID.randomUUID()),
             unitName = "Satunnainen päivähoitopaikka",
+            unitProviderType = ProviderType.MUNICIPAL,
             daycareType = setOf(CareType.CENTRE),
             costCenter = "12345",
             subCostCenter = "01",

@@ -119,6 +119,7 @@ val invoiceDetailedQueryBase =
                 'product', row.product,
                 'unitId', row.unit_id,
                 'unitName', daycare.name,
+                'unitProviderType', daycare.provider_type,
                 'daycareType', daycare.type,
                 'costCenter', daycare.cost_center,
                 'subCostCenter', row_care_area.sub_cost_center,

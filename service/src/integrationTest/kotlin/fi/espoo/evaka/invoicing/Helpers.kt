@@ -99,9 +99,7 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed =
         codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
         rows =
             invoice.rows.map { row ->
-                val costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!
-                val daycareType = allDaycares.find { it.id == row.unitId }?.type!!
-                val unitName = allDaycares.find { it.id == row.unitId }?.name!!
+                val unit = allDaycares.find { it.id == row.unitId }!!
                 InvoiceRowDetailed(
                     id = row.id!!,
                     child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
@@ -111,16 +109,17 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed =
                     periodEnd = row.periodEnd,
                     product = row.product,
                     unitId = row.unitId,
-                    unitName = unitName,
-                    daycareType = daycareType,
-                    costCenter = costCenter,
+                    unitName = unit.name,
+                    unitProviderType = unit.providerType,
+                    daycareType = unit.type,
+                    costCenter = unit.costCenter!!,
                     subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
                     savedCostCenter =
                         if (
                             invoice.status == InvoiceStatus.SENT ||
                                 invoice.status == InvoiceStatus.WAITING_FOR_SENDING
                         )
-                            costCenter
+                            unit.costCenter
                         else null,
                     description = row.description,
                     correctionId = row.correctionId,
