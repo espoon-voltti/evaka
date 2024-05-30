@@ -14,8 +14,6 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
-import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
@@ -47,7 +45,6 @@ import org.springframework.web.bind.annotation.RestController
 )
 class FinanceBasicsController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(
@@ -179,15 +176,22 @@ class FinanceBasicsController(
 
                     val currentVoucherValues = tx.getVoucherValuesByServiceNeedOption()
 
-                    if (currentVoucherValues.containsKey(body.serviceNeedOptionId)) {
-                        val latest =
-                            currentVoucherValues[body.serviceNeedOptionId]!!.maxBy {
-                                it.voucherValues.range.start
-                            }
+                    currentVoucherValues
+                        .getOrDefault(body.serviceNeedOptionId, emptyList())
+                        .maxByOrNull { it.voucherValues.range.start }
+                        ?.let { latest ->
+                            if (!body.range.start.isAfter(latest.voucherValues.range.start))
+                                throw BadRequest(
+                                    "New voucher value range must start after existing ones"
+                                )
 
-                        if (latest.voucherValues.range.end == null)
-                            tx.updateVoucherValueEndDate(latest.id, body.range.start)
-                    }
+                            if (latest.voucherValues.range.overlaps(body.range)) {
+                                tx.updateVoucherValueEndDate(
+                                    latest.id,
+                                    body.range.start.minusDays(1)
+                                )
+                            }
+                        }
 
                     tx.insertNewVoucherValue(body)
                 }
@@ -504,7 +508,7 @@ fun Database.Transaction.updateVoucherValueEndDate(
             sql(
                 """
                 UPDATE service_need_option_voucher_value
-                SET validity = daterange(lower(validity), ${bind(endDate)})
+                SET validity = daterange(lower(validity), ${bind(endDate)}, '[]')
                 WHERE id = ${bind(id)}
             """
             )

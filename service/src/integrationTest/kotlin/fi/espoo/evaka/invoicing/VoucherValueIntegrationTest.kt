@@ -156,6 +156,15 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `should throw when adding a voucher value that starts before the existing latest one`() {
+        assertThrows<BadRequest> {
+            addVoucherValue(
+                testVoucherValue.copy(range = DateRange(LocalDate.of(2024, 1, 1), null))
+            )
+        }
+    }
+
+    @Test
     fun `should work when service need option has no prior voucher values`() {
         db.transaction { tx -> tx.deleteTestVoucherValues() }
         addVoucherValue(testVoucherValue)
