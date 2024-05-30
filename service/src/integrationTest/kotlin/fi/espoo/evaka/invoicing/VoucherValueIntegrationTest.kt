@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -154,6 +155,21 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
     }
 
+    @Test
+    fun `should throw when adding a voucher value that starts before the existing latest one`() {
+        assertThrows<BadRequest> {
+            addVoucherValue(
+                testVoucherValue.copy(range = DateRange(LocalDate.of(2024, 1, 1), null))
+            )
+        }
+    }
+
+    @Test
+    fun `should work when service need option has no prior voucher values`() {
+        db.transaction { tx -> tx.deleteTestVoucherValues() }
+        addVoucherValue(testVoucherValue)
+    }
+
     fun deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
         financeBasicsController.deleteVoucherValue(dbInstance(), financeUser, mockClock, id)
     }
@@ -170,4 +186,16 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun getVoucherValues():
         Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> =
         dbInstance().connect { dbc -> dbc.read { tx -> tx.getVoucherValuesByServiceNeedOption() } }
+
+    fun Database.Transaction.deleteTestVoucherValues() {
+        execute {
+            sql(
+                """
+                DELETE FROM service_need_option_voucher_value
+                WHERE service_need_option_id = ${bind(snDefaultDaycare.id)}
+            """
+                    .trimIndent()
+            )
+        }
+    }
 }
