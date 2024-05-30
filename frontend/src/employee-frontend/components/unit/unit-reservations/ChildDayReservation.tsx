@@ -25,7 +25,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { Light } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'

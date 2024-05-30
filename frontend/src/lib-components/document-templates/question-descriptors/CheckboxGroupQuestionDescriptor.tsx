@@ -23,7 +23,7 @@ import {
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputFieldF } from 'lib-components/atoms/form/InputField'
 import {

@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { Title } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronLeft, faChevronRight } from 'lib-icons'

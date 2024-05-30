@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { swapElements } from 'lib-common/array'
 import { BoundForm, useFormElems, useFormFields } from 'lib-common/form/hooks'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow

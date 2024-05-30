@@ -21,7 +21,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import {

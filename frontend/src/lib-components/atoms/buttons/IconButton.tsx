@@ -101,7 +101,7 @@ export type IconButtonProps = {
 } & BaseProps &
   ({ 'aria-label': string } | { 'aria-labelledby': string })
 
-export default React.memo(function IconButton({
+export const IconButton = React.memo(function IconButton({
   icon,
   type = 'button',
   onClick,

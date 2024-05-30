@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { fontWeights, P } from 'lib-components/typography'
 import colors from 'lib-customizations/common'

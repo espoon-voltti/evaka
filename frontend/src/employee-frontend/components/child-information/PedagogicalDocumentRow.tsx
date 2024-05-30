@@ -12,7 +12,7 @@ import {
 } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Td, Tr } from 'lib-components/layout/Table'

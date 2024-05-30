@@ -14,7 +14,7 @@ import {
   vasuQuestionTypes
 } from 'lib-common/api-types/vasu'
 import { VasuSection } from 'lib-common/generated/api-types/vasu'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'

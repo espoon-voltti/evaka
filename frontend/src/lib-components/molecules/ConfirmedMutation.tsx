@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import { cancelMutation, MutationDescription } from 'lib-common/query'
 
 import Button from '../atoms/buttons/Button'
-import IconButton from '../atoms/buttons/IconButton'
+import { IconButton } from '../atoms/buttons/IconButton'
 import InlineButton from '../atoms/buttons/InlineButton'
 import { useTranslations } from '../i18n'
 import { BaseProps } from '../utils'

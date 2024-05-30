@@ -16,7 +16,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faCheck, faChevronDown, faDash } from 'lib-icons'
 
 import { useTranslations } from '../../i18n'
-import IconButton from '../buttons/IconButton'
+import { IconButton } from '../buttons/IconButton'
 
 const DropdownContainer = styled.div`
   border: 1px solid ${(p) => p.theme.colors.grayscale.g70};

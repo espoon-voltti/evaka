@@ -15,7 +15,7 @@ import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
 import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
-import IconButton from '../buttons/IconButton'
+import { IconButton } from '../buttons/IconButton'
 
 const inputWidths = {
   xs: '60px',

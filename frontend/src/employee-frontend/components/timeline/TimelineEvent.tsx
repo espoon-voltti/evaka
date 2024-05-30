@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow

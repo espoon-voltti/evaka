@@ -10,7 +10,7 @@ import styled, { useTheme } from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
 import {
   CollapsibleContentAreaProps,

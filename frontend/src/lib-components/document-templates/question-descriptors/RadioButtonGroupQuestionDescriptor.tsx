@@ -22,7 +22,7 @@ import {
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import {

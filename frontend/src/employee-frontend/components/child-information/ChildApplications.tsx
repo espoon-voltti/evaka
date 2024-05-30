@@ -10,7 +10,7 @@ import { PersonApplicationSummary } from 'lib-common/generated/api-types/applica
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H2 } from 'lib-components/typography'

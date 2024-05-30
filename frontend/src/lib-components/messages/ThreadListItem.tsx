@@ -4,7 +4,7 @@
 
 import styled from 'styled-components'
 
-import IconButton from '../atoms/buttons/IconButton'
+import { IconButton } from '../atoms/buttons/IconButton'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 

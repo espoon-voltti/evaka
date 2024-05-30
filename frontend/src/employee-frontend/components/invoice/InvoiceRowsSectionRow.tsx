@@ -23,7 +23,7 @@ import { formatCents, parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import { stringToInt } from 'lib-common/utils/number'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import Combobox, {
   MenuItemProps
 } from 'lib-components/atoms/dropdowns/Combobox'

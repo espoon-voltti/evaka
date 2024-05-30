@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { faTimes } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
-import IconButton from '../atoms/buttons/IconButton'
+import { IconButton } from '../atoms/buttons/IconButton'
 import { tabletMin } from '../breakpoints'
 import { FixedSpaceRow } from '../layout/flex-helpers'
 import { modalZIndex } from '../layout/z-helpers'

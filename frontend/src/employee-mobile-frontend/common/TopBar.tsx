@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'

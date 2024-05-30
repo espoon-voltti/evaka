@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { FocusEventHandler, useState } from 'react'
 import styled, { css } from 'styled-components'
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import { H1, P } from 'lib-components/typography'

@@ -17,7 +17,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fasInfo, faTimes } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
-import IconButton from '../atoms/buttons/IconButton'
+import { IconButton } from '../atoms/buttons/IconButton'
 import { desktopMin } from '../breakpoints'
 import { useTranslations } from '../i18n'
 import { defaultMargins, SpacingSize } from '../white-space'

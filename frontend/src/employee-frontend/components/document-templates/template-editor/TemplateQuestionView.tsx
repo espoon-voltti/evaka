@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { BoundForm } from 'lib-common/form/hooks'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 

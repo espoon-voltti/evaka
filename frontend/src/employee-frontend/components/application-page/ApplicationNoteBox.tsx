@@ -15,7 +15,7 @@ import {
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

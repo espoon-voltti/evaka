@@ -5,7 +5,7 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'

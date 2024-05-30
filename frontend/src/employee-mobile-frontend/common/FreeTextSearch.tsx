@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, faTimes } from 'lib-icons'

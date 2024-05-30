@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'

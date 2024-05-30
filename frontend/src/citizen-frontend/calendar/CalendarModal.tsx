@@ -4,7 +4,7 @@
 
 import styled from 'styled-components'
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { defaultMargins } from 'lib-components/white-space'
 

@@ -12,7 +12,7 @@ import {
   useFormField,
   useFormUnion
 } from 'lib-common/form/hooks'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {

@@ -14,7 +14,7 @@ import {
   FeeAlterationWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,

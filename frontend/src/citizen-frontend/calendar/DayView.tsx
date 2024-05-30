@@ -40,7 +40,7 @@ import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'

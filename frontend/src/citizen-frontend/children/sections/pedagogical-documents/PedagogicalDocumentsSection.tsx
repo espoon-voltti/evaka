@@ -18,7 +18,7 @@ import {
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

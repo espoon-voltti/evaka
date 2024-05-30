@@ -6,7 +6,7 @@ import React, { ReactElement } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconButton } from 'lib-components/atoms/buttons/IconButton'
 import { H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronUp, faChevronDown } from 'lib-icons'
