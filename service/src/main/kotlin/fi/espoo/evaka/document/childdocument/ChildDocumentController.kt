@@ -9,6 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
+import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -70,7 +71,21 @@ class ChildDocumentController(
                         throw Conflict("Child already has incomplete document of the same template")
                     }
 
-                    tx.insertChildDocument(body, clock.now(), user.id)
+                    val processId =
+                        template.processDefinitionNumber?.let { processDefinitionNumber ->
+                            tx.insertProcess(
+                                    processDefinitionNumber = processDefinitionNumber,
+                                    year = clock.today().year
+                                )
+                                .id
+                        }
+
+                    tx.insertChildDocument(
+                        document = body,
+                        now = clock.now(),
+                        userId = user.id,
+                        processId = processId
+                    )
                 }
             }
             .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
