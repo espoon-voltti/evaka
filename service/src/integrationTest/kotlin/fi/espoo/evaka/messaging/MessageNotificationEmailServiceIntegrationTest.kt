@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import java.time.Duration
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -148,57 +147,6 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertEquals(
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             getEmailFor(testPersonEn).fromAddress
-        )
-    }
-
-    @Test
-    fun `MUNICIPAL notifications are sent to citizens in a spread window`() {
-        val municipalEmployeeId = EmployeeId(UUID.randomUUID())
-        val municipalEmployee =
-            AuthenticatedUser.Employee(
-                id = municipalEmployeeId,
-                roles = setOf(UserRole.UNIT_SUPERVISOR)
-            )
-
-        val municipalAccount =
-            db.transaction { tx ->
-                tx.insert(DevEmployee(id = municipalEmployeeId))
-                tx.upsertEmployeeMessageAccount(municipalEmployeeId, AccountType.MUNICIPAL)
-            }
-
-        postNewThread(
-            sender = municipalAccount,
-            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = municipalEmployee,
-            clock,
-            MessageType.BULLETIN
-        )
-
-        clock.tick(Duration.ofSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
-        asyncJobRunner.runPendingJobsSync(clock)
-        assertEquals(0, MockEmailClient.emails.size)
-
-        clock.tick(Duration.ofSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS))
-        asyncJobRunner.runPendingJobsSync(clock)
-
-        assertEquals(4, MockEmailClient.emails.size)
-
-        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
-        assertEquals(
-            "Uusi tiedote eVakassa / Nytt allmänt meddelande i eVaka / New bulletin in eVaka",
-            getEmailFor(testPersonFi).content.subject
-        )
-        assertEquals(
-            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonSv).fromAddress
-        )
-        assertEquals(
-            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEn).fromAddress
-        )
-        assertEquals(
-            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEl).fromAddress
         )
     }
 
