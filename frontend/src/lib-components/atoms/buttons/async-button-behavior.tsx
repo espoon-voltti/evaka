@@ -15,13 +15,9 @@ type ButtonState<T> =
   | { state: 'idle' | 'in-progress' | 'failure' }
   | { state: 'success'; value: T }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-const idle: ButtonState<any> = { state: 'idle' }
-const inProgress: ButtonState<any> = { state: 'in-progress' }
-const failure: ButtonState<any> = { state: 'failure' }
-
-/* eslint-enable @typescript-eslint/no-explicit-any */
+const idle: ButtonState<never> = { state: 'idle' }
+const inProgress: ButtonState<never> = { state: 'in-progress' }
+const failure: ButtonState<never> = { state: 'failure' }
 
 export interface AsyncButtonBehaviorProps<T> {
   /** Return a promise to start an async action, or `undefined` to do a sync action (or nothing at all) */
