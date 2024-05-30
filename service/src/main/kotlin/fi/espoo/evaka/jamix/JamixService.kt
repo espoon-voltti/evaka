@@ -12,19 +12,28 @@ import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.JamixEnv
+import fi.espoo.evaka.children.getActivePlacementUnitsForChildren
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.isUnitOperationDay
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
+import fi.espoo.evaka.emailclient.EmailContent
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.MealReportChildInfo
 import fi.espoo.evaka.reports.mealReportData
 import fi.espoo.evaka.reports.mealTexturesForChildren
 import fi.espoo.evaka.reports.specialDietsForChildren
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.async.removeUnclaimedJobs
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -39,12 +48,16 @@ import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
+val loggerWarner: (String) -> Unit = { s -> logger.warn(s) }
+
 @Service
 class JamixService(
     env: JamixEnv?,
     jsonMapper: JsonMapper,
     private val mealTypeMapper: MealTypeMapper,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val emailEnv: EmailEnv,
+    private val emailClient: EmailClient
 ) {
     private val client = env?.let { JamixHttpClient(it, jsonMapper) }
 
@@ -91,16 +104,20 @@ class JamixService(
 
     fun syncDiets(db: Database.Connection, clock: EvakaClock, job: AsyncJob.SyncJamixDiets) {
         if (client == null) error("Cannot sync diet list: JamixEnv is not configured")
-        fetchAndUpdateJamixDiets(client, db)
+        val warningEmails =
+            fetchAndUpdateJamixDiets(client, db, clock, emailEnv.sender(Language.fi))
         fetchAndUpdateJamixTextures(client, db)
+        warningEmails.forEach { emailClient.send(it) }
     }
 }
 
 fun fetchAndUpdateJamixDiets(
     client: JamixClient,
     db: Database.Connection,
-    warner: (s: String) -> Unit = { s -> logger.warn(s) }
-) {
+    clock: EvakaClock,
+    fromAddress: String,
+    warner: (s: String) -> Unit = loggerWarner
+): List<Email> {
     val dietsFromJamix = client.getDiets()
 
     val cleanedDietList = cleanupJamixDietList(dietsFromJamix)
@@ -108,21 +125,78 @@ fun fetchAndUpdateJamixDiets(
         "Jamix returned ${dietsFromJamix.size} cleaned list contains: ${cleanedDietList.size} diets"
     )
     if (cleanedDietList.isEmpty()) error("Refusing to sync empty diet list into database")
-    db.transaction { tx ->
-        val nulledChildrenCount = tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
-        if (nulledChildrenCount != 0)
-            warner(
-                "Jamix diet list update caused $nulledChildrenCount child special diets to be set to null"
-            )
-        val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
-        logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
+    return db.transaction { tx ->
+        val nulledChildren = tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
+        if (nulledChildren.isNotEmpty()) {
+                warner(
+                    "Jamix diet list update caused ${nulledChildren.size} child special diets to be set to null"
+                )
+                generateSpecialDietNullificationWarningEmails(
+                    tx,
+                    clock,
+                    nulledChildren,
+                    fromAddress
+                )
+            } else {
+                emptyList()
+            }
+            .also {
+                val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
+                logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
+            }
     }
+}
+
+fun generateSpecialDietNullificationWarningEmails(
+    tx: Database.Transaction,
+    clock: EvakaClock,
+    nulledChildren: Map<ChildId, SpecialDiet>,
+    fromAddress: String
+): List<Email> {
+    val childrenByUnit = tx.getActivePlacementUnitsForChildren(clock.today(), nulledChildren.keys)
+    if (childrenByUnit.isEmpty()) return emptyList()
+
+    return childrenByUnit.flatMap { (unitId, childrenInUnit) ->
+        val emailBody = createEmailBodyForUnit(childrenInUnit, nulledChildren)
+
+        val supervisors =
+            tx.getDaycareAclRows(unitId, false, UserRole.UNIT_SUPERVISOR).map { it.employee }
+
+        supervisors.mapNotNull { recipient ->
+            Email.createForEmployee(
+                recipient,
+                content =
+                    EmailContent(
+                        subject = "Muutoksia Jamix erityisruokavalioihin",
+                        html = emailBody.replace("\n", "<br>"),
+                        text = emailBody
+                    ),
+                traceId = "",
+                fromAddress
+            )
+        }
+    }
+}
+
+private fun createEmailBodyForUnit(
+    childrenInUnit: List<ChildId>,
+    nulledChildren: Map<ChildId, SpecialDiet>
+): String {
+    val emailBodyLines =
+        childrenInUnit.mapNotNull { childId ->
+            nulledChildren[childId]?.let { diet ->
+                "Lapsen tunniste: '$childId', Alkuperäinen erityisruokavalio: '${diet.abbreviation}' ERV tunniste: ${diet.id}"
+            }
+        }
+
+    return "Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden poistumisesta Jamixista:\n" +
+        emailBodyLines.joinToString("\n")
 }
 
 fun fetchAndUpdateJamixTextures(
     client: JamixClient,
     db: Database.Connection,
-    warner: (s: String) -> Unit = { s -> logger.warn(s) }
+    warner: (s: String) -> Unit = loggerWarner
 ) {
     val texturesFromJamix =
         client.getTextures().map { it -> MealTexture(it.modelId, it.fields.textureName) }

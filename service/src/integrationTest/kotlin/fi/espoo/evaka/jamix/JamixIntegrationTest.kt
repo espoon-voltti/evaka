@@ -10,20 +10,11 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.dev.DevAbsence
-import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
-import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.DevEmployee
-import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
-import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.DevReservation
-import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.specialdiet.*
 import java.time.LocalDate
@@ -312,7 +303,14 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `diet sync does not sync empty data`() {
         val client = TestJamixClient()
-        assertThrows<Exception> { fetchAndUpdateJamixDiets(client, db) }
+        assertThrows<Exception> {
+            fetchAndUpdateJamixDiets(
+                client,
+                db,
+                clock = MockEvakaClock(2024, 4, 8, 12, 0),
+                fromAddress = "Foobar <foobar@example.com>"
+            )
+        }
     }
 
     @Test
@@ -325,7 +323,12 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         JamixSpecialDiet(2, JamixSpecialDietFields("Hello World", "Hello"))
                     )
             )
-        fetchAndUpdateJamixDiets(client, db)
+        fetchAndUpdateJamixDiets(
+            client,
+            db,
+            clock = MockEvakaClock(2024, 4, 8, 12, 0),
+            fromAddress = "Foobar <foobar@example.com>"
+        )
         db.transaction { tx ->
             val diets = tx.getSpecialDiets().toSet()
             assertEquals(setOf(SpecialDiet(1, "Foo"), SpecialDiet(2, "Hello")), diets)
@@ -345,7 +348,14 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 specialDiets = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")))
             )
         val warnings = mutableListOf<String>()
-        fetchAndUpdateJamixDiets(client, db) { s -> warnings.add(s) }
+        fetchAndUpdateJamixDiets(
+            client,
+            db,
+            clock = MockEvakaClock(2024, 4, 8, 12, 0),
+            fromAddress = "Foobar <foobar@example.com>"
+        ) { s ->
+            warnings.add(s)
+        }
         // assert that logger.warn has been called
         assertEquals(
             setOf("Jamix diet list update caused 1 child special diets to be set to null"),
@@ -356,6 +366,66 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertNotNull(childAfterSync)
             assertNull(childAfterSync.additionalInformation.specialDiet)
         }
+    }
+
+    @Test
+    fun `diet sync generates warning emails`() {
+
+        val monday = LocalDate.of(2024, 4, 8)
+        val tuesday = LocalDate.of(2024, 4, 9)
+
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
+                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+            )
+        val employee1 = DevEmployee(email = "supervisor_the_first@city.fi")
+        val employee2 = DevEmployee(email = "supervisor_the_second@city.fi")
+
+        val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee1)
+            tx.insert(employee2)
+            tx.updateDaycareAclWithEmployee(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            tx.updateDaycareAclWithEmployee(daycare.id, employee2.id, UserRole.UNIT_SUPERVISOR)
+
+            tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation")))
+
+            tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
+            tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
+            tx.insert(
+                DevPlacement(
+                    childId = childWithSpecialDiet.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = tuesday
+                )
+            )
+        }
+        val client =
+            TestJamixClient(
+                specialDiets = listOf(JamixSpecialDiet(2, JamixSpecialDietFields("Foobar", "Foo")))
+            )
+        val emails =
+            fetchAndUpdateJamixDiets(
+                client,
+                db,
+                clock = MockEvakaClock(2024, 4, 8, 12, 0),
+                fromAddress = "Foobar <foobar@example.com>"
+            )
+        assertEquals(2, emails.size)
+        val s = childWithSpecialDiet.id.raw
+        assertEquals(
+            "Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden poistumisesta Jamixista:\n" +
+                "Lapsen tunniste: '$s', Alkuperäinen erityisruokavalio: 'diet abbreviation' ERV tunniste: 1",
+            emails[0].content.text
+        )
     }
 
     @Test
@@ -376,7 +446,12 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
             )
-        fetchAndUpdateJamixDiets(client, db)
+        fetchAndUpdateJamixDiets(
+            client,
+            db,
+            clock = MockEvakaClock(2024, 4, 8, 12, 0),
+            fromAddress = "Foobar <foobar@example.com>"
+        )
         db.transaction { tx ->
             val childAfterSync = tx.getChild(childWithSpecialDiet.id)
             assertNotNull(childAfterSync)
