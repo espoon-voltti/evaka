@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.util.regex.Pattern
@@ -186,8 +187,10 @@ allprojects {
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = libs.versions.java.get()
-        kotlinOptions.allWarningsAsErrors = true
+        compilerOptions {
+            jvmTarget = JvmTarget.fromTarget(libs.versions.java.get())
+            allWarningsAsErrors = true
+        }
     }
 
     tasks.withType<Test> {
