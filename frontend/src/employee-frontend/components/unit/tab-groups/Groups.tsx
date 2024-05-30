@@ -174,7 +174,7 @@ export default React.memo(function Groups({
           <IconButton
             icon={allGroupsAreOpen ? faAngleUp : faAngleDown}
             size="L"
-            gray
+            color="gray"
             data-qa="toggle-all-groups-collapsible"
             aria-label={allGroupsAreOpen ? i18n.common.close : i18n.common.open}
           />

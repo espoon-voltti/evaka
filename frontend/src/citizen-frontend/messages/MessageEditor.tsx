@@ -143,7 +143,7 @@ export default React.memo(function MessageEditor({
             <IconButton
               icon={faTimes}
               onClick={() => onClose()}
-              white
+              color="white"
               data-qa="close-message-editor-btn"
               aria-label={i18n.common.close}
             />

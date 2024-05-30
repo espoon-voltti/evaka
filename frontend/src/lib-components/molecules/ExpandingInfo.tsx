@@ -315,7 +315,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
           onClick={close}
           icon={faTimes}
           aria-label={i18n.common.close}
-          gray
+          color="gray"
         />
       </InfoBoxContentArea>
     </InfoBoxContainer>

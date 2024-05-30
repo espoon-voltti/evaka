@@ -8,16 +8,51 @@ import classNames from 'classnames'
 import React from 'react'
 import styled from 'styled-components'
 
+import { Theme } from 'lib-common/theme'
+
 import { BaseProps } from '../../utils'
 import { diameterByIconSize, IconSize } from '../icon-size'
 
 import { useThrottledEventHandler } from './button-commons'
 
+type PredefinedColor = 'default' | 'gray' | 'white'
+
+type CssColors = {
+  base: string
+  hover: string
+  active: string
+  focus: string
+}
+
+const cssColors = (theme: Theme, color: PredefinedColor): CssColors => {
+  switch (color) {
+    case 'default':
+      return {
+        base: theme.colors.main.m2,
+        hover: theme.colors.main.m2Hover,
+        active: theme.colors.main.m2Active,
+        focus: theme.colors.main.m2Focus
+      }
+    case 'gray':
+      return {
+        base: theme.colors.grayscale.g70,
+        hover: theme.colors.grayscale.g70,
+        active: theme.colors.grayscale.g100,
+        focus: theme.colors.main.m2Focus
+      }
+    case 'white':
+      return {
+        base: theme.colors.grayscale.g0,
+        hover: theme.colors.grayscale.g0,
+        active: theme.colors.main.m2Active,
+        focus: theme.colors.main.m2Focus
+      }
+  }
+}
+
 const StyledButton = styled.button<{
   $size: IconSize
-  $gray?: boolean
-  $white?: boolean
-  $color?: string
+  $color: PredefinedColor
 }>`
   display: flex;
   justify-content: center;
@@ -26,14 +61,7 @@ const StyledButton = styled.button<{
   width: calc(12px + ${(p) => diameterByIconSize(p.$size)}px);
   height: calc(12px + ${(p) => diameterByIconSize(p.$size)}px);
   font-size: ${(p) => diameterByIconSize(p.$size)}px;
-  color: ${(p) =>
-    p.$color
-      ? p.$color
-      : p.$gray
-        ? p.theme.colors.grayscale.g70
-        : p.$white
-          ? p.theme.colors.grayscale.g0
-          : p.theme.colors.main.m2};
+  color: ${(p) => cssColors(p.theme, p.$color).base};
   border: none;
   border-radius: 100%;
   background: none;
@@ -44,7 +72,7 @@ const StyledButton = styled.button<{
   -webkit-tap-highlight-color: transparent;
 
   &:focus {
-    box-shadow: 0 0 0 2px ${(p) => p.theme.colors.main.m2Focus};
+    box-shadow: 0 0 0 2px ${(p) => cssColors(p.theme, p.$color).focus};
   }
 
   .icon-wrapper {
@@ -55,23 +83,11 @@ const StyledButton = styled.button<{
   }
 
   &:hover .icon-wrapper {
-    color: ${(p) =>
-      p.$color
-        ? p.color
-        : p.$gray
-          ? p.theme.colors.grayscale.g70
-          : p.$white
-            ? p.theme.colors.grayscale.g0
-            : p.theme.colors.main.m2Hover};
+    color: ${(p) => cssColors(p.theme, p.$color).hover};
   }
 
   &:active .icon-wrapper {
-    color: ${(p) =>
-      p.$color
-        ? p.$color
-        : p.$gray
-          ? p.theme.colors.grayscale.g100
-          : p.theme.colors.main.m2Active};
+    color: ${(p) => cssColors(p.theme, p.$color).active};
   }
 
   &.disabled,
@@ -90,9 +106,7 @@ export type IconButtonProps = {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   disabled?: boolean
   size?: IconSize | undefined
-  gray?: boolean
-  white?: boolean
-  color?: string
+  color?: PredefinedColor
 } & BaseProps &
   ({ 'aria-label': string } | { 'aria-labelledby': string })
 
@@ -102,9 +116,7 @@ export default React.memo(function IconButton({
   onClick,
   disabled,
   size = 's',
-  gray,
-  white,
-  color,
+  color = 'default',
   className,
   ...props
 }: IconButtonProps) {
@@ -116,8 +128,6 @@ export default React.memo(function IconButton({
       className={classNames(className, { disabled })}
       onClick={handleOnClick}
       $size={size}
-      $gray={gray}
-      $white={white}
       $color={color}
       {...props}
     >

@@ -258,7 +258,7 @@ export default React.memo(function Group({
           <IconButton
             icon={open ? faAngleUp : faAngleDown}
             size="L"
-            gray
+            color="gray"
             data-qa="collapsible-trigger"
             aria-label={open ? i18n.common.close : i18n.common.open}
           />

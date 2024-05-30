@@ -85,7 +85,7 @@ export const LoggedInUser = React.memo(function LoggedInUser({
             <>
               <IconButton
                 icon={faTimes}
-                white
+                color="white"
                 onClick={toggleMenu}
                 data-qa="close-user-menu-btn"
                 aria-label={i18n.common.close}

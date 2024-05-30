@@ -120,7 +120,7 @@ export default React.memo(function TopBar({
             <TopBarIconContainer>
               <IconButton
                 icon={faTimes}
-                white
+                color="white"
                 disabled={closeDisabled}
                 onClick={onClose}
                 aria-label={i18n.common.close}

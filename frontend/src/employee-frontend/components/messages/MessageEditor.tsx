@@ -580,7 +580,7 @@ export default React.memo(function MessageEditor({
               <IconButton
                 icon={faDownLeftAndUpRightToCenter}
                 onClick={toggleExpandedView}
-                white
+                color="white"
                 size="s"
                 data-qa="collapse-view-btn"
                 aria-label={i18n.common.open}
@@ -589,7 +589,7 @@ export default React.memo(function MessageEditor({
               <IconButton
                 icon={faUpRightAndDownLeftFromCenter}
                 onClick={toggleExpandedView}
-                white
+                color="white"
                 size="s"
                 data-qa="expand-view-btn"
                 aria-label={i18n.common.close}
@@ -598,7 +598,7 @@ export default React.memo(function MessageEditor({
             <IconButton
               icon={faTimes}
               onClick={onCloseHandler}
-              white
+              color="white"
               size="m"
               data-qa="close-message-editor-btn"
               aria-label={i18n.common.close}
