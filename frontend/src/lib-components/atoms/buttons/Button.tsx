@@ -3,15 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import React, { useCallback } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-
-import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 
-import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
+import {
+  buttonBorderRadius,
+  defaultButtonTextStyle,
+  useThrottledEventHandler
+} from './button-commons'
 
 export const StyledButton = styled.button`
   min-height: 45px;
@@ -97,24 +99,7 @@ export default React.memo(function Button({
   type = 'button',
   ...props
 }: ButtonProps) {
-  const [ignoreClick, setIgnoreClick] = React.useState(false)
-  React.useEffect(() => {
-    if (ignoreClick) {
-      const id = setTimeout(() => setIgnoreClick(false), 300)
-      return () => clearTimeout(id)
-    }
-    return undefined
-  }, [ignoreClick])
-
-  const handleOnClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (!ignoreClick) {
-        if (!isAutomatedTest) setIgnoreClick(true)
-        if (onClick) onClick(e)
-      }
-    },
-    [ignoreClick, onClick]
-  )
+  const handleOnClick = useThrottledEventHandler(onClick)
   return (
     <StyledButton
       className={classNames(className, { primary, disabled })}
