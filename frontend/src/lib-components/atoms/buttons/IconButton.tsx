@@ -75,18 +75,11 @@ const StyledButton = styled.button<{
     box-shadow: 0 0 0 2px ${(p) => cssColors(p.theme, p.$color).focus};
   }
 
-  .icon-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 2px;
-  }
-
-  &:hover .icon-wrapper {
+  &:hover {
     color: ${(p) => cssColors(p.theme, p.$color).hover};
   }
 
-  &:active .icon-wrapper {
+  &:active {
     color: ${(p) => cssColors(p.theme, p.$color).active};
   }
 
@@ -94,9 +87,7 @@ const StyledButton = styled.button<{
   &:disabled {
     cursor: not-allowed;
 
-    .icon-wrapper {
-      color: ${(p) => p.theme.colors.grayscale.g35};
-    }
+    color: ${(p) => p.theme.colors.grayscale.g35};
   }
 `
 
@@ -131,9 +122,7 @@ export default React.memo(function IconButton({
       $color={color}
       {...props}
     >
-      <div className="icon-wrapper">
-        <FontAwesomeIcon icon={icon} />
-      </div>
+      <FontAwesomeIcon icon={icon} />
     </StyledButton>
   )
 })
