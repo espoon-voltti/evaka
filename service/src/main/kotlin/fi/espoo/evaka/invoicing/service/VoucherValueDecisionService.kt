@@ -257,11 +257,8 @@ class VoucherValueDecisionService(
         val recipients = listOfNotNull(decision.headOfFamily)
 
         recipients.forEach { recipient ->
-            val language =
-                if (!recipient.language.isNullOrEmpty())
-                    Language.tryValueOf(recipient.language) ?: Language.en
-                else Language.fi
-            val fromAddress = emailEnv.sender(language)
+            // simplified to get rid of superfluous language requirement
+            val fromAddress = emailEnv.sender(Language.fi)
             val content =
                 emailMessageProvider.financeDecisionNotification(
                     FinanceDecisionType.VOUCHER_VALUE_DECISION
