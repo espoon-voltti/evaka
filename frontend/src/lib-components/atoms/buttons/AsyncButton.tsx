@@ -4,54 +4,25 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { animated, useSpring } from '@react-spring/web'
-import * as Sentry from '@sentry/browser'
 import classNames from 'classnames'
-import React, {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import React from 'react'
 import styled, { useTheme } from 'styled-components'
-
-import { Failure, Result } from 'lib-common/api'
-import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useTranslations } from 'lib-components/i18n'
 import { faCheck, faTimes } from 'lib-icons'
 
 import { ScreenReaderOnly } from '../ScreenReaderOnly'
 
 import { StyledButton } from './Button'
+import {
+  AsyncButtonBehaviorProps,
+  useAsyncButtonBehavior
+} from './async-button-behavior'
 
-const onSuccessTimeout = isAutomatedTest ? 10 : 800
-const clearStateTimeout = isAutomatedTest ? 25 : 3000
-
-type ButtonState<T> =
-  | { state: 'idle' | 'in-progress' | 'failure' }
-  | { state: 'success'; value: T }
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-const idle: ButtonState<any> = { state: 'idle' }
-const inProgress: ButtonState<any> = { state: 'in-progress' }
-const failure: ButtonState<any> = { state: 'failure' }
-
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-export interface AsyncButtonProps<T> {
+export interface AsyncButtonProps<T> extends AsyncButtonBehaviorProps<T> {
   text: string
   textInProgress?: string
   textDone?: string
-  /** Return a promise to start an async action, or `undefined` to do a sync action (or nothing at all) */
-  onClick: () => Promise<Result<T>> | void
-  /** Called when the promise has resolved with a Success value and the success animation has finished */
-  onSuccess: (value: T) => void
-  /** Called immediately when the promis has resolved with a Failure value */
-  onFailure?: (failure: Failure<T>) => void
   type?: 'button' | 'submit'
-  preventDefault?: boolean
-  stopPropagation?: boolean
   primary?: boolean
   disabled?: boolean
   className?: string
@@ -78,137 +49,32 @@ function AsyncButton<T>({
   ...props
 }: AsyncButtonProps<T>) {
   const i18n = useTranslations()
+
   const { colors } = useTheme()
-  const [buttonState, setButtonState] = useState<ButtonState<T>>(idle)
-  const onSuccessRef = useRef(onSuccess)
+  const { state, handleClick } = useAsyncButtonBehavior({
+    preventDefault,
+    stopPropagation,
+    onClick,
+    onSuccess,
+    onFailure
+  })
 
-  const mountedRef = useRef(true)
-  useEffect(
-    () => () => {
-      mountedRef.current = false
-    },
-    []
-  )
-
-  const handleSuccess = useCallback((value: T) => {
-    setButtonState({ state: 'success', value })
-  }, [])
-
-  const handleFailure = useCallback(
-    (value: Failure<T> | undefined) => {
-      if (!mountedRef.current) return
-      setButtonState(failure)
-      onFailure && value !== undefined && onFailure(value)
-    },
-    [onFailure]
-  )
-
-  const isInProgress = buttonState.state === 'in-progress'
-  const isSuccess = buttonState.state === 'success'
-  const isFailure = buttonState.state === 'failure'
-
-  const handleClick = useCallback(
-    (e: FormEvent) => {
-      if (preventDefault) e.preventDefault()
-      if (stopPropagation) e.stopPropagation()
-
-      if (!mountedRef.current) return
-      if (isInProgress || isSuccess) return
-
-      const maybePromise = onClick()
-      if (maybePromise === undefined) {
-        // The click handler didn't do an async call, nothing to do here
-      } else {
-        setButtonState(inProgress)
-        maybePromise
-          .then((result) => {
-            if (!mountedRef.current) return
-            if (result.isSuccess) {
-              handleSuccess(result.value)
-            }
-            if (result.isLoading) {
-              handleFailure(undefined)
-              Sentry.captureMessage(
-                'BUG: AsyncButton promise resolved to a Loading value',
-                'error'
-              )
-            } else if (result.isFailure) {
-              handleFailure(result)
-            } else {
-              handleSuccess(result.value)
-            }
-          })
-          .catch((originalErr: unknown) => {
-            handleFailure(undefined)
-            if (originalErr instanceof Error) {
-              if ('message' in originalErr && 'stack' in originalErr) {
-                const err = new Error(
-                  `AsyncButton promise was rejected: ${originalErr.message}`
-                )
-                err.stack = originalErr.stack
-                Sentry.captureException(err)
-              } else {
-                Sentry.captureException(originalErr)
-              }
-            }
-          })
-      }
-    },
-    [
-      preventDefault,
-      stopPropagation,
-      isInProgress,
-      onClick,
-      handleSuccess,
-      handleFailure,
-      isSuccess
-    ]
-  )
-
-  useEffect(() => {
-    onSuccessRef.current = (value: T) => onSuccess(value)
-  }, [onSuccess])
-
-  useEffect(() => {
-    if (buttonState.state === 'success') {
-      const runOnSuccess = setTimeout(
-        () => onSuccessRef.current(buttonState.value),
-        onSuccessTimeout
-      )
-      const clearState = setTimeout(
-        () => mountedRef.current && setButtonState(idle),
-        clearStateTimeout
-      )
-      return () => {
-        clearTimeout(runOnSuccess)
-        clearTimeout(clearState)
-      }
-    } else if (buttonState.state === 'failure') {
-      const clearState = setTimeout(
-        () => mountedRef.current && setButtonState(idle),
-        clearStateTimeout
-      )
-      return () => clearTimeout(clearState)
-    }
-    return undefined
-  }, [buttonState])
-
-  const showIcon = buttonState.state !== 'idle'
+  const showIcon = state !== 'idle'
 
   const container = useSpring<{ x: number }>({
-    x: ((!hideSuccess || !isSuccess) && showIcon) || icon ? 1 : 0
+    x: ((!hideSuccess || state !== 'success') && showIcon) || icon ? 1 : 0
   })
   const iconSpring = useSpring<{ opacity: number }>({
     opacity: icon && !showIcon ? 1 : 0
   })
   const spinner = useSpring<{ opacity: number }>({
-    opacity: isInProgress ? 1 : 0
+    opacity: state === 'in-progress' ? 1 : 0
   })
   const checkmark = useSpring<{ opacity: number }>({
-    opacity: !hideSuccess && isSuccess ? 1 : 0
+    opacity: !hideSuccess && state === 'success' ? 1 : 0
   })
   const cross = useSpring<{ opacity: number }>({
-    opacity: isFailure ? 1 : 0
+    opacity: state === 'failure' ? 1 : 0
   })
 
   return (
@@ -221,20 +87,20 @@ function AsyncButton<T>({
       disabled={disabled}
       onClick={handleClick}
       {...props}
-      data-status={buttonState.state === 'idle' ? '' : buttonState.state}
-      aria-busy={buttonState.state === 'in-progress'}
+      data-status={state === 'idle' ? '' : state}
+      aria-busy={state === 'in-progress'}
     >
-      {buttonState.state === 'in-progress' && (
+      {state === 'in-progress' && (
         <ScreenReaderOnly aria-live="polite" id="in-progress">
           {i18n.asyncButton.inProgress}
         </ScreenReaderOnly>
       )}
-      {buttonState.state === 'failure' && (
+      {state === 'failure' && (
         <ScreenReaderOnly aria-live="assertive" id="failure">
           {i18n.asyncButton.failure}
         </ScreenReaderOnly>
       )}
-      {buttonState.state === 'success' && (
+      {state === 'success' && (
         <ScreenReaderOnly aria-live="assertive" id="success">
           {i18n.asyncButton.success}
         </ScreenReaderOnly>
@@ -275,7 +141,11 @@ function AsyncButton<T>({
           </IconWrapper>
         </IconContainer>
         <TextWrapper>
-          {isInProgress ? textInProgress : isSuccess ? textDone : text}
+          {state === 'in-progress'
+            ? textInProgress
+            : state === 'success'
+              ? textDone
+              : text}
         </TextWrapper>
       </Content>
     </StyledButton>
