@@ -45,7 +45,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H1, H2 } from 'lib-components/typography'
+import { H1, H2, H3 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -53,6 +53,7 @@ import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
 import {
+  childDocumentMetadataQuery,
   childDocumentNextStatusMutation,
   childDocumentPrevStatusMutation,
   childDocumentQuery,
@@ -62,6 +63,7 @@ import {
   queryKeys,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
+import LabelValueList from '../common/LabelValueList'
 
 import { getNextDocumentStatus, getPrevDocumentStatus } from './statuses'
 
@@ -345,6 +347,59 @@ export const ChildDocumentEditView = React.memo(
   }
 )
 
+const ChildDocumentMetadataSection = React.memo(
+  function ChildDocumentMetadataSection({ documentId }: { documentId: UUID }) {
+    const { i18n } = useTranslation()
+    const t = i18n.childInformation.childDocuments.editor.metadata
+    const result = useQueryResult(
+      childDocumentMetadataQuery({ childDocumentId: documentId })
+    )
+    return (
+      <div>
+        <H3>{t.title}</H3>
+        {renderResult(result, (metadata) => {
+          if (metadata === null) return <div>{t.notFound}</div>
+          return (
+            <LabelValueList
+              spacing="small"
+              contents={[
+                {
+                  label: t.processNumber,
+                  value: metadata.process.processNumber
+                },
+                {
+                  label: t.name,
+                  value: metadata.documentName
+                },
+                {
+                  label: t.createdAt,
+                  value: metadata.documentCreatedAt?.format() ?? '-'
+                },
+                {
+                  label: t.createdBy,
+                  value: metadata.documentCreatedBy
+                    ? `${metadata.documentCreatedBy.firstName} ${metadata.documentCreatedBy.lastName} ${metadata.documentCreatedBy.email ? `(${metadata.documentCreatedBy.email})` : ''} `
+                    : '-'
+                },
+                {
+                  label: t.archiveDurationMonths,
+                  value: `${metadata.archiveDurationMonths} ${t.monthsUnit}`
+                },
+                {
+                  label: t.confidentiality,
+                  value: metadata.confidentialDocument
+                    ? t.confidential
+                    : t.public
+                }
+              ]}
+            />
+          )
+        })}
+      </div>
+    )
+  }
+)
+
 const ChildDocumentReadViewInner = React.memo(
   function ChildDocumentReadViewInner({
     documentAndPermissions,
@@ -399,6 +454,14 @@ const ChildDocumentReadViewInner = React.memo(
             <Gap size="XXL" />
             <DocumentView bind={bind} readOnly={true} />
           </ContentArea>
+          {permittedActions.includes('READ_METADATA') && (
+            <>
+              <Gap />
+              <ContentArea opaque>
+                <ChildDocumentMetadataSection documentId={document.id} />
+              </ContentArea>
+            </>
+          )}
         </Container>
 
         <ActionBar>

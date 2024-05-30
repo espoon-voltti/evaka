@@ -171,6 +171,7 @@ enum class Audit(
     ChildDocumentPrevStatus,
     ChildDocumentPublish,
     ChildDocumentRead,
+    ChildDocumentReadMetadata,
     ChildDocumentTryTakeLockOnContent,
     ChildDocumentUnreadCount,
     ChildDocumentUpdateContent,

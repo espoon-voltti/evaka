@@ -2400,6 +2400,8 @@ export class Fixture {
       legalBasis: '§1',
       published: false,
       validity: new DateRange(LocalDate.of(2000, 1, 1), null),
+      processDefinitionNumber: null,
+      archiveDurationMonths: null,
       content: {
         sections: [
           {

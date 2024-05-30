@@ -39,3 +39,15 @@ fun Database.Transaction.insertProcess(
             )
         }
         .exactlyOne()
+
+fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
+    createQuery {
+            sql(
+                """
+    SELECT id, process_definition_number, year, number
+    FROM archived_process
+    WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull()

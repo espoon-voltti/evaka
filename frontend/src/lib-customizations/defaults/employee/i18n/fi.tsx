@@ -860,7 +860,20 @@ export const fi = {
         notFullyPublished: (publishedAt: HelsinkiDateTime | null) =>
           `Asiakirjassa on julkaisemattomia muutoksia ${
             publishedAt ? ` (julkaistu ${publishedAt.format()})` : ''
-          }`
+          }`,
+        metadata: {
+          title: 'Arkistoitava metadata',
+          notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
+          processNumber: 'Asianumero',
+          name: 'Asiakirjan nimi',
+          createdAt: 'Asiakirjan laatimisajankohta',
+          createdBy: 'Asiakirjan laatija',
+          archiveDurationMonths: 'Arkistointiaika',
+          monthsUnit: 'kuukautta',
+          confidentiality: 'Asiakirjan julkisuus',
+          confidential: 'Salassapidettävä',
+          public: 'Julkinen'
+        }
       }
     },
     assistanceNeedPreschoolDecision: {

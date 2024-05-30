@@ -13,6 +13,7 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -56,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var controller: ChildDocumentController
+    @Autowired lateinit var metadataController: ProcessMetadataController
 
     lateinit var areaId: AreaId
     lateinit var employeeUser: AuthenticatedUser.Employee
@@ -143,9 +145,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         DevDocumentTemplate(
             id = templateIdHojks,
             type = DocumentType.HOJKS,
-            name = "HOJKS 2023",
+            name = "HOJKS",
             validity = DateRange(clock.today(), clock.today()),
-            content = templateContent
+            content = templateContent,
+            processDefinitionNumber = "123.456.789",
+            archiveDurationMonths = 120
         )
 
     @BeforeEach
@@ -237,7 +241,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         Action.ChildDocument.READ,
                         Action.ChildDocument.UPDATE,
                         Action.ChildDocument.NEXT_STATUS,
-                        Action.ChildDocument.PREV_STATUS
+                        Action.ChildDocument.PREV_STATUS,
+                        Action.ChildDocument.READ_METADATA
                     )
             ),
             document
@@ -258,6 +263,26 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             ),
             summaries.map { it.data }
         )
+    }
+
+    @Test
+    fun `creating new document may start a metadata process`() {
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                clock,
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks)
+            )
+        val metadata = getChildDocumentMetadata(documentId)
+        assertNotNull(metadata)
+        metadata.also {
+            assertEquals("1/123.456.789/2022", it.process.processNumber)
+            assertEquals("HOJKS", it.documentName)
+            assertNotNull(it.documentCreatedAt)
+            assertEquals(employeeUser.id, it.documentCreatedBy?.id)
+            assertEquals(120, it.archiveDurationMonths)
+        }
     }
 
     @Test
@@ -772,4 +797,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             id,
             ChildDocumentController.StatusChangeRequest(status)
         )
+
+    private fun getChildDocumentMetadata(id: ChildDocumentId) =
+        metadataController.getChildDocumentMetadata(dbInstance(), employeeUser, clock, id)
 }

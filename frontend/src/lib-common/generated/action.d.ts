@@ -250,6 +250,7 @@ export type ChildDocument =
   | 'PREV_STATUS'
   | 'PUBLISH'
   | 'READ'
+  | 'READ_METADATA'
   | 'UPDATE'
 
 export type DailyServiceTime =
