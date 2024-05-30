@@ -33,7 +33,10 @@ enum class EmailMessageType {
     /** Notifications about new calendar events of daycare groups */
     CALENDAR_EVENT_NOTIFICATION,
 
-    /** Notifications about new decisions (e.g. daycare decision, assistance decision) */
+    /**
+     * Notifications about new decisions (e.g. daycare decision, assistance decision, finance
+     * decisions)
+     */
     DECISION_NOTIFICATION,
 
     /**

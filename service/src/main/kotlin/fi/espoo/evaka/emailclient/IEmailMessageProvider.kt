@@ -5,6 +5,7 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.shared.ChildId
@@ -90,6 +91,8 @@ interface IEmailMessageProvider {
         language: Language,
         events: List<CalendarEventNotificationData>
     ): EmailContent
+
+    fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 }
 
 data class CalendarEventNotificationData(

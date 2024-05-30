@@ -323,6 +323,16 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendNewFeeDecisionEmail(
+        val decisionId: FeeDecisionId,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendNewVoucherValueDecisionEmail(val decisionId: VoucherValueDecisionId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -370,6 +380,8 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendPendingDecisionEmail::class,
                     SendVasuNotificationEmail::class,
                     SendNewCustomerIncomeNotificationEmail::class,
+                    SendNewFeeDecisionEmail::class,
+                    SendNewVoucherValueDecisionEmail::class
                 )
             )
         val urgent =

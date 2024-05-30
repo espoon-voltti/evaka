@@ -4,7 +4,11 @@
 
 package fi.espoo.evaka.invoicing
 
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionController
@@ -19,20 +23,25 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -47,7 +56,9 @@ import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
+import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -71,6 +82,8 @@ import org.springframework.beans.factory.annotation.Autowired
 class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
+    @Autowired private lateinit var emailEnv: EmailEnv
 
     private val user =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
@@ -299,6 +312,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @BeforeEach
     fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
+        MockEmailClient.clear()
 
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
@@ -2049,6 +2063,131 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEqualEnough(preschoolClubDecisions.map { toSummary(it) }, result.data)
     }
 
+    @Test
+    fun `Email notification is sent to hof when decision in WAITING_FOR_SENDING is set to SENT`() {
+        // optInAdult has an email address, and does not require manual sending of PDF decision
+        val optInAdult =
+            testAdult_6.copy(
+                id = PersonId(UUID.randomUUID()),
+                email = "optin@test.com",
+                forceManualFeeDecisions = false,
+                ssn = "291090-9986",
+                enabledEmailTypes = listOf(EmailMessageType.DECISION_NOTIFICATION)
+            )
+        db.transaction {
+            it.insert(optInAdult, DevPersonType.RAW_ROW)
+            it.insert(
+                DevParentship(
+                    ParentshipId(UUID.randomUUID()),
+                    testChild_2.id,
+                    optInAdult.id,
+                    testChild_2.dateOfBirth,
+                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    HelsinkiDateTime.now()
+                )
+            )
+            it.insertTestPartnership(adult1 = optInAdult.id, adult2 = testAdult_7.id)
+        }
+        createAndConfirmFeeDecisionsForFamily(optInAdult, testAdult_7, listOf(testChild_2))
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val emailContent =
+            emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
+
+        // assert that only hof has mail
+        assertEquals(
+            setOfNotNull(optInAdult.email),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+        assertEquals(emailContent.subject, getEmailFor(optInAdult).content.subject)
+        assertEquals(
+            "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
+            getEmailFor(optInAdult).fromAddress
+        )
+    }
+
+    @Test
+    fun `Email notification is sent to hof when decision in WAITING_FOR_MANUAL_SENDING is set to SENT`() {
+        db.transaction {
+            // testAdult_3 has an email address, but no mail address -> marked for manual sending
+            it.insert(
+                DevParentship(
+                    ParentshipId(UUID.randomUUID()),
+                    testChild_2.id,
+                    testAdult_3.id,
+                    testChild_2.dateOfBirth,
+                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    HelsinkiDateTime.now()
+                )
+            )
+            it.insertTestPartnership(adult1 = testAdult_3.id, adult2 = testAdult_4.id)
+        }
+        val feeDecision =
+            createAndConfirmFeeDecisionsForFamily(testAdult_3, testAdult_4, listOf(testChild_2))
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        // assert that nothing sent yet
+        assertEquals(emptySet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+
+        // mark waiting as sent
+        feeDecisionController.setFeeDecisionSent(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            listOf(feeDecision.id)
+        )
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val emailContent =
+            emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
+
+        // assert that only hof has mail
+        assertEquals(
+            setOfNotNull(testAdult_3.email),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+        assertEquals(emailContent.subject, getEmailFor(testAdult_3).content.subject)
+        assertEquals(
+            "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
+            getEmailFor(testAdult_3).fromAddress
+        )
+    }
+
+    @Test
+    fun `Email notification is not sent to hof when opted out of decision emails`() {
+        // optOutAdult is eligible, but has elected to not receive decision emails
+        val optOutAdult =
+            testAdult_6.copy(
+                id = PersonId(UUID.randomUUID()),
+                ssn = "291090-9986",
+                email = "optout@test.com",
+                forceManualFeeDecisions = false,
+                enabledEmailTypes = listOf(),
+            )
+        db.transaction {
+            it.insert(optOutAdult, DevPersonType.RAW_ROW)
+            it.insert(
+                DevParentship(
+                    ParentshipId(UUID.randomUUID()),
+                    testChild_2.id,
+                    optOutAdult.id,
+                    testChild_2.dateOfBirth,
+                    testChild_2.dateOfBirth.plusYears(18).minusDays(1),
+                    HelsinkiDateTime.now()
+                )
+            )
+            it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = testAdult_7.id)
+        }
+        createAndConfirmFeeDecisionsForFamily(optOutAdult, testAdult_7, listOf(testChild_2))
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        // assert that no mail for anyone
+        assertEquals(emptySet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+    }
+
     private fun getPdf(id: FeeDecisionId, user: AuthenticatedUser.Employee) {
         feeDecisionController.getFeeDecisionPdf(dbInstance(), user, RealEvakaClock(), id)
     }
@@ -2132,5 +2271,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     private fun setDecisionType(id: FeeDecisionId, body: FeeDecisionTypeRequest) {
         feeDecisionController.setFeeDecisionType(dbInstance(), user, RealEvakaClock(), id, body)
+    }
+
+    private fun getEmailFor(person: DevPerson): Email {
+        val address = person.email ?: throw Error("$person has no email")
+        return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 }

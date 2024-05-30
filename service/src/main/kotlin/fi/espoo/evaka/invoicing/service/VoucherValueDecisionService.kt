@@ -5,7 +5,12 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailClient
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
@@ -16,10 +21,12 @@ import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionToIgnored
 import fi.espoo.evaka.invoicing.data.setVoucherValueDecisionType
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.pdfgen.PdfGenerator
+import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.SettingType
@@ -37,8 +44,11 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.message.IMessageProvider
 import java.time.LocalDate
+import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+
+private val logger = KotlinLogging.logger {}
 
 @Component
 class VoucherValueDecisionService(
@@ -46,9 +56,16 @@ class VoucherValueDecisionService(
     private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    env: BucketEnv
+    env: BucketEnv,
+    private val emailEnv: EmailEnv,
+    private val emailMessageProvider: IEmailMessageProvider,
+    private val emailClient: EmailClient,
 ) {
     private val bucket = env.voucherValueDecisions
+
+    init {
+        asyncJobRunner.registerHandler(::runSendNewVoucherValueDecisionEmail)
+    }
 
     fun createDecisionPdf(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
         val decision = getDecision(tx, decisionId)
@@ -134,7 +151,11 @@ class VoucherValueDecisionService(
         )
 
         tx.markVoucherValueDecisionsSent(listOf(decision.id), clock.now())
-
+        asyncJobRunner.plan(
+            tx,
+            listOf(AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = decision.id)),
+            runAt = clock.now()
+        )
         return true
     }
 
@@ -217,6 +238,45 @@ class VoucherValueDecisionService(
         }
 
         tx.setVoucherValueDecisionType(decisionId, type)
+    }
+
+    fun runSendNewVoucherValueDecisionEmail(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendNewVoucherValueDecisionEmail
+    ) {
+        val voucherValueDecisionId = msg.decisionId
+        val decision =
+            db.read { tx -> tx.getVoucherValueDecision(voucherValueDecisionId) }
+                ?: throw NotFound("Decision not found")
+
+        logger.info {
+            "Sending voucher value decision emails for (decisionId: $voucherValueDecisionId)"
+        }
+
+        val recipients = listOfNotNull(decision.headOfFamily)
+
+        recipients.forEach { recipient ->
+            // simplified to get rid of superfluous language requirement
+            val fromAddress = emailEnv.sender(Language.fi)
+            val content =
+                emailMessageProvider.financeDecisionNotification(
+                    FinanceDecisionType.VOUCHER_VALUE_DECISION
+                )
+            Email.create(
+                    db,
+                    recipient.id,
+                    EmailMessageType.DECISION_NOTIFICATION,
+                    fromAddress,
+                    content,
+                    "$voucherValueDecisionId - ${recipient.id}",
+                )
+                ?.also { emailClient.send(it) }
+        }
+
+        logger.info {
+            "Successfully sent voucher value decision emails (${recipients.size}) (id: $voucherValueDecisionId)."
+        }
     }
 }
 
