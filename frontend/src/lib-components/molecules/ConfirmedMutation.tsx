@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import { cancelMutation, MutationDescription } from 'lib-common/query'
 
 import Button from '../atoms/buttons/Button'
-import { IconButton } from '../atoms/buttons/IconButton'
+import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
 import InlineButton from '../atoms/buttons/InlineButton'
 import { useTranslations } from '../i18n'
 import { BaseProps } from '../utils'
@@ -89,7 +89,7 @@ function ConfirmedMutation_<Arg, Data>(
         />
       )}
       {props.buttonStyle === 'ICON' && (
-        <IconButton
+        <IconOnlyButton
           icon={props.icon}
           aria-label={props.buttonAltText}
           onClick={openConfirmation}

@@ -40,7 +40,7 @@ import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
@@ -328,7 +328,7 @@ const DayModal = React.memo(function DayModal({
                 />
                 <CalendarModalSection>
                   <DayPicker>
-                    <IconButton
+                    <IconOnlyButton
                       icon={faChevronLeft}
                       onClick={dateActions?.navigateToPreviousDate}
                       disabled={!dateActions?.navigateToPreviousDate}
@@ -337,7 +337,7 @@ const DayModal = React.memo(function DayModal({
                     <ModalHeader headingComponent={DayOfWeek}>
                       {date.format('EEEEEE d.M.yyyy', lang)}
                     </ModalHeader>
-                    <IconButton
+                    <IconOnlyButton
                       icon={faChevronRight}
                       onClick={dateActions?.navigateToNextDate}
                       disabled={!dateActions?.navigateToNextDate}

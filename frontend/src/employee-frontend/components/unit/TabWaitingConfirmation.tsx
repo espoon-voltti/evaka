@@ -11,7 +11,7 @@ import styled from 'styled-components'
 import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { P } from 'lib-components/typography'
@@ -172,7 +172,7 @@ export default React.memo(function TabWaitingConfirmation({
                       target="_blank"
                       rel="noreferrer"
                     >
-                      <IconButton
+                      <IconOnlyButton
                         onClick={() => undefined}
                         icon={faFileAlt}
                         aria-label={i18n.personProfile.application.open}

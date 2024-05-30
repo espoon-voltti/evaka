@@ -15,7 +15,7 @@ import { tabletMin } from '../../breakpoints'
 import { BaseProps } from '../../utils'
 import { defaultMargins } from '../../white-space'
 import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
-import { IconButton } from '../buttons/IconButton'
+import { IconOnlyButton } from '../buttons/IconOnlyButton'
 
 const inputWidths = {
   xs: '60px',
@@ -149,7 +149,7 @@ const IconContainer = styled.div<{ clickable: boolean }>`
       : ''}
 `
 
-const StyledIconButton = styled(IconButton)`
+const StyledIconButton = styled(IconOnlyButton)`
   color: ${(p) => p.theme.colors.grayscale.g70};
 
   &:hover {

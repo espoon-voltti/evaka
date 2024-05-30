@@ -47,7 +47,7 @@ import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
@@ -593,7 +593,7 @@ const ReservationTimeAddButton = ({
   const { i18n } = useTranslation()
 
   return (
-    <IconButton
+    <IconOnlyButton
       icon={faPlus}
       onClick={() =>
         form.update((prev) => [...prev, { startTime: '', endTime: '' }])
@@ -620,7 +620,7 @@ const ReservationTimeEdit = ({
       <span>–</span>
       <TimeInputF bind={endTime} data-qa="reservation-end-time" />
       {onRemoveTime !== undefined && (
-        <IconButton
+        <IconOnlyButton
           icon={faTrash}
           onClick={onRemoveTime}
           aria-label={i18n.common.remove}

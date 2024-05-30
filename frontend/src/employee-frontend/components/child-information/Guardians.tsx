@@ -13,7 +13,7 @@ import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { StaticChip } from 'lib-components/atoms/Chip'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -145,7 +145,7 @@ export default React.memo(function Guardians() {
                           ? i18n.personProfile.evakaRights.statusDenied
                           : i18n.personProfile.evakaRights.statusAllowed}
                       </StaticChip>
-                      <IconButton
+                      <IconOnlyButton
                         icon={faPen}
                         aria-label={i18n.common.edit}
                         onClick={() => setEditingEvakaRights(guardian.id)}

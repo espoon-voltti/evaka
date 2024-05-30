@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { TooltipWithoutAnchor } from 'lib-components/atoms/Tooltip'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -47,7 +47,7 @@ export default function TlEvent<T extends WithRange>({
             <HeaderInner>
               {renderer.NestedContent && (
                 <ExpanderButton data-qa="event-expander-button">
-                  <IconButton
+                  <IconOnlyButton
                     icon={open ? faChevronUp : faChevronDown}
                     size="xs"
                     aria-label={open ? 'sulje' : 'avaa'}

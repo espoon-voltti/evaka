@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -103,7 +103,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
               data-qa="group-selector-button"
             />
             {onSearch && (
-              <IconButton
+              <IconOnlyButton
                 onClick={onSearch}
                 icon={faSearch}
                 aria-label={i18n.common.search}

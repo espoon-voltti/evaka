@@ -17,7 +17,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fasInfo, faTimes } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
-import { IconButton } from '../atoms/buttons/IconButton'
+import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
 import { desktopMin } from '../breakpoints'
 import { useTranslations } from '../i18n'
 import { defaultMargins, SpacingSize } from '../white-space'
@@ -311,7 +311,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
           {info}
         </InfoContainer>
 
-        <IconButton
+        <IconOnlyButton
           onClick={close}
           icon={faTimes}
           aria-label={i18n.common.close}

@@ -24,7 +24,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -519,7 +519,7 @@ function StaffAttendanceDetailsModal<
                       data-qa="departure-time-input"
                     />
                     <Gap size="xs" horizontal />
-                    <IconButton
+                    <IconOnlyButton
                       icon={faTrash}
                       onClick={() => removeAttendance(index)}
                       aria-label={i18n.common.remove}

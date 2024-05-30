@@ -34,7 +34,7 @@ import {
 import useRouteParams from 'lib-common/useRouteParams'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -636,13 +636,13 @@ export default React.memo(function VasuTemplateEditor() {
                     {!readonly && (
                       <div className="hover-toolbar">
                         <FixedSpaceRow spacing="xs" className="hover-toolbar">
-                          <IconButton
+                          <IconOnlyButton
                             icon={faArrowUp}
                             onClick={() => moveSection(sectionIndex, 'up')}
                             disabled={sectionIndex === 0}
                             aria-label={i18n.vasuTemplates.moveUp}
                           />
-                          <IconButton
+                          <IconOnlyButton
                             icon={faArrowDown}
                             onClick={() => moveSection(sectionIndex, 'down')}
                             disabled={
@@ -651,7 +651,7 @@ export default React.memo(function VasuTemplateEditor() {
                             }
                             aria-label={i18n.vasuTemplates.moveDown}
                           />
-                          <IconButton
+                          <IconOnlyButton
                             icon={faTrash}
                             onClick={() => removeSection(sectionIndex)}
                             disabled={section.questions.length > 0}
@@ -681,7 +681,7 @@ export default React.memo(function VasuTemplateEditor() {
                                 spacing="xs"
                                 className="hover-toolbar"
                               >
-                                <IconButton
+                                <IconOnlyButton
                                   icon={faArrowUp}
                                   onClick={() =>
                                     moveQuestion(
@@ -693,7 +693,7 @@ export default React.memo(function VasuTemplateEditor() {
                                   disabled={questionIndex === 0}
                                   aria-label={i18n.vasuTemplates.moveUp}
                                 />
-                                <IconButton
+                                <IconOnlyButton
                                   icon={faArrowDown}
                                   onClick={() =>
                                     moveQuestion(
@@ -708,7 +708,7 @@ export default React.memo(function VasuTemplateEditor() {
                                   }
                                   aria-label={i18n.vasuTemplates.moveDown}
                                 />
-                                <IconButton
+                                <IconOnlyButton
                                   icon={faTrash}
                                   disabled={question.ophKey !== null}
                                   onClick={() =>

@@ -43,7 +43,7 @@ import LocalDate from 'lib-common/local-date'
 import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -485,7 +485,7 @@ const TimesForm = React.memo(function TimesForm({
       <TimeInputF bind={startTime} data-qa="start" />
       <span>-</span>
       <TimeInputF bind={endTime} data-qa="end" />
-      <IconButton
+      <IconOnlyButton
         icon={faTrash}
         aria-label={i18n.common.remove}
         data-qa="remove-btn"
@@ -540,7 +540,7 @@ const AbsenceForm = React.memo(function AbsenceForm({
         }
       </AbsenceLabel>
       <SelectF bind={bind} data-qa="type-select" />
-      <IconButton
+      <IconOnlyButton
         data-qa="remove-btn"
         icon={faTrash}
         aria-label={i18n.common.remove}

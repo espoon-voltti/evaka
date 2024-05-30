@@ -18,7 +18,7 @@ import {
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -192,7 +192,7 @@ const ItemDescription = React.memo(function ItemDescription({
             />
           </TabletAndDesktop>
           <MobileOnly>
-            <IconButton
+            <IconOnlyButton
               onClick={toggleExpanded}
               data-qa={`${dataQa}-button`}
               icon={expanded ? faChevronUp : faChevronDown}
@@ -288,14 +288,14 @@ const Pagination = React.memo(function Pagination({
 
   return (
     <FixedSpaceRow alignItems="center" justifyContent="flex-end">
-      <IconButton
+      <IconOnlyButton
         icon={faChevronLeft}
         aria-label={t.children.pedagogicalDocuments.previousPage}
         disabled={page === 0}
         onClick={() => setPage(page - 1)}
       />
       <div>{t.children.pedagogicalDocuments.pageCount(page + 1, total)}</div>
-      <IconButton
+      <IconOnlyButton
         icon={faChevronRight}
         aria-label={t.children.pedagogicalDocuments.nextPage}
         disabled={page + 1 >= total}

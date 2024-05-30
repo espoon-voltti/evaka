@@ -20,7 +20,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -372,13 +372,13 @@ const ActiveDateRangeSelector = React.memo(function ActiveDateRangeSelector({
         {startDate.format('dd.MM.')}–{endDate.format('dd.MM.yyyy')}
       </ColoredH3>
       <FixedSpaceRow spacing="xxs">
-        <IconButton
+        <IconOnlyButton
           icon={faChevronLeft}
           onClick={() => setSelectedDate(subUnitOfTime(selectedDate))}
           data-qa="previous-week"
           aria-label={i18n.unit.calendar.previousWeek}
         />
-        <IconButton
+        <IconOnlyButton
           icon={faChevronRight}
           onClick={() => setSelectedDate(addUnitOfTime(selectedDate))}
           data-qa="next-week"

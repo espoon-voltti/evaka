@@ -13,7 +13,7 @@ import { Timeline } from 'lib-common/generated/api-types/timeline'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import PageWrapper from 'lib-components/layout/PageWrapper'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
@@ -100,12 +100,12 @@ const TimelineView = React.memo(function TimelineView({
       </H2>
       <Gap size="s" />
       <FixedSpaceRow>
-        <IconButton
+        <IconOnlyButton
           icon={faMagnifyingGlassPlus}
           aria-label="Zoom in"
           onClick={() => setZoom((prev) => Math.min(100, prev + 2))}
         />
-        <IconButton
+        <IconOnlyButton
           icon={faMagnifyingGlassMinus}
           aria-label="Zoom out"
           onClick={() => setZoom((prev) => Math.max(1, prev - 2))}

@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -95,7 +95,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
                   <Td>{holiday.reservationDeadline?.format()}</Td>
                   <Td>
                     <FixedSpaceRow spacing="s">
-                      <IconButton
+                      <IconOnlyButton
                         icon={faPen}
                         data-qa="btn-edit"
                         onClick={() =>
@@ -103,7 +103,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
                         }
                         aria-label={i18n.common.edit}
                       />
-                      <IconButton
+                      <IconOnlyButton
                         icon={faTrash}
                         data-qa="btn-delete"
                         onClick={() => setPeriodToDelete(holiday.id)}
@@ -140,7 +140,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
                   <Td>{row.title.fi}</Td>
                   <Td>
                     <FixedSpaceRow spacing="s">
-                      <IconButton
+                      <IconOnlyButton
                         icon={faPen}
                         data-qa="btn-edit"
                         onClick={() =>
@@ -148,7 +148,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
                         }
                         aria-label={i18n.common.edit}
                       />
-                      <IconButton
+                      <IconOnlyButton
                         icon={faTrash}
                         data-qa="btn-delete"
                         onClick={() => setQuestionnaireToDelete(row.id)}

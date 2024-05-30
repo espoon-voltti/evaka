@@ -25,7 +25,7 @@ import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Button from 'lib-components/atoms/buttons/Button'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TreeDropdown, {
@@ -577,7 +577,7 @@ export default React.memo(function MessageEditor({
           <Title>{title}</Title>
           <HeaderButtonContainer>
             {expandedView ? (
-              <IconButton
+              <IconOnlyButton
                 icon={faDownLeftAndUpRightToCenter}
                 onClick={toggleExpandedView}
                 color="white"
@@ -586,7 +586,7 @@ export default React.memo(function MessageEditor({
                 aria-label={i18n.common.open}
               />
             ) : (
-              <IconButton
+              <IconOnlyButton
                 icon={faUpRightAndDownLeftFromCenter}
                 onClick={toggleExpandedView}
                 color="white"
@@ -595,7 +595,7 @@ export default React.memo(function MessageEditor({
                 aria-label={i18n.common.close}
               />
             )}
-            <IconButton
+            <IconOnlyButton
               icon={faTimes}
               onClick={onCloseHandler}
               color="white"

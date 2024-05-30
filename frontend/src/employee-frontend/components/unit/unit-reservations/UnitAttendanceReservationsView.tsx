@@ -13,7 +13,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -205,7 +205,7 @@ export default React.memo(function UnitAttendanceReservationsView({
         <Gap size="s" />
         <FixedSpaceRow alignItems="center">
           <Label id="legend-title-label">{i18n.absences.legendTitle}</Label>
-          <IconButton
+          <IconOnlyButton
             icon={legendVisible ? faChevronUp : faChevronDown}
             onClick={() => setLegendVisible(!legendVisible)}
             aria-labelledby="legend-title-label"

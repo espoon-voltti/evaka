@@ -44,7 +44,7 @@ import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -547,7 +547,7 @@ const StaffAttendanceEditor = ({
             />
           </div>
           <IconContainer>
-            <IconButton
+            <IconOnlyButton
               icon={faTrash}
               onClick={onDelete}
               aria-label={i18n.common.remove}

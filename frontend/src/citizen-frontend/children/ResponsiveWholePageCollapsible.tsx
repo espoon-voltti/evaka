@@ -10,7 +10,7 @@ import styled, { useTheme } from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
 import {
   CollapsibleContentAreaProps,
@@ -185,6 +185,6 @@ const CollapsibleContainer = styled.div<{ padding: SpacingSize }>`
   }
 `
 
-const NonShrinkingIconButton = styled(IconButton)`
+const NonShrinkingIconButton = styled(IconOnlyButton)`
   flex-shrink: 0;
 `

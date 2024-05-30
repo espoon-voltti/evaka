@@ -10,7 +10,7 @@ import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
 import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import { faLockOpenAlt, faTimes } from 'lib-icons'
@@ -83,7 +83,7 @@ export const LoggedInUser = React.memo(function LoggedInUser({
         u?.employeeId && u?.pinLoginActive ? (
           menuOpen ? (
             <>
-              <IconButton
+              <IconOnlyButton
                 icon={faTimes}
                 color="white"
                 onClick={toggleMenu}

@@ -14,7 +14,7 @@ import {
   vasuQuestionTypes
 } from 'lib-common/api-types/vasu'
 import { VasuSection } from 'lib-common/generated/api-types/vasu'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -247,7 +247,7 @@ export default React.memo(function CreateQuestionModal({
                   }
                   width="m"
                 />
-                <IconButton
+                <IconOnlyButton
                   icon={faTrash}
                   disabled={options.length < 2}
                   onClick={(e) => {
@@ -261,7 +261,7 @@ export default React.memo(function CreateQuestionModal({
                 />
                 {type === 'RADIO_GROUP' && (
                   <div>
-                    <IconButton
+                    <IconOnlyButton
                       icon={faCalendarAlt}
                       onClick={(e) => {
                         e.preventDefault()
@@ -341,7 +341,7 @@ export default React.memo(function CreateQuestionModal({
                     }
                     width="m"
                   />
-                  <IconButton
+                  <IconOnlyButton
                     icon={faTrash}
                     disabled={keys.length < 2}
                     onClick={(e) => {

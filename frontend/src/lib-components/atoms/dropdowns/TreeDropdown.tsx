@@ -16,7 +16,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faCheck, faChevronDown, faDash } from 'lib-icons'
 
 import { useTranslations } from '../../i18n'
-import { IconButton } from '../buttons/IconButton'
+import { IconOnlyButton } from '../buttons/IconOnlyButton'
 
 const DropdownContainer = styled.div`
   border: 1px solid ${(p) => p.theme.colors.grayscale.g70};
@@ -234,7 +234,7 @@ function _TreeLevel<N extends TreeNode>({
         </Box>
         <label htmlFor={id}>{node.text}</label>
         {node.children.length > 0 && (
-          <IconButton
+          <IconOnlyButton
             icon={expanded ? faChevronUp : faChevronDown}
             onClick={() => setExpanded(!expanded)}
             aria-expanded={expanded}
@@ -377,7 +377,7 @@ function TreeDropdown<N extends TreeNode>({
         <DropdownContainerContent data-qa="selected-values">
           {treeValue.length === 0 ? placeholder : treeValue}
         </DropdownContainerContent>
-        <IconButton icon={faChevronDown} aria-label={i18n.expandDropdown} />
+        <IconOnlyButton icon={faChevronDown} aria-label={i18n.expandDropdown} />
       </DropdownContainer>
       {active && (
         <DropdownTreeListContainer

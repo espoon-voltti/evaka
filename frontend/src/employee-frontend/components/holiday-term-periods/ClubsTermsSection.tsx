@@ -12,7 +12,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
@@ -107,7 +107,7 @@ export default React.memo(function ClubTermsSection() {
                     </Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
-                        <IconButton
+                        <IconOnlyButton
                           icon={faPen}
                           data-qa="btn-edit"
                           onClick={() => onEditTermHandle(row)}

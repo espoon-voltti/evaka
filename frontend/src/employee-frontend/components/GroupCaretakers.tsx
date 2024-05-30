@@ -16,7 +16,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Button from 'lib-components/atoms/buttons/Button'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -142,7 +142,7 @@ export default React.memo(function GroupCaretakers() {
                       <div>
                         <StatusLabel status={getStatusLabelByDateRange(row)} />
                         <FixedSpaceRow>
-                          <IconButton
+                          <IconOnlyButton
                             onClick={() => {
                               setRowToEdit(row)
                               setModalOpen(true)
@@ -150,7 +150,7 @@ export default React.memo(function GroupCaretakers() {
                             icon={faPen}
                             aria-label={i18n.common.edit}
                           />
-                          <IconButton
+                          <IconOnlyButton
                             onClick={() => setRowToDelete(row)}
                             icon={faTrash}
                             aria-label={i18n.common.remove}

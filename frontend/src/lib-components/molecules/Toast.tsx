@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { faTimes } from 'lib-icons'
 
 import RoundIcon from '../atoms/RoundIcon'
-import { IconButton } from '../atoms/buttons/IconButton'
+import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
 import { tabletMin } from '../breakpoints'
 import { FixedSpaceRow } from '../layout/flex-helpers'
 import { modalZIndex } from '../layout/z-helpers'
@@ -82,7 +82,7 @@ const ToastContent = styled.div`
   flex-grow: 1;
 `
 
-const CloseButton = styled(IconButton)`
+const CloseButton = styled(IconOnlyButton)`
   align-self: flex-start;
   color: ${(p) => p.theme.colors.main.m2};
 `

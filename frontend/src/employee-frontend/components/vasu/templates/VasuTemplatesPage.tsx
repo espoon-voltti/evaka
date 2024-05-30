@@ -11,7 +11,7 @@ import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -98,12 +98,12 @@ export default React.memo(function VasuTemplatesPage() {
                           }
                           onSuccess={() => undefined}
                         />
-                        <IconButton
+                        <IconOnlyButton
                           icon={faPen}
                           onClick={() => setTemplateToEdit(template)}
                           aria-label={i18n.common.edit}
                         />
-                        <IconButton
+                        <IconOnlyButton
                           icon={faTrash}
                           disabled={template.documentCount > 0}
                           onClick={() => {

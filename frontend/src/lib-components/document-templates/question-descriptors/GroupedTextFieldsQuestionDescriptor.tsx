@@ -31,7 +31,7 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 
-import { IconButton } from '../../atoms/buttons/IconButton'
+import { IconOnlyButton } from '../../atoms/buttons/IconOnlyButton'
 import InlineButton from '../../atoms/buttons/InlineButton'
 import { useTranslations } from '../../i18n'
 
@@ -162,7 +162,7 @@ const View = React.memo(function View({
               <FixedSpaceRow>
                 <QuestionRow bind={row} />
                 {answerRows.length > 1 && (
-                  <IconButton
+                  <IconOnlyButton
                     icon={faTrash}
                     aria-label={i18n.common.remove}
                     onClick={() =>
@@ -266,7 +266,7 @@ const TemplateView = React.memo(function TemplateView({
             <FixedSpaceRow key={i}>
               <InputFieldF bind={elem} key={i} />
               {fieldLabelsElems.length > 1 && (
-                <IconButton
+                <IconOnlyButton
                   icon={faTrash}
                   onClick={() =>
                     fieldLabels.update((prev) => [

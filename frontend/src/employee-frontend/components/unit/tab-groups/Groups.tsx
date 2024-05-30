@@ -18,7 +18,7 @@ import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
@@ -171,7 +171,7 @@ export default React.memo(function Groups({
         <TitleContainer onClick={toggleAllGroups}>
           <H2 fitted>{i18n.unit.groups.title}</H2>
           <Gap size="XL" horizontal />
-          <IconButton
+          <IconOnlyButton
             icon={allGroupsAreOpen ? faAngleUp : faAngleDown}
             size="L"
             color="gray"

@@ -15,7 +15,7 @@ import {
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -227,7 +227,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           {isRead(props) && (props.editable || props.deletable) && (
             <FixedSpaceRow spacing="xs">
               {props.editable && (
-                <IconButton
+                <IconOnlyButton
                   icon={faPen}
                   onClick={props.onStartEdit}
                   size="s"
@@ -236,7 +236,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                 />
               )}
               {props.deletable && (
-                <IconButton
+                <IconOnlyButton
                   icon={faTrash}
                   onClick={() => setConfirmingDelete(true)}
                   size="s"

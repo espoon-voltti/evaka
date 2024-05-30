@@ -11,7 +11,7 @@ import { Action } from 'lib-common/generated/action'
 import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -115,7 +115,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
         >
           <FixedSpaceRow spacing="s" alignItems="center">
             {permittedActions.includes('UPDATE') && (
-              <IconButton
+              <IconOnlyButton
                 icon={faPen}
                 onClick={() => {
                   setActiveCoefficient(voucherCoefficient)
@@ -126,7 +126,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientRow({
               />
             )}
             {permittedActions.includes('DELETE') && (
-              <IconButton
+              <IconOnlyButton
                 icon={faTrash}
                 onClick={() => {
                   setActiveCoefficient(voucherCoefficient)

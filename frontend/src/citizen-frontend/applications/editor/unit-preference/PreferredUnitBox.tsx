@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
@@ -128,7 +128,7 @@ export default React.memo(function PreferredUnitBox({
         </FixedSpaceColumn>
       </MainColCenter>
       <MainColRight>
-        <IconButton
+        <IconOnlyButton
           icon={faTimes}
           color="gray"
           onClick={remove}

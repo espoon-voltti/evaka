@@ -21,7 +21,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -260,7 +260,7 @@ export default React.memo(function MarkAbsentBeforehand({
                                 data-qa="absence-row"
                               >
                                 <AbsenceDate>{`${absenceRange.start.format()} - ${absenceRange.end.format()}`}</AbsenceDate>
-                                <IconButton
+                                <IconOnlyButton
                                   icon={faTrash}
                                   onClick={() => {
                                     setDeleteRange(absenceRange)
@@ -280,7 +280,7 @@ export default React.memo(function MarkAbsentBeforehand({
                                 <AbsenceDate>
                                   {absenceRange.start.format()}
                                 </AbsenceDate>
-                                <IconButton
+                                <IconOnlyButton
                                   icon={faTrash}
                                   onClick={() => {
                                     setDeleteRange(absenceRange)

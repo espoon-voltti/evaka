@@ -23,7 +23,7 @@ import {
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputFieldF } from 'lib-components/atoms/form/InputField'
 import {
@@ -226,7 +226,7 @@ const OptionView = React.memo(function OptionView({
       <FixedSpaceColumn spacing="xxs">
         <FixedSpaceRow alignItems="center">
           <InputFieldF bind={label} hideErrorsBeforeTouched width="m" />
-          <IconButton
+          <IconOnlyButton
             icon={faTrash}
             aria-label={i18n.common.remove}
             onClick={onDelete}
@@ -275,7 +275,7 @@ const TemplateView = React.memo(function TemplateView({
             />
           </FixedSpaceRow>
         ))}
-        <IconButton
+        <IconOnlyButton
           icon={faPlus}
           aria-label={i18n.common.add}
           onClick={() => {

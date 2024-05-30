@@ -27,7 +27,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
   cancelMutation,
@@ -255,7 +255,7 @@ export default React.memo(function Group({
             {capitalizeFirstLetter(group.name)}
           </H3>
           <Gap size="L" horizontal />
-          <IconButton
+          <IconOnlyButton
             icon={open ? faAngleUp : faAngleDown}
             size="L"
             color="gray"

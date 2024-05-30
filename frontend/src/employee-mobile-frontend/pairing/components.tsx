@@ -5,7 +5,7 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -39,7 +39,7 @@ export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
   color: ${(p) => (p.$primary ? colors.grayscale.g0 : colors.main.m2)};
 `
 
-export const BackButton = styled(IconButton)`
+export const BackButton = styled(IconOnlyButton)`
   color: ${colors.main.m1};
   position: absolute;
 `

@@ -12,7 +12,7 @@ import {
 } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -174,14 +174,14 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
           </InlineButtons>
         ) : (
           <InlineButtons>
-            <IconButton
+            <IconOnlyButton
               data-qa="pedagogical-document-button-edit"
               onClick={() => setEditMode(true)}
               icon={faPen}
               disabled={submitting}
               aria-label={i18n.common.edit}
             />
-            <IconButton
+            <IconOnlyButton
               data-qa="pedagogical-document-button-delete"
               onClick={() => onDelete(pedagogicalDocument)}
               icon={faTrash}

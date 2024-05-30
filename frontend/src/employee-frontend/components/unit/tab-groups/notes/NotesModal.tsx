@@ -9,7 +9,7 @@ import { Result, wrapResult } from 'lib-common/api'
 import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { IconButton } from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { StickyNoteTab } from 'lib-components/employee/notes/StickyNoteTab'
 import { EditedNote } from 'lib-components/employee/notes/notes'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -237,7 +237,7 @@ export default React.memo(function NotesModal({
       <HeaderContainer>
         <Tabs>{tabs}</Tabs>
         <CloseContainer>
-          <IconButton
+          <IconOnlyButton
             icon={faTimes}
             onClick={onClose}
             data-qa="modal-close"
