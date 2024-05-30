@@ -9,74 +9,29 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { BaseProps } from '../../utils'
-import { IconSize } from '../icon-size'
+import { diameterByIconSize, IconSize } from '../icon-size'
 
-export interface ButtonProps {
-  size?: IconSize | undefined
-  gray?: boolean
-  white?: boolean
-  color?: string
-}
+import { useThrottledEventHandler } from './button-commons'
 
-const StyledButton = styled.button<ButtonProps>`
+const StyledButton = styled.button<{
+  $size: IconSize
+  $gray?: boolean
+  $white?: boolean
+  $color?: string
+}>`
   display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  width: calc(
-    12px +
-      ${(props: ButtonProps) => {
-        switch (props.size) {
-          case 's':
-            return '20px'
-          case 'm':
-            return '24px'
-          case 'L':
-            return '34px'
-          case 'XL':
-            return '64px'
-          default:
-            return '20px'
-        }
-      }}
-  );
-  height: calc(
-    12px +
-      ${(props: ButtonProps) => {
-        switch (props.size) {
-          case 's':
-            return '20px'
-          case 'm':
-            return '24px'
-          case 'L':
-            return '34px'
-          case 'XL':
-            return '64px'
-          default:
-            return '20px'
-        }
-      }}
-  );
-  font-size: ${(props: ButtonProps) => {
-    switch (props.size) {
-      case 's':
-        return '20px'
-      case 'm':
-        return '24px'
-      case 'L':
-        return '34px'
-      case 'XL':
-        return '64px'
-      default:
-        return '20px'
-    }
-  }};
+  width: calc(12px + ${(p) => diameterByIconSize(p.$size)}px);
+  height: calc(12px + ${(p) => diameterByIconSize(p.$size)}px);
+  font-size: ${(p) => diameterByIconSize(p.$size)}px;
   color: ${(p) =>
-    p.color
-      ? p.color
-      : p.gray
+    p.$color
+      ? p.$color
+      : p.$gray
         ? p.theme.colors.grayscale.g70
-        : p.white
+        : p.$white
           ? p.theme.colors.grayscale.g0
           : p.theme.colors.main.m2};
   border: none;
@@ -101,20 +56,20 @@ const StyledButton = styled.button<ButtonProps>`
 
   &:hover .icon-wrapper {
     color: ${(p) =>
-      p.color
+      p.$color
         ? p.color
-        : p.gray
+        : p.$gray
           ? p.theme.colors.grayscale.g70
-          : p.white
+          : p.$white
             ? p.theme.colors.grayscale.g0
             : p.theme.colors.main.m2Hover};
   }
 
   &:active .icon-wrapper {
     color: ${(p) =>
-      p.color
-        ? p.color
-        : p.gray
+      p.$color
+        ? p.$color
+        : p.$gray
           ? p.theme.colors.grayscale.g100
           : p.theme.colors.main.m2Active};
   }
@@ -131,22 +86,39 @@ const StyledButton = styled.button<ButtonProps>`
 
 export type IconButtonProps = {
   icon: IconDefinition
+  type?: 'button' | 'submit'
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   disabled?: boolean
-} & ButtonProps &
-  BaseProps &
+  size?: IconSize | undefined
+  gray?: boolean
+  white?: boolean
+  color?: string
+} & BaseProps &
   ({ 'aria-label': string } | { 'aria-labelledby': string })
 
 export default React.memo(function IconButton({
-  disabled,
   icon,
+  type = 'button',
+  onClick,
+  disabled,
+  size = 's',
+  gray,
+  white,
+  color,
+  className,
   ...props
 }: IconButtonProps) {
+  const handleOnClick = useThrottledEventHandler(onClick)
   return (
     <StyledButton
-      type="button"
+      type={type}
       disabled={disabled}
-      className={classNames(props.className, { disabled })}
+      className={classNames(className, { disabled })}
+      onClick={handleOnClick}
+      $size={size}
+      $gray={gray}
+      $white={white}
+      $color={color}
       {...props}
     >
       <div className="icon-wrapper">
