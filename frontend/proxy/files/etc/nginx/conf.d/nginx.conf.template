@@ -338,37 +338,34 @@ server {
   set $authUrl "<%= ENV["KEYCLOAK_URL"] %>";
   set $formActionUrl "<%= ENV["FORM_ACTION_URL"] %>";
 
+  <% if ENV["KEYCLOAK_ADMIN_ALLOWLIST"] %>
+  # https://www.keycloak.org/server/reverseproxy#_exposed_path_recommendations
+  location /auth/js/ {
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  location /auth/realms/ {
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  location /auth/resources/ {
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  location /auth/robots.txt {
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  <% end %>
+
   location /auth {
-    <% if ENV.key?("KEYCLOAK_PARAMETERS") && ENV["KEYCLOAK_PARAMETERS"] != "" %>
-    <%= ENV["KEYCLOAK_PARAMETERS"] %>
+    include keycloak-proxy.conf;
+    <% if ENV["KEYCLOAK_ADMIN_ALLOWLIST"] %>
+    <% ENV["KEYCLOAK_ADMIN_ALLOWLIST"].split(',').each do |entry| %>
+    allow <%= entry %>;
     <% end %>
-
-    <% if ENV["BASIC_AUTH_ENABLED"] == "true" %>
-    auth_basic "off";
+    deny all;
     <% end %>
-
-    add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self'; form-action 'self' ${formActionUrl}";
-
-    proxy_ssl_verify off;
-
-    proxy_http_version 1.1;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For "$http_x_forwarded_for, $realip_remote_addr";
-    proxy_set_header X-Forwarded-Host $http_host;
-    proxy_set_header X-Original-Forwarded-Proto "https";
-    proxy_set_header X-Request-ID $request_id;
-    proxy_set_header Host $http_host;
-
-    # Actual caching headers should be set by downstream API Gateways;
-    # this is just to prevent caching at the proxy level.
-    proxy_no_cache 1;
-    proxy_set_header X-Forwarded-Proto "https";
-
-    proxy_pass $authUrl;
-
-    proxy_buffer_size 32k;
-    proxy_buffers 8 32k;
-    proxy_busy_buffers_size 64k;
   }
   <% end %>
 
