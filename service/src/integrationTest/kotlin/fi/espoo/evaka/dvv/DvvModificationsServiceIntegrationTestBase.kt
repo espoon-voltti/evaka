@@ -6,7 +6,9 @@ package fi.espoo.evaka.dvv
 
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.DvvModificationsEnv
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.VtjXroadEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import java.security.cert.X509Certificate
@@ -35,8 +37,9 @@ class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
         dvvModificationsServiceClient =
             DvvModificationsServiceClient(
                 jsonMapper,
-                noCertCheckFuelManager(),
                 listOf(requestCustomizerMock),
+                EvakaEnv.fromEnvironment(env).copy(httpClientCertificateCheck = false),
+                VtjXroadEnv.fromEnvironment(env).copy(keyStore = null, trustStore = null),
                 DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl)
             )
         dvvModificationsService =
