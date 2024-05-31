@@ -8,7 +8,7 @@ import { Result, wrapResult } from 'lib-common/api'
 import { MessageType } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
-import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
+import { AsyncIconOnlyButton } from 'lib-components/atoms/buttons/AsyncIconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import { faBoxArchive } from 'lib-icons'
@@ -81,7 +81,7 @@ export function ThreadList({ items: messages, accountId, onArchive }: Props) {
           </ParticipantsAndPreview>
           <FixedSpaceRow>
             {onArchive && (
-              <AsyncIconButton
+              <AsyncIconOnlyButton
                 icon={faBoxArchive}
                 aria-label={i18n.common.archive}
                 data-qa="delete-thread-btn"

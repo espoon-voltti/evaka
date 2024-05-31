@@ -7,6 +7,7 @@ import { animated, useSpring } from '@react-spring/web'
 import classNames from 'classnames'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
+
 import { useTranslations } from 'lib-components/i18n'
 import { faCheck, faTimes } from 'lib-icons'
 

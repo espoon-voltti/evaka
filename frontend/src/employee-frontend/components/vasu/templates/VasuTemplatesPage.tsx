@@ -10,7 +10,7 @@ import { Loading, Result, wrapResult } from 'lib-common/api'
 import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
+import { AsyncIconOnlyButton } from 'lib-components/atoms/buttons/AsyncIconOnlyButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -91,8 +91,9 @@ export default React.memo(function VasuTemplatesPage() {
                     <Td>{template.documentCount}</Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
-                        <AsyncIconButton
+                        <AsyncIconOnlyButton
                           icon={faFileExport}
+                          aria-label="lol"
                           onClick={() =>
                             migrateVasuDocumentsResult({ id: template.id })
                           }
