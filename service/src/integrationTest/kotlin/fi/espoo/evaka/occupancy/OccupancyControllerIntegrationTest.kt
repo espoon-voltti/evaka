@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
@@ -504,19 +503,15 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 endDate = endDate,
                 creator = Creator.DVV
             )
-            val applicationId =
-                tx.insertTestApplication(
-                    status = ApplicationStatus.WAITING_PLACEMENT,
-                    childId = childId,
-                    guardianId = testAdult_1.id,
-                    type = type
-                )
-            val form =
-                DaycareFormV0.fromApplication2(validDaycareApplication)
-                    .copy(type = type, connectedDaycare = connectedDaycare)
-            tx.insertTestApplicationForm(applicationId, form)
-
-            applicationId
+            tx.insertTestApplication(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                childId = childId,
+                guardianId = testAdult_1.id,
+                type = type,
+                document =
+                    DaycareFormV0.fromApplication2(validDaycareApplication)
+                        .copy(type = type, connectedDaycare = connectedDaycare)
+            )
         }
 
     private fun getSpeculatedOccupancies(

@@ -25,8 +25,6 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestClubApplicationForm
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validClubApplication
@@ -88,24 +86,17 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = guardian.id,
-                        status = ApplicationStatus.CREATED,
-                        type = ApplicationType.DAYCARE
-                    )
-                    .also { id ->
-                        tx.insertTestApplicationForm(
-                            applicationId = id,
-                            document =
-                                validDaycareForm.copy(
-                                    guardian = guardianAsDaycareAdult,
-                                    apply =
-                                        validDaycareForm.apply.copy(
-                                            preferredUnits = listOf(testDaycare.id)
-                                        )
-                                )
+                    childId = testChild_1.id,
+                    guardianId = guardian.id,
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            guardian = guardianAsDaycareAdult,
+                            apply =
+                                validDaycareForm.apply.copy(preferredUnits = listOf(testDaycare.id))
                         )
-                    }
+                )
             }
 
         val (_, res, _) =
@@ -137,24 +128,19 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = guardian.id,
-                        status = ApplicationStatus.CREATED,
-                        type = ApplicationType.DAYCARE
-                    )
-                    .also { id ->
-                        tx.insertTestApplicationForm(
-                            applicationId = id,
-                            document =
-                                validDaycareForm.copy(
-                                    guardian = guardianAsDaycareAdult,
-                                    apply =
-                                        validDaycareForm.apply.copy(
-                                            preferredUnits = listOf(testSvebiDaycare.id)
-                                        )
+                    childId = testChild_1.id,
+                    guardianId = guardian.id,
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            guardian = guardianAsDaycareAdult,
+                            apply =
+                                validDaycareForm.apply.copy(
+                                    preferredUnits = listOf(testSvebiDaycare.id)
                                 )
                         )
-                    }
+                )
             }
 
         val (_, res, _) =
@@ -187,25 +173,18 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = guardian.id,
-                        status = ApplicationStatus.CREATED,
-                        hideFromGuardian = false,
-                        type = ApplicationType.DAYCARE
-                    )
-                    .also { id ->
-                        tx.insertTestApplicationForm(
-                            applicationId = id,
-                            document =
-                                validDaycareForm.copy(
-                                    guardian = guardianAsDaycareAdult,
-                                    apply =
-                                        validDaycareForm.apply.copy(
-                                            preferredUnits = listOf(testDaycare.id)
-                                        )
-                                )
+                    childId = testChild_1.id,
+                    guardianId = guardian.id,
+                    status = ApplicationStatus.CREATED,
+                    hideFromGuardian = false,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            guardian = guardianAsDaycareAdult,
+                            apply =
+                                validDaycareForm.apply.copy(preferredUnits = listOf(testDaycare.id))
                         )
-                    }
+                )
             }
         val (_, res, _) =
             http
@@ -232,17 +211,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = guardian.id,
-                        status = ApplicationStatus.CREATED,
-                        type = ApplicationType.CLUB
-                    )
-                    .also { id ->
-                        tx.insertTestClubApplicationForm(
-                            applicationId = id,
-                            document = validClubForm
-                        )
-                    }
+                    childId = testChild_1.id,
+                    guardianId = guardian.id,
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.CLUB,
+                    document = validClubForm
+                )
             }
 
         val (_, res, _) =
@@ -310,25 +284,18 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = guardian.id,
-                        status = ApplicationStatus.CREATED,
-                        hideFromGuardian = true,
-                        type = ApplicationType.DAYCARE
-                    )
-                    .also { id ->
-                        tx.insertTestApplicationForm(
-                            applicationId = id,
-                            document =
-                                validDaycareForm.copy(
-                                    guardian = guardianAsDaycareAdult,
-                                    apply =
-                                        validDaycareForm.apply.copy(
-                                            preferredUnits = listOf(testDaycare.id)
-                                        )
-                                )
+                    childId = testChild_1.id,
+                    guardianId = guardian.id,
+                    status = ApplicationStatus.CREATED,
+                    hideFromGuardian = true,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            guardian = guardianAsDaycareAdult,
+                            apply =
+                                validDaycareForm.apply.copy(preferredUnits = listOf(testDaycare.id))
                         )
-                    }
+                )
             }
         val (_, res, _) =
             http
@@ -350,24 +317,17 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = testAdult_1.id,
-                        status = ApplicationStatus.CREATED,
-                        type = ApplicationType.DAYCARE
-                    )
-                    .also { id ->
-                        tx.insertTestApplicationForm(
-                            applicationId = id,
-                            document =
-                                validDaycareForm.copy(
-                                    guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
-                                    apply =
-                                        validDaycareForm.apply.copy(
-                                            preferredUnits = listOf(testDaycare.id)
-                                        )
-                                )
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    status = ApplicationStatus.CREATED,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        validDaycareForm.copy(
+                            guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
+                            apply =
+                                validDaycareForm.apply.copy(preferredUnits = listOf(testDaycare.id))
                         )
-                    }
+                )
             }
 
         val (_, res, _) =
@@ -392,18 +352,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = testChild_1.id,
-                        guardianId = testAdult_1.id,
-                        status = ApplicationStatus.CREATED,
-                        sentDate = manuallySetSentDate,
-                        type = ApplicationType.DAYCARE
-                    )
-                    .also { id ->
-                        tx.insertTestApplicationForm(
-                            applicationId = id,
-                            document = validDaycareForm
-                        )
-                    }
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    status = ApplicationStatus.CREATED,
+                    sentDate = manuallySetSentDate,
+                    type = ApplicationType.DAYCARE,
+                    document = validDaycareForm
+                )
             }
 
         val (_, res, _) =

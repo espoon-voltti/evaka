@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.snDefaultDaycare
 import java.time.LocalDate
@@ -39,32 +38,30 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
             val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
             daycareId = tx.insert(DevDaycare(areaId = areaId))
+            form =
+                DaycareFormV0(
+                    type = ApplicationType.DAYCARE,
+                    child = Child(dateOfBirth = LocalDate.of(2020, 1, 1)),
+                    guardian = Adult(),
+                    apply = Apply(preferredUnits = listOf(daycareId)),
+                    preferredStartDate = LocalDate.of(2022, 1, 1),
+                    serviceNeedOption =
+                        ServiceNeedOption(
+                            id = snDefaultDaycare.id,
+                            nameFi = snDefaultDaycare.nameFi,
+                            nameEn = snDefaultDaycare.nameEn,
+                            nameSv = snDefaultDaycare.nameSv,
+                            validPlacementType = null
+                        )
+                )
             applicationId =
                 tx.insertTestApplication(
                     childId = childId,
                     guardianId = guardianId,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document = form
                 )
-        }
-        form =
-            DaycareFormV0(
-                type = ApplicationType.DAYCARE,
-                child = Child(dateOfBirth = LocalDate.of(2020, 1, 1)),
-                guardian = Adult(),
-                apply = Apply(preferredUnits = listOf(daycareId)),
-                preferredStartDate = LocalDate.of(2022, 1, 1),
-                serviceNeedOption =
-                    ServiceNeedOption(
-                        id = snDefaultDaycare.id,
-                        nameFi = snDefaultDaycare.nameFi,
-                        nameEn = snDefaultDaycare.nameEn,
-                        nameSv = snDefaultDaycare.nameSv,
-                        validPlacementType = null
-                    )
-            )
-        db.transaction {
-            it.insertServiceNeedOptions()
-            it.insertTestApplicationForm(applicationId, form)
+            tx.insertServiceNeedOptions()
         }
     }
 

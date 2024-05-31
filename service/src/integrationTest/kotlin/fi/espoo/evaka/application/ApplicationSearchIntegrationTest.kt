@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolClub45
@@ -327,33 +326,28 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val applicationId =
             db.transaction { tx ->
                 tx.insertTestApplication(
-                        childId = child.id,
-                        guardianId = guardian.id,
-                        type = type,
-                        additionalDaycareApplication = additionalDaycareApplication
-                    )
-                    .also { id ->
-                        val form =
-                            DaycareFormV0.fromApplication2(
-                                    validDaycareApplication.copy(
-                                        childId = child.id,
-                                        guardianId = guardian.id,
-                                        type = type
-                                    )
+                    childId = child.id,
+                    guardianId = guardian.id,
+                    type = type,
+                    additionalDaycareApplication = additionalDaycareApplication,
+                    document =
+                        DaycareFormV0.fromApplication2(
+                                validDaycareApplication.copy(
+                                    childId = child.id,
+                                    guardianId = guardian.id,
+                                    type = type
                                 )
-                                .copy(urgent = urgent)
-                                .copy(extendedCare = extendedCare)
-                                .copy(connectedDaycare = connectedDaycare)
-                                .copy(serviceNeedOption = serviceNeedOption)
-                                .let {
-                                    if (preparatory)
-                                        it.copy(
-                                            careDetails = it.careDetails.copy(preparatory = true)
-                                        )
-                                    else it
-                                }
-                        tx.insertTestApplicationForm(id, form)
-                    }
+                            )
+                            .copy(urgent = urgent)
+                            .copy(extendedCare = extendedCare)
+                            .copy(connectedDaycare = connectedDaycare)
+                            .copy(serviceNeedOption = serviceNeedOption)
+                            .let {
+                                if (preparatory)
+                                    it.copy(careDetails = it.careDetails.copy(preparatory = true))
+                                else it
+                            }
+                )
             }
 
         if (attachment) {

@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.ApplicationId
@@ -36,6 +37,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
+import fi.espoo.evaka.test.validDaycareApplication
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertFalse
@@ -84,7 +86,8 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                 it.insertTestApplication(
                     childId = childId,
                     guardianId = guardianId,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
             decisionId =
                 it.insertTestDecision(

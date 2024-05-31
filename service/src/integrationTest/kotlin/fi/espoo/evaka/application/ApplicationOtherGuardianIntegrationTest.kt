@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -212,27 +211,23 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(expectedOtherGuardians + guardian.id, getSfiMessageRecipients())
     }
 
-    private fun insertTestApplication(preferredStartDate: LocalDate) =
+    private fun insertTestApplication(preferredStartDate: LocalDate): ApplicationId =
         db.transaction { tx ->
-            val application =
-                tx.insertTestApplication(
-                    id = application,
-                    type = ApplicationType.DAYCARE,
-                    status = ApplicationStatus.CREATED,
-                    guardianId = guardian.id,
-                    childId = child.id,
-                )
-            tx.insertTestApplicationForm(
-                application,
-                DaycareFormV0(
-                    type = ApplicationType.DAYCARE,
-                    guardian = guardian.toDaycareFormAdult(),
-                    child = child.toDaycareFormChild(),
-                    apply = Apply(preferredUnits = listOf(daycare.id)),
-                    preferredStartDate = preferredStartDate,
-                )
+            tx.insertTestApplication(
+                id = application,
+                type = ApplicationType.DAYCARE,
+                status = ApplicationStatus.CREATED,
+                guardianId = guardian.id,
+                childId = child.id,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        guardian = guardian.toDaycareFormAdult(),
+                        child = child.toDaycareFormChild(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        preferredStartDate = preferredStartDate,
+                    )
             )
-            application
         }
 
     private fun insertFosterParent(clock: EvakaClock) =

@@ -9,6 +9,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -44,6 +45,7 @@ import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDefaultPartDayDaycare
+import fi.espoo.evaka.test.validDaycareApplication
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -953,6 +955,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     status = ApplicationStatus.WAITING_DECISION,
                     type = ApplicationType.DAYCARE,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
                 .also { applicationId ->
                     tx.insertTestPlacementPlan(
@@ -985,6 +988,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     status = ApplicationStatus.WAITING_DECISION,
                     type = ApplicationType.PRESCHOOL,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
                 .also { applicationId ->
                     tx.insertTestPlacementPlan(
@@ -1095,7 +1099,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
-                    status = ApplicationStatus.WAITING_DECISION
+                    status = ApplicationStatus.WAITING_DECISION,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
                 .also { applicationId ->
                     tx.insertTestPlacementPlan(
@@ -1125,7 +1130,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
-                    status = ApplicationStatus.WAITING_DECISION
+                    status = ApplicationStatus.WAITING_DECISION,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
                 .also { applicationId ->
                     tx.insertTestPlacementPlan(
@@ -1162,7 +1168,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
-                    status = ApplicationStatus.WAITING_DECISION
+                    status = ApplicationStatus.WAITING_DECISION,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
                 .also { applicationId ->
                     tx.insertTestPlacementPlan(
@@ -1200,7 +1207,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
-                    status = ApplicationStatus.WAITING_DECISION
+                    status = ApplicationStatus.WAITING_DECISION,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
                 .also { applicationId ->
                     tx.insertTestPlacementPlan(
@@ -1238,7 +1246,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.PRESCHOOL,
-                    status = ApplicationStatus.WAITING_DECISION
+                    status = ApplicationStatus.WAITING_DECISION,
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
                 )
                 .also { applicationId ->
                     tx.insertTestPlacementPlan(

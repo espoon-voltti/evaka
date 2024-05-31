@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
@@ -485,16 +484,12 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         status: ApplicationStatus = ApplicationStatus.SENT
     ): ApplicationId {
         return db.transaction { tx ->
-            val applicationId =
-                tx.insertTestApplication(
-                    status = status,
-                    childId = childId,
-                    guardianId = testAdult_1.id,
-                    transferApplication = true,
-                    type = type
-                )
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
+            tx.insertTestApplication(
+                status = status,
+                childId = childId,
+                guardianId = testAdult_1.id,
+                transferApplication = true,
+                type = type,
                 document =
                     DaycareFormV0.fromApplication2(validDaycareApplication)
                         .copy(
@@ -503,7 +498,6 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                             connectedDaycare = preschoolDaycare
                         )
             )
-            applicationId
         }
     }
 
@@ -514,15 +508,11 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId = testChild_1.id
     ): ApplicationId {
         return db.transaction { tx ->
-            val applicationId =
-                tx.insertTestApplication(
-                    status = ApplicationStatus.SENT,
-                    childId = childId,
-                    guardianId = testAdult_1.id,
-                    type = type
-                )
-            tx.insertTestApplicationForm(
-                applicationId = applicationId,
+            tx.insertTestApplication(
+                status = ApplicationStatus.SENT,
+                childId = childId,
+                guardianId = testAdult_1.id,
+                type = type,
                 document =
                     DaycareFormV0.fromApplication2(validDaycareApplication).let { form ->
                         form.copy(
@@ -532,7 +522,6 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     }
             )
-            applicationId
         }
     }
 

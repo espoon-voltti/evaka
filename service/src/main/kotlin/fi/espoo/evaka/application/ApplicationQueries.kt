@@ -11,6 +11,7 @@ import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_ONL
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_ONLY
+import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.exhaust
@@ -63,19 +64,21 @@ enum class ApplicationSortDirection {
 }
 
 fun Database.Transaction.insertApplication(
+    now: HelsinkiDateTime,
     type: ApplicationType,
     guardianId: PersonId,
     childId: ChildId,
     origin: ApplicationOrigin,
-    hideFromGuardian: Boolean = false,
-    sentDate: LocalDate? = null,
-    allowOtherGuardianAccess: Boolean = false,
+    hideFromGuardian: Boolean,
+    sentDate: LocalDate?,
+    allowOtherGuardianAccess: Boolean,
+    document: DatabaseForm
 ): ApplicationId =
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access)
-VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)})
+INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)})
 RETURNING id
 """
             )

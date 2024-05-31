@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -47,23 +46,21 @@ class ApplicationAccessControlTest : AccessControlTest() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            val areaId = tx.insert(DevCareArea())
+            daycareId = tx.insert(DevDaycare(areaId = areaId))
             applicationId =
                 tx.insertTestApplication(
                     guardianId = creatorCitizen.id,
                     childId = childId,
-                    type = ApplicationType.DAYCARE
-                )
-            val areaId = tx.insert(DevCareArea())
-            daycareId = tx.insert(DevDaycare(areaId = areaId))
-            tx.insertTestApplicationForm(
-                applicationId,
-                DaycareFormV0(
                     type = ApplicationType.DAYCARE,
-                    child = Child(dateOfBirth = LocalDate.of(2019, 1, 1)),
-                    Adult(),
-                    apply = Apply(preferredUnits = listOf(daycareId))
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = LocalDate.of(2019, 1, 1)),
+                            Adult(),
+                            apply = Apply(preferredUnits = listOf(daycareId))
+                        )
                 )
-            )
         }
     }
 

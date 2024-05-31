@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.getValidDaycareApplication
@@ -442,11 +441,13 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     dueDate = dueDate,
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
-                    type = ApplicationType.DAYCARE
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0.fromApplication2(
+                                getValidDaycareApplication(shiftCare = shiftCare)
+                            )
+                            .copy(urgent = urgent)
                 )
-            val validDaycareForm =
-                DaycareFormV0.fromApplication2(getValidDaycareApplication(shiftCare = shiftCare))
-            tx.insertTestApplicationForm(applicationId, validDaycareForm.copy(urgent = urgent))
             tx.fetchApplicationDetails(applicationId)!!
         }
 }

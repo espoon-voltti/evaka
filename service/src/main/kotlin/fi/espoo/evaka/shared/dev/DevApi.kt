@@ -17,9 +17,6 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
-import fi.espoo.evaka.application.persistence.DatabaseForm
-import fi.espoo.evaka.application.persistence.club.ClubFormV0
-import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistance.DaycareAssistanceLevel
 import fi.espoo.evaka.assistance.OtherAssistanceMeasureType
 import fi.espoo.evaka.assistance.PreschoolAssistanceLevel
@@ -253,7 +250,7 @@ class DevApi(
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
     private val env: EvakaEnv,
-    private val bucketEnv: BucketEnv,
+    bucketEnv: BucketEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val featureConfig: FeatureConfig
 ) {
@@ -712,6 +709,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/applications")
     fun createApplications(
         db: Database,
+        clock: EvakaClock,
         @RequestBody applications: List<DevApplicationWithForm>
     ): List<ApplicationId> =
         db.connect { dbc ->
@@ -726,23 +724,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             }
                             .execute()
                     }
-                    tx.insertApplicationForm(
-                        DevApplicationForm(
-                            applicationId = id,
-                            revision = 1,
-                            document =
-                                if (application.type == ApplicationType.CLUB) {
-                                    ClubFormV0.fromForm2(application.form, false, false)
-                                } else {
-                                    DaycareFormV0.fromForm2(
-                                        application.form,
-                                        application.type,
-                                        false,
-                                        false
-                                    )
-                                }
-                        )
-                    )
                     id
                 }
             }
@@ -2162,16 +2143,8 @@ data class DevApplicationWithForm(
     val transferApplication: Boolean,
     val allowOtherGuardianAccess: Boolean = true,
     val otherGuardians: List<PersonId>,
-    val form: ApplicationForm
-)
-
-data class DevApplicationForm(
-    val id: UUID? = UUID.randomUUID(),
-    val applicationId: ApplicationId,
-    val createdDate: HelsinkiDateTime? = HelsinkiDateTime.now(),
-    val revision: Int,
-    val document: DatabaseForm,
-    val updated: HelsinkiDateTime? = HelsinkiDateTime.now()
+    val form: ApplicationForm,
+    val formModified: HelsinkiDateTime
 )
 
 data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: EmployeeId)

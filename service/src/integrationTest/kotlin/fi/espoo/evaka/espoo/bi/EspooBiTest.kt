@@ -76,7 +76,6 @@ import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.insertTestDecision
@@ -465,29 +464,25 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
         daycare: DaycareId? = null
     ): ApplicationId =
         insertTestApplication(
-                type = ApplicationType.DAYCARE,
-                childId = insertTestChild(),
-                guardianId = insert(DevPerson(), DevPersonType.RAW_ROW)
-            )
-            .also {
-                insertTestApplicationForm(
-                    it,
-                    DaycareFormV0(
-                        type = ApplicationType.DAYCARE,
-                        connectedDaycare = false,
-                        urgent = true,
-                        careDetails =
-                            CareDetails(
-                                assistanceNeeded = true,
-                            ),
-                        extendedCare = true,
-                        child = Child(dateOfBirth = null),
-                        guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(daycare ?: insertTestDaycare())),
-                        preferredStartDate = LocalDate.of(2019, 1, 1)
-                    )
+            type = ApplicationType.DAYCARE,
+            childId = insertTestChild(),
+            guardianId = insert(DevPerson(), DevPersonType.RAW_ROW),
+            document =
+                DaycareFormV0(
+                    type = ApplicationType.DAYCARE,
+                    connectedDaycare = false,
+                    urgent = true,
+                    careDetails =
+                        CareDetails(
+                            assistanceNeeded = true,
+                        ),
+                    extendedCare = true,
+                    child = Child(dateOfBirth = null),
+                    guardian = Adult(),
+                    apply = Apply(preferredUnits = listOf(daycare ?: insertTestDaycare())),
+                    preferredStartDate = LocalDate.of(2019, 1, 1)
                 )
-            }
+        )
 
     private fun Database.Transaction.insertTestServiceNeedOption(): ServiceNeedOptionId =
         ServiceNeedOptionId(UUID.randomUUID()).also {

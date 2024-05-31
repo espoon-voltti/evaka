@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -77,15 +76,11 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun addDaycareApplication(status: ApplicationStatus = ApplicationStatus.SENT) {
         db.transaction { tx ->
-            val appId =
-                tx.insertTestApplication(
-                    status = status,
-                    childId = childId,
-                    guardianId = guardianId,
-                    type = ApplicationType.DAYCARE
-                )
-            tx.insertTestApplicationForm(
-                applicationId = appId,
+            tx.insertTestApplication(
+                status = status,
+                childId = childId,
+                guardianId = guardianId,
+                type = ApplicationType.DAYCARE,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )
         }

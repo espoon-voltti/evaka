@@ -46,7 +46,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -778,18 +777,8 @@ fun Database.Transaction.insertApplication(
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi",
     serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
-    transferApplication: Boolean = false
+    transferApplication: Boolean = false,
 ): ApplicationDetails {
-    insertTestApplication(
-        id = applicationId,
-        sentDate = sentDate,
-        dueDate = null,
-        status = status,
-        guardianId = guardian.id,
-        childId = child.id,
-        transferApplication = transferApplication,
-        type = appliedType.toApplicationType()
-    )
     val application =
         ApplicationDetails(
             id = applicationId,
@@ -885,8 +874,15 @@ fun Database.Transaction.insertApplication(
             attachments = listOf(),
             hasOtherGuardian = false,
         )
-    insertTestApplicationForm(
-        applicationId = applicationId,
+    insertTestApplication(
+        id = applicationId,
+        sentDate = sentDate,
+        dueDate = null,
+        status = status,
+        guardianId = guardian.id,
+        childId = child.id,
+        transferApplication = transferApplication,
+        type = appliedType.toApplicationType(),
         document = DaycareFormV0.fromApplication2(application)
     )
     return application

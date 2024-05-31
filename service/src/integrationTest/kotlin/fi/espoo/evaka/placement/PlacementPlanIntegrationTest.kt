@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -424,30 +423,26 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         preparatory: Boolean = false
     ): ApplicationId =
         db.transaction { tx ->
-            val applicationId =
-                tx.insertTestApplication(
-                    status = status,
-                    guardianId = adult.id,
-                    childId = child.id,
-                    type = type
-                )
             val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
-            tx.insertTestApplicationForm(
-                applicationId,
-                DaycareFormV0(
-                    type = type,
-                    partTime = partTime,
-                    serviceNeedOption = serviceNeedOption,
-                    connectedDaycare = preschoolDaycare,
-                    serviceStart = "08:00".takeIf { preschoolDaycare },
-                    serviceEnd = "16:00".takeIf { preschoolDaycare },
-                    child = child.toDaycareFormChild(),
-                    guardian = adult.toDaycareFormAdult(adult.restrictedDetailsEnabled),
-                    apply = Apply(preferredUnits = preferredUnits.map { it.id }),
-                    preferredStartDate = preferredStartDate,
-                    careDetails = careDetails
-                )
+            tx.insertTestApplication(
+                status = status,
+                guardianId = adult.id,
+                childId = child.id,
+                type = type,
+                document =
+                    DaycareFormV0(
+                        type = type,
+                        partTime = partTime,
+                        serviceNeedOption = serviceNeedOption,
+                        connectedDaycare = preschoolDaycare,
+                        serviceStart = "08:00".takeIf { preschoolDaycare },
+                        serviceEnd = "16:00".takeIf { preschoolDaycare },
+                        child = child.toDaycareFormChild(),
+                        guardian = adult.toDaycareFormAdult(adult.restrictedDetailsEnabled),
+                        apply = Apply(preferredUnits = preferredUnits.map { it.id }),
+                        preferredStartDate = preferredStartDate,
+                        careDetails = careDetails
+                    )
             )
-            applicationId
         }
 }
