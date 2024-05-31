@@ -42,12 +42,11 @@ private val logger = KotlinLogging.logger {}
 @Service
 class JamixService(
     env: JamixEnv?,
-    fuel: FuelManager,
     jsonMapper: JsonMapper,
     private val mealTypeMapper: MealTypeMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
-    private val client = env?.let { JamixHttpClient(it, fuel, jsonMapper) }
+    private val client = env?.let { JamixHttpClient(it, jsonMapper) }
 
     init {
         asyncJobRunner.registerHandler(::sendOrder)
@@ -297,11 +296,9 @@ interface JamixClient {
     fun getTextures(): List<JamixTexture>
 }
 
-class JamixHttpClient(
-    private val env: JamixEnv,
-    private val fuel: FuelManager,
-    private val jsonMapper: JsonMapper
-) : JamixClient {
+class JamixHttpClient(private val env: JamixEnv, private val jsonMapper: JsonMapper) : JamixClient {
+    private val fuel = FuelManager()
+
     override fun getCustomers(): List<JamixClient.Customer> =
         request(Method.GET, env.url.resolve("customers"))
 
