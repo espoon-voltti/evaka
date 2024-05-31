@@ -60,6 +60,7 @@ const emptyInvoiceRow = (
   description: '',
   unitId: '',
   unitName: '',
+  unitProviderType: 'MUNICIPAL',
   daycareType: [],
   costCenter: '',
   subCostCenter: '',

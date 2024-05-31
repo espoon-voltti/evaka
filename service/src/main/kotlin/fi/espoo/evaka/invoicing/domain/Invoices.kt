@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -110,6 +111,7 @@ data class InvoiceRowDetailed(
     val product: ProductKey,
     val unitId: DaycareId,
     val unitName: String,
+    val unitProviderType: ProviderType,
     val daycareType: Set<CareType>,
     val costCenter: String,
     val subCostCenter: String?,
