@@ -14,6 +14,7 @@ import colors from 'lib-customizations/common'
 import { faArrowRight } from 'lib-icons'
 
 import EvakaLogo from '../assets/EvakaLogo.svg'
+import { authMobile } from '../auth/api'
 import { UserContext } from '../auth/state'
 import { useTranslation } from '../common/i18n'
 import {
@@ -21,7 +22,6 @@ import {
   postPairingChallenge
 } from '../generated/api-clients/pairing'
 
-import { authMobile } from './api'
 import { FullHeightContainer, WideLinkButton } from './components'
 
 const CenteredColumn = styled.div`

@@ -116,7 +116,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
   const groupId = child.groupId
   const groupNotes = useQueryResult(
-    queryOrDefault(groupNotesQuery, [])(groupId)
+    queryOrDefault(groupNotesQuery, [])(groupId ? { groupId } : null)
   )
 
   const [time, setTime] = useState(() =>
@@ -140,7 +140,11 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   const expectedAbsences = useQueryResult(
     queryOrDefault(
       (departed: LocalTime) =>
-        childExpectedAbsencesOnDepartureQuery({ unitId, childId, departed }),
+        childExpectedAbsencesOnDepartureQuery({
+          unitId,
+          childId,
+          body: { departed }
+        }),
       null
     )(timeError === undefined ? LocalTime.tryParse(time) : null)
   )
@@ -280,17 +284,19 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                     return createDeparture({
                       unitId,
                       childId,
-                      absenceTypeNonbillable:
-                        expectedAbsences.value?.includes('NONBILLABLE') &&
-                        selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
-                          ? selectedAbsenceTypeNonbillable ?? null
-                          : null,
-                      absenceTypeBillable:
-                        expectedAbsences.value?.includes('BILLABLE') &&
-                        selectedAbsenceTypeBillable !== 'NO_ABSENCE'
-                          ? selectedAbsenceTypeBillable ?? null
-                          : null,
-                      departed: LocalTime.parse(time)
+                      body: {
+                        absenceTypeNonbillable:
+                          expectedAbsences.value?.includes('NONBILLABLE') &&
+                          selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
+                            ? selectedAbsenceTypeNonbillable ?? null
+                            : null,
+                        absenceTypeBillable:
+                          expectedAbsences.value?.includes('BILLABLE') &&
+                          selectedAbsenceTypeBillable !== 'NO_ABSENCE'
+                            ? selectedAbsenceTypeBillable ?? null
+                            : null,
+                        departed: LocalTime.parse(time)
+                      }
                     })
                   }}
                   onSuccess={() => {
@@ -337,7 +343,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 export default React.memo(function MarkDeparted({ unitId }: { unitId: UUID }) {
   const { childId } = useRouteParams(['childId'])
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 
   return renderResult(
     combine(child, attendanceStatuses),

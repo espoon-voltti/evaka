@@ -216,7 +216,9 @@ export default React.memo(function StaffAttendanceEditPage({
   const { i18n } = useTranslation()
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
-  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId })
+  )
   const combinedResult = useMemo(
     () =>
       combine(unitInfoResponse, staffAttendanceResponse).map(
@@ -310,7 +312,7 @@ const StaffAttendancesEditor = ({
               mutation={staffAttendanceMutation}
               onClick={() => ({
                 unitId,
-                request: {
+                body: {
                   employeeId,
                   pinCode: pinCode.value().join(''),
                   date,

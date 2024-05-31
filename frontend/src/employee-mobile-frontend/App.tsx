@@ -220,7 +220,7 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
 function ChildAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
   // Re-fetch child data when navigating to the attendance section
   useQuery(childrenQuery(unitOrGroup.unitId), { refetchOnMount: 'always' })
-  useQuery(attendanceStatusesQuery(unitOrGroup.unitId), {
+  useQuery(attendanceStatusesQuery({ unitId: unitOrGroup.unitId }), {
     refetchOnMount: 'always'
   })
 

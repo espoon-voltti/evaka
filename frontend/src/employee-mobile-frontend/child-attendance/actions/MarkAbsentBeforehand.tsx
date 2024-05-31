@@ -7,6 +7,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import LocalDate from 'lib-common/local-date'
@@ -36,16 +37,20 @@ import { renderResult } from '../../async-rendering'
 import ChildNameBackButton from '../../common/ChildNameBackButton'
 import { Actions, CustomTitle } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
-import { TallContentArea } from '../../pairing/components'
+import { futureAbsencesOfChild } from '../../generated/api-clients/absence'
 import {
   deleteAbsenceRange,
-  getFutureAbsencesByChild,
   postAbsenceRange
-} from '../api'
+} from '../../generated/api-clients/attendance'
+import { TallContentArea } from '../../pairing/components'
 import { childrenQuery } from '../queries'
 import { useChild } from '../utils'
 
 import AbsenceSelector, { AbsenceTypeWithNoAbsence } from './AbsenceSelector'
+
+const postAbsenceRangeResult = wrapResult(postAbsenceRange)
+const deleteAbsenceRangeResult = wrapResult(deleteAbsenceRange)
+const futureAbsencesByChildResult = wrapResult(futureAbsencesOfChild)
 
 export default React.memo(function MarkAbsentBeforehand({
   unitId
@@ -69,7 +74,7 @@ export default React.memo(function MarkAbsentBeforehand({
   )
 
   const [absences, loadFutureAbsences] = useApiState(
-    () => getFutureAbsencesByChild(childId),
+    () => futureAbsencesByChildResult({ childId }),
     [childId]
   )
 
@@ -78,12 +83,16 @@ export default React.memo(function MarkAbsentBeforehand({
 
   const postAbsence = useCallback(
     (absenceType: AbsenceType) =>
-      postAbsenceRange(unitId, childId, {
-        absenceType,
-        range: new FiniteDateRange(
-          LocalDate.parseIso(startDate),
-          LocalDate.parseIso(endDate)
-        )
+      postAbsenceRangeResult({
+        unitId,
+        childId,
+        body: {
+          absenceType,
+          range: new FiniteDateRange(
+            LocalDate.parseIso(startDate),
+            LocalDate.parseIso(endDate)
+          )
+        }
       }),
     [childId, endDate, startDate, unitId]
   )
@@ -107,7 +116,12 @@ export default React.memo(function MarkAbsentBeforehand({
 
   const deleteAbsences = useCallback(async () => {
     if (deleteRange) {
-      await deleteAbsenceRange(unitId, childId, deleteRange)
+      await deleteAbsenceRangeResult({
+        unitId,
+        childId,
+        from: deleteRange.start,
+        to: deleteRange.end
+      })
     }
     setDeleteRange(undefined)
     void loadFutureAbsences()

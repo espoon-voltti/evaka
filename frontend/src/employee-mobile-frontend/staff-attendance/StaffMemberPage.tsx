@@ -44,7 +44,9 @@ export default React.memo(function StaffMemberPage({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
-  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId })
+  )
 
   const employeeResponse = useMemo(
     () =>

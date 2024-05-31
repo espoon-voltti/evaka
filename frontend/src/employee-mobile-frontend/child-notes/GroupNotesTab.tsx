@@ -59,12 +59,12 @@ export const GroupNotesTab = React.memo(function GroupNotesTab({
   const onSave = useCallback(
     ({ id, ...body }: EditedNote) =>
       id
-        ? updateGroupNote({ groupId, id, body })
+        ? updateGroupNote({ groupId, noteId: id, body })
         : createGroupNote({ groupId, body }),
     [createGroupNote, updateGroupNote, groupId]
   )
   const onRemove = useCallback(
-    (id: string) => deleteGroupNote({ groupId, id }),
+    (noteId: UUID) => deleteGroupNote({ groupId, noteId }),
     [deleteGroupNote, groupId]
   )
   const labels = useMemo<StickyNoteTabLabels>(

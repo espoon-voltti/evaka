@@ -58,7 +58,7 @@ export default React.memo(function AttendancePageWrapper({
   )
 
   const unitChildren = useQueryResult(childrenQuery(unitId))
-  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery({ unitId }))
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
 

@@ -113,7 +113,10 @@ export default React.memo(function ChildListItem({
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { data: groupNotes = [] } = useQuery(
-    queryOrDefault(groupNotesQuery, [])(child.groupId)
+    queryOrDefault(
+      groupNotesQuery,
+      []
+    )(child.groupId ? { groupId: child.groupId } : undefined)
   )
   const groupName = unitInfoResponse
     .map(

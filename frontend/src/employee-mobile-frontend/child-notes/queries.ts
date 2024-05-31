@@ -2,17 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  ChildDailyNoteBody,
-  ChildStickyNoteBody,
-  GroupNoteBody
-} from 'lib-common/generated/api-types/note'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
+import { Arg0, UUID } from 'lib-common/types'
 
 import { childrenQuery } from '../child-attendance/queries'
-import { createQueryKeys } from '../query'
-
 import {
   createChildDailyNote,
   createChildStickyNote,
@@ -24,7 +17,8 @@ import {
   updateChildDailyNote,
   updateChildStickyNote,
   updateGroupNote
-} from './api'
+} from '../generated/api-clients/note'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('notes', {
   ofGroup: (groupId: UUID) => ['group', groupId]
@@ -32,75 +26,61 @@ const queryKeys = createQueryKeys('notes', {
 
 export const groupNotesQuery = query({
   api: getGroupNotes,
-  queryKey: queryKeys.ofGroup,
+  queryKey: ({ groupId }) => queryKeys.ofGroup(groupId),
   options: {
     staleTime: 5 * 60 * 1000
   }
 })
 
 export const createGroupNoteMutation = mutation({
-  api: ({ groupId, body }: { groupId: UUID; body: GroupNoteBody }) =>
-    createGroupNote({ groupId, body }),
-  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery(groupId).queryKey]
+  api: createGroupNote,
+  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
 })
 
 export const updateGroupNoteMutation = mutation({
-  api: ({ id, body }: { groupId: UUID; id: UUID; body: GroupNoteBody }) =>
-    updateGroupNote({ id, body }),
-  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery(groupId).queryKey]
+  api: (arg: Arg0<typeof updateGroupNote> & { groupId: UUID }) =>
+    updateGroupNote(arg),
+  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
 })
 
 export const deleteGroupNoteMutation = mutation({
-  api: ({ id }: { groupId: UUID; id: UUID }) => deleteGroupNote(id),
-  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery(groupId).queryKey]
+  api: (arg: Arg0<typeof deleteGroupNote> & { groupId: UUID }) =>
+    deleteGroupNote(arg),
+  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery({ groupId }).queryKey]
 })
 
 export const createChildDailyNoteMutation = mutation({
-  api: ({
-    childId,
-    body
-  }: {
-    unitId: UUID
-    childId: UUID
-    body: ChildDailyNoteBody
-  }) =>
-    createChildDailyNote({
-      childId,
-      body
-    }),
+  api: (arg: Arg0<typeof createChildDailyNote> & { unitId: UUID }) =>
+    createChildDailyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const updateChildDailyNoteMutation = mutation({
-  api: ({ id, body }: { unitId: UUID; id: UUID; body: ChildDailyNoteBody }) =>
-    updateChildDailyNote({ id, body }),
+  api: (arg: Arg0<typeof updateChildDailyNote> & { unitId: UUID }) =>
+    updateChildDailyNote(arg).then(() => undefined),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const deleteChildDailyNoteMutation = mutation({
-  api: ({ id }: { unitId: UUID; id: UUID }) => deleteChildDailyNote(id),
+  api: (arg: Arg0<typeof deleteChildDailyNote> & { unitId: UUID }) =>
+    deleteChildDailyNote(arg).then(() => undefined),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const createChildStickyNoteMutation = mutation({
-  api: ({
-    childId,
-    body
-  }: {
-    unitId: UUID
-    childId: UUID
-    body: ChildStickyNoteBody
-  }) => createChildStickyNote({ childId, body }),
+  api: (arg: Arg0<typeof createChildStickyNote> & { unitId: UUID }) =>
+    createChildStickyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const updateChildStickyNoteMutation = mutation({
-  api: ({ id, body }: { unitId: UUID; id: UUID; body: ChildStickyNoteBody }) =>
-    updateChildStickyNote({ id, body }),
+  api: (arg: Arg0<typeof updateChildStickyNote> & { unitId: UUID }) =>
+    updateChildStickyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })
 
 export const deleteChildStickyNoteMutation = mutation({
-  api: ({ id }: { unitId: UUID; id: UUID }) => deleteChildStickyNote(id),
+  api: (arg: Arg0<typeof deleteChildStickyNote> & { unitId: UUID }) =>
+    deleteChildStickyNote(arg),
   invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
 })

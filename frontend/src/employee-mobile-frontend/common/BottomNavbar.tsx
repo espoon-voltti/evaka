@@ -110,7 +110,7 @@ export default function BottomNavbar({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
-  const { data: unreadCounts = [] } = useQuery(unreadCountsQuery(unitId), {
+  const { data: unreadCounts = [] } = useQuery(unreadCountsQuery({ unitId }), {
     refetchOnMount: false
   })
   const { groupAccounts } = useContext(MessageContext)

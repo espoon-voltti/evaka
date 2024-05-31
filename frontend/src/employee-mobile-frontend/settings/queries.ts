@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PushSettings } from 'lib-common/generated/api-types/webpush'
 import { mutation, query } from 'lib-common/query'
 
+import {
+  getPushSettings,
+  setPushSettings
+} from '../generated/api-clients/webpush'
 import { createQueryKeys } from '../query'
-
-import { getPushSettings, setPushSettings } from './api'
 
 const queryKeys = createQueryKeys('settings', {
   push: () => ['push']
@@ -19,6 +20,6 @@ export const pushSettingsQuery = query({
 })
 
 export const pushSettingsMutation = mutation({
-  api: (settings: PushSettings) => setPushSettings(settings),
+  api: setPushSettings,
   invalidateQueryKeys: (_) => [queryKeys.push()]
 })

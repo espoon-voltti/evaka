@@ -2,71 +2,62 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  ExternalStaffArrivalRequest,
-  ExternalStaffDepartureRequest,
-  StaffArrivalRequest,
-  StaffDepartureRequest,
-  StaffAttendanceUpdateRequest
-} from 'lib-common/generated/api-types/attendance'
 import { mutation, query } from 'lib-common/query'
-import { UUID } from 'lib-common/types'
-
-import { createQueryKeys } from '../query'
+import { Arg0, UUID } from 'lib-common/types'
 
 import {
-  getUnitStaffAttendances,
-  postExternalStaffArrival,
-  postExternalStaffDeparture,
-  postStaffArrival,
-  postStaffDeparture,
-  putStaffAttendances
-} from './api'
+  getAttendancesByUnit,
+  markArrival,
+  markDeparture,
+  markExternalArrival,
+  markExternalDeparture,
+  setAttendances
+} from '../generated/api-clients/attendance'
+import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('staffAttendance', {
   ofUnit: (unitId: UUID) => ['unit', unitId]
 })
 
 export const staffAttendanceQuery = query({
-  api: getUnitStaffAttendances,
-  queryKey: queryKeys.ofUnit
+  api: getAttendancesByUnit,
+  queryKey: ({ unitId }) => queryKeys.ofUnit(unitId)
 })
 
 export const staffArrivalMutation = mutation({
-  api: ({ request }: { unitId: UUID; request: StaffArrivalRequest }) =>
-    postStaffArrival(request),
-  invalidateQueryKeys: ({ unitId }) => [staffAttendanceQuery(unitId).queryKey]
+  api: (arg: Arg0<typeof markArrival> & { unitId: UUID }) => markArrival(arg),
+  invalidateQueryKeys: ({ unitId }) => [
+    staffAttendanceQuery({ unitId }).queryKey
+  ]
 })
 
 export const staffDepartureMutation = mutation({
-  api: ({ request }: { unitId: UUID; request: StaffDepartureRequest }) =>
-    postStaffDeparture(request),
-  invalidateQueryKeys: ({ unitId }) => [staffAttendanceQuery(unitId).queryKey]
+  api: (arg: Arg0<typeof markDeparture> & { unitId: UUID }) =>
+    markDeparture(arg),
+  invalidateQueryKeys: ({ unitId }) => [
+    staffAttendanceQuery({ unitId }).queryKey
+  ]
 })
 
 export const externalStaffArrivalMutation = mutation({
-  api: ({ request }: { unitId: UUID; request: ExternalStaffArrivalRequest }) =>
-    postExternalStaffArrival(request),
-  invalidateQueryKeys: ({ unitId }) => [staffAttendanceQuery(unitId).queryKey]
+  api: (arg: Arg0<typeof markExternalArrival> & { unitId: UUID }) =>
+    markExternalArrival(arg),
+  invalidateQueryKeys: ({ unitId }) => [
+    staffAttendanceQuery({ unitId }).queryKey
+  ]
 })
 
 export const externalStaffDepartureMutation = mutation({
-  api: ({
-    request
-  }: {
-    unitId: UUID
-    request: ExternalStaffDepartureRequest
-  }) => postExternalStaffDeparture(request),
-  invalidateQueryKeys: ({ unitId }) => [staffAttendanceQuery(unitId).queryKey]
+  api: (arg: Arg0<typeof markExternalDeparture> & { unitId: UUID }) =>
+    markExternalDeparture(arg),
+  invalidateQueryKeys: ({ unitId }) => [
+    staffAttendanceQuery({ unitId }).queryKey
+  ]
 })
 
 export const staffAttendanceMutation = mutation({
-  api: ({
-    unitId,
-    request
-  }: {
-    unitId: UUID
-    request: StaffAttendanceUpdateRequest
-  }) => putStaffAttendances(unitId, request),
-  invalidateQueryKeys: ({ unitId }) => [staffAttendanceQuery(unitId).queryKey]
+  api: setAttendances,
+  invalidateQueryKeys: ({ unitId }) => [
+    staffAttendanceQuery({ unitId }).queryKey
+  ]
 })

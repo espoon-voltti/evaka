@@ -35,7 +35,7 @@ export default React.memo(function DraftMessagesList({ onSelectDraft }: Props) {
     queryOrDefault(
       draftMessagesQuery,
       []
-    )(selectedAccount ? selectedAccount.account.id : undefined)
+    )(selectedAccount ? { accountId: selectedAccount.account.id } : undefined)
   )
 
   return renderResult(draftMessages, (messages) => (

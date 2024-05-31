@@ -38,7 +38,9 @@ export default React.memo(function ExternalStaffMemberPage({
   const { attendanceId } = useRouteParams(['attendanceId'])
   const { i18n } = useTranslation()
 
-  const staffAttendanceResponse = useQueryResult(staffAttendanceQuery(unitId))
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId })
+  )
 
   const attendance = useMemo(
     () =>
@@ -121,7 +123,7 @@ export default React.memo(function ExternalStaffMemberPage({
             mutation={externalStaffDepartureMutation}
             onClick={() =>
               parsedTime !== undefined
-                ? { unitId, request: { attendanceId, time: parsedTime } }
+                ? { unitId, body: { attendanceId, time: parsedTime } }
                 : cancelMutation
             }
             onSuccess={() => {

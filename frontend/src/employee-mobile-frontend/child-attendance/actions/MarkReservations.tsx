@@ -225,8 +225,8 @@ export default React.memo(function MarkReservations({
     useQueryResult(childrenQuery(unitOrGroup.unitId)),
     childId
   )
-  const reservations = useQueryResult(getConfirmedRangeQuery(childId))
-  const absences = useQueryResult(getFutureAbsencesByChildQuery(childId))
+  const reservations = useQueryResult(getConfirmedRangeQuery({ childId }))
+  const absences = useQueryResult(getFutureAbsencesByChildQuery({ childId }))
   const [mode, setMode] = useState<Mode>('view')
   const goBack = useCallback(() => {
     navigate(-1)

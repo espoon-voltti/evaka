@@ -115,7 +115,9 @@ export default React.memo(function ChildNotes({
   )
 
   const { data: groupNotes } = useQuery(
-    groupNotesQuery(unitOrGroup.type === 'group' ? unitOrGroup.id : ''),
+    groupNotesQuery({
+      groupId: unitOrGroup.type === 'group' ? unitOrGroup.id : ''
+    }),
     {
       enabled: unitOrGroup.type === 'group'
     }

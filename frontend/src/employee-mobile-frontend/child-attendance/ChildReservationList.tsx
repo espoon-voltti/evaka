@@ -53,7 +53,10 @@ export default React.memo(function ChildReservationList({
   date
 }: ChildReservationListProps) {
   const confirmedDayReservationsResult = useQueryResult(
-    confirmedDayReservationsQuery(unitOrGroup.unitId, date)
+    confirmedDayReservationsQuery({
+      unitId: unitOrGroup.unitId,
+      examinationDate: date
+    })
   )
 
   const sortStartTimeNullsLast = (o: CategorizedReservationInfo) =>
