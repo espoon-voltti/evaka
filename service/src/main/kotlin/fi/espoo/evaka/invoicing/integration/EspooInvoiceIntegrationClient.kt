@@ -5,7 +5,7 @@
 package fi.espoo.evaka.invoicing.integration
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.EspooInvoiceIntegrationEnv
@@ -25,6 +25,8 @@ class EspooInvoiceIntegrationClient(
     private val env: EspooInvoiceIntegrationEnv,
     private val jsonMapper: JsonMapper
 ) : InvoiceIntegrationClient {
+    private val fuel = FuelManager()
+
     override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult {
         val (withSSN, withoutSSN) =
             invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
@@ -65,7 +67,8 @@ class EspooInvoiceIntegrationClient(
         }
         logger.debug("Sending invoice batch ${batch.batchNumber} to integration, payload: $payload")
         val (_, _, result) =
-            Fuel.post("${env.url}/invoice-batches")
+            fuel
+                .post("${env.url}/invoice-batches")
                 .authentication()
                 .basic(env.username, env.password.value)
                 .jsonBody(payload)
