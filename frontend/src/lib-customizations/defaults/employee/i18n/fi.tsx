@@ -872,7 +872,8 @@ export const fi = {
           monthsUnit: 'kuukautta',
           confidentiality: 'Asiakirjan julkisuus',
           confidential: 'Salassapidettävä',
-          public: 'Julkinen'
+          public: 'Julkinen',
+          organization: 'Organisaatio'
         }
       }
     },

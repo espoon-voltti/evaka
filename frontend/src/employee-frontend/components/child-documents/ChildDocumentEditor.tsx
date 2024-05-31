@@ -390,6 +390,10 @@ const ChildDocumentMetadataSection = React.memo(
                   value: metadata.confidentialDocument
                     ? t.confidential
                     : t.public
+                },
+                {
+                  label: t.organization,
+                  value: metadata.process.organization
                 }
               ]}
             />

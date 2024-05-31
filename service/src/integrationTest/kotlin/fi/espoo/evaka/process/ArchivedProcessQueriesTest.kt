@@ -10,16 +10,35 @@ import org.junit.jupiter.api.Test
 
 class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
-    fun `inserting process`() {
+    fun `inserting process increments the number correctly`() {
         val definition1 = "123.456.789"
         val definition2 = "987.654.321"
         val year1 = 2022
         val year2 = 2023
-        assertEquals(1, db.transaction { it.insertProcess(definition1, year1) }.number)
-        assertEquals(2, db.transaction { it.insertProcess(definition1, year1) }.number)
-        assertEquals(1, db.transaction { it.insertProcess(definition2, year1) }.number)
-        assertEquals(1, db.transaction { it.insertProcess(definition1, year2) }.number)
-        assertEquals(1, db.transaction { it.insertProcess(definition2, year2) }.number)
-        assertEquals(3, db.transaction { it.insertProcess(definition1, year1) }.number)
+        val organization = "Espoon kaupungin varhaiskasvatus"
+        assertEquals(
+            1,
+            db.transaction { it.insertProcess(definition1, year1, organization) }.number
+        )
+        assertEquals(
+            2,
+            db.transaction { it.insertProcess(definition1, year1, organization) }.number
+        )
+        assertEquals(
+            1,
+            db.transaction { it.insertProcess(definition2, year1, organization) }.number
+        )
+        assertEquals(
+            1,
+            db.transaction { it.insertProcess(definition1, year2, organization) }.number
+        )
+        assertEquals(
+            1,
+            db.transaction { it.insertProcess(definition2, year2, organization) }.number
+        )
+        assertEquals(
+            3,
+            db.transaction { it.insertProcess(definition1, year1, organization) }.number
+        )
     }
 }

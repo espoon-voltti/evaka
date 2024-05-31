@@ -25,7 +25,8 @@ CREATE TABLE archived_process (
     updated_at timestamp with time zone NOT NULL DEFAULT now(),
     process_definition_number text NOT NULL,
     year smallint NOT NULL,
-    number integer NOT NULL
+    number integer NOT NULL,
+    organization text NOT NULL
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON archived_process

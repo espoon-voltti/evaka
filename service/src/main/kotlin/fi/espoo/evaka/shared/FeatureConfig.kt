@@ -137,4 +137,7 @@ data class FeatureConfig(
 
     /** Controls whether absences give a daily refund for TEMPORARY_DAYCARE_PART_DAY */
     val temporaryDaycarePartDayAbsenceGivesADailyRefund: Boolean = true,
+
+    /** The name of the organization used in archived metadata */
+    val archiveMetadataOrganization: String,
 )

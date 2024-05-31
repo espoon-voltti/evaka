@@ -278,7 +278,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertNotNull(metadata)
         metadata.also {
             assertEquals("1/123.456.789/2022", it.process.processNumber)
+            assertEquals("Espoon kaupungin varhaiskasvatus", it.process.organization)
             assertEquals("HOJKS", it.documentName)
+            assertEquals(true, it.confidentialDocument)
             assertNotNull(it.documentCreatedAt)
             assertEquals(employeeUser.id, it.documentCreatedBy?.id)
             assertEquals(120, it.archiveDurationMonths)

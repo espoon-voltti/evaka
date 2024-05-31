@@ -11,6 +11,7 @@ import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -37,7 +38,8 @@ import org.springframework.web.bind.annotation.RestController
 )
 class ChildDocumentController(
     private val accessControl: AccessControl,
-    private val childDocumentService: ChildDocumentService
+    private val childDocumentService: ChildDocumentService,
+    private val featureConfig: FeatureConfig
 ) {
     @PostMapping
     fun createDocument(
@@ -75,7 +77,8 @@ class ChildDocumentController(
                         template.processDefinitionNumber?.let { processDefinitionNumber ->
                             tx.insertProcess(
                                     processDefinitionNumber = processDefinitionNumber,
-                                    year = clock.today().year
+                                    year = clock.today().year,
+                                    organization = featureConfig.archiveMetadataOrganization
                                 )
                                 .id
                         }

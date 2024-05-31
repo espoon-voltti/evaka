@@ -14,6 +14,7 @@ import { UUID } from '../../types'
 export interface ArchivedProcess {
   id: UUID
   number: number
+  organization: string
   processDefinitionNumber: string
   processNumber: string
   year: number
