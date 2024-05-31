@@ -37,7 +37,7 @@ CREATE UNIQUE INDEX uniq$process_number ON archived_process (process_definition_
 CREATE TYPE archived_process_state AS ENUM ('INITIAL', 'PREPARATION', 'DECIDING', 'COMPLETED');
 
 CREATE TABLE archived_process_history (
-    process_id uuid NOT NULL REFERENCES archived_process,
+    process_id uuid NOT NULL REFERENCES archived_process ON DELETE CASCADE,
     row_index smallint NOT NULL, -- incrementing number
     state archived_process_state NOT NULL,
     entered_at timestamp with time zone NOT NULL,
@@ -48,7 +48,7 @@ CREATE UNIQUE INDEX uniq$archived_process_history_row_index ON archived_process_
 
 -- assume a 1-to-1 relationship between child_document and archived_process for now
 ALTER TABLE child_document
-    ADD COLUMN process_id uuid REFERENCES archived_process,
+    ADD COLUMN process_id uuid REFERENCES archived_process ON DELETE SET NULL,
     ADD COLUMN created_by uuid REFERENCES employee;
 
 CREATE INDEX fk$child_document_process_id ON child_document(process_id);

@@ -312,6 +312,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertEquals(ArchivedProcessState.COMPLETED, history[1].state)
         assertEquals(clock4.now(), history[2].enteredAt)
         assertEquals(ArchivedProcessState.INITIAL, history[2].state)
+
+        controller.deleteDraftDocument(dbInstance(), employeeUser, clock5, documentId)
+        assertNull(db.read { it.getProcess(metadata.process.id) })
     }
 
     @Test

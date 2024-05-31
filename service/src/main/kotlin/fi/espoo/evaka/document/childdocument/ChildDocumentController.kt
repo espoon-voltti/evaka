@@ -10,6 +10,7 @@ import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.deleteProcessByDocumentId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.process.updateDocumentProcessHistory
@@ -444,6 +445,7 @@ class ChildDocumentController(
                         Action.ChildDocument.DELETE,
                         documentId
                     )
+                    deleteProcessByDocumentId(tx, documentId)
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }

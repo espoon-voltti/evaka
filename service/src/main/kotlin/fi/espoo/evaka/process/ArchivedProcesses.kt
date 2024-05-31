@@ -95,6 +95,14 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
         }
         .exactlyOneOrNull()
 
+fun deleteProcessByDocumentId(tx: Database.Transaction, documentId: ChildDocumentId) {
+    tx.createQuery { sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}") }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.also { processId ->
+            tx.execute { sql("DELETE FROM archived_process WHERE id = ${bind(processId)}") }
+        }
+}
+
 fun Database.Transaction.insertProcessHistoryRow(
     processId: ArchivedProcessId,
     state: ArchivedProcessState,
