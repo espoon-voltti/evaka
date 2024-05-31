@@ -430,7 +430,11 @@ private fun getAttendanceReservationReport(
             generateSequence(HelsinkiDateTime.atStartOfDay(start)) {
                     if (it < seqEnd) it.plusMinutes(15) else null
                 }
-                .filter { daycare.operationDays.contains(it.dayOfWeek.value) }
+                .filter {
+                    (daycare.shiftCareOperationDays ?: daycare.operationDays).contains(
+                        it.dayOfWeek.value
+                    )
+                }
                 .map { intervalStart ->
                     val interval =
                         HelsinkiDateTimeRange(intervalStart, intervalStart.plusMinutes(15))
