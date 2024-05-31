@@ -33,6 +33,13 @@ export interface ChildDocumentMetadata {
 }
 
 /**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.ChildDocumentMetadataResponse
+*/
+export interface ChildDocumentMetadataResponse {
+  data: ChildDocumentMetadata | null
+}
+
+/**
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.EmployeeBasics
 */
 export interface EmployeeBasics {
@@ -47,5 +54,13 @@ export function deserializeJsonChildDocumentMetadata(json: JsonOf<ChildDocumentM
   return {
     ...json,
     documentCreatedAt: (json.documentCreatedAt != null) ? HelsinkiDateTime.parseIso(json.documentCreatedAt) : null
+  }
+}
+
+
+export function deserializeJsonChildDocumentMetadataResponse(json: JsonOf<ChildDocumentMetadataResponse>): ChildDocumentMetadataResponse {
+  return {
+    ...json,
+    data: (json.data != null) ? deserializeJsonChildDocumentMetadata(json.data) : null
   }
 }

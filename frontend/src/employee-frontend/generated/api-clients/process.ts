@@ -4,11 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
-import { ChildDocumentMetadata } from 'lib-common/generated/api-types/process'
+import { ChildDocumentMetadataResponse } from 'lib-common/generated/api-types/process'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
-import { deserializeJsonChildDocumentMetadata } from 'lib-common/generated/api-types/process'
+import { deserializeJsonChildDocumentMetadataResponse } from 'lib-common/generated/api-types/process'
 import { uri } from 'lib-common/uri'
 
 
@@ -19,10 +19,10 @@ export async function getChildDocumentMetadata(
   request: {
     childDocumentId: UUID
   }
-): Promise<ChildDocumentMetadata | null> {
-  const { data: json } = await client.request<JsonOf<ChildDocumentMetadata | null>>({
+): Promise<ChildDocumentMetadataResponse> {
+  const { data: json } = await client.request<JsonOf<ChildDocumentMetadataResponse>>({
     url: uri`/employee/process-metadata/child-documents/${request.childDocumentId}`.toString(),
     method: 'GET'
   })
-  return (json != null) ? deserializeJsonChildDocumentMetadata(json) : null
+  return deserializeJsonChildDocumentMetadataResponse(json)
 }

@@ -41,13 +41,17 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val confidentialDocument: Boolean
     )
 
+    // wrapper that is needed because currently returning null
+    // from an endpoint is not serialized correctly
+    data class ChildDocumentMetadataResponse(val data: ChildDocumentMetadata?)
+
     @GetMapping("/child-documents/{childDocumentId}")
     fun getChildDocumentMetadata(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childDocumentId: ChildDocumentId
-    ): ChildDocumentMetadata? {
+    ): ChildDocumentMetadataResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -57,26 +61,32 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         Action.ChildDocument.READ_METADATA,
                         childDocumentId
                     )
-                    val document = tx.getChildDocumentBasics(childDocumentId) ?: return@read null
-                    val process = document.processId?.let { tx.getProcess(it) } ?: return@read null
-                    ChildDocumentMetadata(
-                        process = process,
-                        documentName = document.name,
-                        documentCreatedAt = document.createdAt,
-                        documentCreatedBy = document.createdBy,
-                        archiveDurationMonths =
-                            document.archiveDurationMonths
-                                ?: throw IllegalStateException(
-                                    "archiveDurationMonths should always be set when archived process exists"
-                                ),
-                        confidentialDocument = document.confidential
+                    val document =
+                        tx.getChildDocumentBasics(childDocumentId)
+                            ?: return@read ChildDocumentMetadataResponse(null)
+                    val process =
+                        document.processId?.let { tx.getProcess(it) }
+                            ?: return@read ChildDocumentMetadataResponse(null)
+                    ChildDocumentMetadataResponse(
+                        ChildDocumentMetadata(
+                            process = process,
+                            documentName = document.name,
+                            documentCreatedAt = document.createdAt,
+                            documentCreatedBy = document.createdBy,
+                            archiveDurationMonths =
+                                document.archiveDurationMonths
+                                    ?: throw IllegalStateException(
+                                        "archiveDurationMonths should always be set when archived process exists"
+                                    ),
+                            confidentialDocument = document.confidential
+                        )
                     )
                 }
             }
-            .also { metadata ->
+            .also { response ->
                 Audit.ChildDocumentReadMetadata.log(
                     targetId = AuditId(childDocumentId),
-                    objectId = metadata?.process?.id?.let(AuditId::invoke)
+                    objectId = response.data?.process?.id?.let(AuditId::invoke)
                 )
             }
     }

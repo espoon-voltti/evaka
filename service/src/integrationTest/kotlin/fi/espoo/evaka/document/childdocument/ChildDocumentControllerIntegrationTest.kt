@@ -274,7 +274,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 clock,
                 ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks)
             )
-        val metadata = getChildDocumentMetadata(documentId)
+        val metadata = getChildDocumentMetadata(documentId).data
         assertNotNull(metadata)
         metadata.also {
             assertEquals("1/123.456.789/2022", it.process.processNumber)

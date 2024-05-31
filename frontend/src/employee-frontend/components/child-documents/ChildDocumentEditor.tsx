@@ -357,7 +357,7 @@ const ChildDocumentMetadataSection = React.memo(
     return (
       <div>
         <H3>{t.title}</H3>
-        {renderResult(result, (metadata) => {
+        {renderResult(result, ({ data: metadata }) => {
           if (metadata === null) return <div>{t.notFound}</div>
           return (
             <LabelValueList
