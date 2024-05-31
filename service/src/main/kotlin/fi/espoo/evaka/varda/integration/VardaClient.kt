@@ -41,10 +41,10 @@ private val logger = KotlinLogging.logger {}
 
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
-    private val fuel: FuelManager,
     private val jsonMapper: JsonMapper,
     env: VardaEnv
 ) : VardaUnitClient {
+    private val fuel = FuelManager()
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
     private val unitUrl = "${env.url}/v1/toimipaikat/"
     private val personUrl = "${env.url}/v1/henkilot/"

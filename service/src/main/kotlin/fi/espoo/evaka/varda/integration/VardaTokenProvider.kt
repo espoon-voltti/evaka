@@ -31,11 +31,9 @@ interface VardaTokenProvider {
  * automatically and internally in this provider with a mutex.
  */
 @Service
-class VardaTempTokenProvider(
-    private val fuel: FuelManager,
-    private val jsonMapper: JsonMapper,
-    env: VardaEnv
-) : VardaTokenProvider {
+class VardaTempTokenProvider(private val jsonMapper: JsonMapper, env: VardaEnv) :
+    VardaTokenProvider {
+    private val fuel = FuelManager()
     private val basicAuth = "Basic ${env.basicAuth.value}"
     private val apiTokenUrl = "${env.url}/user/apikey/"
 
