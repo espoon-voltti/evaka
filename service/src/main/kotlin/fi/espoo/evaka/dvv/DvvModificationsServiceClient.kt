@@ -13,7 +13,6 @@ import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.DvvModificationsEnv
-import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.VtjXroadEnv
 import java.security.cert.X509Certificate
@@ -37,7 +36,6 @@ private val logger = KotlinLogging.logger {}
 class DvvModificationsServiceClient(
     private val jsonMapper: JsonMapper,
     private val customizers: List<DvvModificationRequestCustomizer>,
-    evakaEnv: EvakaEnv,
     xroadEnv: VtjXroadEnv,
     env: DvvModificationsEnv
 ) {
@@ -48,12 +46,12 @@ class DvvModificationsServiceClient(
 
     private val fuel =
         if (
-            evakaEnv.httpClientCertificateCheck &&
+            xroadEnv.httpClientCertificateCheck &&
                 xroadEnv.keyStore != null &&
                 xroadEnv.trustStore != null
         ) {
             certCheckFuelManager(keyStore = xroadEnv.keyStore, trustStore = xroadEnv.trustStore)
-        } else if (!evakaEnv.httpClientCertificateCheck) {
+        } else if (!xroadEnv.httpClientCertificateCheck) {
             noCertCheckFuelManager()
         } else {
             FuelManager()
