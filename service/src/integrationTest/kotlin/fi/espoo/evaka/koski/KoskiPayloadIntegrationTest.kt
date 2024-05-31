@@ -41,7 +41,6 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env),
-                    fuel = http,
                     asyncJobRunner = null
                 )
             )
