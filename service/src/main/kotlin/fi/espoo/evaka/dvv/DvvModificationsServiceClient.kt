@@ -15,14 +15,12 @@ import com.github.kittinunf.result.Result
 import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.KeystoreEnv
 import fi.espoo.evaka.VtjXroadEnv
-import java.security.cert.X509Certificate
+import fi.espoo.evaka.shared.trustAllCerts
 import java.time.LocalDate
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
-import javax.net.ssl.X509TrustManager
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -52,7 +50,7 @@ class DvvModificationsServiceClient(
         ) {
             certCheckFuelManager(keyStore = xroadEnv.keyStore, trustStore = xroadEnv.trustStore)
         } else if (!xroadEnv.httpClientCertificateCheck) {
-            noCertCheckFuelManager()
+            FuelManager.trustAllCerts()
         } else {
             FuelManager()
         }
@@ -78,33 +76,6 @@ class DvvModificationsServiceClient(
                             java.security.SecureRandom()
                         )
                     }
-                    .socketFactory
-
-            hostnameVerifier = HostnameVerifier { _, _ -> true }
-        }
-
-    private fun noCertCheckFuelManager() =
-        FuelManager().apply {
-            val trustAllCerts =
-                arrayOf<TrustManager>(
-                    object : X509TrustManager {
-                        override fun getAcceptedIssuers(): Array<X509Certificate>? = null
-
-                        override fun checkClientTrusted(
-                            chain: Array<X509Certificate>,
-                            authType: String
-                        ) = Unit
-
-                        override fun checkServerTrusted(
-                            chain: Array<X509Certificate>,
-                            authType: String
-                        ) = Unit
-                    }
-                )
-
-            socketFactory =
-                SSLContext.getInstance("SSL")
-                    .apply { init(null, trustAllCerts, java.security.SecureRandom()) }
                     .socketFactory
 
             hostnameVerifier = HostnameVerifier { _, _ -> true }

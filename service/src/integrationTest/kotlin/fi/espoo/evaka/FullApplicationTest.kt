@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.trustAllCerts
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import io.opentracing.Tracer
@@ -71,7 +72,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @BeforeAll
     fun beforeAll() {
         assert(httpPort > 0)
-        http = FuelManager()
+        http = FuelManager.trustAllCerts()
         http.forceMethods = true // use actual PATCH requests
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
