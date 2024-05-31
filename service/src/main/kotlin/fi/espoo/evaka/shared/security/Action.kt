@@ -260,9 +260,7 @@ sealed interface Action {
                 .inAnyUnit()
         ),
         CREATE_UNIT(HasGlobalRole(ADMIN)),
-        READ_CUSTOMER_FEES_REPORT(
-            HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF, REPORT_VIEWER)
-        ),
+        READ_CUSTOMER_FEES_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, REPORT_VIEWER)),
         READ_DECISION_UNITS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
