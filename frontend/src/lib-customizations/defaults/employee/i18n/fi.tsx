@@ -229,6 +229,13 @@ export const fi = {
       title:
         'Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin.',
       checkboxLabel: 'Ymmärrän, olen asiasta yhteydessä laskutustiimiin.*'
+    },
+    userTypes: {
+      SYSTEM: 'järjestelmä',
+      CITIZEN: 'kuntalainen',
+      EMPLOYEE: 'työntekijä',
+      MOBILE_DEVICE: 'mobiililaite',
+      UNKNOWN: 'tuntematon'
     }
   },
   header: {
@@ -873,7 +880,8 @@ export const fi = {
           confidentiality: 'Asiakirjan julkisuus',
           confidential: 'Salassapidettävä',
           public: 'Julkinen',
-          organization: 'Organisaatio'
+          organization: 'Organisaatio',
+          history: 'Prosessin historia'
         }
       }
     },
@@ -4824,6 +4832,14 @@ export const fi = {
       'Voit määritellä eVakassa käytössä olevan kutsumanimesi. Kutsumanimen tulee olla jokin etunimistäsi. Jos nimesi on vaihtunut ja sinulla on tarve päivittää eVakaan uusi nimesi, ole yhteydessä Espoon HelpDeskiin.',
     select: 'Valitse kutsumanimi',
     confirm: 'Vahvista'
+  },
+  metadata: {
+    states: {
+      INITIAL: 'Asian vireillepano / -tulo',
+      PREPARATION: 'Asian valmistelu',
+      DECIDING: 'Päätöksenteko',
+      COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
+    }
   },
   components
 }

@@ -38,13 +38,13 @@ CREATE TYPE archived_process_state AS ENUM ('INITIAL', 'PREPARATION', 'DECIDING'
 
 CREATE TABLE archived_process_history (
     process_id uuid NOT NULL REFERENCES archived_process,
-    step smallint NOT NULL, -- incrementing number
+    row_index smallint NOT NULL, -- incrementing number
     state archived_process_state NOT NULL,
     entered_at timestamp with time zone NOT NULL,
     entered_by uuid NOT NULL REFERENCES evaka_user
 );
 
-CREATE UNIQUE INDEX uniq$process_step ON archived_process_history (process_id, step);
+CREATE UNIQUE INDEX uniq$archived_process_history_row_index ON archived_process_history (process_id, row_index);
 
 -- assume a 1-to-1 relationship between child_document and archived_process for now
 ALTER TABLE child_document

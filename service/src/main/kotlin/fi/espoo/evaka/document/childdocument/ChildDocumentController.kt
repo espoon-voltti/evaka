@@ -9,7 +9,10 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
+import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
@@ -73,19 +76,28 @@ class ChildDocumentController(
                         throw Conflict("Child already has incomplete document of the same template")
                     }
 
+                    val now = clock.now()
                     val processId =
                         template.processDefinitionNumber?.let { processDefinitionNumber ->
                             tx.insertProcess(
                                     processDefinitionNumber = processDefinitionNumber,
-                                    year = clock.today().year,
+                                    year = now.year,
                                     organization = featureConfig.archiveMetadataOrganization
                                 )
                                 .id
+                                .also { processId ->
+                                    tx.insertProcessHistoryRow(
+                                        processId = processId,
+                                        state = ArchivedProcessState.INITIAL,
+                                        now = now,
+                                        userId = user.evakaUserId
+                                    )
+                                }
                         }
 
                     tx.insertChildDocument(
                         document = body,
-                        now = clock.now(),
+                        now = now,
                         userId = user.id,
                         processId = processId
                     )
@@ -356,6 +368,13 @@ class ChildDocumentController(
                             clock.now()
                         )
                     }
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        documentId = documentId,
+                        newStatus = statusTransition.newStatus,
+                        now = clock.now(),
+                        userId = user.evakaUserId
+                    )
                 }
             }
             .also {
@@ -392,6 +411,13 @@ class ChildDocumentController(
                             goingForward = false
                         )
                     tx.changeStatus(documentId, statusTransition, clock.now())
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        documentId = documentId,
+                        newStatus = statusTransition.newStatus,
+                        now = clock.now(),
+                        userId = user.evakaUserId
+                    )
                 }
             }
             .also {

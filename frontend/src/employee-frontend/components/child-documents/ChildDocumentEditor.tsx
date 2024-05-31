@@ -45,7 +45,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H1, H2, H3 } from 'lib-components/typography'
+import { H1, H2, H3, H4 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -360,43 +360,56 @@ const ChildDocumentMetadataSection = React.memo(
         {renderResult(result, ({ data: metadata }) => {
           if (metadata === null) return <div>{t.notFound}</div>
           return (
-            <LabelValueList
-              spacing="small"
-              contents={[
-                {
-                  label: t.processNumber,
-                  value: metadata.process.processNumber
-                },
-                {
-                  label: t.name,
-                  value: metadata.documentName
-                },
-                {
-                  label: t.createdAt,
-                  value: metadata.documentCreatedAt?.format() ?? '-'
-                },
-                {
-                  label: t.createdBy,
-                  value: metadata.documentCreatedBy
-                    ? `${metadata.documentCreatedBy.firstName} ${metadata.documentCreatedBy.lastName} ${metadata.documentCreatedBy.email ? `(${metadata.documentCreatedBy.email})` : ''} `
-                    : '-'
-                },
-                {
-                  label: t.archiveDurationMonths,
-                  value: `${metadata.archiveDurationMonths} ${t.monthsUnit}`
-                },
-                {
-                  label: t.confidentiality,
-                  value: metadata.confidentialDocument
-                    ? t.confidential
-                    : t.public
-                },
-                {
-                  label: t.organization,
-                  value: metadata.process.organization
-                }
-              ]}
-            />
+            <div>
+              <LabelValueList
+                spacing="small"
+                contents={[
+                  {
+                    label: t.processNumber,
+                    value: metadata.process.processNumber
+                  },
+                  {
+                    label: t.name,
+                    value: metadata.documentName
+                  },
+                  {
+                    label: t.createdAt,
+                    value: metadata.documentCreatedAt?.format() ?? '-'
+                  },
+                  {
+                    label: t.createdBy,
+                    value: metadata.documentCreatedBy
+                      ? `${metadata.documentCreatedBy.firstName} ${metadata.documentCreatedBy.lastName} ${metadata.documentCreatedBy.email ? `(${metadata.documentCreatedBy.email})` : ''} `
+                      : '-'
+                  },
+                  {
+                    label: t.archiveDurationMonths,
+                    value: `${metadata.archiveDurationMonths} ${t.monthsUnit}`
+                  },
+                  {
+                    label: t.confidentiality,
+                    value: metadata.confidentialDocument
+                      ? t.confidential
+                      : t.public
+                  },
+                  {
+                    label: t.organization,
+                    value: metadata.process.organization
+                  }
+                ]}
+              />
+              <Gap />
+              <H4>{t.history}</H4>
+              <ul>
+                {metadata.process.history.map((row) => (
+                  <li key={row.rowIndex}>
+                    {row.enteredAt.format()}: {i18n.metadata.states[row.state]},{' '}
+                    {row.enteredBy.name} (
+                    {i18n.common.userTypes[row.enteredBy.type]})
+                  </li>
+                ))}
+              </ul>
+            </div>
           )
         })}
       </div>
