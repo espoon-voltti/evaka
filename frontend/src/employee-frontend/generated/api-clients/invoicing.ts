@@ -407,6 +407,24 @@ export async function updateFeeThresholds(
 
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.updateVoucherValue
+*/
+export async function updateVoucherValue(
+  request: {
+    id: UUID,
+    body: ServiceNeedOptionVoucherValueRange
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/finance-basics/voucher-values/${request.id}`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<ServiceNeedOptionVoucherValueRange>
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.invoicing.controller.FinanceDecisionController.getSelectableFinanceDecisionHandlers
 */
 export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]> {
