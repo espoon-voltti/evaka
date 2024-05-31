@@ -23,6 +23,8 @@ import fi.espoo.evaka.reports.mealTexturesForChildren
 import fi.espoo.evaka.reports.specialDietsForChildren
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.AsyncJobType
+import fi.espoo.evaka.shared.async.removeUnclaimedJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -49,6 +51,7 @@ class JamixService(
 
     init {
         asyncJobRunner.registerHandler(::sendOrder)
+        asyncJobRunner.registerHandler(::syncDiets)
     }
 
     fun planOrders(dbc: Database.Connection, clock: EvakaClock) {
@@ -75,7 +78,19 @@ class JamixService(
         }
     }
 
-    fun syncDiets(db: Database.Connection, clock: EvakaClock) {
+    fun planDietSync(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncJamixDiets::class)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.SyncJamixDiets()),
+                runAt = clock.now(),
+                retryCount = 1
+            )
+        }
+    }
+
+    fun syncDiets(db: Database.Connection, clock: EvakaClock, job: AsyncJob.SyncJamixDiets) {
         if (client == null) error("Cannot sync diet list: JamixEnv is not configured")
         fetchAndUpdateJamixDiets(client, db)
         fetchAndUpdateJamixTextures(client, db)

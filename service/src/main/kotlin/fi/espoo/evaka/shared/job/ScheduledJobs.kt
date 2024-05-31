@@ -345,7 +345,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun syncJamixDiets(db: Database.Connection, clock: EvakaClock) {
-        jamixService.syncDiets(db, clock)
+        jamixService.planDietSync(db, clock)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {
