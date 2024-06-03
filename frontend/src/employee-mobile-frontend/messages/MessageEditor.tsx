@@ -315,6 +315,7 @@ export default React.memo(function MessageEditor({
               onClick={sendMutationOnClick}
               onSuccess={onClose}
               data-qa="send-message-btn"
+              data-qa-modal="many-recipients-warning"
               confirmationTitle={
                 i18n.messages.messageEditor.manyRecipientsWarning.title
               }

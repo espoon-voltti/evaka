@@ -41,6 +41,7 @@ export type ConfirmedMutationProps<Arg, Data> = BaseProps & {
   confirmLabel?: string
   cancelLabel?: string
   onSuccess?: (value: Data) => void
+  'data-qa-modal'?: string
 } & (LargeButtonProps | InlineButtonProps | IconButtonProps)
 
 function ConfirmedMutation_<Arg, Data>(
@@ -56,6 +57,7 @@ function ConfirmedMutation_<Arg, Data>(
     onSuccess,
     cancelLabel,
     'data-qa': dataQa,
+    'data-qa-modal': dataQaModal,
     className
   } = props
   const i18n = useTranslations()
@@ -108,6 +110,7 @@ function ConfirmedMutation_<Arg, Data>(
           }}
           rejectAction={() => setConfirming(false)}
           rejectLabel={cancelLabel ?? i18n.common.cancel}
+          data-qa={dataQaModal}
         />
       )}
     </div>

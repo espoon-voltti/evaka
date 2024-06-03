@@ -24,6 +24,8 @@ export default class MobileMessageEditor extends Element {
   send = this.findByDataQa('send-message-btn')
   discard = this.findByDataQa('discard-message-btn')
   close = this.find('[aria-label="Sulje"]')
+  manyRecipientsWarning = this.findByDataQa('many-recipients-warning')
+  manyRecipientsConfirm = this.manyRecipientsWarning.findByDataQa('modal-okBtn')
 
   async fillMessage(message: {
     title: string

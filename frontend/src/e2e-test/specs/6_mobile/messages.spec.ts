@@ -348,6 +348,39 @@ describe('Messages page', () => {
   })
 
   test('Employee sends a message to a group', async () => {
+    const extraChildFixture = await Fixture.person().save()
+    const extraGuardianFixture1 = await Fixture.person()
+      .with({ ssn: '240190-5442' })
+      .save()
+    const extraGuardianFixture2 = await Fixture.person()
+      .with({ ssn: '210390-383J' })
+      .save()
+    await insertGuardians({
+      body: [
+        {
+          childId: extraChildFixture.data.id,
+          guardianId: extraGuardianFixture1.data.id
+        },
+        {
+          childId: extraChildFixture.data.id,
+          guardianId: extraGuardianFixture2.data.id
+        }
+      ]
+    })
+    await Fixture.child(extraChildFixture.data.id).save()
+    const extraPlacementFixture = await Fixture.placement()
+      .with({
+        childId: extraChildFixture.data.id,
+        unitId: daycareFixture.id,
+        startDate: mockedDate,
+        endDate: mockedDate
+      })
+      .save()
+    await Fixture.groupPlacement()
+      .with({ daycareGroupId: daycareGroup.id })
+      .withPlacement(extraPlacementFixture)
+      .save()
+
     await staffStartsNewMessage()
 
     await messageEditor.senderName.assertTextEquals(
@@ -367,6 +400,8 @@ describe('Messages page', () => {
     const message = { title: 'Otsikko', content: 'Testiviestin sisältö' }
     await messageEditor.fillMessage(message)
     await messageEditor.send.click()
+    await messageEditor.manyRecipientsWarning.waitUntilVisible()
+    await messageEditor.manyRecipientsConfirm.click()
     await messageEditor.waitUntilHidden()
     await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
