@@ -7,6 +7,7 @@ import { Arg0, UUID } from 'lib-common/types'
 
 import {
   createMessage,
+  createMessagePreflightCheck,
   deleteDraftMessage,
   getAccountsByDevice,
   getDraftMessages,
@@ -39,7 +40,11 @@ const queryKeys = createQueryKeys('messages', {
     threadId
   ],
   recipients: () => ['recipients'],
-  unreadCounts: () => ['unreadCounts']
+  unreadCounts: () => ['unreadCounts'],
+  preflight: (arg: Arg0<typeof createMessagePreflightCheck>) => [
+    'preflight',
+    arg
+  ]
 })
 
 export const messagingAccountsQuery = query({
@@ -85,6 +90,11 @@ export const recipientsQuery = query({
 export const unreadCountsQuery = query({
   api: getUnreadMessagesByUnit,
   queryKey: queryKeys.unreadCounts
+})
+
+export const createMessagePreflightCheckQuery = query({
+  api: createMessagePreflightCheck,
+  queryKey: queryKeys.preflight
 })
 
 export const sendMessageMutation = mutation({

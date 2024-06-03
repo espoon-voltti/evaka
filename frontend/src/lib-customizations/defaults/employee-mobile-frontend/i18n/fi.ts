@@ -423,7 +423,13 @@ export const fi = {
       },
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
-      sending: 'Lähetetään'
+      sending: 'Lähetetään',
+      recipientCount: 'Vastaanottajia',
+      manyRecipientsWarning: {
+        title: 'Viestillä on suuri määrä vastaanottajia.',
+        text: (count: number) =>
+          `Tämä viesti on lähdössä ${count} vastaanottajalle. Oletko varma, että haluat lähettää viestin?`
+      }
     },
     emptyInbox: 'Viestilaatikkosi on tyhjä',
     noSentMessages: 'Ei lähetettyjä viestejä',
