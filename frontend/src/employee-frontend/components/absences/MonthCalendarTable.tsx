@@ -36,6 +36,7 @@ import StaffAttendance from './StaffAttendance'
 interface MonthCalendarRow {
   holidays: Record<string, boolean>
   operationTimes: (TimeRange | null)[]
+  shiftCareOperationTimes: (TimeRange | null)[] | null
   child: GroupMonthCalendarChild
   days: [LocalDate, GroupMonthCalendarDayChild | undefined][]
   emptyCols: number[]
@@ -48,6 +49,7 @@ interface MonthCalendarRow {
 const MonthCalendarRow = React.memo(function MonthCalendarRow({
   holidays,
   operationTimes,
+  shiftCareOperationTimes,
   child,
   days,
   emptyCols,
@@ -109,7 +111,11 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
             <MonthCalendarCell
               date={date}
               holidays={holidays}
-              operationTime={operationTimes[date.getIsoDayOfWeek() - 1]}
+              operationTime={
+                (shiftCareOperationTimes ?? operationTimes)[
+                  date.getIsoDayOfWeek() - 1
+                ]
+              }
               childId={child.id}
               day={day}
               intermittentShiftCare={day.shiftCare === 'INTERMITTENT'}
@@ -317,6 +323,7 @@ export default React.memo(function MonthCalendarTable({
             key={child.id}
             holidays={holidays}
             operationTimes={groupMonthCalendar.daycareOperationTimes}
+            shiftCareOperationTimes={groupMonthCalendar.shiftCareOperationTimes}
             child={child}
             days={days}
             emptyCols={emptyCols}

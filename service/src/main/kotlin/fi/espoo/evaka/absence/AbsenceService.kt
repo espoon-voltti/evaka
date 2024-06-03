@@ -261,12 +261,13 @@ fun getGroupMonthCalendar(
             .sortedWith(compareBy({ it.lastName }, { it.firstName }))
 
     return GroupMonthCalendar(
-        groupId,
-        daycare.name,
-        daycare.operationTimes,
-        groupName,
-        children,
-        days,
+        groupId = groupId,
+        daycareName = daycare.name,
+        daycareOperationTimes = daycare.operationTimes,
+        shiftCareOperationTimes = daycare.shiftCareOperationTimes,
+        groupName = groupName,
+        children = children,
+        days = days,
     )
 }
 
@@ -516,6 +517,7 @@ data class GroupMonthCalendar(
     val groupId: GroupId,
     val daycareName: String,
     val daycareOperationTimes: List<TimeRange?>,
+    val shiftCareOperationTimes: List<TimeRange?>?,
     val groupName: String,
     val children: List<GroupMonthCalendarChild>,
     val days: List<GroupMonthCalendarDay>,

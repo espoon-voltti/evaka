@@ -107,6 +107,7 @@ export interface GroupMonthCalendar {
   days: GroupMonthCalendarDay[]
   groupId: UUID
   groupName: string
+  shiftCareOperationTimes: (TimeRange | null)[] | null
 }
 
 /**
@@ -230,7 +231,8 @@ export function deserializeJsonGroupMonthCalendar(json: JsonOf<GroupMonthCalenda
     ...json,
     children: json.children.map(e => deserializeJsonGroupMonthCalendarChild(e)),
     daycareOperationTimes: json.daycareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null),
-    days: json.days.map(e => deserializeJsonGroupMonthCalendarDay(e))
+    days: json.days.map(e => deserializeJsonGroupMonthCalendarDay(e)),
+    shiftCareOperationTimes: (json.shiftCareOperationTimes != null) ? json.shiftCareOperationTimes.map(e => (e != null) ? TimeRange.parseJson(e) : null) : null
   }
 }
 
