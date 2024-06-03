@@ -38,7 +38,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val documentCreatedAt: HelsinkiDateTime?,
         val documentCreatedBy: EmployeeBasics?,
         val archiveDurationMonths: Int,
-        val confidentialDocument: Boolean
+        val confidentialDocument: Boolean,
+        val downloadable: Boolean
     )
 
     // wrapper that is needed because currently returning null
@@ -78,7 +79,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                     ?: throw IllegalStateException(
                                         "archiveDurationMonths should always be set when archived process exists"
                                     ),
-                            confidentialDocument = document.confidential
+                            confidentialDocument = document.confidential,
+                            downloadable = document.downloadable
                         )
                     )
                 }
@@ -97,7 +99,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val archiveDurationMonths: Int?,
         val processId: ArchivedProcessId?,
         val createdAt: HelsinkiDateTime?,
-        @Nested("created_by") val createdBy: EmployeeBasics?
+        @Nested("created_by") val createdBy: EmployeeBasics?,
+        val downloadable: Boolean
     )
 
     private fun Database.Read.getChildDocumentBasics(
@@ -115,7 +118,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             e.id AS created_by_id,
             e.first_name AS created_by_first_name,
             e.last_name AS created_by_last_name,
-            e.email AS created_by_email
+            e.email AS created_by_email,
+            cd.document_key IS NOT NULL AS downloadable
         FROM child_document cd
         JOIN document_template dt ON dt.id = cd.template_id
         LEFT JOIN employee e ON e.id = cd.created_by

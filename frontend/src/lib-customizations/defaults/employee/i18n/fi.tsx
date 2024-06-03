@@ -881,7 +881,8 @@ export const fi = {
           confidential: 'Salassapidettävä',
           public: 'Julkinen',
           organization: 'Organisaatio',
-          history: 'Prosessin historia'
+          history: 'Prosessin historia',
+          downloadPdf: 'Lataa PDF'
         }
       }
     },

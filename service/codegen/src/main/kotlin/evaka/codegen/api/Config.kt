@@ -126,6 +126,7 @@ private val plannedEndpoints =
         "/employee/child-documents/{documentId}/content",
         "/employee/child-documents/{documentId}/lock",
         "/employee/child-documents/{documentId}/next-status",
+        "/employee/child-documents/{documentId}/pdf",
         "/employee/child-documents/{documentId}/prev-status",
         "/employee/child-documents/{documentId}/publish",
         "/employee/children/{child}/assistance",

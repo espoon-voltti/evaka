@@ -2247,6 +2247,7 @@ sealed interface Action {
                 .inPlacementGroupOfDuplicateChildOfHojksChildDocument()
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
+        DOWNLOAD(HasGlobalRole(ADMIN)),
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)

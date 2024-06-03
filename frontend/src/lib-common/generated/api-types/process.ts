@@ -50,6 +50,7 @@ export interface ChildDocumentMetadata {
   documentCreatedAt: HelsinkiDateTime | null
   documentCreatedBy: EmployeeBasics | null
   documentName: string
+  downloadable: boolean
   process: ArchivedProcess
 }
 

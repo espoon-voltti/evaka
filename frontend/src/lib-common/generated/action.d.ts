@@ -246,6 +246,7 @@ export type ChildDailyNote =
 
 export type ChildDocument =
   | 'DELETE'
+  | 'DOWNLOAD'
   | 'NEXT_STATUS'
   | 'PREV_STATUS'
   | 'PUBLISH'

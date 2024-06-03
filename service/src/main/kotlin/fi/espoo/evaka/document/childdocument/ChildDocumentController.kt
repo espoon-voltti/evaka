@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -450,5 +451,27 @@ class ChildDocumentController(
                 }
             }
             .also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
+    }
+
+    @GetMapping("/{documentId}/pdf")
+    fun downloadChildDocument(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.DOWNLOAD,
+                        documentId
+                    )
+                    childDocumentService.getPdfResponse(tx, documentId)
+                }
+            }
+            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
     }
 }

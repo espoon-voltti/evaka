@@ -244,7 +244,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         Action.ChildDocument.UPDATE,
                         Action.ChildDocument.NEXT_STATUS,
                         Action.ChildDocument.PREV_STATUS,
-                        Action.ChildDocument.READ_METADATA
+                        Action.ChildDocument.READ_METADATA,
+                        Action.ChildDocument.DOWNLOAD
                     )
             ),
             document

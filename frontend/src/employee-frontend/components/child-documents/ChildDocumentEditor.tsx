@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
 import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
+import { faArrowDownToLine } from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, {
@@ -19,6 +20,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useForm } from 'lib-common/form/hooks'
+import { Action } from 'lib-common/generated/action'
 import {
   ChildDocumentDetails,
   ChildDocumentWithPermittedActions,
@@ -31,6 +33,7 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
@@ -348,7 +351,13 @@ export const ChildDocumentEditView = React.memo(
 )
 
 const ChildDocumentMetadataSection = React.memo(
-  function ChildDocumentMetadataSection({ documentId }: { documentId: UUID }) {
+  function ChildDocumentMetadataSection({
+    documentId,
+    permittedActions
+  }: {
+    documentId: UUID
+    permittedActions: Action.ChildDocument[]
+  }) {
     const { i18n } = useTranslation()
     const t = i18n.childInformation.childDocuments.editor.metadata
     const result = useQueryResult(
@@ -409,6 +418,23 @@ const ChildDocumentMetadataSection = React.memo(
                   </li>
                 ))}
               </ul>
+              {permittedActions.includes('DOWNLOAD') && (
+                <>
+                  <Gap />
+                  <InlineButton
+                    icon={faArrowDownToLine}
+                    text={t.downloadPdf}
+                    disabled={!metadata.downloadable}
+                    onClick={() => {
+                      window.open(
+                        `/api/application/citizen/child-documents/${documentId}/pdf`,
+                        '_blank',
+                        'noopener,noreferrer'
+                      )
+                    }}
+                  />
+                </>
+              )}
             </div>
           )
         })}
@@ -475,7 +501,10 @@ const ChildDocumentReadViewInner = React.memo(
             <>
               <Gap />
               <ContentArea opaque>
-                <ChildDocumentMetadataSection documentId={document.id} />
+                <ChildDocumentMetadataSection
+                  documentId={document.id}
+                  permittedActions={documentAndPermissions.permittedActions}
+                />
               </ContentArea>
             </>
           )}
