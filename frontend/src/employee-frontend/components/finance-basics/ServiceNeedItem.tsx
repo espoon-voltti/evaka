@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faTrash } from 'Icons'
+import { faPen, faTrash } from 'Icons'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -15,6 +15,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
@@ -87,6 +88,12 @@ export default React.memo(function ServiceNeedItem({
     [setEditorState, serviceNeedId, previousCoeffient, previousCoeffientUnder3y]
   )
 
+  const editVoucherValue = useCallback(
+    (id: string, voucherValue: ServiceNeedOptionVoucherValueRange) =>
+      setEditorState({ editing: id, form: copyForm(voucherValue) }),
+    [setEditorState]
+  )
+
   return (
     <>
       <CollapsibleContentArea
@@ -131,6 +138,7 @@ export default React.memo(function ServiceNeedItem({
             {editorState.editing == 'new' ? (
               <VoucherValueEditor
                 i18n={i18n}
+                id={undefined}
                 initialState={editorState.form}
                 close={closeEditor}
               />
@@ -141,48 +149,75 @@ export default React.memo(function ServiceNeedItem({
                   a.voucherValues.range.start
                 )
               )
-              .map((voucherValue, i) => (
-                <Tr key={i} data-qa={`voucher-value-row-${i}`}>
-                  <Td data-qa="validity">
-                    {voucherValue.voucherValues.range.format('dd.MM.yyyy')}
-                  </Td>
-                  <Td data-qa="base-value">
-                    {(voucherValue.voucherValues.baseValue / 100).toFixed(2)}
-                  </Td>
-                  <Td data-qa="coefficient">
-                    {voucherValue.voucherValues.coefficient}
-                  </Td>
-                  <Td data-qa="value">
-                    {(voucherValue.voucherValues.value / 100).toFixed(2)}
-                  </Td>
-                  <Td data-qa="base-value-under-3y">
-                    {(
-                      voucherValue.voucherValues.baseValueUnder3y / 100
-                    ).toFixed(2)}
-                  </Td>
-                  <Td data-qa="coefficient-under-3y">
-                    {voucherValue.voucherValues.coefficientUnder3y}
-                  </Td>
-                  <Td data-qa="value-under-3y">
-                    {(voucherValue.voucherValues.valueUnder3y / 100).toFixed(2)}
-                  </Td>
-                  <Td data-qa="delete-btn">
-                    {voucherValue.voucherValues.range.end == null && (
-                      <ConfirmedMutation
-                        buttonStyle="INLINE"
-                        data-qa="btn-delete"
-                        icon={faTrash}
-                        buttonText=""
-                        mutation={deleteVoucherValueMutation}
-                        onClick={() => ({ id: voucherValue.id })}
-                        confirmationTitle={
-                          i18n.financeBasics.modals.deleteVoucherValue.title
-                        }
-                      />
-                    )}
-                  </Td>
-                </Tr>
-              ))}
+              .map((voucherValue, i) =>
+                editorState.editing === voucherValue.id ? (
+                  <VoucherValueEditor
+                    i18n={i18n}
+                    id={voucherValue.id}
+                    initialState={editorState.form}
+                    close={closeEditor}
+                    key={i}
+                  />
+                ) : (
+                  <Tr key={i} data-qa={`voucher-value-row-${i}`}>
+                    <Td data-qa="validity">
+                      {voucherValue.voucherValues.range.format('dd.MM.yyyy')}
+                    </Td>
+                    <Td data-qa="base-value">
+                      {(voucherValue.voucherValues.baseValue / 100).toFixed(2)}
+                    </Td>
+                    <Td data-qa="coefficient">
+                      {voucherValue.voucherValues.coefficient}
+                    </Td>
+                    <Td data-qa="value">
+                      {(voucherValue.voucherValues.value / 100).toFixed(2)}
+                    </Td>
+                    <Td data-qa="base-value-under-3y">
+                      {(
+                        voucherValue.voucherValues.baseValueUnder3y / 100
+                      ).toFixed(2)}
+                    </Td>
+                    <Td data-qa="coefficient-under-3y">
+                      {voucherValue.voucherValues.coefficientUnder3y}
+                    </Td>
+                    <Td data-qa="value-under-3y">
+                      {(voucherValue.voucherValues.valueUnder3y / 100).toFixed(
+                        2
+                      )}
+                    </Td>
+                    <Td data-qa="delete-btn">
+                      {voucherValue.voucherValues.range.end == null && (
+                        <ConfirmedMutation
+                          buttonStyle="INLINE"
+                          data-qa="btn-delete"
+                          icon={faTrash}
+                          buttonText=""
+                          mutation={deleteVoucherValueMutation}
+                          onClick={() => ({ id: voucherValue.id })}
+                          confirmationTitle={
+                            i18n.financeBasics.modals.deleteVoucherValue.title
+                          }
+                        />
+                      )}
+                    </Td>
+                    <Td data-qa="edit-btn">
+                      {voucherValue.voucherValues.range.end == null && (
+                        <IconButton
+                          icon={faPen}
+                          onClick={() =>
+                            editVoucherValue(
+                              voucherValue.id,
+                              voucherValue.voucherValues
+                            )
+                          }
+                          data-qa="copy"
+                          aria-label={i18n.common.edit}
+                        />
+                      )}
+                    </Td>
+                  </Tr>
+                )
+              )}
           </Tbody>
         </Table>
       </CollapsibleContentArea>
@@ -219,4 +254,18 @@ const emptyForm = (
   baseValueUnder3y: '0.00',
   coefficientUnder3y: coefficientUnder3y.toString(),
   valueUnder3y: '0.00'
+})
+
+const copyForm = (
+  voucherValue: ServiceNeedOptionVoucherValueRange
+): FormState => ({
+  serviceNeedOptionId: voucherValue.serviceNeedOptionId,
+  validFrom: voucherValue.range.start,
+  validTo: voucherValue.range.end,
+  baseValue: (voucherValue.baseValue / 100).toFixed(2),
+  coefficient: voucherValue.coefficient.toString(),
+  value: (voucherValue.value / 100).toFixed(2),
+  baseValueUnder3y: (voucherValue.baseValueUnder3y / 100).toFixed(2),
+  coefficientUnder3y: voucherValue.coefficientUnder3y.toString(),
+  valueUnder3y: (voucherValue.valueUnder3y / 100).toFixed(2)
 })

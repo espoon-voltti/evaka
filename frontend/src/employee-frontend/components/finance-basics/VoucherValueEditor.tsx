@@ -9,6 +9,7 @@ import { throwIfNull } from 'lib-common/form-validation'
 import { ServiceNeedOptionVoucherValueRange } from 'lib-common/generated/api-types/invoicing'
 import { parseCentsOrThrow } from 'lib-common/money'
 import { useMutationResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -17,16 +18,21 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Translations } from 'lib-customizations/employee'
 
 import { FormState } from './ServiceNeedItem'
-import { createVoucherValueMutation } from './queries'
+import {
+  createVoucherValueMutation,
+  updateVoucherValueMutation
+} from './queries'
 
 export type VoucherValueEditorProps = {
   i18n: Translations
+  id: UUID | undefined
   initialState: FormState
   close: () => void
 }
 
 export default React.memo(function VoucherValueEditor({
   i18n,
+  id,
   initialState,
   close
 }: VoucherValueEditorProps) {
@@ -36,10 +42,19 @@ export default React.memo(function VoucherValueEditor({
     createVoucherValueMutation
   )
 
-  const onSubmit = useCallback(
-    () => createVoucherValue({ body: parseFormOrThrow(editorState) }),
-    [editorState, createVoucherValue]
+  const { mutateAsync: updateVoucherValue } = useMutationResult(
+    updateVoucherValueMutation
   )
+
+  const onSubmit = useCallback(() => {
+    try {
+      return id !== undefined
+        ? updateVoucherValue({ id: id, body: parseFormOrThrow(editorState) })
+        : createVoucherValue({ body: parseFormOrThrow(editorState) })
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  }, [editorState, createVoucherValue, updateVoucherValue, id])
 
   return (
     <Tr key="edit">
