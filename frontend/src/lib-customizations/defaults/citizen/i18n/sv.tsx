@@ -190,6 +190,7 @@ const sv: Translations = {
   },
   loginPage: {
     title: 'Esbo stads småbarnspedagogik',
+    systemNotification: 'Viktigt meddelande',
     login: {
       title: 'Logga in med användarnamn',
       paragraph:

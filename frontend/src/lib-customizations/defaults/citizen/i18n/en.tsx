@@ -192,6 +192,7 @@ const en: Translations = {
   },
   loginPage: {
     title: 'City of Espoo early childhood education',
+    systemNotification: 'Important announcement',
     login: {
       title: 'Sign in with username',
       paragraph:
