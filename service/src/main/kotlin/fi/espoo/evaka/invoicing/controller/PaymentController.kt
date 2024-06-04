@@ -20,19 +20,16 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 class PaymentController(
     private val accessControl: AccessControl,
     private val paymentService: PaymentService
 ) {
-    @PostMapping("/payments/search")
+    @PostMapping(path = ["/payments/search", "/employee/payments/search"])
     fun searchPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -41,7 +38,7 @@ class PaymentController(
         return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
     }
 
-    @PostMapping("/payments/create-drafts")
+    @PostMapping(path = ["/payments/create-drafts", "/employee/payments/create-drafts"])
     fun createPaymentDrafts(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -63,7 +60,7 @@ class PaymentController(
         val paymentIds: List<PaymentId>
     )
 
-    @PostMapping("/payments/delete-drafts")
+    @PostMapping(path = ["/payments/delete-drafts", "/employee/payments/delete-drafts"])
     fun deleteDraftPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -85,7 +82,7 @@ class PaymentController(
         Audit.PaymentsDeleteDrafts.log(targetId = AuditId(paymentIds))
     }
 
-    @PostMapping("/payments/send")
+    @PostMapping(path = ["/payments/send", "/employee/payments/send"])
     fun sendPayments(
         db: Database,
         user: AuthenticatedUser.Employee,

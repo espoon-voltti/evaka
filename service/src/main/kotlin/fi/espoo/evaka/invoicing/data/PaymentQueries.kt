@@ -167,29 +167,27 @@ WHERE id = ${bind { it.id }}
 fun Database.Transaction.confirmDraftPayments(draftIds: List<PaymentId>) {
     if (draftIds.isEmpty()) return
 
-    createUpdate {
-            sql(
-                """
-                UPDATE payment set status = ${bind(PaymentStatus.CONFIRMED)}::payment_status 
-                WHERE status = ${bind(PaymentStatus.DRAFT)}::payment_status
+    execute {
+        sql(
+            """
+                UPDATE payment set status = ${bind(PaymentStatus.CONFIRMED)} 
+                WHERE status = ${bind(PaymentStatus.DRAFT)}
                 AND id = ANY (${bind(draftIds)})
                 """
-            )
-        }
-        .execute()
+        )
+    }
 }
 
 fun Database.Transaction.revertPaymentsToDrafts(paymentIds: List<PaymentId>) {
     if (paymentIds.isEmpty()) return
 
-    createUpdate {
-            sql(
-                """
-                UPDATE payment set status = ${bind(PaymentStatus.DRAFT)}::payment_status 
-                WHERE status = ${bind(PaymentStatus.CONFIRMED)}::payment_status
+    execute {
+        sql(
+            """
+                UPDATE payment set status = ${bind(PaymentStatus.DRAFT)} 
+                WHERE status = ${bind(PaymentStatus.CONFIRMED)}
                 AND id = ANY (${bind(paymentIds)})
                 """
-            )
-        }
-        .execute()
+        )
+    }
 }
