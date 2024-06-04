@@ -6,6 +6,7 @@ import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import {
+  getCustomerFeesReport,
   getExceededServiceNeedReportRows,
   getExceededServiceNeedReportUnits,
   getFamilyContactsReport,
@@ -32,6 +33,10 @@ import { createQueryKeys } from '../../query'
 import { OccupancyReportFilters } from './Occupancies'
 
 const queryKeys = createQueryKeys('reports', {
+  customerFees: (filters: Arg0<typeof getCustomerFeesReport>) => [
+    'customerFees',
+    filters
+  ],
   exceededServiceNeedsUnits: () => ['exceededServiceNeedsUnits'],
   exceededServiceNeedsRows: (params: {
     unitId: UUID
@@ -63,6 +68,11 @@ const queryKeys = createQueryKeys('reports', {
     'mealReportByUnit',
     filters
   ]
+})
+
+export const customerFeesReportQuery = query({
+  api: getCustomerFeesReport,
+  queryKey: queryKeys.customerFees
 })
 
 export const exceededServiceNeedReportUnitsQuery = query({

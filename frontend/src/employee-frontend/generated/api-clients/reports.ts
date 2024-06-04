@@ -15,6 +15,7 @@ import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/r
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
+import { CustomerFeesReportRow } from 'lib-common/generated/api-types/reports'
 import { DecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { DuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
@@ -23,6 +24,7 @@ import { ExceededServiceNeedReportUnit } from 'lib-common/generated/api-types/re
 import { FamilyConflictReportRow } from 'lib-common/generated/api-types/reports'
 import { FamilyContactReportRow } from 'lib-common/generated/api-types/reports'
 import { FamilyDaycareMealReportResult } from 'lib-common/generated/api-types/reports'
+import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { FuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import { JsonOf } from 'lib-common/json'
@@ -240,6 +242,32 @@ export async function getChildrenInDifferentAddressReport(): Promise<ChildrenInD
   const { data: json } = await client.request<JsonOf<ChildrenInDifferentAddressReportRow[]>>({
     url: uri`/reports/children-in-different-address`.toString(),
     method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.CustomerFeesReport.getCustomerFeesReport
+*/
+export async function getCustomerFeesReport(
+  request: {
+    date: LocalDate,
+    areaId?: UUID | null,
+    unitId?: UUID | null,
+    decisionType: FinanceDecisionType
+  }
+): Promise<CustomerFeesReportRow[]> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()],
+    ['areaId', request.areaId],
+    ['unitId', request.unitId],
+    ['decisionType', request.decisionType.toString()]
+  )
+  const { data: json } = await client.request<JsonOf<CustomerFeesReportRow[]>>({
+    url: uri`/employee/reports/customer-fees`.toString(),
+    method: 'GET',
+    params
   })
   return json
 }

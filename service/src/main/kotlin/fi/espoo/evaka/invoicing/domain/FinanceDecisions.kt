@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
@@ -79,6 +80,7 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
     return nonAnnulledConflicts + originalConflictsAnnulled
 }
 
+@ConstList("financeDecisionTypes")
 enum class FinanceDecisionType {
     FEE_DECISION,
     VOUCHER_VALUE_DECISION

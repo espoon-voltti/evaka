@@ -20,6 +20,7 @@ enum class Report {
     ATTENDANCE_RESERVATION,
     CHILD_AGE_LANGUAGE,
     CHILDREN_IN_DIFFERENT_ADDRESS,
+    CUSTOMER_FEES,
     DECISIONS,
     DUPLICATE_PEOPLE,
     ENDED_PLACEMENTS,
@@ -98,6 +99,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
                         )
+                    },
+                    Report.CUSTOMER_FEES.takeIf {
+                        permittedGlobalActions.contains(Action.Global.READ_CUSTOMER_FEES_REPORT)
                     },
                     Report.DECISIONS.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_DECISIONS_REPORT)

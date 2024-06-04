@@ -73,6 +73,7 @@ import AttendanceReservation from './components/reports/AttendanceReservation'
 import AttendanceReservationByChild from './components/reports/AttendanceReservationByChild'
 import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
 import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDifferentAddress'
+import ReportCustomerFees from './components/reports/CustomerFees'
 import ReportDecisions from './components/reports/Decisions'
 import ReportDuplicatePeople from './components/reports/DuplicatePeople'
 import ReportEndedPlacements from './components/reports/EndedPlacements'
@@ -589,6 +590,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <ReportInvoices />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/customer-fees',
+          element: (
+            <EmployeeRoute title="reports">
+              <ReportCustomerFees />
             </EmployeeRoute>
           )
         },
