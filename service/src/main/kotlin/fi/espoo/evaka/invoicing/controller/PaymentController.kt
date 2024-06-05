@@ -130,7 +130,7 @@ class PaymentController(
                 paymentService.confirmPayments(it, paymentIds)
             }
         }
-        Audit.PaymentsConfirmDrafts.log(targetId = paymentIds)
+        Audit.PaymentsConfirmDrafts.log(targetId = AuditId(paymentIds))
     }
 
     @PostMapping("/employee/payments/revert-to-draft")
@@ -152,7 +152,7 @@ class PaymentController(
                 paymentService.revertPaymentsToDrafts(it, paymentIds)
             }
         }
-        Audit.PaymentsRevertToDrafts.log(targetId = paymentIds)
+        Audit.PaymentsRevertToDrafts.log(targetId = AuditId(paymentIds))
     }
 }
 
