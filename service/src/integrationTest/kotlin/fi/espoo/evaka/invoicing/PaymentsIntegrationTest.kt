@@ -207,6 +207,122 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `confirm payments`() {
+        createVoucherDecision(
+            janFirst,
+            // Doesn't have payment details
+            unitId = testDaycare.id,
+            headOfFamilyId = testAdult_2.id,
+            childId = testChild_2.id,
+            value = 134850,
+            coPayment = 28800
+        )
+        createVoucherDecision(
+            janFirst,
+            // Has payment details
+            unitId = testVoucherDaycare.id,
+            headOfFamilyId = testAdult_1.id,
+            childId = testChild_1.id,
+            value = 87000,
+            coPayment = 28800
+        )
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+        val paymentDraftIds = createPaymentDrafts(janLast)
+
+        confirmPaymentDrafts(janLast, paymentDraftIds)
+
+        val payments = db.read { it.readPayments() }
+        assertEquals(2, payments.size)
+
+        // assert respective details
+        payments.first().let { payment ->
+            assertEquals(DateRange(janFirst, janLast), payment.period)
+            assertEquals(testDaycare.id, payment.unit.id)
+            assertEquals(testDaycare.name, payment.unit.name)
+            assertEquals(134850 - 28800, payment.amount)
+        }
+        payments.last().let { payment ->
+            assertEquals(testVoucherDaycare.id, payment.unit.id)
+            assertEquals(87000 - 28800, payment.amount)
+            assertEquals(testVoucherDaycare.name, payment.unit.name)
+        }
+
+        // assert that status is set and sending details remain unset
+        payments.forEach { payment ->
+            assertEquals(PaymentStatus.CONFIRMED, payment.status)
+            assertEquals(null, payment.paymentDate)
+            assertEquals(null, payment.dueDate)
+            assertEquals(null, payment.number)
+            assertEquals(null, payment.sentBy)
+            assertEquals(null, payment.sentAt)
+            assertEquals(null, payment.unit.businessId)
+            assertEquals(null, payment.unit.iban)
+            assertEquals(null, payment.unit.providerId)
+        }
+    }
+
+    @Test
+    fun `revert confirmed payments to drafts`() {
+        createVoucherDecision(
+            janFirst,
+            // Doesn't have payment details
+            unitId = testDaycare.id,
+            headOfFamilyId = testAdult_2.id,
+            childId = testChild_2.id,
+            value = 134850,
+            coPayment = 28800
+        )
+        createVoucherDecision(
+            janFirst,
+            // Has payment details
+            unitId = testVoucherDaycare.id,
+            headOfFamilyId = testAdult_1.id,
+            childId = testChild_1.id,
+            value = 87000,
+            coPayment = 28800
+        )
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
+        val paymentDraftIds = createPaymentDrafts(janLast)
+
+        confirmPaymentDrafts(janLast, paymentDraftIds)
+
+        revertPaymentsToDrafts(janLast, paymentDraftIds)
+
+        val payments = db.read { it.readPayments() }
+        assertEquals(2, payments.size)
+
+        // assert respective details
+        payments.first().let { payment ->
+            assertEquals(DateRange(janFirst, janLast), payment.period)
+            assertEquals(testDaycare.id, payment.unit.id)
+            assertEquals(testDaycare.name, payment.unit.name)
+            assertEquals(134850 - 28800, payment.amount)
+        }
+        payments.last().let { payment ->
+            assertEquals(testVoucherDaycare.id, payment.unit.id)
+            assertEquals(87000 - 28800, payment.amount)
+            assertEquals(testVoucherDaycare.name, payment.unit.name)
+        }
+
+        // assert that status is set and sending details remain unset
+        payments.forEach { payment ->
+            assertEquals(PaymentStatus.DRAFT, payment.status)
+            assertEquals(null, payment.paymentDate)
+            assertEquals(null, payment.dueDate)
+            assertEquals(null, payment.number)
+            assertEquals(null, payment.sentBy)
+            assertEquals(null, payment.sentAt)
+            assertEquals(null, payment.unit.businessId)
+            assertEquals(null, payment.unit.iban)
+            assertEquals(null, payment.unit.providerId)
+        }
+    }
+
+    @Test
     fun `send payments`() {
         createVoucherDecision(
             janFirst,
@@ -231,6 +347,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
         val paymentDraftIds = createPaymentDrafts(janLast)
 
+        confirmPaymentDrafts(janLast, paymentDraftIds)
         sendPayments(
             today = febFirst,
             paymentDate = febSecond,
@@ -241,7 +358,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val payments = db.read { it.readPayments() }
         assertEquals(2, payments.size)
         payments.first().let { payment ->
-            assertEquals(PaymentStatus.DRAFT, payment.status)
+            assertEquals(PaymentStatus.CONFIRMED, payment.status)
             assertEquals(DateRange(janFirst, janLast), payment.period)
             assertEquals(testDaycare.id, payment.unit.id)
             assertEquals(134850 - 28800, payment.amount)
@@ -307,6 +424,8 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
         }
         val paymentDraftIds1 = createPaymentDrafts(janLast)
+
+        confirmPaymentDrafts(janLast, paymentDraftIds1)
 
         sendPayments(
             today = febFirst,
@@ -396,6 +515,24 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""")
                 .toList<PaymentId>()
         }
+    }
+
+    private fun confirmPaymentDrafts(today: LocalDate, ids: List<PaymentId>) {
+        paymentController.confirmDraftPayments(
+            dbInstance(),
+            financeUser,
+            MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
+            ids
+        )
+    }
+
+    private fun revertPaymentsToDrafts(today: LocalDate, ids: List<PaymentId>) {
+        paymentController.revertPaymentsToDrafts(
+            dbInstance(),
+            financeUser,
+            MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
+            ids
+        )
     }
 
     private fun deletePaymentDrafts(today: LocalDate, paymentIds: List<PaymentId>) {

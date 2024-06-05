@@ -184,7 +184,7 @@ export function PaymentStatusFilter({
 }: PaymentStatusFilterProps) {
   const { i18n } = useTranslation()
 
-  const statuses: PaymentStatus[] = ['DRAFT', 'SENT']
+  const statuses: PaymentStatus[] = ['DRAFT', 'CONFIRMED', 'SENT']
 
   return (
     <>

@@ -801,6 +801,7 @@ export type PaymentSortParam =
 */
 export type PaymentStatus =
   | 'DRAFT'
+  | 'CONFIRMED'
   | 'SENT'
 
 /**

@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.invoicing.data.confirmDraftPayments
 import fi.espoo.evaka.invoicing.data.getMaxPaymentNumber
 import fi.espoo.evaka.invoicing.data.readPaymentsByIdsWithFreshUnitData
-import fi.espoo.evaka.invoicing.data.updatePaymentDraftsAsSent
+import fi.espoo.evaka.invoicing.data.revertPaymentsToDrafts
+import fi.espoo.evaka.invoicing.data.updateConfirmedPaymentsAsSent
 import fi.espoo.evaka.invoicing.domain.PaymentIntegrationClient
 import fi.espoo.evaka.invoicing.domain.PaymentStatus
 import fi.espoo.evaka.shared.FeatureConfig
@@ -39,9 +41,9 @@ class PaymentService(
                 ?: throw Error("paymentNumberSeriesStart not configured")
         val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
 
-        val notDrafts = payments.filterNot { it.status == PaymentStatus.DRAFT }
-        if (notDrafts.isNotEmpty()) {
-            throw BadRequest("Some payments are not drafts")
+        val notConfirmed = payments.filterNot { it.status == PaymentStatus.CONFIRMED }
+        if (notConfirmed.isNotEmpty()) {
+            throw BadRequest("Some payments are not confirmed")
         }
 
         var nextPaymentNumber =
@@ -86,6 +88,34 @@ class PaymentService(
             sendResult.failed.map { it.id }.joinToString(", ")
             }"
         }
-        tx.updatePaymentDraftsAsSent(sendResult.succeeded, now)
+        tx.updateConfirmedPaymentsAsSent(sendResult.succeeded, now)
+    }
+
+    fun confirmPayments(
+        tx: Database.Transaction,
+        paymentIds: List<PaymentId>,
+    ) {
+        val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
+
+        val notDrafts = payments.filterNot { it.status == PaymentStatus.DRAFT }
+        if (notDrafts.isNotEmpty()) {
+            throw BadRequest("Some payments are not drafts")
+        }
+
+        tx.confirmDraftPayments(paymentIds)
+    }
+
+    fun revertPaymentsToDrafts(
+        tx: Database.Transaction,
+        paymentIds: List<PaymentId>,
+    ) {
+        val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
+
+        val notConfirmed = payments.filterNot { it.status == PaymentStatus.CONFIRMED }
+        if (notConfirmed.isNotEmpty()) {
+            throw BadRequest("Some payments are not confirmed")
+        }
+
+        tx.revertPaymentsToDrafts(paymentIds)
     }
 }

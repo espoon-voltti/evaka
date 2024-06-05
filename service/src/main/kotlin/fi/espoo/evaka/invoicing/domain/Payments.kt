@@ -53,6 +53,7 @@ interface PaymentIntegrationClient {
 
 enum class PaymentStatus : DatabaseEnum {
     DRAFT,
+    CONFIRMED,
     SENT;
 
     override val sqlType = "payment_status"

@@ -2934,6 +2934,14 @@ export const fi = {
       createPaymentDrafts: 'Luo maksatusaineisto',
       checked: (count: number) =>
         count === 1 ? `${count} rivi valittu` : `${count} riviä valittu`,
+      confirmPayments: (count: number) =>
+        count === 1
+          ? `Merkitse ${count} maksu tarkastetuksi`
+          : `Merkitse ${count} maksua tarkastetuksi`,
+      revertPayments: (count: number) =>
+        count === 1
+          ? `Palauta ${count} maksu luonnokseksi`
+          : `Palauta ${count} maksua luonnoksiksi`,
       sendPayments: (count: number) =>
         count === 1 ? `Siirrä ${count} maksu` : `Siirrä ${count} maksua`,
       deletePayment: (count: number) =>
@@ -2941,6 +2949,7 @@ export const fi = {
     },
     status: {
       DRAFT: 'Luonnos',
+      CONFIRMED: 'Tarkastettu',
       SENT: 'Siirretty'
     },
     sendModal: {
