@@ -23,7 +23,7 @@ import {
 export type AsyncIconOnlyButtonProps<T> = IconOnlyButtonVisualProps &
   AsyncButtonBehaviorProps<T>
 
-export const AsyncIconOnlyButton = React.memo(function IconOnlyButton<T>({
+const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
   preventDefault,
   stopPropagation,
   onClick,
@@ -91,7 +91,11 @@ export const AsyncIconOnlyButton = React.memo(function IconOnlyButton<T>({
       </animated.div>
     </RelativeContainer>
   ))
-})
+}
+
+export const AsyncIconOnlyButton = React.memo(
+  AsyncIconOnlyButton_
+) as typeof AsyncIconOnlyButton_
 
 const RelativeContainer = styled.div`
   position: relative;
