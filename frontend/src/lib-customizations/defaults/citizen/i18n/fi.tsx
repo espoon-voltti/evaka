@@ -2034,7 +2034,7 @@ export default {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://www.espoo.fi/fi/artikkelit/lasten-varhaiskasvatuksesta-perittavat-maksut-182022-alkaen"
+            href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-asiakasmaksut#section-59617"
           >
             tästä
           </a>

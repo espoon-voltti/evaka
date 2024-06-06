@@ -1794,7 +1794,7 @@ const en: Translations = {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://www.espoo.fi/en/articles/early-education-fees-1-august-2022"
+            href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
           >
             here
           </a>

@@ -2034,7 +2034,7 @@ const sv: Translations = {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://www.espoo.fi/sv/artiklar/avgifter-smabarnspedagogik-fran-182022"
+            href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/klientavgifterna-smabarnspedagogik"
           >
             här
           </a>
