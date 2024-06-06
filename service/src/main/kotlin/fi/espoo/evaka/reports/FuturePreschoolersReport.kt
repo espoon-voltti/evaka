@@ -134,6 +134,7 @@ SELECT d.id,
     d.post_office as post_office,
     (SELECT count(id) FROM daycare_caretaker WHERE group_id = dg.id AND start_date < :today AND end_date >= :today) * 7 AS group_size,
     array_remove(ARRAY[
+        CASE WHEN d.provider_type != 'MUNICIPAL' THEN 'PRIVATE' END,
         CASE WHEN d.with_school THEN 'WITH_SCHOOL' END,
         CASE WHEN d.provides_shift_care THEN 'SHIFT_CARE' END,
         CASE WHEN d.language_emphasis_id IS NOT NULL THEN 'LANGUAGE_EMPHASIS' END
