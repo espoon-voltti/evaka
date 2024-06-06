@@ -20,7 +20,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -190,17 +190,17 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                               i18n.reports.assistanceNeedDecisions
                                 .mismatchDecisionMakerWarning.text
                             }{' '}
-                            <ButtonLink
+                            <Button
+                              appearance="link"
                               onClick={() =>
                                 setMismatchDecisionMakerModalOpen(true)
                               }
                               data-qa="mismatch-modal-link"
-                            >
-                              {
+                              text={
                                 i18n.reports.assistanceNeedDecisions
                                   .mismatchDecisionMakerWarning.link
                               }
-                            </ButtonLink>
+                            />
                           </>
                         }
                       />

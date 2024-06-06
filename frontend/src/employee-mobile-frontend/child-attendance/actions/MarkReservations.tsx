@@ -45,7 +45,7 @@ import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
-import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
@@ -499,7 +499,8 @@ const ReservationEdit = ({
       return <TimesEdit bind={form} />
     case 'absence':
       return (
-        <ButtonLink
+        <Button
+          appearance="link"
           onClick={() => {
             if (form.state.scheduleType === 'FIXED_SCHEDULE') {
               reservation.set({ branch: 'fixedSchedule', state: true })
@@ -511,9 +512,8 @@ const ReservationEdit = ({
             }
           }}
           data-qa="remove-absence"
-        >
-          {i18n.attendances.removeAbsence}
-        </ButtonLink>
+          text={i18n.attendances.removeAbsence}
+        />
       )
     case 'fixedSchedule':
       return (

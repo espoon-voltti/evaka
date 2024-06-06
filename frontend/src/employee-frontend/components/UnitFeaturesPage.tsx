@@ -20,7 +20,7 @@ import {
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -168,7 +168,8 @@ export default React.memo(function UnitFeaturesPage() {
                       <div>{i18n.unitFeatures.pilotFeatures[f]}</div>
                       <Gap size="xs" />
                       <div>
-                        <ButtonLink
+                        <Button
+                          appearance="link"
                           onClick={() => {
                             void updateFeatures(
                               units
@@ -181,11 +182,12 @@ export default React.memo(function UnitFeaturesPage() {
                               !allSelected
                             )
                           }}
-                        >
-                          {allSelected
-                            ? i18n.unitFeatures.page.unselectAll
-                            : i18n.unitFeatures.page.selectAll}
-                        </ButtonLink>
+                          text={
+                            allSelected
+                              ? i18n.unitFeatures.page.unselectAll
+                              : i18n.unitFeatures.page.selectAll
+                          }
+                        />
                       </div>
                     </Td>
                   )
