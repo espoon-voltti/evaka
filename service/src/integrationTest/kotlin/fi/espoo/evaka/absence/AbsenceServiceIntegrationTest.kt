@@ -135,6 +135,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 groupName = testDaycareGroup.name,
                 daycareName = testDaycare.name,
                 daycareOperationTimes = testDaycare.operationTimes,
+                shiftCareOperationTimes = testDaycare.shiftCareOperationTimes,
                 children = listOf(),
                 days =
                     FiniteDateRange.ofMonth(today.year, today.month)
@@ -344,6 +345,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 groupName = "testiryhmä",
                 daycareName = testRoundTheClockDaycare.name,
                 daycareOperationTimes = testRoundTheClockDaycare.operationTimes,
+                shiftCareOperationTimes = testRoundTheClockDaycare.shiftCareOperationTimes,
                 children =
                     listOf(
                         // Sorted by lastName firstName
@@ -441,6 +443,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 groupName = testDaycareGroup.name,
                 daycareName = testDaycare.name,
                 daycareOperationTimes = testDaycare.operationTimes,
+                shiftCareOperationTimes = testDaycare.shiftCareOperationTimes,
                 children = listOf(child(testChild_1)),
                 days =
                     FiniteDateRange.ofMonth(placementStart.year, placementStart.month)
