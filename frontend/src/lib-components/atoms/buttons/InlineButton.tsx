@@ -69,6 +69,9 @@ export interface InlineButtonProps extends BaseProps {
   iconRight?: boolean
 }
 
+/**
+ * @deprecated use Button and appearance="inline" instead
+ */
 const InlineButton = React.forwardRef(function InlineButton(
   {
     className,

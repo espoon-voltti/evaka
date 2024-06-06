@@ -4,6 +4,9 @@
 
 import styled from 'styled-components'
 
+/**
+ * @deprecated use Button and appearance="link" instead
+ */
 export const ButtonLink = styled.button`
   color: ${(p) => p.theme.colors.main.m2};
   cursor: pointer;
