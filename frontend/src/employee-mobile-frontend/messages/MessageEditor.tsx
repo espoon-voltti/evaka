@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import isEqual from 'lodash/isEqual'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { boolean, string } from 'lib-common/form/fields'
@@ -17,9 +18,10 @@ import {
   PostMessageBody,
   UpdatableDraftContent
 } from 'lib-common/generated/api-types/messaging'
-import { cancelMutation, useMutation } from 'lib-common/query'
+import { cancelMutation, useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import MutateButton, {
   InlineMutateButton
@@ -33,6 +35,7 @@ import {
   receiversAsSelectorNode,
   SelectorNode
 } from 'lib-components/messages/SelectorNode'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Bold, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -41,6 +44,7 @@ import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 
 import {
+  createMessagePreflightCheckQuery,
   deleteDraftMutation,
   initDraftMutation,
   saveDraftMutation,
@@ -174,6 +178,35 @@ export default React.memo(function MessageEditor({
   )
   const { recipients, urgent, title, content } = useFormFields(form)
 
+  const selectedRecipients = useMemo(
+    () => getSelected(recipients.value()).map((r) => r.messageRecipient),
+    [recipients]
+  )
+  const debouncedRecipients = useDebounce(selectedRecipients, 500)
+  const preflightResult = useQueryResult(
+    createMessagePreflightCheckQuery({
+      accountId: account.id,
+      body: {
+        filters: null, // not supported on mobile
+        recipients: debouncedRecipients
+      }
+    })
+  )
+
+  const sendDisabled =
+    !form.isValid() ||
+    form.value().messageContent(draftId) === undefined ||
+    !isEqual(debouncedRecipients, selectedRecipients) ||
+    !preflightResult.isSuccess
+
+  const sendMutationOnClick = () => {
+    cancelSaveDraft()
+    const messageContent = form.value().messageContent(draftId)
+    return messageContent !== undefined
+      ? { accountId: account.id, body: messageContent }
+      : cancelMutation
+  }
+
   return (
     <div data-qa="message-editor">
       <TopBar
@@ -249,6 +282,12 @@ export default React.memo(function MessageEditor({
 
         <Gap size="s" />
 
+        <div>
+          <span>{i18n.messages.messageEditor.recipientCount}: </span>
+          {preflightResult.isSuccess && (
+            <span>{preflightResult.value.numberOfRecipientAccounts}</span>
+          )}
+        </div>
         <BottomRow>
           <InlineMutateButton
             text={i18n.messages.messageEditor.deleteDraft}
@@ -265,24 +304,38 @@ export default React.memo(function MessageEditor({
             data-qa="discard-message-btn"
           />
           <span />
-          <MutateButton
-            mutation={sendMessageMutation}
-            primary
-            text={i18n.messages.messageEditor.send}
-            disabled={
-              !form.isValid() ||
-              form.value().messageContent(draftId) === undefined
-            }
-            onClick={() => {
-              cancelSaveDraft()
-              const messageContent = form.value().messageContent(draftId)
-              return messageContent !== undefined
-                ? { accountId: account.id, body: messageContent }
-                : cancelMutation
-            }}
-            onSuccess={onClose}
-            data-qa="send-message-btn"
-          />
+          {preflightResult.isSuccess &&
+          preflightResult.value.numberOfRecipientAccounts > 2 ? (
+            <ConfirmedMutation
+              mutation={sendMessageMutation}
+              buttonStyle="BUTTON"
+              primary
+              buttonText={i18n.messages.messageEditor.send}
+              disabled={sendDisabled}
+              onClick={sendMutationOnClick}
+              onSuccess={onClose}
+              data-qa="send-message-btn"
+              data-qa-modal="many-recipients-warning"
+              confirmationTitle={
+                i18n.messages.messageEditor.manyRecipientsWarning.title
+              }
+              confirmationText={i18n.messages.messageEditor.manyRecipientsWarning.text(
+                preflightResult.value.numberOfRecipientAccounts
+              )}
+              confirmLabel={i18n.messages.messageEditor.send}
+              cancelLabel={i18n.common.cancel}
+            />
+          ) : (
+            <MutateButton
+              mutation={sendMessageMutation}
+              primary
+              text={i18n.messages.messageEditor.send}
+              disabled={sendDisabled}
+              onClick={sendMutationOnClick}
+              onSuccess={onClose}
+              data-qa="send-message-btn"
+            />
+          )}
         </BottomRow>
       </ContentArea>
     </div>
