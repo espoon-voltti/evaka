@@ -10,7 +10,6 @@
 
 .gradle
 .gradle_user_home
-.kotlin
 /build/
 /target/
 /lib/
