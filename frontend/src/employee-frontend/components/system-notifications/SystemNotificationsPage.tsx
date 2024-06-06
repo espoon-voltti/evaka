@@ -88,11 +88,11 @@ const NotificationEditor = React.memo(function NotificationEditor({
   return (
     <FixedSpaceColumn>
       <Label>{i18n.systemNotifications.text}</Label>
-      <InputFieldF bind={text} />
+      <InputFieldF bind={text} data-qa="text-input" />
       <FixedSpaceRow>
         <Label>{i18n.systemNotifications.validTo}</Label>
-        <DatePickerF bind={validToDate} locale={lang} />
-        <TimeInputF bind={validToTime} />
+        <DatePickerF bind={validToDate} locale={lang} data-qa="date-input" />
+        <TimeInputF bind={validToTime} data-qa="time-input" />
       </FixedSpaceRow>
       <FixedSpaceRow>
         <Button text={i18n.common.cancel} onClick={onClose} />
@@ -103,6 +103,7 @@ const NotificationEditor = React.memo(function NotificationEditor({
           mutation={putSystemNotificationMutation}
           onClick={() => ({ body: form.value() })}
           onSuccess={onClose}
+          data-qa="save-btn"
         />
       </FixedSpaceRow>
     </FixedSpaceColumn>
@@ -186,6 +187,7 @@ const SystemNotificationsPageInner = React.memo(
                       text={i18n.systemNotifications.setNotification}
                       icon={faPlus}
                       disabled={editedNotification !== null}
+                      data-qa="create-btn"
                     />
                   )}
                 </FixedSpaceColumn>
