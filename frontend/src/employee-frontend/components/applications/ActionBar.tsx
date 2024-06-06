@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import StickyActionBar from '../../components/common/StickyActionBar'
@@ -165,7 +165,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
       ) : null}
       <FixedSpaceRow>
         {actions.map(({ id, label, disabled, onClick, primary }) => (
-          <Button
+          <LegacyButton
             key={id}
             onClick={onClick}
             text={label}

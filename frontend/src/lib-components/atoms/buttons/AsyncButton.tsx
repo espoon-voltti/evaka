@@ -13,7 +13,7 @@ import { faCheck, faTimes } from 'lib-icons'
 
 import { ScreenReaderOnly } from '../ScreenReaderOnly'
 
-import { StyledButton } from './Button'
+import { StyledButton } from './LegacyButton'
 import {
   AsyncButtonBehaviorProps,
   useAsyncButtonBehavior

@@ -14,7 +14,7 @@ import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
@@ -273,7 +273,7 @@ export default React.memo(function StaffMarkDepartedPage({
                 <Gap size="xs" />
                 <Actions>
                   <FixedSpaceRow fullWidth>
-                    <Button
+                    <LegacyButton
                       text={i18n.common.cancel}
                       onClick={() => navigate(-1)}
                     />

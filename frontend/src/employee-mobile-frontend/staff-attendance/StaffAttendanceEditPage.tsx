@@ -42,10 +42,10 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -295,7 +295,7 @@ const StaffAttendancesEditor = ({
         </ContentArea>
         <ContentArea opaque paddingHorizontal="s">
           <FixedSpaceRow justifyContent="space-between">
-            <Button
+            <LegacyButton
               data-qa="cancel"
               onClick={() => {
                 pinCode.update(() => EMPTY_PIN)
@@ -304,7 +304,7 @@ const StaffAttendancesEditor = ({
               }}
             >
               {i18n.common.cancel}
-            </Button>
+            </LegacyButton>
             <MutateButton
               primary
               data-qa="confirm"
@@ -431,7 +431,7 @@ const StaffAttendancesEditor = ({
       </ContentArea>
       <ContentArea opaque paddingHorizontal="s">
         <FixedSpaceRow justifyContent="space-between">
-          <Button
+          <LegacyButton
             data-qa="cancel"
             onClick={() =>
               navigate(
@@ -441,15 +441,15 @@ const StaffAttendancesEditor = ({
             }
           >
             {i18n.common.cancel}
-          </Button>
-          <Button
+          </LegacyButton>
+          <LegacyButton
             primary
             data-qa="save"
             onClick={() => setMode('pin')}
             disabled={!form.isValid()}
           >
             <FontAwesomeIcon icon={faLockAlt} /> {i18n.common.saveChanges}
-          </Button>
+          </LegacyButton>
         </FixedSpaceRow>
       </ContentArea>
     </>

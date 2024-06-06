@@ -90,7 +90,10 @@ export interface ButtonProps extends BaseProps {
   type?: 'submit' | 'button'
 }
 
-export const Button = React.memo(function Button({
+/**
+ * @deprecated use Button instead
+ */
+export const LegacyButton = React.memo(function LegacyButton({
   className,
   'data-qa': dataQa,
   onClick,

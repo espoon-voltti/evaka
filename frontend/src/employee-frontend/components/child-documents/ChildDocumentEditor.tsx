@@ -32,7 +32,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -267,7 +267,7 @@ const ChildDocumentEditViewInner = React.memo(
           <Container>
             <FixedSpaceRow justifyContent="space-between" alignItems="center">
               <FixedSpaceRow alignItems="center">
-                <Button
+                <LegacyButton
                   text={i18n.common.goBack}
                   onClick={goBack}
                   // disable while debounce is pending to avoid leaving before saving
@@ -293,7 +293,7 @@ const ChildDocumentEditViewInner = React.memo(
                 </FixedSpaceRow>
               </FixedSpaceRow>
 
-              <Button
+              <LegacyButton
                 text={i18n.childInformation.childDocuments.editor.preview}
                 primary
                 onClick={() =>
@@ -514,7 +514,7 @@ const ChildDocumentReadViewInner = React.memo(
           <Container>
             <FixedSpaceRow justifyContent="space-between" alignItems="center">
               <FixedSpaceRow alignItems="center">
-                <Button
+                <LegacyButton
                   text={i18n.common.goBack}
                   onClick={goBack}
                   data-qa="return-button"
@@ -563,7 +563,7 @@ const ChildDocumentReadViewInner = React.memo(
               <FixedSpaceRow>
                 {permittedActions.includes('UPDATE') &&
                   document.status !== 'COMPLETED' && (
-                    <Button
+                    <LegacyButton
                       text={i18n.common.edit}
                       onClick={() =>
                         navigate(

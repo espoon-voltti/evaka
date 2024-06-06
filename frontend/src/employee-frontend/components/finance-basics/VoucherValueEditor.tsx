@@ -15,7 +15,7 @@ import { isValidCents, parseCentsOrThrow } from 'lib-common/money'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -242,7 +242,7 @@ export default React.memo(function VoucherValueEditor({
           />
         </Td>
         <Td>
-          <Button text={i18n.common.cancel} onClick={close} />
+          <LegacyButton text={i18n.common.cancel} onClick={close} />
           <AsyncButton
             primary
             text={i18n.common.save}

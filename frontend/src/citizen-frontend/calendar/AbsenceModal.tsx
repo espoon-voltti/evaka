@@ -24,7 +24,7 @@ import { UUID } from 'lib-common/types'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
@@ -270,7 +270,7 @@ export default React.memo(function AbsenceModal({
               </CalendarModalSection>
             </div>
             <CalendarModalButtons>
-              <Button
+              <LegacyButton
                 onClick={close}
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}

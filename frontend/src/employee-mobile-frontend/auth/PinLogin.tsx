@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -140,7 +140,7 @@ const PinLoginForm = React.memo(function PinLoginForm({
 
           <Gap size="s" />
 
-          <Button
+          <LegacyButton
             primary
             disabled={!valid || submitting}
             text={i18n.pin.login}

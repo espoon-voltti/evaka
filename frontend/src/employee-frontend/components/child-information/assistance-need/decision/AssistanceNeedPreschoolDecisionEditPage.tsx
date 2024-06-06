@@ -41,7 +41,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -950,7 +950,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
       <StickyFooter>
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <FixedSpaceRow alignItems="center">
-            <Button
+            <LegacyButton
               text={i18n.childInformation.assistanceNeedDecision.leavePage}
               disabled={saving}
               onClick={() =>
@@ -978,7 +978,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
             </FixedSpaceRow>
           </FixedSpaceRow>
 
-          <Button
+          <LegacyButton
             primary
             text={i18n.childInformation.assistanceNeedDecision.preview}
             disabled={!saved || (displayValidation && !isValid)}

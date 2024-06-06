@@ -17,8 +17,8 @@ import { UserRole } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -84,7 +84,7 @@ const GlobalRolesForm = React.memo(function GlobalRolesForm({
         ))}
       </FixedSpaceColumn>
       <FixedSpaceRow>
-        <Button text={i18n.common.cancel} onClick={onCancel} />
+        <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
         <MutateButton
           primary
           text={i18n.common.save}

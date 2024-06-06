@@ -24,8 +24,8 @@ import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -146,7 +146,7 @@ export default React.memo(function TemplateContentEditor({
       <Gap />
       <ContentArea opaque>
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
-          <Button
+          <LegacyButton
             text={i18n.common.goBack}
             onClick={() => navigate('/document-templates')}
           />
@@ -382,7 +382,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
         )}
       </div>
       <FixedSpaceRow justifyContent="flex-end">
-        <Button onClick={onClose} text={i18n.common.cancel} />
+        <LegacyButton onClick={onClose} text={i18n.common.cancel} />
         <MutateButton
           primary
           mutation={updateDocumentTemplateBasicsMutation}

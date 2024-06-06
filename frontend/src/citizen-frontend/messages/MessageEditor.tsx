@@ -19,8 +19,8 @@ import {
 import { formatFirstName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -314,7 +314,7 @@ export default React.memo(function MessageEditor({
               </ErrorMessage>
             )}
             <BottomRow>
-              <Button
+              <LegacyButton
                 text={i18n.messages.messageEditor.discard}
                 onClick={onClose}
               />

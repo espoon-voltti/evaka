@@ -34,8 +34,8 @@ import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -453,7 +453,7 @@ export default React.memo(function DiscussionReservationSurveyView({
   )
 })
 
-const ExpandHorizonButton = styled(Button)`
+const ExpandHorizonButton = styled(LegacyButton)`
   margin-bottom: 10px;
 `
 const WidthLimiter = styled.div`

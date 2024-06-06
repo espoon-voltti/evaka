@@ -23,8 +23,8 @@ import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import Main from 'lib-components/atoms/Main'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton, {
   ReturnButtonWrapper
 } from 'lib-components/atoms/buttons/ReturnButton'
@@ -376,7 +376,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
       <ActionRow breakpoint="660px">
         {!verifying && (
-          <Button
+          <LegacyButton
             data-qa="cancel-application-button"
             text={t.applications.editor.actions.cancel}
             onClick={() => navigate(-1)}
@@ -387,7 +387,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         <div className="expander" />
 
         {application.status === 'CREATED' && !verifying && (
-          <Button
+          <LegacyButton
             text={t.applications.editor.actions.saveDraft}
             onClick={onSaveDraft}
             disabled={submitting}
@@ -396,14 +396,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         )}
         {verifying ? (
           <>
-            <Button
+            <LegacyButton
               text={t.applications.editor.actions.returnToEditBtn}
               onClick={() => setVerifying(false)}
               disabled={submitting}
               data-qa="return-to-edit-btn"
             />
             {application.status === 'CREATED' ? (
-              <Button
+              <LegacyButton
                 text={t.applications.editor.actions.send}
                 onClick={onSend}
                 disabled={
@@ -415,7 +415,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
                 data-qa="send-btn"
               />
             ) : (
-              <Button
+              <LegacyButton
                 text={t.applications.editor.actions.update}
                 onClick={onUpdate}
                 disabled={
@@ -429,7 +429,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             )}
           </>
         ) : (
-          <Button
+          <LegacyButton
             text={t.applications.editor.actions.verify}
             onClick={onVerify}
             disabled={submitting}

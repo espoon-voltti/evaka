@@ -21,8 +21,8 @@ import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -660,8 +660,11 @@ export default React.memo(function PersonDetails({
       {editing && (
         <RightAlignedRow>
           <FixedSpaceRow>
-            <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
-            <Button
+            <LegacyButton
+              onClick={() => clearUiMode()}
+              text={i18n.common.cancel}
+            />
+            <LegacyButton
               primary
               disabled={false}
               onClick={() => onSubmit()}

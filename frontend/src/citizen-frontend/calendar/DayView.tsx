@@ -39,8 +39,11 @@ import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Button, StyledButton } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import {
+  LegacyButton,
+  StyledButton
+} from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
@@ -181,7 +184,7 @@ function View({
   )
 
   const leftButton = reservationsEditable ? (
-    <Button
+    <LegacyButton
       onClick={onEditReservations}
       text={i18n.common.edit}
       data-qa="edit"
@@ -189,7 +192,7 @@ function View({
   ) : undefined
 
   const rightButton = absencesEditable ? (
-    <Button
+    <LegacyButton
       primary
       text={i18n.calendar.newAbsence}
       onClick={onCreateAbsence}
@@ -249,7 +252,11 @@ function Edit({
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
 
   const leftButton = (
-    <Button onClick={onCancel} text={i18n.common.cancel} data-qa="cancel" />
+    <LegacyButton
+      onClick={onCancel}
+      text={i18n.common.cancel}
+      data-qa="cancel"
+    />
   )
 
   const rightButton = (

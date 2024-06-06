@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import { useTranslation } from '../../state/i18n'
@@ -31,8 +31,8 @@ function FormActions({
   return (
     <ButtonsContainer>
       <FixedSpaceRow>
-        <Button onClick={onCancel} text={i18n.common.cancel} />
-        <Button
+        <LegacyButton onClick={onCancel} text={i18n.common.cancel} />
+        <LegacyButton
           primary
           type="submit"
           disabled={disabled}

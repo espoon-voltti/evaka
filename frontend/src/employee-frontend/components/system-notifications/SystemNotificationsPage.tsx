@@ -23,7 +23,7 @@ import {
 } from 'lib-common/generated/api-types/systemnotifications'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useQueryResult } from 'lib-common/query'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton, {
   InlineMutateButton
@@ -95,7 +95,7 @@ const NotificationEditor = React.memo(function NotificationEditor({
         <TimeInputF bind={validToTime} data-qa="time-input" />
       </FixedSpaceRow>
       <FixedSpaceRow>
-        <Button text={i18n.common.cancel} onClick={onClose} />
+        <LegacyButton text={i18n.common.cancel} onClick={onClose} />
         <MutateButton
           primary
           text={i18n.common.save}

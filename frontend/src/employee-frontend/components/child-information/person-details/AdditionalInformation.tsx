@@ -15,8 +15,8 @@ import { IsoLanguage, isoLanguages } from 'lib-common/generated/language'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -375,7 +375,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
           {editing && (
             <RightAlignedRow>
               <FixedSpaceRow>
-                <Button onClick={clearUiMode} text={i18n.common.cancel} />
+                <LegacyButton onClick={clearUiMode} text={i18n.common.cancel} />
                 <AsyncButton
                   primary
                   disabled={false}

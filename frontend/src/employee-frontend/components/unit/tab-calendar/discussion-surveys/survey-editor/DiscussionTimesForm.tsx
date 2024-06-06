@@ -17,7 +17,7 @@ import {
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -180,7 +180,7 @@ export default React.memo(function DiscussionTimesForm({
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <Button
+                  <LegacyButton
                     onClick={extendHorizonAction}
                     text={
                       i18n.unit.calendar.events.discussionReservation.calendar

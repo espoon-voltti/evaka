@@ -45,9 +45,9 @@ import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
@@ -364,7 +364,7 @@ const ReservationsView = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <Button
+          <LegacyButton
             text={
               i18n.attendances.actions.confirmedRangeReservations
                 .markReservations
@@ -372,7 +372,7 @@ const ReservationsView = ({
             onClick={onEditReservations}
             data-qa="edit"
           />
-          <Button
+          <LegacyButton
             primary
             text={
               i18n.attendances.actions.confirmedRangeReservations
@@ -465,7 +465,7 @@ const ReservationsEdit = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <Button text={i18n.common.cancel} onClick={onCancel} />
+          <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
           <MutateButton
             primary
             text={i18n.common.confirm}

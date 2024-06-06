@@ -19,8 +19,8 @@ import {
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import {
@@ -293,7 +293,7 @@ export const DiscussionReservationModal = React.memo(
             />
 
             <FixedSpaceRow justifyContent="flex-end" spacing="s">
-              <Button
+              <LegacyButton
                 onClick={cancelChanges}
                 data-qa="cancel"
                 text={i18n.common.cancel}

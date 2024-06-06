@@ -18,7 +18,7 @@ import {
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -41,7 +41,7 @@ import {
 
 import { AssistanceNeedDecisionReportContext } from './AssistanceNeedDecisionReportContext'
 
-const DangerButton = styled(Button)`
+const DangerButton = styled(LegacyButton)`
   background-color: ${(p) => p.theme.colors.status.danger};
   color: ${(p) => p.theme.colors.grayscale.g0};
   border-color: transparent;
@@ -144,7 +144,7 @@ const DecisionView = React.memo(function DecisionView({
       <Gap size="m" />
       <StickyFooter>
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
-          <Button
+          <LegacyButton
             text={i18n.childInformation.assistanceNeedDecision.leavePage}
             onClick={() => navigate(`/reports/assistance-need-decisions`)}
           />
@@ -157,7 +157,7 @@ const DecisionView = React.memo(function DecisionView({
                 onClick={() => setConfirmationModal('REJECT')}
                 data-qa="reject-button"
               />
-              <Button
+              <LegacyButton
                 text={
                   i18n.reports.assistanceNeedDecisions.returnDecisionForEditing
                 }
@@ -173,7 +173,7 @@ const DecisionView = React.memo(function DecisionView({
                 }
                 data-qa="return-for-edit-button"
               />
-              <Button
+              <LegacyButton
                 primary
                 text={i18n.reports.assistanceNeedDecisions.approveDecision}
                 disabled={submitting || !isDecisionMaker}

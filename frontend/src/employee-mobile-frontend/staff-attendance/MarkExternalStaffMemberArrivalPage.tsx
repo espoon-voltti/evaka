@@ -11,7 +11,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
@@ -140,7 +140,7 @@ export default function MarkExternalStaffMemberArrivalPage({
             <Gap size="xs" />
             <Actions>
               <FixedSpaceRow fullWidth>
-                <Button
+                <LegacyButton
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />

@@ -15,7 +15,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Tabs } from 'lib-components/molecules/Tabs'
 import { defaultMargins } from 'lib-components/white-space'
@@ -231,7 +231,7 @@ const NoAccounts = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.s};
 `
 
-const HoverButton = styled(Button)`
+const HoverButton = styled(LegacyButton)`
   position: fixed;
   bottom: calc(${defaultMargins.s} + ${bottomNavBarHeight}px);
   right: ${defaultMargins.s};

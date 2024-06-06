@@ -31,8 +31,8 @@ import {
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -280,7 +280,7 @@ const SettingsSectionsEditor = React.memo(function SettingsSectionsEditor({
       />
       <Gap size="L" />
       <FixedSpaceRow>
-        <Button
+        <LegacyButton
           data-qa="cancel"
           onClick={stopEditing}
           text={i18n.common.cancel}

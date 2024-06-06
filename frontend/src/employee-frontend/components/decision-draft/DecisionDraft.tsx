@@ -26,7 +26,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -576,7 +576,7 @@ export default React.memo(function Decision() {
             )}
             <SendButtonContainer>
               <FixedSpaceRow>
-                <Button
+                <LegacyButton
                   data-qa="cancel-decisions-button"
                   onClick={() => redirectToMainPage(navigate)}
                   text={i18n.common.cancel}

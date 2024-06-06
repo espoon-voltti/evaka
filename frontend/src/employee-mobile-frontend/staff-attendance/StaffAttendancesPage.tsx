@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { faPlus } from 'lib-icons'
@@ -159,14 +159,14 @@ export default React.memo(function StaffAttendancesPage({
         </FixedSpaceColumn>
       ))}
       <StaticIconContainer>
-        <Button
+        <LegacyButton
           primary
           onClick={navigateToExternalMemberArrival}
           data-qa="add-external-member-btn"
         >
           <FontAwesomeIcon icon={faPlus} size="sm" />{' '}
           {i18n.attendances.staff.externalPerson}
-        </Button>
+        </LegacyButton>
       </StaticIconContainer>
     </PageWithNavigation>
   )

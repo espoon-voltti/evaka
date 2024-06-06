@@ -20,8 +20,8 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Content from 'lib-components/layout/Container'
@@ -214,13 +214,13 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
               <StickyFooterContainer>
                 <FixedSpaceRow justifyContent="space-between" flexWrap="wrap">
                   <FixedSpaceRow spacing="s">
-                    <Button
+                    <LegacyButton
                       onClick={() =>
                         navigate(`/reports/assistance-need-decisions`)
                       }
                     >
                       {t.leavePage}
-                    </Button>
+                    </LegacyButton>
                   </FixedSpaceRow>
                   <FixedSpaceRow spacing="m">
                     {(decision.status === 'DRAFT' ||

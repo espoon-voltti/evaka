@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { OnEnterView } from 'lib-components/OnEnterView'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -72,7 +72,7 @@ export default React.memo(function ThreadList({
           <DottedLine />
           <Gap size="s" />
           <HeaderContainer>
-            <Button
+            <LegacyButton
               text={t.messages.messageEditor.newMessage}
               onClick={() => setEditorVisible(true)}
               primary
@@ -207,7 +207,7 @@ const ThreadListItems = styled.ul`
   margin: 0;
 `
 
-const FloatingButton = styled(Button)`
+const FloatingButton = styled(LegacyButton)`
   position: fixed;
   bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};

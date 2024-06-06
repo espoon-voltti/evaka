@@ -24,9 +24,9 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TreeDropdown, {
   TreeNode
@@ -828,7 +828,7 @@ export default React.memo(function MessageEditor({
                 .map((r) => r.numberOfRecipientAccounts)
                 .getOrElse('')}
             </div>
-            <Button
+            <LegacyButton
               text={
                 sending
                   ? i18n.messages.messageEditor.sending

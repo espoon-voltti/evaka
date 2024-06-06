@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { JsonOf } from 'lib-common/json'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
@@ -65,7 +65,7 @@ export default React.memo(function TemplateImportModal({
         }}
       />
       <ModalButtons $justifyContent="center">
-        <Button
+        <LegacyButton
           primary
           disabled={!data}
           text={i18n.common.continue}
@@ -73,7 +73,11 @@ export default React.memo(function TemplateImportModal({
           data-qa="continue"
         />
         <Gap horizontal size="s" />
-        <Button onClick={onClose} data-qa="cancel" text={i18n.common.cancel} />
+        <LegacyButton
+          onClick={onClose}
+          data-qa="cancel"
+          text={i18n.common.cancel}
+        />
       </ModalButtons>
     </BaseModal>
   )

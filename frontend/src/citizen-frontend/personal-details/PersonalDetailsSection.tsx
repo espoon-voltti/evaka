@@ -20,8 +20,8 @@ import {
   requiredEmail,
   requiredPhoneNumber
 } from 'lib-common/form/validators'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -82,7 +82,7 @@ export default React.memo(function PersonalDetailsSection({
       <form>
         {children}
         <FixedSpaceRow justifyContent="flex-end">
-          <Button
+          <LegacyButton
             type="button"
             text={t.common.cancel}
             onClick={() => {

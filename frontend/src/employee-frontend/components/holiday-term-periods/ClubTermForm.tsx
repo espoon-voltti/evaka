@@ -27,8 +27,8 @@ import {
 import { useMutationResult } from 'lib-common/query'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -252,7 +252,7 @@ export default React.memo(function ClubTermForm({
           onClick={onSubmit}
           data-qa="save-btn"
         />
-        <Button onClick={onCancel} text={i18n.common.goBack} />
+        <LegacyButton onClick={onCancel} text={i18n.common.goBack} />
       </ButtonContainer>
     </>
   )

@@ -15,7 +15,7 @@ import {
 } from 'lib-common/generated/api-types/calendarevent'
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import TreeDropdown, {
   TreeNode,
@@ -172,7 +172,7 @@ export default React.memo(function DiscussionSurveyForm({
       </SurveyFormSectionGroup>
 
       <FixedSpaceRow justifyContent="flex-start" alignItems="center">
-        <Button
+        <LegacyButton
           text={t.discussionReservation.cancelButton}
           onClick={() => setCancelConfirmModalVisible(true)}
           data-qa="cancel-button"

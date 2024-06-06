@@ -9,7 +9,7 @@ import { unstable_usePrompt as usePrompt } from 'react-router-dom'
 import { wrapResult } from 'lib-common/api'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -121,7 +121,7 @@ export default React.memo(function EmployeePinCodePage() {
         </FixedSpaceColumn>
         <Gap size="L" />
         {pin.length !== 4 || error ? (
-          <Button primary text={i18n.pinCode.button} disabled />
+          <LegacyButton primary text={i18n.pinCode.button} disabled />
         ) : (
           <AsyncButton
             primary

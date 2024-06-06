@@ -21,7 +21,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -256,7 +256,7 @@ function sendAbsenceUpdates(
   }
 }
 
-const AddAbsencesButton = styled(Button)`
+const AddAbsencesButton = styled(LegacyButton)`
   @media print {
     display: none;
   }

@@ -15,8 +15,8 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -113,7 +113,7 @@ export default React.memo(function GroupCaretakers() {
             </Title>
             <p>{i18n.groupCaretakers.info}</p>
             <FlexRowRightAlign>
-              <Button
+              <LegacyButton
                 onClick={() => setModalOpen(true)}
                 text={i18n.groupCaretakers.create}
               />

@@ -8,7 +8,7 @@ import { Failure, Result } from 'lib-common/api'
 import { MutationDescription } from 'lib-common/query'
 
 import AsyncButton from '../../atoms/buttons/AsyncButton'
-import { Button } from '../../atoms/buttons/Button'
+import { LegacyButton } from '../../atoms/buttons/LegacyButton'
 import MutateButton, { cancelMutation } from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
 
@@ -43,7 +43,7 @@ export default React.memo(function FormModal({
     <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       <form onSubmit={onSubmit}>{children}</form>
       <ModalButtons $justifyContent="center">
-        <Button
+        <LegacyButton
           primary
           type="submit"
           data-qa="modal-okBtn"
@@ -52,7 +52,7 @@ export default React.memo(function FormModal({
           text={resolveLabel}
         />
         <Gap horizontal size="s" />
-        <Button
+        <LegacyButton
           onClick={rejectAction}
           data-qa="modal-cancelBtn"
           text={rejectLabel}
@@ -97,7 +97,7 @@ function AsyncFormModal_<T>({
           data-qa="modal-okBtn"
         />
         <Gap horizontal size="s" />
-        <Button
+        <LegacyButton
           onClick={rejectAction}
           data-qa="modal-cancelBtn"
           text={rejectLabel}
@@ -151,7 +151,7 @@ function MutateFormModal_<Arg, Data>({
           data-qa="modal-okBtn"
         />
         <Gap horizontal size="s" />
-        <Button
+        <LegacyButton
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
