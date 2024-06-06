@@ -47,6 +47,7 @@ data class Daycare(
     val providerType: ProviderType,
     val capacity: Int,
     val language: Language,
+    val withSchool: Boolean,
     val ghostUnit: Boolean,
     val uploadToVarda: Boolean,
     val uploadChildrenToVarda: Boolean,

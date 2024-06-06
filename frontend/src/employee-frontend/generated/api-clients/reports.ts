@@ -42,7 +42,7 @@ import { PlacementCountReportResult } from 'lib-common/generated/api-types/repor
 import { PlacementGuaranteeReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementSketchingReportRow } from 'lib-common/generated/api-types/reports'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import { PreschoolGroupsReportRow } from 'lib-common/generated/api-types/reports'
+import { PreschoolUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { PresenceReportRow } from 'lib-common/generated/api-types/reports'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { RawReportRow } from 'lib-common/generated/api-types/reports'
@@ -51,6 +51,7 @@ import { ServiceNeedReportRow } from 'lib-common/generated/api-types/reports'
 import { ServiceVoucherReport } from 'lib-common/generated/api-types/reports'
 import { ServiceVoucherUnitReport } from 'lib-common/generated/api-types/reports'
 import { SextetReportRow } from 'lib-common/generated/api-types/reports'
+import { SourceUnitsReportRow } from 'lib-common/generated/api-types/reports'
 import { StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import { UUID } from 'lib-common/types'
 import { UnitsReportRow } from 'lib-common/generated/api-types/reports'
@@ -428,31 +429,35 @@ export async function getFamilyDaycareMealReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersGroupsReport
+* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersReport
 */
-export async function getFuturePreschoolersGroupsReport(
-  request: {
-    municipal: boolean
-  }
-): Promise<PreschoolGroupsReportRow[]> {
-  const params = createUrlSearchParams(
-    ['municipal', request.municipal.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<PreschoolGroupsReportRow[]>>({
-    url: uri`/reports/future-preschoolers/groups`.toString(),
-    method: 'GET',
-    params
+export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersReportRow[]> {
+  const { data: json } = await client.request<JsonOf<FuturePreschoolersReportRow[]>>({
+    url: uri`/reports/future-preschoolers`.toString(),
+    method: 'GET'
   })
   return json
 }
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersReport
+* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersSourceUnitsReport
 */
-export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersReportRow[]> {
-  const { data: json } = await client.request<JsonOf<FuturePreschoolersReportRow[]>>({
-    url: uri`/reports/future-preschoolers`.toString(),
+export async function getFuturePreschoolersSourceUnitsReport(): Promise<SourceUnitsReportRow[]> {
+  const { data: json } = await client.request<JsonOf<SourceUnitsReportRow[]>>({
+    url: uri`/employee/reports/future-preschoolers/source-units`.toString(),
+    method: 'GET'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersUnitsReport
+*/
+export async function getFuturePreschoolersUnitsReport(): Promise<PreschoolUnitsReportRow[]> {
+  const { data: json } = await client.request<JsonOf<PreschoolUnitsReportRow[]>>({
+    url: uri`/employee/reports/future-preschoolers/units`.toString(),
     method: 'GET'
   })
   return json

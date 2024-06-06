@@ -4065,19 +4065,19 @@ export const fi = {
     futurePreschoolers: {
       title: 'Tulevat esikoululaiset',
       description:
-        'Raportti tulevan vuoden esiopetuksen lapsista ja ryhmistä automaattisijoitustyökalua varten',
+        'Raportti tulevan vuoden esiopetuksen lapsista ja yksiköistä automaattisijoitustyökalua varten',
       futurePreschoolersCount: (count: number) =>
         count === 1
           ? `${count} tuleva esikoululainen`
           : `${count} tulevaa esikoululaista`,
-      municipalGroupCount: (count: number) =>
+      preschoolUnitCount: (count: number) =>
         count === 1
-          ? `${count} ryhmä esiopetusta antavissa kunnallisissa yksiköissä`
-          : `${count} ryhmää esiopetusta antavissa kunnallisissa yksiköissä`,
-      privateVoucherGroupCount: (count: number) =>
+          ? `${count} esiopetusta antava yksikkö`
+          : `${count} esiopetusta antavaa yksikköä`,
+      sourceUnitCount: (count: number) =>
         count === 1
-          ? `${count} ryhmä esiopetusta antavissa palveluseteliyksiköissä`
-          : `${count} ryhmää esiopetusta antavissa palveluseteliyksiköissä`
+          ? `${count} tulevien esikoululaisten nykyinen yksikkö`
+          : `${count} tulevien esikoululaisten nykyistä yksikköä`
     },
     meals: {
       title: 'Ruokailijamäärät',
@@ -4137,6 +4137,7 @@ export const fi = {
       shiftCare: 'Ilta- ja vuorohoito',
       capacity: 'Yksikön laskennallinen lapsimäärä',
       language: 'Yksikön kieli',
+      withSchool: 'Koulun yhteydessä',
       ghostUnit: 'Haamuyksikkö',
       integrations: 'Integraatiot',
       invoicedByMunicipality: 'Laskutetaan eVakasta',
@@ -4182,6 +4183,7 @@ export const fi = {
       providesShiftCare: 'Yksikkö tarjoaa ilta- ja vuorohoitoa',
       shiftCareOpenOnHolidays: 'Vuorohoito on auki myös pyhäpäivinä',
       capacity: 'henkilöä',
+      withSchool: 'Yksikkö sijaitsee koulun yhteydessä',
       ghostUnit: 'Yksikkö on haamuyksikkö',
       uploadToVarda: 'Yksikön tiedot lähetetään Vardaan',
       uploadChildrenToVarda: 'Yksikön lasten tiedot lähetetään Vardaan',

@@ -19,6 +19,7 @@ import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_2
+import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.testVoucherDaycare
 import java.time.LocalDate
 import java.util.UUID
@@ -37,6 +38,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
             tx.insert(testDaycare)
             tx.insert(testVoucherDaycare)
+            tx.insert(testRoundTheClockDaycare)
             tx.insert(
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
@@ -49,22 +51,6 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     id = GroupId(UUID.randomUUID()),
                     daycareId = testVoucherDaycare.id,
                     name = "Test voucher group 1"
-                )
-            )
-            tx.insert(
-                DevDaycareGroup(
-                    id = GroupId(UUID.randomUUID()),
-                    daycareId = testDaycare.id,
-                    name = "Test closed group",
-                    endDate = LocalDate.of(2019, 1, 31)
-                )
-            )
-            tx.insert(
-                DevDaycareGroup(
-                    id = GroupId(UUID.randomUUID()),
-                    daycareId = testVoucherDaycare.id,
-                    name = "Test closed voucher group",
-                    endDate = LocalDate.of(2019, 1, 31)
                 )
             )
         }
@@ -130,22 +116,26 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `open municipal groups are found in report`() {
-        val report = getGroupReport(true)
-        assertEquals(1, report.size)
+    fun `open preschool units are found in report`() {
+        val report = getUnitReport()
+        assertEquals(2, report.size)
     }
 
     @Test
-    fun `open private groups are found in report`() {
-        val report = getGroupReport(false)
-        assertEquals(1, report.size)
+    fun `open source are found in report`() {
+        val report = getSourceUnitReport()
+        assertEquals(3, report.size)
     }
 
     private fun getChildrenReport(): List<FuturePreschoolersReportRow> {
         return db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 1, 1)) }
     }
 
-    private fun getGroupReport(municipal: Boolean): List<PreschoolGroupsReportRow> {
-        return db.read { it.getPreschoolGroupsRows(LocalDate.of(2023, 1, 1), municipal) }
+    private fun getUnitReport(): List<PreschoolUnitsReportRow> {
+        return db.read { it.getPreschoolUnitsRows(LocalDate.of(2023, 1, 1)) }
+    }
+
+    private fun getSourceUnitReport(): List<SourceUnitsReportRow> {
+        return db.read { it.geSourceUnitsRows(LocalDate.of(2023, 1, 1)) }
     }
 }

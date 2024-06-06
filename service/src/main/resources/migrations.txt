@@ -418,3 +418,4 @@ V418__application_non_nullable_fields.sql
 V419__payment_confirmed_state.sql
 V420__payment_constraint_change.sql
 V421__child_document_archival_metadata.sql
+V422__daycare_with_school.sql

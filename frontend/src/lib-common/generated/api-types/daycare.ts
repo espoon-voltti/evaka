@@ -215,6 +215,7 @@ export interface Daycare {
   uploadToVarda: boolean
   url: string | null
   visitingAddress: VisitingAddress
+  withSchool: boolean
 }
 
 /**
@@ -279,6 +280,7 @@ export interface DaycareFields {
   uploadToVarda: boolean
   url: string | null
   visitingAddress: VisitingAddress
+  withSchool: boolean
 }
 
 /**
