@@ -374,30 +374,10 @@ export interface FuturePreschoolersReportRow {
   childLastName: string
   childPostOffice: string
   childPostalCode: string
-  childSsn: string | null
-  guardian1Address: string | null
-  guardian1Email: string | null
-  guardian1FirstName: string | null
-  guardian1LastName: string | null
-  guardian1Phone: string | null
-  guardian1PostOffice: string | null
-  guardian1PostalCode: string | null
-  guardian2Address: string | null
-  guardian2Email: string | null
-  guardian2FirstName: string | null
-  guardian2LastName: string | null
-  guardian2Phone: string | null
-  guardian2PostOffice: string | null
-  guardian2PostalCode: string | null
   id: UUID
-  languageEmphasisGroup: string | null
-  shiftCare: boolean
-  twoYearPreschool: boolean
-  unitAddress: string
-  unitArea: string | null
+  options: string[]
+  unitId: UUID
   unitName: string
-  unitPostOffice: string
-  unitPostalCode: string
 }
 
 /**
@@ -638,18 +618,15 @@ export interface PlacementSketchingReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PreschoolGroupsReportRow
+* Generated from fi.espoo.evaka.reports.PreschoolUnitsReportRow
 */
-export interface PreschoolGroupsReportRow {
+export interface PreschoolUnitsReportRow {
   address: string
-  amongSchool: boolean | null
-  groupName: string
   groupSize: number
   id: UUID
-  languageEmphasis: boolean | null
+  options: string[]
   postOffice: string
   postalCode: string
-  shiftCare: boolean
   unitName: string
 }
 
@@ -833,6 +810,17 @@ export interface SextetReportRow {
   attendanceDays: number
   placementType: PlacementType
   unitId: UUID
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.SourceUnitsReportRow
+*/
+export interface SourceUnitsReportRow {
+  address: string
+  id: UUID
+  postOffice: string
+  postalCode: string
   unitName: string
 }
 

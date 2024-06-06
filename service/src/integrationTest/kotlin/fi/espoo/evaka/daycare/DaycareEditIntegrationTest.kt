@@ -47,6 +47,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             providerType = ProviderType.MUNICIPAL,
             capacity = 1,
             language = Language.fi,
+            withSchool = false,
             ghostUnit = false,
             uploadToVarda = false,
             uploadChildrenToVarda = false,
@@ -182,6 +183,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(fields.providerType, daycare.providerType)
         assertEquals(fields.capacity, daycare.capacity)
         assertEquals(fields.language, daycare.language)
+        assertEquals(fields.withSchool, daycare.withSchool)
         assertEquals(fields.ghostUnit, daycare.ghostUnit)
         assertEquals(fields.uploadToVarda, daycare.uploadToVarda)
         assertEquals(fields.uploadChildrenToVarda, daycare.uploadChildrenToVarda)

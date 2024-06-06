@@ -77,6 +77,7 @@ type FormData = {
   providerType: ProviderType
   capacity: string
   language: Language
+  withSchool: boolean
   ghostUnit: boolean
   uploadToVarda: boolean
   uploadChildrenToVarda: boolean
@@ -648,6 +649,7 @@ function validateForm(
     clubApplyPeriod,
     providerType,
     language,
+    withSchool,
     ghostUnit,
     financeDecisionHandlerId,
     uploadToVarda,
@@ -684,6 +686,7 @@ function validateForm(
         providerType,
         capacity,
         language,
+        withSchool,
         ghostUnit,
         uploadToVarda,
         uploadChildrenToVarda,
@@ -792,6 +795,7 @@ function toFormData(unit: Daycare | undefined): FormData {
     providerType: unit?.providerType ?? 'MUNICIPAL',
     capacity: (unit?.capacity ?? 0).toString(),
     language: unit?.language ?? 'fi',
+    withSchool: unit?.withSchool ?? false,
     ghostUnit: unit?.ghostUnit ?? false,
     uploadToVarda: unit?.uploadToVarda ?? false,
     uploadChildrenToVarda: unit?.uploadChildrenToVarda ?? false,
@@ -1538,6 +1542,15 @@ export default function UnitEditor(props: Props) {
         ) : (
           i18n.language[form.language]
         )}
+      </FormPart>
+      <FormPart>
+        <div>{i18n.unitEditor.label.withSchool}</div>
+        <Checkbox
+          disabled={!props.editable}
+          label={i18n.unitEditor.field.withSchool}
+          checked={form.withSchool}
+          onChange={(withSchool) => updateForm({ withSchool })}
+        />
       </FormPart>
       <FormPart>
         <div>{i18n.unitEditor.label.ghostUnit}</div>
