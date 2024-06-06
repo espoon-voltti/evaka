@@ -2019,14 +2019,14 @@ export default {
         <Gap size="xs" />
         <UnorderedList>
           <li>
-            Jos tulosi ylittävät perhekoon mukaisen korkeimman maksun tulorajan,
-            hyväksy korkein varhaiskasvatusmaksu. Tällöin sinun ei tarvitse
-            selvittää tulojasi lainkaan.
+            Maksu voidaan tarkistaa kesken toimintavuotta, mikäli perheen
+            tilanteessa, tuloissa tai lapsen palveluntarpeessa tapahtuu muutos.
+            Maksua voidaan muuttaa myös lainsäädännön muutosten tai
+            kaupunginhallituksen päätösten mukaisesti.
           </li>
           <li>
-            Jos perheeseesi kuuluu toinen aikuinen, myös hänen on toimitettava
-            tuloselvitys tunnistautumalla eVakaan omilla henkilötiedoillaan ja
-            täyttämällä tämä lomake.
+            Jos perheen tuloissa tapahtuu olennaisia (+/-10 %) muutoksia, on
+            uusi tuloselvitys tehtävä välittömästi.
           </li>
         </UnorderedList>
         <P>
