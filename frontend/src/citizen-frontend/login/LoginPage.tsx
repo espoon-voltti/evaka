@@ -92,6 +92,7 @@ export default React.memo(function LoginPage() {
                   message={systemNotifications.value.notification.text}
                   wide
                   noMargin
+                  data-qa="system-notification"
                 />
               </ContentArea>
             )}
