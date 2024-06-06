@@ -22,6 +22,7 @@ export type QueryKeyPrefix =
   | 'calendarEvent'
   | 'messaging'
   | 'personDetails'
+  | 'systemNotifications'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

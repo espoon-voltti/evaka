@@ -55,6 +55,7 @@ export const fi = {
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',
     settings: 'Asetukset',
+    systemNotifications: 'Tilapäinen ilmoitus',
     unitFeatures: 'Toimintojen avaukset',
     welcomePage: 'Tervetuloa eVakaan',
     vasuTemplates: 'Vasu-pohjat',
@@ -4841,6 +4842,16 @@ export const fi = {
       DECIDING: 'Päätöksenteko',
       COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
     }
+  },
+  systemNotifications: {
+    title: {
+      CITIZENS: 'Kuntalaisille näkyvä ilmoitus',
+      EMPLOYEES: 'Henkilökunnalle näkyvä ilmoitus'
+    },
+    noNotification: 'Ei ilmoitusta tällä hetkellä',
+    setNotification: 'Aseta ilmoitus',
+    text: 'Teksti',
+    validTo: 'Poistuu näkyvistä'
   },
   components
 }

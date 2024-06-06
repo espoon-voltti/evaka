@@ -103,6 +103,7 @@ import VardaChildErrors from './components/reports/VardaChildErrors'
 import VardaUnitErrors from './components/reports/VardaUnitErrors'
 import VoucherServiceProviderUnit from './components/reports/VoucherServiceProviderUnit'
 import VoucherServiceProviders from './components/reports/VoucherServiceProviders'
+import SystemNotificationsPage from './components/system-notifications/SystemNotificationPage'
 import TimelinePage from './components/timeline/TimelinePage'
 import DiscussionReservationSurveyWrapper from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveyWrapper'
 import DiscussionReservationSurveysPage from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveysPage'
@@ -198,6 +199,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="settings">
               <SettingsPage />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/system-notifications',
+          element: (
+            <EmployeeRoute title="systemNotifications">
+              <SystemNotificationsPage />
             </EmployeeRoute>
           )
         },

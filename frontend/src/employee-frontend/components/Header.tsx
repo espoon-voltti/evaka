@@ -395,6 +395,15 @@ export default React.memo(function Header() {
                   {i18n.titles.settings}
                 </Link>
               )}
+              {user?.accessibleFeatures.systemNotifications && (
+                <Link
+                  to="/system-notifications"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-system-notifications"
+                >
+                  {i18n.titles.systemNotifications}
+                </Link>
+              )}
               {user?.accessibleFeatures.unitFeatures && (
                 <Link
                   to="/unit-features"
