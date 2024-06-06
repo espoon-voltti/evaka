@@ -1501,7 +1501,7 @@ export default {
       returnToPreviousPage: 'Palaa'
     },
     assistancePreschoolDecisions: {
-      title: 'Päätös erityisestä tuesta esiopetuksessa',
+      title: 'Päätös tuesta esiopetuksessa',
       statuses: {
         DRAFT: 'Luonnos',
         NEEDS_WORK: 'Korjattava',

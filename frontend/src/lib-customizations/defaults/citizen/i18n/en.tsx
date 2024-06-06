@@ -1560,7 +1560,7 @@ const en: Translations = {
     assistancePreschoolDecisions: {
       // the actual decision cannot be in English
       ...fi.decisions.assistancePreschoolDecisions,
-      title: 'Decision of special support in pre-primary education',
+      title: 'Decision of support in pre-primary education',
       statuses: {
         DRAFT: 'Draft',
         NEEDS_WORK: 'Needs work',
