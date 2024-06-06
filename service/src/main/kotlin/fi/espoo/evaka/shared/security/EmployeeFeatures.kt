@@ -13,6 +13,7 @@ data class EmployeeFeatures(
     val personSearch: Boolean,
     val reports: Boolean,
     val settings: Boolean,
+    val systemNotifications: Boolean,
     val holidayAndTermPeriods: Boolean,
     val unitFeatures: Boolean,
     val units: Boolean,
