@@ -11,7 +11,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'

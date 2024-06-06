@@ -8,7 +8,7 @@ import { combine, Loading, Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'

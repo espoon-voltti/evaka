@@ -8,7 +8,7 @@ import { Line } from 'react-chartjs-2'
 
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Container, ContentArea } from 'lib-components/layout/Container'

@@ -10,7 +10,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
   FixedSpaceColumn,

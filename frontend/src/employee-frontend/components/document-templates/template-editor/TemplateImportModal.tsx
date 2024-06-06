@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { ExportedDocumentTemplate } from 'lib-common/generated/api-types/document'
 import { JsonOf } from 'lib-common/json'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'

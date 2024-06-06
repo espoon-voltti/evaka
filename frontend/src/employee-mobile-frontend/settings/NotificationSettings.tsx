@@ -31,7 +31,7 @@ import {
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'

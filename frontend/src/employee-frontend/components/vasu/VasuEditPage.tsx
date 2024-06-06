@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import useRouteParams from 'lib-common/useRouteParams'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import StickyFooter, {
   StickyFooterContainer

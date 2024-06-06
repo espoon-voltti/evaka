@@ -21,7 +21,7 @@ import {
   useSelectMutation
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'

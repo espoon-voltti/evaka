@@ -27,7 +27,7 @@ import {
 import { useMutationResult } from 'lib-common/query'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'

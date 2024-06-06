@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import StickyActionBar from '../../components/common/StickyActionBar'

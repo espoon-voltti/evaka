@@ -39,7 +39,7 @@ import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Button, { StyledButton } from 'lib-components/atoms/buttons/Button'
+import { Button, StyledButton } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import MutateButton, {
   cancelMutation

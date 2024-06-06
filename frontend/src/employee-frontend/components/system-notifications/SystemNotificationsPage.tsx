@@ -23,7 +23,7 @@ import {
 } from 'lib-common/generated/api-types/systemnotifications'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useQueryResult } from 'lib-common/query'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton, {
   InlineMutateButton

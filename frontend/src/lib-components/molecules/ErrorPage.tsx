@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import Button from '../atoms/buttons/Button'
+import { Button } from '../atoms/buttons/Button'
 import Container, { ContentArea } from '../layout/Container'
 import { H1, P } from '../typography'
 

@@ -12,7 +12,7 @@ import {
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Gap } from 'lib-components/white-space'
 

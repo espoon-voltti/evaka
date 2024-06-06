@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import { useTranslation } from '../../state/i18n'

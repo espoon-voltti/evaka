@@ -15,7 +15,7 @@ import {
 } from 'lib-common/generated/api-types/calendarevent'
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import TreeDropdown, {
   TreeNode,

@@ -19,7 +19,7 @@ import {
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'

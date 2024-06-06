@@ -4,7 +4,7 @@
 
 import styled from 'styled-components'
 
-import Button from '../atoms/buttons/Button'
+import { Button } from '../atoms/buttons/Button'
 
 export const ScreenReaderButton = styled(Button)`
   position: absolute;

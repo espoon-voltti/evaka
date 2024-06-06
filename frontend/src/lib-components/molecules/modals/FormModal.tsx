@@ -8,7 +8,7 @@ import { Failure, Result } from 'lib-common/api'
 import { MutationDescription } from 'lib-common/query'
 
 import AsyncButton from '../../atoms/buttons/AsyncButton'
-import Button from '../../atoms/buttons/Button'
+import { Button } from '../../atoms/buttons/Button'
 import MutateButton, { cancelMutation } from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
 

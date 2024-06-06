@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import MutateButton, {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'

@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { wrapResult } from 'lib-common/api'
 import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { featureFlags } from 'lib-customizations/employee'
 
 import {
