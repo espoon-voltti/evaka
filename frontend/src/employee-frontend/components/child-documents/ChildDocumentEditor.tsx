@@ -5,6 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
 import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
+import { faArrowDownToLine } from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, {
@@ -19,6 +20,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { useForm } from 'lib-common/form/hooks'
+import { Action } from 'lib-common/generated/action'
 import {
   ChildDocumentDetails,
   ChildDocumentWithPermittedActions,
@@ -31,6 +33,7 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
@@ -45,7 +48,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H1, H2 } from 'lib-components/typography'
+import { H1, H2, H3, H4 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -53,6 +56,7 @@ import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { renderResult } from '../async-rendering'
 import {
+  childDocumentMetadataQuery,
   childDocumentNextStatusMutation,
   childDocumentPrevStatusMutation,
   childDocumentQuery,
@@ -62,6 +66,7 @@ import {
   queryKeys,
   updateChildDocumentContentMutation
 } from '../child-information/queries'
+import LabelValueList from '../common/LabelValueList'
 
 import { getNextDocumentStatus, getPrevDocumentStatus } from './statuses'
 
@@ -345,6 +350,99 @@ export const ChildDocumentEditView = React.memo(
   }
 )
 
+const ChildDocumentMetadataSection = React.memo(
+  function ChildDocumentMetadataSection({
+    documentId,
+    permittedActions
+  }: {
+    documentId: UUID
+    permittedActions: Action.ChildDocument[]
+  }) {
+    const { i18n } = useTranslation()
+    const t = i18n.childInformation.childDocuments.editor.metadata
+    const result = useQueryResult(
+      childDocumentMetadataQuery({ childDocumentId: documentId })
+    )
+    return (
+      <div>
+        <H3>{t.title}</H3>
+        {renderResult(result, ({ data: metadata }) => {
+          if (metadata === null) return <div>{t.notFound}</div>
+          return (
+            <div>
+              <LabelValueList
+                spacing="small"
+                contents={[
+                  {
+                    label: t.processNumber,
+                    value: metadata.process.processNumber
+                  },
+                  {
+                    label: t.name,
+                    value: metadata.documentName
+                  },
+                  {
+                    label: t.createdAt,
+                    value: metadata.documentCreatedAt?.format() ?? '-'
+                  },
+                  {
+                    label: t.createdBy,
+                    value: metadata.documentCreatedBy
+                      ? `${metadata.documentCreatedBy.firstName} ${metadata.documentCreatedBy.lastName} ${metadata.documentCreatedBy.email ? `(${metadata.documentCreatedBy.email})` : ''} `
+                      : '-'
+                  },
+                  {
+                    label: t.archiveDurationMonths,
+                    value: `${metadata.archiveDurationMonths} ${t.monthsUnit}`
+                  },
+                  {
+                    label: t.confidentiality,
+                    value: metadata.confidentialDocument
+                      ? t.confidential
+                      : t.public
+                  },
+                  {
+                    label: t.organization,
+                    value: metadata.process.organization
+                  }
+                ]}
+              />
+              <Gap />
+              <H4>{t.history}</H4>
+              <ul>
+                {metadata.process.history.map((row) => (
+                  <li key={row.rowIndex}>
+                    {row.enteredAt.format()}: {i18n.metadata.states[row.state]},{' '}
+                    {row.enteredBy.name} (
+                    {i18n.common.userTypes[row.enteredBy.type]})
+                  </li>
+                ))}
+              </ul>
+              {permittedActions.includes('DOWNLOAD') && (
+                <>
+                  <Gap />
+                  <InlineButton
+                    icon={faArrowDownToLine}
+                    text={t.downloadPdf}
+                    disabled={!metadata.downloadable}
+                    onClick={() => {
+                      window.open(
+                        `/api/application/citizen/child-documents/${documentId}/pdf`,
+                        '_blank',
+                        'noopener,noreferrer'
+                      )
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+)
+
 const ChildDocumentReadViewInner = React.memo(
   function ChildDocumentReadViewInner({
     documentAndPermissions,
@@ -399,6 +497,17 @@ const ChildDocumentReadViewInner = React.memo(
             <Gap size="XXL" />
             <DocumentView bind={bind} readOnly={true} />
           </ContentArea>
+          {permittedActions.includes('READ_METADATA') && (
+            <>
+              <Gap />
+              <ContentArea opaque>
+                <ChildDocumentMetadataSection
+                  documentId={document.id}
+                  permittedActions={documentAndPermissions.permittedActions}
+                />
+              </ContentArea>
+            </>
+          )}
         </Container>
 
         <ActionBar>

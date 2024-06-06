@@ -62,7 +62,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             language = OfficialLanguage.FI,
             confidential = true,
             legalBasis = "§42",
-            validity = DateRange(LocalDate.of(2022, 7, 1), null)
+            validity = DateRange(LocalDate.of(2022, 7, 1), null),
+            processDefinitionNumber = "123.456.789",
+            archiveDurationMonths = 120
         )
 
     @BeforeEach
@@ -97,6 +99,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(testCreationRequest.confidential, created.confidential)
         assertEquals(testCreationRequest.legalBasis, created.legalBasis)
         assertEquals(testCreationRequest.validity, created.validity)
+        assertEquals(testCreationRequest.processDefinitionNumber, created.processDefinitionNumber)
+        assertEquals(testCreationRequest.archiveDurationMonths, created.archiveDurationMonths)
         assertEquals(DocumentTemplateContent(sections = emptyList()), created.content)
 
         val summaries = controller.getTemplates(dbInstance(), employeeUser, now)
@@ -124,7 +128,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 language = OfficialLanguage.SV,
                 type = DocumentType.PEDAGOGICAL_REPORT,
                 confidential = false,
-                legalBasis = "$42b"
+                legalBasis = "$42b",
+                processDefinitionNumber = "123.456.789b",
+                archiveDurationMonths = 132
             )
         )
 
@@ -147,7 +153,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 confidential = false,
                 legalBasis = "$42b",
                 content = testContent,
-                validity = newValidity
+                validity = newValidity,
+                processDefinitionNumber = "123.456.789b",
+                archiveDurationMonths = 132
             ),
             fetched
         )
@@ -236,7 +244,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     language = OfficialLanguage.SV,
                     confidential = false,
                     legalBasis = "",
-                    validity = newValidity
+                    validity = newValidity,
+                    processDefinitionNumber = "123.456.789b",
+                    archiveDurationMonths = 1200
                 )
             )
 
@@ -247,6 +257,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(false, copy.confidential)
         assertEquals("", copy.legalBasis)
         assertEquals(newValidity, copy.validity)
+        assertEquals("123.456.789b", copy.processDefinitionNumber)
+        assertEquals(1200, copy.archiveDurationMonths)
         assertEquals(false, copy.published)
         assertEquals(testContent, copy.content)
         assertEquals(copy, controller.getTemplate(dbInstance(), employeeUser, now, copy.id))

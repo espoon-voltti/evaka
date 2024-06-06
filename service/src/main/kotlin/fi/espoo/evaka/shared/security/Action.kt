@@ -2246,6 +2246,8 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfDuplicateChildOfHojksChildDocument()
         ),
+        READ_METADATA(HasGlobalRole(ADMIN)),
+        DOWNLOAD(HasGlobalRole(ADMIN)),
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)

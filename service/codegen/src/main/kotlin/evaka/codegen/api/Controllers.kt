@@ -312,6 +312,7 @@ private val knownLegacyPaths =
         "/child-documents/{documentId}/content",
         "/child-documents/{documentId}/lock",
         "/child-documents/{documentId}/next-status",
+        "/child-documents/{documentId}/pdf",
         "/child-documents/{documentId}/prev-status",
         "/child-documents/{documentId}/publish",
         "/child-images/{imageId}",

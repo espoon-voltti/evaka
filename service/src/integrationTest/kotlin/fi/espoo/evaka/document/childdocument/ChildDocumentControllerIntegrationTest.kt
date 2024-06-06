@@ -13,6 +13,9 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
 import fi.espoo.evaka.document.Section
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.ProcessMetadataController
+import fi.espoo.evaka.process.getProcess
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -56,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var controller: ChildDocumentController
+    @Autowired lateinit var metadataController: ProcessMetadataController
 
     lateinit var areaId: AreaId
     lateinit var employeeUser: AuthenticatedUser.Employee
@@ -143,9 +147,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         DevDocumentTemplate(
             id = templateIdHojks,
             type = DocumentType.HOJKS,
-            name = "HOJKS 2023",
+            name = "HOJKS",
             validity = DateRange(clock.today(), clock.today()),
-            content = templateContent
+            content = templateContent,
+            processDefinitionNumber = "123.456.789",
+            archiveDurationMonths = 120
         )
 
     @BeforeEach
@@ -225,6 +231,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 legalBasis = devTemplatePed.legalBasis,
                                 validity = devTemplatePed.validity,
                                 published = devTemplatePed.published,
+                                processDefinitionNumber = null,
+                                archiveDurationMonths = null,
                                 content = templateContent
                             )
                     ),
@@ -235,7 +243,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         Action.ChildDocument.READ,
                         Action.ChildDocument.UPDATE,
                         Action.ChildDocument.NEXT_STATUS,
-                        Action.ChildDocument.PREV_STATUS
+                        Action.ChildDocument.PREV_STATUS,
+                        Action.ChildDocument.READ_METADATA,
+                        Action.ChildDocument.DOWNLOAD
                     )
             ),
             document
@@ -256,6 +266,56 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             ),
             summaries.map { it.data }
         )
+    }
+
+    @Test
+    fun `creating new document may start a metadata process`() {
+        val now1 = clock.now()
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                clock,
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks)
+            )
+        val metadata = getChildDocumentMetadata(documentId).data
+        assertNotNull(metadata)
+        metadata.also {
+            assertEquals("1/123.456.789/2022", it.process.processNumber)
+            assertEquals("Espoon kaupungin varhaiskasvatus", it.process.organization)
+            assertEquals("HOJKS", it.documentName)
+            assertEquals(true, it.confidentialDocument)
+            assertNotNull(it.documentCreatedAt)
+            assertEquals(employeeUser.id, it.documentCreatedBy?.id)
+            assertEquals(120, it.archiveDurationMonths)
+            it.process.history.also { history ->
+                assertEquals(1, history.size)
+                assertEquals(ArchivedProcessState.INITIAL, history.first().state)
+                assertEquals(now1, history.first().enteredAt)
+                assertEquals(employeeUser.evakaUserId, history.first().enteredBy.id)
+            }
+        }
+
+        val clock2 = MockEvakaClock(clock.now().plusHours(1))
+        nextState(documentId, DocumentStatus.PREPARED, clock2)
+        val clock3 = MockEvakaClock(clock2.now().plusHours(1))
+        nextState(documentId, DocumentStatus.COMPLETED, clock3)
+        val clock4 = MockEvakaClock(clock3.now().plusHours(1))
+        prevState(documentId, DocumentStatus.PREPARED, clock4)
+        val clock5 = MockEvakaClock(clock4.now().plusHours(1))
+        prevState(documentId, DocumentStatus.DRAFT, clock5)
+
+        val history = db.read { it.getProcess(metadata.process.id)!!.history }
+        assertEquals(3, history.size)
+        assertEquals(clock.now(), history[0].enteredAt)
+        assertEquals(ArchivedProcessState.INITIAL, history[0].state)
+        assertEquals(clock3.now(), history[1].enteredAt)
+        assertEquals(ArchivedProcessState.COMPLETED, history[1].state)
+        assertEquals(clock4.now(), history[2].enteredAt)
+        assertEquals(ArchivedProcessState.INITIAL, history[2].state)
+
+        controller.deleteDraftDocument(dbInstance(), employeeUser, clock5, documentId)
+        assertNull(db.read { it.getProcess(metadata.process.id) })
     }
 
     @Test
@@ -753,21 +813,32 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     private fun getDocument(id: ChildDocumentId) =
         controller.getDocument(dbInstance(), employeeUser, clock, id).data
 
-    private fun nextState(id: ChildDocumentId, status: DocumentStatus) =
+    private fun nextState(
+        id: ChildDocumentId,
+        status: DocumentStatus,
+        clockOverride: MockEvakaClock = clock
+    ) =
         controller.nextDocumentStatus(
             dbInstance(),
             employeeUser,
-            clock,
+            clockOverride,
             id,
             ChildDocumentController.StatusChangeRequest(status)
         )
 
-    private fun prevState(id: ChildDocumentId, status: DocumentStatus) =
+    private fun prevState(
+        id: ChildDocumentId,
+        status: DocumentStatus,
+        clockOverride: MockEvakaClock = clock
+    ) =
         controller.prevDocumentStatus(
             dbInstance(),
             employeeUser,
-            clock,
+            clockOverride,
             id,
             ChildDocumentController.StatusChangeRequest(status)
         )
+
+    private fun getChildDocumentMetadata(id: ChildDocumentId) =
+        metadataController.getChildDocumentMetadata(dbInstance(), employeeUser, clock, id)
 }

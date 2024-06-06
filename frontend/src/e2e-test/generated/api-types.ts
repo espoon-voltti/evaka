@@ -518,12 +518,14 @@ export interface DevDaycareGroupPlacement {
 * Generated from fi.espoo.evaka.shared.dev.DevDocumentTemplate
 */
 export interface DevDocumentTemplate {
+  archiveDurationMonths: number | null
   confidential: boolean
   content: DocumentTemplateContent
   id: UUID
   language: OfficialLanguage
   legalBasis: string
   name: string
+  processDefinitionNumber: string | null
   published: boolean
   type: DocumentType
   validity: DateRange

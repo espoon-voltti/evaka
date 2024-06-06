@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.document.childdocument
 
+import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
@@ -18,13 +19,14 @@ const val lockMinutes = 5
 fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest,
     now: HelsinkiDateTime,
-    userId: EmployeeId
+    userId: EmployeeId,
+    processId: ArchivedProcessId?
 ): ChildDocumentId {
     return createQuery {
             sql(
                 """
-INSERT INTO child_document(child_id, template_id, status, content, modified_at, content_modified_at, content_modified_by)
-VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)})
+INSERT INTO child_document(child_id, template_id, status, content, modified_at, content_modified_at, content_modified_by, created_by, process_id)
+VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)})
 RETURNING id
 """
             )

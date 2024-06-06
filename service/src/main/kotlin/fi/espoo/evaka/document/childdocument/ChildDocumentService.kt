@@ -12,11 +12,13 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pdfgen.PdfGenerator
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -103,6 +105,16 @@ class ChildDocumentService(
                 }
 
             tx.markCompletedAndPublish(documentIds, now)
+
+            documentIds.forEach { documentId ->
+                updateDocumentProcessHistory(
+                    tx = tx,
+                    documentId = documentId,
+                    newStatus = DocumentStatus.COMPLETED,
+                    now = now,
+                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+                )
+            }
         }
     }
 

@@ -10,10 +10,19 @@ import {
   openEndedLocalDateRange,
   string
 } from 'lib-common/form/fields'
-import { object, oneOf, required, validated } from 'lib-common/form/form'
+import {
+  object,
+  oneOf,
+  required,
+  transformed,
+  validated,
+  value
+} from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
 import {
+  DocumentTemplateBasicsRequest,
   DocumentType,
   documentTypes,
   ExportedDocumentTemplate
@@ -28,6 +37,7 @@ import { UUID } from 'lib-common/types'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
@@ -40,14 +50,40 @@ import {
   importDocumentTemplateMutation
 } from '../queries'
 
-export const documentTemplateForm = object({
-  name: validated(string(), nonBlank),
-  type: required(oneOf<DocumentType>()),
-  language: required(oneOf<OfficialLanguage>()),
-  confidential: boolean(),
-  legalBasis: string(),
-  validity: required(openEndedLocalDateRange())
-})
+export const documentTemplateForm = transformed(
+  object({
+    name: validated(string(), nonBlank),
+    type: required(oneOf<DocumentType>()),
+    language: required(oneOf<OfficialLanguage>()),
+    confidential: boolean(),
+    legalBasis: string(),
+    validity: required(openEndedLocalDateRange()),
+    processDefinitionNumber: required(value<string>()),
+    archiveDurationMonths: required(value<string>())
+  }),
+  (value) => {
+    const archived = value.processDefinitionNumber.trim().length > 0
+    if (archived) {
+      const archiveDurationMonths = parseInt(value.archiveDurationMonths)
+      if (isNaN(archiveDurationMonths) || archiveDurationMonths < 1) {
+        return ValidationError.field('archiveDurationMonths', 'integerFormat')
+      }
+      const output: DocumentTemplateBasicsRequest = {
+        ...value,
+        processDefinitionNumber: value.processDefinitionNumber.trim(),
+        archiveDurationMonths: archiveDurationMonths
+      }
+      return ValidationSuccess.of(output)
+    } else {
+      const output: DocumentTemplateBasicsRequest = {
+        ...value,
+        processDefinitionNumber: null,
+        archiveDurationMonths: null
+      }
+      return ValidationSuccess.of(output)
+    }
+  }
+)
 
 export type TemplateModalMode =
   | { type: 'new' }
@@ -114,7 +150,10 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
             legalBasis: mode.data.legalBasis,
             validity: openEndedLocalDateRange.fromRange(
               DateRange.parseJson(mode.data.validity)
-            )
+            ),
+            processDefinitionNumber: mode.data.processDefinitionNumber ?? '',
+            archiveDurationMonths:
+              mode.data.archiveDurationMonths?.toString() ?? '120'
           }
         : {
             name: '',
@@ -128,15 +167,25 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
             },
             confidential: true,
             legalBasis: '',
-            validity: openEndedLocalDateRange.empty()
+            validity: openEndedLocalDateRange.empty(),
+            processDefinitionNumber: '',
+            archiveDurationMonths: '120'
           },
     {
       ...i18n.validationErrors
     }
   )
 
-  const { name, type, language, confidential, legalBasis, validity } =
-    useFormFields(form)
+  const {
+    name,
+    type,
+    language,
+    confidential,
+    legalBasis,
+    validity,
+    processDefinitionNumber,
+    archiveDurationMonths
+  } = useFormFields(form)
 
   return (
     <AsyncFormModal
@@ -190,6 +239,29 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
         bind={confidential}
         label={i18n.documentTemplates.templateModal.confidential}
       />
+      <Gap />
+      <ExpandingInfo
+        info={i18n.documentTemplates.templateModal.processDefinitionNumberInfo}
+        width="auto"
+      >
+        <Label>
+          {i18n.documentTemplates.templateModal.processDefinitionNumber}
+        </Label>
+      </ExpandingInfo>
+      <InputFieldF bind={processDefinitionNumber} hideErrorsBeforeTouched />
+      {processDefinitionNumber.value().trim().length > 0 && (
+        <>
+          <Gap />
+          <Label>
+            {i18n.documentTemplates.templateModal.archiveDurationMonths}
+          </Label>
+          <InputFieldF
+            bind={archiveDurationMonths}
+            type="number"
+            hideErrorsBeforeTouched
+          />
+        </>
+      )}
     </AsyncFormModal>
   )
 })

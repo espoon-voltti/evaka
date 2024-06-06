@@ -337,13 +337,6 @@ enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
     override val sqlType: String = "document_template_type"
 }
 
-@Deprecated(
-    message = "use OfficialLanguage instead",
-    replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
-)
-typealias DocumentLanguage = OfficialLanguage
-
 data class DocumentTemplate(
     val id: DocumentTemplateId,
     val name: String,
@@ -353,6 +346,8 @@ data class DocumentTemplate(
     val legalBasis: String,
     val validity: DateRange,
     val published: Boolean,
+    val processDefinitionNumber: String?,
+    val archiveDurationMonths: Int?,
     @Json val content: DocumentTemplateContent
 )
 
@@ -363,6 +358,8 @@ data class ExportedDocumentTemplate(
     val confidential: Boolean,
     val legalBasis: String,
     val validity: DateRange,
+    val processDefinitionNumber: String?,
+    val archiveDurationMonths: Int?,
     @Json val content: DocumentTemplateContent
 )
 
@@ -372,7 +369,9 @@ data class DocumentTemplateBasicsRequest(
     val language: OfficialLanguage,
     val confidential: Boolean,
     val legalBasis: String,
-    val validity: DateRange
+    val validity: DateRange,
+    val processDefinitionNumber: String?,
+    val archiveDurationMonths: Int?
 )
 
 data class DocumentTemplateSummary(

@@ -9,7 +9,13 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.document.DocumentTemplateContent
 import fi.espoo.evaka.document.getTemplate
 import fi.espoo.evaka.pis.listPersonByDuplicateOf
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.deleteProcessByDocumentId
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -19,6 +25,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -36,7 +43,8 @@ import org.springframework.web.bind.annotation.RestController
 )
 class ChildDocumentController(
     private val accessControl: AccessControl,
-    private val childDocumentService: ChildDocumentService
+    private val childDocumentService: ChildDocumentService,
+    private val featureConfig: FeatureConfig
 ) {
     @PostMapping
     fun createDocument(
@@ -70,7 +78,31 @@ class ChildDocumentController(
                         throw Conflict("Child already has incomplete document of the same template")
                     }
 
-                    tx.insertChildDocument(body, clock.now(), user.id)
+                    val now = clock.now()
+                    val processId =
+                        template.processDefinitionNumber?.let { processDefinitionNumber ->
+                            tx.insertProcess(
+                                    processDefinitionNumber = processDefinitionNumber,
+                                    year = now.year,
+                                    organization = featureConfig.archiveMetadataOrganization
+                                )
+                                .id
+                                .also { processId ->
+                                    tx.insertProcessHistoryRow(
+                                        processId = processId,
+                                        state = ArchivedProcessState.INITIAL,
+                                        now = now,
+                                        userId = user.evakaUserId
+                                    )
+                                }
+                        }
+
+                    tx.insertChildDocument(
+                        document = body,
+                        now = now,
+                        userId = user.id,
+                        processId = processId
+                    )
                 }
             }
             .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
@@ -338,6 +370,13 @@ class ChildDocumentController(
                             clock.now()
                         )
                     }
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        documentId = documentId,
+                        newStatus = statusTransition.newStatus,
+                        now = clock.now(),
+                        userId = user.evakaUserId
+                    )
                 }
             }
             .also {
@@ -374,6 +413,13 @@ class ChildDocumentController(
                             goingForward = false
                         )
                     tx.changeStatus(documentId, statusTransition, clock.now())
+                    updateDocumentProcessHistory(
+                        tx = tx,
+                        documentId = documentId,
+                        newStatus = statusTransition.newStatus,
+                        now = clock.now(),
+                        userId = user.evakaUserId
+                    )
                 }
             }
             .also {
@@ -400,9 +446,32 @@ class ChildDocumentController(
                         Action.ChildDocument.DELETE,
                         documentId
                     )
+                    deleteProcessByDocumentId(tx, documentId)
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }
             .also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
+    }
+
+    @GetMapping("/{documentId}/pdf")
+    fun downloadChildDocument(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ChildDocument.DOWNLOAD,
+                        documentId
+                    )
+                    childDocumentService.getPdfResponse(tx, documentId)
+                }
+            }
+            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
     }
 }

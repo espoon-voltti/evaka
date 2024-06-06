@@ -281,6 +281,8 @@ class PdfGeneratorTest {
                             "§3.2b varhaiskasvatuslaki, varhaiskasvatuslautakunnan päätös ja määräys 11.3.2017",
                         validity =
                             DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(1)),
+                        processDefinitionNumber = null,
+                        archiveDurationMonths = null,
                         published = true,
                         content =
                             DocumentTemplateContent(

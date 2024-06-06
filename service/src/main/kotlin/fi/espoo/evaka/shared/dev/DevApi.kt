@@ -2277,6 +2277,8 @@ data class DevDocumentTemplate(
     val confidential: Boolean = true,
     val legalBasis: String = "§15",
     val validity: DateRange,
+    val processDefinitionNumber: String? = null,
+    val archiveDurationMonths: Int? = null,
     val published: Boolean = true,
     @Json val content: DocumentTemplateContent
 )

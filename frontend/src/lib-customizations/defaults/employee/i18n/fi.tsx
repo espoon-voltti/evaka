@@ -229,6 +229,13 @@ export const fi = {
       title:
         'Olet tekemässä muutosta, joka voi aiheuttaa takautuvasti muutoksia asiakasmaksuihin.',
       checkboxLabel: 'Ymmärrän, olen asiasta yhteydessä laskutustiimiin.*'
+    },
+    userTypes: {
+      SYSTEM: 'järjestelmä',
+      CITIZEN: 'kuntalainen',
+      EMPLOYEE: 'työntekijä',
+      MOBILE_DEVICE: 'mobiililaite',
+      UNKNOWN: 'tuntematon'
     }
   },
   header: {
@@ -860,7 +867,23 @@ export const fi = {
         notFullyPublished: (publishedAt: HelsinkiDateTime | null) =>
           `Asiakirjassa on julkaisemattomia muutoksia ${
             publishedAt ? ` (julkaistu ${publishedAt.format()})` : ''
-          }`
+          }`,
+        metadata: {
+          title: 'Arkistoitava metadata',
+          notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
+          processNumber: 'Asianumero',
+          name: 'Asiakirjan nimi',
+          createdAt: 'Asiakirjan laatimisajankohta',
+          createdBy: 'Asiakirjan laatija',
+          archiveDurationMonths: 'Arkistointiaika',
+          monthsUnit: 'kuukautta',
+          confidentiality: 'Asiakirjan julkisuus',
+          confidential: 'Salassapidettävä',
+          public: 'Julkinen',
+          organization: 'Organisaatio',
+          history: 'Prosessin historia',
+          downloadPdf: 'Lataa PDF'
+        }
       }
     },
     assistanceNeedPreschoolDecision: {
@@ -4548,7 +4571,11 @@ export const fi = {
       language: 'Lomakkeen kieli',
       confidential: 'Lomake on salassapidettävä',
       legalBasis: 'Lait joihin lomake perustuu (vapaaehtoinen)',
-      validity: 'Voimassa ajalla'
+      validity: 'Voimassa ajalla',
+      processDefinitionNumber: 'Tehtäväluokka',
+      processDefinitionNumberInfo:
+        'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos lomaketta ei arkistoida.',
+      archiveDurationMonths: 'Arkistointiaika (kuukautta)'
     },
     templateEditor: {
       confidential: 'Salassapidettävä',
@@ -4806,6 +4833,14 @@ export const fi = {
       'Voit määritellä eVakassa käytössä olevan kutsumanimesi. Kutsumanimen tulee olla jokin etunimistäsi. Jos nimesi on vaihtunut ja sinulla on tarve päivittää eVakaan uusi nimesi, ole yhteydessä Espoon HelpDeskiin.',
     select: 'Valitse kutsumanimi',
     confirm: 'Vahvista'
+  },
+  metadata: {
+    states: {
+      INITIAL: 'Asian vireillepano / -tulo',
+      PREPARATION: 'Asian valmistelu',
+      DECIDING: 'Päätöksenteko',
+      COMPLETED: 'Toimeenpano / Päättäminen / Sulkeminen'
+    }
   },
   components
 }

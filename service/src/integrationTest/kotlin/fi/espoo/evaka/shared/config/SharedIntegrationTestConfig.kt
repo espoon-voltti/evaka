@@ -226,5 +226,6 @@ val testFeatureConfig =
             "Varhaiskasvatuksen palveluohjaus - Småbarnspedagogikens servicehandledning - Early childhood education service guidance",
         applyPlacementUnitFromDecision = false,
         preferredStartRelativeApplicationDueDate = false,
-        fiveYearsOldDaycareEnabled = true
+        fiveYearsOldDaycareEnabled = true,
+        archiveMetadataOrganization = "Espoon kaupungin varhaiskasvatus"
     )

@@ -76,11 +76,13 @@ import {
   updateFeeAlteration
 } from '../../generated/api-clients/invoicing'
 import { getFosterParents } from '../../generated/api-clients/pis'
+import { getChildDocumentMetadata } from '../../generated/api-clients/process'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('childInformation', {
   childDocuments: (childId: UUID) => ['childDocuments', childId],
   childDocument: (id: UUID) => ['childDocument', id],
+  childDocumentMetadata: (id: UUID) => ['childDocumentMetadata', id],
   childDocumentWriteLock: (id: UUID) => ['childDocument', id, 'lock'],
   assistance: (childId: UUID) => ['assistance', childId],
   assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
@@ -121,6 +123,12 @@ export const childDocumentsQuery = query({
 export const childDocumentQuery = query({
   api: getDocument,
   queryKey: ({ documentId }) => queryKeys.childDocument(documentId)
+})
+
+export const childDocumentMetadataQuery = query({
+  api: getChildDocumentMetadata,
+  queryKey: ({ childDocumentId }) =>
+    queryKeys.childDocumentMetadata(childDocumentId)
 })
 
 export const childDocumentWriteLockQuery = query({
