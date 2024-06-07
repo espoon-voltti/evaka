@@ -27,7 +27,7 @@ import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
-import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -311,7 +311,8 @@ export function SingleThreadView({
                   text={i18n.messages.replyToThread}
                 />
                 {onArchived && (
-                  <AsyncInlineButton
+                  <AsyncButton
+                    appearance="inline"
                     icon={faBoxArchive}
                     aria-label={i18n.common.archive}
                     data-qa="delete-thread-btn"

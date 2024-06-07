@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 
 import { cancelMutation, MutationDescription } from 'lib-common/query'
 
@@ -39,13 +38,3 @@ function LegacyMutateButton<Arg, Data>({
  * @deprecated use MutateButton instead
  */
 export default React.memo(LegacyMutateButton) as typeof LegacyMutateButton
-
-/**
- * @deprecated use MutateButton and appearance="inline" instead
- */
-export const InlineMutateButton = styled(LegacyMutateButton)`
-  padding: 0;
-  min-width: 0;
-  min-height: 0;
-  border: none;
-` as typeof LegacyMutateButton

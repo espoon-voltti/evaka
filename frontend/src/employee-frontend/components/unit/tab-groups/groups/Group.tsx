@@ -29,10 +29,8 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import {
-  cancelMutation,
-  InlineMutateButton
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { cancelMutation } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -303,7 +301,8 @@ export default React.memo(function Group({
           )}
           {permittedActions.includes('DELETE') && (
             <>
-              <InlineMutateButton
+              <MutateButton
+                appearance="inline"
                 icon={faTrash}
                 text={i18n.unit.groups.deleteGroup}
                 mutation={deleteGroupMutation}
@@ -697,7 +696,8 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
               </>
             )}
             {canDelete && (
-              <InlineMutateButton
+              <MutateButton
+                appearance="inline"
                 mutation={deleteMutation}
                 onClick={onClick}
                 data-qa="remove-btn"

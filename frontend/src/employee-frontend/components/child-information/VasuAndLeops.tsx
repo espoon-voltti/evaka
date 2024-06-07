@@ -29,7 +29,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { InlineMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
@@ -320,7 +320,8 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                 <Td minimalWidth>
                   {vasu.documentState === 'CLOSED' ? (
                     permittedActions.includes('EVENT_RETURNED_TO_REVIEWED') ? (
-                      <InlineMutateButton
+                      <MutateButton
+                        appearance="inline"
                         mutation={updateDocumentStateMutation}
                         onClick={() => ({
                           id: vasu.id,

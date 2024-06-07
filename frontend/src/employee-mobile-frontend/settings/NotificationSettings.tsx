@@ -30,7 +30,7 @@ import {
 } from 'lib-common/generated/api-types/webpush'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
@@ -362,7 +362,8 @@ const PermissionSection = React.memo(function PermissionSection(props: {
         <FixedSpaceRow>
           <span data-qa="permission-state">{t.state.prompt}</span>
           <Gap size="s" horizontal />
-          <AsyncInlineButton
+          <AsyncButton
+            appearance="inline"
             data-qa="enable"
             text={t.enable}
             onClick={props.enable}
