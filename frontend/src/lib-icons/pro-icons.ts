@@ -14,6 +14,7 @@ export { faChevronDown as fasChevronDown } from '@fortawesome/free-solid-svg-ico
 export { faChevronUp as fasChevronUp } from '@fortawesome/free-solid-svg-icons/faChevronUp'
 export { faChild as fasChild } from '@fortawesome/free-solid-svg-icons/faChild'
 export { faEnvelope as fasEnvelope } from '@fortawesome/free-solid-svg-icons/faEnvelope'
+export { faExclamation as fasExclamation } from '@fortawesome/free-solid-svg-icons/faExclamation'
 export { faExclamationTriangle as fasExclamationTriangle } from '@fortawesome/free-solid-svg-icons/faExclamationTriangle'
 export { faInfo as fasInfo } from '@fortawesome/free-solid-svg-icons/faInfo'
 export { faMapMarkerAlt as fasMapMarkerAlt } from '@fortawesome/free-solid-svg-icons/faMapMarkerAlt'

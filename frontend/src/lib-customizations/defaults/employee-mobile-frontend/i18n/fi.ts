@@ -99,6 +99,9 @@ export const fi = {
     firstName: 'Etunimi',
     openExpandingInfo: 'Avaa lisätietokenttä'
   },
+  systemNotification: {
+    title: 'Ilmoitus'
+  },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
     text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',
