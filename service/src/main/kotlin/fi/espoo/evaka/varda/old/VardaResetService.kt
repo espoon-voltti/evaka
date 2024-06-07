@@ -5,7 +5,6 @@
 package fi.espoo.evaka.varda.old
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
@@ -32,7 +31,6 @@ private val logger = KotlinLogging.logger {}
 class VardaResetService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val tokenProvider: VardaTokenProvider,
-    private val fuel: FuelManager,
     private val mapper: JsonMapper,
     private val vardaEnv: VardaEnv,
     private val evakaEnv: EvakaEnv,
@@ -45,7 +43,7 @@ class VardaResetService(
         asyncJobRunner.registerHandler(::oldResetVardaChildByAsyncJob)
     }
 
-    val client = VardaClient(tokenProvider, fuel, mapper, vardaEnv)
+    val client = VardaClient(tokenProvider, mapper, vardaEnv)
 
     fun planVardaReset(
         db: Database.Connection,

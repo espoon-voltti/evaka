@@ -29,7 +29,6 @@ private val logger = KotlinLogging.logger {}
 class KoskiClient(
     private val env: KoskiEnv,
     private val ophEnv: OphEnv,
-    private val fuel: FuelManager,
     asyncJobRunner: AsyncJobRunner<AsyncJob>?
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the
@@ -39,6 +38,8 @@ class KoskiClient(
         defaultJsonMapperBuilder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .build()
+
+    private val fuel = FuelManager()
 
     init {
         asyncJobRunner?.registerHandler { db, clock, msg: AsyncJob.UploadToKoski ->

@@ -28,7 +28,7 @@ abstract class VardaIntegrationTest(resetDbBeforeEach: Boolean) :
         super.beforeAll()
         val vardaBaseUrl = URI.create("http://localhost:$httpPort/mock-integration/varda/api")
         val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
-        vardaTokenProvider = VardaTempTokenProvider(http, jsonMapper, vardaEnv)
-        vardaClient = VardaClient(vardaTokenProvider, http, jsonMapper, vardaEnv)
+        vardaTokenProvider = VardaTempTokenProvider(jsonMapper, vardaEnv)
+        vardaClient = VardaClient(vardaTokenProvider, jsonMapper, vardaEnv)
     }
 }

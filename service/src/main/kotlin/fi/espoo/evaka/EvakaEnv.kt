@@ -34,7 +34,6 @@ data class EvakaEnv(
     val frontendBaseUrlSv: String,
     val feeDecisionMinDate: LocalDate,
     val maxAttachmentsPerUser: Int,
-    val httpClientCertificateCheck: Boolean,
     val mockClock: Boolean,
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
@@ -73,9 +72,6 @@ data class EvakaEnv(
                         "evaka.max_attachments_per_user",
                         "fi.espoo.evaka.maxAttachmentsPerUser"
                     ),
-                httpClientCertificateCheck =
-                    env.lookup("evaka.http_client.certificate_check", "fuel.certificate.check")
-                        ?: true,
                 mockClock = env.lookup("evaka.clock.mock") ?: false,
                 nrOfDaysFeeDecisionCanBeSentInAdvance =
                     env.lookup("evaka.fee_decision.days_in_advance") ?: 0,
@@ -401,6 +397,7 @@ data class VtjXroadEnv(
     val trustStore: KeystoreEnv?,
     val keyStore: KeystoreEnv?,
     val address: String,
+    val httpClientCertificateCheck: Boolean,
     val client: VtjXroadClientEnv,
     val service: VtjXroadServiceEnv,
     val protocolVersion: String
@@ -457,6 +454,12 @@ data class VtjXroadEnv(
                         "evaka.integration.vtj.xroad.address",
                         "fi.espoo.voltti.vtj.xroad.address"
                     ) ?: "",
+                httpClientCertificateCheck =
+                    env.lookup(
+                        "evaka.integration.vtj.xroad.certificate_check",
+                        "evaka.http_client.certificate_check",
+                        "fuel.certificate.check"
+                    ) ?: true,
                 client = VtjXroadClientEnv.fromEnvironment(env),
                 service = VtjXroadServiceEnv.fromEnvironment(env),
                 protocolVersion =

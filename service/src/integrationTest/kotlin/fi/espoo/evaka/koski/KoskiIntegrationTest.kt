@@ -60,7 +60,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env),
-                    fuel = http,
                     asyncJobRunner = null
                 )
             )
@@ -871,7 +870,6 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env).copy(municipalityCode = "001"),
-                    fuel = http,
                     asyncJobRunner = null
                 )
             )

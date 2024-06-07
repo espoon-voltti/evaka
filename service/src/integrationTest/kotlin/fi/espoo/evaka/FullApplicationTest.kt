@@ -15,7 +15,6 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.FuelManagerConfig
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.getTestDataSource
@@ -23,6 +22,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.trustAllCerts
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import io.opentracing.Tracer
@@ -54,7 +54,6 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     private lateinit var jdbi: Jdbi
 
     /** HTTP client for testing the application */
-    @Autowired private lateinit var fuelManagerConfig: FuelManagerConfig
     protected lateinit var http: FuelManager
 
     @Autowired protected lateinit var env: Environment
@@ -73,7 +72,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @BeforeAll
     fun beforeAll() {
         assert(httpPort > 0)
-        http = fuelManagerConfig.noCertCheckFuelManager()
+        http = FuelManager.trustAllCerts()
         http.forceMethods = true // use actual PATCH requests
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))

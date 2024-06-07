@@ -5,7 +5,6 @@
 package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.emailclient.EvakaEmailMessageProvider
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
@@ -161,9 +160,9 @@ class EspooConfig {
     @Bean fun espooBiJob(client: EspooBiClient) = EspooBiJob(client)
 
     @Bean
-    fun espooBiClient(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>, fuel: FuelManager) =
+    fun espooBiClient(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>) =
         when (env.biIntegrationEnabled) {
-            true -> EspooBiHttpClient(fuel, biEnv.getObject())
+            true -> EspooBiHttpClient(biEnv.getObject())
             false -> MockEspooBiClient()
         }
 

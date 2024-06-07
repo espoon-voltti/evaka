@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.espoo.bi
 
-import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.EspooBiEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.Sensitive
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2023, 1, 1, 1, 0)))
-    private val fuel = FuelManager()
 
     @Autowired private lateinit var mockEndpoint: MockBiEndpoint
     private lateinit var job: EspooBiJob
@@ -31,7 +29,6 @@ class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
         super.beforeAll()
         val client =
             EspooBiHttpClient(
-                fuel,
                 EspooBiEnv(
                     url = "http://localhost:$httpPort/public/mock-espoo-bi",
                     username = "user",

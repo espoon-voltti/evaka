@@ -12,10 +12,8 @@ import fi.espoo.voltti.logging.loggers.error
 import java.time.Duration
 import mu.KotlinLogging
 
-class EspooBiHttpClient(
-    private val fuel: FuelManager,
-    private val env: EspooBiEnv,
-) : EspooBiClient {
+class EspooBiHttpClient(private val env: EspooBiEnv) : EspooBiClient {
+    private val fuel = FuelManager()
     private val logger = KotlinLogging.logger {}
     private val readTimeout = Duration.ofMinutes(5)
 
