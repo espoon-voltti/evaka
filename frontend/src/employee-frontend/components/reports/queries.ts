@@ -17,7 +17,7 @@ import {
   getOccupancyGroupReport,
   getOccupancyUnitReport,
   getPlacementGuaranteeReport,
-  getPreschoolAbsenceReportRows,
+  getPreschoolAbsenceReport,
   getServiceVoucherReportForAllUnits,
   getUnitsReport,
   getVardaChildErrorsReport,
@@ -64,9 +64,10 @@ const queryKeys = createQueryKeys('reports', {
     'mealReportByUnit',
     filters
   ],
-  preschoolAbsenceReport: (
-    filters: Arg0<typeof getPreschoolAbsenceReportRows>
-  ) => ['preschoolAbsenceReport', filters]
+  preschoolAbsenceReport: (filters: Arg0<typeof getPreschoolAbsenceReport>) => [
+    'preschoolAbsenceReport',
+    filters
+  ]
 })
 
 export const exceededServiceNeedReportUnitsQuery = query({
@@ -160,6 +161,6 @@ export const mealReportByUnitQuery = query({
 })
 
 export const preschoolAbsenceReportQuery = query({
-  api: getPreschoolAbsenceReportRows,
+  api: getPreschoolAbsenceReport,
   queryKey: queryKeys.preschoolAbsenceReport
 })

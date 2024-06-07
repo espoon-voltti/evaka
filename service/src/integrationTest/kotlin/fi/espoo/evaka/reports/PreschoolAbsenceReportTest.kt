@@ -18,7 +18,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
-import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -56,9 +56,9 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
     private val unitSupervisorA = DevEmployee(id = EmployeeId(UUID.randomUUID()), roles = setOf())
     private val unitSupervisorB = DevEmployee(id = EmployeeId(UUID.randomUUID()), roles = setOf())
 
-    // Wednesday
+    // Monday
     private val mockClock =
-        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 7), LocalTime.of(12, 15)))
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 12), LocalTime.of(12, 15)))
 
     @Test
     fun `Unit supervisor can see own unit's report results`() {
@@ -71,7 +71,8 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 unitSupervisorA.user,
                 testData.daycareAId,
                 null,
-                testData.termId
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end
             )
 
         assertThat(results.isNotEmpty())
@@ -87,7 +88,8 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 adminLoginUser,
                 testData.daycareAId,
                 null,
-                testData.termId
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end
             )
         assertThat(results.isNotEmpty())
     }
@@ -102,7 +104,8 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 unitSupervisorA.user,
                 testData.daycareBId,
                 null,
-                testData.termId
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end
             )
         }
     }
@@ -118,11 +121,28 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 adminLoginUser,
                 testData.daycareAId,
                 null,
-                testData.termId
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end
             )
 
         val (groupAExpectation, groupBExpectation) = getExpectedResults(testData)
-        assertThat(reportResults).hasSameElementsAs(groupAExpectation + groupBExpectation)
+        val childCResults =
+            (groupAExpectation + groupBExpectation).filter { it.childId == testData.childC.id }
+        val combinedResult =
+            ChildPreschoolAbsenceRow(
+                childCResults[0].childId,
+                childCResults[0].firstName,
+                childCResults[0].lastName,
+                childCResults[0].hourlyTypeResults.toMutableMap().apply {
+                    childCResults[1].hourlyTypeResults.forEach {
+                        merge(it.key, it.value) { a, b -> a + b }
+                    }
+                }
+            )
+        assertThat(reportResults)
+            .hasSameElementsAs(
+                groupAExpectation.filter { it.childId != testData.childC.id } + combinedResult
+            )
     }
 
     @Test
@@ -136,7 +156,8 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 adminLoginUser,
                 testData.daycareAId,
                 testData.groupBId,
-                testData.termId
+                testData.preschoolTerm.start,
+                testData.preschoolTerm.end
             )
 
         val (_, groupBExpectation) = getExpectedResults(testData)
@@ -184,6 +205,20 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                                 else -> 0
                             }
                         }
+                ),
+                ChildPreschoolAbsenceRow(
+                    childId = testData.childC.id,
+                    firstName = testData.childC.firstName,
+                    lastName = testData.childC.lastName,
+                    hourlyTypeResults =
+                        // 5h full day absence + 3h early departure
+                        preschoolAbsenceTypes.associateWith { type ->
+                            when (type) {
+                                AbsenceType.UNKNOWN_ABSENCE -> 5
+                                AbsenceType.OTHER_ABSENCE -> 3
+                                else -> 0
+                            }
+                        }
                 )
             )
 
@@ -207,13 +242,17 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
         return Pair(groupAExpectation, groupBExpectation)
     }
 
-    private fun initTestData(keyDate: LocalDate): PreschoolAbsenceReportTestData {
+    private fun initTestData(monday: LocalDate): PreschoolAbsenceReportTestData {
+        val tuesday = monday.plusDays(1)
+        val wednesday = monday.plusDays(2)
+        val thursday = monday.plusDays(3)
+        val friday = monday.plusDays(4)
+
         return db.transaction { tx ->
             tx.insert(admin)
 
-            val testTerm = FiniteDateRange(keyDate.minusMonths(6), keyDate.plusMonths(6))
-            val termId =
-                tx.insertPreschoolTerm(testTerm, testTerm, testTerm, testTerm, DateSet.empty())
+            val testTerm = FiniteDateRange(monday.minusMonths(6), monday.plusMonths(6))
+            tx.insertPreschoolTerm(testTerm, testTerm, testTerm, testTerm, DateSet.empty())
 
             val areaAId = tx.insert(DevCareArea(name = "Area A", shortName = "Area A"))
             val areaBId = tx.insert(DevCareArea(name = "Area B", shortName = "Area B"))
@@ -223,7 +262,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     DevDaycare(
                         name = "Preschool A",
                         areaId = areaAId,
-                        openingDate = keyDate.minusDays(7),
+                        openingDate = monday.minusDays(7),
                         type = setOf(CareType.PRESCHOOL),
                         dailyPreschoolTime =
                             TimeRange(LocalTime.of(9, 0, 0), LocalTime.of(14, 0, 0))
@@ -235,7 +274,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                         GroupId(UUID.randomUUID()),
                         preschoolAId,
                         "Testiryhmä A",
-                        startDate = keyDate.minusDays(7)
+                        startDate = monday.minusDays(7)
                     )
                 )
 
@@ -245,7 +284,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                         GroupId(UUID.randomUUID()),
                         preschoolAId,
                         "Testiryhmä B",
-                        startDate = keyDate.minusDays(7)
+                        startDate = monday.minusDays(7)
                     )
                 )
 
@@ -254,7 +293,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     DevDaycare(
                         name = "Preschool B",
                         areaId = areaBId,
-                        openingDate = keyDate.minusDays(7),
+                        openingDate = monday.minusDays(7),
                         type = setOf(CareType.PRESCHOOL),
                         dailyPreschoolTime =
                             TimeRange(LocalTime.of(9, 0, 0), LocalTime.of(13, 0, 0))
@@ -270,7 +309,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
             val testChildAapo =
                 DevPerson(
                     id = ChildId(UUID.randomUUID()),
-                    dateOfBirth = keyDate.minusYears(6),
+                    dateOfBirth = monday.minusYears(6),
                     firstName = "Aapo",
                     lastName = "Aarnio"
                 )
@@ -279,7 +318,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
             val testChildBertil =
                 DevPerson(
                     ChildId(UUID.randomUUID()),
-                    dateOfBirth = keyDate.minusYears(6),
+                    dateOfBirth = monday.minusYears(6),
                     firstName = "Bertil",
                     lastName = "Becker"
                 )
@@ -288,21 +327,22 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
             val testChildCecil =
                 DevPerson(
                     ChildId(UUID.randomUUID()),
-                    dateOfBirth = keyDate.minusYears(6),
+                    dateOfBirth = monday.minusYears(6),
                     firstName = "Cecil",
                     lastName = "Cilliacus"
                 )
             tx.insert(testChildCecil, DevPersonType.CHILD)
 
-            val placementDuration = FiniteDateRange(keyDate.minusMonths(1), keyDate.plusMonths(1))
+            val defaultPlacementDuration =
+                FiniteDateRange(monday.minusMonths(1), monday.plusMonths(1))
             val placementAId =
                 tx.insert(
                     DevPlacement(
                         type = PlacementType.PRESCHOOL,
                         childId = testChildAapo.id,
                         unitId = preschoolAId,
-                        startDate = placementDuration.start,
-                        endDate = placementDuration.end
+                        startDate = defaultPlacementDuration.start,
+                        endDate = defaultPlacementDuration.end
                     )
                 )
 
@@ -311,49 +351,73 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     type = PlacementType.PRESCHOOL,
                     childId = testChildBertil.id,
                     unitId = preschoolAId,
-                    startDate = placementDuration.start,
-                    endDate = placementDuration.end
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end
                 )
             )
 
-            val placementCId =
-                tx.insert(
-                    DevPlacement(
-                        type = PlacementType.PRESCHOOL_DAYCARE,
-                        childId = testChildCecil.id,
-                        unitId = preschoolAId,
-                        startDate = keyDate.minusMonths(1),
-                        endDate = keyDate.plusMonths(1)
-                    )
+            val placementC1 =
+                DevPlacement(
+                    id = PlacementId(UUID.randomUUID()),
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChildCecil.id,
+                    unitId = preschoolAId,
+                    startDate = monday.minusMonths(1),
+                    endDate = wednesday
                 )
+            tx.insert(placementC1)
+
+            val placementC2 =
+                DevPlacement(
+                    id = PlacementId(UUID.randomUUID()),
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChildCecil.id,
+                    unitId = preschoolAId,
+                    startDate = thursday,
+                    endDate = thursday.plusMonths(1)
+                )
+
+            tx.insert(placementC2)
 
             tx.insert(
                 DevDaycareGroupPlacement(
                     GroupPlacementId(UUID.randomUUID()),
                     placementAId,
                     groupAId,
-                    placementDuration.start,
-                    placementDuration.end
+                    defaultPlacementDuration.start,
+                    defaultPlacementDuration.end
                 )
             )
 
             tx.insert(
                 DevDaycareGroupPlacement(
                     GroupPlacementId(UUID.randomUUID()),
-                    placementCId,
+                    placementC1.id,
                     groupBId,
-                    placementDuration.start,
-                    placementDuration.end
+                    placementC1.startDate,
+                    placementC1.endDate
                 )
             )
+
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    GroupPlacementId(UUID.randomUUID()),
+                    placementC2.id,
+                    groupAId,
+                    placementC2.startDate,
+                    placementC2.endDate
+                )
+            )
+
+            // Monday
 
             tx.insert(
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
                     testChildAapo.id,
-                    keyDate,
+                    monday,
                     AbsenceType.OTHER_ABSENCE,
-                    HelsinkiDateTime.atStartOfDay(keyDate),
+                    HelsinkiDateTime.atStartOfDay(monday),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE
                 )
@@ -363,9 +427,9 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
                     testChildBertil.id,
-                    keyDate,
+                    monday,
                     AbsenceType.SICKLEAVE,
-                    HelsinkiDateTime.atStartOfDay(keyDate),
+                    HelsinkiDateTime.atStartOfDay(monday),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE
                 )
@@ -375,63 +439,92 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
                     testChildCecil.id,
-                    keyDate,
+                    monday,
                     AbsenceType.UNKNOWN_ABSENCE,
-                    HelsinkiDateTime.atStartOfDay(keyDate),
+                    HelsinkiDateTime.atStartOfDay(monday),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE
                 )
             )
 
+            // Tuesday
+
             tx.insertTestChildAttendance(
                 testChildAapo.id,
                 preschoolAId,
-                HelsinkiDateTime.of(keyDate, LocalTime.of(8, 0)),
+                HelsinkiDateTime.of(tuesday, LocalTime.of(8, 0)),
                 // left an hour early
-                HelsinkiDateTime.of(keyDate, LocalTime.of(13, 0))
-            )
-
-            tx.insertTestChildAttendance(
-                testChildAapo.id,
-                preschoolAId,
-                // arrived an hour late
-                HelsinkiDateTime.of(keyDate.plusDays(1), LocalTime.of(10, 0)),
-                HelsinkiDateTime.of(keyDate.plusDays(1), LocalTime.of(16, 0))
-            )
-
-            tx.insertTestChildAttendance(
-                testChildAapo.id,
-                preschoolAId,
-                // arrived 45 minutes late
-                HelsinkiDateTime.of(keyDate.plusDays(2), LocalTime.of(9, 45)),
-                HelsinkiDateTime.of(keyDate.plusDays(2), LocalTime.of(16, 0))
+                HelsinkiDateTime.of(tuesday, LocalTime.of(13, 0))
             )
 
             tx.insertTestChildAttendance(
                 testChildBertil.id,
-                preschoolBId,
-                HelsinkiDateTime.of(keyDate, LocalTime.of(9, 0)),
-                HelsinkiDateTime.of(keyDate, LocalTime.of(16, 0))
+                preschoolAId,
+                HelsinkiDateTime.of(tuesday, LocalTime.of(9, 0)),
+                HelsinkiDateTime.of(tuesday, LocalTime.of(16, 0))
             )
 
             // arrives 1.5h late
             tx.insertTestChildAttendance(
                 testChildCecil.id,
                 preschoolAId,
-                HelsinkiDateTime.of(keyDate.plusDays(1), LocalTime.of(10, 30)),
-                HelsinkiDateTime.of(keyDate.plusDays(1), LocalTime.of(15, 30))
+                HelsinkiDateTime.of(tuesday, LocalTime.of(10, 30)),
+                HelsinkiDateTime.of(tuesday, LocalTime.of(15, 30))
             )
 
+            // Wednesday
+
+            tx.insertTestChildAttendance(
+                testChildAapo.id,
+                preschoolAId,
+                // arrived an hour late
+                HelsinkiDateTime.of(wednesday, LocalTime.of(10, 0)),
+                HelsinkiDateTime.of(wednesday, LocalTime.of(16, 0))
+            )
+
+            // Thursday
+
+            tx.insertTestChildAttendance(
+                testChildAapo.id,
+                preschoolAId,
+                // arrived 45 minutes late
+                HelsinkiDateTime.of(thursday, LocalTime.of(9, 45)),
+                HelsinkiDateTime.of(thursday, LocalTime.of(16, 0))
+            )
+
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    thursday,
+                    AbsenceType.UNKNOWN_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(thursday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.NONBILLABLE
+                )
+            )
+
+            // Friday
+
+            // leaves 3 hours early
+            tx.insertTestChildAttendance(
+                testChildCecil.id,
+                preschoolAId,
+                HelsinkiDateTime.of(friday, LocalTime.of(9, 0)),
+                HelsinkiDateTime.of(friday, LocalTime.of(11, 0))
+            )
+
+            // next monday
             // unfinished attendance shouldn't show up
             tx.insertTestChildAttendance(
                 testChildCecil.id,
                 preschoolAId,
-                HelsinkiDateTime.of(keyDate.plusDays(2), LocalTime.of(9, 0)),
+                HelsinkiDateTime.of(monday.plusWeeks(1), LocalTime.of(11, 0)),
                 null
             )
 
             PreschoolAbsenceReportTestData(
-                termId,
+                testTerm,
                 testChildAapo,
                 testChildBertil,
                 testChildCecil,
@@ -446,7 +539,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
     }
 
     data class PreschoolAbsenceReportTestData(
-        val termId: PreschoolTermId,
+        val preschoolTerm: FiniteDateRange,
         val childA: DevPerson,
         val childB: DevPerson,
         val childC: DevPerson,

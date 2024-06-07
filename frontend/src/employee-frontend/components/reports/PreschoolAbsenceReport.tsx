@@ -4,9 +4,11 @@
 
 import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 
+import { UserContext } from 'employee-frontend/state/user'
 import { combine } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   Daycare,
   DaycareGroup,
@@ -41,7 +43,11 @@ import { preschoolAbsenceReportQuery } from './queries'
 export default React.memo(function PreschoolAbsenceReport() {
   const { i18n } = useTranslation()
 
-  const allOption = useMemo(() => ({ name: i18n.common.all, id: null }), [i18n.common.all])
+  const { roles } = useContext(UserContext)
+  const allOption = useMemo(
+    () => ({ name: i18n.common.all, id: null }),
+    [i18n.common.all]
+  )
   const [selectedUnit, setSelectedUnit] = useState<Daycare | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<
     DaycareGroup | null | { name: string; id: string | null }
@@ -56,16 +62,29 @@ export default React.memo(function PreschoolAbsenceReport() {
   )
   const terms = useQueryResult(preschoolTermsQuery())
 
+  const isSvUnit = useMemo(
+    () => selectedUnit?.language === 'sv',
+    [selectedUnit]
+  )
   const termOptions = useMemo(
     () =>
       terms.map((t) => {
         const today = LocalDate.todayInHelsinkiTz()
-        const pastTerms = t.filter((pt) =>
-          pt.finnishPreschool.start.isEqualOrBefore(today)
+        const visibleTerms = t.filter((pt) => {
+          if (roles.includes('ADMIN')) return true
+          const termStart = isSvUnit
+            ? pt.swedishPreschool.start
+            : pt.finnishPreschool.start
+          return (
+            termStart.isEqualOrBefore(today) &&
+            termStart.isAfter(today.subYears(2))
+          )
+        })
+        return orderBy(visibleTerms, (term) =>
+          isSvUnit ? term.swedishPreschool.start : term.finnishPreschool.start
         )
-        return orderBy(pastTerms, (term) => term.finnishPreschool.start)
       }),
-    [terms]
+    [terms, isSvUnit, roles]
   )
 
   const groupOptions = useMemo(
@@ -89,23 +108,6 @@ export default React.memo(function PreschoolAbsenceReport() {
             <>
               <FilterRow>
                 <FilterLabel>
-                  {i18n.reports.preschoolAbsences.filters.preschoolTerm.label}
-                </FilterLabel>
-                <FlexRow>
-                  <Combobox
-                    items={termResult}
-                    onChange={setSelectedTerm}
-                    selectedItem={selectedTerm}
-                    getItemLabel={(item) => item.finnishPreschool.format()}
-                    placeholder={
-                      i18n.reports.preschoolAbsences.filters.preschoolTerm
-                        .placeholder
-                    }
-                  />
-                </FlexRow>
-              </FilterRow>
-              <FilterRow>
-                <FilterLabel>
                   {
                     i18n.reports.preschoolAbsences.filters.daycareSelection
                       .label
@@ -118,6 +120,28 @@ export default React.memo(function PreschoolAbsenceReport() {
                     selectedItem={selectedUnit}
                     getItemLabel={(item) => item.name}
                     placeholder={i18n.filters.unitPlaceholder}
+                  />
+                </FlexRow>
+              </FilterRow>
+              <FilterRow>
+                <FilterLabel>
+                  {i18n.reports.preschoolAbsences.filters.preschoolTerm.label}
+                </FilterLabel>
+                <FlexRow>
+                  <Combobox
+                    items={termResult}
+                    onChange={setSelectedTerm}
+                    disabled={!selectedUnit}
+                    selectedItem={selectedTerm}
+                    getItemLabel={(item) =>
+                      isSvUnit
+                        ? item.swedishPreschool.format()
+                        : item.finnishPreschool.format()
+                    }
+                    placeholder={
+                      i18n.reports.preschoolAbsences.filters.preschoolTerm
+                        .placeholder
+                    }
                   />
                 </FlexRow>
               </FilterRow>
@@ -140,7 +164,11 @@ export default React.memo(function PreschoolAbsenceReport() {
               </FilterRow>
               {selectedTerm && selectedUnit && (
                 <PreschoolAbsenceGrid
-                  term={selectedTerm}
+                  term={
+                    isSvUnit
+                      ? selectedTerm.swedishPreschool
+                      : selectedTerm.finnishPreschool
+                  }
                   daycare={selectedUnit}
                   groupId={selectedGroup?.id}
                 />
@@ -169,14 +197,16 @@ const PreschoolAbsenceGrid = ({
   daycare,
   groupId
 }: {
-  term: PreschoolTerm
+  term: FiniteDateRange
   daycare: Daycare
   groupId?: string | null
 }) => {
   const { i18n } = useTranslation()
+
   const reportResult = useQueryResult(
     preschoolAbsenceReportQuery({
-      termId: term.id,
+      termStart: term.start,
+      termEnd: term.end,
       unitId: daycare.id,
       groupId: groupId ?? null
     })
@@ -241,7 +271,7 @@ const PreschoolAbsenceGrid = ({
             label: i18n.absences.absenceTypes.UNKNOWN_ABSENCE
           }
         ]}
-        filename={`${i18n.reports.preschoolAbsences.title} ${daycare.name} ${term.finnishPreschool.format()}.csv`}
+        filename={`${i18n.reports.preschoolAbsences.title} ${daycare.name} ${term.format()}.csv`}
       />
       <TableScrollable>
         <Thead>

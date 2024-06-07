@@ -698,19 +698,21 @@ export async function getPlacementSketchingReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.PreschoolAbsenceReport.getPreschoolAbsenceReportRows
+* Generated from fi.espoo.evaka.reports.PreschoolAbsenceReport.getPreschoolAbsenceReport
 */
-export async function getPreschoolAbsenceReportRows(
+export async function getPreschoolAbsenceReport(
   request: {
     unitId: UUID,
     groupId?: UUID | null,
-    termId: UUID
+    termStart: LocalDate,
+    termEnd: LocalDate
   }
 ): Promise<ChildPreschoolAbsenceRow[]> {
   const params = createUrlSearchParams(
     ['unitId', request.unitId],
     ['groupId', request.groupId],
-    ['termId', request.termId]
+    ['termStart', request.termStart.formatIso()],
+    ['termEnd', request.termEnd.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<ChildPreschoolAbsenceRow[]>>({
     url: uri`/employee/reports/preschool-absence`.toString(),
