@@ -100,8 +100,10 @@ const StyledButton = styled.button<{
           min-width: 100px;
           border-width: 1px;
           background: ${(p) => p.theme.colors.grayscale.g0};
-          display: block;
-          text-align: center;
+          display: flex;
+          flex-wrap: nowrap;
+          align-items: center;
+          justify-content: center;
           overflow-x: hidden;
           letter-spacing: 0.2px;
 
@@ -130,7 +132,7 @@ const StyledButton = styled.button<{
           padding: 0;
           margin: 0;
           display: inline-flex;
-          text-align: left;
+          flex-wrap: nowrap;
           align-items: center;
           justify-content: center;
 
