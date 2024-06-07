@@ -22,7 +22,7 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val definition2 = "987.654.321"
         val year1 = 2022
         val year2 = 2023
-        val organization = "Espoon kaupungin varhaiskasvatus"
+        val organization = "Espoon kaupungin esiopetus ja varhaiskasvatus"
         assertEquals(
             1,
             db.transaction { it.insertProcess(definition1, year1, organization) }.number
@@ -59,7 +59,7 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it.insertProcess(
                         processDefinitionNumber = "123.456.789",
                         year = 2022,
-                        organization = "Espoon kaupungin varhaiskasvatus"
+                        organization = "Espoon kaupungin esiopetus ja varhaiskasvatus"
                     )
                 }
                 .id

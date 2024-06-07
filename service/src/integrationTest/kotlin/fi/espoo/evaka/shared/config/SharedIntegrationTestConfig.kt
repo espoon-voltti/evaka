@@ -227,5 +227,5 @@ val testFeatureConfig =
         applyPlacementUnitFromDecision = false,
         preferredStartRelativeApplicationDueDate = false,
         fiveYearsOldDaycareEnabled = true,
-        archiveMetadataOrganization = "Espoon kaupungin varhaiskasvatus"
+        archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus"
     )
