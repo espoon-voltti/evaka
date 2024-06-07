@@ -9,7 +9,7 @@ import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/ap
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -92,7 +92,7 @@ const DecisionReadView = React.memo(function DecisionReadView({
             {permittedActions.includes('REVERT_TO_UNSENT') &&
               decision.sentForDecision !== null &&
               ['DRAFT', 'NEEDS_WORK'].includes(decision.status) && (
-                <LegacyAsyncButton
+                <AsyncButton
                   text={
                     i18n.childInformation.assistanceNeedDecision.revertToUnsent
                   }
@@ -110,7 +110,7 @@ const DecisionReadView = React.memo(function DecisionReadView({
               (decision.status === 'NEEDS_WORK' ||
                 (decision.status === 'DRAFT' &&
                   decision.sentForDecision === null)) && (
-                <LegacyAsyncButton
+                <AsyncButton
                   primary
                   text={
                     i18n.childInformation.assistanceNeedDecision

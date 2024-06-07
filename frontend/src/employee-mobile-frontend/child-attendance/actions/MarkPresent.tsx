@@ -25,7 +25,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -125,7 +125,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />
-                <LegacyAsyncButton
+                <AsyncButton
                   primary
                   text={i18n.common.confirm}
                   disabled={!isValidTime()}

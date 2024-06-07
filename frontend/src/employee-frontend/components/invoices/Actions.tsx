@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -73,7 +73,7 @@ const Actions = React.memo(function Actions({
         </>
       ) : null}
       {canDelete && (
-        <LegacyAsyncButton
+        <AsyncButton
           text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
           disabled={checkedIds.length === 0}
           onClick={() => deleteDraftInvoicesResult({ body: checkedIds })}

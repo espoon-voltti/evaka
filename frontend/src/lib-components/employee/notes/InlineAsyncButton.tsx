@@ -4,9 +4,9 @@
 
 import styled from 'styled-components'
 
-import { LegacyAsyncButton } from '../../atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from '../../atoms/buttons/AsyncButton'
 
-export const InlineAsyncButton = styled(LegacyAsyncButton)`
+export const InlineAsyncButton = styled(AsyncButton)`
   padding: 0;
   min-width: 0;
   min-height: 0;

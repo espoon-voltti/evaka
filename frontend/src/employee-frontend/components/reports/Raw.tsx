@@ -8,7 +8,7 @@ import { Result, Success, wrapResult } from 'lib-common/api'
 import { RawReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -83,7 +83,7 @@ export default React.memo(function Raw() {
           </FlexRow>
         </FilterRow>
         <FilterRow>
-          <LegacyAsyncButton
+          <AsyncButton
             primary
             text={i18n.common.search}
             onClick={fetchRawReport}
@@ -185,7 +185,7 @@ export default React.memo(function Raw() {
         )}
         {user?.accessibleFeatures.submitPatuReport && (
           <div>
-            <LegacyAsyncButton
+            <AsyncButton
               primary
               text="Lähetä patu-raportti"
               onClick={submitPatuReport}

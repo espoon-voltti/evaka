@@ -22,9 +22,9 @@ import { presentInGroup } from 'lib-common/staff-attendance'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -559,7 +559,7 @@ function StaffAttendanceDetailsModal<
         <Gap size="L" />
         <ModalActions>
           <LegacyButton text={i18n.common.cancel} onClick={onClose} />
-          <LegacyAsyncButton
+          <AsyncButton
             primary
             text={i18n.unit.staffAttendance.saveChanges}
             onClick={save}

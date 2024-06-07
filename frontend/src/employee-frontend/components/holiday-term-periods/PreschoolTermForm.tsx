@@ -26,8 +26,8 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import { useMutationResult } from 'lib-common/query'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -313,7 +313,7 @@ export default React.memo(function PreschoolTermForm({
 
       <Gap />
       <ButtonContainer>
-        <LegacyAsyncButton
+        <AsyncButton
           primary
           disabled={!form.isValid()}
           text={i18n.common.save}

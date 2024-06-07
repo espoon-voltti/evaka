@@ -33,9 +33,9 @@ import {
 } from 'lib-common/generated/api-types/vasu'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -840,7 +840,7 @@ export default React.memo(function VasuTemplateEditor() {
 
             <Gap />
 
-            <LegacyAsyncButton
+            <AsyncButton
               text={i18n.common.save}
               primary
               data-qa="save-template"

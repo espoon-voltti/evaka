@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react'
 import { wrapResult } from 'lib-common/api'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
@@ -77,7 +77,7 @@ export default React.memo(function DecisionResponse({
         label={i18n.application.decisions.response.reject}
         onChange={() => setAccept(false)}
       />
-      <LegacyAsyncButton
+      <AsyncButton
         onClick={onSubmit}
         onSuccess={reloadApplication}
         text={i18n.application.decisions.response.submit}

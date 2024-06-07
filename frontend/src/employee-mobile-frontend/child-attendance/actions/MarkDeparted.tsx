@@ -26,7 +26,7 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -274,7 +274,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />
-                <LegacyAsyncButton
+                <AsyncButton
                   primary
                   text={i18n.common.confirm}
                   disabled={!formIsValid}

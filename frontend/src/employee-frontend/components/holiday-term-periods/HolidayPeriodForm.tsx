@@ -12,7 +12,7 @@ import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { mockToday } from 'lib-common/utils/helpers'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -165,7 +165,7 @@ export default React.memo(function HolidayPeriodForm({
 
       <Gap />
       <ButtonContainer>
-        <LegacyAsyncButton
+        <AsyncButton
           primary
           disabled={!form.isValid()}
           text={i18n.common.save}

@@ -19,8 +19,8 @@ import { mockNow } from 'lib-common/utils/helpers'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -226,7 +226,7 @@ export default React.memo(function MarkAbsentBeforehand({
                   {selectedAbsenceType !== undefined &&
                   selectedAbsenceType !== 'NO_ABSENCE' &&
                   canSave ? (
-                    <LegacyAsyncButton
+                    <AsyncButton
                       primary
                       text={i18n.common.confirm}
                       onClick={() => postAbsence(selectedAbsenceType)}

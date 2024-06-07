@@ -23,8 +23,8 @@ import { officialLanguages } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -179,7 +179,7 @@ export default React.memo(function TemplateContentEditor({
                 onChange={setReadyToPublish}
                 data-qa="ready-to-publish-checkbox"
               />
-              <LegacyAsyncButton
+              <AsyncButton
                 text={i18n.common.save}
                 primary
                 data-qa="save-template"

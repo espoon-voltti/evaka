@@ -21,7 +21,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionInfoHeader from 'lib-components/assistance-need-decision/AssistanceNeedDecisionInfoHeader'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { InputInfo } from 'lib-components/atoms/form/InputField'
 import Content, { ContentArea } from 'lib-components/layout/Container'
@@ -332,7 +332,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
             </>
           )}
         <FooterContainer>
-          <LegacyAsyncButton
+          <AsyncButton
             primary
             text={i18n.childInformation.assistanceNeedDecision.leavePage}
             onClick={forceSave}
@@ -342,7 +342,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
           />
           <AutosaveStatusIndicator status={status} />
           <FlexGap />
-          <LegacyAsyncButton
+          <AsyncButton
             primary
             text={i18n.childInformation.assistanceNeedDecision.preview}
             onClick={() => {

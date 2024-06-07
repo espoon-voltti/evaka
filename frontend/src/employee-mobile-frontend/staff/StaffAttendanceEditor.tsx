@@ -12,7 +12,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import { formatDecimal } from 'lib-common/utils/number'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H2, H4 } from 'lib-components/typography'
@@ -159,7 +159,7 @@ const CancelButton = styled(LegacyButton)`
   width: 172px;
   padding: 0;
 `
-const ConfirmButton = styled(LegacyAsyncButton)`
+const ConfirmButton = styled(AsyncButton)`
   width: 172px;
   padding: 0;
 `

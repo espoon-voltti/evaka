@@ -7,7 +7,7 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { wrapResult } from 'lib-common/api'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import {
@@ -51,7 +51,7 @@ const Actions = React.memo(function Actions({
   return (
     <FixedSpaceRow justifyContent="flex-end">
       {invoice.status === 'WAITING_FOR_SENDING' ? (
-        <LegacyAsyncButton
+        <AsyncButton
           primary
           text={i18n.invoice.form.buttons.markSent}
           onClick={markSent}
@@ -60,7 +60,7 @@ const Actions = React.memo(function Actions({
         />
       ) : null}
       {editable ? (
-        <LegacyAsyncButton
+        <AsyncButton
           primary
           text={i18n.common.save}
           textInProgress={i18n.common.saving}

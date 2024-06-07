@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { wrapResult } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -85,7 +85,7 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
             onChange={(value) => setSelectedPreferredFirstName(value)}
             data-qa="select-preferred-first-name"
           />
-          <LegacyAsyncButton
+          <AsyncButton
             primary
             disabled={disableConfirm()}
             text={i18n.preferredFirstName.confirm}

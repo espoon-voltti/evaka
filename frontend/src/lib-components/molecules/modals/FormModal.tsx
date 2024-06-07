@@ -7,7 +7,7 @@ import React, { FormEvent, useCallback } from 'react'
 import { Failure, Result } from 'lib-common/api'
 import { MutationDescription } from 'lib-common/query'
 
-import { LegacyAsyncButton } from '../../atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from '../../atoms/buttons/AsyncButton'
 import { LegacyButton } from '../../atoms/buttons/LegacyButton'
 import { MutateButton, cancelMutation } from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
@@ -87,7 +87,7 @@ function AsyncFormModal_<T>({
     <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       {children}
       <ModalButtons $justifyContent="center">
-        <LegacyAsyncButton
+        <AsyncButton
           primary
           text={resolveLabel}
           disabled={resolveDisabled}

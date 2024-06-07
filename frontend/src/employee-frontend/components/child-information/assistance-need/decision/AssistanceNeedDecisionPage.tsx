@@ -13,7 +13,7 @@ import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanc
 import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content from 'lib-components/layout/Container'
@@ -135,7 +135,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
 
                   {decision.sentForDecision &&
                     permittedActions.includes('REVERT_TO_UNSENT') && (
-                      <LegacyAsyncButton
+                      <AsyncButton
                         primary
                         text={t.revertToUnsent}
                         onClick={() =>
@@ -147,7 +147,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                     )}
 
                   {permittedActions.includes('SEND') && (
-                    <LegacyAsyncButton
+                    <AsyncButton
                       primary
                       text={t.sendToDecisionMaker}
                       onClick={() => sendAssistanceNeedDecisionResult({ id })}

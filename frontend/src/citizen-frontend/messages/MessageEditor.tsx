@@ -18,8 +18,8 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -319,7 +319,7 @@ export default React.memo(function MessageEditor({
                 onClick={onClose}
               />
               <span />
-              <LegacyAsyncButton
+              <AsyncButton
                 primary
                 text={i18n.messages.messageEditor.send}
                 disabled={!sendEnabled}

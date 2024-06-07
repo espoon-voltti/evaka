@@ -11,7 +11,7 @@ import {
   SettingType
 } from 'lib-common/generated/api-types/setting'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -96,7 +96,7 @@ export default React.memo(function SettingsPage() {
           </Table>
         ))}
         <Gap size="s" />
-        <LegacyAsyncButton
+        <AsyncButton
           primary
           text={i18n.common.save}
           onClick={submit}

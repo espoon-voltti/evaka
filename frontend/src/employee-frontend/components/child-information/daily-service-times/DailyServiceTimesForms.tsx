@@ -20,7 +20,7 @@ import LocalTime from 'lib-common/local-time'
 import { useMutationResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -310,7 +310,7 @@ export const DailyServiceTimesCreationForm = React.memo(
         <FixedSpaceRow justifyContent="flex-end">
           <FixedSpaceRow spacing="s">
             <LegacyButton text={i18n.common.cancel} onClick={() => onClose()} />
-            <LegacyAsyncButton
+            <AsyncButton
               text={i18n.common.confirm}
               primary
               onClick={sendCreationRequest}
@@ -505,7 +505,7 @@ const DailyServiceTimesEditFullForm = React.memo(
               text={i18n.common.cancel}
               onClick={() => onClose(false)}
             />
-            <LegacyAsyncButton
+            <AsyncButton
               text={i18n.common.confirm}
               primary
               onClick={sendModificationRequest}
@@ -566,7 +566,7 @@ const DailyServiceTimesEditEndForm = React.memo(
               text={i18n.common.cancel}
               onClick={() => onClose(false)}
             />
-            <LegacyAsyncButton
+            <AsyncButton
               text={i18n.common.confirm}
               primary
               onClick={save}

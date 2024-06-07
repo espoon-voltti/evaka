@@ -21,7 +21,7 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -518,7 +518,7 @@ function HandlerNotesForm({
         onChange={(handlerNote) => setState((old) => ({ ...old, handlerNote }))}
       />
 
-      <LegacyAsyncButton
+      <AsyncButton
         primary
         onClick={() => onSave(state)}
         onSuccess={onSuccess}

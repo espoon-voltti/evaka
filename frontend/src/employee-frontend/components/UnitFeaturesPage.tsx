@@ -19,8 +19,8 @@ import {
 } from 'lib-common/generated/api-types/shared'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -146,7 +146,7 @@ export default React.memo(function UnitFeaturesPage() {
 
         <Gap size="s" />
 
-        <LegacyAsyncButton
+        <AsyncButton
           disabled={!undoAction}
           onClick={undo}
           onSuccess={reloadUnits}

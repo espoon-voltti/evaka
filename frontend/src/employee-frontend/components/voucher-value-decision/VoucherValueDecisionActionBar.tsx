@@ -9,7 +9,7 @@ import {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
-import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
@@ -84,7 +84,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
             data-qa="decision-actions-close"
             text={i18n.feeDecisions.buttons.close}
           />
-          <LegacyAsyncButton
+          <AsyncButton
             text={i18n.common.save}
             textInProgress={i18n.common.saving}
             textDone={i18n.common.saved}
@@ -113,7 +113,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
               data-qa="open-decision-handler-select-modal"
             />
           ) : (
-            <LegacyAsyncButton
+            <AsyncButton
               primary
               data-qa="button-send-decision"
               disabled={modified}
@@ -141,7 +141,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
       )}
       {isWaiting && (
         <StickyActionBar align="right">
-          <LegacyAsyncButton
+          <AsyncButton
             data-qa="button-mark-decision-sent"
             primary
             text={i18n.valueDecisions.buttons.markSent}
