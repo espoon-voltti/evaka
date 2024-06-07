@@ -12,6 +12,7 @@ export type QueryKeyPrefix =
   | 'notes'
   | 'settings'
   | 'staffAttendance'
+  | 'topBar'
   | 'units'
 
 export const queryClient = new QueryClient({

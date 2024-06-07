@@ -56,6 +56,7 @@ export { faEnvelope as fasEnvelope } from '@fortawesome/free-solid-svg-icons/faE
 export { faEuroSign } from '@fortawesome/free-solid-svg-icons/faEuroSign'
 export { faExchangeAlt as faExchange } from '@fortawesome/free-solid-svg-icons/faExchangeAlt'
 export { faExclamation } from '@fortawesome/free-solid-svg-icons/faExclamation'
+export { faExclamation as fasExclamation } from '@fortawesome/free-solid-svg-icons/faExclamation'
 export { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons/faExclamationTriangle'
 export { faExclamationTriangle as fasExclamationTriangle } from '@fortawesome/free-solid-svg-icons/faExclamationTriangle'
 export { faExternalLinkAlt as faExternalLink } from '@fortawesome/free-solid-svg-icons/faExternalLinkAlt'
