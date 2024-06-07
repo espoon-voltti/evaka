@@ -25,7 +25,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import LegacyMutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
@@ -95,7 +94,7 @@ const NotificationEditor = React.memo(function NotificationEditor({
       </FixedSpaceRow>
       <FixedSpaceRow>
         <LegacyButton text={i18n.common.cancel} onClick={onClose} />
-        <LegacyMutateButton
+        <MutateButton
           primary
           text={i18n.common.save}
           disabled={!form.isValid()}

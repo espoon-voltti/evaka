@@ -23,7 +23,6 @@ import { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -326,7 +325,7 @@ export default React.memo(function MessageEditor({
               cancelLabel={i18n.common.cancel}
             />
           ) : (
-            <LegacyMutateButton
+            <MutateButton
               mutation={sendMessageMutation}
               primary
               text={i18n.messages.messageEditor.send}

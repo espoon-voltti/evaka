@@ -33,7 +33,7 @@ import { UUID } from 'lib-common/types'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
@@ -286,7 +286,7 @@ const SettingsSectionsEditor = React.memo(function SettingsSectionsEditor({
           onClick={stopEditing}
           text={i18n.common.cancel}
         />
-        <LegacyMutateButton
+        <MutateButton
           primary
           data-qa="save"
           type="submit"

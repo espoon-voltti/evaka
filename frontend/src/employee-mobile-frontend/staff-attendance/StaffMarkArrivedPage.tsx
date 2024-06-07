@@ -24,9 +24,9 @@ import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -302,7 +302,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
             text={i18n.common.cancel}
             onClick={() => navigate(-1)}
           />
-          <LegacyMutateButton
+          <MutateButton
             primary
             text={i18n.common.confirm}
             disabled={confirmDisabled}

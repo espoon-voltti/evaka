@@ -48,7 +48,7 @@ import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -466,7 +466,7 @@ const ReservationsEdit = ({
           gap={defaultMargins.s}
         >
           <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
-          <LegacyMutateButton
+          <MutateButton
             primary
             text={i18n.common.confirm}
             mutation={setConfirmedRangeMutation}

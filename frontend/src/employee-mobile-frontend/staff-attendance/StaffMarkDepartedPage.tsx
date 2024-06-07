@@ -16,9 +16,9 @@ import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -278,7 +278,7 @@ export default React.memo(function StaffMarkDepartedPage({
                       text={i18n.common.cancel}
                       onClick={() => navigate(-1)}
                     />
-                    <LegacyMutateButton
+                    <MutateButton
                       primary
                       text={i18n.common.confirm}
                       disabled={confirmDisabled}

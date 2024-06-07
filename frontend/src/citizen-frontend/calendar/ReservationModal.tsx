@@ -18,9 +18,9 @@ import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -296,7 +296,7 @@ export default React.memo(function ReservationModal({
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}
               />
-              <LegacyMutateButton
+              <MutateButton
                 primary
                 text={i18n.common.confirm}
                 disabled={

@@ -9,10 +9,7 @@ import { MutationDescription } from 'lib-common/query'
 
 import { LegacyAsyncButton } from '../../atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from '../../atoms/buttons/LegacyButton'
-import {
-  LegacyMutateButton,
-  cancelMutation
-} from '../../atoms/buttons/LegacyMutateButton'
+import { MutateButton, cancelMutation } from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
 
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
@@ -141,7 +138,7 @@ function MutateFormModal_<Arg, Data>({
     <BaseModal {...props} close={rejectAction} closeLabel={rejectLabel}>
       {children}
       <ModalButtons $justifyContent="center">
-        <LegacyMutateButton
+        <MutateButton
           primary
           mutation={resolveMutation}
           text={resolveLabel}

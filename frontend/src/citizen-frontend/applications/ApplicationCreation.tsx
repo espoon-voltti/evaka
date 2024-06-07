@@ -12,9 +12,9 @@ import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -160,7 +160,7 @@ export default React.memo(function ApplicationCreation() {
           </ContentArea>
           <ContentArea opaque={false} paddingVertical="L">
             <ButtonContainer justify="center">
-              <LegacyMutateButton
+              <MutateButton
                 primary
                 text={t.applications.creation.create}
                 disabled={selectedType === undefined || duplicateExists}

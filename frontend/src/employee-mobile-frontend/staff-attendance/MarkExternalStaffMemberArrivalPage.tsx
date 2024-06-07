@@ -13,9 +13,9 @@ import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -145,7 +145,7 @@ export default function MarkExternalStaffMemberArrivalPage({
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />
-                <LegacyMutateButton
+                <MutateButton
                   primary
                   text={i18n.common.confirm}
                   disabled={!unit.isOperationalDate || !formIsValid()}

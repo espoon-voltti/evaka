@@ -11,7 +11,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -53,14 +53,14 @@ export default React.memo(function VardaChildErrors() {
           info={i18n.reports.vardaChildErrors.vardaInfo}
         >
           <FixedSpaceRow>
-            <LegacyMutateButton
+            <MutateButton
               primary
               text={i18n.reports.vardaChildErrors.vardaUpdateButton}
               mutation={startVardaUpdateMutation}
               onClick={() => true}
               data-qa="varda-update-button"
             />
-            <LegacyMutateButton
+            <MutateButton
               primary
               text={i18n.reports.vardaChildErrors.vardaResetButton}
               mutation={startVardaResetMutation}
@@ -116,7 +116,7 @@ export default React.memo(function VardaChildErrors() {
                             ? row.resetTimeStamp.format()
                             : ''}
                         </span>
-                        <LegacyMutateButton
+                        <MutateButton
                           primary
                           text={i18n.reports.vardaChildErrors.resetChild}
                           mutation={resetVardaChildMutation}

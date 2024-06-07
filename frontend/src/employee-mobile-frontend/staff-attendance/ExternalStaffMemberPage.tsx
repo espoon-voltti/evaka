@@ -11,9 +11,9 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -116,7 +116,7 @@ export default React.memo(function ExternalStaffMemberPage({
             </>
           ) : undefined}
 
-          <LegacyMutateButton
+          <MutateButton
             primary
             text={i18n.attendances.actions.markDeparted}
             data-qa="mark-departed-btn"

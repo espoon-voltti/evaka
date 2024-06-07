@@ -11,7 +11,7 @@ import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
@@ -208,7 +208,7 @@ export default React.memo(function VasuPage() {
                             data-qa="confirm-checkbox"
                           />
                           <Gap />
-                          <LegacyMutateButton
+                          <MutateButton
                             primary
                             text={t.common.confirm}
                             disabled={!givePermissionToShareSelected}

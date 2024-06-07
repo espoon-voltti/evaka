@@ -10,9 +10,9 @@ import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
@@ -74,7 +74,7 @@ export default React.memo(function UnitDetailsPage() {
                     onClick={useEditable.off}
                     text={i18n.common.cancel}
                   />
-                  <LegacyMutateButton
+                  <MutateButton
                     primary
                     preventDefault
                     mutation={updateUnitMutation}

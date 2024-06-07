@@ -23,9 +23,9 @@ import {
 import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -241,7 +241,7 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
             onClick={() => clearUiMode()}
             text={i18n.common.cancel}
           />
-          <LegacyMutateButton
+          <MutateButton
             primary
             type="submit"
             mutation={createOrUpdateBackupCare}

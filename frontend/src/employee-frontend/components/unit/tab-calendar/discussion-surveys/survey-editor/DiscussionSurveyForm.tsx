@@ -16,7 +16,7 @@ import {
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import TreeDropdown, {
   TreeNode,
   hasUncheckedChildren
@@ -178,7 +178,7 @@ export default React.memo(function DiscussionSurveyForm({
           data-qa="cancel-button"
         />
         {eventData ? (
-          <LegacyMutateButton
+          <MutateButton
             primary
             mutation={updateCalendarEventMutation}
             text={t.discussionReservation.saveSurveyButton}
@@ -206,7 +206,7 @@ export default React.memo(function DiscussionSurveyForm({
             data-qa="survey-editor-submit-button"
           />
         ) : (
-          <LegacyMutateButton
+          <MutateButton
             primary
             mutation={createCalendarEventMutation}
             text={t.discussionReservation.createSurveyButton}

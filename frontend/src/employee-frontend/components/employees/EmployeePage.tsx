@@ -19,7 +19,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -85,7 +85,7 @@ const GlobalRolesForm = React.memo(function GlobalRolesForm({
       </FixedSpaceColumn>
       <FixedSpaceRow>
         <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
-        <LegacyMutateButton
+        <MutateButton
           primary
           text={i18n.common.save}
           mutation={updateEmployeeGlobalRolesMutation}

@@ -26,7 +26,7 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -384,7 +384,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
       </div>
       <FixedSpaceRow justifyContent="flex-end">
         <LegacyButton onClick={onClose} text={i18n.common.cancel} />
-        <LegacyMutateButton
+        <MutateButton
           primary
           mutation={updateDocumentTemplateBasicsMutation}
           disabled={!form.isValid()}

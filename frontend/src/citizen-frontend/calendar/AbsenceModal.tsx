@@ -26,9 +26,9 @@ import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
-  LegacyMutateButton,
+  MutateButton,
   cancelMutation
-} from 'lib-components/atoms/buttons/LegacyMutateButton'
+} from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
@@ -276,7 +276,7 @@ export default React.memo(function AbsenceModal({
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}
               />
-              <LegacyMutateButton
+              <MutateButton
                 primary
                 text={i18n.common.confirm}
                 disabled={selectedChildren.state.length === 0}

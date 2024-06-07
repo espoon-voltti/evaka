@@ -45,7 +45,7 @@ import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
@@ -304,7 +304,7 @@ const StaffAttendancesEditor = ({
             >
               {i18n.common.cancel}
             </LegacyButton>
-            <LegacyMutateButton
+            <MutateButton
               primary
               data-qa="confirm"
               text={i18n.common.confirm}
