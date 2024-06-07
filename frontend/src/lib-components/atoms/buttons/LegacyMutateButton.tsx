@@ -6,7 +6,7 @@ import React from 'react'
 
 import { cancelMutation, MutationDescription } from 'lib-common/query'
 
-import AsyncButton, { AsyncButtonProps } from './LegacyAsyncButton'
+import { LegacyAsyncButton, AsyncButtonProps } from './LegacyAsyncButton'
 import { useMutateButtonBehavior } from './mutate-button-behavior'
 
 export { cancelMutation }
@@ -18,7 +18,7 @@ export interface MutateButtonProps<Arg, Data>
   onSuccess?: (value: Data) => void
 }
 
-function LegacyMutateButton<Arg, Data>({
+function LegacyMutateButton_<Arg, Data>({
   mutation,
   onClick,
   onSuccess,
@@ -30,11 +30,17 @@ function LegacyMutateButton<Arg, Data>({
     onSuccess
   })
   return (
-    <AsyncButton {...props} onClick={handleClick} onSuccess={handleSuccess} />
+    <LegacyAsyncButton
+      {...props}
+      onClick={handleClick}
+      onSuccess={handleSuccess}
+    />
   )
 }
 
 /**
  * @deprecated use MutateButton instead
  */
-export default React.memo(LegacyMutateButton) as typeof LegacyMutateButton
+export const LegacyMutateButton = React.memo(
+  LegacyMutateButton_
+) as typeof LegacyMutateButton_

@@ -14,7 +14,7 @@ import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -170,7 +170,7 @@ export default React.memo(function FeeAlterationEditor({
             onClick={cancel}
             text={i18n.childInformation.feeAlteration.editor.cancel}
           />
-          <AsyncButton
+          <LegacyAsyncButton
             primary
             data-qa="fee-alteration-editor-save-button"
             type="submit"

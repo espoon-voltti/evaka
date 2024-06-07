@@ -11,7 +11,7 @@ import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { EmailNotificationSettings } from 'lib-common/generated/api-types/pis'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -178,7 +178,7 @@ export default React.memo(
               text={t.common.cancel}
               data-qa="cancel"
             />
-            <MutateButton
+            <LegacyMutateButton
               mutation={updateNotificationSettingsMutation}
               onClick={() => ({
                 body: form.value()

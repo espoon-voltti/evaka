@@ -25,7 +25,8 @@ import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
@@ -275,7 +276,7 @@ export default React.memo(function AbsenceModal({
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}
               />
-              <MutateButton
+              <LegacyMutateButton
                 primary
                 text={i18n.common.confirm}
                 disabled={selectedChildren.state.length === 0}

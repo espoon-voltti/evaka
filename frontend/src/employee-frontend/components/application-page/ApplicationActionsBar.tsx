@@ -11,7 +11,7 @@ import {
   ApplicationDetails,
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Gap } from 'lib-components/white-space'
@@ -81,7 +81,7 @@ export default React.memo(function ApplicationActionsBar({
       id: 'save-application',
       enabled: editing,
       component: (
-        <AsyncButton
+        <LegacyAsyncButton
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}

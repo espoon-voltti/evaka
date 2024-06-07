@@ -20,7 +20,7 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -469,7 +469,7 @@ export default React.memo(function PlacementRow({
                 onClick={() => setEditing(false)}
                 text={i18n.common.cancel}
               />
-              <AsyncButton
+              <LegacyAsyncButton
                 primary
                 onClick={submitUpdate}
                 onSuccess={onSuccess}

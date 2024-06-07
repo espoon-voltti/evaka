@@ -29,7 +29,7 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import TreeDropdown, {
   hasUncheckedChildren,
   TreeNode
@@ -854,7 +854,7 @@ const EditEventModal = React.memo(function EditEventModal({
               }}
               data-qa="delete"
             />
-            <AsyncButton
+            <LegacyAsyncButton
               primary
               onClick={() =>
                 modifyCalendarEventResult({ id: event.id, body: form })

@@ -15,7 +15,7 @@ import {
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -98,7 +98,7 @@ export default React.memo(function MarkAbsent({ unitId }: { unitId: UUID }) {
                 />
                 {selectedAbsenceType !== undefined &&
                 selectedAbsenceType !== 'NO_ABSENCE' ? (
-                  <AsyncButton
+                  <LegacyAsyncButton
                     primary
                     text={i18n.common.confirm}
                     onClick={() =>

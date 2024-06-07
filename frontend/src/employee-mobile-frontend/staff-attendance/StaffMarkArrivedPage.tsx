@@ -23,7 +23,8 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -301,7 +302,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
             text={i18n.common.cancel}
             onClick={() => navigate(-1)}
           />
-          <MutateButton
+          <LegacyMutateButton
             primary
             text={i18n.common.confirm}
             disabled={confirmDisabled}

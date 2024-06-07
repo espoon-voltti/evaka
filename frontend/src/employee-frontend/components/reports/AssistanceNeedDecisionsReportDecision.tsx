@@ -20,7 +20,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -61,7 +61,7 @@ const StickyFooterContainer = styled.div`
   padding: ${defaultMargins.xs};
 `
 
-const DangerAsyncButton = styled(AsyncButton)`
+const DangerAsyncButton = styled(LegacyAsyncButton)`
   background-color: ${(p) => p.theme.colors.status.danger};
   color: ${(p) => p.theme.colors.grayscale.g0};
   border-color: transparent;
@@ -235,7 +235,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                           onSuccess={() => reloadDecision()}
                           data-qa="reject-button"
                         />
-                        <AsyncButton
+                        <LegacyAsyncButton
                           text={
                             i18n.reports.assistanceNeedDecisions
                               .returnDecisionForEditing
@@ -244,7 +244,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
                           onSuccess={() => reloadDecision()}
                           data-qa="return-for-edit"
                         />
-                        <AsyncButton
+                        <LegacyAsyncButton
                           primary
                           text={
                             i18n.reports.assistanceNeedDecisions.approveDecision

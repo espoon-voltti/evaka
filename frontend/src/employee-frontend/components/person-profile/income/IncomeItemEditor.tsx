@@ -23,7 +23,7 @@ import LocalDate from 'lib-common/local-date'
 import { parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -377,7 +377,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           text={i18n.common.cancel}
           data-qa="cancel-income-edit"
         />
-        <AsyncButton
+        <LegacyAsyncButton
           primary
           text={i18n.common.save}
           textInProgress={i18n.common.saving}

@@ -12,7 +12,7 @@ import { Decision } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -256,7 +256,7 @@ export default React.memo(function DecisionResponse({
             <Gap size="L" />
           )}
           <ButtonContainer>
-            <AsyncButton
+            <LegacyAsyncButton
               text={t.decisions.applicationDecisions.response.submit}
               primary
               onClick={() => {

@@ -8,7 +8,8 @@ import { useNavigate } from 'react-router-dom'
 import { combine, Loading, Result } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -60,7 +61,7 @@ export default React.memo(function CreateUnitPage() {
                     onClick={() => navigate(-1)}
                     text={i18n.common.cancel}
                   />
-                  <MutateButton
+                  <LegacyMutateButton
                     primary
                     preventDefault
                     mutation={createUnitMutation}

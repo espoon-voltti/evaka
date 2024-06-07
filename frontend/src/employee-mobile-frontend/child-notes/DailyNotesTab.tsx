@@ -15,7 +15,7 @@ import {
 import { useMutation, useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -367,7 +367,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             data-qa="cancel-daily-note-btn"
           />
 
-          <AsyncButton
+          <LegacyAsyncButton
             primary
             onClick={saveChildDailyNote}
             onSuccess={() => {

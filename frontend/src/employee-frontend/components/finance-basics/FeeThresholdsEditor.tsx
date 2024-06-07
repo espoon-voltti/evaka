@@ -11,7 +11,7 @@ import { throwIfNull } from 'lib-common/form-validation'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -416,7 +416,7 @@ export default React.memo(function FeeThresholdsEditor({
       ) : null}
       <ButtonRow>
         <LegacyButton text={i18n.common.cancel} onClick={close} />
-        <AsyncButton
+        <LegacyAsyncButton
           primary
           text={i18n.common.save}
           onClick={() => {

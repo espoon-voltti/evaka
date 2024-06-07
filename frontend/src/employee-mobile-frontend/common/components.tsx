@@ -7,8 +7,8 @@ import styled, { css } from 'styled-components'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
-import MutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyMutateButton } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { fontWeights } from 'lib-components/typography'
 import {
   defaultMargins,
@@ -26,13 +26,13 @@ const wideButtonCss = css`
   }
 `
 
-export const WideAsyncButton = styled(AsyncButton)`
+export const WideAsyncButton = styled(LegacyAsyncButton)`
   ${wideButtonCss}
 `
 
-export const WideMutateButton = styled(MutateButton)`
+export const WideMutateButton = styled(LegacyMutateButton)`
   ${wideButtonCss}
-` as typeof MutateButton
+` as typeof LegacyMutateButton
 
 export const InlineWideAsyncButton = styled(WideAsyncButton)`
   border: none;

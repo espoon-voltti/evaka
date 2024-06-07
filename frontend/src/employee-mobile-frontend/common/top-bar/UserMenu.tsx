@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -52,7 +52,7 @@ export const UserMenu = React.memo(function UserMenu(props: Props) {
 
       <Gap />
 
-      <AsyncButton
+      <LegacyAsyncButton
         onClick={pinLogout}
         onSuccess={props.onLogoutSuccess}
         primary

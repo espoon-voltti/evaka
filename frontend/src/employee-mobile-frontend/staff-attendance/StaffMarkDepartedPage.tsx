@@ -15,7 +15,8 @@ import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -277,7 +278,7 @@ export default React.memo(function StaffMarkDepartedPage({
                       text={i18n.common.cancel}
                       onClick={() => navigate(-1)}
                     />
-                    <MutateButton
+                    <LegacyMutateButton
                       primary
                       text={i18n.common.confirm}
                       disabled={confirmDisabled}

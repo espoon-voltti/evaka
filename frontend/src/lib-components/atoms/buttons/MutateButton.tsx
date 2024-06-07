@@ -4,12 +4,16 @@
 
 import React from 'react'
 
+import { cancelMutation } from 'lib-common/query'
+
 import { AsyncButton } from './AsyncButton'
 import { BaseButtonVisualProps } from './button-visuals'
 import {
   MutateButtonBehaviorProps,
   useMutateButtonBehavior
 } from './mutate-button-behavior'
+
+export { cancelMutation }
 
 export type MutateButtonProps<Arg, Data> = BaseButtonVisualProps &
   MutateButtonBehaviorProps<Arg, Data> & {

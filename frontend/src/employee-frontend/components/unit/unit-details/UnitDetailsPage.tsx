@@ -9,7 +9,8 @@ import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -73,7 +74,7 @@ export default React.memo(function UnitDetailsPage() {
                     onClick={useEditable.off}
                     text={i18n.common.cancel}
                   />
-                  <MutateButton
+                  <LegacyMutateButton
                     primary
                     preventDefault
                     mutation={updateUnitMutation}

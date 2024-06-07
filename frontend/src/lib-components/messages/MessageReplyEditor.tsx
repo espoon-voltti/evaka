@@ -11,7 +11,7 @@ import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faTrash } from 'lib-icons'
 
-import MutateButton from '../atoms/buttons/LegacyMutateButton'
+import { LegacyMutateButton } from '../atoms/buttons/LegacyMutateButton'
 import TextArea from '../atoms/form/TextArea'
 import { useTranslations } from '../i18n'
 import ButtonContainer from '../layout/ButtonContainer'
@@ -106,7 +106,7 @@ function MessageReplyEditor<T, R>({
       </EditorRow>
       <EditorRow>
         <ButtonContainer justify="space-between">
-          <MutateButton
+          <LegacyMutateButton
             mutation={mutation}
             text={i18n.messages.send}
             textInProgress={i18n.messages.sending}

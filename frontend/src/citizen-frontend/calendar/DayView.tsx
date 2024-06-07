@@ -44,7 +44,8 @@ import {
   LegacyButton,
   StyledButton
 } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -260,7 +261,7 @@ function Edit({
   )
 
   const rightButton = (
-    <MutateButton
+    <LegacyMutateButton
       primary
       mutation={postReservationsMutation}
       onClick={() => {

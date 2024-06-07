@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -58,7 +58,7 @@ const Actions = React.memo(function Actions({
   if (statuses.length === 1 && statuses[0] === 'IGNORED') {
     return (
       <StickyActionBar align="right">
-        <AsyncButton
+        <LegacyAsyncButton
           text={i18n.valueDecisions.buttons.unignoreDrafts(checkedIds.length)}
           disabled={checkedIds.length === 0}
           onClick={() =>
@@ -100,7 +100,7 @@ const Actions = React.memo(function Actions({
               data-qa="open-decision-handler-select-modal"
             />
           ) : (
-            <AsyncButton
+            <LegacyAsyncButton
               primary
               text={i18n.valueDecisions.buttons.createDecision(
                 checkedIds.length

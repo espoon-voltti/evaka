@@ -9,7 +9,7 @@ import {
   FeeDecisionDetailed,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
@@ -75,7 +75,7 @@ const Actions = React.memo(function Actions({
             data-qa="decision-actions-close"
             text={i18n.feeDecisions.buttons.close}
           />
-          <AsyncButton
+          <LegacyAsyncButton
             text={i18n.common.save}
             textInProgress={i18n.common.saving}
             textDone={i18n.common.saved}
@@ -93,7 +93,7 @@ const Actions = React.memo(function Actions({
               data-qa="open-decision-handler-select-modal"
             />
           ) : (
-            <AsyncButton
+            <LegacyAsyncButton
               primary
               text={i18n.feeDecisions.buttons.createDecision(1)}
               onClick={confirmDecision}
@@ -105,7 +105,7 @@ const Actions = React.memo(function Actions({
         </>
       ) : null}
       {isWaiting ? (
-        <AsyncButton
+        <LegacyAsyncButton
           primary
           text={i18n.feeDecisions.buttons.markSent}
           onClick={markSent}

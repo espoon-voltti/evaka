@@ -11,7 +11,8 @@ import { useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -159,7 +160,7 @@ export default React.memo(function ApplicationCreation() {
           </ContentArea>
           <ContentArea opaque={false} paddingVertical="L">
             <ButtonContainer justify="center">
-              <MutateButton
+              <LegacyMutateButton
                 primary
                 text={t.applications.creation.create}
                 disabled={selectedType === undefined || duplicateExists}

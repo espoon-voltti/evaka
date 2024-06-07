@@ -27,7 +27,7 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { InternalLink } from 'lib-components/atoms/InternalLink'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import { LegacyAsyncButton } from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -378,7 +378,7 @@ export default React.memo(function PlacementDraft() {
                 />
               </SelectContainer>
               <SendButtonContainer>
-                <AsyncButton
+                <LegacyAsyncButton
                   primary
                   disabled={validPlan === null}
                   data-qa="send-placement-button"

@@ -12,7 +12,8 @@ import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -144,7 +145,7 @@ export default function MarkExternalStaffMemberArrivalPage({
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />
-                <MutateButton
+                <LegacyMutateButton
                   primary
                   text={i18n.common.confirm}
                   disabled={!unit.isOperationalDate || !formIsValid()}

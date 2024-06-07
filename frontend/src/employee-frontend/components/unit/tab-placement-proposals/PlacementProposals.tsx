@@ -20,7 +20,8 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -296,7 +297,7 @@ export default React.memo(function PlacementProposals({
 
       {placementPlans.length > 0 && (
         <ButtonRow>
-          <MutateButton
+          <LegacyMutateButton
             data-qa="placement-proposals-accept-button"
             mutation={acceptPlacementProposalMutation}
             onClick={() => ({ unitId })}

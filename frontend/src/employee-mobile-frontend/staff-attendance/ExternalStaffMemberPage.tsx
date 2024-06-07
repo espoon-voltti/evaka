@@ -10,7 +10,8 @@ import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
-import MutateButton, {
+import {
+  LegacyMutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/LegacyMutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -115,7 +116,7 @@ export default React.memo(function ExternalStaffMemberPage({
             </>
           ) : undefined}
 
-          <MutateButton
+          <LegacyMutateButton
             primary
             text={i18n.attendances.actions.markDeparted}
             data-qa="mark-departed-btn"
