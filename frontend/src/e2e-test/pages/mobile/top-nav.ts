@@ -9,6 +9,11 @@ export default class TopNav {
 
   #userMenu = this.page.find('[data-qa="top-bar-user"]')
 
+  systemNotificationBtn = this.page.findByDataQa('system-notification-btn')
+  systemNotificationModal = this.page.findByDataQa('system-notification-modal')
+  systemNotificationModalClose =
+    this.systemNotificationModal.findByDataQa('modal-okBtn')
+
   async openUserMenu() {
     await this.#userMenu.click()
   }

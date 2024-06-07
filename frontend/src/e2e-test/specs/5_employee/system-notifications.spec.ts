@@ -9,6 +9,8 @@ import { EmployeeBuilder, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { SystemNotificationsPage } from '../../pages/employee/SystemNotificationsPage'
 import EmployeeNav from '../../pages/employee/employee-nav'
+import TopNav from '../../pages/mobile/top-nav'
+import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -51,5 +53,42 @@ describe('System notifications', () => {
     const citizensPage2 = await Page.open({ mockedTime: validTo.addHours(1) })
     await citizensPage2.goto(config.enduserLoginUrl)
     await citizensPage2.findByDataQa('system-notification').waitUntilHidden()
+  })
+
+  test('notification for employees', async () => {
+    const notificationText = 'eVakassa on huoltokatko perjantaina klo 18 - 24.'
+    const now = HelsinkiDateTime.of(2024, 6, 3, 11, 0)
+    const validTo = HelsinkiDateTime.of(2024, 6, 3, 11, 30)
+
+    const adminPage = await Page.open({ mockedTime: now })
+    await employeeLogin(adminPage, admin.data)
+    await adminPage.goto(config.employeeUrl)
+    const nav = new EmployeeNav(adminPage)
+    await nav.openAndClickDropdownMenuItem('system-notifications')
+
+    const systemNotificationsPage = new SystemNotificationsPage(adminPage)
+    await systemNotificationsPage.createButton('EMPLOYEES').click()
+    await systemNotificationsPage.textInput.fill(notificationText)
+    await systemNotificationsPage.dateInput.fill(validTo.toLocalDate().format())
+    await systemNotificationsPage.timeInput.fill(validTo.toLocalTime().format())
+    await systemNotificationsPage.saveButton.click()
+    await systemNotificationsPage.saveButton.waitUntilHidden()
+    await adminPage.close()
+
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare()
+      .with({
+        areaId: area.data.id
+      })
+      .save()
+    const mobilePage = await Page.open({ mockedTime: now })
+    await mobilePage.goto(await pairMobileDevice(unit.data.id))
+    const topBar = new TopNav(mobilePage)
+    await topBar.systemNotificationBtn.click()
+    await topBar.systemNotificationModal.assertText((t) =>
+      t.includes(notificationText)
+    )
+    await topBar.systemNotificationModalClose.click()
+    await topBar.systemNotificationModal.waitUntilHidden()
   })
 })
