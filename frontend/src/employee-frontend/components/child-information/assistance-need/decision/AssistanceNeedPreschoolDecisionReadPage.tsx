@@ -9,7 +9,7 @@ import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/ap
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {

@@ -8,7 +8,7 @@ import { unstable_usePrompt as usePrompt } from 'react-router-dom'
 
 import { wrapResult } from 'lib-common/api'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'

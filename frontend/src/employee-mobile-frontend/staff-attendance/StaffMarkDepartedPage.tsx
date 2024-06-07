@@ -17,7 +17,7 @@ import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
-} from 'lib-components/atoms/buttons/MutateButton'
+} from 'lib-components/atoms/buttons/LegacyMutateButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'

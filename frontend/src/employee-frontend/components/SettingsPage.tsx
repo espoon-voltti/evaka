@@ -11,7 +11,7 @@ import {
   SettingType
 } from 'lib-common/generated/api-types/setting'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'

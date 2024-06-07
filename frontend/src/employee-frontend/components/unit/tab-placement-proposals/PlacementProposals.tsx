@@ -22,7 +22,7 @@ import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import MutateButton, {
   cancelMutation
-} from 'lib-components/atoms/buttons/MutateButton'
+} from 'lib-components/atoms/buttons/LegacyMutateButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'

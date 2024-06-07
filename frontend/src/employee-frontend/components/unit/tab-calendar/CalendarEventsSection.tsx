@@ -28,8 +28,8 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import TreeDropdown, {
   hasUncheckedChildren,
   TreeNode

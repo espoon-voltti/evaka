@@ -13,7 +13,7 @@ import Main from 'lib-components/atoms/Main'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
-} from 'lib-components/atoms/buttons/MutateButton'
+} from 'lib-components/atoms/buttons/LegacyMutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'

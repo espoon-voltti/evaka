@@ -32,7 +32,7 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
   cancelMutation,
   InlineMutateButton
-} from 'lib-components/atoms/buttons/MutateButton'
+} from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,

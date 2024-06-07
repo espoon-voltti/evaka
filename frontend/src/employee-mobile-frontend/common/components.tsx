@@ -6,9 +6,9 @@ import styled, { css } from 'styled-components'
 
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
+import MutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { fontWeights } from 'lib-components/typography'
 import {
   defaultMargins,

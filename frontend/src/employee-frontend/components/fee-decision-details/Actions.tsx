@@ -9,7 +9,7 @@ import {
   FeeDecisionDetailed,
   FeeDecisionType
 } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'

@@ -35,6 +35,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -71,7 +72,6 @@ import {
 import LabelValueList from '../common/LabelValueList'
 
 import { getNextDocumentStatus, getPrevDocumentStatus } from './statuses'
-import { Button } from 'lib-components/atoms/buttons/Button'
 
 const ActionBar = styled.div`
   position: sticky;

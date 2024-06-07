@@ -15,7 +15,7 @@ import {
 } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'

@@ -46,7 +46,7 @@ import {
 } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
-} from 'lib-components/atoms/buttons/MutateButton'
+} from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,

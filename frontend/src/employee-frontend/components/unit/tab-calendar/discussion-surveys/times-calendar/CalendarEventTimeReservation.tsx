@@ -21,7 +21,7 @@ import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import MutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import {
   FixedSpaceColumn,

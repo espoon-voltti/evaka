@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { cancelMutation, MutationDescription } from 'lib-common/query'
 
-import AsyncButton, { AsyncButtonProps } from './AsyncButton'
+import AsyncButton, { AsyncButtonProps } from './LegacyAsyncButton'
 import { useMutateButtonBehavior } from './mutate-button-behavior'
 
 export { cancelMutation }
@@ -19,7 +19,7 @@ export interface MutateButtonProps<Arg, Data>
   onSuccess?: (value: Data) => void
 }
 
-function MutateButton<Arg, Data>({
+function LegacyMutateButton<Arg, Data>({
   mutation,
   onClick,
   onSuccess,
@@ -35,11 +35,17 @@ function MutateButton<Arg, Data>({
   )
 }
 
-export default React.memo(MutateButton) as typeof MutateButton
+/**
+ * @deprecated use MutateButton instead
+ */
+export default React.memo(LegacyMutateButton) as typeof LegacyMutateButton
 
-export const InlineMutateButton = styled(MutateButton)`
+/**
+ * @deprecated use MutateButton and appearance="inline" instead
+ */
+export const InlineMutateButton = styled(LegacyMutateButton)`
   padding: 0;
   min-width: 0;
   min-height: 0;
   border: none;
-` as typeof MutateButton
+` as typeof LegacyMutateButton

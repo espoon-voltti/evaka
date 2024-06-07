@@ -10,7 +10,7 @@ import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton, {
   cancelMutation
-} from 'lib-components/atoms/buttons/MutateButton'
+} from 'lib-components/atoms/buttons/LegacyMutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'

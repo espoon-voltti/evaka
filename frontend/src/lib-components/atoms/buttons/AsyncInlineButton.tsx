@@ -4,8 +4,11 @@
 
 import styled from 'styled-components'
 
-import AsyncButton from './AsyncButton'
+import AsyncButton from './LegacyAsyncButton'
 
+/**
+ * @deprecated use AsyncButton and appearance="inline" instead
+ */
 export default styled(AsyncButton)`
   padding: 0;
   min-width: 0;

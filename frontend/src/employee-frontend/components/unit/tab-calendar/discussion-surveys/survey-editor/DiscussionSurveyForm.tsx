@@ -16,7 +16,7 @@ import {
 import { cancelMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import MutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
 import TreeDropdown, {
   TreeNode,
   hasUncheckedChildren

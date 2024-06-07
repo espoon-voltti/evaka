@@ -25,7 +25,7 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import MutateButton, {
   InlineMutateButton
-} from 'lib-components/atoms/buttons/MutateButton'
+} from 'lib-components/atoms/buttons/LegacyMutateButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'

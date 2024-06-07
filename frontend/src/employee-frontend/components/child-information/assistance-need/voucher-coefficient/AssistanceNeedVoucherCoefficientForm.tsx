@@ -21,7 +21,7 @@ import { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'

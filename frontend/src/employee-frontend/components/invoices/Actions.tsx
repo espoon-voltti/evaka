@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'

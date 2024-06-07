@@ -33,7 +33,7 @@ import { UUID } from 'lib-common/types'
 import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import MutateButton from 'lib-components/atoms/buttons/LegacyMutateButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {

@@ -32,7 +32,7 @@ export interface AsyncButtonProps<T> extends AsyncButtonBehaviorProps<T> {
   icon?: IconDefinition
 }
 
-function AsyncButton<T>({
+function LegacyAsyncButton<T>({
   className,
   text,
   textInProgress = text,
@@ -153,7 +153,10 @@ function AsyncButton<T>({
   )
 }
 
-export default React.memo(AsyncButton) as typeof AsyncButton
+/**
+ * @deprecated use AsyncButton instead
+ */
+export default React.memo(LegacyAsyncButton) as typeof LegacyAsyncButton
 
 const Content = styled.div`
   display: flex;

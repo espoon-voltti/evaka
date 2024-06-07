@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react'
 import { wrapResult } from 'lib-common/api'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import AsyncButton from 'lib-components/atoms/buttons/LegacyAsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
   FixedSpaceColumn,
