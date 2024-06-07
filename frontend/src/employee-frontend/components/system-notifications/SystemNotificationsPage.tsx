@@ -125,8 +125,10 @@ const SystemNotificationsPageInner = React.memo(
     const [editedNotification, setEditedNotification] =
       useState<SystemNotificationTargetGroup | null>(null)
 
-    // EMPLOYEES to be added once supported
-    const targetGroups: SystemNotificationTargetGroup[] = ['CITIZENS']
+    const targetGroups: SystemNotificationTargetGroup[] = [
+      'CITIZENS',
+      'EMPLOYEES'
+    ]
 
     return (
       <FixedSpaceColumn spacing="XL">
