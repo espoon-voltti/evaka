@@ -12,7 +12,9 @@ import {
 } from './mutate-button-behavior'
 
 export type MutateIconOnlyButtonProps<Arg, Data> = IconOnlyButtonVisualProps &
-  MutateButtonBehaviorProps<Arg, Data>
+  MutateButtonBehaviorProps<Arg, Data> & {
+    hideSuccess?: boolean
+  }
 
 const MutateIconOnlyButton_ = function MutateIconOnlyButton<Arg, Data>({
   mutation,

@@ -7,7 +7,10 @@ import { animated, useSpring } from '@react-spring/web'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
+import { useTranslations } from 'lib-components/i18n'
 import { faCheck, faTimes } from 'lib-icons'
+
+import { ScreenReaderOnly } from '../ScreenReaderOnly'
 
 import {
   AsyncButtonBehaviorProps,
@@ -19,6 +22,7 @@ export type AsyncButtonProps<T> = BaseButtonVisualProps &
   AsyncButtonBehaviorProps<T> & {
     textInProgress?: string
     textDone?: string
+    hideSuccess?: boolean
   }
 
 const AsyncButton_ = function AsyncButton<T>({
@@ -31,6 +35,7 @@ const AsyncButton_ = function AsyncButton<T>({
   text,
   textInProgress = text,
   textDone = text,
+  hideSuccess = false,
   ...props
 }: AsyncButtonProps<T>) {
   const { state, handleClick } = useAsyncButtonBehavior({
@@ -40,10 +45,10 @@ const AsyncButton_ = function AsyncButton<T>({
     onSuccess,
     onFailure
   })
+  const i18n = useTranslations()
   const { colors } = useTheme()
 
   const showIcon = state !== 'idle'
-  const hideSuccess = false
 
   const container = useSpring<{ x: number }>({
     x: ((!hideSuccess || state !== 'success') && showIcon) || props.icon ? 1 : 0
@@ -60,52 +65,77 @@ const AsyncButton_ = function AsyncButton<T>({
   const cross = useSpring<{ opacity: number }>({
     opacity: state === 'failure' ? 1 : 0
   })
+  return renderBaseButton(
+    {
+      text,
+      'data-status': state === 'idle' ? '' : state,
+      'aria-busy': state === 'in-progress',
+      type,
+      ...props
+    },
+    handleClick,
+    ({ icon }) => (
+      <>
+        {state === 'in-progress' && (
+          <ScreenReaderOnly aria-live="polite" id="in-progress">
+            {i18n.asyncButton.inProgress}
+          </ScreenReaderOnly>
+        )}
+        {state === 'failure' && (
+          <ScreenReaderOnly aria-live="assertive" id="failure">
+            {i18n.asyncButton.failure}
+          </ScreenReaderOnly>
+        )}
+        {state === 'success' && (
+          <ScreenReaderOnly aria-live="assertive" id="success">
+            {i18n.asyncButton.success}
+          </ScreenReaderOnly>
+        )}
 
-  return renderBaseButton({ text, ...props }, handleClick, ({ icon }) => (
-    <>
-      <IconContainer
-        style={{
-          width: container.x.to((x) => `${24 * x}px`),
-          marginRight: container.x.to((x) => `${8 * x}px`)
-        }}
-      >
-        {icon && (
+        <IconContainer
+          style={{
+            width: container.x.to((x) => `${24 * x}px`),
+            marginRight: container.x.to((x) => `${8 * x}px`)
+          }}
+        >
+          {icon && (
+            <IconWrapper
+              style={{
+                opacity: iconSpring.opacity,
+                transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
+              }}
+            >
+              <FontAwesomeIcon icon={icon} color={colors.main.m2} />
+            </IconWrapper>
+          )}
+          <Spinner style={spinner} />
           <IconWrapper
             style={{
-              opacity: iconSpring.opacity,
-              transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
+              opacity: checkmark.opacity,
+              transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
             }}
           >
-            <FontAwesomeIcon icon={icon} color={colors.main.m2} />
+            <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
           </IconWrapper>
-        )}
-        <Spinner style={spinner} />
-        <IconWrapper
-          style={{
-            opacity: checkmark.opacity,
-            transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
-          }}
-        >
-          <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
-        </IconWrapper>
-        <IconWrapper
-          style={{
-            opacity: cross.opacity,
-            transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
-          }}
-        >
-          <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
-        </IconWrapper>
-      </IconContainer>
-      <TextWrapper>
-        {state === 'in-progress'
-          ? textInProgress
-          : state === 'success'
-            ? textDone
-            : text}
-      </TextWrapper>
-    </>
-  ))
+          <IconWrapper
+            style={{
+              opacity: cross.opacity,
+              transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
+            }}
+          >
+            <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
+          </IconWrapper>
+        </IconContainer>
+        <TextWrapper>
+          {state === 'in-progress'
+            ? textInProgress
+            : state === 'success'
+              ? textDone
+              : text}
+        </TextWrapper>
+      </>
+    )
+  )
 }
 
 export const AsyncButton = React.memo(AsyncButton_) as typeof AsyncButton_

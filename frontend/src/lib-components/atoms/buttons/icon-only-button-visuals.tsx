@@ -106,7 +106,10 @@ export const renderIconOnlyButton = (
     color = 'default',
     className,
     ...props
-  }: IconOnlyButtonVisualProps,
+  }: IconOnlyButtonVisualProps & {
+    'data-status'?: string
+    'aria-busy'?: boolean
+  },
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
   children: (icon: IconDefinition, size: IconSize) => React.ReactNode
 ) => (

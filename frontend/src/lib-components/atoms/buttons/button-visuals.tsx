@@ -153,7 +153,7 @@ export const renderBaseButton = (
     primary,
     className,
     ...props
-  }: BaseButtonVisualProps,
+  }: BaseButtonVisualProps & { 'data-status'?: string; 'aria-busy'?: boolean },
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
   children: (props: {
     text: string

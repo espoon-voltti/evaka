@@ -9,6 +9,8 @@ import styled, { useTheme } from 'styled-components'
 
 import { faCheck, faTimes } from 'lib-icons'
 
+import { useTranslations } from '../../i18n'
+import { ScreenReaderOnly } from '../ScreenReaderOnly'
 import { IconSize } from '../icon-size'
 
 import {
@@ -21,7 +23,9 @@ import {
 } from './icon-only-button-visuals'
 
 export type AsyncIconOnlyButtonProps<T> = IconOnlyButtonVisualProps &
-  AsyncButtonBehaviorProps<T>
+  AsyncButtonBehaviorProps<T> & {
+    hideSuccess?: boolean
+  }
 
 const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
   preventDefault,
@@ -29,6 +33,7 @@ const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
   onClick,
   onSuccess,
   onFailure,
+  hideSuccess,
   ...props
 }: AsyncIconOnlyButtonProps<T>) {
   const { state, handleClick } = useAsyncButtonBehavior({
@@ -38,10 +43,10 @@ const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
     onSuccess,
     onFailure
   })
+  const i18n = useTranslations()
   const { colors } = useTheme()
 
   const showIcon = state !== 'idle'
-  const hideSuccess = false
 
   const iconSpring = useSpring<{ opacity: number }>({
     opacity: props.icon && !showIcon ? 1 : 0
@@ -56,41 +61,66 @@ const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
     opacity: state === 'failure' ? 1 : 0
   })
 
-  return renderIconOnlyButton(props, handleClick, (icon, size) => (
-    <RelativeContainer>
-      <IconContainer $size={size}>
-        <Spinner style={spinner} />
-      </IconContainer>
-      <IconContainer $size={size}>
-        <animated.div
-          style={{
-            opacity: checkmark.opacity,
-            transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
-          }}
-        >
-          <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
-        </animated.div>
-      </IconContainer>
-      <IconContainer $size={size}>
-        <animated.div
-          style={{
-            opacity: cross.opacity,
-            transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
-          }}
-        >
-          <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
-        </animated.div>
-      </IconContainer>
-      <animated.div
-        style={{
-          opacity: iconSpring.opacity,
-          transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
-        }}
-      >
-        <FontAwesomeIcon icon={icon} />
-      </animated.div>
-    </RelativeContainer>
-  ))
+  return renderIconOnlyButton(
+    {
+      'data-status': state === 'idle' ? '' : state,
+      'aria-busy': state === 'in-progress',
+      ...props
+    },
+    handleClick,
+    (icon, size) => (
+      <>
+        {state === 'in-progress' && (
+          <ScreenReaderOnly aria-live="polite" id="in-progress">
+            {i18n.asyncButton.inProgress}
+          </ScreenReaderOnly>
+        )}
+        {state === 'failure' && (
+          <ScreenReaderOnly aria-live="assertive" id="failure">
+            {i18n.asyncButton.failure}
+          </ScreenReaderOnly>
+        )}
+        {state === 'success' && (
+          <ScreenReaderOnly aria-live="assertive" id="success">
+            {i18n.asyncButton.success}
+          </ScreenReaderOnly>
+        )}
+        <RelativeContainer>
+          <IconContainer $size={size}>
+            <Spinner style={spinner} />
+          </IconContainer>
+          <IconContainer $size={size}>
+            <animated.div
+              style={{
+                opacity: checkmark.opacity,
+                transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
+              }}
+            >
+              <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
+            </animated.div>
+          </IconContainer>
+          <IconContainer $size={size}>
+            <animated.div
+              style={{
+                opacity: cross.opacity,
+                transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
+              }}
+            >
+              <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
+            </animated.div>
+          </IconContainer>
+          <animated.div
+            style={{
+              opacity: iconSpring.opacity,
+              transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
+            }}
+          >
+            <FontAwesomeIcon icon={icon} />
+          </animated.div>
+        </RelativeContainer>
+      </>
+    )
+  )
 }
 
 export const AsyncIconOnlyButton = React.memo(

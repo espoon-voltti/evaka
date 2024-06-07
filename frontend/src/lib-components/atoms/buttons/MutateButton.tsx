@@ -19,6 +19,7 @@ export type MutateButtonProps<Arg, Data> = BaseButtonVisualProps &
   MutateButtonBehaviorProps<Arg, Data> & {
     textInProgress?: string
     textDone?: string
+    hideSuccess?: boolean
   }
 
 const MutateButton_ = function MutateButton<Arg, Data>({
