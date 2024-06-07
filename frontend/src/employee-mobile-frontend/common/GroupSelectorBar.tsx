@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -124,7 +125,8 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
           data-qa="group-selector"
         />
         <CloseButtonWrapper>
-          <InlineButton
+          <Button
+            appearance="inline"
             text={i18n.common.close}
             icon={faChevronUp}
             onClick={() => setShowGroupSelector(false)}

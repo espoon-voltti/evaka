@@ -34,8 +34,8 @@ import {
 import useRouteParams from 'lib-common/useRouteParams'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -764,7 +764,8 @@ export default React.memo(function VasuTemplateEditor() {
                                 questionIndex < section.questions.length - 1
                               }
                             >
-                              <InlineButton
+                              <Button
+                                appearance="inline"
                                 onClick={() =>
                                   setAddingQuestion([
                                     sectionIndex,
@@ -777,7 +778,8 @@ export default React.memo(function VasuTemplateEditor() {
                                 disabled={readonly}
                               />
                               <Gap size="L" horizontal />
-                              <InlineButton
+                              <Button
+                                appearance="inline"
                                 onClick={() =>
                                   setAddingParagraph([
                                     sectionIndex,
@@ -796,7 +798,8 @@ export default React.memo(function VasuTemplateEditor() {
                     </FixedSpaceColumn>
                     {section.questions.length === 0 && !readonly && (
                       <AddNewContainer showOnHover={false}>
-                        <InlineButton
+                        <Button
+                          appearance="inline"
                           onClick={() =>
                             setAddingQuestion([sectionIndex, 0, section])
                           }
@@ -812,7 +815,8 @@ export default React.memo(function VasuTemplateEditor() {
                         sectionIndex < template.content.sections.length - 1
                       }
                     >
-                      <InlineButton
+                      <Button
+                        appearance="inline"
                         onClick={() => addSection(sectionIndex + 1)}
                         text={i18n.vasuTemplates.addNewSection}
                         icon={faPlus}
@@ -825,7 +829,8 @@ export default React.memo(function VasuTemplateEditor() {
             </FixedSpaceColumn>
             {template.content.sections.length === 0 && !readonly && (
               <AddNewContainer showOnHover={false}>
-                <InlineButton
+                <Button
+                  appearance="inline"
                   onClick={() => addSection(0)}
                   text={i18n.vasuTemplates.addNewSection}
                   icon={faPlus}

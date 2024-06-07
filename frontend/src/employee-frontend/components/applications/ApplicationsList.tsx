@@ -18,8 +18,8 @@ import Pagination from 'lib-components/Pagination'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import {
@@ -612,7 +612,8 @@ const ApplicationsList = React.memo(function Applications({
           rejectLabel={i18n.common.cancel}
         >
           <AlignRight>
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() => setEditedNoteText('')}
               text={i18n.common.clear}
               icon={faTrash}

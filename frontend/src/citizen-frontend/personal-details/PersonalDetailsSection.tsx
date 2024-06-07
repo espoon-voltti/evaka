@@ -20,7 +20,7 @@ import {
   requiredEmail,
   requiredPhoneNumber
 } from 'lib-common/form/validators'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -149,7 +149,8 @@ export default React.memo(function PersonalDetailsSection({
         />
       )}
       <EditButtonRow>
-        <InlineButton
+        <Button
+          appearance="inline"
           text={t.common.edit}
           icon={canEdit ? faPen : faLockAlt}
           onClick={

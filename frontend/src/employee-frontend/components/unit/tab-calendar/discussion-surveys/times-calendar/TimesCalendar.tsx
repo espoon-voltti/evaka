@@ -30,13 +30,13 @@ import LocalDate from 'lib-common/local-date'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { H3, fontWeights } from 'lib-components/typography'
+import { fontWeights, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -540,7 +540,8 @@ export const TimesDay = React.memo(function TimesDay({
                   key={`${day.date.format()}-time-input-${i}`}
                 >
                   <CalendarEventTimeInput bind={t} />
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     icon={faTrash}
                     onClick={() => removeAction(t.state.id ?? '')}
                     text=""
@@ -550,7 +551,8 @@ export const TimesDay = React.memo(function TimesDay({
             </TimesContainer>
           )}
           <ButtonContainer>
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() =>
                 addAction({
                   id: uuidv4(),
@@ -711,7 +713,8 @@ export const TimesReservationDay = React.memo(function TimesReservationDay({
           )}
 
           <ButtonContainer>
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={createNewTime}
               data-qa="add-time-button"
               icon={faPlus}

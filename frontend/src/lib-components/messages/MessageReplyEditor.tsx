@@ -8,9 +8,9 @@ import styled from 'styled-components'
 import { AccountType } from 'lib-common/generated/api-types/messaging'
 import { cancelMutation, MutationDescription } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { faTrash } from 'lib-icons'
 
-import InlineButton from '../atoms/buttons/InlineButton'
 import MutateButton from '../atoms/buttons/MutateButton'
 import TextArea from '../atoms/form/TextArea'
 import { useTranslations } from '../i18n'
@@ -116,7 +116,8 @@ function MessageReplyEditor<T, R>({
             onSuccess={handleSuccess}
             disabled={!sendEnabled}
           />
-          <InlineButton
+          <Button
+            appearance="inline"
             text={i18n.messageReplyEditor.discard}
             icon={faTrash}
             data-qa="message-discard-btn"

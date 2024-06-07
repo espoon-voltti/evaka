@@ -10,7 +10,7 @@ import { isLoading, wrapResult } from 'lib-common/api'
 import { FamilyContact } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField from 'lib-components/atoms/form/InputField'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -228,7 +228,8 @@ const FamilyContactRow = React.memo(function FamilyContactRow({
             ) : null}
             {contact.role !== 'LOCAL_SIBLING' &&
             permittedActions.has('UPDATE_FAMILY_CONTACT_DETAILS') ? (
-              <InlineButton
+              <Button
+                appearance="inline"
                 onClick={edit}
                 text={i18n.common.edit}
                 data-qa="family-contact-edit"
@@ -320,12 +321,14 @@ const EditContactFields = React.memo(function EditFoo({
         {`(${i18n.childInformation.familyContacts.backupPhone})`}
       </span>
       <FixedSpaceRow justifyContent="flex-end" spacing="m">
-        <InlineButton
+        <Button
+          appearance="inline"
           onClick={onCancel}
           text={i18n.common.cancel}
           disabled={isSaving}
         />
-        <InlineButton
+        <Button
+          appearance="inline"
           onClick={() => onSave(formData)}
           text={i18n.common.save}
           disabled={isSaving || !dirty}

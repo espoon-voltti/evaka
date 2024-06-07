@@ -23,8 +23,8 @@ import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -446,7 +446,8 @@ function StaffAttendanceDetailsModal<
                         data-qa="attendance-group-select"
                       />
                     ) : (
-                      <InlineButton
+                      <Button
+                        appearance="inline"
                         text={groups.find((g) => g.id === groupId)?.name ?? '-'}
                         onClick={() =>
                           updateAttendance(index, {
@@ -546,7 +547,8 @@ function StaffAttendanceDetailsModal<
             }
           )}
           <NewAttendance>
-            <InlineButton
+            <Button
+              appearance="inline"
               icon={faPlus}
               text={i18n.unit.staffAttendance.addNewAttendance}
               onClick={addNewAttendance}

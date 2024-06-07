@@ -14,8 +14,8 @@ import {
   vasuQuestionTypes
 } from 'lib-common/api-types/vasu'
 import { VasuSection } from 'lib-common/generated/api-types/vasu'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -288,7 +288,8 @@ export default React.memo(function CreateQuestionModal({
                 )}
               </FixedSpaceRow>
             ))}
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() => setOptions([...options, { name: '' }])}
               text={t.addNewOption}
             />
@@ -353,7 +354,8 @@ export default React.memo(function CreateQuestionModal({
                 </FixedSpaceRow>
               </ExpandingInfo>
             ))}
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() => setKeys([...keys, { name: '' }])}
               text={t.addNewKey}
             />

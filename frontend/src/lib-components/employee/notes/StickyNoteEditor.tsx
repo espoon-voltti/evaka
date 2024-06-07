@@ -6,7 +6,7 @@ import React, { useCallback, useState } from 'react'
 
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -57,7 +57,11 @@ export const StickyNoteEditor = React.memo(function StickyNoteEditor({
       />
       <Gap size="xs" />
       <FixedSpaceRow justifyContent="flex-end">
-        <InlineButton onClick={onCancelEdit} text={labels.cancel} />
+        <Button
+          appearance="inline"
+          onClick={onCancelEdit}
+          text={labels.cancel}
+        />
         <InlineAsyncButton
           data-qa="sticky-note-save"
           text={labels.save}

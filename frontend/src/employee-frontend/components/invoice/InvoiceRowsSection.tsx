@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { groupBy, get } from 'lodash/fp'
+import { get, groupBy } from 'lodash/fp'
 import React, { Fragment, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -10,13 +10,13 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
 import {
-  PersonDetailed,
   InvoiceCodes,
-  InvoiceRowDetailed
+  InvoiceRowDetailed,
+  PersonDetailed
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import Title from 'lib-components/atoms/Title'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faAbacus, faCoins } from 'lib-icons'
@@ -176,7 +176,8 @@ export default React.memo(function InvoiceRowsSection({
                       {firstRow.child.ssn}
                     </Link>
                   </Title>
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     icon={faAbacus}
                     onClick={() =>
                       openAbsences(firstRow.child, firstRow.periodStart)
@@ -261,7 +262,8 @@ export default React.memo(function InvoiceRowsSection({
                   </Tbody>
                 </InvoiceRowsTable>
                 {permittedActions.includes('UPDATE') && (
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     disabled={!editable}
                     onClick={getAddInvoiceRow(firstRow)}
                     data-qa="invoice-button-add-row"

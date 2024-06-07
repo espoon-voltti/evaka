@@ -26,7 +26,7 @@ import {
   faTimes
 } from 'lib-icons'
 
-import InlineButton from '../atoms/buttons/InlineButton'
+import { Button } from '../atoms/buttons/Button'
 import { useTranslations } from '../i18n'
 
 const fileUploadErrorKeys = {
@@ -442,7 +442,8 @@ export default React.memo(function FileUpload({
             htmlFor={ariaId}
             onKeyDown={onKeyDown}
           >
-            <InlineButton
+            <Button
+              appearance="inline"
               className="file-input-button"
               disabled={disabled}
               icon={faPlus}
@@ -458,7 +459,8 @@ export default React.memo(function FileUpload({
           htmlFor={ariaId}
           onKeyDown={onKeyDown}
         >
-          <InlineButton
+          <Button
+            appearance="inline"
             disabled={disabled}
             icon={faPaperclip}
             text={i18n.input.title}

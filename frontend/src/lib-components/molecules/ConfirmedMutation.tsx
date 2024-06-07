@@ -6,8 +6,8 @@ import React, { useState } from 'react'
 
 import { cancelMutation, MutationDescription } from 'lib-common/query'
 
+import { Button } from '../atoms/buttons/Button'
 import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
-import InlineButton from '../atoms/buttons/InlineButton'
 import { LegacyButton } from '../atoms/buttons/LegacyButton'
 import { useTranslations } from '../i18n'
 import { BaseProps } from '../utils'
@@ -80,7 +80,8 @@ function ConfirmedMutation_<Arg, Data>(
         />
       )}
       {props.buttonStyle === 'INLINE' && (
-        <InlineButton
+        <Button
+          appearance="inline"
           text={props.buttonText}
           icon={props.icon}
           onClick={openConfirmation}

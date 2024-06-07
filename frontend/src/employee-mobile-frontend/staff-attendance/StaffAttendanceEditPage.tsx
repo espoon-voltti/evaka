@@ -44,7 +44,6 @@ import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -492,7 +491,8 @@ const StaffAttendanceEditor = ({
           <SelectF bind={groupId} data-qa="group-selector" />
         ) : (
           <>
-            <InlineButton
+            <Button
+              appearance="inline"
               text={
                 groupIdDomValue !== emptyGroupIdDomValue
                   ? groups.find((group) => group.id === groupIdDomValue)

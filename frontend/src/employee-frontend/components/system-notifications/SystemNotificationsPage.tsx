@@ -23,8 +23,8 @@ import {
 } from 'lib-common/generated/api-types/systemnotifications'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useQueryResult } from 'lib-common/query'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import MutateButton, {
   InlineMutateButton
 } from 'lib-components/atoms/buttons/MutateButton'
@@ -162,7 +162,8 @@ const SystemNotificationsPageInner = React.memo(
                   </div>
                   {editAllowed && (
                     <FixedSpaceRow>
-                      <InlineButton
+                      <Button
+                        appearance="inline"
                         onClick={() => setEditedNotification(targetGroup)}
                         text={i18n.common.edit}
                         icon={faPen}
@@ -182,7 +183,8 @@ const SystemNotificationsPageInner = React.memo(
                 <FixedSpaceColumn>
                   <div>{i18n.systemNotifications.noNotification}</div>
                   {editAllowed && (
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       onClick={() => setEditedNotification(targetGroup)}
                       text={i18n.systemNotifications.setNotification}
                       icon={faPlus}

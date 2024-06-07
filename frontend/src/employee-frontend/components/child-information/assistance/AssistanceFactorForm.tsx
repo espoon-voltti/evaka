@@ -22,7 +22,7 @@ import {
   AssistanceFactorUpdate
 } from 'lib-common/generated/api-types/assistance'
 import { UUID } from 'lib-common/types'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -121,12 +121,14 @@ export const AssistanceFactorForm = React.memo(function AssistanceFactorForm(
       </Td>
       <Td>
         <FixedSpaceRow justifyContent="flex-end" spacing="m">
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={props.onClose}
             text={i18n.common.cancel}
             data-qa="cancel"
           />
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={onSubmit}
             text={i18n.common.save}
             disabled={!form.isValid()}

@@ -19,7 +19,7 @@ import { appVersion } from 'lib-common/globals'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { faExclamation, faInfo, faRedo } from 'lib-icons'
 
-import InlineButton from './atoms/buttons/InlineButton'
+import { Button } from './atoms/buttons/Button'
 import { useTranslations } from './i18n'
 import { FixedSpaceColumn } from './layout/flex-helpers'
 import Toast from './molecules/Toast'
@@ -246,13 +246,18 @@ const ReloadNotification = React.memo(function ReloadNotification({
     <FixedSpaceColumn spacing="xs" onClick={reload}>
       <div>{title}</div>
       <div>
-        <ReloadButton icon={faRedo} text={buttonText} onClick={reload} />
+        <ReloadButton
+          appearance="inline"
+          icon={faRedo}
+          text={buttonText}
+          onClick={reload}
+        />
       </div>
     </FixedSpaceColumn>
   )
 })
 
-const ReloadButton = styled(InlineButton)`
+const ReloadButton = styled(Button)`
   white-space: normal;
   text-align: left;
 `

@@ -11,7 +11,7 @@ import { Action } from 'lib-common/generated/action'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -250,7 +250,8 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
                   </InfoLabelContainer>
                 )}
               {permittedActions.has('READ_TIMELINE') && (
-                <InlineButton
+                <Button
+                  appearance="inline"
                   text={i18n.personProfile.timeline}
                   onClick={() => navigate(`/profile/${id}/timeline`)}
                   icon={faListTimeline}

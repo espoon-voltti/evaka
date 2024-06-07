@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { Failure, wrapResult } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { localDate, localTime, string, boolean } from 'lib-common/form/fields'
+import { boolean, localDate, localTime, string } from 'lib-common/form/fields'
 import {
   object,
   oneOf,
@@ -31,7 +31,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import {
@@ -247,7 +247,8 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
 
         <Gap size="xs" />
         <FixedSpaceRow justifyContent="space-between">
-          <InlineButton
+          <Button
+            appearance="inline"
             text={i18n.common.cancel}
             data-qa="add-person-cancel-btn"
             onClick={onClose}

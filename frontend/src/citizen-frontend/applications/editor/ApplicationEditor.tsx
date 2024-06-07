@@ -23,7 +23,7 @@ import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
 import Main from 'lib-components/atoms/Main'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton, {
   ReturnButtonWrapper
@@ -445,7 +445,8 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     <Container>
       {verifying ? (
         <ReturnButtonWrapper>
-          <InlineButton
+          <Button
+            appearance="inline"
             icon={faAngleLeft}
             text={t.applications.editor.actions.returnToEdit}
             onClick={() => setVerifying(false)}

@@ -43,8 +43,8 @@ import LocalDate from 'lib-common/local-date'
 import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
@@ -316,7 +316,8 @@ export default React.memo(function ChildDateModal({
               />
             ))}
             {reservationElems.length < 2 && (
-              <InlineButton
+              <Button
+                appearance="inline"
                 text={
                   i18n.unit.attendanceReservations.childDateModal.reservations
                     .add
@@ -375,7 +376,8 @@ export default React.memo(function ChildDateModal({
                 }
               />
             ))}
-            <InlineButton
+            <Button
+              appearance="inline"
               text={
                 i18n.unit.attendanceReservations.childDateModal.attendances.add
               }
@@ -516,7 +518,8 @@ const AbsenceForm = React.memo(function AbsenceForm({
 
   if (bind.value() === undefined) {
     return (
-      <InlineButton
+      <Button
+        appearance="inline"
         onClick={() => bind.update((s) => ({ ...s, domValue: defaultType }))}
         text={
           i18n.unit.attendanceReservations.childDateModal.absences.add[category]

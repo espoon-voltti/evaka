@@ -27,7 +27,7 @@ import {
 import { useMutationResult } from 'lib-common/query'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
@@ -213,7 +213,8 @@ export default React.memo(function ClubTermForm({
                 data-qa="term-break-input"
               />
 
-              <InlineButton
+              <Button
+                appearance="inline"
                 text={i18n.common.remove}
                 icon={faTrash}
                 data-qa="remove-term-break-button"
@@ -233,7 +234,8 @@ export default React.memo(function ClubTermForm({
 
           <Gap size="L" />
 
-          <InlineButton
+          <Button
+            appearance="inline"
             text={i18n.terms.addTermBreak}
             icon={faPlus}
             data-qa="add-term-break-button"

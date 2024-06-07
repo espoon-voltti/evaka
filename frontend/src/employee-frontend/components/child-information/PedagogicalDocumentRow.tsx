@@ -12,8 +12,8 @@ import {
 } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Td, Tr } from 'lib-components/layout/Table'
 import FileUpload from 'lib-components/molecules/FileUpload'
@@ -157,13 +157,15 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       <ActionsTd data-qa="pedagogical-document-actions">
         {editMode ? (
           <InlineButtons>
-            <InlineButton
+            <Button
+              appearance="inline"
               data-qa="pedagogical-document-button-save"
               onClick={updateDocument}
               text={i18n.common.save}
               disabled={!pedagogicalDocument.description.length || submitting}
             />
-            <InlineButton
+            <Button
+              appearance="inline"
               data-qa="pedagogical-document-button-cancel"
               onClick={() => {
                 endEdit()

@@ -15,7 +15,7 @@ import {
 import { useMutation } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
@@ -276,7 +276,8 @@ export default React.memo(function ChildApplicationsBlock({
                 (applicationStatus === 'SENT' &&
                   permittedActions[applicationId]?.includes('UPDATE')) ? (
                   <Link to={`/applications/${applicationId}/edit`}>
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       icon={faPen}
                       text={t.applicationsList.editApplicationLink}
                       onClick={noop}
@@ -285,7 +286,8 @@ export default React.memo(function ChildApplicationsBlock({
                   </Link>
                 ) : permittedActions[applicationId]?.includes('READ') ? (
                   <Link to={`/applications/${applicationId}`}>
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       icon={faFileAlt}
                       text={t.applicationsList.openApplicationLink}
                       onClick={noop}
@@ -296,7 +298,8 @@ export default React.memo(function ChildApplicationsBlock({
                 {(applicationStatus === 'CREATED' ||
                   applicationStatus === 'SENT') &&
                   permittedActions[applicationId]?.includes('DELETE') && (
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       icon={faTrash}
                       text={
                         applicationStatus === 'CREATED'

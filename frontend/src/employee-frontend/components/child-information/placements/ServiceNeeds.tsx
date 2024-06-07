@@ -16,7 +16,7 @@ import {
 } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H4 } from 'lib-components/typography'
@@ -84,7 +84,8 @@ export default React.memo(function ServiceNeeds({
       <HeaderRow>
         <H4 noMargin>{t.title}</H4>
         {createAllowed && (
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={() => setCreatingNew(true)}
             text={t.createNewBtn}
             icon={faPlus}

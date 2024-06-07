@@ -31,7 +31,7 @@ import {
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -54,7 +54,7 @@ const SectionLabel = styled.div`
   font-weight: ${fontWeights.semibold};
 `
 
-const EditButton = styled(InlineButton)`
+const EditButton = styled(Button)`
   font-size: 16px;
 `
 
@@ -109,6 +109,7 @@ export const NotificationSettings = React.memo(function NotificationSettings({
           <>
             <Gap size="s" horizontal />
             <EditButton
+              appearance="inline"
               data-qa="edit"
               text={i18n.common.edit}
               onClick={startEditing}

@@ -7,7 +7,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { faRedo } from 'lib-icons'
 
@@ -74,7 +74,8 @@ export const UndoMessage = React.memo(function UndoMessageToast({
   return (
     <FixedSpaceColumn spacing="xs">
       <div>{i18n.messages.undo.info}</div>
-      <InlineButton
+      <Button
+        appearance="inline"
         icon={faRedo}
         text={`${i18n.common.cancel} (${i18n.messages.undo.secondsLeft(
           secondsLeft

@@ -28,6 +28,7 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
 import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -41,8 +42,7 @@ import { Bold, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faAngleLeft } from 'lib-icons'
-import { faBoxArchive } from 'lib-icons'
+import { faAngleLeft, faBoxArchive } from 'lib-icons'
 
 import { getAttachmentUrl } from '../../api/attachments'
 import { archiveThread } from '../../generated/api-clients/messaging'
@@ -303,7 +303,8 @@ export function SingleThreadView({
             <>
               <Gap size="s" />
               <ActionRow justifyContent="space-between">
-                <InlineButton
+                <Button
+                  appearance="inline"
                   icon={faReply}
                   onClick={() => setReplyEditorVisible(true)}
                   data-qa="message-reply-editor-btn"

@@ -4,8 +4,11 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
-import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
-import { faArrowDownToLine } from 'Icons'
+import {
+  faArrowDownToLine,
+  fasCheckCircle,
+  fasExclamationTriangle
+} from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, {
@@ -33,7 +36,6 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
@@ -49,7 +51,7 @@ import {
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2, H3, H4 } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
@@ -69,6 +71,7 @@ import {
 import LabelValueList from '../common/LabelValueList'
 
 import { getNextDocumentStatus, getPrevDocumentStatus } from './statuses'
+import { Button } from 'lib-components/atoms/buttons/Button'
 
 const ActionBar = styled.div`
   position: sticky;
@@ -421,7 +424,8 @@ const ChildDocumentMetadataSection = React.memo(
               {permittedActions.includes('DOWNLOAD') && (
                 <>
                   <Gap />
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     icon={faArrowDownToLine}
                     text={t.downloadPdf}
                     disabled={!metadata.downloadable}

@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -233,8 +233,8 @@ const en: Translations = {
   ctaToast: {
     holidayPeriodCta: (period: FiniteDateRange, deadline: LocalDate) => (
       <>
-        <InlineButton text="Register" onClick={() => undefined} /> attendances
-        and absences between {period.start.format('dd.MM.')}-
+        <Button appearance="inline" text="Register" onClick={() => undefined} />{' '}
+        attendances and absences between {period.start.format('dd.MM.')}-
         {period.end.format()} no later than {deadline.format()}. The exact times
         of attendances will be marked after the questionnaire has closed.
       </>

@@ -29,7 +29,7 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import TreeDropdown, {
   hasUncheckedChildren,
   TreeNode
@@ -845,7 +845,8 @@ const EditEventModal = React.memo(function EditEventModal({
 
           <Gap size="L" />
           <FixedSpaceRow justifyContent="space-between">
-            <InlineButton
+            <Button
+              appearance="inline"
               icon={faTrash}
               text={i18n.unit.calendar.events.edit.delete}
               onClick={() => {

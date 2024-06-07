@@ -28,7 +28,7 @@ import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { InlineMutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -296,7 +296,8 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
             {vasus.map(({ data: vasu, permittedActions }) => (
               <Tr key={vasu.id} data-qa="curriculum-document-row">
                 <Td>
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     onClick={() =>
                       navigate({
                         pathname: `/vasu/${vasu.id}`,
@@ -334,7 +335,8 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                       />
                     ) : null
                   ) : (
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       onClick={() =>
                         navigate({
                           pathname: `/vasu/${vasu.id}/edit`,
@@ -349,7 +351,8 @@ export default React.memo(function VasuAndLeops({ id: childId }: Props) {
                 <Td minimalWidth>
                   {vasu.documentState === 'DRAFT' &&
                   permittedActions.includes('DELETE') ? (
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       onClick={() => setConfirmDelete(vasu.id)}
                       text={i18n.common.remove}
                     />

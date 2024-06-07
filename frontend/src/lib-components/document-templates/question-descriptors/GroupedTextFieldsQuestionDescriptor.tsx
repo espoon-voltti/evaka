@@ -22,6 +22,7 @@ import {
   Question,
   QuestionType
 } from 'lib-common/generated/api-types/document'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import {
@@ -32,7 +33,6 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 
 import { IconOnlyButton } from '../../atoms/buttons/IconOnlyButton'
-import InlineButton from '../../atoms/buttons/InlineButton'
 import { useTranslations } from '../../i18n'
 
 import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
@@ -177,7 +177,8 @@ const View = React.memo(function View({
             </FixedSpaceColumn>
           ))}
           {template.state.allowMultipleRows && (
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() =>
                 answer.update((prev) => [
                   ...prev,
@@ -279,7 +280,8 @@ const TemplateView = React.memo(function TemplateView({
               )}
             </FixedSpaceRow>
           ))}
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={() => fieldLabels.update((prev) => [...prev, ''])}
             text={i18n.documentTemplates.templateQuestions.addTextField}
             icon={faPlus}

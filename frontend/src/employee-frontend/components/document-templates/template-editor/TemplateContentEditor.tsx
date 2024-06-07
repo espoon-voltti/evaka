@@ -24,7 +24,7 @@ import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import MutateButton from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -220,7 +220,8 @@ const BasicsSection = React.memo(function BasicsSection({
       <FixedSpaceRow justifyContent="space-between">
         <H1>{template.name}</H1>
         {editingAllowed && (
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={() => setEditing(true)}
             text="Muokkaa lomakkeen perustietoja"
             icon={faPen}

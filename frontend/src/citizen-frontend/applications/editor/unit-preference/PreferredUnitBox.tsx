@@ -8,8 +8,8 @@ import styled from 'styled-components'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
@@ -94,11 +94,12 @@ export default React.memo(function PreferredUnitBox({
           </FixedSpaceFlexWrap>
           <Gap size="xs" />
           <FixedSpaceFlexWrap verticalSpacing="xs">
-            <InlineButton
+            <Button
+              appearance="inline"
               text={
                 t.applications.editor.unitPreference.units.preferences.moveUp
               }
-              altText={`${unit.name} (${
+              aria-label={`${unit.name} (${
                 t.applications.editor.unitPreference.units.preferences[
                   unit.language
                 ]
@@ -109,11 +110,12 @@ export default React.memo(function PreferredUnitBox({
               onClick={moveUp || noOp}
               disabled={!moveUp}
             />
-            <InlineButton
+            <Button
+              appearance="inline"
               text={
                 t.applications.editor.unitPreference.units.preferences.moveDown
               }
-              altText={`${unit.name} (${
+              aria-label={`${unit.name} (${
                 t.applications.editor.unitPreference.units.preferences[
                   unit.language
                 ]

@@ -24,8 +24,8 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TreeDropdown, {
@@ -59,13 +59,14 @@ import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import {
+  faChevronDown,
+  faChevronUp,
   faDownLeftAndUpRightToCenter,
+  faQuestion,
   faTimes,
   faTrash,
-  faUpRightAndDownLeftFromCenter,
-  faQuestion
+  faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
-import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -662,7 +663,9 @@ export default React.memo(function MessageEditor({
             <>
               <Gap size="s" />
               <RightAlignedRow>
-                <InlineButton
+                <Button
+                  appearance="inline"
+                  order="text-icon"
                   data-qa="filters-btn"
                   onClick={useFiltersVisible.toggle}
                   text={
@@ -670,7 +673,6 @@ export default React.memo(function MessageEditor({
                       ? i18n.messages.messageEditor.filters.hideFilters
                       : i18n.messages.messageEditor.filters.showFilters
                   }
-                  iconRight
                   icon={filtersVisible ? faChevronUp : faChevronDown}
                 />
               </RightAlignedRow>
@@ -812,7 +814,8 @@ export default React.memo(function MessageEditor({
         </ScrollableFormArea>
         <BottomBar>
           {draftId ? (
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() => onDiscard(message.sender.value, draftId)}
               text={i18n.messages.messageEditor.deleteDraft}
               icon={faTrash}

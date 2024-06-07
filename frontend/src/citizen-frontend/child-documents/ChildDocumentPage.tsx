@@ -16,7 +16,7 @@ import {
 } from 'lib-common/generated/api-types/document'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
@@ -63,13 +63,15 @@ export default React.memo(function ChildDocumentPage() {
         <TopButtonRow justifyContent="space-between">
           <ReturnButton label={i18n.common.return} />
           <FixedSpaceRow>
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() => window.print()}
               icon={faPrint}
               text={i18n.common.print}
             />
             {childDocument.map((d) => d.downloadable).getOrElse(false) && (
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faArrowDownToLine}
                 text={i18n.common.download}
                 onClick={() => {

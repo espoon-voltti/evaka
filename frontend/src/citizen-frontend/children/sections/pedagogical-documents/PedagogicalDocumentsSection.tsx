@@ -18,8 +18,8 @@ import {
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
@@ -178,7 +178,8 @@ const ItemDescription = React.memo(function ItemDescription({
       {shouldShowExpandButton && (
         <div>
           <TabletAndDesktop>
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={toggleExpanded}
               data-qa={`${dataQa}-button`}
               icon={expanded ? faChevronUp : faChevronDown}

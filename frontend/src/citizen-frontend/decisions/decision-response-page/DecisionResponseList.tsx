@@ -11,7 +11,7 @@ import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -68,7 +68,8 @@ export default React.memo(function DecisionResponseList() {
     <>
       <Container>
         <Gap size="s" />
-        <InlineButton
+        <Button
+          appearance="inline"
           text={t.decisions.applicationDecisions.returnToPreviousPage}
           onClick={handleReturnToPreviousPage}
           icon={faChevronLeft}

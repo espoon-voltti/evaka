@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -101,7 +101,8 @@ export default React.memo(function UnitList({
                 <Gap size="s" />
 
                 <Centered>
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     data-qa="toggle-show-more-units"
                     onClick={() => setShowMoreUnits(true)}
                     text={t.map.showMore}

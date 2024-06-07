@@ -27,8 +27,8 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
   cancelMutation,
   InlineMutateButton
@@ -291,7 +291,8 @@ export default React.memo(function Group({
         <Toolbar>
           {permittedActions.includes('UPDATE') && (
             <>
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faPen}
                 text={i18n.unit.groups.update}
                 onClick={() => toggleUiMode(`update-group-${group.id}`)}
@@ -315,7 +316,8 @@ export default React.memo(function Group({
           )}
           {permittedActions.includes('READ_ABSENCES') && (
             <Link to={`/units/${unit.id}/calendar?group=${group.id}`}>
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faCalendarAlt}
                 text={i18n.unit.groups.diaryButton}
                 onClick={() => undefined}
@@ -345,7 +347,8 @@ export default React.memo(function Group({
                 {renderCaretakerCount()}
                 {canManageCaretakers ? (
                   <Link to={`/units/${unit.id}/groups/${group.id}/caretakers`}>
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       icon={faPen}
                       text={i18n.common.edit}
                       onClick={() => undefined}
@@ -454,7 +457,8 @@ export default React.memo(function Group({
                 permittedActions.includes('READ_NOTES') &&
                 notesResponse.isSuccess && (
                   <GroupNoteLinkContainer>
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       icon={
                         notesResponse.value.groupNotes.length > 0
                           ? farStickyNote
@@ -682,7 +686,8 @@ const GroupPlacementRow = React.memo(function GroupPlacementRow({
           <RowActionContainer>
             {canTransfer && (
               <>
-                <InlineButton
+                <Button
+                  appearance="inline"
                   onClick={() => onTransferRequested(placement)}
                   data-qa="transfer-btn"
                   icon={faExchange}
