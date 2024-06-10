@@ -140,7 +140,7 @@ SELECT d.id,
             FROM daycare_group 
             WHERE daycare_id = d.id
         ) AND start_date < :today AND end_date >= :today
-    ) * 7 AS group_size,
+    ) * 7 AS unit_size,
     array_remove(ARRAY[
         CASE WHEN d.provider_type != 'MUNICIPAL' THEN 'PRIVATE' END,
         CASE WHEN d.with_school THEN 'WITH_SCHOOL' END,
@@ -193,7 +193,7 @@ data class PreschoolUnitsReportRow(
     val address: String,
     val postalCode: String,
     val postOffice: String,
-    val groupSize: Int,
+    val unitSize: Int,
     val options: List<String>
 )
 

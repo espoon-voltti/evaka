@@ -11,6 +11,7 @@ import {
   getExceededServiceNeedReportUnits,
   getFamilyContactsReport,
   getFuturePreschoolersReport,
+  getFuturePreschoolersSourceUnitsReport,
   getFuturePreschoolersUnitsReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
@@ -156,7 +157,7 @@ export const preschoolUnitsQuery = query({
 })
 
 export const preschoolSourceUnitsQuery = query({
-  api: getFuturePreschoolersUnitsReport,
+  api: getFuturePreschoolersSourceUnitsReport,
   queryKey: queryKeys.futurePreschoolersUnits
 })
 
