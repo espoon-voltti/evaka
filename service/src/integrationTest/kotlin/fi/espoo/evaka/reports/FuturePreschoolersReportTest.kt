@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test
 
 class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
 
-
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
