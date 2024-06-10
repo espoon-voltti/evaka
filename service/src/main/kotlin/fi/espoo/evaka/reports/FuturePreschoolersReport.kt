@@ -132,7 +132,15 @@ SELECT d.id,
     d.street_address AS address,
     d.postal_code AS postal_code,
     d.post_office as post_office,
-    (SELECT count(id) FROM daycare_caretaker WHERE group_id = dg.id AND start_date < :today AND end_date >= :today) * 7 AS group_size,
+    (
+        SELECT count(id) 
+        FROM daycare_caretaker 
+        WHERE group_id IN (
+            SELECT id 
+            FROM daycare_group 
+            WHERE daycare_id = d.id
+        ) AND start_date < :today AND end_date >= :today
+    ) * 7 AS group_size,
     array_remove(ARRAY[
         CASE WHEN d.provider_type != 'MUNICIPAL' THEN 'PRIVATE' END,
         CASE WHEN d.with_school THEN 'WITH_SCHOOL' END,
@@ -140,9 +148,8 @@ SELECT d.id,
         CASE WHEN d.language_emphasis_id IS NOT NULL THEN 'LANGUAGE_EMPHASIS' END
     ], NULL) AS options
 FROM daycare d
-JOIN daycare_group dg on d.id = dg.daycare_id
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND
-dg.start_date <= :today AND (dg.end_date IS NULL OR dg.end_date >= :today)
+d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
             """
                     .trimIndent()
             )
@@ -160,7 +167,7 @@ SELECT d.id,
     d.postal_code AS postal_code,
     d.post_office as post_office
 FROM daycare d
-WHERE d.closing_date IS NULL OR d.closing_date >= :today
+WHERE d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
             """
                     .trimIndent()
             )
