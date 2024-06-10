@@ -547,6 +547,10 @@ class DaycareController(
                                 }
                                 .toSet()
 
+                    val childIds =
+                        placements.map { it.child.id }.toSet() +
+                            backupCares.map { it.child.id }.toSet()
+
                     val capacities =
                         if (
                             accessControl.hasPermissionFor(
@@ -557,7 +561,7 @@ class DaycareController(
                                 unitId
                             )
                         ) {
-                            tx.getUnitChildrenCapacities(unitId, from)
+                            tx.getUnitChildrenCapacities(childIds, from)
                         } else {
                             listOf()
                         }
