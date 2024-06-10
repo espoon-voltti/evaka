@@ -78,7 +78,7 @@ export default React.memo(function FuturePreschoolersReport() {
                   { label: 'Lahiosoite', key: 'address' },
                   { label: 'Postinumero', key: 'postalCode' },
                   { label: 'Postitoimipaikka', key: 'postOffice' },
-                  { label: 'Paikkojen_lkm', key: 'groupSize' },
+                  { label: 'Paikkojen_lkm', key: 'unitSize' },
                   { label: 'ominaisuudet', key: 'options' }
                 ]}
                 filename="Esiopetusyksikot.csv"

@@ -622,12 +622,12 @@ export interface PlacementSketchingReportRow {
 */
 export interface PreschoolUnitsReportRow {
   address: string
-  groupSize: number
   id: UUID
   options: string[]
   postOffice: string
   postalCode: string
   unitName: string
+  unitSize: number
 }
 
 /**

@@ -36,9 +36,9 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             testDecisionMaker_2.let {
                 tx.insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
             }
-            tx.insert(testDaycare)
-            tx.insert(testVoucherDaycare)
-            tx.insert(testRoundTheClockDaycare)
+            tx.insert(testDaycare.copy(openingDate = LocalDate.of(2000, 1, 1)))
+            tx.insert(testVoucherDaycare.copy(openingDate = LocalDate.of(2000, 1, 1)))
+            tx.insert(testRoundTheClockDaycare.copy(openingDate = LocalDate.of(2000, 1, 1)))
             tx.insert(
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
@@ -136,6 +136,6 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun getSourceUnitReport(): List<SourceUnitsReportRow> {
-        return db.read { it.geSourceUnitsRows(LocalDate.of(2023, 1, 1)) }
+        return db.read { it.getSourceUnitsRows(LocalDate.of(2023, 1, 1)) }
     }
 }
