@@ -4531,11 +4531,16 @@ export const fi = {
           <br />
           alle 3v (€)
         </>
-      )
-    },
-    modals: {
-      deleteVoucherValue: {
-        title: 'Haluatko varmasti poistaa palveluseteliarvon?'
+      ),
+      errors: {
+        'date-overlap':
+          'Voimassaolo ei voi alkaa ennen toisen palveluseteliarvon alkamispäivää',
+        shouldNotHappen: 'Odottamaton virhe'
+      },
+      modals: {
+        deleteVoucherValue: {
+          title: 'Haluatko varmasti poistaa palveluseteliarvon?'
+        }
       }
     }
   },
