@@ -39,7 +39,7 @@
     "passport": "^0.7.0",
     "pino": "^9.1.0",
     "pino-http": "^10.1.0",
-    "pino-pretty": "^11.1.0",
+    "pino-pretty": "^11.2.0",
     "pump": "^3.0.0",
     "query-string": "^9.0.0",
     "redis": "^4.6.7",
