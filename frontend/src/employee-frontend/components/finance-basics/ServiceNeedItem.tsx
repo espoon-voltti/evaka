@@ -18,6 +18,7 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
@@ -132,6 +133,7 @@ export default React.memo(function ServiceNeedItem({
               <Th>{i18n.financeBasics.serviceNeeds.baseValueUnder3y}</Th>
               <Th>{i18n.financeBasics.serviceNeeds.coefficientUnder3y}</Th>
               <Th>{i18n.financeBasics.serviceNeeds.valueUnder3y}</Th>
+              <Th />
             </Tr>
           </Thead>
           <Tbody>
@@ -141,6 +143,7 @@ export default React.memo(function ServiceNeedItem({
                 id={undefined}
                 initialState={editorState.form}
                 close={closeEditor}
+                existingVoucherValues={voucherValuesList}
               />
             ) : null}
             {voucherValuesList
@@ -157,6 +160,7 @@ export default React.memo(function ServiceNeedItem({
                     initialState={editorState.form}
                     close={closeEditor}
                     key={i}
+                    existingVoucherValues={voucherValuesList}
                   />
                 ) : (
                   <Tr key={i} data-qa={`voucher-value-row-${i}`}>
@@ -185,35 +189,36 @@ export default React.memo(function ServiceNeedItem({
                         2
                       )}
                     </Td>
-                    <Td data-qa="delete-btn">
-                      {voucherValue.voucherValues.range.end == null && (
-                        <ConfirmedMutation
-                          buttonStyle="INLINE"
-                          data-qa="btn-delete"
-                          icon={faTrash}
-                          buttonText=""
-                          mutation={deleteVoucherValueMutation}
-                          onClick={() => ({ id: voucherValue.id })}
-                          confirmationTitle={
-                            i18n.financeBasics.modals.deleteVoucherValue.title
-                          }
-                        />
-                      )}
-                    </Td>
-                    <Td data-qa="edit-btn">
-                      {voucherValue.voucherValues.range.end == null && (
-                        <IconButton
-                          icon={faPen}
-                          onClick={() =>
-                            editVoucherValue(
-                              voucherValue.id,
-                              voucherValue.voucherValues
-                            )
-                          }
-                          data-qa="copy"
-                          aria-label={i18n.common.edit}
-                        />
-                      )}
+                    <Td data-qa="buttons">
+                      <FixedSpaceRow>
+                        {voucherValue.voucherValues.range.end == null && (
+                          <IconButton
+                            icon={faPen}
+                            onClick={() =>
+                              editVoucherValue(
+                                voucherValue.id,
+                                voucherValue.voucherValues
+                              )
+                            }
+                            data-qa="copy"
+                            aria-label={i18n.common.edit}
+                          />
+                        )}
+                        {voucherValue.voucherValues.range.end == null && (
+                          <ConfirmedMutation
+                            buttonStyle="INLINE"
+                            data-qa="btn-delete"
+                            icon={faTrash}
+                            buttonText=""
+                            mutation={deleteVoucherValueMutation}
+                            onClick={() => ({ id: voucherValue.id })}
+                            confirmationTitle={
+                              i18n.financeBasics.serviceNeeds.modals
+                                .deleteVoucherValue.title
+                            }
+                          />
+                        )}
+                      </FixedSpaceRow>
                     </Td>
                   </Tr>
                 )
