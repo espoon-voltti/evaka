@@ -78,7 +78,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                         Action.Global.READ_FUTURE_PRESCHOOLERS
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.geSourceUnitsRows(clock.today())
+                    it.getSourceUnitsRows(clock.today())
                 }
             }
             .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
@@ -157,7 +157,7 @@ d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today
         .bind("today", today)
         .toList<PreschoolUnitsReportRow>()
 
-fun Database.Read.geSourceUnitsRows(today: LocalDate): List<SourceUnitsReportRow> =
+fun Database.Read.getSourceUnitsRows(today: LocalDate): List<SourceUnitsReportRow> =
     createQuery {
             sql(
                 """
