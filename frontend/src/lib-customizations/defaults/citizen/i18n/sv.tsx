@@ -2018,15 +2018,15 @@ const sv: Translations = {
         <Gap size="xs" />
         <UnorderedList>
           <li>
-            Om dina inkomster överskrider inkomstgränsen för den högsta avgiften
-            enligt familjestorleken, godkänn den högsta avgiften för
-            småbarnspedagogik. I detta fall behöver du inte alls reda ut dina
-            inkomster.
+            Avgiften kan justeras i mitten av verksamhetsperioden om en sådan
+            betydande förändring sker i familjens situation, inkomster eller
+            barnets veckotimmar, som kan inverka på avgiften för
+            småbarnspedagogik. Avgiften kan också ändras om lagstiftningen
+            ändras eller på beslut av stadsstyrelsen.
           </li>
           <li>
-            Om din familj inkluderar en annan vuxen måste de också skicka in en
-            inkomstutredning genom att personligen logga in på eVaka och fylla i
-            detta formulär.
+            Om det sker väsentliga förändringar i familjens inkomster (+/-10 %),
+            ska en ny inkomstutredning göras omedelbart.
           </li>
         </UnorderedList>
         <P>
@@ -2034,7 +2034,7 @@ const sv: Translations = {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://www.espoo.fi/sv/artiklar/avgifter-smabarnspedagogik-fran-182022"
+            href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/klientavgifterna-smabarnspedagogik"
           >
             här
           </a>

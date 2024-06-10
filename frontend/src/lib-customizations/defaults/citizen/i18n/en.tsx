@@ -1560,7 +1560,7 @@ const en: Translations = {
     assistancePreschoolDecisions: {
       // the actual decision cannot be in English
       ...fi.decisions.assistancePreschoolDecisions,
-      title: 'Decision of special support in pre-primary education',
+      title: 'Decision of support in pre-primary education',
       statuses: {
         DRAFT: 'Draft',
         NEEDS_WORK: 'Needs work',
@@ -1778,15 +1778,14 @@ const en: Translations = {
         <Gap size="xs" />
         <UnorderedList>
           <li>
-            If your income exceeds the highest payment income threshold
-            according to family size, accept the highest early childhood
-            education fee. In this case, you do not need to submit an income
-            statement.
+            The fee can be reviewed during the operating year if there are
+            changes in the family&apos;s situation, income, or the child&apos;s
+            service needs. The fee can also be changed in accordance with
+            changes in legislation or decisions made by the city council.
           </li>
           <li>
-            If there&apos;s another adult in your family, they must also submit
-            an income statement by personally logging into eVaka and filling out
-            this form.
+            If there are significant changes (+/-10%) in the family&apos;s
+            income, a new income statement must be made immediately.
           </li>
         </UnorderedList>
         <P>
@@ -1794,7 +1793,7 @@ const en: Translations = {
           <a
             target="_blank"
             rel="noreferrer"
-            href="https://www.espoo.fi/en/articles/early-education-fees-1-august-2022"
+            href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
           >
             here
           </a>
