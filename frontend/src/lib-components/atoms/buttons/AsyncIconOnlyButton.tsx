@@ -18,11 +18,11 @@ import {
   useAsyncButtonBehavior
 } from './async-button-behavior'
 import {
-  IconOnlyButtonVisualProps,
-  renderIconOnlyButton
+  BaseIconOnlyButtonVisualProps,
+  renderBaseIconOnlyButton
 } from './icon-only-button-visuals'
 
-export type AsyncIconOnlyButtonProps<T> = IconOnlyButtonVisualProps &
+export type AsyncIconOnlyButtonProps<T> = BaseIconOnlyButtonVisualProps &
   AsyncButtonBehaviorProps<T> & {
     hideSuccess?: boolean
   }
@@ -61,7 +61,7 @@ const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
     opacity: state === 'failure' ? 1 : 0
   })
 
-  return renderIconOnlyButton(
+  return renderBaseIconOnlyButton(
     {
       'data-status': state === 'idle' ? '' : state,
       'aria-busy': state === 'in-progress',
@@ -123,6 +123,11 @@ const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
   )
 }
 
+/**
+ * An HTML button that looks like an icon and triggers an async action when clicked.
+ *
+ * Loading/success/failure states are indicated by temporarily replacing the default icon with a spinner or a checkmark/cross icon.
+ */
 export const AsyncIconOnlyButton = React.memo(
   AsyncIconOnlyButton_
 ) as typeof AsyncIconOnlyButton_

@@ -19,6 +19,9 @@ const idle: ButtonState<never> = { state: 'idle' }
 const inProgress: ButtonState<never> = { state: 'in-progress' }
 const failure: ButtonState<never> = { state: 'failure' }
 
+/**
+ * Behavioral props for an async button.
+ */
 export interface AsyncButtonBehaviorProps<T> {
   /** Return a promise to start an async action, or `undefined` to do a sync action (or nothing at all) */
   onClick: () => Promise<Result<T>> | void
@@ -26,10 +29,21 @@ export interface AsyncButtonBehaviorProps<T> {
   onSuccess: (value: T) => void
   /** Called immediately when the promise has resolved with a Failure value */
   onFailure?: (failure: Failure<T>) => void
+  /**
+   * If true, the click event preventDefault() function will be called automatically
+   */
   preventDefault?: boolean
+  /**
+   * If true, the click event stopPropagation() function will be called automatically
+   */
   stopPropagation?: boolean
 }
 
+/**
+ * A hook that provides the behavior for an async button.
+ *
+ * The returned raw click handler should be pass to a button's onClick prop.
+ */
 export function useAsyncButtonBehavior<T>({
   preventDefault = false,
   stopPropagation = false,

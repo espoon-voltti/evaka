@@ -38,4 +38,9 @@ const MutateButton_ = function MutateButton<Arg, Data>({
   )
 }
 
+/**
+ * An HTML button that triggers a mutation when clicked.
+ *
+ * Loading/success/failure states are indicated with a spinner or a checkmark/cross icon.
+ */
 export const MutateButton = React.memo(MutateButton_) as typeof MutateButton_

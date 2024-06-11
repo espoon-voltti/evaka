@@ -14,6 +14,9 @@ import {
 
 import { AsyncButtonBehaviorProps } from './async-button-behavior'
 
+/**
+ * Behavioral props for a mutate button.
+ */
 export interface MutateButtonBehaviorProps<Arg, Data>
   extends Omit<
     AsyncButtonBehaviorProps<{ value: Data; arg: Arg }>,
@@ -24,6 +27,11 @@ export interface MutateButtonBehaviorProps<Arg, Data>
   onSuccess?: (value: Data) => void
 }
 
+/**
+ * A hook that provides the behavior for a mutate button.
+ *
+ * The returned raw handlers should be passed to an async button's onClick and onSuccess props.
+ */
 export function useMutateButtonBehavior<Arg, Data>({
   mutation,
   onClick,

@@ -5,16 +5,20 @@
 import React from 'react'
 
 import { AsyncIconOnlyButton } from './AsyncIconOnlyButton'
-import { IconOnlyButtonVisualProps } from './icon-only-button-visuals'
+import { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
 import {
   MutateButtonBehaviorProps,
   useMutateButtonBehavior
 } from './mutate-button-behavior'
 
-export type MutateIconOnlyButtonProps<Arg, Data> = IconOnlyButtonVisualProps &
-  MutateButtonBehaviorProps<Arg, Data> & {
-    hideSuccess?: boolean
-  }
+export type MutateIconOnlyButtonProps<Arg, Data> =
+  BaseIconOnlyButtonVisualProps &
+    MutateButtonBehaviorProps<Arg, Data> & {
+      /**
+       * If true, the success icon is hidden.
+       */
+      hideSuccess?: boolean
+    }
 
 const MutateIconOnlyButton_ = function MutateIconOnlyButton<Arg, Data>({
   mutation,
@@ -36,6 +40,11 @@ const MutateIconOnlyButton_ = function MutateIconOnlyButton<Arg, Data>({
   )
 }
 
+/**
+ * An HTML button that looks like an icon and triggers a mutation when clicked.
+ *
+ * Loading/success/failure states are indicated by temporarily replacing the default icon with a spinner or a checkmark/cross icon.
+ */
 export const MutateIconOnlyButton = React.memo(
   MutateIconOnlyButton_
 ) as typeof MutateIconOnlyButton_

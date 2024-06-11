@@ -20,8 +20,21 @@ import { BaseButtonVisualProps, renderBaseButton } from './button-visuals'
 
 export type AsyncButtonProps<T> = BaseButtonVisualProps &
   AsyncButtonBehaviorProps<T> & {
+    /**
+     * Text to display when the async action is in progress.
+     *
+     * Defaults to the button's text.
+     */
     textInProgress?: string
+    /**
+     * Text to display when the async action is successful.
+     *
+     * Defaults to the button's text.
+     */
     textDone?: string
+    /**
+     * If true, the success icon is hidden.
+     */
     hideSuccess?: boolean
   }
 
@@ -138,6 +151,11 @@ const AsyncButton_ = function AsyncButton<T>({
   )
 }
 
+/**
+ * An HTML button that triggers an async action when clicked.
+ *
+ * Loading/success/failure states are indicated with a spinner or a checkmark/cross icon.
+ */
 export const AsyncButton = React.memo(AsyncButton_) as typeof AsyncButton_
 
 const IconContainer = animated(styled.div`

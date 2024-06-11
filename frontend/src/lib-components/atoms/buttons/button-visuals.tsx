@@ -14,18 +14,58 @@ import { BaseProps } from '../../utils'
 
 import { buttonBorderRadius, defaultButtonTextStyle } from './button-commons'
 
+/**
+ * Visual appearance of a button
+ *
+ * button = a normal button. Block-level element
+ * inline = no border, no background, no padding. Inline-level element
+ * link = like inline but looks more like a link. Inline-level element
+ */
 export type ButtonAppearance = 'button' | 'inline' | 'link'
 
+/**
+ * Visual order of the icon and text of a button.
+ *
+ * icon-text = icon on the left, text on the right
+ * text-icon = text on the left, icon on the right
+ */
 export type ButtonOrder = 'icon-text' | 'text-icon'
 
+/**
+ * Visual/semantic props for a button
+ */
 export type BaseButtonVisualProps = {
+  /**
+   * Text to be displayed on the button
+   */
   text: string
+  /**
+   * An ARIA label that should be used as the "accessible name" instead of the text
+   */
   'aria-label'?: string
+  /**
+   * Icon to be displayed on the button
+   */
   icon?: IconDefinition
+  /**
+   * Visual appearance of the button
+   */
   appearance?: ButtonAppearance
+  /**
+   * Visual order of the icon and text
+   */
   order?: ButtonOrder
+  /**
+   * HTML type of the button
+   */
   type?: 'button' | 'submit'
+  /**
+   * If true, the button is rendered using "primary colors"
+   */
   primary?: boolean
+  /**
+   * If true, the button is disabled and can't be clicked
+   */
   disabled?: boolean
 } & BaseProps
 

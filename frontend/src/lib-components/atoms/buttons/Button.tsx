@@ -9,9 +9,17 @@ import { useThrottledEventHandler } from './button-commons'
 import { BaseButtonVisualProps, renderBaseButton } from './button-visuals'
 
 export type ButtonProps = BaseButtonVisualProps & {
+  /**
+   * Function to call when the button is clicked.
+   *
+   * Multiple fast clicks (e.g. double-clicks) are prevented using a throttling mechanism.
+   */
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
 
+/**
+ * An HTML button
+ */
 export const Button = React.memo(function Button({
   onClick,
   ...props

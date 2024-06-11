@@ -7,20 +7,23 @@ import React from 'react'
 
 import { useThrottledEventHandler } from './button-commons'
 import {
-  IconOnlyButtonVisualProps,
-  renderIconOnlyButton
+  BaseIconOnlyButtonVisualProps,
+  renderBaseIconOnlyButton
 } from './icon-only-button-visuals'
 
-export type IconOnlyButtonProps = IconOnlyButtonVisualProps & {
+export type IconOnlyButtonProps = BaseIconOnlyButtonVisualProps & {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
 
+/**
+ * An HTML button that looks like an icon.
+ */
 export const IconOnlyButton = React.memo(function IconOnlyButton({
   onClick,
   ...props
 }: IconOnlyButtonProps) {
   const handleOnClick = useThrottledEventHandler(onClick)
-  return renderIconOnlyButton(props, handleOnClick, (icon) => (
+  return renderBaseIconOnlyButton(props, handleOnClick, (icon) => (
     <FontAwesomeIcon icon={icon} />
   ))
 })

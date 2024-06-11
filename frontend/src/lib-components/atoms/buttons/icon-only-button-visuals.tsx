@@ -14,6 +14,62 @@ import { diameterByIconSize, IconSize } from '../icon-size'
 
 type PredefinedColor = 'default' | 'gray' | 'white'
 
+/**
+ * Visual/semantic props for an icon-only button
+ */
+export type BaseIconOnlyButtonVisualProps = {
+  /**
+   * Icon to be displayed in the button
+   */
+  icon: IconDefinition
+  /**
+   * HTML type of the button
+   */
+  type?: 'button' | 'submit'
+  /**
+   * If true, the button is disabled and can't be clicked
+   */
+  disabled?: boolean
+  /**
+   * Size of the icon
+   */
+  size?: IconSize | undefined
+  /**
+   * Selects one of the predefined color themes
+   */
+  color?: PredefinedColor
+} & BaseProps &
+  ({ 'aria-label': string } | { 'aria-labelledby': string })
+
+export const renderBaseIconOnlyButton = (
+  {
+    icon,
+    type = 'button',
+    disabled,
+    size = 's',
+    color = 'default',
+    className,
+    ...props
+  }: BaseIconOnlyButtonVisualProps & {
+    'data-status'?: string
+    'aria-busy'?: boolean
+  },
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
+  children: (icon: IconDefinition, size: IconSize) => React.ReactNode
+) => (
+  <StyledButton
+    type={type}
+    disabled={disabled}
+    className={classNames(className, { disabled })}
+    $size={size}
+    $color={color}
+    onClick={onClick}
+    {...props}
+  >
+    {children(icon, size)}
+  </StyledButton>
+)
+
 type CssColors = {
   base: string
   hover: string
@@ -87,41 +143,3 @@ const StyledButton = styled.button<{
     color: ${(p) => p.theme.colors.grayscale.g35};
   }
 `
-
-export type IconOnlyButtonVisualProps = {
-  icon: IconDefinition
-  type?: 'button' | 'submit'
-  disabled?: boolean
-  size?: IconSize | undefined
-  color?: PredefinedColor
-} & BaseProps &
-  ({ 'aria-label': string } | { 'aria-labelledby': string })
-
-export const renderIconOnlyButton = (
-  {
-    icon,
-    type = 'button',
-    disabled,
-    size = 's',
-    color = 'default',
-    className,
-    ...props
-  }: IconOnlyButtonVisualProps & {
-    'data-status'?: string
-    'aria-busy'?: boolean
-  },
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
-  children: (icon: IconDefinition, size: IconSize) => React.ReactNode
-) => (
-  <StyledButton
-    type={type}
-    disabled={disabled}
-    className={classNames(className, { disabled })}
-    $size={size}
-    $color={color}
-    onClick={onClick}
-    {...props}
-  >
-    {children(icon, size)}
-  </StyledButton>
-)
