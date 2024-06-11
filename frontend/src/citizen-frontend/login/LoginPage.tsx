@@ -7,6 +7,7 @@ import React, { useMemo, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { useQueryResult } from 'lib-common/query'
 import LinkWrapperInlineBlock from 'lib-components/atoms/LinkWrapperInlineBlock'
 import Main from 'lib-components/atoms/Main'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
@@ -20,14 +21,17 @@ import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H1, H2, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
-import Footer from './Footer'
-import { useUser } from './auth/state'
-import { useTranslation } from './localization'
-import { getStrongLoginUriWithPath, getWeakLoginUri } from './navigation/const'
+import Footer from '../Footer'
+import { useUser } from '../auth/state'
+import { useTranslation } from '../localization'
+import { getStrongLoginUriWithPath, getWeakLoginUri } from '../navigation/const'
+
+import { systemNotificationsQuery } from './queries'
 
 const ParagraphInfoButton = styled(InfoButton)`
   margin-left: ${defaultMargins.xs};
@@ -61,6 +65,8 @@ export default React.memo(function LoginPage() {
   const [showInfoBoxText1, setShowInfoBoxText1] = useState(false)
   const [showInfoBoxText2, setShowInfoBoxText2] = useState(false)
 
+  const systemNotifications = useQueryResult(systemNotificationsQuery())
+
   if (user) {
     return <Navigate to="/" replace />
   }
@@ -78,6 +84,18 @@ export default React.memo(function LoginPage() {
           <ContentArea opaque>
             <H1 noMargin>{i18n.loginPage.title}</H1>
           </ContentArea>
+          {systemNotifications.isSuccess &&
+            systemNotifications.value.notification && (
+              <ContentArea opaque>
+                <AlertBox
+                  title={i18n.loginPage.systemNotification}
+                  message={systemNotifications.value.notification.text}
+                  wide
+                  noMargin
+                  data-qa="system-notification"
+                />
+              </ContentArea>
+            )}
           <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.login.title}</H2>
             <Gap size="m" />

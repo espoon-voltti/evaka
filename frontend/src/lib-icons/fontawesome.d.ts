@@ -131,6 +131,7 @@ declare module 'Icons' {
   const fasChild: IconDefinition
   const fasCommentAltLines: IconDefinition
   const fasEnvelope: IconDefinition
+  const fasExclamation: IconDefinition
   const fasExclamationTriangle: IconDefinition
   const fasInfo: IconDefinition
   const fasMapMarkerAlt: IconDefinition

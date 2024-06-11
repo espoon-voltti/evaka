@@ -318,7 +318,9 @@ sealed interface Action {
         READ_NON_SSN_CHILDREN_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
         VARDA_OPERATIONS(HasGlobalRole(ADMIN)),
         CREATE_PRESCHOOL_TERM(HasGlobalRole(ADMIN)),
-        CREATE_CLUB_TERM(HasGlobalRole(ADMIN));
+        CREATE_CLUB_TERM(HasGlobalRole(ADMIN)),
+        READ_SYSTEM_NOTIFICATIONS(HasGlobalRole(ADMIN)),
+        UPDATE_SYSTEM_NOTIFICATION(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

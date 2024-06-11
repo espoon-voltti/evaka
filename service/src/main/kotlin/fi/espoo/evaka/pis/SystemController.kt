@@ -201,6 +201,10 @@ class SystemController(
                                     permittedGlobalActions.contains(Action.Global.REPORTS_PAGE),
                                 settings =
                                     permittedGlobalActions.contains(Action.Global.SETTINGS_PAGE),
+                                systemNotifications =
+                                    permittedGlobalActions.contains(
+                                        Action.Global.READ_SYSTEM_NOTIFICATIONS
+                                    ),
                                 unitFeatures =
                                     permittedGlobalActions.contains(
                                         Action.Global.UNIT_FEATURES_PAGE

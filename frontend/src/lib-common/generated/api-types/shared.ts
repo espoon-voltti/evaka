@@ -76,6 +76,7 @@ export interface EmployeeFeatures {
   reports: boolean
   settings: boolean
   submitPatuReport: boolean
+  systemNotifications: boolean
   unitFeatures: boolean
   units: boolean
   vasuTemplates: boolean

@@ -189,6 +189,7 @@ export default {
   },
   loginPage: {
     title: 'Espoon kaupungin varhaiskasvatus',
+    systemNotification: 'Tärkeä tiedote',
     login: {
       title: 'Kirjaudu käyttäjätunnuksella',
       paragraph:
