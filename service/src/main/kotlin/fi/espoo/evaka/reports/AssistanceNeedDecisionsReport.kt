@@ -96,7 +96,7 @@ private fun Database.Read.getDecisionRows(
                 """
 WITH decisions AS (
     SELECT 
-        id, false as preschool, status, sent_for_decision, decision_made, 
+        id, decision_number, false as preschool, status, sent_for_decision, decision_made,
         child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened
     FROM assistance_need_decision ad
     WHERE sent_for_decision IS NOT NULL
@@ -105,13 +105,13 @@ WITH decisions AS (
     UNION ALL
     
     SELECT 
-        id, true as preschool, status, sent_for_decision, decision_made, 
+        id, decision_number, true as preschool, status, sent_for_decision, decision_made,
         child_id, selected_unit, decision_maker_employee_id, decision_maker_has_opened
     FROM assistance_need_preschool_decision apd
     WHERE sent_for_decision IS NOT NULL
     AND (${predicate(idFilterPreschool.forTable("apd"))})
 )
-SELECT ad.id, ad.preschool, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
+SELECT ad.id, ad.decision_number, ad.preschool, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
     care_area.name care_area_name, daycare.name unit_name, decision_made, status,
     (CASE WHEN decision_maker_employee_id = ${bind(userId)} THEN decision_maker_has_opened END) is_opened
 FROM decisions ad
@@ -126,6 +126,7 @@ JOIN care_area ON care_area.id = daycare.care_area_id
 
 data class AssistanceNeedDecisionsReportRow(
     val id: UUID,
+    val decisionNumber: Long,
     val preschool: Boolean,
     val sentForDecision: LocalDate,
     val childName: String,

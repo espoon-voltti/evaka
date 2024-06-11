@@ -46,6 +46,7 @@ export interface AssistanceNeedDecisionsReportRow {
   careAreaName: string
   childName: string
   decisionMade: LocalDate | null
+  decisionNumber: number
   id: UUID
   isOpened: boolean | null
   preschool: boolean

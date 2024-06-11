@@ -157,6 +157,7 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
           <Table>
             <Thead>
               <Tr>
+                <Th>{i18n.reports.assistanceNeedDecisions.decisionNumber}</Th>
                 <SortableTh
                   sorted={
                     sortColumn === 'sentForDecision' ? sortDirection : undefined
@@ -209,6 +210,12 @@ export default React.memo(function AssistanceNeedDecisionsReport() {
                   }
                   data-qa="assistance-need-decision-row"
                 >
+                  <Td data-qa="decision-number">
+                    {(row.preschool
+                      ? i18n.reports.assistanceNeedDecisions.preschoolPrefix
+                      : i18n.reports.assistanceNeedDecisions
+                          .childhoodEducationPrefix) + row.decisionNumber}
+                  </Td>
                   <Td data-qa="sent-for-decision">
                     {row.isOpened === false && (
                       <Highlight data-qa="unopened-indicator" />

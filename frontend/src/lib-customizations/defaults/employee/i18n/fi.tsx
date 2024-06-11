@@ -3518,6 +3518,9 @@ export const fi = {
     assistanceNeedDecisions: {
       title: 'Tuen päätökset',
       description: 'Päätöksen tekijälle lähetetyt tuen päätökset.',
+      decisionNumber: 'Päätösnumero',
+      childhoodEducationPrefix: 'VK ',
+      preschoolPrefix: 'EO ',
       sentToDecisionMaker: 'Lähetetty päätöksen tekijälle',
       decisionMade: 'Päätös tehty',
       status: 'Tila',
