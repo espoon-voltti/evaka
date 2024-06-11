@@ -231,10 +231,18 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Enable discussion reservation surveys
    */
   discussionReservations?: boolean
+
   /**
    * Display Jamix food ordering service related functions
    */
   jamixIntegration?: boolean
+
+  /**
+   * Allow admin to force unpublish document templates.
+   * Do not set in production.
+   * Note the corresponding backend environment variable feature flag.
+   */
+  forceUnpublishDocumentTemplate?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
