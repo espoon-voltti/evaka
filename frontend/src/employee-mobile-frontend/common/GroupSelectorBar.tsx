@@ -10,7 +10,7 @@ import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleDown, faAngleUp, faChevronUp, faSearch } from 'lib-icons'
@@ -33,7 +33,7 @@ const GroupSelectorButtonRow = styled.div`
   padding: 0 ${defaultMargins.s};
 `
 
-const GroupSelectorButton = styled(InlineButton)`
+const GroupSelectorButton = styled(LegacyInlineButton)`
   border: none;
   font-family: Montserrat, sans-serif;
   font-size: 20px;

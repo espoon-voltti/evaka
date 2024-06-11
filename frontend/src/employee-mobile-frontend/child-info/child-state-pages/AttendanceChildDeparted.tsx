@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
@@ -38,7 +38,7 @@ export default React.memo(function AttendanceChildDeparted({
   )
 })
 
-export const ReturnToPresentButton = styled(InlineButton)`
+export const ReturnToPresentButton = styled(LegacyInlineButton)`
   color: ${colors.main.m2};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};

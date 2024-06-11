@@ -12,7 +12,7 @@ import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanc
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -45,7 +45,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
         <FixedSpaceRow justifyContent="space-between">
           <ReturnButton label={i18n.common.return} />
           <FixedSpaceRow>
-            <InlineButton
+            <LegacyInlineButton
               icon={faArrowDownToLine}
               text={i18n.common.download}
               onClick={() => {

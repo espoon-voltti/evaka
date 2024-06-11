@@ -7,7 +7,7 @@ import styled, { css } from 'styled-components'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
 import {
@@ -105,7 +105,7 @@ export const DailyNotes = styled.div`
   display: flex;
 `
 
-export const BackButtonInline = styled(InlineButton)`
+export const BackButtonInline = styled(LegacyInlineButton)`
   color: ${colors.main.m1};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};

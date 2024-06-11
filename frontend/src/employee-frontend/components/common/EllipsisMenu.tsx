@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
 import { faEllipsisVAlt } from 'lib-icons'
@@ -102,7 +102,7 @@ const Menu = styled.div`
   cursor: auto;
 `
 
-const MenuItem = styled(InlineButton)`
+const MenuItem = styled(LegacyInlineButton)`
   color: ${({ theme }) => theme.colors.grayscale.g100};
   font-weight: 400;
   white-space: nowrap;

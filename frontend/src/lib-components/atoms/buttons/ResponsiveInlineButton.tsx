@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { tabletMin } from '../../breakpoints'
 
-import InlineButton, { InlineButtonProps } from './InlineButton'
+import LegacyInlineButton, { InlineButtonProps } from './LegacyInlineButton'
 
 interface ResponsiveInlineButtonProps extends InlineButtonProps {
   breakpoint?: string
@@ -25,7 +25,7 @@ export default React.memo(function ResponsiveInlineButton({
   ...props
 }: ResponsiveInlineButtonProps) {
   return (
-    <InlineButton
+    <LegacyInlineButton
       text={<ResponsiveText breakpoint={breakpoint}>{text}</ResponsiveText>}
       {...props}
     />

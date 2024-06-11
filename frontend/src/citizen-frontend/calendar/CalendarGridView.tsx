@@ -23,7 +23,7 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   ExpandingInfoBox,
@@ -117,7 +117,7 @@ export default React.memo(function CalendarGridView({
       <StickyBottomBar>
         <ButtonContainer>
           {questionnaireAvailable && (
-            <InlineButton
+            <LegacyInlineButton
               onClick={onReportHolidaysClicked}
               text={
                 <ReportHolidayLabel

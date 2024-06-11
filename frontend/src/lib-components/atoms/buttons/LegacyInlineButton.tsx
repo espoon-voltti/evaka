@@ -72,7 +72,7 @@ export interface InlineButtonProps extends BaseProps {
 /**
  * @deprecated use Button and appearance="inline" instead
  */
-const InlineButton = React.forwardRef(function InlineButton(
+const LegacyInlineButton = React.forwardRef(function InlineButton(
   {
     className,
     'data-qa': dataQa,
@@ -110,6 +110,6 @@ const InlineButton = React.forwardRef(function InlineButton(
   )
 })
 
-InlineButton.displayName = 'ForwardedRef(InlineButton)'
+LegacyInlineButton.displayName = 'ForwardedRef(LegacyInlineButton)'
 
-export default InlineButton
+export default LegacyInlineButton

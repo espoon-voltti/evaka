@@ -29,7 +29,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -248,7 +248,7 @@ export function SingleThreadView({
   return (
     <ThreadContainer>
       <ContentArea opaque>
-        <InlineButton
+        <LegacyInlineButton
           icon={faAngleLeft}
           text={i18n.common.goBack}
           onClick={goBack}

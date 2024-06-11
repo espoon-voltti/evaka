@@ -10,7 +10,7 @@ import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -80,7 +80,7 @@ const DownloadButton = React.memo(function DownloadButton({
   const defaultBehaviour = () => window.print()
   return (
     <DownloadButtonWrapper margin={margin}>
-      <InlineButton
+      <LegacyInlineButton
         icon={faArrowDownToLine}
         text={label}
         onClick={onClick ?? defaultBehaviour}
@@ -164,7 +164,7 @@ export default React.memo(function VasuPage() {
                             ? t.children.vasu.givePermissionToShareTitleVasu
                             : t.children.vasu.givePermissionToShareTitleLeops}
                         </Label>
-                        <InlineButton
+                        <LegacyInlineButton
                           onClick={togglePermissionExpanded}
                           text={
                             permissionExpanded ? t.common.hide : t.common.show
