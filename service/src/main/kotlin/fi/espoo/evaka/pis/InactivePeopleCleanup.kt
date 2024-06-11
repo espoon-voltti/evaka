@@ -50,6 +50,9 @@ WITH people_with_no_archive_data AS (
         SELECT 1 FROM message_content
         WHERE message_content.author_id = (SELECT id FROM message_account a WHERE a.person_id = person.id)
     )
+    AND NOT EXISTS (SELECT 1 FROM assistance_need_decision WHERE assistance_need_decision.child_id = person.id)
+    AND NOT EXISTS (SELECT 1 FROM assistance_need_decision_guardian WHERE assistance_need_decision_guardian.person_id = person.id)
+    AND NOT EXISTS (SELECT 1 FROM assistance_need_preschool_decision WHERE assistance_need_preschool_decision.child_id = person.id)
 )
 DELETE FROM person p
 WHERE id IN (SELECT id FROM people_with_no_archive_data)
