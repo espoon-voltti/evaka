@@ -74,10 +74,12 @@ export default React.memo(function TopBar({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const notificationResult = useQueryResult(currentSystemNotificationQuery())
-
   // only shown on main screen
   const hideSystemNotification = invertedColors
+
+  const notificationResult = useQueryResult(currentSystemNotificationQuery(), {
+    enabled: !hideSystemNotification
+  })
 
   const [showNotificationModal, setShowNotificationModal] = useState(false)
 

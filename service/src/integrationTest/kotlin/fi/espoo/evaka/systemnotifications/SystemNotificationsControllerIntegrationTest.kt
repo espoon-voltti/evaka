@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -83,16 +84,16 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
             citizenNotification,
             getCurrentSystemNotificationCitizen(beforeValidTo).notification
         )
-        assertEquals(null, getCurrentSystemNotificationCitizen(afterValidTo).notification)
+        assertNull(getCurrentSystemNotificationCitizen(afterValidTo).notification)
         assertEquals(
             employeeNotification,
             getCurrentSystemNotificationEmployeeMobile(beforeValidTo).notification
         )
-        assertEquals(null, getCurrentSystemNotificationEmployeeMobile(afterValidTo).notification)
+        assertNull(getCurrentSystemNotificationEmployeeMobile(afterValidTo).notification)
 
         deleteSystemNotification(now, SystemNotificationTargetGroup.CITIZENS)
         assertEquals(listOf(employeeNotification), getAllSystemNotifications(now))
-        assertEquals(null, getCurrentSystemNotificationCitizen(beforeValidTo).notification)
+        assertNull(getCurrentSystemNotificationCitizen(beforeValidTo).notification)
     }
 
     private fun putSystemNotification(now: HelsinkiDateTime, body: SystemNotification) =
