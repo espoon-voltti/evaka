@@ -29,7 +29,7 @@ COPY --from=customizations . src/lib-customizations/${EVAKA_CUSTOMIZATIONS}
 ARG ICONS=free
 ARG SENTRY_PUBLISH_ENABLED="false"
 ARG SENTRY_AUTH_TOKEN=""
-ARG SENTRY_ORG="espoon-voltti"
+ARG SENTRY_ORG="espoo-voltti"
 ARG build=none
 ARG commit=none
 
