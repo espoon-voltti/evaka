@@ -1,4 +1,4 @@
---- ../../../../../../../../update/IdpReviewProfileAuthenticator.java.24.0.4.orig	2024-05-20 16:45:04.316660473 +0300
+--- ../../../../../../../../update/IdpReviewProfileAuthenticator.java.24.0.5.orig	2024-06-11 16:22:29.428541675 +0300
 +++ EvakaReviewProfileAuthenticator.java	2024-04-30 14:50:02.623872698 +0300
 @@ -15,7 +15,7 @@
   * limitations under the License.
