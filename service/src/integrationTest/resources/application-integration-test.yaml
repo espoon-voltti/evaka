@@ -82,6 +82,8 @@ evaka:
           location: classpath:xroad/trustStore.jks
           password: password
           type: JKS
+  not_for_prod:
+    force_unpublish_document_template_enabled: true
   jwt:
     public_keys_url: classpath:evaka-integration-test/jwks.json
   max_attachments_per_user: 3

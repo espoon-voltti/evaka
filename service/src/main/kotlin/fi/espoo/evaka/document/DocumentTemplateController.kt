@@ -6,6 +6,7 @@ package fi.espoo.evaka.document
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.placement.getChildPlacementUnitLanguage
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -35,7 +37,10 @@ import org.springframework.web.bind.annotation.RestController
     "/document-templates", // deprecated
     "/employee/document-templates"
 )
-class DocumentTemplateController(private val accessControl: AccessControl) {
+class DocumentTemplateController(
+    private val accessControl: AccessControl,
+    private val evakaEnv: EvakaEnv
+) {
     @PostMapping
     fun createTemplate(
         db: Database,
@@ -323,6 +328,9 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId
     ) {
+        if (!evakaEnv.forceUnpublishDocumentTemplateEnabled) {
+            throw Forbidden("endpoint not enabled in this environment")
+        }
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
