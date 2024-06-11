@@ -456,29 +456,28 @@ data class UnitChildrenCapacityFactors(
 )
 
 fun Database.Read.getUnitChildrenCapacities(
-    unitId: DaycareId,
+    childIds: Set<ChildId>,
     date: LocalDate
 ): List<UnitChildrenCapacityFactors> {
     return createQuery {
             sql(
                 """
 SELECT
-    ch.id child_id,
-    MAX(COALESCE(an.capacity_factor, 1)) assistance_need_factor,
-    MAX(CASE
+    ch.id AS child_id,
+    COALESCE(an.capacity_factor, 1) AS assistance_need_factor,
+    CASE
         WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
-        WHEN extract(YEARS FROM age(${bind(date)}, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
+        WHEN extract(YEARS FROM age(${bind(date)}, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y, 1.75)
         ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient, 1)
-    END) AS service_need_factor
-FROM realized_placement_one(${bind(date)}) pl
-JOIN daycare u ON u.id = pl.unit_id
-JOIN person ch ON ch.id = pl.child_id
+    END AS service_need_factor
+FROM person ch 
+LEFT JOIN realized_placement_one(${bind(date)}) pl ON ch.id = pl.child_id
+LEFT JOIN daycare u ON u.id = pl.unit_id
 LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 LEFT JOIN service_need_option sno on sn.option_id = sno.id
 LEFT JOIN service_need_option default_sno on pl.placement_type = default_sno.valid_placement_type AND default_sno.default_option
 LEFT JOIN assistance_factor an ON an.child_id = ch.id AND an.valid_during @> ${bind(date)}
-WHERE pl.unit_id = ${bind(unitId)}
-GROUP BY ch.id
+WHERE ch.id = ANY(${bind(childIds)})
 """
             )
         }
