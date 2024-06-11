@@ -312,6 +312,32 @@ class DocumentTemplateController(private val accessControl: AccessControl) {
             .also { Audit.DocumentTemplatePublish.log(targetId = AuditId(templateId)) }
     }
 
+    /**
+     * Unpublishes a template and deletes all related child documents and archived processes. Must
+     * NOT be enabled in production environment.
+     */
+    @PutMapping("/{templateId}/force-unpublish")
+    fun forceUnpublishTemplate(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable templateId: DocumentTemplateId
+    ) {
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.DocumentTemplate.FORCE_UNPUBLISH,
+                        templateId
+                    )
+                    tx.forceUnpublishTemplate(templateId)
+                }
+            }
+            .also { Audit.DocumentTemplateForceUnpublish.log(targetId = AuditId(templateId)) }
+    }
+
     @DeleteMapping("/{templateId}")
     fun deleteDraftTemplate(
         db: Database,

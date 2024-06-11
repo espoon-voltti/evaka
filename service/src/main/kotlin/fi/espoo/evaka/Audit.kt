@@ -226,6 +226,7 @@ enum class Audit(
     DocumentTemplateCopy,
     DocumentTemplateCreate,
     DocumentTemplateDelete,
+    DocumentTemplateForceUnpublish,
     DocumentTemplatePublish,
     DocumentTemplateRead,
     DocumentTemplateUpdateBasics,

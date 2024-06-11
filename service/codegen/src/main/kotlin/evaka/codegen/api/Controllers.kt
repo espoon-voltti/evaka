@@ -389,6 +389,7 @@ private val knownLegacyPaths =
         "/document-templates/{templateId}/content",
         "/document-templates/{templateId}/duplicate",
         "/document-templates/{templateId}/export",
+        "/document-templates/{templateId}/force-unpublish",
         "/document-templates/{templateId}/publish",
         "/document-templates/{templateId}/validity",
         "/employee",

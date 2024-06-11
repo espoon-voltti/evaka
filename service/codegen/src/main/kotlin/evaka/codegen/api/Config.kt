@@ -158,6 +158,7 @@ private val plannedEndpoints =
         "/employee/document-templates/{templateId}/content",
         "/employee/document-templates/{templateId}/duplicate",
         "/employee/document-templates/{templateId}/export",
+        "/employee/document-templates/{templateId}/force-unpublish",
         "/employee/document-templates/{templateId}/publish",
         "/employee/document-templates/{templateId}/validity",
         "/employee/employees",
