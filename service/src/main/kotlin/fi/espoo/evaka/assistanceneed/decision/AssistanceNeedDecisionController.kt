@@ -7,6 +7,10 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -80,7 +84,33 @@ class AssistanceNeedDecisionController(
                             )
                     }
 
-                    tx.insertAssistanceNeedDecision(childId, decision)
+                    val now = clock.now()
+                    val processId =
+                        featureConfig.archiveMetadataConfigs[
+                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE]
+                            ?.let { config ->
+                                tx.insertProcess(
+                                        processDefinitionNumber = config.processDefinitionNumber,
+                                        year = now.year,
+                                        organization = featureConfig.archiveMetadataOrganization,
+                                        archiveDurationMonths = config.archiveDurationMonths
+                                    )
+                                    .id
+                                    .also { processId ->
+                                        tx.insertProcessHistoryRow(
+                                            processId = processId,
+                                            state = ArchivedProcessState.INITIAL,
+                                            now = now,
+                                            userId = user.evakaUserId
+                                        )
+                                    }
+                            }
+
+                    tx.insertAssistanceNeedDecision(
+                        childId = childId,
+                        data = decision,
+                        processId = processId
+                    )
                 }
             }
             .also { assistanceNeedDecision ->

@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistanceneed.preschooldecision
 
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.UnreadAssistanceNeedDecisionItem
+import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
@@ -20,13 +21,14 @@ import java.time.LocalDate
 
 fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
     childId: ChildId,
+    processId: ArchivedProcessId?,
     language: OfficialLanguage = OfficialLanguage.FI
 ): AssistanceNeedPreschoolDecision =
     createQuery {
             sql(
                 """
-                INSERT INTO assistance_need_preschool_decision (child_id, language)
-                VALUES (${bind(childId)}, ${bind(language)})
+                INSERT INTO assistance_need_preschool_decision (child_id, language, process_id)
+                VALUES (${bind(childId)}, ${bind(language)}, ${bind(processId)})
                 RETURNING id
                 """
             )

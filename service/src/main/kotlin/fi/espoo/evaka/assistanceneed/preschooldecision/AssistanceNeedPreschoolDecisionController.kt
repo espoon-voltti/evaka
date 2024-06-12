@@ -10,6 +10,10 @@ import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -54,7 +58,29 @@ class AssistanceNeedPreschoolDecisionController(
                         childId
                     )
 
-                    tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId)
+                    val now = clock.now()
+                    val processId =
+                        featureConfig.archiveMetadataConfigs[
+                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
+                            ?.let { config ->
+                                tx.insertProcess(
+                                        processDefinitionNumber = config.processDefinitionNumber,
+                                        year = now.year,
+                                        organization = featureConfig.archiveMetadataOrganization,
+                                        archiveDurationMonths = config.archiveDurationMonths
+                                    )
+                                    .id
+                                    .also { processId ->
+                                        tx.insertProcessHistoryRow(
+                                            processId = processId,
+                                            state = ArchivedProcessState.INITIAL,
+                                            now = now,
+                                            userId = user.evakaUserId
+                                        )
+                                    }
+                            }
+
+                    tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId, processId)
                 }
             }
             .also { assistanceNeedDecision ->
