@@ -100,6 +100,28 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
         }
         .exactlyOneOrNull()
 
+fun Database.Read.getArchiveProcessByAssistanceNeedDecisionId(
+    decisionId: AssistanceNeedDecisionId
+): ArchivedProcess? {
+    return createQuery {
+            sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.let { processId -> getProcess(processId) }
+}
+
+fun Database.Read.getArchiveProcessByAssistanceNeedPreschoolDecisionId(
+    decisionId: AssistanceNeedPreschoolDecisionId
+): ArchivedProcess? {
+    return createQuery {
+            sql(
+                "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
+            )
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.let { processId -> getProcess(processId) }
+}
+
 fun Database.Transaction.deleteProcessById(processId: ArchivedProcessId) {
     execute { sql("DELETE FROM archived_process WHERE id = ${bind(processId)}") }
 }

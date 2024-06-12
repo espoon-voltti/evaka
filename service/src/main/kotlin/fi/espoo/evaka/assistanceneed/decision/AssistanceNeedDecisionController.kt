@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.deleteProcessByAssistanceNeedDecisionId
+import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedDecisionId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
@@ -246,6 +247,17 @@ class AssistanceNeedDecisionController(
 
                     if (decision.child?.id == null) {
                         throw BadRequest("The decision must have a child")
+                    }
+
+                    tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also { process ->
+                        if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
+                            tx.insertProcessHistoryRow(
+                                processId = process.id,
+                                state = ArchivedProcessState.PREPARATION,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
                     }
 
                     tx.updateAssistanceNeedDecision(

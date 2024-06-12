@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.deleteProcessByAssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
@@ -171,6 +172,17 @@ class AssistanceNeedPreschoolDecisionController(
 
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
                     if (!decision.isValid) throw BadRequest("Decision form is not valid")
+
+                    tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(id)?.also { process ->
+                        if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
+                            tx.insertProcessHistoryRow(
+                                processId = process.id,
+                                state = ArchivedProcessState.PREPARATION,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
+                    }
 
                     tx.updateAssistanceNeedPreschoolDecisionToSent(id, clock.today())
                 }
