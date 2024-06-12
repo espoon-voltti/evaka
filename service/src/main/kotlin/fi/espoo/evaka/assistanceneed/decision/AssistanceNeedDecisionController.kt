@@ -468,6 +468,15 @@ class AssistanceNeedDecisionController(
                     )
 
                     if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                        tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also {
+                            tx.insertProcessHistoryRow(
+                                processId = it.id,
+                                state = ArchivedProcessState.DECIDING,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
+
                         asyncJobRunner.plan(
                             tx,
                             listOf(

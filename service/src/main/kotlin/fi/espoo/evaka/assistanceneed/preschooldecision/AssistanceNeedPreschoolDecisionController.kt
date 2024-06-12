@@ -313,6 +313,15 @@ class AssistanceNeedPreschoolDecisionController(
                     )
 
                     if (decided) {
+                        tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(id)?.also {
+                            tx.insertProcessHistoryRow(
+                                processId = it.id,
+                                state = ArchivedProcessState.DECIDING,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
+
                         asyncJobRunner.plan(
                             tx,
                             listOf(AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id)),
