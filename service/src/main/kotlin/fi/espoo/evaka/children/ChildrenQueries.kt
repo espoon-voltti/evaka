@@ -75,7 +75,7 @@ fun Database.Read.getActivePlacementUnitsForChildren(
                 """
 SELECT unit_id, child_id
 FROM placement
-WHERE child_id = ANY (${bind(childIds)}) AND start_date <= ${bind(today)} AND end_date >= ${bind(today)}
+WHERE child_id = ANY (${bind(childIds)}) AND daterange(start_date, end_date, '[]') @> ${bind(today)}
 """
             )
         }

@@ -106,11 +106,15 @@ class JamixService(
         if (client == null) error("Cannot sync diet list: JamixEnv is not configured")
         val warningEmails =
             fetchAndUpdateJamixDiets(client, db, clock, emailEnv.sender(Language.fi))
-        fetchAndUpdateJamixTextures(client, db)
-        warningEmails.forEach { emailClient.send(it) }
+        try {
+            fetchAndUpdateJamixTextures(client, db)
+        } finally {
+            warningEmails.forEach { emailClient.send(it) }
+        }
     }
 }
 
+/** Throws an IllegalStateException if Jamix returns an empty diet list. */
 fun fetchAndUpdateJamixDiets(
     client: JamixClient,
     db: Database.Connection,
@@ -193,6 +197,7 @@ private fun createEmailBodyForUnit(
         emailBodyLines.joinToString("\n")
 }
 
+/** Throws an IllegalStateException if Jamix returns an empty texture list. */
 fun fetchAndUpdateJamixTextures(
     client: JamixClient,
     db: Database.Connection,
