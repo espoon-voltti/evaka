@@ -33,6 +33,8 @@ import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuReportingService
+import fi.espoo.evaka.shared.ArchiveProcessConfig
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -191,7 +193,20 @@ class EspooConfig {
             applyPlacementUnitFromDecision = false,
             preferredStartRelativeApplicationDueDate = false,
             fiveYearsOldDaycareEnabled = true,
-            archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus"
+            archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
+            archiveMetadataConfigs =
+                mapOf(
+                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
+                        ArchiveProcessConfig(
+                            processDefinitionNumber = "todo-1",
+                            archiveDurationMonths = 120
+                        ),
+                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
+                        ArchiveProcessConfig(
+                            processDefinitionNumber = "todo-2",
+                            archiveDurationMonths = 120
+                        ),
+                )
         )
 
     @Bean

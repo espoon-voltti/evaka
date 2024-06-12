@@ -140,4 +140,20 @@ data class FeatureConfig(
 
     /** The name of the organization used in archived metadata */
     val archiveMetadataOrganization: String,
+
+    /** Configs for enabled archive metadata processes */
+    val archiveMetadataConfigs: Map<ArchiveProcessType, ArchiveProcessConfig>
+)
+
+enum class ArchiveProcessType {
+    APPLICATION_DAYCARE,
+    APPLICATION_PRESCHOOL,
+    APPLICATION_CLUB,
+    ASSISTANCE_NEED_DECISION_DAYCARE,
+    ASSISTANCE_NEED_DECISION_PRESCHOOL
+}
+
+data class ArchiveProcessConfig(
+    val processDefinitionNumber: String,
+    val archiveDurationMonths: Int
 )

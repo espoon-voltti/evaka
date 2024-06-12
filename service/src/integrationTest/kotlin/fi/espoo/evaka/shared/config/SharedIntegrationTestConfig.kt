@@ -24,6 +24,8 @@ import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
+import fi.espoo.evaka.shared.ArchiveProcessConfig
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -227,5 +229,18 @@ val testFeatureConfig =
         applyPlacementUnitFromDecision = false,
         preferredStartRelativeApplicationDueDate = false,
         fiveYearsOldDaycareEnabled = true,
-        archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus"
+        archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
+        archiveMetadataConfigs =
+            mapOf(
+                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
+                    ArchiveProcessConfig(
+                        processDefinitionNumber = "123.456.a",
+                        archiveDurationMonths = 120
+                    ),
+                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
+                    ArchiveProcessConfig(
+                        processDefinitionNumber = "123.456.b",
+                        archiveDurationMonths = 120
+                    ),
+            )
     )
