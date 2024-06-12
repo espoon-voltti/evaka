@@ -35,14 +35,17 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import LabelValueList from '../../common/LabelValueList'
 import {
+  forceUnpublishDocumentTemplateMutation,
   publishDocumentTemplateMutation,
   updateDocumentTemplateBasicsMutation,
   updateDocumentTemplateContentMutation
@@ -147,6 +150,26 @@ export default React.memo(function TemplateContentEditor({
             text={i18n.common.goBack}
             onClick={() => navigate('/document-templates')}
           />
+
+          {featureFlags.forceUnpublishDocumentTemplate &&
+            template.published && (
+              <ConfirmedMutation
+                buttonStyle="BUTTON"
+                buttonText={
+                  i18n.documentTemplates.templateEditor.forceUnpublish.button
+                }
+                confirmationTitle={
+                  i18n.documentTemplates.templateEditor.forceUnpublish
+                    .confirmationTitle
+                }
+                confirmationText={
+                  i18n.documentTemplates.templateEditor.forceUnpublish
+                    .confirmationText
+                }
+                mutation={forceUnpublishDocumentTemplateMutation}
+                onClick={() => ({ templateId: template.id })}
+              />
+            )}
 
           {!readOnly && (
             <FixedSpaceRow alignItems="center">

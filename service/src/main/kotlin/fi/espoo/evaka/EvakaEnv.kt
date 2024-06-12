@@ -28,6 +28,7 @@ data class EvakaEnv(
     val vtjEnabled: Boolean,
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
+    val forceUnpublishDocumentTemplateEnabled: Boolean,
     val awsRegion: Region,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
@@ -56,6 +57,9 @@ data class EvakaEnv(
                         ?: false,
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
+                forceUnpublishDocumentTemplateEnabled =
+                    env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
+                        ?: false,
                 awsRegion = Region.of(env.lookup("evaka.aws.region", "aws.region")),
                 asyncJobRunnerDisabled =
                     env.lookup("evaka.async_job_runner.disable_runner") ?: false,

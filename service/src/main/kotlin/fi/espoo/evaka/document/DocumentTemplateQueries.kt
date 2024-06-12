@@ -137,6 +137,29 @@ fun Database.Transaction.publishTemplate(id: DocumentTemplateId) {
         .updateExactlyOne()
 }
 
+// not for production use
+fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
+    execute {
+        sql(
+            """
+        WITH documents_to_delete AS (
+            SELECT id, process_id FROM child_document
+            WHERE template_id = ${bind(id)}
+            FOR UPDATE 
+        ), delete_processes AS (
+            DELETE FROM archived_process ap
+            WHERE ap.id IN (SELECT d2d.process_id FROM documents_to_delete d2d)
+        ), delete_documents AS (
+            DELETE FROM child_document cd WHERE cd.id IN (SELECT d2d.id FROM documents_to_delete d2d)
+        )
+        UPDATE document_template
+        SET published = false
+        WHERE id = ${bind(id)}
+    """
+        )
+    }
+}
+
 fun Database.Transaction.deleteDraftTemplate(id: DocumentTemplateId) {
     createUpdate {
             sql(

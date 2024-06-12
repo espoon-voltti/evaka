@@ -65,6 +65,8 @@ evaka:
         trust_store:
           password: password
           type: JKS
+  not_for_prod:
+    force_unpublish_document_template_enabled: true
   jwt:
     public_keys_url: classpath:local-development/jwks.json
   web_push:

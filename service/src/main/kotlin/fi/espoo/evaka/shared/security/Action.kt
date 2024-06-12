@@ -1408,7 +1408,8 @@ sealed interface Action {
         READ(HasGlobalRole(ADMIN)),
         COPY(HasGlobalRole(ADMIN)),
         UPDATE(HasGlobalRole(ADMIN)),
-        DELETE(HasGlobalRole(ADMIN));
+        DELETE(HasGlobalRole(ADMIN)),
+        FORCE_UNPUBLISH(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

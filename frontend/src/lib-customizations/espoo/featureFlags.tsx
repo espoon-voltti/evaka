@@ -40,7 +40,8 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     discussionReservations: true,
-    jamixIntegration: true
+    jamixIntegration: true,
+    forceUnpublishDocumentTemplate: true
   },
   staging: {
     citizenShiftCareAbsence: true,
@@ -69,7 +70,8 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     discussionReservations: true,
-    jamixIntegration: true
+    jamixIntegration: true,
+    forceUnpublishDocumentTemplate: true
   },
   prod: {
     citizenShiftCareAbsence: true,
@@ -97,7 +99,8 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    discussionReservations: false
+    discussionReservations: false,
+    forceUnpublishDocumentTemplate: false
   }
 }
 

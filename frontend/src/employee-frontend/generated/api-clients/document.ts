@@ -98,6 +98,22 @@ export async function exportTemplate(
 
 
 /**
+* Generated from fi.espoo.evaka.document.DocumentTemplateController.forceUnpublishTemplate
+*/
+export async function forceUnpublishTemplate(
+  request: {
+    templateId: UUID
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/document-templates/${request.templateId}/force-unpublish`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
 * Generated from fi.espoo.evaka.document.DocumentTemplateController.getActiveTemplates
 */
 export async function getActiveTemplates(

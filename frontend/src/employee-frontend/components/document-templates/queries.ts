@@ -9,6 +9,7 @@ import {
   createTemplate,
   deleteDraftTemplate,
   duplicateTemplate,
+  forceUnpublishTemplate,
   getActiveTemplates,
   getTemplate,
   getTemplates,
@@ -85,6 +86,14 @@ export const updateDocumentTemplateValidityMutation = mutation({
 
 export const publishDocumentTemplateMutation = mutation({
   api: publishTemplate,
+  invalidateQueryKeys: (arg) => [
+    queryKeys.documentTemplateSummaries(),
+    queryKeys.documentTemplate(arg.templateId)
+  ]
+})
+
+export const forceUnpublishDocumentTemplateMutation = mutation({
+  api: forceUnpublishTemplate,
   invalidateQueryKeys: (arg) => [
     queryKeys.documentTemplateSummaries(),
     queryKeys.documentTemplate(arg.templateId)

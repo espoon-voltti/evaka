@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.CheckboxGroupQuestionOption
 import fi.espoo.evaka.document.DocumentTemplate
 import fi.espoo.evaka.document.DocumentTemplateContent
+import fi.espoo.evaka.document.DocumentTemplateController
 import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.Question
 import fi.espoo.evaka.document.RadioButtonGroupQuestionOption
@@ -59,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired lateinit var controller: ChildDocumentController
+    @Autowired lateinit var templateController: DocumentTemplateController
     @Autowired lateinit var metadataController: ProcessMetadataController
 
     lateinit var areaId: AreaId
@@ -316,6 +318,48 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         controller.deleteDraftDocument(dbInstance(), employeeUser, clock5, documentId)
         assertNull(db.read { it.getProcess(metadata.process.id) })
+    }
+
+    @Test
+    fun `force unpublishing a template with documents and metadata`() {
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser,
+                clock,
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdHojks)
+            )
+        assertNotNull(getChildDocumentMetadata(documentId).data)
+
+        templateController.forceUnpublishTemplate(
+            dbInstance(),
+            employeeUser,
+            clock,
+            templateIdHojks
+        )
+
+        assertFalse(
+            templateController
+                .getTemplate(dbInstance(), employeeUser, clock, templateIdHojks)
+                .published
+        )
+        assertEquals(
+            0,
+            controller.getDocuments(dbInstance(), employeeUser, clock, testChild_1.id).size
+        )
+        assertEquals(
+            0,
+            db.read {
+                it.createQuery { sql("SELECT count(*) FROM archived_process") }.exactlyOne<Int>()
+            }
+        )
+        assertEquals(
+            0,
+            db.read {
+                it.createQuery { sql("SELECT count(*) FROM archived_process_history") }
+                    .exactlyOne<Int>()
+            }
+        )
     }
 
     @Test

@@ -4600,7 +4600,13 @@ export const fi = {
       titleEditQuestion: 'Muokkaa kysymystä',
       moveUp: 'Siirrä ylös',
       moveDown: 'Siirrä alas',
-      readyToPublish: 'Valmis julkaistavaksi'
+      readyToPublish: 'Valmis julkaistavaksi',
+      forceUnpublish: {
+        button: 'Peruuta julkaisu',
+        confirmationTitle: 'Haluatko varmasti perua julkaisun?',
+        confirmationText:
+          'Kaikki tätä lomakepohjaa käyttävät asiakirjat poistetaan.'
+      }
     },
     questionTypes: {
       TEXT: 'Tekstikenttä',
