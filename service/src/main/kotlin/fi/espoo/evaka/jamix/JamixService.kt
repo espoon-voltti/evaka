@@ -108,8 +108,16 @@ class JamixService(
             fetchAndUpdateJamixDiets(client, db, clock, emailEnv.sender(Language.fi))
         try {
             fetchAndUpdateJamixTextures(client, db)
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to sync meal textures from Jamix" }
         } finally {
-            warningEmails.forEach { emailClient.send(it) }
+            warningEmails.forEach { email ->
+                try {
+                    emailClient.send(email)
+                } catch (e: Exception) {
+                    logger.error(e) { "Failed to send warning email" }
+                }
+            }
         }
     }
 }
