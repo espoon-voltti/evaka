@@ -93,7 +93,11 @@ export default React.memo(function PreschoolAbsenceReport() {
   )
 
   const daycareOptions = useMemo(
-    () => units.map((d) => orderBy(d, (item) => item.name)),
+    () =>
+      units.map((d) => {
+        const preschoolUnits = d.filter((u) => u.type.includes('PRESCHOOL'))
+        return orderBy(preschoolUnits, (item) => item.name)
+      }),
     [units]
   )
 
@@ -120,6 +124,8 @@ export default React.memo(function PreschoolAbsenceReport() {
                     selectedItem={selectedUnit}
                     getItemLabel={(item) => item.name}
                     placeholder={i18n.filters.unitPlaceholder}
+                    data-qa="unit-select"
+                    getItemDataQa={({ id }) => `unit-${id}`}
                   />
                 </FlexRow>
               </FilterRow>
@@ -142,6 +148,8 @@ export default React.memo(function PreschoolAbsenceReport() {
                       i18n.reports.preschoolAbsences.filters.preschoolTerm
                         .placeholder
                     }
+                    data-qa="term-select"
+                    getItemDataQa={({ id }) => `term-${id}`}
                   />
                 </FlexRow>
               </FilterRow>
@@ -352,15 +360,15 @@ const PreschoolAbsenceGrid = ({
         <Tbody>
           {report.length > 0 ? (
             report.map((row, rowIndex) => (
-              <Tr key={`${rowIndex}`}>
-                <Td>{row.firstName}</Td>
-                <Td>{row.lastName}</Td>
-                <Td>
+              <Tr key={`${rowIndex}`} data-qa="preschool-absence-row">
+                <Td data-qa="first-name-column">{row.firstName}</Td>
+                <Td data-qa="last-name-column">{row.lastName}</Td>
+                <Td data-qa="total-column">
                   {row.UNKNOWN_ABSENCE + row.OTHER_ABSENCE + row.SICKLEAVE}
                 </Td>
-                <Td>{row.OTHER_ABSENCE}</Td>
-                <Td>{row.SICKLEAVE}</Td>
-                <Td>{row.UNKNOWN_ABSENCE}</Td>
+                <Td data-qa="other-absence-column">{row.OTHER_ABSENCE}</Td>
+                <Td data-qa="sickleave-column">{row.SICKLEAVE}</Td>
+                <Td data-qa="unknown-absence-column">{row.UNKNOWN_ABSENCE}</Td>
               </Tr>
             ))
           ) : (

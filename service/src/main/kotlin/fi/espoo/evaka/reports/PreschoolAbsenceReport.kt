@@ -300,6 +300,7 @@ from (select (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
                     on ca.child_id = p.child_id
                         and daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
                         and ca.end_time IS NOT NULL
+                        and ca.unit_id = d.id
       -- pick out attendance intersecting preschool service time
       where tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
             tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})
@@ -353,6 +354,7 @@ from (select (tsrange(ca.date + ca.start_time, ca.date + ca.end_time) *
                     on ca.child_id = p.child_id
                         and daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} @> ca.date
                         and ca.end_time IS NOT NULL
+                        and ca.unit_id = d.id
       -- pick out attendance intersecting preschool service time
       where tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
             tsrange(ca.date + ${bind(startTime)}, ca.date + ${bind(endTime)})

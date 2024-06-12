@@ -397,7 +397,7 @@ export default React.memo(function Reports() {
             )}
             {reports.has('PRESCHOOL_ABSENCES') && (
               <Report
-                data-qa="preschoo-absences-report"
+                data-qa="report-preschool-absence"
                 path="/reports/preschool-absence"
                 color={colors.main.m2}
                 icon={faChild}
