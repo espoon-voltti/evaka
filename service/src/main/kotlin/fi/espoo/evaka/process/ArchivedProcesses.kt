@@ -6,6 +6,8 @@ package fi.espoo.evaka.process
 
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.shared.ArchivedProcessId
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.db.Database
@@ -98,12 +100,38 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
         }
         .exactlyOneOrNull()
 
+fun Database.Transaction.deleteProcessById(processId: ArchivedProcessId) {
+    execute { sql("DELETE FROM archived_process WHERE id = ${bind(processId)}") }
+}
+
 fun deleteProcessByDocumentId(tx: Database.Transaction, documentId: ChildDocumentId) {
     tx.createQuery { sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}") }
         .exactlyOneOrNull<ArchivedProcessId?>()
-        ?.also { processId ->
-            tx.execute { sql("DELETE FROM archived_process WHERE id = ${bind(processId)}") }
+        ?.also { processId -> tx.deleteProcessById(processId) }
+}
+
+fun deleteProcessByAssistanceNeedDecisionId(
+    tx: Database.Transaction,
+    decisionId: AssistanceNeedDecisionId
+) {
+    tx.createQuery {
+            sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
         }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.also { processId -> tx.deleteProcessById(processId) }
+}
+
+fun deleteProcessByAssistanceNeedPreschoolDecisionId(
+    tx: Database.Transaction,
+    decisionId: AssistanceNeedPreschoolDecisionId
+) {
+    tx.createQuery {
+            sql(
+                "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
+            )
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.also { processId -> tx.deleteProcessById(processId) }
 }
 
 fun Database.Transaction.insertProcessHistoryRow(

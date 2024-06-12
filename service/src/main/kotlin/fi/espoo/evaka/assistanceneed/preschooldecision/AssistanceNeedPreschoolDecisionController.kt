@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.deleteProcessByAssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
@@ -416,6 +417,7 @@ class AssistanceNeedPreschoolDecisionController(
                         Action.AssistanceNeedPreschoolDecision.DELETE,
                         id
                     )
+                    deleteProcessByAssistanceNeedPreschoolDecisionId(tx, id)
                     if (!tx.deleteAssistanceNeedPreschoolDecision(id)) {
                         throw NotFound(
                             "Assistance need preschool decision $id cannot found or cannot be deleted",

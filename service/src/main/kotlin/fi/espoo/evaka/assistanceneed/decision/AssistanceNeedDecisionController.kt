@@ -8,6 +8,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.deleteProcessByAssistanceNeedDecisionId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.shared.ArchiveProcessType
@@ -365,6 +366,7 @@ class AssistanceNeedDecisionController(
                         Action.AssistanceNeedDecision.DELETE,
                         id
                     )
+                    deleteProcessByAssistanceNeedDecisionId(tx, id)
                     if (!tx.deleteAssistanceNeedDecision(id)) {
                         throw NotFound(
                             "Assistance need decision $id cannot found or cannot be deleted",
