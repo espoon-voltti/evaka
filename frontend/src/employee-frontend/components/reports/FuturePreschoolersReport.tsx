@@ -52,6 +52,8 @@ export default React.memo(function FuturePreschoolersReport() {
                   { label: 'lapsen_id', key: 'id' },
                   { label: 'lapsen_sukunimi', key: 'childLastName' },
                   { label: 'lapsen_etunimi', key: 'childFirstName' },
+                  { label: 'lapsen_syntyma_pvm', key: 'childDateOfBirth' },
+                  { label: 'lapsen_kieli', key: 'childLanguage' },
                   { label: 'lapsen_osoite', key: 'childAddress' },
                   { label: 'postinumero', key: 'childPostalCode' },
                   { label: 'toimipaikka', key: 'childPostOffice' },
