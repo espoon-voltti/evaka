@@ -120,7 +120,7 @@ const AsyncButton_ = function AsyncButton<T>({
                 transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
               }}
             >
-              <FontAwesomeIcon icon={icon} color={colors.main.m2} />
+              <FontAwesomeIcon icon={icon} />
             </IconWrapper>
           )}
           <Spinner style={spinner} />
