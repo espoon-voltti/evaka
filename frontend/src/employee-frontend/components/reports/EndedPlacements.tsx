@@ -29,10 +29,6 @@ const getEndedPlacementsReportResult = wrapResult(getEndedPlacementsReport)
 
 type PlacementsReportFilters = Arg0<typeof getEndedPlacementsReport>
 
-const StyledTd = styled(Td)`
-  white-space: nowrap;
-`
-
 const Wrapper = styled.div`
   width: 100%;
 `
@@ -128,20 +124,24 @@ export default React.memo(function EndedPlacements() {
                   <Th>{i18n.reports.common.childName}</Th>
                   <Th>{i18n.reports.endedPlacements.ssn}</Th>
                   <Th>{i18n.reports.endedPlacements.placementEnd}</Th>
+                  <Th>{i18n.reports.endedPlacements.unit}</Th>
+                  <Th>{i18n.reports.endedPlacements.area}</Th>
                   <Th>{i18n.reports.endedPlacements.nextPlacementStart}</Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {rows.value.map((row) => (
                   <Tr key={row.childId}>
-                    <StyledTd>
+                    <Td>
                       <Link to={`/child-information/${row.childId}`}>{`${
                         row.lastName ?? ''
                       } ${row.firstName ?? ''}`}</Link>
-                    </StyledTd>
-                    <StyledTd>{row.ssn}</StyledTd>
-                    <StyledTd>{row.placementEnd.format()}</StyledTd>
-                    <StyledTd>{row.nextPlacementStart?.format()}</StyledTd>
+                    </Td>
+                    <Td>{row.ssn}</Td>
+                    <Td>{row.placementEnd.format()}</Td>
+                    <Td>{row.unitName}</Td>
+                    <Td>{row.areaName}</Td>
+                    <Td>{row.nextPlacementStart?.format()}</Td>
                   </Tr>
                 ))}
               </Tbody>

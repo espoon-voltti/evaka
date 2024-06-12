@@ -3722,6 +3722,8 @@ export const fi = {
         'Kelaan toimitettava raportti varhaiskasvatuksessa lopettavista ja mahdollisesti myöhemmin jatkavista lapsista.',
       ssn: 'Hetu',
       placementEnd: 'Lopettaa varhaiskasvatuksessa',
+      unit: 'Yksikkö',
+      area: 'Alue',
       nextPlacementStart: 'Jatkaa varhaiskasvatuksessa'
     },
     missingHeadOfFamily: {

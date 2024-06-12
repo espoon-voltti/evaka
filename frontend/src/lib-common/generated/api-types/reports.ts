@@ -257,12 +257,14 @@ export interface DuplicatePeopleReportRow {
 * Generated from fi.espoo.evaka.reports.EndedPlacementsReportRow
 */
 export interface EndedPlacementsReportRow {
+  areaName: string
   childId: UUID
   firstName: string | null
   lastName: string | null
   nextPlacementStart: LocalDate | null
   placementEnd: LocalDate
   ssn: string | null
+  unitName: string
 }
 
 /**
