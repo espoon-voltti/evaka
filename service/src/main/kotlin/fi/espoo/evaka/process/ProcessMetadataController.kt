@@ -37,7 +37,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val documentName: String,
         val documentCreatedAt: HelsinkiDateTime?,
         val documentCreatedBy: EmployeeBasics?,
-        val archiveDurationMonths: Int,
         val confidentialDocument: Boolean,
         val downloadable: Boolean
     )
@@ -74,11 +73,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                             documentName = document.name,
                             documentCreatedAt = document.createdAt,
                             documentCreatedBy = document.createdBy,
-                            archiveDurationMonths =
-                                document.archiveDurationMonths
-                                    ?: throw IllegalStateException(
-                                        "archiveDurationMonths should always be set when archived process exists"
-                                    ),
                             confidentialDocument = document.confidential,
                             downloadable = document.downloadable
                         )
@@ -96,7 +90,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
     private data class ChildDocumentBasics(
         val name: String,
         val confidential: Boolean,
-        val archiveDurationMonths: Int?,
         val processId: ArchivedProcessId?,
         val createdAt: HelsinkiDateTime?,
         @Nested("created_by") val createdBy: EmployeeBasics?,
@@ -112,7 +105,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         SELECT 
             dt.name,
             dt.confidential,
-            dt.archive_duration_months,
             cd.process_id,
             cd.created AS created_at,
             e.id AS created_by_id,

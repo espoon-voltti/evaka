@@ -13,6 +13,7 @@ import { UUID } from '../../types'
 * Generated from fi.espoo.evaka.process.ArchivedProcess
 */
 export interface ArchivedProcess {
+  archiveDurationMonths: number
   history: ArchivedProcessHistoryRow[]
   id: UUID
   number: number
@@ -45,7 +46,6 @@ export type ArchivedProcessState =
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.ChildDocumentMetadata
 */
 export interface ChildDocumentMetadata {
-  archiveDurationMonths: number
   confidentialDocument: boolean
   documentCreatedAt: HelsinkiDateTime | null
   documentCreatedBy: EmployeeBasics | null

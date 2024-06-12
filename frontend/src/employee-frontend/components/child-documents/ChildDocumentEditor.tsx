@@ -396,7 +396,7 @@ const ChildDocumentMetadataSection = React.memo(
                   },
                   {
                     label: t.archiveDurationMonths,
-                    value: `${metadata.archiveDurationMonths} ${t.monthsUnit}`
+                    value: `${metadata.process.archiveDurationMonths} ${t.monthsUnit}`
                   },
                   {
                     label: t.confidentiality,

@@ -289,7 +289,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals(true, it.confidentialDocument)
             assertNotNull(it.documentCreatedAt)
             assertEquals(employeeUser.id, it.documentCreatedBy?.id)
-            assertEquals(120, it.archiveDurationMonths)
+            assertEquals(120, it.process.archiveDurationMonths)
             it.process.history.also { history ->
                 assertEquals(1, history.size)
                 assertEquals(ArchivedProcessState.INITIAL, history.first().state)

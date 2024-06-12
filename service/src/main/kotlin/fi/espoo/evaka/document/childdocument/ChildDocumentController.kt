@@ -81,10 +81,14 @@ class ChildDocumentController(
                     val now = clock.now()
                     val processId =
                         template.processDefinitionNumber?.let { processDefinitionNumber ->
+                            // guaranteed to be not null when processDefinitionNumber is not null by
+                            // db constraint
+                            val archiveDurationMonths = template.archiveDurationMonths!!
                             tx.insertProcess(
                                     processDefinitionNumber = processDefinitionNumber,
                                     year = now.year,
-                                    organization = featureConfig.archiveMetadataOrganization
+                                    organization = featureConfig.archiveMetadataOrganization,
+                                    archiveDurationMonths = archiveDurationMonths
                                 )
                                 .id
                                 .also { processId ->
