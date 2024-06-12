@@ -8,6 +8,11 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.syncApplicationOtherGuardians
+import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
+import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
+import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionForm
+import fi.espoo.evaka.assistanceneed.preschooldecision.AssistanceNeedPreschoolDecisionType
 import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.getCitizenMessageAccount
@@ -22,6 +27,8 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
+import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
@@ -32,8 +39,12 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedDecision
+import fi.espoo.evaka.shared.dev.insertTestAssistanceNeedPreschoolDecision
 import fi.espoo.evaka.shared.dev.insertTestPartnership
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -42,6 +53,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
+import java.time.Month
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -377,6 +389,116 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     serviceWorkerAccountName = "Espoon palveluohjaus"
                 )
             tx.insertRecipients(listOf(messageId to setOf(employeeAccount)))
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `adult with assistance need decision is not cleaned up`() {
+        db.transaction { tx ->
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
+            tx.insertTestAssistanceNeedDecision(
+                childId = testChild_1.id,
+                DevAssistanceNeedDecision(
+                    decisionNumber = 999,
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange.ofMonth(2019, Month.JANUARY),
+                    status = AssistanceNeedDecisionStatus.ACCEPTED,
+                    language = OfficialLanguage.FI,
+                    decisionMade = null,
+                    sentForDecision = null,
+                    selectedUnit = null,
+                    preparedBy1 = null,
+                    preparedBy2 = null,
+                    decisionMaker = null,
+                    pedagogicalMotivation = null,
+                    structuralMotivationOptions =
+                        StructuralMotivationOptions(false, false, false, false, false, false),
+                    structuralMotivationDescription = null,
+                    careMotivation = null,
+                    serviceOptions = ServiceOptions(false, false, false, false, false),
+                    servicesMotivation = null,
+                    expertResponsibilities = null,
+                    guardiansHeardOn = null,
+                    guardianInfo = emptySet(),
+                    viewOfGuardians = null,
+                    otherRepresentativeHeard = false,
+                    otherRepresentativeDetails = null,
+                    assistanceLevels = emptySet(),
+                    motivationForDecision = null,
+                    unreadGuardianIds = null,
+                    annulmentReason = "",
+                )
+            )
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `adult with assistance need preschool decision is not cleaned up`() {
+        db.transaction { tx ->
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
+            val employeeId = EmployeeId(UUID.randomUUID())
+            tx.insert(
+                DevEmployee(id = employeeId, firstName = "Firstname", lastName = "Supervisor")
+            )
+            tx.insertTestAssistanceNeedPreschoolDecision(
+                DevAssistanceNeedPreschoolDecision(
+                    decisionNumber = 999,
+                    childId = testChild_1.id,
+                    form =
+                        AssistanceNeedPreschoolDecisionForm(
+                            language = OfficialLanguage.FI,
+                            type = AssistanceNeedPreschoolDecisionType.NEW,
+                            validFrom = LocalDate.of(2019, 1, 1),
+                            validTo = null,
+                            extendedCompulsoryEducation = false,
+                            extendedCompulsoryEducationInfo = "",
+                            grantedAssistanceService = false,
+                            grantedInterpretationService = false,
+                            grantedAssistiveDevices = false,
+                            grantedServicesBasis = "",
+                            selectedUnit = testDaycare.id,
+                            primaryGroup = "",
+                            decisionBasis = "",
+                            basisDocumentPedagogicalReport = false,
+                            basisDocumentPsychologistStatement = false,
+                            basisDocumentSocialReport = false,
+                            basisDocumentDoctorStatement = false,
+                            basisDocumentPedagogicalReportDate = null,
+                            basisDocumentPsychologistStatementDate = null,
+                            basisDocumentSocialReportDate = null,
+                            basisDocumentDoctorStatementDate = null,
+                            basisDocumentOtherOrMissing = false,
+                            basisDocumentOtherOrMissingInfo = "",
+                            basisDocumentsInfo = "",
+                            guardiansHeardOn = null,
+                            guardianInfo = emptySet(),
+                            otherRepresentativeHeard = false,
+                            otherRepresentativeDetails = "",
+                            viewOfGuardians = "",
+                            preparer1EmployeeId = employeeId,
+                            preparer1Title = "",
+                            preparer1PhoneNumber = "",
+                            preparer2EmployeeId = null,
+                            preparer2Title = "",
+                            preparer2PhoneNumber = "",
+                            decisionMakerEmployeeId = employeeId,
+                            decisionMakerTitle = "",
+                        ),
+                    status = AssistanceNeedDecisionStatus.ACCEPTED,
+                    annulmentReason = "",
+                    sentForDecision = null,
+                    decisionMade = LocalDate.of(2019, 5, 1),
+                    unreadGuardianIds = emptySet(),
+                )
+            )
         }
 
         assertCleanedUpPeople(testDate, setOf())
