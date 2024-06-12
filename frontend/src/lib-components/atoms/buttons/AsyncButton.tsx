@@ -40,6 +40,7 @@ export type AsyncButtonProps<T> = BaseButtonVisualProps &
 
 const AsyncButton_ = function AsyncButton<T>({
   type,
+  primary,
   preventDefault = type === 'submit',
   stopPropagation = false,
   onClick,
@@ -84,6 +85,7 @@ const AsyncButton_ = function AsyncButton<T>({
       'data-status': state === 'idle' ? '' : state,
       'aria-busy': state === 'in-progress',
       type,
+      primary: primary && !showIcon,
       ...props
     },
     handleClick,
