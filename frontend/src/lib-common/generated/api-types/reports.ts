@@ -373,7 +373,9 @@ export interface FamilyDaycareMealReportResult {
 */
 export interface FuturePreschoolersReportRow {
   childAddress: string
+  childDateOfBirth: LocalDate
   childFirstName: string
+  childLanguage: string | null
   childLastName: string
   childPostOffice: string
   childPostalCode: string
@@ -960,6 +962,14 @@ export function deserializeJsonEndedPlacementsReportRow(json: JsonOf<EndedPlacem
     ...json,
     nextPlacementStart: (json.nextPlacementStart != null) ? LocalDate.parseIso(json.nextPlacementStart) : null,
     placementEnd: LocalDate.parseIso(json.placementEnd)
+  }
+}
+
+
+export function deserializeJsonFuturePreschoolersReportRow(json: JsonOf<FuturePreschoolersReportRow>): FuturePreschoolersReportRow {
+  return {
+    ...json,
+    childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
   }
 }
 

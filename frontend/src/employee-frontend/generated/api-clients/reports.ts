@@ -64,6 +64,7 @@ import { deserializeJsonAttendanceReservationReportByChildRow } from 'lib-common
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
@@ -436,7 +437,7 @@ export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersR
     url: uri`/reports/future-preschoolers`.toString(),
     method: 'GET'
   })
-  return json
+  return json.map(e => deserializeJsonFuturePreschoolersReportRow(e))
 }
 
 
