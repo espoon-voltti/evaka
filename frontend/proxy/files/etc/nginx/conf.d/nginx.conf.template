@@ -163,11 +163,7 @@ server {
   set $staticEndpoint "<%= ENV["STATIC_FILES_ENDPOINT_URL"] %>";
   <% end %>
 
-
-  # Logging
-  # NOTE: All log files are symlinked to redirect to stdout
-
-  access_log /var/log/nginx/access.log json_access;
+  access_log off;
 
   # Security
 
@@ -274,6 +270,8 @@ server {
   }
 
   location /api/application {
+    access_log /var/log/nginx/access.log json_access;
+
     include     proxy_params;
     proxy_pass  $enduserUrl;
 
@@ -289,6 +287,8 @@ server {
   }
 
   location /api/internal {
+    access_log /var/log/nginx/access.log json_access;
+
     include     proxy_params;
     proxy_pass  $internalUrl;
 
@@ -300,6 +300,8 @@ server {
 
   # Direct all CPS reports to internal endpoint /api/csp/csp-report
   location /api/csp {
+    access_log /var/log/nginx/access.log json_access;
+
     include     proxy_params;
     proxy_pass  $internalUrl/api/csp/csp-report;
   }
@@ -345,6 +347,8 @@ server {
     allow all;
   }
   location /auth/realms/ {
+    access_log /var/log/nginx/access.log json_access;
+
     include keycloak-proxy.conf;
     allow all;
   }
@@ -380,7 +384,7 @@ server {
     listen 8080;
     server_name <%= ENV["SERVICE_DOMAIN_SV"] %>;
 
-    access_log /var/log/nginx/access.log json_access;
+    access_log off;
 
     set $httpScheme "<%= ENV["HTTP_SCHEME"] || "https" %>";
 
