@@ -20,6 +20,8 @@ import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.cancelPlacement
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionGuardianId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -28,15 +30,16 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -69,6 +72,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     @Autowired
     private lateinit var assistanceNeedDecisionService: AssistanceNeedPreschoolDecisionService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var processMetadataController: ProcessMetadataController
 
     private val assistanceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
@@ -77,6 +81,8 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             testDecisionMaker_2.id,
             setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
         )
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val clock = MockEvakaClock(2024, 3, 5, 13, 30)
 
     private val testForm =
         AssistanceNeedPreschoolDecisionForm(
@@ -133,6 +139,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
+            tx.insert(admin)
         }
     }
 
@@ -227,7 +234,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         sendAssistanceNeedDecision(assistanceNeedDecision.id)
 
         val sentDecision = getDecision(assistanceNeedDecision.id)
-        assertEquals(LocalDate.now(), sentDecision.sentForDecision)
+        assertEquals(clock.today(), sentDecision.sentForDecision)
     }
 
     @Test
@@ -278,7 +285,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             decisionMaker,
         )
         val decision = getDecision(assistanceNeedDecision.id)
-        assertEquals(LocalDate.now(), decision.decisionMade)
+        assertEquals(clock.today(), decision.decisionMade)
         // decisions cannot be re-decided
         assertThrows<BadRequest> {
             decideDecision(
@@ -288,7 +295,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             )
         }
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(clock)
 
         val messages = MockSfiMessagesClient.getMessages()
         assertEquals(1, messages.size)
@@ -302,6 +309,51 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         val annulled = getDecision(decision.id)
         assertEquals(AssistanceNeedDecisionStatus.ANNULLED, annulled.status)
         assertEquals("oops", annulled.annulmentReason)
+    }
+
+    @Test
+    fun `Metadata is collected`() {
+        val assistanceNeedDecision = createAndFillDecision(testForm)
+        sendAssistanceNeedDecision(assistanceNeedDecision.id)
+        decideDecision(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionStatus.ACCEPTED,
+            decisionMaker,
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val metadata =
+            processMetadataController
+                .getAssistanceNeedPreschoolDecisionMetadata(
+                    dbInstance(),
+                    admin.user,
+                    clock,
+                    assistanceNeedDecision.id
+                )
+                .data
+        assertNotNull(metadata)
+        assertEquals("1/123.456.b/2024", metadata.process.processNumber)
+        assertEquals(120, metadata.process.archiveDurationMonths)
+        assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", metadata.process.organization)
+        assertEquals(4, metadata.process.history.size)
+        assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
+        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[0].enteredBy.id)
+        assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
+        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
+        assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
+        assertEquals(decisionMaker.evakaUserId, metadata.process.history[2].enteredBy.id)
+        assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
+        assertEquals(
+            AuthenticatedUser.SystemInternalUser.evakaUserId,
+            metadata.process.history[3].enteredBy.id
+        )
+        assertEquals("Päätös tuesta esiopetuksessa", metadata.primaryDocument.name)
+        assertEquals(assistanceWorker.id, metadata.primaryDocument.createdBy?.id)
+        assertEquals(true, metadata.primaryDocument.confidential)
+        assertEquals(
+            "/employee/assistance-need-preschool-decisions/${assistanceNeedDecision.id}/pdf",
+            metadata.primaryDocument.downloadPath
+        )
     }
 
     @Test
@@ -331,7 +383,8 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     unitSupervisorOfTestDaycare.id,
                     unitSupervisorOfTestDaycare.lastName,
                     unitSupervisorOfTestDaycare.firstName
-                )
+                ),
+                Tuple(admin.id, admin.lastName, admin.firstName)
             ),
             decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
         )
@@ -367,7 +420,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             AssistanceNeedDecisionStatus.ACCEPTED,
             decisionMaker,
         )
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(setOf(testAdult_2.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
@@ -707,7 +760,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         return assistanceNeedDecisionController.createAssistanceNeedPreschoolDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             testChild_1.id
         )
     }
@@ -719,7 +772,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assistanceNeedDecisionController.updateAssistanceNeedPreschoolDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             decision.id,
             form.copy(
                 guardianInfo =
@@ -734,23 +787,13 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         id: AssistanceNeedPreschoolDecisionId
     ): AssistanceNeedPreschoolDecision {
         return assistanceNeedDecisionController
-            .getAssistanceNeedPreschoolDecision(
-                dbInstance(),
-                assistanceWorker,
-                RealEvakaClock(),
-                id
-            )
+            .getAssistanceNeedPreschoolDecision(dbInstance(), assistanceWorker, clock, id)
             .decision
     }
 
     private fun getDecisionsByChild(childId: ChildId): List<AssistanceNeedPreschoolDecisionBasics> {
         return assistanceNeedDecisionController
-            .getAssistanceNeedPreschoolDecisions(
-                dbInstance(),
-                assistanceWorker,
-                RealEvakaClock(),
-                childId
-            )
+            .getAssistanceNeedPreschoolDecisions(dbInstance(), assistanceWorker, clock, childId)
             .map { it.decision }
     }
 
@@ -764,7 +807,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assistanceNeedDecisionController.deleteAssistanceNeedPreschoolDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
@@ -775,7 +818,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assistanceNeedDecisionController.sendAssistanceNeedPreschoolDecisionForDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
@@ -787,7 +830,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assistanceNeedDecisionController.markAssistanceNeedPreschoolDecisionAsOpened(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
@@ -800,7 +843,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assistanceNeedDecisionController.decideAssistanceNeedPreschoolDecision(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id,
             AssistanceNeedPreschoolDecisionController.DecideAssistanceNeedPreschoolDecisionRequest(
                 status = status
@@ -816,7 +859,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assistanceNeedDecisionController.annulAssistanceNeedPreschoolDecision(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id,
             AssistanceNeedPreschoolDecisionController.AnnulAssistanceNeedPreschoolDecisionRequest(
                 reason = reason
@@ -831,7 +874,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         return assistanceNeedDecisionController.getAssistancePreschoolDecisionMakerOptions(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
