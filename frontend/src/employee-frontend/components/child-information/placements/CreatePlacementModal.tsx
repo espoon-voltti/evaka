@@ -43,7 +43,7 @@ export interface Props {
 interface Form {
   type: PlacementType
   startDate: LocalDate
-  endDate: LocalDate
+  endDate: LocalDate | null
   unit: { id: string; name: string; ghostUnit: boolean } | null
   placeGuarantee: boolean
 }
@@ -56,15 +56,18 @@ function CreatePlacementModal({ childId, reload }: Props) {
     type: 'DAYCARE',
     unit: null,
     startDate: LocalDate.todayInSystemTz(),
-    endDate: LocalDate.todayInSystemTz(),
+    endDate: null,
     placeGuarantee: false
   })
   const [submitting, setSubmitting] = useState<boolean>(false)
   const retroactive = useMemo(
     () =>
       isChangeRetroactive(
-        form.endDate.isEqualOrAfter(form.startDate)
-          ? new FiniteDateRange(form.startDate, form.endDate)
+        form.endDate && form.endDate.isEqualOrAfter(form.startDate)
+          ? new FiniteDateRange(
+              form.startDate,
+              form.endDate ? form.endDate : LocalDate.todayInSystemTz()
+            )
           : null,
         null,
         false,
@@ -75,7 +78,9 @@ function CreatePlacementModal({ childId, reload }: Props) {
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
 
   const unitOptions = useMemo(() => {
-    const activeUnits = form.startDate.isAfter(form.endDate)
+    const activeUnits = form.startDate.isAfter(
+      form.endDate ? form.endDate : LocalDate.todayInSystemTz()
+    )
       ? units
       : units.map((list) =>
           list.filter((u) =>
@@ -104,8 +109,12 @@ function CreatePlacementModal({ childId, reload }: Props) {
       errors.push(i18n.childInformation.placements.warning.ghostUnit)
     }
 
-    if (form.startDate.isAfter(form.endDate)) {
-      errors.push(i18n.validationError.invertedDateRange)
+    if (form.endDate === null) {
+      errors.push(i18n.validationError.mandatoryField)
+    } else {
+      if (form.startDate.isAfter(form.endDate)) {
+        errors.push(i18n.validationError.invertedDateRange)
+      }
     }
 
     return errors
@@ -121,7 +130,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
         type: form.type,
         unitId: form.unit.id,
         startDate: form.startDate,
-        endDate: form.endDate,
+        endDate: form.endDate!,
         placeGuarantee: form.placeGuarantee
       }
     })
@@ -214,7 +223,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
           <div className="bold">{i18n.common.form.endDate}</div>
 
           <DatePickerDeprecated
-            date={form.endDate}
+            date={form.endDate || undefined}
             onChange={(endDate) => setForm({ ...form, endDate })}
             data-qa="create-placement-end-date"
             type="full-width"

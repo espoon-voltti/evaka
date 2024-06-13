@@ -25,7 +25,7 @@ import {
   terminatePlacement
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { Page } from '../../utils/page'
+import { Combobox, Modal, Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 beforeEach(async (): Promise<void> => resetServiceState())
@@ -242,6 +242,27 @@ describe('Child Information placement create (feature flag place guarantee = fal
       { unitName, period: '06.09.2023 - 06.09.2023', status: 'Aktiivinen' },
       { unitName, period: '05.09.2023 - 05.09.2023', status: 'Päättynyt' }
     ])
+  })
+
+  test('placement end date is initially empty but mandatory', async () => {
+    const admin = await Fixture.employeeAdmin().save()
+    const area = await Fixture.careArea().save()
+    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
+    const unitName = unit.data.name
+    const child = await Fixture.person().save()
+    const childId = child.data.id
+
+    const page = await openPage()
+    await employeeLogin(page, admin.data)
+
+    await openChildPlacements(page, childId)
+    await page.findByDataQa('create-new-placement-button').click()
+
+    const modal = new Modal(page.findByDataQa('modal'))
+    const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
+    await unitSelect.fillAndSelectFirst(unitName)
+    await modal.findByDataQa('create-placement-end-date').assertTextEquals('')
+    await modal.submitButton.assertDisabled(true)
   })
 
   async function openPage() {
