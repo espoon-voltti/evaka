@@ -43,22 +43,14 @@ export type ArchivedProcessState =
   | 'COMPLETED'
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.ChildDocumentMetadata
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.Document
 */
-export interface ChildDocumentMetadata {
-  confidentialDocument: boolean
-  documentCreatedAt: HelsinkiDateTime | null
-  documentCreatedBy: EmployeeBasics | null
-  documentName: string
-  downloadable: boolean
-  process: ArchivedProcess
-}
-
-/**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.ChildDocumentMetadataResponse
-*/
-export interface ChildDocumentMetadataResponse {
-  data: ChildDocumentMetadata | null
+export interface Document {
+  confidential: boolean
+  createdAt: HelsinkiDateTime | null
+  createdBy: EmployeeBasics | null
+  downloadPath: string | null
+  name: string
 }
 
 /**
@@ -69,6 +61,21 @@ export interface EmployeeBasics {
   firstName: string
   id: UUID
   lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.ProcessMetadata
+*/
+export interface ProcessMetadata {
+  primaryDocument: Document
+  process: ArchivedProcess
+}
+
+/**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.ProcessMetadataResponse
+*/
+export interface ProcessMetadataResponse {
+  data: ProcessMetadata | null
 }
 
 
@@ -88,18 +95,26 @@ export function deserializeJsonArchivedProcessHistoryRow(json: JsonOf<ArchivedPr
 }
 
 
-export function deserializeJsonChildDocumentMetadata(json: JsonOf<ChildDocumentMetadata>): ChildDocumentMetadata {
+export function deserializeJsonDocument(json: JsonOf<Document>): Document {
   return {
     ...json,
-    documentCreatedAt: (json.documentCreatedAt != null) ? HelsinkiDateTime.parseIso(json.documentCreatedAt) : null,
+    createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null
+  }
+}
+
+
+export function deserializeJsonProcessMetadata(json: JsonOf<ProcessMetadata>): ProcessMetadata {
+  return {
+    ...json,
+    primaryDocument: deserializeJsonDocument(json.primaryDocument),
     process: deserializeJsonArchivedProcess(json.process)
   }
 }
 
 
-export function deserializeJsonChildDocumentMetadataResponse(json: JsonOf<ChildDocumentMetadataResponse>): ChildDocumentMetadataResponse {
+export function deserializeJsonProcessMetadataResponse(json: JsonOf<ProcessMetadataResponse>): ProcessMetadataResponse {
   return {
     ...json,
-    data: (json.data != null) ? deserializeJsonChildDocumentMetadata(json.data) : null
+    data: (json.data != null) ? deserializeJsonProcessMetadata(json.data) : null
   }
 }

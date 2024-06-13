@@ -868,23 +868,7 @@ export const fi = {
         notFullyPublished: (publishedAt: HelsinkiDateTime | null) =>
           `Asiakirjassa on julkaisemattomia muutoksia ${
             publishedAt ? ` (julkaistu ${publishedAt.format()})` : ''
-          }`,
-        metadata: {
-          title: 'Arkistoitava metadata',
-          notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
-          processNumber: 'Asianumero',
-          name: 'Asiakirjan nimi',
-          createdAt: 'Asiakirjan laatimisajankohta',
-          createdBy: 'Asiakirjan laatija',
-          archiveDurationMonths: 'Arkistointiaika',
-          monthsUnit: 'kuukautta',
-          confidentiality: 'Asiakirjan julkisuus',
-          confidential: 'Salassapidettävä',
-          public: 'Julkinen',
-          organization: 'Organisaatio',
-          history: 'Prosessin historia',
-          downloadPdf: 'Lataa PDF'
-        }
+          }`
       }
     },
     assistanceNeedPreschoolDecision: {
@@ -4878,6 +4862,21 @@ export const fi = {
     confirm: 'Vahvista'
   },
   metadata: {
+    title: 'Arkistoitava metadata',
+    notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
+    processNumber: 'Asianumero',
+    organization: 'Organisaatio',
+    archiveDurationMonths: 'Arkistointiaika',
+    documents: 'Asiakirjat',
+    name: 'Asiakirjan nimi',
+    createdAt: 'Laatimisajankohta',
+    createdBy: 'Laatija',
+    monthsUnit: 'kuukautta',
+    confidentiality: 'Julkisuus',
+    confidential: 'Salassapidettävä',
+    public: 'Julkinen',
+    history: 'Prosessin historia',
+    downloadPdf: 'Lataa PDF',
     states: {
       INITIAL: 'Asian vireillepano / -tulo',
       PREPARATION: 'Asian valmistelu',

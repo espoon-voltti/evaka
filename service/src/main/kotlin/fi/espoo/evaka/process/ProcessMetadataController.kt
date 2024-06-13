@@ -32,18 +32,19 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val email: String?
     )
 
-    data class ChildDocumentMetadata(
-        val process: ArchivedProcess,
-        val documentName: String,
-        val documentCreatedAt: HelsinkiDateTime?,
-        val documentCreatedBy: EmployeeBasics?,
-        val confidentialDocument: Boolean,
-        val downloadable: Boolean
+    data class ProcessMetadata(val process: ArchivedProcess, val primaryDocument: Document)
+
+    data class Document(
+        val name: String,
+        val createdAt: HelsinkiDateTime?,
+        val createdBy: EmployeeBasics?,
+        val confidential: Boolean,
+        val downloadPath: String?
     )
 
     // wrapper that is needed because currently returning null
     // from an endpoint is not serialized correctly
-    data class ChildDocumentMetadataResponse(val data: ChildDocumentMetadata?)
+    data class ProcessMetadataResponse(val data: ProcessMetadata?)
 
     @GetMapping("/child-documents/{childDocumentId}")
     fun getChildDocumentMetadata(
@@ -51,7 +52,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childDocumentId: ChildDocumentId
-    ): ChildDocumentMetadataResponse {
+    ): ProcessMetadataResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -63,18 +64,31 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                     )
                     val document =
                         tx.getChildDocumentBasics(childDocumentId)
-                            ?: return@read ChildDocumentMetadataResponse(null)
+                            ?: return@read ProcessMetadataResponse(null)
                     val process =
                         document.processId?.let { tx.getProcess(it) }
-                            ?: return@read ChildDocumentMetadataResponse(null)
-                    ChildDocumentMetadataResponse(
-                        ChildDocumentMetadata(
+                            ?: return@read ProcessMetadataResponse(null)
+                    val downloadAllowed =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.ChildDocument.DOWNLOAD,
+                            childDocumentId
+                        )
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
                             process = process,
-                            documentName = document.name,
-                            documentCreatedAt = document.createdAt,
-                            documentCreatedBy = document.createdBy,
-                            confidentialDocument = document.confidential,
-                            downloadable = document.downloadable
+                            primaryDocument =
+                                Document(
+                                    name = document.name,
+                                    createdAt = document.createdAt,
+                                    createdBy = document.createdBy,
+                                    confidential = document.confidential,
+                                    downloadPath =
+                                        "/employee/child-documents/${childDocumentId}/pdf"
+                                            .takeIf { document.downloadable && downloadAllowed }
+                                )
                         )
                     )
                 }
