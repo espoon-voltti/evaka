@@ -47,7 +47,7 @@ const customizations: CitizenCustomizations = {
               asiakasmaksutiedotteeseen:
             </span>
             <a
-              href="https://www.espoo.fi/fi/artikkelit/lasten-varhaiskasvatuksesta-perittavat-maksut-182023-alkaen"
+              href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-asiakasmaksut#section-59617"
               target="_blank"
               rel="noreferrer"
             >
