@@ -78,6 +78,7 @@ import {
 import { getFosterParents } from '../../generated/api-clients/pis'
 import {
   getAssistanceNeedDecisionMetadata,
+  getAssistanceNeedPreschoolDecisionMetadata,
   getChildDocumentMetadata
 } from '../../generated/api-clients/process'
 import { createQueryKeys } from '../../query'
@@ -107,6 +108,10 @@ export const queryKeys = createQueryKeys('childInformation', {
     'assistanceNeedPreschoolDecisionDecisionMakerOptions',
     decisionId,
     unitId
+  ],
+  assistanceNeedPreschoolDecisionMetadata: (decisionId: UUID) => [
+    'assistanceNeedPreschoolDecisionMetadata',
+    decisionId
   ],
   units: () => ['units'],
   backupPickups: (childId: UUID) => ['backupPickups', childId],
@@ -305,6 +310,12 @@ export const assistanceNeedPreschoolDecisionMakerOptionsQuery = query({
   ) => getAssistancePreschoolDecisionMakerOptions(arg),
   queryKey: ({ id, unitId }) =>
     queryKeys.assistanceNeedPreschoolDecisionDecisionMakerOptions(id, unitId)
+})
+
+export const assistanceNeedPreschoolDecisionMetadataQuery = query({
+  api: getAssistanceNeedPreschoolDecisionMetadata,
+  queryKey: ({ decisionId }) =>
+    queryKeys.assistanceNeedPreschoolDecisionMetadata(decisionId)
 })
 
 export const createAssistanceNeedPreschoolDecisionMutation = mutation({

@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -153,6 +154,59 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
     }
 
+    @GetMapping("/assistance-need-preschool-decisions/{decisionId}")
+    fun getAssistanceNeedPreschoolDecisionMetadata(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable decisionId: AssistanceNeedPreschoolDecisionId
+    ): ProcessMetadataResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.READ_METADATA,
+                        decisionId
+                    )
+                    val process =
+                        tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(decisionId)
+                            ?: return@read ProcessMetadataResponse(null)
+                    val decision = tx.getAssistanceNeedPreschoolDecisionBasics(decisionId)
+                    val downloadAllowed =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.AssistanceNeedPreschoolDecision.DOWNLOAD,
+                            decisionId
+                        )
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
+                            process = process,
+                            primaryDocument =
+                                Document(
+                                    name = "Päätös tuesta esiopetuksessa",
+                                    createdAt = decision.createdAt,
+                                    createdBy = decision.createdBy,
+                                    confidential = true,
+                                    downloadPath =
+                                        "/employee/assistance-need-preschool-decisions/$decisionId/pdf"
+                                            .takeIf { decision.downloadable && downloadAllowed }
+                                )
+                        )
+                    )
+                }
+            }
+            .also { response ->
+                Audit.AssistanceNeedPreschoolDecisionReadMetadata.log(
+                    targetId = AuditId(decisionId),
+                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                )
+            }
+    }
+
     private data class ChildDocumentBasics(
         val name: String,
         val confidential: Boolean,
@@ -207,6 +261,27 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             e.email AS created_by_email,
             d.document_key IS NOT NULL AS downloadable
         FROM assistance_need_decision d
+        LEFT JOIN employee e ON e.id = d.created_by
+        WHERE d.id = ${bind(decisionId)}
+    """
+                )
+            }
+            .exactlyOne()
+
+    private fun Database.Read.getAssistanceNeedPreschoolDecisionBasics(
+        decisionId: AssistanceNeedPreschoolDecisionId
+    ): AssistanceNeedDecisionBasics =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            d.created AS created_at,
+            e.id AS created_by_id,
+            e.first_name AS created_by_first_name,
+            e.last_name AS created_by_last_name,
+            e.email AS created_by_email,
+            d.document_key IS NOT NULL AS downloadable
+        FROM assistance_need_preschool_decision d
         LEFT JOIN employee e ON e.id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """

@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -41,7 +42,8 @@ import org.springframework.web.bind.annotation.RestController
 class AssistanceNeedPreschoolDecisionController(
     private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService
 ) {
     @PostMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
@@ -121,6 +123,32 @@ class AssistanceNeedPreschoolDecisionController(
                 }
             }
             .also { Audit.ChildAssistanceNeedPreschoolDecisionRead.log(targetId = AuditId(id)) }
+    }
+
+    @GetMapping("/employee/assistance-need-preschool-decisions/{id}/pdf")
+    fun getAssistanceNeedPreschoolDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.DOWNLOAD,
+                        id
+                    )
+                }
+                assistanceNeedPreschoolDecisionService.getDecisionPdfResponse(dbc, id)
+            }
+            .also {
+                Audit.ChildAssistanceNeedPreschoolDecisionDownloadEmployee.log(
+                    targetId = AuditId(id)
+                )
+            }
     }
 
     @PutMapping(

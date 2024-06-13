@@ -29,6 +29,22 @@ export async function getAssistanceNeedDecisionMetadata(
 
 
 /**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.getAssistanceNeedPreschoolDecisionMetadata
+*/
+export async function getAssistanceNeedPreschoolDecisionMetadata(
+  request: {
+    decisionId: UUID
+  }
+): Promise<ProcessMetadataResponse> {
+  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
+    url: uri`/employee/process-metadata/assistance-need-preschool-decisions/${request.decisionId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonProcessMetadataResponse(json)
+}
+
+
+/**
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.getChildDocumentMetadata
 */
 export async function getChildDocumentMetadata(
