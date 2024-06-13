@@ -200,6 +200,7 @@ data class ApplicationUnitSummary(
     val requestedPlacementType: PlacementType,
     val serviceNeed: ServiceNeedOption?,
     val preferredStartDate: LocalDate,
+    val extendedCare: Boolean,
     val preferenceOrder: Int,
     val status: ApplicationStatus
 )
