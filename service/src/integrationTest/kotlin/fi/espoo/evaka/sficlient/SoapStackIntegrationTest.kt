@@ -130,7 +130,11 @@ class SoapStackIntegrationTest {
                     streetAddress = "contact-organization-street-address",
                     postalCode = "contact-organization-postal-code",
                     postOffice = "contact-organization-post-office"
-                )
+                ),
+            restEnabled = false,
+            restAddress = null,
+            restUsername = null,
+            restPassword = null,
         )
 
     @BeforeAll
