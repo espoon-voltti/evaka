@@ -319,6 +319,7 @@ export type ApplicationTypeToggle =
 export interface ApplicationUnitSummary {
   applicationId: UUID
   dateOfBirth: LocalDate
+  extendedCare: boolean
   firstName: string
   guardianEmail: string | null
   guardianFirstName: string

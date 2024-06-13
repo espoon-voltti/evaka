@@ -878,6 +878,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                     a.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
                     a.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
                     a.document -> 'serviceNeedOption' ->> 'validPlacementType' AS serviceNeedValidPlacementType,
+                    a.document ->> 'extendedCare' as extended_care,
                     a.document,
                     (a.document ->> 'preferredStartDate')::date as preferred_start_date,
                     (array_position((
@@ -926,6 +927,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                         )
                     },
                 preferredStartDate = column("preferred_start_date"),
+                extendedCare = column("extended_care"),
                 preferenceOrder = column("preference_order"),
                 status = column("status")
             )

@@ -2290,7 +2290,8 @@ export const fi = {
       placement: 'Osa/Koko',
       preferenceOrder: 'Toive',
       startDate: 'Aloitus',
-      status: 'Tila'
+      status: 'Tila',
+      extendedCare: 'Vuorohoito'
     },
     placements: {
       title: 'Ryhmää odottavat lapset',

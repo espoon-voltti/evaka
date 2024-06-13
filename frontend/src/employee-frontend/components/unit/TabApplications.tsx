@@ -83,9 +83,12 @@ export default React.memo(function TabApplications({ applications }: Props) {
                         : 'full'
                     }
                     label={
-                      row.serviceNeed !== null
+                      (row.serviceNeed !== null
                         ? row.serviceNeed.nameFi
-                        : i18n.placement.type[row.requestedPlacementType]
+                        : i18n.placement.type[row.requestedPlacementType]) +
+                      (row.extendedCare
+                        ? ', ' + i18n.unit.applications.extendedCare
+                        : '')
                     }
                   />
                 </Td>
