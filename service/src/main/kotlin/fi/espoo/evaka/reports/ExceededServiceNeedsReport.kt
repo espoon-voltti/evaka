@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.reports
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsences
@@ -40,7 +41,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ExceededServiceNeedsReportController(private val accessControl: AccessControl) {
+class ExceededServiceNeedsReportController(
+    private val accessControl: AccessControl,
+    private val env: EvakaEnv
+) {
     @GetMapping(
         "/reports/exceeded-service-need/units", // deprecated
         "/employee/reports/exceeded-service-need/units"
@@ -82,7 +86,14 @@ class ExceededServiceNeedsReportController(private val accessControl: AccessCont
                     Action.Unit.READ_EXCEEDED_SERVICE_NEEDS_REPORT,
                     unitId
                 )
-                exceededServiceNeedReport(tx, clock.today(), unitId, year, month)
+                exceededServiceNeedReport(
+                    tx,
+                    clock.today(),
+                    unitId,
+                    year,
+                    month,
+                    env.forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed
+                )
             }
         }
     }
@@ -122,7 +133,8 @@ private fun exceededServiceNeedReport(
     today: LocalDate,
     unitId: DaycareId,
     year: Int,
-    month: Int
+    month: Int,
+    forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed: Boolean
 ): List<ExceededServiceNeedReportRow> {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -176,7 +188,8 @@ private fun exceededServiceNeedReport(
                             shiftCareType = serviceNeed.shiftCare,
                             absences = childAbsences,
                             reservations = childReservations,
-                            attendances = childAttendances
+                            attendances = childAttendances,
+                            forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed
                         )
                 }
             }

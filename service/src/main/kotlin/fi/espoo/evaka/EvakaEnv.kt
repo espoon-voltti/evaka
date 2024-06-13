@@ -40,6 +40,7 @@ data class EvakaEnv(
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
     val plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean,
     val personAddressEnvelopeWindowPosition: Rectangle,
+    val forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed: Boolean
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -87,7 +88,10 @@ data class EvakaEnv(
                 personAddressEnvelopeWindowPosition =
                     env.lookup<String?>("evaka.person_address_envelope_window_position")?.let {
                         Rectangle.fromString(it)
-                    } ?: Rectangle.iPostWindowPosition
+                    } ?: Rectangle.iPostWindowPosition,
+                forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed =
+                    env.lookup("evaka.force_majeure_absence_days_calculated_as_used_service_need")
+                        ?: false
             )
         }
     }

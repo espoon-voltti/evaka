@@ -50,7 +50,8 @@ class UsedServiceTests {
             shiftCareType,
             absences,
             reservations,
-            attendances
+            attendances,
+            false
         )
 
     @Test
@@ -187,6 +188,18 @@ class UsedServiceTests {
             .also {
                 assertEquals(it.usedServiceMinutes, 480)
                 assertEquals(it.usedServiceRanges, listOf(range(8, 16)))
+            }
+    }
+
+    @Test
+    fun `force majeure absence days do not increase used service time`() {
+        compute(
+                attendances = listOf(interval(8, 16)),
+                absences = listOf(AbsenceType.FORCE_MAJEURE to AbsenceCategory.BILLABLE)
+            )
+            .also {
+                assertEquals(0, it.usedServiceMinutes)
+                assertEquals(emptyList(), it.usedServiceRanges)
             }
     }
 

@@ -537,7 +537,8 @@ fun computeUsedService(
     shiftCareType: ShiftCareType,
     absences: List<Pair<AbsenceType, AbsenceCategory>>,
     reservations: List<TimeRange>,
-    attendances: List<TimeInterval>
+    attendances: List<TimeInterval>,
+    forceMajureAbsenceDaysCalculateAsUsedServiceNeed: Boolean
 ): UsedServiceResult {
     // Today's date is taken to be "in the future" if child has no attendances today or there's an
     // ongoing attendance
@@ -577,6 +578,16 @@ fun computeUsedService(
     if (isDateInFuture) {
         return UsedServiceResult(
             reservedMinutes = minutesOf(effectiveReservations),
+            usedServiceMinutes = 0,
+            usedServiceRanges = emptyList()
+        )
+    }
+    if (
+        !forceMajureAbsenceDaysCalculateAsUsedServiceNeed &&
+            absences.map { it.first }.toSet() == setOf(AbsenceType.FORCE_MAJEURE)
+    ) {
+        return UsedServiceResult(
+            reservedMinutes = 0,
             usedServiceMinutes = 0,
             usedServiceRanges = emptyList()
         )

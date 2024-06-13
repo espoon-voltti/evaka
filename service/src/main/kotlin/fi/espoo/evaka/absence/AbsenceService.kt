@@ -45,7 +45,8 @@ fun getGroupMonthCalendar(
     today: LocalDate,
     groupId: GroupId,
     year: Int,
-    month: Int
+    month: Int,
+    forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed: Boolean
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -140,7 +141,8 @@ fun getGroupMonthCalendar(
                                                     it.reservation.asTimeRange()
                                                 },
                                             attendances =
-                                                childAttendances.map { it.asTimeInterval() }
+                                                childAttendances.map { it.asTimeInterval() },
+                                            forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed
                                         )
                                     usedServiceByChild.updateKey(child.id) {
                                         (it ?: UsedServiceData(daycareHoursPerMonth)).let { totals

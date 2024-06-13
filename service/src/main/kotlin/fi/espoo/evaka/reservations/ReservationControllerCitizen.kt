@@ -181,7 +181,9 @@ class ReservationControllerCitizen(
                                                                             .mapNotNull {
                                                                                 it.asTimeRange()
                                                                             },
-                                                                        childAttendances
+                                                                        childAttendances,
+                                                                        env
+                                                                            .forceMajeureAbsenceDaysCalculatedAsUsedServiceNeed
                                                                     )
                                                                 }
                                                         ReservationResponseDayChild(
