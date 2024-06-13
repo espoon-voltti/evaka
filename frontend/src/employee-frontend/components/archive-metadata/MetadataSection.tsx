@@ -6,13 +6,15 @@ import { faArrowDownToLine } from 'Icons'
 import React from 'react'
 
 import { Result } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import {
   Document,
   ProcessMetadataResponse
 } from 'lib-common/generated/api-types/process'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H3, H4 } from 'lib-components/typography'
+import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
@@ -81,10 +83,15 @@ export default React.memo(function MetadataSection({
   metadataResult: Result<ProcessMetadataResponse>
 }) {
   const { i18n } = useTranslation()
+  const [sectionOpen, { toggle: toggleOpen }] = useBoolean(false)
 
   return (
-    <div>
-      <H3>{i18n.metadata.title}</H3>
+    <CollapsibleContentArea
+      title={<H2 noMargin>{i18n.metadata.title}</H2>}
+      open={sectionOpen}
+      toggleOpen={toggleOpen}
+      opaque
+    >
       {renderResult(metadataResult, ({ data: metadata }) => {
         if (metadata === null) return <div>{i18n.metadata.notFound}</div>
         return (
@@ -107,10 +114,10 @@ export default React.memo(function MetadataSection({
               ]}
             />
             <Gap />
-            <H4>{i18n.metadata.documents}</H4>
+            <H3>{i18n.metadata.documents}</H3>
             <DocumentMetadata document={metadata.primaryDocument} />
             <Gap />
-            <H4>{i18n.metadata.history}</H4>
+            <H3>{i18n.metadata.history}</H3>
             <ul>
               {metadata.process.history.map((row) => (
                 <li key={row.rowIndex}>
@@ -123,6 +130,6 @@ export default React.memo(function MetadataSection({
           </div>
         )
       })}
-    </div>
+    </CollapsibleContentArea>
   )
 })

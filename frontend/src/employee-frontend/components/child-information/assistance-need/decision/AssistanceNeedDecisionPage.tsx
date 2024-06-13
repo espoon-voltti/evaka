@@ -18,7 +18,7 @@ import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decis
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Content, { ContentArea } from 'lib-components/layout/Container'
+import Content, { Container } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
   FixedSpaceColumn,
@@ -112,9 +112,9 @@ export default React.memo(function AssistanceNeedDecisionPage() {
               {permittedActions.includes('READ_METADATA') && (
                 <>
                   <Gap />
-                  <ContentArea opaque>
+                  <Container>
                     <DecisionMetadataSection decisionId={decision.id} />
-                  </ContentArea>
+                  </Container>
                 </>
               )}
             </>

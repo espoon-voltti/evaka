@@ -12,7 +12,7 @@ import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Container } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
   FixedSpaceColumn,
@@ -70,9 +70,7 @@ const DecisionReadView = React.memo(function DecisionReadView({
         <>
           <Gap />
           <Container>
-            <ContentArea opaque>
-              <DecisionMetadataSection decisionId={decision.id} />
-            </ContentArea>
+            <DecisionMetadataSection decisionId={decision.id} />
           </Container>
         </>
       )}

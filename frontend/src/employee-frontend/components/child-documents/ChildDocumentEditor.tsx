@@ -413,9 +413,9 @@ const ChildDocumentReadViewInner = React.memo(
           {permittedActions.includes('READ_METADATA') && (
             <>
               <Gap />
-              <ContentArea opaque>
+              <Container>
                 <ChildDocumentMetadataSection documentId={document.id} />
-              </ContentArea>
+              </Container>
             </>
           )}
         </Container>
