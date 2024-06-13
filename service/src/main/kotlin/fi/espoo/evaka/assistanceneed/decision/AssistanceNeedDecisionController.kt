@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -111,7 +112,8 @@ class AssistanceNeedDecisionController(
                     tx.insertAssistanceNeedDecision(
                         childId = childId,
                         data = decision,
-                        processId = processId
+                        processId = processId,
+                        user = user
                     )
                 }
             }
@@ -152,6 +154,28 @@ class AssistanceNeedDecisionController(
                 }
             }
             .also { Audit.ChildAssistanceNeedDecisionRead.log(targetId = AuditId(id)) }
+    }
+
+    @GetMapping("/employee/assistance-need-decision/{id}/pdf")
+    fun getAssistanceNeedDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedDecisionId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.DOWNLOAD,
+                        id
+                    )
+                }
+                assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
+            }
+            .also { Audit.ChildAssistanceNeedDecisionDownloadEmployee.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(

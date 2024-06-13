@@ -82,7 +82,7 @@ class AssistanceNeedPreschoolDecisionController(
                                     }
                             }
 
-                    tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId, processId)
+                    tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId, processId, user)
                 }
             }
             .also { assistanceNeedDecision ->

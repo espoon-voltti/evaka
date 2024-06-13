@@ -76,7 +76,10 @@ import {
   updateFeeAlteration
 } from '../../generated/api-clients/invoicing'
 import { getFosterParents } from '../../generated/api-clients/pis'
-import { getChildDocumentMetadata } from '../../generated/api-clients/process'
+import {
+  getAssistanceNeedDecisionMetadata,
+  getChildDocumentMetadata
+} from '../../generated/api-clients/process'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('childInformation', {
@@ -85,6 +88,10 @@ export const queryKeys = createQueryKeys('childInformation', {
   childDocumentMetadata: (id: UUID) => ['childDocumentMetadata', id],
   childDocumentWriteLock: (id: UUID) => ['childDocument', id, 'lock'],
   assistance: (childId: UUID) => ['assistance', childId],
+  assistanceNeedDecisionMetadata: (decisionId: UUID) => [
+    'assistanceNeedDecisionMetadata',
+    decisionId
+  ],
   assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
     'assistanceNeedPreschoolDecisionBasics',
     childId
@@ -271,6 +278,12 @@ export const deleteOtherAssistanceMeasureMutation = mutation({
   api: (arg: Arg0<typeof deleteOtherAssistanceMeasure> & { childId: UUID }) =>
     deleteOtherAssistanceMeasure(arg),
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
+})
+
+export const assistanceNeedDecisionMetadataQuery = query({
+  api: getAssistanceNeedDecisionMetadata,
+  queryKey: ({ decisionId }) =>
+    queryKeys.assistanceNeedDecisionMetadata(decisionId)
 })
 
 export const assistanceNeedPreschoolDecisionBasicsQuery = query({

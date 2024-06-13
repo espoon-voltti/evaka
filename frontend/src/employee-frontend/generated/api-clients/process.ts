@@ -13,6 +13,22 @@ import { uri } from 'lib-common/uri'
 
 
 /**
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.getAssistanceNeedDecisionMetadata
+*/
+export async function getAssistanceNeedDecisionMetadata(
+  request: {
+    decisionId: UUID
+  }
+): Promise<ProcessMetadataResponse> {
+  const { data: json } = await client.request<JsonOf<ProcessMetadataResponse>>({
+    url: uri`/employee/process-metadata/assistance-need-decisions/${request.decisionId}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonProcessMetadataResponse(json)
+}
+
+
+/**
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.getChildDocumentMetadata
 */
 export async function getChildDocumentMetadata(

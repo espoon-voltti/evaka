@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -22,13 +23,14 @@ import java.time.LocalDate
 fun Database.Transaction.insertEmptyAssistanceNeedPreschoolDecisionDraft(
     childId: ChildId,
     processId: ArchivedProcessId?,
+    user: AuthenticatedUser.Employee,
     language: OfficialLanguage = OfficialLanguage.FI
 ): AssistanceNeedPreschoolDecision =
     createQuery {
             sql(
                 """
-                INSERT INTO assistance_need_preschool_decision (child_id, language, process_id)
-                VALUES (${bind(childId)}, ${bind(language)}, ${bind(processId)})
+                INSERT INTO assistance_need_preschool_decision (child_id, language, process_id, created_by)
+                VALUES (${bind(childId)}, ${bind(language)}, ${bind(processId)}, ${bind(user.id)})
                 RETURNING id
                 """
             )
