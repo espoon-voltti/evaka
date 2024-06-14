@@ -6,6 +6,7 @@ package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 
@@ -20,9 +21,6 @@ private constructor(
     val content: EmailContent,
     val traceId: String
 ) {
-    fun send(emailClient: EmailClient) {
-        emailClient.send(this)
-    }
 
     companion object {
         fun create(
@@ -56,6 +54,27 @@ private constructor(
             }
 
             return Email(toAddress, fromAddress, content, traceId)
+        }
+
+        fun createForEmployee(
+            employee: DaycareAclRowEmployee,
+            content: EmailContent,
+            traceId: String,
+            fromAddress: String
+        ): Email? {
+            if (employee.email == null) {
+                logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
+                return null
+            }
+
+            if (!employee.email.matches(EMAIL_PATTERN)) {
+                logger.warn(
+                    "Will not send email due to invalid toAddress \"$employee.email\": (traceId: $traceId)"
+                )
+                return null
+            }
+
+            return Email(employee.email, fromAddress, content, traceId)
         }
     }
 }

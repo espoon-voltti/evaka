@@ -5,6 +5,7 @@
 package fi.espoo.evaka.children
 
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
@@ -64,3 +65,19 @@ SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_d
             )
         }
         .toList()
+
+fun Database.Read.getActivePlacementUnitsForChildren(
+    today: LocalDate,
+    childIds: Set<ChildId>
+): Map<DaycareId, List<ChildId>> =
+    createQuery {
+            sql(
+                """
+SELECT unit_id, child_id
+FROM placement
+WHERE child_id = ANY (${bind(childIds)}) AND daterange(start_date, end_date, '[]') @> ${bind(today)}
+"""
+            )
+        }
+        .toList { column<DaycareId>("unit_id") to column<ChildId>("child_id") }
+        .groupBy({ it.first }, { it.second })

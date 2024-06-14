@@ -28,7 +28,8 @@ data class DaycareAclRowEmployee(
 
 fun Database.Read.getDaycareAclRows(
     daycareId: DaycareId,
-    includeStaffOccupancy: Boolean
+    includeStaffOccupancy: Boolean,
+    role: UserRole? = null
 ): List<DaycareAclRow> =
     createQuery {
             sql(
@@ -52,7 +53,7 @@ FROM daycare_acl
                              JOIN daycare_group dg ON acl.daycare_group_id = dg.id
                     GROUP BY daycare_id, employee_id) groups USING (daycare_id, employee_id)
          LEFT JOIN staff_occupancy_coefficient soc USING (daycare_id, employee_id)
-WHERE daycare_id = ${bind(daycareId)}
+WHERE daycare_id = ${bind(daycareId)} ${if (role != null) "AND role = ${bind(role)}" else ""}
     """
             )
         }

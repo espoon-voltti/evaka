@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.specialdiet
 
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.mapper.PropagateNull
 
@@ -13,16 +14,32 @@ data class SpecialDiet(@PropagateNull val id: Int?, val abbreviation: String)
 
 /**
  * Sets child's special diets to null if there are some children whose special diet is not contained
- * in the new list. Returns the count of affected rows
+ * in the new list. Returns a map from ChildId to SpecialDiet that was previously set for that
+ * child.
  */
 fun Database.Transaction.resetSpecialDietsNotContainedWithin(
     specialDietList: List<SpecialDiet>
-): Int {
+): Map<ChildId, SpecialDiet> {
     val newSpecialDietIds = specialDietList.map { it.id }
-    val affectedRows = execute {
+
+    val previousDiets =
+        createQuery {
+                sql(
+                    """
+SELECT child.id as child_id, special_diet.id, special_diet.abbreviation 
+FROM child 
+INNER JOIN special_diet ON child.diet_id = special_diet.id
+WHERE child.diet_id != ALL (${bind(newSpecialDietIds)})
+        """
+                )
+            }
+            .toMap { column<ChildId>("child_id") to row<SpecialDiet>() }
+
+    execute {
         sql("UPDATE child SET diet_id = null WHERE diet_id != ALL (${bind(newSpecialDietIds)})")
     }
-    return affectedRows
+
+    return previousDiets
 }
 
 fun Database.Transaction.resetMealTexturesNotContainedWithin(
