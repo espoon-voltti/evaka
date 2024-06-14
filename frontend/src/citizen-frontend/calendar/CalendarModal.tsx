@@ -4,11 +4,11 @@
 
 import styled from 'styled-components'
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { defaultMargins } from 'lib-components/white-space'
 
-export const CalendarModalCloseButton = styled(IconButton)`
+export const CalendarModalCloseButton = styled(IconOnlyButton)`
   position: absolute;
   top: ${defaultMargins.s};
   right: ${defaultMargins.s};

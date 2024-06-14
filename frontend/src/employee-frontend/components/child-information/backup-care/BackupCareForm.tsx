@@ -21,8 +21,9 @@ import {
   useSelectMutation
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
-import MutateButton, {
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import {
+  MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -236,7 +237,10 @@ export default function BackupCareForm({ childId, backupCare }: Props) {
           </div>
         ))}
         <ActionButtons>
-          <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
+          <LegacyButton
+            onClick={() => clearUiMode()}
+            text={i18n.common.cancel}
+          />
           <MutateButton
             primary
             type="submit"

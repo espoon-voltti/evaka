@@ -11,7 +11,7 @@ import { Action } from 'lib-common/generated/action'
 import { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4, LabelLike } from 'lib-components/typography'
@@ -68,7 +68,7 @@ export default React.memo(function DailyServiceTimesRow({
         <Td minimalWidth topBorder borderStyle="dashed" verticalAlign="middle">
           <FixedSpaceRow alignItems="center" spacing="s">
             {!hasEnded && !isEditing && permittedActions.includes('UPDATE') ? (
-              <IconButton
+              <IconOnlyButton
                 icon={faPen}
                 data-qa="daily-service-times-row-edit"
                 onClick={(ev) => {
@@ -81,7 +81,7 @@ export default React.memo(function DailyServiceTimesRow({
             {!hasStarted &&
             !isEditing &&
             permittedActions.includes('DELETE') ? (
-              <IconButton
+              <IconOnlyButton
                 icon={faTrash}
                 data-qa="daily-service-times-row-delete"
                 onClick={(ev) => {
@@ -113,7 +113,7 @@ export default React.memo(function DailyServiceTimesRow({
               }
               data-qa="status"
             />
-            <IconButton
+            <IconOnlyButton
               icon={isOpen ? faChevronUp : faChevronDown}
               onClick={toggleOpen}
               data-qa="daily-service-times-row-opener"

@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 
 import { Action } from './ApplicationActions'
 
@@ -22,7 +22,8 @@ export default React.memo(function PrimaryAction({ action }: Props) {
     <>
       {action && (
         <PrimaryActionContainer onClick={(e) => e.stopPropagation()}>
-          <InlineButton
+          <Button
+            appearance="inline"
             text={action.label}
             onClick={action.onClick}
             disabled={!action.enabled}

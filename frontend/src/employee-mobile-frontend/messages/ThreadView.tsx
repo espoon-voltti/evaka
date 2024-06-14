@@ -25,7 +25,7 @@ import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -162,6 +162,7 @@ const ReceivedThread = React.memo(function ReceivedThread({
             <ActionRow justifyContent="space-between">
               {type === 'MESSAGE' ? (
                 <ReplyToThreadButton
+                  appearance="inline"
                   icon={faReply}
                   onClick={showReplyEditor}
                   data-qa="message-reply-editor-btn"
@@ -322,7 +323,7 @@ const ActionRow = styled(FixedSpaceRow)`
   padding: 0 ${defaultMargins.xs} ${defaultMargins.xs} ${defaultMargins.xs};
 `
 
-const ReplyToThreadButton = styled(InlineButton)`
+const ReplyToThreadButton = styled(Button)`
   align-self: flex-start;
 `
 

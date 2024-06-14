@@ -45,10 +45,10 @@ import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
-import Button from 'lib-components/atoms/buttons/Button'
-import { ButtonLink } from 'lib-components/atoms/buttons/ButtonLink'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -364,7 +364,7 @@ const ReservationsView = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <Button
+          <LegacyButton
             text={
               i18n.attendances.actions.confirmedRangeReservations
                 .markReservations
@@ -372,7 +372,7 @@ const ReservationsView = ({
             onClick={onEditReservations}
             data-qa="edit"
           />
-          <Button
+          <LegacyButton
             primary
             text={
               i18n.attendances.actions.confirmedRangeReservations
@@ -465,7 +465,7 @@ const ReservationsEdit = ({
           spacing={defaultMargins.zero}
           gap={defaultMargins.s}
         >
-          <Button text={i18n.common.cancel} onClick={onCancel} />
+          <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
           <MutateButton
             primary
             text={i18n.common.confirm}
@@ -499,7 +499,8 @@ const ReservationEdit = ({
       return <TimesEdit bind={form} />
     case 'absence':
       return (
-        <ButtonLink
+        <Button
+          appearance="link"
           onClick={() => {
             if (form.state.scheduleType === 'FIXED_SCHEDULE') {
               reservation.set({ branch: 'fixedSchedule', state: true })
@@ -511,9 +512,8 @@ const ReservationEdit = ({
             }
           }}
           data-qa="remove-absence"
-        >
-          {i18n.attendances.removeAbsence}
-        </ButtonLink>
+          text={i18n.attendances.removeAbsence}
+        />
       )
     case 'fixedSchedule':
       return (
@@ -593,7 +593,7 @@ const ReservationTimeAddButton = ({
   const { i18n } = useTranslation()
 
   return (
-    <IconButton
+    <IconOnlyButton
       icon={faPlus}
       onClick={() =>
         form.update((prev) => [...prev, { startTime: '', endTime: '' }])
@@ -620,7 +620,7 @@ const ReservationTimeEdit = ({
       <span>–</span>
       <TimeInputF bind={endTime} data-qa="reservation-end-time" />
       {onRemoveTime !== undefined && (
-        <IconButton
+        <IconOnlyButton
           icon={faTrash}
           onClick={onRemoveTime}
           aria-label={i18n.common.remove}

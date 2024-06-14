@@ -9,8 +9,8 @@ import styled from 'styled-components'
 
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText } from 'lib-components/typography'
@@ -122,7 +122,7 @@ export default React.memo(function ImageEditor({
           </InformationText>
 
           <ButtonRow>
-            <Button
+            <LegacyButton
               text={i18n.common.cancel}
               onClick={onReturn}
               disabled={submitting}

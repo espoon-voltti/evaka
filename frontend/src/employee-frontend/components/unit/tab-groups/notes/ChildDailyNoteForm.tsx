@@ -15,8 +15,8 @@ import {
 } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -284,7 +284,7 @@ export default React.memo(function ChildDailyNoteForm({
           </FixedSpaceColumn>
         </FixedSpaceColumn>
         <FixedSpaceRow justifyContent="space-around">
-          <Button
+          <LegacyButton
             onClick={onCancel}
             text={i18n.common.cancel}
             data-qa="btn-cancel"

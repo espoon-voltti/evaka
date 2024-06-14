@@ -20,7 +20,7 @@ import {
 } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -350,13 +350,15 @@ function ServiceNeedEditorRow({
         </Td>
         <Td>
           <FixedSpaceRow justifyContent="flex-end" spacing="m">
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={onCancel}
               text={i18n.common.cancel}
               disabled={submitting}
               data-qa="service-need-cancel"
             />
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={onSubmit}
               text={i18n.common.save}
               disabled={submitting || !formIsValid}

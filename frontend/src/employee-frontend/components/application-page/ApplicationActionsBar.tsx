@@ -11,8 +11,8 @@ import {
   ApplicationDetails,
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { Gap } from 'lib-components/white-space'
 
@@ -52,7 +52,7 @@ export default React.memo(function ApplicationActionsBar({
         !editing &&
         (applicationStatus === 'CREATED' || applicationStatus === 'SENT'),
       component: (
-        <Button
+        <LegacyButton
           onClick={() => setEditing(true)}
           text={i18n.common.edit}
           primary
@@ -64,14 +64,17 @@ export default React.memo(function ApplicationActionsBar({
       id: 'cancel-editing',
       enabled: editing && applicationStatus !== 'CREATED',
       component: (
-        <Button onClick={() => setEditing(false)} text={i18n.common.cancel} />
+        <LegacyButton
+          onClick={() => setEditing(false)}
+          text={i18n.common.cancel}
+        />
       )
     },
     {
       id: 'cancel-new-application',
       enabled: editing && applicationStatus === 'CREATED',
       component: (
-        <Button onClick={() => navigate(-1)} text={i18n.common.cancel} />
+        <LegacyButton onClick={() => navigate(-1)} text={i18n.common.cancel} />
       )
     },
     {

@@ -27,7 +27,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -987,7 +987,8 @@ export default function UnitEditor(props: Props) {
         <TopBar>
           <H1 fitted>{props.unit.name}</H1>
           {!props.editable && (
-            <InlineButton
+            <Button
+              appearance="inline"
               icon={faPen}
               onClick={onClickEditHandler}
               text={i18n.common.edit}

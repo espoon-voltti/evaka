@@ -4,8 +4,11 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
-import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
-import { faArrowDownToLine } from 'Icons'
+import {
+  faArrowDownToLine,
+  fasCheckCircle,
+  fasExclamationTriangle
+} from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, {
@@ -32,8 +35,8 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
 import DocumentView from 'lib-components/document-templates/DocumentView'
@@ -49,7 +52,7 @@ import {
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2, H3, H4 } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
@@ -267,7 +270,7 @@ const ChildDocumentEditViewInner = React.memo(
           <Container>
             <FixedSpaceRow justifyContent="space-between" alignItems="center">
               <FixedSpaceRow alignItems="center">
-                <Button
+                <LegacyButton
                   text={i18n.common.goBack}
                   onClick={goBack}
                   // disable while debounce is pending to avoid leaving before saving
@@ -293,7 +296,7 @@ const ChildDocumentEditViewInner = React.memo(
                 </FixedSpaceRow>
               </FixedSpaceRow>
 
-              <Button
+              <LegacyButton
                 text={i18n.childInformation.childDocuments.editor.preview}
                 primary
                 onClick={() =>
@@ -421,7 +424,8 @@ const ChildDocumentMetadataSection = React.memo(
               {permittedActions.includes('DOWNLOAD') && (
                 <>
                   <Gap />
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     icon={faArrowDownToLine}
                     text={t.downloadPdf}
                     disabled={!metadata.downloadable}
@@ -514,7 +518,7 @@ const ChildDocumentReadViewInner = React.memo(
           <Container>
             <FixedSpaceRow justifyContent="space-between" alignItems="center">
               <FixedSpaceRow alignItems="center">
-                <Button
+                <LegacyButton
                   text={i18n.common.goBack}
                   onClick={goBack}
                   data-qa="return-button"
@@ -563,7 +567,7 @@ const ChildDocumentReadViewInner = React.memo(
               <FixedSpaceRow>
                 {permittedActions.includes('UPDATE') &&
                   document.status !== 'COMPLETED' && (
-                    <Button
+                    <LegacyButton
                       text={i18n.common.edit}
                       onClick={() =>
                         navigate(

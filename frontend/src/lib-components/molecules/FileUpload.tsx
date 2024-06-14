@@ -11,7 +11,7 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/attachment'
 import { UUID } from 'lib-common/types'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { H4, InformationText, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -26,7 +26,7 @@ import {
   faTimes
 } from 'lib-icons'
 
-import InlineButton from '../atoms/buttons/InlineButton'
+import { Button } from '../atoms/buttons/Button'
 import { useTranslations } from '../i18n'
 
 const fileUploadErrorKeys = {
@@ -201,7 +201,7 @@ const ProgressBar = styled.div<ProgressBarProps>`
   margin-bottom: 3px;
 `
 
-const FileDeleteButton = styled(IconButton)`
+const FileDeleteButton = styled(IconOnlyButton)`
   border: none;
   background: none;
   padding: 4px;
@@ -442,7 +442,8 @@ export default React.memo(function FileUpload({
             htmlFor={ariaId}
             onKeyDown={onKeyDown}
           >
-            <InlineButton
+            <Button
+              appearance="inline"
               className="file-input-button"
               disabled={disabled}
               icon={faPlus}
@@ -458,7 +459,8 @@ export default React.memo(function FileUpload({
           htmlFor={ariaId}
           onKeyDown={onKeyDown}
         >
-          <InlineButton
+          <Button
+            appearance="inline"
             disabled={disabled}
             icon={faPaperclip}
             text={i18n.input.title}

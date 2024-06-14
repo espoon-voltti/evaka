@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Title } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
@@ -30,11 +30,11 @@ export default React.memo(function PeriodPicker({ onChange, date }: Props) {
 
   return (
     <Container>
-      <IconButton
+      <IconOnlyButton
         onClick={decrease}
         data-qa="period-picker-previous-month"
         icon={faChevronLeft}
-        gray
+        color="gray"
         aria-label={i18n.common.datePicker.previousMonthLabel}
       />
       <Gap horizontal size="L" />
@@ -42,11 +42,11 @@ export default React.memo(function PeriodPicker({ onChange, date }: Props) {
         {i18n.datePicker.months[date.getMonth() - 1]} {date.getYear()}
       </PeriodTitle>
       <Gap horizontal size="L" />
-      <IconButton
+      <IconOnlyButton
         onClick={increase}
         data-qa="period-picker-next-month"
         icon={faChevronRight}
-        gray
+        color="gray"
         aria-label={i18n.common.datePicker.nextMonthLabel}
       />
     </Container>

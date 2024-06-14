@@ -18,7 +18,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { StaticChip } from 'lib-components/atoms/Chip'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -286,7 +286,8 @@ const EmployeeAclEditForm = React.memo(function EmployeeAclEditForm({
         </FormControl>
       )}
       <BottomRow>
-        <InlineButton
+        <Button
+          appearance="inline"
           text={i18n.common.cancel}
           data-qa="edit-acl-row-cancel-btn"
           onClick={onClose}

@@ -23,7 +23,7 @@ import { formatCents, parseCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import { stringToInt } from 'lib-common/utils/number'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Combobox, {
   MenuItemProps
 } from 'lib-components/atoms/dropdowns/Combobox'
@@ -200,7 +200,7 @@ function InvoiceRowSectionRow({
             <Tooltip tooltip={note} data-qa="note-tooltip">
               <IconButtonWrapper margin={editable}>
                 {addNote && editable ? (
-                  <IconButton
+                  <IconOnlyButton
                     icon={note ? fasCommentAltLines : faCommentAlt}
                     onClick={addNote}
                     aria-label={i18n.common.addNew}
@@ -218,7 +218,7 @@ function InvoiceRowSectionRow({
           ) : null}
           {remove && deletable ? (
             <IconButtonWrapper margin={editable}>
-              <IconButton
+              <IconOnlyButton
                 icon={faTrash}
                 onClick={remove}
                 data-qa="delete-invoice-row-button"

@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText, P } from 'lib-components/typography'
@@ -48,7 +48,8 @@ export const StaticStickyNote = React.memo(function StaticStickyNote({
       </InformationText>
       <Gap size="xs" />
       <FixedSpaceRow justifyContent="flex-end">
-        <InlineButton
+        <Button
+          appearance="inline"
           data-qa="sticky-note-edit"
           disabled={!editable}
           onClick={onEdit}

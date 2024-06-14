@@ -14,7 +14,7 @@ import {
   FeeAlterationWithPermittedActions
 } from 'lib-common/generated/api-types/invoicing'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
@@ -89,7 +89,7 @@ export default React.memo(function FeeAlterationList({
               </FixedSpaceRow>
               <FixedSpaceRow>
                 {permittedActions.includes('UPDATE') && (
-                  <IconButton
+                  <IconOnlyButton
                     icon={faPen}
                     onClick={() => {
                       if (feeAlteration.id !== null) {
@@ -100,7 +100,7 @@ export default React.memo(function FeeAlterationList({
                   />
                 )}
                 {permittedActions.includes('DELETE') && (
-                  <IconButton
+                  <IconOnlyButton
                     icon={faTrash}
                     onClick={() => toggleDeleteModal(feeAlteration)}
                     aria-label={i18n.common.remove}

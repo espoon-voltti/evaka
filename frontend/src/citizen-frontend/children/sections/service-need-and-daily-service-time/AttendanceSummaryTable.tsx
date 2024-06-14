@@ -13,7 +13,7 @@ import { ServiceNeedSummary } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -55,7 +55,7 @@ export default React.memo(function AttendanceSummaryTable({
       <ListGrid>
         <H3>{t.children.attendanceSummary.title}</H3>
         <FixedSpaceRow alignItems="center">
-          <IconButton
+          <IconOnlyButton
             icon={faChevronLeft}
             onClick={() =>
               setAttendanceSummaryDate(attendanceSummaryDate.subMonths(1))
@@ -63,7 +63,7 @@ export default React.memo(function AttendanceSummaryTable({
             aria-label={t.calendar.previousMonth}
           />
           <div>{attendanceSummaryDate.formatExotic('MM / yyyy')}</div>
-          <IconButton
+          <IconOnlyButton
             icon={faChevronRight}
             onClick={() =>
               setAttendanceSummaryDate(attendanceSummaryDate.addMonths(1))

@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { FocusEventHandler, useState } from 'react'
 import styled, { css } from 'styled-components'
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { tabletMin } from 'lib-components/breakpoints'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import { H1, P } from 'lib-components/typography'
@@ -100,7 +100,7 @@ export const ModalButtons = styled.div<{
   }
 `
 
-const CloseButton = styled(IconButton)`
+const CloseButton = styled(IconOnlyButton)`
   position: absolute;
   top: ${defaultMargins.s};
   right: ${defaultMargins.s};

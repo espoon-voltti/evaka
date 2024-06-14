@@ -8,7 +8,7 @@ import { wrapResult } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -85,7 +85,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
                     <Td>{name}</Td>
                     <Td align="right">
                       <FixedSpaceRow justifyContent="flex-end" spacing="L">
-                        <IconButton
+                        <IconOnlyButton
                           icon={faPen}
                           onClick={() =>
                             setOpenModal({
@@ -97,7 +97,7 @@ export default React.memo(function PersonalMobileDevicesPage() {
                           disabled={openModal !== undefined}
                           aria-label={i18n.common.edit}
                         />
-                        <IconButton
+                        <IconOnlyButton
                           icon={faTrash}
                           onClick={() => setOpenModal({ id, action: 'delete' })}
                           disabled={openModal !== undefined}

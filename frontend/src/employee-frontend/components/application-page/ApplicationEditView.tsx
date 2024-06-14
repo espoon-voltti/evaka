@@ -24,7 +24,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
@@ -708,7 +708,8 @@ export default React.memo(function ApplicationEditView({
               <HorizontalContainer key={unit.id}>
                 <Link to={`/units/${unit.id}`}>{`${i + 1}. ${unit.name}`}</Link>
                 <Gap size="s" horizontal />
-                <InlineButton
+                <Button
+                  appearance="inline"
                   icon={faTimes}
                   text={i18n.common.remove}
                   onClick={() =>
@@ -1208,7 +1209,8 @@ export default React.memo(function ApplicationEditView({
                           />
                         </WithLabel>
                         <Gap size="s" horizontal />
-                        <InlineButton
+                        <Button
+                          appearance="inline"
                           icon={faTimes}
                           text={i18n.common.remove}
                           onClick={() =>

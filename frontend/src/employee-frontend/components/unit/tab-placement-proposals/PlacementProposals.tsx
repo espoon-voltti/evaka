@@ -20,7 +20,8 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import MutateButton, {
+import {
+  MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import InputField from 'lib-components/atoms/form/InputField'

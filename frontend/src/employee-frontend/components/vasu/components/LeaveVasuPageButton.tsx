@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 
 import { useTranslation } from '../../../state/i18n'
 
@@ -23,7 +23,7 @@ export const LeaveVasuPageButton = React.memo(function LeaveVasuPageButton({
 
   return (
     <ExitButtonWrapper>
-      <Button
+      <LegacyButton
         text={i18n.vasu.leavePage}
         onClick={() => navigate(`/child-information/${childId}`)}
         disabled={disabled}

@@ -18,8 +18,8 @@ import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -171,10 +171,10 @@ export default React.memo(function Groups({
         <TitleContainer onClick={toggleAllGroups}>
           <H2 fitted>{i18n.unit.groups.title}</H2>
           <Gap size="XL" horizontal />
-          <IconButton
+          <IconOnlyButton
             icon={allGroupsAreOpen ? faAngleUp : faAngleDown}
             size="L"
-            gray
+            color="gray"
             data-qa="toggle-all-groups-collapsible"
             aria-label={allGroupsAreOpen ? i18n.common.close : i18n.common.open}
           />
@@ -182,7 +182,8 @@ export default React.memo(function Groups({
         <FixedSpaceRow spacing="L" alignItems="center">
           {canSeeFamilyContactsReport && (
             <Link to={`/units/${unit.id}/family-contacts`}>
-              <InlineButton
+              <Button
+                appearance="inline"
                 text={i18n.unit.groups.familyContacts}
                 onClick={() => undefined}
                 data-qa="open-family-contacts-button"

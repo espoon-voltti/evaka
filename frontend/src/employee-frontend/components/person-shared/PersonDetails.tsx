@@ -21,8 +21,8 @@ import { Action } from 'lib-common/generated/action'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { isoLanguages } from 'lib-common/generated/language'
 import LocalDate from 'lib-common/local-date'
-import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -270,7 +270,8 @@ export default React.memo(function PersonDetails({
             {duplicateOngoing ? (
               <SpinnerSegment margin="xxs" />
             ) : (
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faCopy}
                 onClick={onDuplicate}
                 text={i18n.personProfile.duplicate}
@@ -284,7 +285,8 @@ export default React.memo(function PersonDetails({
             {vtjUpdateOngoing ? (
               <SpinnerSegment margin="xxs" />
             ) : (
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faSync}
                 onClick={onVtjUpdate}
                 data-qa="update-from-vtj-button"
@@ -302,7 +304,8 @@ export default React.memo(function PersonDetails({
               target="_blank"
               rel="noreferrer"
             >
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faFileAlt}
                 text={i18n.personProfile.downloadAddressPage}
                 onClick={noop}
@@ -315,7 +318,8 @@ export default React.memo(function PersonDetails({
         (person.socialSecurityNumber === null && canEditPersonalDetails) ||
         permittedActions.has('UPDATE_INVOICE_ADDRESS') ||
         permittedActions.has('UPDATE_OPH_OID') ? (
-          <InlineButton
+          <Button
+            appearance="inline"
             icon={faPen}
             onClick={() => toggleUiMode('person-details-editing')}
             disabled={uiMode === 'person-details-editing'}
@@ -391,7 +395,8 @@ export default React.memo(function PersonDetails({
                   !permittedActions.has('ENABLE_SSN_ADDING')) ? (
                   <span data-qa="no-ssn">{i18n.personProfile.noSsn}</span>
                 ) : (
-                  <InlineButton
+                  <Button
+                    appearance="inline"
                     onClick={() => toggleUiMode('add-ssn-modal')}
                     text={i18n.personProfile.addSsn}
                     disabled={!permittedActions.has('ADD_SSN')}
@@ -660,8 +665,11 @@ export default React.memo(function PersonDetails({
       {editing && (
         <RightAlignedRow>
           <FixedSpaceRow>
-            <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
-            <Button
+            <LegacyButton
+              onClick={() => clearUiMode()}
+              text={i18n.common.cancel}
+            />
+            <LegacyButton
               primary
               disabled={false}
               onClick={() => onSubmit()}

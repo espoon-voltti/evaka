@@ -6,7 +6,7 @@ import React, { useCallback, useState } from 'react'
 
 import { FinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
 import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H3, Label } from 'lib-components/typography'
@@ -96,7 +96,8 @@ export default React.memo(function FinanceDecision({
       </ListGrid>
       <Gap size="m" />
 
-      <InlineButton
+      <Button
+        appearance="inline"
         icon={faFileAlt}
         text={t.decisions.financeDecisions.loadDecisionPDF}
         onClick={() =>

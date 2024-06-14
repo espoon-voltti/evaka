@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { BoundForm, useFormField, useFormFields } from 'lib-common/form/hooks'
 import { CalendarEventTimeForm } from 'lib-common/generated/api-types/calendarevent'
 import { UUID } from 'lib-common/types'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
@@ -53,7 +53,7 @@ export default React.memo(function NewCalendarEventTimeEditor({
         size="narrow"
         data-qa="event-time-end-input"
       />
-      <InlineButton
+      <LegacyInlineButton
         icon={faCheck}
         disabled={!bind.isValid()}
         text=""
@@ -62,7 +62,7 @@ export default React.memo(function NewCalendarEventTimeEditor({
         }}
         data-qa="event-time-submit"
       />
-      <InlineButton
+      <LegacyInlineButton
         icon={faTrash}
         text=""
         onClick={() => {

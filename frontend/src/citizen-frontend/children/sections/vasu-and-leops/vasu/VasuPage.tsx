@@ -4,15 +4,14 @@
 
 import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
-import DownloadButton from 'lib-components/atoms/buttons/DownloadButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
@@ -23,12 +22,13 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { vasuTranslations } from 'lib-customizations/employee'
+import { faArrowDownToLine } from 'lib-icons'
 
 import { UnwrapResult } from '../../../../async-rendering'
 import { useTranslation } from '../../../../localization'
 import {
-  vasuDocumentQuery,
-  givePermissionToShareVasuMutation
+  givePermissionToShareVasuMutation,
+  vasuDocumentQuery
 } from '../queries'
 
 import { VasuContainer } from './components/VasuContainer'
@@ -42,6 +42,54 @@ const TopButtonRow = styled(FixedSpaceRow)`
     margin-right: ${defaultMargins.s};
   }
 `
+
+interface DownloadButtonWrapperProps {
+  margin?: string
+}
+
+const DownloadButtonWrapper = styled.div<DownloadButtonWrapperProps>`
+  margin: ${(p) => p.margin ?? defaultMargins.xs} 0;
+
+  button {
+    padding-left: 0;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  @media (max-width: ${tabletMin}) {
+    margin-left: ${defaultMargins.m};
+  }
+
+  @media print {
+    display: none;
+  }
+`
+type DownloadButtonProps = {
+  label: string
+  'data-qa'?: string
+  onClick?: () => void
+}
+
+const DownloadButton = React.memo(function DownloadButton({
+  label,
+  'data-qa': dataQa,
+  onClick,
+  margin
+}: DownloadButtonProps & DownloadButtonWrapperProps) {
+  const { colors } = useTheme()
+  const defaultBehaviour = () => window.print()
+  return (
+    <DownloadButtonWrapper margin={margin}>
+      <LegacyInlineButton
+        icon={faArrowDownToLine}
+        text={label}
+        onClick={onClick ?? defaultBehaviour}
+        data-qa={dataQa}
+        color={colors.main.m1}
+      />
+    </DownloadButtonWrapper>
+  )
+})
 
 export default React.memo(function VasuPage() {
   const { id } = useRouteParams(['id'])
@@ -116,7 +164,7 @@ export default React.memo(function VasuPage() {
                             ? t.children.vasu.givePermissionToShareTitleVasu
                             : t.children.vasu.givePermissionToShareTitleLeops}
                         </Label>
-                        <InlineButton
+                        <LegacyInlineButton
                           onClick={togglePermissionExpanded}
                           text={
                             permissionExpanded ? t.common.hide : t.common.show

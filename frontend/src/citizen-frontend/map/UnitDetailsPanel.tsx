@@ -11,7 +11,7 @@ import { useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { mockNow } from 'lib-common/utils/helpers'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -97,7 +97,8 @@ export default React.memo(function UnitDetailsPanel({
     <Wrapper data-qa="map-unit-details">
       <Area opaque>
         <Gap size="s" />
-        <InlineButton
+        <Button
+          appearance="inline"
           data-qa="map-unit-details-back"
           text={t.map.backToSearch}
           icon={faArrowLeft}

@@ -10,7 +10,7 @@ import { faAngleLeft } from 'lib-icons'
 
 import { defaultMargins } from '../../white-space'
 
-import InlineButton from './InlineButton'
+import LegacyInlineButton from './LegacyInlineButton'
 
 interface WrapperProps {
   margin?: string
@@ -50,7 +50,7 @@ export default React.memo(function ReturnButton({
   const defaultBehaviour = useCallback(() => navigate(-1), [navigate])
   return onClick || history.length > 1 ? (
     <ReturnButtonWrapper margin={margin}>
-      <InlineButton
+      <LegacyInlineButton
         icon={faAngleLeft}
         text={label}
         onClick={onClick ?? defaultBehaviour}

@@ -9,7 +9,7 @@ import { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -225,13 +225,13 @@ function BackupPickup({ childId }: BackupPickupProps) {
                     <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
                       <Td>
                         <FixedSpaceRowAlignRight>
-                          <IconButton
+                          <IconOnlyButton
                             icon={faPen}
                             onClick={() => openEditBackupPickupModal(row)}
                             data-qa="edit-backup-pickup"
                             aria-label={i18n.common.edit}
                           />
-                          <IconButton
+                          <IconOnlyButton
                             icon={faTrash}
                             onClick={() => openRemoveBackupPickupModal(row)}
                             data-qa="delete-backup-pickup"

@@ -22,7 +22,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
@@ -366,7 +366,11 @@ const ChildSection = React.memo(function ChildSection({
         )}
         {editState?.childId === child.id && (
           <FixedSpaceRow spacing="L">
-            <InlineButton text={i18n.common.cancel} onClick={cancelEditing} />
+            <Button
+              appearance="inline"
+              text={i18n.common.cancel}
+              onClick={cancelEditing}
+            />
             <InlineAsyncButton
               text={i18n.common.save}
               onClick={save ?? (() => Promise.resolve(Success.of()))}

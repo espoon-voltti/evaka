@@ -13,7 +13,7 @@ import {
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
 import { SelectionChip } from 'lib-components/atoms/Chip'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -26,8 +26,7 @@ import { fontWeights, H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { mapConfig } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
-import { faAngleDown, faAngleUp } from 'lib-icons'
-import { faArrowLeft } from 'lib-icons'
+import { faAngleDown, faAngleUp, faArrowLeft } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 import SearchInput from '../map/SearchInput'
@@ -73,7 +72,8 @@ export default React.memo(function SearchSection({
     <Wrapper opaque>
       {!!navigateBack && (
         <Link to={navigateBack}>
-          <InlineButton
+          <Button
+            appearance="inline"
             text={t.common.return}
             icon={faArrowLeft}
             onClick={() => undefined}
@@ -181,11 +181,12 @@ export default React.memo(function SearchSection({
 
       <Gap size="m" />
 
-      <InlineButton
+      <Button
+        appearance="inline"
+        order="text-icon"
         onClick={() => setShowMoreFilters(!showMoreFilters)}
         text={showMoreFilters ? t.map.showLessFilters : t.map.showMoreFilters}
         icon={showMoreFilters ? faAngleUp : faAngleDown}
-        iconRight
       />
     </Wrapper>
   )

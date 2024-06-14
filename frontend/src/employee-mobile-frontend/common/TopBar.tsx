@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
@@ -88,7 +88,7 @@ export default React.memo(function TopBar({
       <StickyTopBar invertedColors={invertedColors}>
         {onBack && (
           <TopBarIconContainer>
-            <IconButton
+            <IconOnlyButton
               icon={faArrowLeft}
               onClick={onBack}
               aria-label={i18n.common.back}
@@ -118,9 +118,9 @@ export default React.memo(function TopBar({
             )}
           {onClose ? (
             <TopBarIconContainer>
-              <IconButton
+              <IconOnlyButton
                 icon={faTimes}
-                white
+                color="white"
                 disabled={closeDisabled}
                 onClick={onClose}
                 aria-label={i18n.common.close}

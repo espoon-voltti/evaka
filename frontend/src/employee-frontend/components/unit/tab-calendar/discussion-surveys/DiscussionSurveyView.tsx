@@ -34,8 +34,8 @@ import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
-import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -351,7 +351,8 @@ export default React.memo(function DiscussionReservationSurveyView({
           <FixedSpaceRow alignItems="center" justifyContent="space-between">
             <H2 data-qa="survey-title">{eventData.title}</H2>
             <FixedSpaceRow alignItems="center" spacing="L">
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faTrash}
                 text={t.discussionReservation.deleteSurveyButton}
                 onClick={() => setDeleteConfirmModalVisible(true)}
@@ -367,7 +368,8 @@ export default React.memo(function DiscussionReservationSurveyView({
           </FormFieldGroup>
           <FixedSpaceRow justifyContent="space-between" alignItems="center">
             <H3>{t.discussionReservation.surveyBasicsTitle}</H3>
-            <InlineButton
+            <Button
+              appearance="inline"
               icon={faPen}
               text={t.discussionReservation.editSurveyButton}
               onClick={onEdit}
@@ -453,7 +455,7 @@ export default React.memo(function DiscussionReservationSurveyView({
   )
 })
 
-const ExpandHorizonButton = styled(Button)`
+const ExpandHorizonButton = styled(LegacyButton)`
   margin-bottom: 10px;
 `
 const WidthLimiter = styled.div`

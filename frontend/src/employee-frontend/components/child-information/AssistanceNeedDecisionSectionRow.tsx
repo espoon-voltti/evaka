@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { AssistanceNeedDecisionBasicsResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faFileAlt, faPen, faTrash } from 'lib-icons'
@@ -32,7 +32,7 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
     <Tr data-qa="table-assistance-need-decision-row">
       <Td>
         <FixedSpaceRow justifyContent="center">
-          <IconButton
+          <IconOnlyButton
             icon={faFileAlt}
             onClick={() =>
               navigate(
@@ -69,7 +69,7 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
         {(decision.status === 'DRAFT' || decision.status === 'NEEDS_WORK') && (
           <FixedSpaceRow justifyContent="flex-end">
             {permittedActions.includes('UPDATE') && (
-              <IconButton
+              <IconOnlyButton
                 icon={faPen}
                 onClick={() =>
                   navigate(
@@ -82,7 +82,7 @@ export default React.memo(function AssistanceNeedDecisionSectionRow({
               />
             )}
             {permittedActions.includes('DELETE') && (
-              <IconButton
+              <IconOnlyButton
                 icon={faTrash}
                 onClick={onDelete}
                 aria-label={i18n.common.remove}

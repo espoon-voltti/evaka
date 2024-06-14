@@ -18,9 +18,9 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import {
   DistinctiveParams,
-  feeDecisionDistinctiveParams,
   FeeDecisionDifference,
   feeDecisionDifferences,
+  feeDecisionDistinctiveParams,
   FeeDecisionStatus,
   InvoiceDistinctiveParams,
   InvoiceStatus,
@@ -33,8 +33,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -140,7 +140,8 @@ export function Filters({
         <Column>{column3}</Column>
       </FilterColumns>
       <ClearOptions clearMargin={clearMargin}>
-        <InlineButton
+        <Button
+          appearance="inline"
           icon={faTrash}
           onClick={clearFilters}
           text={i18n.filters.clear}
@@ -197,7 +198,7 @@ const CustomIcon = styled(FontAwesomeIcon)`
   font-size: 22px;
 `
 
-const CustomIconButton = styled(IconButton)`
+const CustomIconButton = styled(IconOnlyButton)`
   float: right;
   position: relative;
   color: ${colors.grayscale.g35};
@@ -971,7 +972,8 @@ export function ApplicationStatusFilter({
               data-qa={`application-status-filter-all-${id}`}
             />
           ))}
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={toggle('ALL')}
             text={
               toggledAllStatuses.length > 0

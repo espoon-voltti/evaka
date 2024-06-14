@@ -5,7 +5,7 @@
 import noop from 'lodash/noop'
 import React from 'react'
 
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { faFileAlt } from 'lib-icons'
 
 import { useTranslation } from '../localization'
@@ -23,7 +23,8 @@ export const PdfLink = React.memo(function PdfLink({
       target="_blank"
       rel="noreferrer"
     >
-      <InlineButton
+      <Button
+        appearance="inline"
         icon={faFileAlt}
         text={t.decisions.applicationDecisions.openPdf}
         onClick={noop}

@@ -6,7 +6,7 @@ import React, { ReactElement } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronUp, faChevronDown } from 'lib-icons'
@@ -60,7 +60,7 @@ function ToolbarAccordion({
                 <Gap size="s" horizontal />
               </>
             ) : null}
-            <IconButton
+            <IconOnlyButton
               icon={open ? faChevronUp : faChevronDown}
               onClick={onToggle}
               data-qa="collapsible-trigger"

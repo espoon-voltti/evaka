@@ -8,8 +8,9 @@ import { combine, Loading, Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
-import Button from 'lib-components/atoms/buttons/Button'
-import MutateButton, {
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import {
+  MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -69,7 +70,10 @@ export default React.memo(function UnitDetailsPage() {
             >
               {(getFormData, isValid) => (
                 <>
-                  <Button onClick={useEditable.off} text={i18n.common.cancel} />
+                  <LegacyButton
+                    onClick={useEditable.off}
+                    text={i18n.common.cancel}
+                  />
                   <MutateButton
                     primary
                     preventDefault

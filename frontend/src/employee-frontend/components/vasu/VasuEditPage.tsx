@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import useRouteParams from 'lib-common/useRouteParams'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import StickyFooter, {
   StickyFooterContainer
@@ -102,7 +102,7 @@ export default React.memo(function VasuEditPage() {
                   {showSpinner && <Spinner />}
                 </StatusContainer>
               </FixedSpaceRow>
-              <Button
+              <LegacyButton
                 text={i18n.vasu.checkInPreview}
                 disabled={status.state != 'clean'}
                 onClick={() =>

@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { BoundForm } from 'lib-common/form/hooks'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 
@@ -64,24 +64,24 @@ export default React.memo(function TemplateQuestionView({
 
         {!readOnly && (
           <FixedSpaceRow className="question-actions">
-            <IconButton
+            <IconOnlyButton
               icon={faPen}
               aria-label={i18n.common.edit}
               onClick={() => setEditing(true)}
             />
-            <IconButton
+            <IconOnlyButton
               icon={faArrowUp}
               aria-label={i18n.documentTemplates.templateEditor.moveUp}
               disabled={first}
               onClick={onMoveUp}
             />
-            <IconButton
+            <IconOnlyButton
               icon={faArrowDown}
               aria-label={i18n.documentTemplates.templateEditor.moveDown}
               disabled={last}
               onClick={onMoveDown}
             />
-            <IconButton
+            <IconOnlyButton
               icon={faTrash}
               aria-label={i18n.common.remove}
               onClick={onDelete}

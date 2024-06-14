@@ -7,8 +7,9 @@ import { useNavigate } from 'react-router-dom'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
-import Button from 'lib-components/atoms/buttons/Button'
-import MutateButton, {
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import {
+  MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -56,7 +57,7 @@ export default React.memo(function CreateUnitPage() {
             >
               {(getFormData, isValid) => (
                 <>
-                  <Button
+                  <LegacyButton
                     onClick={() => navigate(-1)}
                     text={i18n.common.cancel}
                   />

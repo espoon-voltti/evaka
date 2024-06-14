@@ -14,7 +14,7 @@ import {
 } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import FullWidthDiv from 'lib-components/layout/FullWidthDiv'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -58,7 +58,7 @@ export function VasuStateTransitionButtons({
     eventType: VasuDocumentEventType,
     primary = true
   ) => (
-    <Button
+    <LegacyButton
       text={i18n.vasu.transitions[eventType].buttonText}
       onClick={() => setSelectedEventType(eventType)}
       primary={primary}
@@ -131,7 +131,7 @@ export function VasuStateTransitionButtons({
             {permittedActions.includes('EVENT_PUBLISHED') &&
               getStateTransitionButton('PUBLISHED', false)}
             {permittedActions.includes('UPDATE') && (
-              <Button
+              <LegacyButton
                 data-qa="edit-button"
                 text={i18n.common.edit}
                 disabled={!permittedActions.includes('UPDATE')}

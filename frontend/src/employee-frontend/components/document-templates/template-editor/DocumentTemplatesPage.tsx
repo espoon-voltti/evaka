@@ -23,7 +23,7 @@ import { DocumentTemplateSummary } from 'lib-common/generated/api-types/document
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -71,7 +71,7 @@ const ValidityEditor = React.memo(function ValidityEditor({
   return (
     <FixedSpaceRow alignItems="center">
       <DateRangePickerF bind={form} locale={lang} />
-      <IconButton
+      <IconOnlyButton
         icon={faCheck}
         aria-label={i18n.common.save}
         onClick={async () => {
@@ -85,7 +85,7 @@ const ValidityEditor = React.memo(function ValidityEditor({
         }}
         disabled={!form.isValid() || !isIdle}
       />
-      <IconButton
+      <IconOnlyButton
         icon={faTimes}
         aria-label={i18n.common.cancel}
         onClick={onClose}
@@ -134,7 +134,7 @@ const TemplateRow = React.memo(function TemplateRow({
         ) : (
           <FixedSpaceRow alignItems="center">
             <span>{template.validity.format()}</span>
-            <IconButton
+            <IconOnlyButton
               icon={faPen}
               aria-label={i18n.common.edit}
               onClick={onEditValidity}
@@ -149,12 +149,12 @@ const TemplateRow = React.memo(function TemplateRow({
       </Td>
       <Td>
         <FixedSpaceRow>
-          <IconButton
+          <IconOnlyButton
             icon={faCopy}
             aria-label={i18n.common.copy}
             onClick={onDuplicate}
           />
-          <IconButton
+          <IconOnlyButton
             icon={faTrash}
             aria-label={i18n.common.remove}
             disabled={template.published}

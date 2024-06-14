@@ -14,8 +14,8 @@ import { FeeAlteration } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import FileUpload from 'lib-components/molecules/FileUpload'
@@ -166,7 +166,7 @@ export default React.memo(function FeeAlterationEditor({
         />
         <Gap size="m" />
         <FixedSpaceRow justifyContent="flex-end">
-          <Button
+          <LegacyButton
             onClick={cancel}
             text={i18n.childInformation.feeAlteration.editor.cancel}
           />

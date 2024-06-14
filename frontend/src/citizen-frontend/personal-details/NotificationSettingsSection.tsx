@@ -9,9 +9,9 @@ import { boolean } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { EmailNotificationSettings } from 'lib-common/generated/api-types/pis'
-import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -65,7 +65,8 @@ export default React.memo(
     return (
       <div data-qa="notification-settings-section" ref={ref}>
         <EditButtonRow>
-          <InlineButton
+          <Button
+            appearance="inline"
             text={t.common.edit}
             icon={faPen}
             onClick={useEditing.on}
@@ -169,7 +170,7 @@ export default React.memo(
         <Gap size="s" />
         {editing ? (
           <FixedSpaceRow justifyContent="flex-end">
-            <Button
+            <LegacyButton
               onClick={() => {
                 form.set(initialData)
                 useEditing.off()

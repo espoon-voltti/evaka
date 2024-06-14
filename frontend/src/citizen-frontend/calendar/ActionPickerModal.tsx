@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
@@ -91,7 +91,7 @@ const Container = styled.div`
   gap: ${defaultMargins.s};
 `
 
-const Action = styled(Button)`
+const Action = styled(LegacyButton)`
   border: none;
   background: none;
   color: ${(p) => p.theme.colors.grayscale.g0};

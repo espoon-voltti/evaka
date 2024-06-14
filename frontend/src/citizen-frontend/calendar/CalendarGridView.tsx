@@ -22,7 +22,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { scrollToPos } from 'lib-common/utils/scrolling'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   ExpandingInfoBox,
@@ -116,7 +117,7 @@ export default React.memo(function CalendarGridView({
       <StickyBottomBar>
         <ButtonContainer>
           {questionnaireAvailable && (
-            <InlineButton
+            <LegacyInlineButton
               onClick={onReportHolidaysClicked}
               text={
                 <ReportHolidayLabel
@@ -128,13 +129,15 @@ export default React.memo(function CalendarGridView({
               data-qa="open-holiday-modal"
             />
           )}
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={onCreateAbsences}
             text={i18n.calendar.newAbsence}
             icon={faUserMinus}
             data-qa="open-absences-modal"
           />
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={onCreateReservationClicked}
             text={i18n.calendar.newReservationBtn}
             icon={faCalendarPlus}

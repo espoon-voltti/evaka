@@ -7,7 +7,7 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { wrapResult } from 'lib-common/api'
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import {

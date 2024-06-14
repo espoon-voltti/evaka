@@ -19,9 +19,9 @@ import {
 import { ChildBasics } from 'lib-common/generated/api-types/placement'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import {
   FixedSpaceColumn,
@@ -57,7 +57,7 @@ const TimeSpan = styled.span`
   font-weight: ${fontWeights.bold};
 `
 
-const ChildLinkButton = styled(InlineButton)`
+const ChildLinkButton = styled(LegacyInlineButton)`
   text-wrap: pretty;
   text-align: start;
 `
@@ -207,7 +207,7 @@ export const DiscussionReservationModal = React.memo(
           <H3>{`${t.reservationModal.reservationStatus}: ${reservationChild.state.childId ? t.reservationModal.reserved : t.reservationModal.unreserved}`}</H3>
 
           {viewMode === 'free' && (
-            <InlineButton
+            <LegacyInlineButton
               icon={faPlus}
               text={
                 i18n.unit.calendar.events.discussionReservation.reserveButton
@@ -237,7 +237,7 @@ export const DiscussionReservationModal = React.memo(
                 placeholder={t.reservationModal.selectPlaceholder}
                 data-qa="reservee-select"
               />
-              <InlineButton
+              <LegacyInlineButton
                 text={i18n.common.remove}
                 icon={faX}
                 onClick={() => {
@@ -255,7 +255,7 @@ export const DiscussionReservationModal = React.memo(
                   ? `${savedChild.firstName} ${savedChild.lastName}`
                   : ''}
               </span>
-              <InlineButton
+              <LegacyInlineButton
                 icon={faX}
                 text={i18n.common.remove}
                 onClick={() => {
@@ -268,7 +268,7 @@ export const DiscussionReservationModal = React.memo(
 
           <Gap size="X5L" />
           <FixedSpaceRow justifyContent="space-between">
-            <InlineButton
+            <LegacyInlineButton
               text={i18n.common.remove}
               onClick={() => {
                 if (savedChild) {
@@ -293,7 +293,7 @@ export const DiscussionReservationModal = React.memo(
             />
 
             <FixedSpaceRow justifyContent="flex-end" spacing="s">
-              <Button
+              <LegacyButton
                 onClick={cancelChanges}
                 data-qa="cancel"
                 text={i18n.common.cancel}

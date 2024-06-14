@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -230,8 +230,12 @@ export default {
   ctaToast: {
     holidayPeriodCta: (period: FiniteDateRange, deadline: LocalDate) => (
       <>
-        <InlineButton text="Ilmoita tästä" onClick={() => undefined} /> läsnä-
-        ja poissaolot välille {period.start.format('dd.MM.')}-
+        <Button
+          appearance="inline"
+          text="Ilmoita tästä"
+          onClick={() => undefined}
+        />{' '}
+        läsnä- ja poissaolot välille {period.start.format('dd.MM.')}-
         {period.end.format()} viimeistään {deadline.format()}. Läsnäolojen
         tarkat kellonajat merkitään, kun kysely on päättynyt.
       </>

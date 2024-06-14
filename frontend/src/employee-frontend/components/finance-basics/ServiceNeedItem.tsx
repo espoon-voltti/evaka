@@ -15,7 +15,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -192,7 +192,7 @@ export default React.memo(function ServiceNeedItem({
                     <Td data-qa="buttons">
                       <FixedSpaceRow>
                         {voucherValue.voucherValues.range.end == null && (
-                          <IconButton
+                          <IconOnlyButton
                             icon={faPen}
                             onClick={() =>
                               editVoucherValue(

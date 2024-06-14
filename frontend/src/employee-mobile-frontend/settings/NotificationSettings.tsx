@@ -30,10 +30,10 @@ import {
 } from 'lib-common/generated/api-types/webpush'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
-import Button from 'lib-components/atoms/buttons/Button'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import MutateButton from 'lib-components/atoms/buttons/MutateButton'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
@@ -54,7 +54,7 @@ const SectionLabel = styled.div`
   font-weight: ${fontWeights.semibold};
 `
 
-const EditButton = styled(InlineButton)`
+const EditButton = styled(Button)`
   font-size: 16px;
 `
 
@@ -109,6 +109,7 @@ export const NotificationSettings = React.memo(function NotificationSettings({
           <>
             <Gap size="s" horizontal />
             <EditButton
+              appearance="inline"
               data-qa="edit"
               text={i18n.common.edit}
               onClick={startEditing}
@@ -280,7 +281,7 @@ const SettingsSectionsEditor = React.memo(function SettingsSectionsEditor({
       />
       <Gap size="L" />
       <FixedSpaceRow>
-        <Button
+        <LegacyButton
           data-qa="cancel"
           onClick={stopEditing}
           text={i18n.common.cancel}
@@ -361,7 +362,8 @@ const PermissionSection = React.memo(function PermissionSection(props: {
         <FixedSpaceRow>
           <span data-qa="permission-state">{t.state.prompt}</span>
           <Gap size="s" horizontal />
-          <AsyncInlineButton
+          <AsyncButton
+            appearance="inline"
             data-qa="enable"
             text={t.enable}
             onClick={props.enable}

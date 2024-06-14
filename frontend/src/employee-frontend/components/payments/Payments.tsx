@@ -17,7 +17,7 @@ import { formatCents } from 'lib-common/money'
 import Pagination from 'lib-components/Pagination'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   SortableTh,
@@ -70,7 +70,8 @@ export default React.memo(function Payments({
         {createResult.isFailure ? (
           <CreateError>{i18n.common.error.unknown}</CreateError>
         ) : null}
-        <InlineButton
+        <Button
+          appearance="inline"
           icon={faSync}
           disabled={createResult.isLoading}
           onClick={() => {

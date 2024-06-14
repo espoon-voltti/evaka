@@ -5,7 +5,7 @@
 import React from 'react'
 
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -17,9 +17,10 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
-import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
+
+import { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function OtherChildrenSubSection({
   formData,
@@ -173,7 +174,8 @@ export default React.memo(function OtherChildrenSubSection({
                       }
                       width="m"
                     />
-                    <InlineButton
+                    <Button
+                      appearance="inline"
                       icon={faTimes}
                       text={t.applications.editor.contactInfo.remove}
                       onClick={() => {

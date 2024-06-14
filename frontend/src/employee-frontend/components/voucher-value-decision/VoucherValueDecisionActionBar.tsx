@@ -9,8 +9,8 @@ import {
   VoucherValueDecisionDetailed,
   VoucherValueDecisionType
 } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -78,7 +78,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
     <FixedSpaceRow justifyContent="flex-end">
       {isDraft && (
         <>
-          <Button
+          <LegacyButton
             onClick={goToDecisions}
             disabled={!modified}
             data-qa="decision-actions-close"
@@ -105,7 +105,7 @@ export default React.memo(function VoucherValueDecisionActionBar({
             data-qa="button-save-decision"
           />
           {featureFlags.financeDecisionHandlerSelect ? (
-            <Button
+            <LegacyButton
               primary
               text={i18n.feeDecisions.buttons.createDecision(1)}
               disabled={modified}

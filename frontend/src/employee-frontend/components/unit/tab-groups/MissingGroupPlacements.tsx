@@ -14,7 +14,7 @@ import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -90,7 +90,8 @@ function renderMissingGroupPlacementRow(
       </Td>
       <Td>
         {canCreateGroupPlacement && (
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={() => onAddToGroup()}
             icon={faArrowRight}
             data-qa="add-to-group-btn"

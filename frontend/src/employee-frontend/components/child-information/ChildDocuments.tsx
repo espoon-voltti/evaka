@@ -19,10 +19,10 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { ChildDocumentStateChip } from 'lib-components/document-templates/ChildDocumentStateChip'
-import { Table, Thead, Th, Tbody, Tr, Td } from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
@@ -66,7 +66,8 @@ const ChildDocuments = React.memo(function ChildDocuments({
           ).map(({ data: document, permittedActions }) => (
             <Tr key={document.id} data-qa="child-document-row">
               <WiderTd data-qa={`child-document-${document.id}`}>
-                <InlineButton
+                <Button
+                  appearance="inline"
                   aria-label={i18n.childInformation.childDocuments.table.open}
                   text={document.templateName}
                   icon={faFile}

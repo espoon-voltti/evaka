@@ -7,8 +7,8 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { VoucherValueDecisionStatus } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { featureFlags } from 'lib-customizations/employee'
 
 import {
@@ -85,14 +85,14 @@ const Actions = React.memo(function Actions({
               {i18n.valueDecisions.buttons.checked(checkedIds.length)}
             </CheckedRowsInfo>
           ) : null}
-          <Button
+          <LegacyButton
             text={i18n.feeDecisions.buttons.ignoreDraft}
             disabled={checkedIds.length !== 1}
             onClick={() => setShowIgnoreModal(true)}
             data-qa="open-ignore-draft-modal"
           />
           {featureFlags.financeDecisionHandlerSelect ? (
-            <Button
+            <LegacyButton
               primary
               text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
               disabled={checkedIds.length === 0}

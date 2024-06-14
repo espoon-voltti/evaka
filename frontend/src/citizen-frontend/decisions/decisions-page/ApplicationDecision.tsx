@@ -13,7 +13,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -144,7 +144,7 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
         <strong>{t.decisions.applicationDecisions.goToConfirmation}</strong>
       </P>
       <ButtonContainer>
-        <Button
+        <LegacyButton
           primary
           text={t.decisions.applicationDecisions.confirmationLink}
           onClick={() => navigate(`/decisions/by-application/${applicationId}`)}

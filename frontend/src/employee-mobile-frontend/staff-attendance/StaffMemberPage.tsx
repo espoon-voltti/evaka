@@ -11,8 +11,8 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
-import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -157,7 +157,7 @@ export default React.memo(function StaffMemberPage({
               <ContentArea opaque paddingHorizontal="s">
                 <FixedSpaceColumn>
                   {staffMember.present ? (
-                    <Button
+                    <LegacyButton
                       primary
                       data-qa="mark-departed-btn"
                       onClick={() =>
@@ -170,7 +170,7 @@ export default React.memo(function StaffMemberPage({
                       }
                     >
                       {i18n.attendances.staff.markDeparted}
-                    </Button>
+                    </LegacyButton>
                   ) : (
                     <>
                       {!isOperationalDate && (
@@ -178,7 +178,7 @@ export default React.memo(function StaffMemberPage({
                           {i18n.attendances.notOperationalDate}
                         </H4>
                       )}
-                      <Button
+                      <LegacyButton
                         primary
                         data-qa="mark-arrived-btn"
                         disabled={!isOperationalDate}
@@ -192,7 +192,7 @@ export default React.memo(function StaffMemberPage({
                         }
                       >
                         {i18n.attendances.staff.markArrived}
-                      </Button>
+                      </LegacyButton>
                     </>
                   )}
                 </FixedSpaceColumn>
@@ -205,7 +205,7 @@ export default React.memo(function StaffMemberPage({
   )
 })
 
-const InlineIconButton = styled(IconButton)`
+const InlineIconButton = styled(IconOnlyButton)`
   display: inline-flex;
   margin-left: ${defaultMargins.xxs};
 `

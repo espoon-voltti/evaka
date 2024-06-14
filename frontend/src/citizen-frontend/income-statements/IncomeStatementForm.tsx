@@ -20,8 +20,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { scrollToRef } from 'lib-common/utils/scrolling'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -249,7 +249,7 @@ export default React.memo(
               />
             </AssureCheckbox>
             <FixedSpaceRow>
-              <Button text={t.common.cancel} onClick={onCancel} />
+              <LegacyButton text={t.common.cancel} onClick={onCancel} />
               <AsyncButton
                 text={t.common.save}
                 primary

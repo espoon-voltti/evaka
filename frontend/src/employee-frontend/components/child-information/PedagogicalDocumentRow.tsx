@@ -12,8 +12,8 @@ import {
 } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { Td, Tr } from 'lib-components/layout/Table'
 import FileUpload from 'lib-components/molecules/FileUpload'
@@ -157,13 +157,15 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
       <ActionsTd data-qa="pedagogical-document-actions">
         {editMode ? (
           <InlineButtons>
-            <InlineButton
+            <Button
+              appearance="inline"
               data-qa="pedagogical-document-button-save"
               onClick={updateDocument}
               text={i18n.common.save}
               disabled={!pedagogicalDocument.description.length || submitting}
             />
-            <InlineButton
+            <Button
+              appearance="inline"
               data-qa="pedagogical-document-button-cancel"
               onClick={() => {
                 endEdit()
@@ -174,14 +176,14 @@ const PedagogicalDocumentRow = React.memo(function PedagogicalDocument({
           </InlineButtons>
         ) : (
           <InlineButtons>
-            <IconButton
+            <IconOnlyButton
               data-qa="pedagogical-document-button-edit"
               onClick={() => setEditMode(true)}
               icon={faPen}
               disabled={submitting}
               aria-label={i18n.common.edit}
             />
-            <IconButton
+            <IconOnlyButton
               data-qa="pedagogical-document-button-delete"
               onClick={() => onDelete(pedagogicalDocument)}
               icon={faTrash}

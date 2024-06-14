@@ -15,8 +15,8 @@ import {
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -92,7 +92,7 @@ export default React.memo(function MarkAbsent({ unitId }: { unitId: UUID }) {
             <Gap size="m" />
             <Actions>
               <FixedSpaceRow fullWidth>
-                <Button
+                <LegacyButton
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />
@@ -116,7 +116,11 @@ export default React.memo(function MarkAbsent({ unitId }: { unitId: UUID }) {
                     data-qa="mark-absent-btn"
                   />
                 ) : (
-                  <Button primary text={i18n.common.confirm} disabled={true} />
+                  <LegacyButton
+                    primary
+                    text={i18n.common.confirm}
+                    disabled={true}
+                  />
                 )}
               </FixedSpaceRow>
             </Actions>

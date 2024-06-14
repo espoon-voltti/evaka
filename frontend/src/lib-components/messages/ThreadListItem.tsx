@@ -4,7 +4,7 @@
 
 import styled from 'styled-components'
 
-import IconButton from '../atoms/buttons/IconButton'
+import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
@@ -32,7 +32,7 @@ export const Truncated = styled.span`
     margin-right: ${defaultMargins.s};
   }
 `
-export const DeleteThreadButton = styled(IconButton)``
+export const DeleteThreadButton = styled(IconOnlyButton)``
 export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   display: block;
   border: 0;

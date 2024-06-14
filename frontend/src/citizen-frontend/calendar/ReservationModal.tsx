@@ -16,8 +16,9 @@ import { formatFirstName } from 'lib-common/names'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Button from 'lib-components/atoms/buttons/Button'
-import MutateButton, {
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import {
+  MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -290,7 +291,7 @@ export default React.memo(function ReservationModal({
               />
             )}
             <CalendarModalButtons>
-              <Button
+              <LegacyButton
                 onClick={onClose}
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}

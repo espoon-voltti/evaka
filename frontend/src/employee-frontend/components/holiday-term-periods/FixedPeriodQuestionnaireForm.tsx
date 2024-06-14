@@ -20,8 +20,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
@@ -606,7 +606,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
           onSuccess={onSuccess}
           data-qa="save-btn"
         />
-        <Button onClick={onCancel} text={i18n.common.goBack} />
+        <LegacyButton onClick={onCancel} text={i18n.common.goBack} />
       </ButtonContainer>
     </>
   )

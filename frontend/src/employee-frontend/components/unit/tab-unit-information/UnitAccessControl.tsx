@@ -20,7 +20,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -147,7 +147,7 @@ function AclRow({
   const buttons = (
     <RowButtons>
       {isEditable && (
-        <IconButton
+        <IconOnlyButton
           icon={faPen}
           onClick={() => onClickEdit(row)}
           data-qa="edit"
@@ -155,7 +155,7 @@ function AclRow({
         />
       )}
       {isDeletable && (
-        <IconButton
+        <IconOnlyButton
           icon={faTrash}
           onClick={onClickDelete}
           data-qa="delete"

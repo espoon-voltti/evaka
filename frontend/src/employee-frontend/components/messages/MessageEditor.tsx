@@ -24,9 +24,9 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import Button from 'lib-components/atoms/buttons/Button'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import TreeDropdown, {
   TreeNode
@@ -59,13 +59,14 @@ import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
 import {
+  faChevronDown,
+  faChevronUp,
   faDownLeftAndUpRightToCenter,
+  faQuestion,
   faTimes,
   faTrash,
-  faUpRightAndDownLeftFromCenter,
-  faQuestion
+  faUpRightAndDownLeftFromCenter
 } from 'lib-icons'
-import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -577,28 +578,28 @@ export default React.memo(function MessageEditor({
           <Title>{title}</Title>
           <HeaderButtonContainer>
             {expandedView ? (
-              <IconButton
+              <IconOnlyButton
                 icon={faDownLeftAndUpRightToCenter}
                 onClick={toggleExpandedView}
-                white
+                color="white"
                 size="s"
                 data-qa="collapse-view-btn"
                 aria-label={i18n.common.open}
               />
             ) : (
-              <IconButton
+              <IconOnlyButton
                 icon={faUpRightAndDownLeftFromCenter}
                 onClick={toggleExpandedView}
-                white
+                color="white"
                 size="s"
                 data-qa="expand-view-btn"
                 aria-label={i18n.common.close}
               />
             )}
-            <IconButton
+            <IconOnlyButton
               icon={faTimes}
               onClick={onCloseHandler}
-              white
+              color="white"
               size="m"
               data-qa="close-message-editor-btn"
               aria-label={i18n.common.close}
@@ -662,7 +663,9 @@ export default React.memo(function MessageEditor({
             <>
               <Gap size="s" />
               <RightAlignedRow>
-                <InlineButton
+                <Button
+                  appearance="inline"
+                  order="text-icon"
                   data-qa="filters-btn"
                   onClick={useFiltersVisible.toggle}
                   text={
@@ -670,7 +673,6 @@ export default React.memo(function MessageEditor({
                       ? i18n.messages.messageEditor.filters.hideFilters
                       : i18n.messages.messageEditor.filters.showFilters
                   }
-                  iconRight
                   icon={filtersVisible ? faChevronUp : faChevronDown}
                 />
               </RightAlignedRow>
@@ -812,7 +814,8 @@ export default React.memo(function MessageEditor({
         </ScrollableFormArea>
         <BottomBar>
           {draftId ? (
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={() => onDiscard(message.sender.value, draftId)}
               text={i18n.messages.messageEditor.deleteDraft}
               icon={faTrash}
@@ -828,7 +831,7 @@ export default React.memo(function MessageEditor({
                 .map((r) => r.numberOfRecipientAccounts)
                 .getOrElse('')}
             </div>
-            <Button
+            <LegacyButton
               text={
                 sending
                   ? i18n.messages.messageEditor.sending

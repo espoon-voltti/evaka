@@ -11,7 +11,7 @@ import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -97,13 +97,13 @@ function DeviceRow({
       <Td data-qa="name">{row.name}</Td>
       <Td>
         <FixedSpaceRowAlignRight>
-          <IconButton
+          <IconOnlyButton
             icon={faPen}
             onClick={onClickEdit}
             data-qa="edit-mobile-device"
             aria-label={i18n.common.edit}
           />
-          <IconButton
+          <IconOnlyButton
             icon={faTrash}
             onClick={onClickDelete}
             data-qa="delete-mobile-device"

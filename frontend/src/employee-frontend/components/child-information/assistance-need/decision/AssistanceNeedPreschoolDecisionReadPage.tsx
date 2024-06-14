@@ -9,8 +9,8 @@ import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/ap
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
   FixedSpaceColumn,
@@ -55,14 +55,14 @@ const DecisionReadView = React.memo(function DecisionReadView({
       <StickyFooter>
         <FixedSpaceRow justifyContent="space-between" alignItems="center">
           <FixedSpaceRow alignItems="center">
-            <Button
+            <LegacyButton
               text={i18n.childInformation.assistanceNeedDecision.leavePage}
               onClick={() =>
                 navigate(`/child-information/${decision.child.id}`)
               }
               data-qa="leave-page-button"
             />
-            <Button
+            <LegacyButton
               text={i18n.childInformation.assistanceNeedDecision.modifyDecision}
               disabled={
                 decision.status !== 'NEEDS_WORK' &&

@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react'
 import { Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, H2, H3 } from 'lib-components/typography'
@@ -76,7 +76,8 @@ export const StickyNoteTab = React.memo(function StickyNoteTab({
         <Gap size="s" />
 
         <FixedSpaceRow justifyContent="flex-end">
-          <InlineButton
+          <Button
+            appearance="inline"
             data-qa="sticky-note-new"
             disabled={editing !== null}
             onClick={() => setEditing('new')}

@@ -8,7 +8,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Td, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import { faPlus } from 'lib-icons'
@@ -48,7 +48,8 @@ function MissingServiceNeedRow({
       <Td />
       <Td align="right">
         {createAllowed && (
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={onEdit}
             text={t.addNewBtn}
             icon={faPlus}

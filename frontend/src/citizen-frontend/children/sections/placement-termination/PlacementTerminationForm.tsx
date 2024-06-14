@@ -16,7 +16,7 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -233,7 +233,7 @@ export default React.memo(function PlacementTerminationForm({
         />
       </div>
 
-      <Button
+      <LegacyButton
         primary
         text={t.children.placementTermination.terminate}
         disabled={terminationState.type !== 'valid'}

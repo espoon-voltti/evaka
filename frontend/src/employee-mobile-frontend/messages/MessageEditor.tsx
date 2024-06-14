@@ -23,9 +23,7 @@ import { UUID } from 'lib-common/types'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
-import MutateButton, {
-  InlineMutateButton
-} from 'lib-components/atoms/buttons/MutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
@@ -289,7 +287,8 @@ export default React.memo(function MessageEditor({
           )}
         </div>
         <BottomRow>
-          <InlineMutateButton
+          <MutateButton
+            appearance="inline"
             text={i18n.messages.messageEditor.deleteDraft}
             mutation={deleteDraftMutation}
             disabled={!draftId}

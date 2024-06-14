@@ -12,7 +12,7 @@ import {
   useFormField,
   useFormUnion
 } from 'lib-common/form/hooks'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import {
@@ -103,7 +103,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
           <RightCell>
-            <IconButton
+            <IconOnlyButton
               data-qa={
                 dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
               }
@@ -309,7 +309,7 @@ const TimeRanges = React.memo(function TimeRanges({
         <RightCell>
           <FixedSpaceRow>
             {onAbsent !== undefined ? (
-              <IconButton
+              <IconOnlyButton
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-absent-button` : undefined
                 }
@@ -319,7 +319,7 @@ const TimeRanges = React.memo(function TimeRanges({
               />
             ) : null}
             {secondTimeRange === undefined ? (
-              <IconButton
+              <IconOnlyButton
                 icon={faPlus}
                 data-qa={
                   dataQaPrefix ? `${dataQaPrefix}-add-res-button` : undefined
@@ -348,7 +348,7 @@ const TimeRanges = React.memo(function TimeRanges({
             />
           </MiddleCell>
           <RightCell>
-            <IconButton
+            <IconOnlyButton
               icon={faTrash}
               onClick={() => bind.update((prev) => prev.slice(0, 1))}
               aria-label={i18n.common.delete}

@@ -18,7 +18,7 @@ import { Employee, TemporaryEmployee } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -293,7 +293,8 @@ export default React.memo(function DaycareAclAdditionModal({
           </FormControl>
         )}
         <BottomRow>
-          <InlineButton
+          <Button
+            appearance="inline"
             text={i18n.common.cancel}
             data-qa="add-daycare-acl-cancel-btn"
             onClick={onClose}

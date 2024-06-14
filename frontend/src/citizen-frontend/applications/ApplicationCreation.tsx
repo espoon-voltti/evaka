@@ -10,8 +10,9 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
-import Button from 'lib-components/atoms/buttons/Button'
-import MutateButton, {
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import {
+  MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -172,7 +173,7 @@ export default React.memo(function ApplicationCreation() {
                 onSuccess={(id) => navigate(`/applications/${id}/edit`)}
                 data-qa="submit"
               />
-              <Button
+              <LegacyButton
                 text={t.common.cancel}
                 onClick={() => navigate('/applications')}
               />

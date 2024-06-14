@@ -5,8 +5,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
 import { faEllipsisVAlt } from 'lib-icons'
@@ -38,7 +38,7 @@ export default React.memo(function EllipsisMenu({
     <Container>
       {items.length > 0 && (
         <>
-          <IconButton
+          <IconOnlyButton
             size="m"
             icon={faEllipsisVAlt}
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -102,7 +102,7 @@ const Menu = styled.div`
   cursor: auto;
 `
 
-const MenuItem = styled(InlineButton)`
+const MenuItem = styled(LegacyInlineButton)`
   color: ${({ theme }) => theme.colors.grayscale.g100};
   font-weight: 400;
   white-space: nowrap;

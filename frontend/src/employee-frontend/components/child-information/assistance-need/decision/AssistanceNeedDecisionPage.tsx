@@ -13,8 +13,8 @@ import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanc
 import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
@@ -101,13 +101,13 @@ export default React.memo(function AssistanceNeedDecisionPage() {
             ({ decision, permittedActions }) => (
               <FixedSpaceRow justifyContent="space-between" flexWrap="wrap">
                 <FixedSpaceRow spacing="s">
-                  <Button
+                  <LegacyButton
                     onClick={() => navigate(`/child-information/${childId}`)}
                   >
                     {t.leavePage}
-                  </Button>
+                  </LegacyButton>
                   {permittedActions.includes('UPDATE') && (
-                    <Button
+                    <LegacyButton
                       onClick={() =>
                         navigate(
                           `/child-information/${childId}/assistance-need-decision/${id}/edit`
@@ -116,7 +116,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                       disabled={!canBeEdited(decision)}
                     >
                       {t.modifyDecision}
-                    </Button>
+                    </LegacyButton>
                   )}
                 </FixedSpaceRow>
                 <FixedSpaceRow spacing="m">

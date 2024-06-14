@@ -26,8 +26,8 @@ import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -270,7 +270,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
             <Actions>
               <FixedSpaceRow fullWidth>
-                <Button
+                <LegacyButton
                   text={i18n.common.cancel}
                   onClick={() => navigate(-1)}
                 />

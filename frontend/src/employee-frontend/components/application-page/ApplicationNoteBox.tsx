@@ -15,8 +15,8 @@ import {
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
 import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -227,7 +227,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           {isRead(props) && (props.editable || props.deletable) && (
             <FixedSpaceRow spacing="xs">
               {props.editable && (
-                <IconButton
+                <IconOnlyButton
                   icon={faPen}
                   onClick={props.onStartEdit}
                   size="s"
@@ -236,7 +236,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                 />
               )}
               {props.deletable && (
-                <IconButton
+                <IconOnlyButton
                   icon={faTrash}
                   onClick={() => setConfirmingDelete(true)}
                   size="s"
@@ -275,13 +275,15 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
               autoFocus
             />
             <ButtonsBar>
-              <InlineButton
+              <Button
+                appearance="inline"
                 onClick={props.onCancel}
                 text={i18n.common.cancel}
                 disabled={submitting}
               />
               <Gap horizontal size="s" />
-              <InlineButton
+              <Button
+                appearance="inline"
                 onClick={save}
                 text={i18n.common.save}
                 disabled={submitting}

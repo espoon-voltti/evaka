@@ -10,8 +10,8 @@ import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
 import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { defaultMargins } from 'lib-components/white-space'
 import { faLockOpenAlt, faTimes } from 'lib-icons'
 
@@ -83,9 +83,9 @@ export const LoggedInUser = React.memo(function LoggedInUser({
         u?.employeeId && u?.pinLoginActive ? (
           menuOpen ? (
             <>
-              <IconButton
+              <IconOnlyButton
                 icon={faTimes}
-                white
+                color="white"
                 onClick={toggleMenu}
                 data-qa="close-user-menu-btn"
                 aria-label={i18n.common.close}
@@ -96,9 +96,10 @@ export const LoggedInUser = React.memo(function LoggedInUser({
               />
             </>
           ) : (
-            <InlineButton
+            <Button
+              appearance="inline"
+              order="text-icon"
               icon={faLockOpenAlt}
-              iconRight
               text={userNames.initials}
               onClick={toggleMenu}
               data-qa="open-user-menu-btn"

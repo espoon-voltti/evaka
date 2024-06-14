@@ -7,8 +7,8 @@ import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -97,7 +97,7 @@ const Actions = React.memo(function Actions({
             data-qa="revert-payments"
           />
           <Gap size="s" horizontal />
-          <Button
+          <LegacyButton
             primary
             disabled={checkedIds.length === 0}
             text={i18n.payments.buttons.sendPayments(checkedIds.length)}

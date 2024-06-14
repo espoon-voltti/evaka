@@ -8,7 +8,7 @@ import { Line } from 'react-chartjs-2'
 
 import { Failure, Loading, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -90,9 +90,9 @@ export default React.memo(function AIPage() {
         {status.isSuccess && (
           <div>
             {status.value.running ? (
-              <Button text="Lopeta" primary onClick={stop} />
+              <LegacyButton text="Lopeta" primary onClick={stop} />
             ) : (
-              <Button text="Käynnistä" primary onClick={start} />
+              <LegacyButton text="Käynnistä" primary onClick={start} />
             )}
 
             <Gap />

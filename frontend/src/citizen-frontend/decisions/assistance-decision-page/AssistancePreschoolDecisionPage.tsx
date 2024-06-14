@@ -10,7 +10,7 @@ import { useTranslation } from 'citizen-frontend/localization'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Content from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -45,7 +45,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
         <FixedSpaceRow justifyContent="space-between">
           <ReturnButton label={i18n.common.return} />
           <FixedSpaceRow>
-            <InlineButton
+            <LegacyInlineButton
               icon={faArrowDownToLine}
               text={i18n.common.download}
               onClick={() => {

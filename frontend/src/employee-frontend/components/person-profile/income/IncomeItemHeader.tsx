@@ -9,7 +9,7 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { Action } from 'lib-common/generated/action'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Title from 'lib-components/atoms/Title'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp, faPen, faTrash } from 'lib-icons'
@@ -24,7 +24,7 @@ const ItemTitle = styled.div`
   cursor: pointer;
 `
 
-const Button = styled(IconButton)`
+const Button = styled(IconOnlyButton)`
   &.button {
     margin-left: 20px;
   }

@@ -23,7 +23,7 @@ import {
   DaycareAssistanceUpdate
 } from 'lib-common/generated/api-types/assistance'
 import { UUID } from 'lib-common/types'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -128,12 +128,14 @@ export const DaycareAssistanceForm = React.memo(function DaycareAssistanceForm(
       </Td>
       <Td>
         <FixedSpaceRow justifyContent="flex-end" spacing="m">
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={props.onClose}
             text={i18n.common.cancel}
             data-qa="cancel"
           />
-          <InlineButton
+          <Button
+            appearance="inline"
             onClick={onSubmit}
             text={i18n.common.save}
             disabled={!form.isValid()}

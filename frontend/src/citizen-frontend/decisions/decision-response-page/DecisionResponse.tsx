@@ -12,8 +12,8 @@ import { Decision } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -276,7 +276,7 @@ export default React.memo(function DecisionResponse({
               }
               data-qa="submit-response"
             />
-            <Button
+            <LegacyButton
               text={t.decisions.applicationDecisions.response.cancel}
               onClick={handleReturnToPreviousPage}
               disabled={blocked || submitting}

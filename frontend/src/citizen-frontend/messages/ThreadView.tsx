@@ -25,7 +25,7 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { desktopMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
@@ -105,7 +105,7 @@ const ActionRow = styled(FixedSpaceRow)`
   margin: 0 28px 0 28px;
 `
 
-const ReplyToThreadButton = styled(InlineButton)`
+const ReplyToThreadButton = styled(Button)`
   align-self: flex-start;
 `
 
@@ -325,6 +325,7 @@ export default React.memo(function ThreadView({
             <ActionRow justifyContent="space-between">
               {messageType === 'MESSAGE' ? (
                 <ReplyToThreadButton
+                  appearance="inline"
                   icon={faReply}
                   onClick={useReplyEditorVisible.on}
                   data-qa="message-reply-editor-btn"
@@ -341,7 +342,8 @@ export default React.memo(function ThreadView({
                 onClick={closeThread}
                 text={i18n.messages.thread.close}
               />
-              <InlineButton
+              <Button
+                appearance="inline"
                 icon={faTrash}
                 data-qa="delete-thread-btn"
                 className="delete-btn"

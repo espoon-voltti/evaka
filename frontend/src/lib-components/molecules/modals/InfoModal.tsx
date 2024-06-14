@@ -4,8 +4,9 @@
 
 import React from 'react'
 
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Gap } from 'lib-components/white-space'
+
+import { Button } from '../../atoms/buttons/Button'
 
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'
 
@@ -50,14 +51,16 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
         <ModalButtons
           $justifyContent={!props.reject ? 'center' : 'space-between'}
         >
-          <InlineButton
+          <Button
+            appearance="inline"
             data-qa="modal-okBtn"
             onClick={props.resolve.action}
             disabled={props.resolve.disabled}
             text={props.resolve.label}
           />
           {props.reject && (
-            <InlineButton
+            <Button
+              appearance="inline"
               onClick={props.reject.action}
               data-qa="modal-cancelBtn"
               text={props.reject.label}

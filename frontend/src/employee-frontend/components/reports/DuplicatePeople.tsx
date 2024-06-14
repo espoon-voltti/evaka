@@ -12,7 +12,7 @@ import LocalDate from 'lib-common/local-date'
 import { Arg0, UUID } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -150,13 +150,13 @@ export default React.memo(function DuplicatePeople() {
                       {duplicate ? (
                         duplicate.group == row.groupIndex ? (
                           duplicate.row == row.duplicateNumber ? (
-                            <Button
+                            <LegacyButton
                               className="inline"
                               onClick={() => setDuplicate(null)}
                               text={i18n.common.cancel}
                             />
                           ) : (
-                            <Button
+                            <LegacyButton
                               className="inline"
                               onClick={() =>
                                 setMaster({
@@ -169,7 +169,7 @@ export default React.memo(function DuplicatePeople() {
                           )
                         ) : null
                       ) : (
-                        <Button
+                        <LegacyButton
                           className="inline"
                           disabled={!hasReferences(row)}
                           onClick={() =>
@@ -183,7 +183,7 @@ export default React.memo(function DuplicatePeople() {
                       )}
                     </NoWrapTd>
                     <NoWrapTd>
-                      <Button
+                      <LegacyButton
                         className="inline"
                         disabled={duplicate != null || hasReferences(row)}
                         onClick={() => setDeleteId(row.id)}

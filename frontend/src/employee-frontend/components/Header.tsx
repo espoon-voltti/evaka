@@ -11,7 +11,7 @@ import styled, { useTheme } from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { EvakaLogo } from 'lib-components/atoms/EvakaLogo'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { isGroupMessageAccount } from 'lib-components/messages/types'
@@ -167,7 +167,7 @@ const NavLinks = styled.div`
   }
 `
 
-const NavbarButton = styled(InlineButton)`
+const NavbarButton = styled(Button)`
   border-bottom: 4px solid transparent; // align vertically with other navbar links
 `
 
@@ -331,10 +331,11 @@ export default React.memo(function Header() {
 
         {loggedIn && user && (
           <NavbarButton
+            appearance="inline"
+            order="text-icon"
             data-qa="username"
             onClick={toggleUserPopup}
             text={user.name}
-            iconRight
             icon={popupVisible ? faChevronUp : faChevronDown}
           />
         )}

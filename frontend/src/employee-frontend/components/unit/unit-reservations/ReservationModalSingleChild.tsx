@@ -42,7 +42,7 @@ import LocalDate from 'lib-common/local-date'
 import { Repetition } from 'lib-common/reservations'
 import { UUID } from 'lib-common/types'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -542,14 +542,14 @@ const TimeInputs = React.memo(function TimeInputs({
       {label}
       <TimeRangeInput bind={timeRange} showAllErrors={showAllErrors} />
       <DayButtons>
-        <IconButton
+        <IconOnlyButton
           icon={faUserMinus}
           data-qa="set-absent-button"
           onClick={onAbsent}
           aria-label="Merkitse poissaolevaksi"
         />
         {!extraTimeRange ? (
-          <IconButton
+          <IconOnlyButton
             icon={faPlus}
             data-qa="add-new-reservation-timerange"
             onClick={() =>
@@ -565,7 +565,7 @@ const TimeInputs = React.memo(function TimeInputs({
         <>
           <div />
           <TimeRangeInput bind={extraTimeRange} showAllErrors={showAllErrors} />
-          <IconButton
+          <IconOnlyButton
             icon={faTrash}
             onClick={() => bind.update((prev) => prev.slice(0, 1))}
             aria-label={i18n.common.remove}
@@ -601,7 +601,7 @@ const ReservationTimes = React.memo(function ReservationTimes({
           {label}
           <span>Poissa</span>
           <div>
-            <IconButton
+            <IconOnlyButton
               icon={faUserMinus}
               data-qa="set-present-button"
               onClick={() =>

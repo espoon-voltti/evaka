@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { Translations as ComponentTranslations } from 'lib-components/i18n'
 import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -231,10 +231,10 @@ const sv: Translations = {
   ctaToast: {
     holidayPeriodCta: (period: FiniteDateRange, deadline: LocalDate) => (
       <>
-        <InlineButton text="Anmäl" onClick={() => undefined} /> närvaro och
-        frånvaro mellan {period.start.format('dd.MM.')}-{period.end.format()}{' '}
-        senast {deadline.format()}. Exakta klockslag för närvarodagar fylls i
-        när frågeformuläret har stängts.
+        <Button appearance="inline" text="Anmäl" onClick={() => undefined} />{' '}
+        närvaro och frånvaro mellan {period.start.format('dd.MM.')}-
+        {period.end.format()} senast {deadline.format()}. Exakta klockslag för
+        närvarodagar fylls i när frågeformuläret har stängts.
       </>
     ),
     fixedPeriodCta: (deadline: LocalDate) =>

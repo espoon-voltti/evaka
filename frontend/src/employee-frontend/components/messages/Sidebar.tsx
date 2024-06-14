@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { Result, wrapResult } from 'lib-common/api'
 import { sortReceivers } from 'lib-common/api-types/messaging'
 import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
-import Button from 'lib-components/atoms/buttons/Button'
+import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -243,7 +243,7 @@ export default React.memo(function Sidebar({
         <DashedLine />
         <Gap size="s" />
         <HeaderContainer>
-          <Button
+          <LegacyButton
             primary
             disabled={!newMessageEnabled}
             text={i18n.messages.messageBoxes.newMessage}

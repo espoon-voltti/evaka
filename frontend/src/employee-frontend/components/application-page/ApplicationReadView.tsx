@@ -14,7 +14,7 @@ import {
 } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { maxOf } from 'lib-common/ordered'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
@@ -345,7 +345,8 @@ export default React.memo(function ApplicationReadView({
             </React.Fragment>
           ))}
           <Label />
-          <InlineButton
+          <Button
+            appearance="inline"
             icon={faExternalLink}
             text={i18n.application.preferences.unitsOnMap}
             onClick={() => window.open('/map', '_blank')}

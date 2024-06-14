@@ -25,7 +25,7 @@ import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import TimeRange from 'lib-common/time-range'
 import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
 import { faExclamationTriangle } from 'lib-icons'
@@ -147,7 +147,7 @@ export default React.memo(function ChildDayAttendance({
       ) : null}
       {!inOtherUnit && !isInBackupGroup && scheduleType !== 'TERM_BREAK' && (
         <DetailsToggle>
-          <IconButton
+          <IconOnlyButton
             icon={faCircleEllipsis}
             onClick={onStartEdit}
             data-qa="open-details"

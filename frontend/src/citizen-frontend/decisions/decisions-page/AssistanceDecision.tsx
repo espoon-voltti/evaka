@@ -15,7 +15,7 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { AssistanceNeedDecisionStatusChip } from 'lib-components/assistance-need-decision/AssistanceNeedDecisionStatusChip'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H3, Label } from 'lib-components/typography'
@@ -111,7 +111,8 @@ export default React.memo(function AssistanceDecision({
       </ListGrid>
       <Gap size="m" />
       <Link to={`/decisions/assistance/${id}`} data-qa="open-decision">
-        <InlineButton
+        <Button
+          appearance="inline"
           icon={faFileAlt}
           text={t.decisions.assistanceDecisions.openDecision}
           onClick={() => undefined}
