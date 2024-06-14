@@ -878,7 +878,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                     a.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
                     a.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
                     a.document -> 'serviceNeedOption' ->> 'validPlacementType' AS serviceNeedValidPlacementType,
-                    a.document ->> 'extendedCare' as extended_care,
+                    coalesce((a.document ->> 'extendedCare')::boolean, false) as extended_care,
                     a.document,
                     (a.document ->> 'preferredStartDate')::date as preferred_start_date,
                     (array_position((
