@@ -434,6 +434,7 @@ enum class Audit(
     PlacementServiceNeedUpdate,
     PlacementTerminate,
     PlacementChildPlacementPeriodsRead,
+    PreschoolAbsenceReport,
     PreschoolAssistanceCreate,
     PreschoolAssistanceUpdate,
     PreschoolAssistanceDelete,

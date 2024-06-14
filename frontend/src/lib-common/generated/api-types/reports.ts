@@ -180,6 +180,16 @@ export interface ChildAgeLanguageReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.ChildPreschoolAbsenceRow
+*/
+export interface ChildPreschoolAbsenceRow {
+  childId: UUID
+  firstName: string
+  hourlyTypeResults: Record<AbsenceType, number>
+  lastName: string
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.ChildrenInDifferentAddressReportRow
 */
 export interface ChildrenInDifferentAddressReportRow {
@@ -727,6 +737,7 @@ export type Report =
   | 'PLACEMENT_COUNT'
   | 'PLACEMENT_GUARANTEE'
   | 'PLACEMENT_SKETCHING'
+  | 'PRESCHOOL_ABSENCES'
   | 'PRESENCE'
   | 'RAW'
   | 'SERVICE_NEED'

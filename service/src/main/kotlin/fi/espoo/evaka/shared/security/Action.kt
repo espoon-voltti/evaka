@@ -2226,6 +2226,10 @@ sealed interface Action {
         READ_MEAL_REPORT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
+        READ_PRESCHOOL_ABSENCE_REPORT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

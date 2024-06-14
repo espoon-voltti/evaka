@@ -57,6 +57,11 @@ export default class ReportsPage {
     return new ManualDuplicationReport(this.page)
   }
 
+  async openPreschoolAbsenceReport() {
+    await this.page.find('[data-qa="report-preschool-absence"]').click()
+    return new PreschoolAbsenceReport(this.page)
+  }
+
   async openVardaErrorsReport() {
     await this.page.find('[data-qa="report-varda-child-errors"]').click()
     return new VardaErrorsReport(this.page)
@@ -481,5 +486,54 @@ export class AssistanceNeedsAndActionsReport {
 
   async openUnit(unitName: string) {
     await this.page.findByDataQa(`unit-${unitName}`).click()
+  }
+}
+
+export class PreschoolAbsenceReport {
+  constructor(private page: Page) {}
+
+  async selectUnit(unitName: string) {
+    const unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
+    await unitSelector.fillAndSelectFirst(unitName)
+  }
+
+  async selectTerm(termRange: string) {
+    const unitSelector = new Combobox(this.page.findByDataQa('term-select'))
+    await unitSelector.fillAndSelectFirst(termRange)
+  }
+
+  async assertRows(
+    expected: {
+      firstName: string
+      lastName: string
+      TOTAL: string
+      OTHER_ABSENCE: string
+      SICKLEAVE: string
+      UNKNOWN_ABSENCE: string
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('preschool-absence-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await row
+          .findByDataQa('first-name-column')
+          .assertTextEquals(data.firstName)
+        await row
+          .findByDataQa('last-name-column')
+          .assertTextEquals(data.lastName)
+        await row.findByDataQa('total-column').assertTextEquals(data.TOTAL)
+        await row
+          .findByDataQa('other-absence-column')
+          .assertTextEquals(data.OTHER_ABSENCE)
+        await row
+          .findByDataQa('sickleave-column')
+          .assertTextEquals(data.SICKLEAVE)
+        await row
+          .findByDataQa('unknown-absence-column')
+          .assertTextEquals(data.UNKNOWN_ABSENCE)
+      })
+    )
   }
 }

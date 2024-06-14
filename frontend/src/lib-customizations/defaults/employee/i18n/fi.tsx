@@ -4109,6 +4109,29 @@ export const fi = {
         mealTextureName: 'Ruoan rakenne',
         additionalInfo: 'Lisätieto'
       }
+    },
+    preschoolAbsences: {
+      title: 'Esiopetuksen poissaoloraportti',
+      description:
+        'Raportti listaa esiopetuskauden lapsikohtaiset poissaolomäärät valitulle yksikölle ja ryhmälle',
+      firstName: 'Etunimi',
+      lastName: 'Sukunimi',
+      hours: '(tuntia)',
+      total: 'Yhteensä',
+      filters: {
+        daycareSelection: {
+          label: 'Esiopetusyksikkö:',
+          placeholder: 'Valitse yksikkö'
+        },
+        groupSelection: {
+          label: 'Ryhmä:',
+          placeholder: 'Valitse ryhmä'
+        },
+        preschoolTerm: {
+          label: 'Esiopetuskausi:',
+          placeholder: 'Valitse esiopetuskausi'
+        }
+      }
     }
   },
   unitEditor: {
