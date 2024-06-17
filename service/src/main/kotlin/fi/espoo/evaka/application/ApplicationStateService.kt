@@ -40,6 +40,12 @@ import fi.espoo.evaka.decision.markApplicationDecisionsSent
 import fi.espoo.evaka.decision.markDecisionAccepted
 import fi.espoo.evaka.decision.markDecisionRejected
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.messaging.MessageRecipient
+import fi.espoo.evaka.messaging.MessageRecipientType
+import fi.espoo.evaka.messaging.MessageService
+import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.messaging.NewMessageStub
+import fi.espoo.evaka.messaging.getServiceWorkerAccountId
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -88,6 +94,7 @@ class ApplicationStateService(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
+    private val messageService: MessageService,
 ) {
     fun createApplication(
         tx: Database.Transaction,
@@ -317,6 +324,75 @@ class ApplicationStateService(
             }
 
         Audit.ApplicationSend.log(targetId = AuditId(applicationId))
+    }
+
+    fun sendPlacementToolApplication(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        application: ApplicationDetails
+    ) {
+        val applicationFlags = tx.applicationFlags(application, clock.today())
+        tx.updateApplicationFlags(application.id, applicationFlags)
+
+        val sentDate = application.sentDate!!
+        val dueDate = application.sentDate
+        tx.updateApplicationDates(application.id, sentDate, dueDate)
+
+        messageService.sendMessageAsEmployee(
+            tx,
+            user,
+            clock.now(),
+            sender = tx.getServiceWorkerAccountId()!!,
+            type = MessageType.MESSAGE,
+            msg =
+                NewMessageStub(
+                    title =
+                        "Esitäyttetty hakemus esiopetukseen / Pre-filled application for preschool education", // todo: parametrize
+                    content =
+                        """Hei!
+
+Olemme tehneet lapsellenne esitäytetyn hakemuksen esiopetukseen. Hakemus on tehty lapsen oppilaaksiottoalueen mukaiseen esiopetusyksikköön.
+
+Mikäli haluatte hakeutua muuhun kuin lapsellenne osoitettuun paikkaan, voitte muokata hakemusta eVakassa 1.1.2024-14.1.2024 välisenä aikana.
+
+Jos taas hyväksytte osoitetun esiopetuspaikan, teidän ei tarvitse tehdä mitään. Saatte päätöksen esiopetuspaikasta helmikuun 2024 aikana.
+
+Terveisin
+
+Turun kaupungin Varhaiskasvatus
+
+
+Hello!
+
+We have made a pre-filled application for preschool education for your child. The application has been submitted to the pre-school unit according to the child's pupil enrollment area.
+
+If you want to apply for a place other than the one assigned to your child, you can edit the application in eVaka between January 1, 2024 and January 14, 2024.
+
+If you accept the assigned pre-school place, you don't have to do anything. You will receive a decision about the preschool place during February 2024.
+
+Best regards
+
+Early childhood education in the city of Turku
+                        """
+                            .trimIndent(),
+                    urgent = false,
+                    sensitive = false
+                ),
+            recipients =
+                setOf(MessageRecipient(MessageRecipientType.CITIZEN, application.guardianId)),
+            recipientNames =
+                listOf(
+                    tx.getPersonById(application.guardianId)?.let {
+                        "${it.firstName} ${it.lastName}"
+                    } ?: ""
+                ),
+            attachments = setOf(),
+            relatedApplication = application.id,
+            filters = null
+        )
+
+        tx.updateApplicationStatus(application.id, SENT)
     }
 
     fun moveToWaitingPlacement(

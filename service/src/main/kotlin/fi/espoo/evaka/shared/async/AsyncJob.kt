@@ -7,7 +7,10 @@ package fi.espoo.evaka.shared.async
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.PlacementToolData
+import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.calendarevent.CalendarEventTime
+import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.koski.KoskiStudyRightKey
@@ -404,6 +407,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class PlacementTool(
+        val data: PlacementToolData,
+        val defaultServiceNeedOption: ServiceNeedOption?,
+        val nextPreschoolTerm: PreschoolTerm,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -434,6 +445,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     UpdateFromVtj::class,
                     UploadToKoski::class,
                     VTJRefresh::class,
+                    PlacementTool::class
                 ),
             )
         val email =

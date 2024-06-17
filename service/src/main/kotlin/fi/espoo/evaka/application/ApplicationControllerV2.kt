@@ -17,7 +17,6 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.updateDecisionDrafts
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
-import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonService
@@ -45,15 +44,18 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import fi.espoo.evaka.shared.security.upsertCitizenUser
 import java.time.LocalDate
+import java.util.UUID
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 enum class ApplicationTypeToggle {
     CLUB,
@@ -126,6 +128,7 @@ class ApplicationControllerV2(
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
+    private val placementToolService: PlacementToolService
 ) {
     @PostMapping
     fun createPaperApplication(
@@ -144,53 +147,14 @@ class ApplicationControllerV2(
                         Action.Global.CREATE_PAPER_APPLICATION,
                     )
 
-                    val child =
-                        tx.getPersonById(body.childId)
-                            ?: throw BadRequest("Could not find the child with id ${body.childId}")
-
-                    val guardianId =
-                        body.guardianId
-                            ?: if (!body.guardianSsn.isNullOrEmpty()) {
-                                personService
-                                    .getOrCreatePerson(
-                                        tx,
-                                        user,
-                                        ExternalIdentifier.SSN.getInstance(body.guardianSsn),
-                                    )
-                                    ?.id
-                                    ?: throw BadRequest(
-                                        "Could not find the guardian with ssn ${body.guardianSsn}"
-                                    )
-                            } else if (body.guardianToBeCreated != null) {
-                                createPerson(tx, body.guardianToBeCreated)
-                            } else {
-                                throw BadRequest(
-                                    "Could not find guardian info from paper application request for ${body.childId}"
-                                )
-                            }
-
-                    val guardian =
-                        tx.getPersonById(guardianId)
-                            ?: throw BadRequest("Could not find the guardian with id $guardianId")
-
-                    // If the guardian has never logged in to eVaka, evaka_user might not contain a
-                    // row for them yet
-                    tx.upsertCitizenUser(guardianId)
-
-                    val applicationId =
-                        applicationStateService.createApplication(
-                            tx = tx,
-                            user = user,
-                            now = clock.now(),
-                            type = body.type,
-                            guardian = guardian,
-                            child = child,
-                            origin = ApplicationOrigin.PAPER,
-                            hideFromGuardian = body.hideFromGuardian,
-                            sentDate = body.sentDate,
-                            allowOtherGuardianAccess = true,
-                        )
-                    Pair(guardianId, applicationId)
+                    savePaperApplication(
+                        tx,
+                        user,
+                        clock,
+                        body,
+                        personService,
+                        applicationStateService
+                    )
                 }
             }
         Audit.ApplicationCreate.log(
@@ -199,6 +163,19 @@ class ApplicationControllerV2(
             meta = mapOf("guardianId" to guardianId, "applicationType" to body.type),
         )
         return applicationId
+    }
+
+    @PostMapping("/placement-tool", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun createPlacementToolApplications(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestPart("file") file: MultipartFile
+    ): UUID {
+        placementToolService.createPlacementToolApplications(db, user, clock, file)
+
+        // this is needed for fileUpload component
+        return UUID.randomUUID()
     }
 
     @PostMapping("/search")

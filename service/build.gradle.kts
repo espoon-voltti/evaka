@@ -145,6 +145,7 @@ dependencies {
     implementation("org.apache.tika:tika-core")
     implementation("org.apache.commons:commons-imaging")
     implementation("org.jsoup:jsoup")
+    implementation("org.apache.commons:commons-csv")
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
