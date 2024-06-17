@@ -4,17 +4,19 @@
 
 package evaka.ktlint
 
+import com.pinterest.ktlint.rule.engine.core.api.AutocorrectDecision
+import com.pinterest.ktlint.rule.engine.core.api.RuleAutocorrectApproveHandler
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 
-class NoPrint : EvakaRule("no-println") {
+class NoPrint : EvakaRule("no-println"), RuleAutocorrectApproveHandler {
     private val printFunctions = setOf("print", "println")
 
     override fun afterVisitChildNodes(
         node: ASTNode,
-        autoCorrect: Boolean,
-        emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> Unit
+        emit:
+            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
     ) {
         val expression = node.psi as? KtCallExpression ?: return
         val isPrintCall =
