@@ -3148,7 +3148,7 @@ __metadata:
     node-forge: "npm:^1.3.1"
     nodemon: "npm:^3.1.0"
     passport: "npm:^0.7.0"
-    pino: "npm:^9.1.0"
+    pino: "npm:^9.2.0"
     pino-http: "npm:^10.1.0"
     pino-pretty: "npm:^11.2.0"
     prettier: "npm:^3.3.1"
@@ -5726,9 +5726,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^9.1.0":
-  version: 9.1.0
-  resolution: "pino@npm:9.1.0"
+"pino@npm:^9.2.0":
+  version: 9.2.0
+  resolution: "pino@npm:9.2.0"
   dependencies:
     atomic-sleep: "npm:^1.0.0"
     fast-redact: "npm:^3.1.1"
@@ -5743,7 +5743,7 @@ __metadata:
     thread-stream: "npm:^3.0.0"
   bin:
     pino: bin.js
-  checksum: 10/b7b0bdfdc2d9db017fa690e85f2e8ad2ddda09b1cbccb9868bc55d9a218ab3e9e4d75e6beb9d44fef10c4982d8719db4cf2325ea1f866d2fb37b7dff7f7297b1
+  checksum: 10/7d8db2228a468d0f54839719d8bee12c6e16529a98df7477e0ec530359c596bf26b291dc1dbf92ede633a487df4a29b871e795f777ce091a9576409d1bd87137
   languageName: node
   linkType: hard
 
