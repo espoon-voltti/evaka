@@ -60,7 +60,7 @@ const Wrapper = styled.div<{ width: InputWidth }>`
 interface StyledInputProps {
   width: InputWidth
   align?: 'left' | 'right'
-  icon?: boolean
+  $icon?: boolean
 }
 
 export const StyledInput = styled.input<StyledInputProps>`
@@ -77,8 +77,8 @@ export const StyledInput = styled.input<StyledInputProps>`
   color: ${(p) => p.theme.colors.grayscale.g100};
   padding: 6px 10px;
 
-  ${({ icon }) =>
-    icon
+  ${({ $icon }) =>
+    $icon
       ? css`
           padding-right: calc(10px + 1rem + 12px);
         `
@@ -100,8 +100,8 @@ export const StyledInput = styled.input<StyledInputProps>`
     border-radius: 2px;
     padding-left: 8px;
     padding-right: 8px;
-    ${({ icon }) =>
-      icon
+    ${({ $icon }) =>
+      $icon
         ? css`
             padding-right: calc(8px + 1rem + 12px);
           `
@@ -298,7 +298,7 @@ const InputField = React.memo(function InputField({
         readOnly={readonly}
         disabled={readonly}
         width={width}
-        icon={showIcon}
+        $icon={showIcon}
         inputMode={inputMode}
         align={align}
         className={classNames(className, infoStatus)}
