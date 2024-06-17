@@ -17,38 +17,34 @@ export default class MobileNotePage {
 
   #stickyNote = {
     note: this.page.findAll('[data-qa="sticky-note"]'),
-    newNoteBtn: this.page.find('[data-qa="sticky-note-new"]'),
+    newNoteBtn: this.page.findByDataQa('sticky-note-new'),
     editBtn: this.page.findAll('[data-qa="sticky-note-edit"]'),
     removeBtn: this.page.findAll('[data-qa="sticky-note-remove"]'),
-    saveBtn: this.page.find('[data-qa="sticky-note-save"]'),
-    input: new TextInput(this.page.find('[data-qa="sticky-note-input"]'))
+    saveBtn: this.page.findByDataQa('sticky-note-save'),
+    input: new TextInput(this.page.findByDataQa('sticky-note-input'))
   }
 
-  #createNoteButton = this.page.find('[data-qa="create-daily-note-btn"]')
-  #deleteNoteButton = this.page.find('[data-qa="open-delete-dialog-btn"]')
+  #createNoteButton = this.page.findByDataQa('create-daily-note-btn')
+  #deleteNoteButton = this.page.findByDataQa('open-delete-dialog-btn')
   #note = {
-    dailyNote: new TextInput(
-      this.page.find('[data-qa="daily-note-note-input"]')
-    ),
+    dailyNote: new TextInput(this.page.findByDataQa('daily-note-note-input')),
     sleepingTimeHours: new TextInput(
-      this.page.find('[data-qa="sleeping-time-hours-input"]')
+      this.page.findByDataQa('sleeping-time-hours-input')
     ),
     sleepingTimeMinutes: new TextInput(
-      this.page.find('[data-qa="sleeping-time-minutes-input"]')
+      this.page.findByDataQa('sleeping-time-minutes-input')
     ),
-    reminderNote: new TextInput(
-      this.page.find('[data-qa="reminder-note-input"]')
-    ),
+    reminderNote: new TextInput(this.page.findByDataQa('reminder-note-input')),
     feedingNote: (level: ChildDailyNoteLevel) =>
-      this.page.find(`[data-qa="feeding-note-${level}"]`),
+      this.page.findByDataQa(`feeding-note-${level}`),
     sleepingNote: (level: ChildDailyNoteLevel) =>
-      this.page.find(`[data-qa="sleeping-note-${level}"]`),
+      this.page.findByDataQa(`sleeping-note-${level}`),
     reminders: (reminder: ChildDailyNoteReminder) =>
-      this.page.find(`[data-qa="reminders-${reminder}"]`)
+      this.page.findByDataQa(`reminders-${reminder}`)
   }
 
   async selectTab(tab: 'note' | 'group' | 'sticky') {
-    await this.page.find(`[data-qa="tab-${tab.toUpperCase()}"]`).click()
+    await this.page.findByDataQa(`tab-${tab.toUpperCase()}`).click()
   }
 
   async initNewStickyNote() {
@@ -110,7 +106,7 @@ export default class MobileNotePage {
 
   async deleteChildDailyNote() {
     await this.#deleteNoteButton.click()
-    await new Modal(this.page.find('[data-qa="modal"]')).submit()
+    await new Modal(this.page.findByDataQa('modal')).submit()
   }
 
   async assertNote(expected: ChildDailyNoteBody) {

@@ -8,13 +8,13 @@ export default class CitizenPedagogicalDocumentsPage {
   constructor(private readonly page: Page) {}
 
   readonly #date = (id: string) =>
-    this.page.find(`[data-qa="pedagogical-document-date-${id}"]`)
+    this.page.findByDataQa(`pedagogical-document-date-${id}`)
   readonly #childName = (id: string) =>
-    this.page.find(`[data-qa="pedagogical-document-child-name-${id}"]`)
+    this.page.findByDataQa(`pedagogical-document-child-name-${id}`)
   readonly #description = (id: string) =>
-    this.page.find(`[data-qa="pedagogical-document-description-${id}"]`)
+    this.page.findByDataQa(`pedagogical-document-description-${id}`)
   readonly #downloadAttachment = (id: string) =>
-    this.page.find(`[data-qa="attachment-${id}-download"]`)
+    this.page.findByDataQa(`attachment-${id}-download`)
 
   async assertPedagogicalDocumentExists(
     id: string,

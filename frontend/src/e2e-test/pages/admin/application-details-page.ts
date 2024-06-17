@@ -7,19 +7,19 @@ import { Page, TextInput } from '../../utils/page'
 export default class ApplicationDetailsPage {
   constructor(private page: Page) {}
 
-  #guardianName = this.page.find('[data-qa="guardian-name"]')
+  #guardianName = this.page.findByDataQa('guardian-name')
 
-  #vtjGuardianName = this.page.find('[data-qa="vtj-guardian-name"]')
+  #vtjGuardianName = this.page.findByDataQa('vtj-guardian-name')
 
-  #otherGuardianAgreementStatus = this.page.find('[data-qa="agreement-status"]')
+  #otherGuardianAgreementStatus = this.page.findByDataQa('agreement-status')
 
-  #otherGuardianSameAddress = this.page.find(
-    '[data-qa="other-vtj-guardian-lives-in-same-address"]'
+  #otherGuardianSameAddress = this.page.findByDataQa(
+    'other-vtj-guardian-lives-in-same-address'
   )
 
-  #noOtherVtjGuardianText = this.page.find('[data-qa="no-other-vtj-guardian"]')
+  #noOtherVtjGuardianText = this.page.findByDataQa('no-other-vtj-guardian')
 
-  #applicationStatus = this.page.find('[data-qa="application-status"]')
+  #applicationStatus = this.page.findByDataQa('application-status')
 
   #notes = this.page.findAllByDataQa('note-container')
 

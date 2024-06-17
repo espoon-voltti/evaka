@@ -28,9 +28,9 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     return new UnitWeekCalendarPage(this.page)
   }
 
-  #unitName = this.page.find('[data-qa="attendances-unit-name"]')
+  #unitName = this.page.findByDataQa('attendances-unit-name')
   #groupSelector = new Select(
-    this.page.find('[data-qa="attendances-group-select"]')
+    this.page.findByDataQa('attendances-group-select')
   )
   childRow = (childId: UUID) =>
     this.page.findByDataQa(`absence-child-row-${childId}`)
@@ -44,7 +44,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
   nextWeekButton = this.page.findByDataQa('next-week')
 
   #staffAttendanceCells = this.page.findAll('[data-qa="staff-attendance-cell"]')
-  #addAbsencesButton = this.page.find('[data-qa="add-absences-button"]')
+  #addAbsencesButton = this.page.findByDataQa('add-absences-button')
 
   async assertUnitName(expectedName: string) {
     await this.#unitName.assertTextEquals(expectedName)
@@ -63,7 +63,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     await this.absenceCell(childId, date).select()
     await this.#addAbsencesButton.click()
 
-    const modal = new AbsenceModal(this.page.find('[data-qa="absence-modal"]'))
+    const modal = new AbsenceModal(this.page.findByDataQa('absence-modal'))
     await modal.selectAbsenceType(type)
     for (const category of categories) {
       await modal.selectAbsenceCategory(category)

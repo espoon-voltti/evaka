@@ -7,22 +7,16 @@ import { Page, TextInput } from '../../../utils/page'
 export class PairingFlow {
   constructor(private readonly page: Page) {}
 
-  #mobileStartPairingBtn = this.page.find('[data-qa="start-pairing-btn"]')
-  #mobilePairingTitle1 = this.page.find(
-    '[data-qa="mobile-pairing-wizard-title-1"]'
-  )
-  #mobilePairingTitle3 = this.page.find(
-    '[data-qa="mobile-pairing-wizard-title-3"]'
-  )
+  #mobileStartPairingBtn = this.page.findByDataQa('start-pairing-btn')
+  #mobilePairingTitle1 = this.page.findByDataQa('mobile-pairing-wizard-title-1')
+  #mobilePairingTitle3 = this.page.findByDataQa('mobile-pairing-wizard-title-3')
   #challengeKeyInput = new TextInput(
-    this.page.find('[data-qa="challenge-key-input"]')
+    this.page.findByDataQa('challenge-key-input')
   )
-  #submitChallengeKeyBtn = this.page.find(
-    '[data-qa="submit-challenge-key-btn"]'
-  )
-  #responseKey = this.page.find('[data-qa="response-key"]')
-  #startCtaLink = this.page.find('[data-qa="start-cta-link"]')
-  #topBarTitle = this.page.find('[data-qa="top-bar-title"]')
+  #submitChallengeKeyBtn = this.page.findByDataQa('submit-challenge-key-btn')
+  #responseKey = this.page.findByDataQa('response-key')
+  #startCtaLink = this.page.findByDataQa('start-cta-link')
+  #topBarTitle = this.page.findByDataQa('top-bar-title')
 
   async startPairing() {
     await this.#mobileStartPairingBtn.click()

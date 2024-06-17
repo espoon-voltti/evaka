@@ -9,43 +9,37 @@ import { Checkbox, Page, TextInput } from '../../utils/page'
 export default class PersonSearchPage {
   constructor(private readonly page: Page) {}
 
-  searchInput = new TextInput(this.page.find('[data-qa="search-input"]'))
+  searchInput = new TextInput(this.page.findByDataQa('search-input'))
   searchResults = this.page.findAllByDataQa('person-row')
   #personLink = this.page.find('[data-qa="person-row"] a')
-  #createPersonButton = this.page.find('[data-qa="create-person-button"]')
+  #createPersonButton = this.page.findByDataQa('create-person-button')
   #createPersonModal = {
     modal: this.page.findByDataQa('modal'),
-    firstNameInput: new TextInput(
-      this.page.find('[data-qa="first-name-input"]')
-    ),
-    lastNameInput: new TextInput(this.page.find('[data-qa="last-name-input"]')),
+    firstNameInput: new TextInput(this.page.findByDataQa('first-name-input')),
+    lastNameInput: new TextInput(this.page.findByDataQa('last-name-input')),
     dateOfBirthInput: new TextInput(
-      this.page.find('[data-qa="date-of-birth-input"]')
+      this.page.findByDataQa('date-of-birth-input')
     ),
     streetAddressInput: new TextInput(
-      this.page.find('[data-qa="street-address-input"]')
+      this.page.findByDataQa('street-address-input')
     ),
-    postalCodeInput: new TextInput(
-      this.page.find('[data-qa="postal-code-input"]')
-    ),
-    postOfficeInput: new TextInput(
-      this.page.find('[data-qa="post-office-input"]')
-    )
+    postalCodeInput: new TextInput(this.page.findByDataQa('postal-code-input')),
+    postOfficeInput: new TextInput(this.page.findByDataQa('post-office-input'))
   }
   #personData = {
-    firstName: this.page.find('[data-qa="person-first-names"]'),
-    lastName: this.page.find('[data-qa="person-last-name"]'),
-    dateOfBirth: this.page.find('[data-qa="person-birthday"]'),
-    address: this.page.find('[data-qa="person-address"]'),
-    ssn: this.page.find('[data-qa="person-ssn"]')
+    firstName: this.page.findByDataQa('person-first-names'),
+    lastName: this.page.findByDataQa('person-last-name'),
+    dateOfBirth: this.page.findByDataQa('person-birthday'),
+    address: this.page.findByDataQa('person-address'),
+    ssn: this.page.findByDataQa('person-ssn')
   }
-  #addSsnButton = this.page.find('[data-qa="add-ssn-button"]')
-  #noSsnText = this.page.find('[data-qa="no-ssn"]')
+  #addSsnButton = this.page.findByDataQa('add-ssn-button')
+  #noSsnText = this.page.findByDataQa('no-ssn')
   #disableSsnAddingCheckbox = new Checkbox(
-    this.page.find('[data-qa="disable-ssn-adding"]')
+    this.page.findByDataQa('disable-ssn-adding')
   )
-  #ssnInput = new TextInput(this.page.find('[data-qa="ssn-input"]'))
-  #modalConfirm = this.page.find('[data-qa="modal-okBtn"]')
+  #ssnInput = new TextInput(this.page.findByDataQa('ssn-input'))
+  #modalConfirm = this.page.findByDataQa('modal-okBtn')
 
   async createPerson(personData: {
     firstName: string

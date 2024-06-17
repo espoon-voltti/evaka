@@ -11,15 +11,15 @@ export default class FinanceBasicsPage {
   constructor(private readonly page: Page) {}
 
   readonly feesSection = {
-    root: this.page.find('[data-qa="fees-section"]'),
+    root: this.page.findByDataQa('fees-section'),
     rootLoaded: this.page.find(
       '[data-qa="fees-section"][data-isloading="false"]'
     ),
-    createFeeThresholdsButton: this.page.find(
-      '[data-qa="create-new-fee-thresholds"]'
+    createFeeThresholdsButton: this.page.findByDataQa(
+      'create-new-fee-thresholds'
     ),
     item: (index: number) => {
-      const element = this.page.find(`[data-qa="fee-thresholds-item-${index}"]`)
+      const element = this.page.findByDataQa(`fee-thresholds-item-${index}`)
 
       return {
         element,
@@ -28,7 +28,7 @@ export default class FinanceBasicsPage {
         },
         edit: async () => {
           await element.find('[data-qa="edit"]').click()
-          await this.page.find('[data-qa="modal-okBtn"]').click()
+          await this.page.findByDataQa('modal-okBtn').click()
         },
         assertItemContains: async (thresholds: FeeThresholds) => {
           const expectValueToBe = async (
@@ -78,46 +78,44 @@ export default class FinanceBasicsPage {
       }
     },
     editor: {
-      validFromInput: new TextInput(this.page.find('[data-qa="valid-from"]')),
-      validToInput: new TextInput(this.page.find('[data-qa="valid-to"]')),
-      maxFeeInput: new TextInput(this.page.find('[data-qa="max-fee"]')),
-      minFeeInput: new TextInput(this.page.find('[data-qa="min-fee"]')),
+      validFromInput: new TextInput(this.page.findByDataQa('valid-from')),
+      validToInput: new TextInput(this.page.findByDataQa('valid-to')),
+      maxFeeInput: new TextInput(this.page.findByDataQa('max-fee')),
+      minFeeInput: new TextInput(this.page.findByDataQa('min-fee')),
       minIncomeThreshold: (familySize: number) =>
         new TextInput(
-          this.page.find(`[data-qa="min-income-threshold-${familySize}"]`)
+          this.page.findByDataQa(`min-income-threshold-${familySize}`)
         ),
       maxIncomeThreshold: (familySize: number) =>
         new TextInput(
-          this.page.find(`[data-qa="max-income-threshold-${familySize}"]`)
+          this.page.findByDataQa(`max-income-threshold-${familySize}`)
         ),
       incomeMultiplier: (familySize: number) =>
         new TextInput(
-          this.page.find(`[data-qa="income-multiplier-${familySize}"]`)
+          this.page.findByDataQa(`income-multiplier-${familySize}`)
         ),
       maxFeeError: (familySize: number) =>
-        new TextInput(
-          this.page.find(`[data-qa="max-fee-error-${familySize}"]`)
-        ),
+        new TextInput(this.page.findByDataQa(`max-fee-error-${familySize}`)),
       incomeThresholdIncrease6Plus: new TextInput(
-        this.page.find('[data-qa="income-threshold-increase"]')
+        this.page.findByDataQa('income-threshold-increase')
       ),
       siblingDiscount2: new TextInput(
-        this.page.find('[data-qa="sibling-discount-2"]')
+        this.page.findByDataQa('sibling-discount-2')
       ),
       siblingDiscount2Plus: new TextInput(
-        this.page.find('[data-qa="sibling-discount-2-plus"]')
+        this.page.findByDataQa('sibling-discount-2-plus')
       ),
-      temporaryFee: new TextInput(this.page.find('[data-qa="temporary-fee"]')),
+      temporaryFee: new TextInput(this.page.findByDataQa('temporary-fee')),
       temporaryFeePartDay: new TextInput(
-        this.page.find('[data-qa="temporary-fee-part-day"]')
+        this.page.findByDataQa('temporary-fee-part-day')
       ),
       temporaryFeeSibling: new TextInput(
-        this.page.find('[data-qa="temporary-fee-sibling"]')
+        this.page.findByDataQa('temporary-fee-sibling')
       ),
       temporaryFeeSiblingPartDay: new TextInput(
-        this.page.find('[data-qa="temporary-fee-sibling-part-day"]')
+        this.page.findByDataQa('temporary-fee-sibling-part-day')
       ),
-      saveButton: new AsyncButton(this.page.find('[data-qa="save"]')),
+      saveButton: new AsyncButton(this.page.findByDataQa('save')),
       fillInThresholds: async (feeThresholds: FeeThresholds) => {
         await this.feesSection.editor.validFromInput.fill(
           feeThresholds.validDuring.start.format()
@@ -172,7 +170,7 @@ export default class FinanceBasicsPage {
         await this.feesSection.editor.saveButton.click()
 
         if (retroactive) {
-          await this.page.find('[data-qa="modal-okBtn"]').click()
+          await this.page.findByDataQa('modal-okBtn').click()
         }
 
         await this.feesSection.editor.saveButton.waitUntilHidden()

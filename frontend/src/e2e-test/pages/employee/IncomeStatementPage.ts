@@ -7,15 +7,15 @@ import { Checkbox, Page, TextInput } from '../../utils/page'
 export class IncomeStatementPage {
   constructor(private readonly page: Page) {}
 
-  #form = this.page.find(`[data-qa="handler-notes-form"]`)
+  #form = this.page.findByDataQa(`handler-notes-form`)
 
   #handledCheckbox = new Checkbox(this.#form.find('[data-qa="set-handled"]'))
   #noteInput = new TextInput(this.#form.find('input[type="text"]'))
   #submitBtn = this.#form.find('button')
 
-  #childOtherInfo = this.page.find('[data-qa="other-info"]')
+  #childOtherInfo = this.page.findByDataQa('other-info')
   #attachments = this.page.findAll('[data-qa="attachments"]')
-  #noAttachments = this.page.find('[data-qa="no-attachments"]')
+  #noAttachments = this.page.findByDataQa('no-attachments')
 
   async assertChildIncomeStatement(
     expectedOtherInfo: string,

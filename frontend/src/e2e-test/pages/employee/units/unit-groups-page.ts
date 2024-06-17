@@ -27,7 +27,7 @@ export class UnitGroupsPage {
     `[data-qa^="daycare-group-collapsible-"]`
   )
   #groupCollapsible = (groupId: string) =>
-    this.page.find(`[data-qa="daycare-group-collapsible-${groupId}"]`)
+    this.page.findByDataQa(`daycare-group-collapsible-${groupId}`)
 
   async selectPeriod(period: '1 day' | '3 months' | '6 months' | '1 year') {
     await this.page
@@ -37,20 +37,20 @@ export class UnitGroupsPage {
   }
 
   async setFilterStartDate(date: string) {
-    await new DatePicker(
-      this.page.find('[data-qa="unit-filter-start-date"]')
-    ).fill(date)
+    await new DatePicker(this.page.findByDataQa('unit-filter-start-date')).fill(
+      date
+    )
     await this.waitUntilLoaded()
   }
 
   terminatedPlacementsSection = new TerminatedPlacementsSection(
     this.page,
-    this.page.find('[data-qa="terminated-placements-section"]')
+    this.page.findByDataQa('terminated-placements-section')
   )
 
   missingPlacementsSection = new MissingPlacementsSection(
     this.page,
-    this.page.find('[data-qa="missing-placements-section"]')
+    this.page.findByDataQa('missing-placements-section')
   )
 
   async assertChildCapacityFactor(childId: string, factor: string) {
@@ -59,8 +59,8 @@ export class UnitGroupsPage {
       .assertTextEquals(factor)
   }
 
-  readonly childCapacityFactorColumnHeading = this.page.find(
-    `[data-qa="child-capacity-factor-heading"]`
+  readonly childCapacityFactorColumnHeading = this.page.findByDataQa(
+    `child-capacity-factor-heading`
   )
 
   readonly childCapacityFactorColumnData = this.page.findAll(
@@ -87,7 +87,7 @@ export class UnitGroupsPage {
   }
 
   async waitUntilVisible() {
-    await this.page.find('[data-qa="groups-title-bar"]').waitUntilVisible()
+    await this.page.findByDataQa('groups-title-bar').waitUntilVisible()
   }
 
   async assertChildOccupancyFactorColumnNotVisible() {
@@ -198,7 +198,7 @@ export class MissingPlacementRow extends Element {
   async addToGroup() {
     await this.#addToGroup.click()
     return new CreateGroupPlacementModal(
-      this.page.find('[data-qa="group-placement-modal"]')
+      this.page.findByDataQa('group-placement-modal')
     )
   }
 }

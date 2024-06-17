@@ -7,10 +7,10 @@ import { Page } from '../../utils/page'
 export default class UnreadMobileMessagesPage {
   constructor(private readonly page: Page) {}
 
-  pinLoginButton = this.page.find(`[data-qa="pin-login-button"]`)
+  pinLoginButton = this.page.findByDataQa(`pin-login-button`)
 
   linkToGroup(groupId: string) {
-    return this.page.find(`[data-qa="link-to-group-messages-${groupId}"]`)
+    return this.page.findByDataQa(`link-to-group-messages-${groupId}`)
   }
 
   async groupLinksExist() {

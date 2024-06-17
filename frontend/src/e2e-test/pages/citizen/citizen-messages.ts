@@ -21,23 +21,21 @@ export default class CitizenMessagesPage {
   replyButtonTag = 'message-reply-editor-btn'
 
   #messageReplyContent = new TextInput(
-    this.page.find('[data-qa="message-reply-content"]')
+    this.page.findByDataQa('message-reply-content')
   )
-  #threadListItem = this.page.find('[data-qa="thread-list-item"]')
-  #threadTitle = this.page.find('[data-qa="thread-reader-title"]')
-  #redactedThreadTitle = this.page.find(
-    '[data-qa="redacted-thread-reader-title"]'
-  )
-  #strongAuthLink = this.page.find('[data-qa="strong-auth-link"]')
+  #threadListItem = this.page.findByDataQa('thread-list-item')
+  #threadTitle = this.page.findByDataQa('thread-reader-title')
+  #redactedThreadTitle = this.page.findByDataQa('redacted-thread-reader-title')
+  #strongAuthLink = this.page.findByDataQa('strong-auth-link')
   #inboxEmpty = this.page.find('[data-qa="inbox-empty"][data-loading="false"]')
   #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
   #threadUrgent = this.page.findByDataQa('thread-reader').findByDataQa('urgent')
-  #openReplyEditorButton = this.page.find(`[data-qa="${this.replyButtonTag}"]`)
-  #sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
+  #openReplyEditorButton = this.page.findByDataQa(`${this.replyButtonTag}`)
+  #sendReplyButton = this.page.findByDataQa('message-send-btn')
   newMessageButton = this.page.findAllByDataQa('new-message-btn').first()
   #messageEditor = this.page.findByDataQa('message-editor')
 
-  discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
+  discardMessageButton = this.page.findByDataQa('message-discard-btn')
 
   async createNewMessage(): Promise<CitizenMessageEditor> {
     await this.newMessageButton.click()

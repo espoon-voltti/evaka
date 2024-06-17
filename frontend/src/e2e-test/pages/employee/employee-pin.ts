@@ -6,13 +6,9 @@ import { Page, TextInput } from '../../utils/page'
 export class EmployeePinPage {
   constructor(private readonly page: Page) {}
 
-  readonly pinInput = new TextInput(
-    this.page.find('[data-qa="pin-code-input"]')
-  )
-  readonly inputInfo = this.page.find('[data-qa="pin-code-input-info"]')
-  readonly pinLockedAlertBox = this.page.find(
-    '[data-qa="pin-locked-alert-box"]'
-  )
+  readonly pinInput = new TextInput(this.page.findByDataQa('pin-code-input'))
+  readonly inputInfo = this.page.findByDataQa('pin-code-input-info')
+  readonly pinLockedAlertBox = this.page.findByDataQa('pin-locked-alert-box')
 
-  readonly pinSendButton = this.page.find('[data-qa="send-pin-button"]')
+  readonly pinSendButton = this.page.findByDataQa('send-pin-button')
 }

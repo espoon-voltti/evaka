@@ -23,47 +23,47 @@ export default class ReportsPage {
   constructor(private readonly page: Page) {}
 
   async openMissingHeadOfFamilyReport() {
-    await this.page.find('[data-qa="report-missing-head-of-family"]').click()
+    await this.page.findByDataQa('report-missing-head-of-family').click()
     return new MissingHeadOfFamilyReport(this.page)
   }
 
   async openApplicationsReport() {
-    await this.page.find('[data-qa="report-applications"]').click()
+    await this.page.findByDataQa('report-applications').click()
     return new ApplicationsReport(this.page)
   }
 
   async openNonSsnChildrenReport() {
-    await this.page.find('[data-qa="report-non-ssn-children"]').click()
+    await this.page.findByDataQa('report-non-ssn-children').click()
     return new NonSsnChildrenReport(this.page)
   }
 
   async openPlacementGuaranteeReport() {
-    await this.page.find('[data-qa="report-placement-guarantee"]').click()
+    await this.page.findByDataQa('report-placement-guarantee').click()
     return new PlacementGuaranteeReport(this.page)
   }
 
   async openPlacementSketchingReport() {
-    await this.page.find('[data-qa="report-placement-sketching"]').click()
+    await this.page.findByDataQa('report-placement-sketching').click()
     return new PlacementSketchingReport(this.page)
   }
 
   async openVoucherServiceProvidersReport() {
-    await this.page.find('[data-qa="report-voucher-service-providers"]').click()
+    await this.page.findByDataQa('report-voucher-service-providers').click()
     return new VoucherServiceProvidersReport(this.page)
   }
 
   async openManualDuplicationReport() {
-    await this.page.find('[data-qa="report-manual-duplication"]').click()
+    await this.page.findByDataQa('report-manual-duplication').click()
     return new ManualDuplicationReport(this.page)
   }
 
   async openPreschoolAbsenceReport() {
-    await this.page.find('[data-qa="report-preschool-absence"]').click()
+    await this.page.findByDataQa('report-preschool-absence').click()
     return new PreschoolAbsenceReport(this.page)
   }
 
   async openVardaErrorsReport() {
-    await this.page.find('[data-qa="report-varda-child-errors"]').click()
+    await this.page.findByDataQa('report-varda-child-errors').click()
     return new VardaErrorsReport(this.page)
   }
 }
@@ -98,7 +98,7 @@ export class MissingHeadOfFamilyReport {
 export class NonSsnChildrenReport {
   constructor(private page: Page) {}
 
-  #nameHeader = this.page.find(`[data-qa="child-name-header"]`)
+  #nameHeader = this.page.findByDataQa(`child-name-header`)
 
   async changeSortOrder() {
     await this.#nameHeader.click()
@@ -127,8 +127,8 @@ export class NonSsnChildrenReport {
 export class ApplicationsReport {
   constructor(private page: Page) {}
 
-  #table = this.page.find(`[data-qa="report-application-table"]`)
-  #areaSelector = new Combobox(this.page.find('[data-qa="select-area"]'))
+  #table = this.page.findByDataQa(`report-application-table`)
+  #areaSelector = new Combobox(this.page.findByDataQa('select-area'))
 
   private async areaWithNameExists(area: string, exists = true) {
     await this.#table.waitUntilVisible()
@@ -169,10 +169,10 @@ export class ApplicationsReport {
 
   async selectDateRangePickerDates(from: LocalDate, to: LocalDate) {
     const fromInput = new DatePickerDeprecated(
-      this.page.find('[data-qa="datepicker-from"]')
+      this.page.findByDataQa('datepicker-from')
     )
     const toInput = new DatePickerDeprecated(
-      this.page.find('[data-qa="datepicker-to"]')
+      this.page.findByDataQa('datepicker-to')
     )
     await fromInput.fill(from.format())
     await toInput.fill(to.format())
@@ -220,7 +220,7 @@ export class PlacementSketchingReport {
   constructor(private page: Page) {}
 
   #applicationStatus = new MultiSelect(
-    this.page.find('[data-qa="select-application-status"]')
+    this.page.findByDataQa('select-application-status')
   )
 
   async assertRow(
@@ -229,7 +229,7 @@ export class PlacementSketchingReport {
     childName: string,
     currentUnitName: string | null = null
   ) {
-    const element = this.page.find(`[data-qa="${applicationId}"]`)
+    const element = this.page.findByDataQa(`${applicationId}`)
     await element.waitUntilVisible()
 
     await element
@@ -244,7 +244,7 @@ export class PlacementSketchingReport {
   }
 
   async assertNotRow(applicationId: string) {
-    const element = this.page.find(`[data-qa="${applicationId}"]`)
+    const element = this.page.findByDataQa(`${applicationId}`)
     await element.waitUntilHidden()
   }
 
@@ -258,9 +258,9 @@ export class PlacementSketchingReport {
 export class VoucherServiceProvidersReport {
   constructor(private page: Page) {}
 
-  #month = new Select(this.page.find('[data-qa="select-month"]'))
-  #year = new Select(this.page.find('[data-qa="select-year"]'))
-  #area = new Select(this.page.find('[data-qa="select-area"]'))
+  #month = new Select(this.page.findByDataQa('select-month'))
+  #year = new Select(this.page.findByDataQa('select-year'))
+  #area = new Select(this.page.findByDataQa('select-area'))
 
   #downloadCsvLink = this.page.find('[data-qa="download-csv"] a')
 
@@ -288,7 +288,7 @@ export class VoucherServiceProvidersReport {
     expectedChildCount: string,
     expectedMonthlySum: string
   ) {
-    const row = this.page.find(`[data-qa="${unitId}"]`)
+    const row = this.page.findByDataQa(`${unitId}`)
     await row.waitUntilVisible()
     expect(await row.find(`[data-qa="child-count"]`).text).toStrictEqual(
       expectedChildCount
@@ -380,11 +380,11 @@ export class ManualDuplicationReport {
 export class VardaErrorsReport {
   constructor(private page: Page) {}
 
-  #errorsTable = this.page.find('[data-qa="varda-errors-table"]')
+  #errorsTable = this.page.findByDataQa('varda-errors-table')
   #errorRows = this.page.findAll('[data-qa="varda-error-row"]')
-  #errors = (childId: string) => this.page.find(`[data-qa="errors-${childId}"]`)
+  #errors = (childId: string) => this.page.findByDataQa(`errors-${childId}`)
   #resetChild = (childId: string) =>
-    this.page.find(`[data-qa="reset-button-${childId}"]`)
+    this.page.findByDataQa(`reset-button-${childId}`)
 
   async assertErrorsContains(childId: string, expected: string) {
     await waitUntilTrue(async () =>

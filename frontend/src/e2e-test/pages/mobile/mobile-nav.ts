@@ -9,18 +9,18 @@ import { Page } from '../../utils/page'
 export default class MobileNav {
   constructor(private readonly page: Page) {}
 
-  readonly #groupSelectorButton = this.page.find(
-    '[data-qa="group-selector-button"]'
+  readonly #groupSelectorButton = this.page.findByDataQa(
+    'group-selector-button'
   )
 
   private groupWithId(id: UUID) {
-    return this.page.find(`[data-qa="group--${id}"]`)
+    return this.page.findByDataQa(`group--${id}`)
   }
 
-  children = this.page.find('[data-qa="bottomnav-children"]')
-  staff = this.page.find('[data-qa="bottomnav-staff"]')
-  messages = this.page.find('[data-qa="bottomnav-messages"]')
-  settings = this.page.find('[data-qa="bottomnav-settings"]')
+  children = this.page.findByDataQa('bottomnav-children')
+  staff = this.page.findByDataQa('bottomnav-staff')
+  messages = this.page.findByDataQa('bottomnav-messages')
+  settings = this.page.findByDataQa('bottomnav-settings')
 
   get selectedGroupName() {
     return this.#groupSelectorButton.text

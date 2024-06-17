@@ -7,10 +7,10 @@ import { Page, Select, TextInput } from '../../utils/page'
 export default class PinLoginPage {
   constructor(private readonly page: Page) {}
 
-  #staffSelect = new Select(this.page.find('[data-qa="select-staff"]'))
-  #pinInput = new TextInput(this.page.find('[data-qa="pin-input"]'))
-  #pinSubmit = new TextInput(this.page.find('[data-qa="pin-submit"]'))
-  #pinInfo = this.page.find('[data-qa="pin-input-info"]')
+  #staffSelect = new Select(this.page.findByDataQa('select-staff'))
+  #pinInput = new TextInput(this.page.findByDataQa('pin-input'))
+  #pinSubmit = new TextInput(this.page.findByDataQa('pin-submit'))
+  #pinInfo = this.page.findByDataQa('pin-input-info')
 
   async submitPin(pin: string) {
     await this.#pinInput.fill(pin)

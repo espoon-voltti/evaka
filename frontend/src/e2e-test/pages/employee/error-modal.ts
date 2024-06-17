@@ -7,7 +7,7 @@ import { Page } from '../../utils/page'
 export default class ErrorModal {
   constructor(private page: Page) {}
 
-  #modal = this.page.find('[data-qa="app-error-modal"]')
+  #modal = this.page.findByDataQa('app-error-modal')
   #title = this.#modal.find('[data-qa="title"]')
   #text = this.#modal.find('[data-qa="text"]')
 

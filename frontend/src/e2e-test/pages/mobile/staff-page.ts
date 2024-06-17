@@ -21,12 +21,12 @@ import {
 export default class StaffPage {
   constructor(private readonly page: Page) {}
 
-  #staffCount = this.page.find('[data-qa="staff-count"]')
-  #staffOtherCount = this.page.find('[data-qa="staff-other-count"]')
-  #cancelButton = this.page.find('[data-qa="cancel-button"]')
-  #confirmButton = this.page.find('[data-qa="confirm-button"]')
-  #occupancyRealized = this.page.find('[data-qa="realized-occupancy"]')
-  #updated = this.page.find('[data-qa="updated"]')
+  #staffCount = this.page.findByDataQa('staff-count')
+  #staffOtherCount = this.page.findByDataQa('staff-other-count')
+  #cancelButton = this.page.findByDataQa('cancel-button')
+  #confirmButton = this.page.findByDataQa('confirm-button')
+  #occupancyRealized = this.page.findByDataQa('realized-occupancy')
+  #updated = this.page.findByDataQa('updated')
 
   private countButton(parent: Element, which: 'plus' | 'minus') {
     return parent.find(`[data-qa="${which}-button"]`)

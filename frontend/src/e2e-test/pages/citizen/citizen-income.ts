@@ -8,17 +8,17 @@ export default class CitizenIncomePage {
   constructor(private readonly page: Page) {}
 
   rows = this.page.findAll('tbody tr')
-  requiredAttachments = this.page.find('[data-qa="required-attachments"]')
-  assureCheckBox = new Checkbox(this.page.find('[data-qa="assure-checkbox"]'))
+  requiredAttachments = this.page.findByDataQa('required-attachments')
+  assureCheckBox = new Checkbox(this.page.findByDataQa('assure-checkbox'))
 
   async createNewIncomeStatement() {
-    await this.page.find('[data-qa="new-income-statement-btn"]').click()
+    await this.page.findByDataQa('new-income-statement-btn').click()
   }
 
   async selectIncomeStatementType(
     type: 'highest-fee' | 'gross-income' | 'entrepreneur-income'
   ) {
-    await this.page.find(`[data-qa="${type}-checkbox"]`).click()
+    await this.page.findByDataQa(`${type}-checkbox`).click()
   }
 
   #startDate = new TextInput(this.page.find('#start-date'))
@@ -43,11 +43,11 @@ export default class CitizenIncomePage {
   }
 
   async selectEntrepreneurType(value: 'full-time' | 'part-time') {
-    await this.page.find(`[data-qa="entrepreneur-${value}-option"]`).click()
+    await this.page.findByDataQa(`entrepreneur-${value}-option`).click()
   }
 
   #entrepreneurDate = new TextInput(
-    this.page.find('[data-qa="entrepreneur-start-date"]')
+    this.page.findByDataQa('entrepreneur-start-date')
   )
 
   async setEntrepreneurStartDate(date: string) {
@@ -75,7 +75,7 @@ export default class CitizenIncomePage {
       | 'self-employed-estimated-income',
     check: boolean
   ) {
-    const elem = new Checkbox(this.page.find(`[data-qa="${checkbox}"]`))
+    const elem = new Checkbox(this.page.findByDataQa(`${checkbox}`))
     check ? await elem.check() : await elem.uncheck()
   }
 
@@ -92,7 +92,7 @@ export default class CitizenIncomePage {
   }
 
   async toggleLlcType(value: 'attachments' | 'incomes-register') {
-    await this.page.find(`[data-qa="llc-${value}"]`).click()
+    await this.page.findByDataQa(`llc-${value}`).click()
   }
 
   async toggleLightEntrepreneur(check: boolean) {
@@ -124,20 +124,20 @@ export default class CitizenIncomePage {
   }
 
   async fillAccountant() {
-    await new TextInput(this.page.find('[data-qa="accountant-name"]')).fill(
+    await new TextInput(this.page.findByDataQa('accountant-name')).fill(
       'Kirjanpitäjä'
     )
-    await new TextInput(this.page.find('[data-qa="accountant-email"]')).fill(
+    await new TextInput(this.page.findByDataQa('accountant-email')).fill(
       'foo@example.com'
     )
-    await new TextInput(this.page.find('[data-qa="accountant-phone"]')).fill(
+    await new TextInput(this.page.findByDataQa('accountant-phone')).fill(
       '0400123456'
     )
   }
 
   async setGrossIncomeEstimate(income: number) {
     await new TextInput(
-      this.page.find('[data-qa="gross-monthly-income-estimate"]')
+      this.page.findByDataQa('gross-monthly-income-estimate')
     ).fill(String(income))
   }
 }

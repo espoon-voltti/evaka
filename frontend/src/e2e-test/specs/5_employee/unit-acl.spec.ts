@@ -142,7 +142,7 @@ describe('Employee - unit ACL', () => {
       const row = unitInfoPage.staffAcl.getRow(pete.id)
       await row.edit()
       const editModal = new EmployeeRowEditModal(
-        page.find('[data-qa="employee-row-edit-person-modal"]')
+        page.findByDataQa('employee-row-edit-person-modal')
       )
       await editModal.toggleGroups(groups)
       await editModal.saveButton.click()
@@ -180,7 +180,7 @@ describe('Employee - unit ACL', () => {
       const row = unitInfoPage.staffAcl.getRow(pete.id)
       await row.edit()
       const editModal = new EmployeeRowEditModal(
-        page.find('[data-qa="employee-row-edit-person-modal"]')
+        page.findByDataQa('employee-row-edit-person-modal')
       )
       await editModal.setCoefficient(coefficientValue)
       await editModal.saveButton.click()
@@ -256,7 +256,7 @@ describe('Employee - unit ACL - temporary employee', () => {
     const row = unitInfoPage.staffAcl.getRowByIndex(index)
     await row.edit()
     return new EmployeeRowEditModal(
-      page.find('[data-qa="employee-row-edit-person-modal"]')
+      page.findByDataQa('employee-row-edit-person-modal')
     )
   }
 

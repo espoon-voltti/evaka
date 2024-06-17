@@ -260,42 +260,40 @@ export default class CitizenCalendarPage {
 class ReservationsModal {
   constructor(private readonly page: Page) {}
 
-  #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
-  #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
-  #repetitionSelect = new Select(this.page.find('[data-qa="repetition"]'))
+  #startDateInput = new TextInput(this.page.findByDataQa('start-date'))
+  #endDateInput = new TextInput(this.page.findByDataQa('end-date'))
+  #repetitionSelect = new Select(this.page.findByDataQa('repetition'))
   #dailyStartTimeInput = new TextInput(
-    this.page.find('[data-qa="daily-time-0-start"]')
+    this.page.findByDataQa('daily-time-0-start')
   )
-  #dailyEndTimeInput = new TextInput(
-    this.page.find('[data-qa="daily-time-0-end"]')
-  )
+  #dailyEndTimeInput = new TextInput(this.page.findByDataQa('daily-time-0-end'))
 
   #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
-      new TextInput(this.page.find(`[data-qa="weekly-${index}-time-0-start"]`))
+      new TextInput(this.page.findByDataQa(`weekly-${index}-time-0-start`))
   )
   #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
-      new TextInput(this.page.find(`[data-qa="weekly-${index}-time-0-end"]`))
+      new TextInput(this.page.findByDataQa(`weekly-${index}-time-0-end`))
   )
   #weeklyAbsentButtons = [0, 1, 2, 3, 4, 5, 6].map(
     (index) =>
-      new TextInput(this.page.find(`[data-qa="weekly-${index}-absent-button"]`))
+      new TextInput(this.page.findByDataQa(`weekly-${index}-absent-button`))
   )
-  #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
+  #modalSendButton = this.page.findByDataQa('modal-okBtn')
 
   irregularStartTimeInput = (date: LocalDate) =>
     new TextInput(
-      this.page.find(`[data-qa="irregular-${date.formatIso()}-time-0-start"]`)
+      this.page.findByDataQa(`irregular-${date.formatIso()}-time-0-start`)
     )
 
   irregularEndTimeInput = (date: LocalDate) =>
     new TextInput(
-      this.page.find(`[data-qa="irregular-${date.formatIso()}-time-0-end"]`)
+      this.page.findByDataQa(`irregular-${date.formatIso()}-time-0-end`)
     )
 
   #childCheckbox = (childId: string) =>
-    new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
+    new Checkbox(this.page.findByDataQa(`child-${childId}`))
 
   async save() {
     await this.#modalSendButton.click()
@@ -490,13 +488,13 @@ class AbsencesModal {
   #childCheckbox = (childId: string) =>
     new Checkbox(this.page.findByDataQa(`child-${childId}`))
 
-  startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
-  endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
+  startDateInput = new TextInput(this.page.findByDataQa('start-date'))
+  endDateInput = new TextInput(this.page.findByDataQa('end-date'))
   #absenceChip = (type: string) =>
-    new Checkbox(this.page.find(`[data-qa="absence-${type}"]`))
-  #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
-  absenceTypeRequiredError = this.page.find(
-    '[data-qa="modal-absence-type-required-error"]'
+    new Checkbox(this.page.findByDataQa(`absence-${type}`))
+  #modalSendButton = this.page.findByDataQa('modal-okBtn')
+  absenceTypeRequiredError = this.page.findByDataQa(
+    'modal-absence-type-required-error'
   )
 
   async assertChildrenSelectable(childIds: string[]) {

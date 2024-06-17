@@ -21,27 +21,25 @@ export default class MessagesPage {
     return new SentMessagesPage(this.page)
   }
 
-  newMessageButton = this.page.find('[data-qa="new-message-btn"]')
-  #personalAccount = this.page.find('[data-qa="personal-account"]')
+  newMessageButton = this.page.findByDataQa('new-message-btn')
+  #personalAccount = this.page.findByDataQa('personal-account')
   #draftMessagesBoxRow = new TextInput(
     this.#personalAccount.find('[data-qa="message-box-row-drafts"]')
   )
   #messageCopiesInbox = this.page.findByDataQa('message-box-row-copies')
-  receivedMessage = this.page.find('[data-qa="received-message-row"]')
-  #draftMessage = this.page.find('[data-qa="draft-message-row"]')
+  receivedMessage = this.page.findByDataQa('received-message-row')
+  #draftMessage = this.page.findByDataQa('draft-message-row')
   #messageContent = (index = 0) =>
-    this.page.find(`[data-qa="message-content"][data-index="${index}"]`)
+    this.page.findByDataQa(`message-content"][data-index="${index}`)
 
-  #openReplyEditorButton = this.page.find(
-    `[data-qa="message-reply-editor-btn"]`
-  )
-  sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
-  discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
+  #openReplyEditorButton = this.page.findByDataQa(`message-reply-editor-btn`)
+  sendReplyButton = this.page.findByDataQa('message-send-btn')
+  discardMessageButton = this.page.findByDataQa('message-discard-btn')
   #messageReplyContent = new TextInput(
-    this.page.find('[data-qa="message-reply-content"]')
+    this.page.findByDataQa('message-reply-content')
   )
   #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
-  #unitAccount = this.page.find('[data-qa="unit-accounts"]')
+  #unitAccount = this.page.findByDataQa('unit-accounts')
   unitReceived = this.#unitAccount.find('[data-qa="message-box-row-received"]')
 
   async getReceivedMessageCount() {

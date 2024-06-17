@@ -22,37 +22,35 @@ import ApplicationReadView from './application-read-view'
 export default class ApplicationEditView {
   constructor(private readonly page: Page) {}
 
-  #saveButton = this.page.find('[data-qa="save-application"]')
-  #urgentCheckbox = new Checkbox(this.page.find('[data-qa="checkbox-urgent"]'))
-  #urgentAttachmentFileUpload = this.page.find('[data-qa="file-upload-urgent"]')
+  #saveButton = this.page.findByDataQa('save-application')
+  #urgentCheckbox = new Checkbox(this.page.findByDataQa('checkbox-urgent'))
+  #urgentAttachmentFileUpload = this.page.findByDataQa('file-upload-urgent')
   #preferredStartDate = new DatePickerDeprecated(
-    this.page.find('[data-qa="datepicker-start-date"]')
+    this.page.findByDataQa('datepicker-start-date')
   )
-  #startTime = new TextInput(this.page.find('[data-qa="start-time"]'))
-  #endTime = new TextInput(this.page.find('[data-qa="end-time"]'))
+  #startTime = new TextInput(this.page.findByDataQa('start-time'))
+  #endTime = new TextInput(this.page.findByDataQa('end-time'))
   #connectedDaycare = new Checkbox(
-    this.page.find('[data-qa="checkbox-service-need-connected"]')
+    this.page.findByDataQa('checkbox-service-need-connected')
   )
   #connectedDaycarePreferredStartDate = new DatePickerDeprecated(
-    this.page.find(
-      '[data-qa="datepicker-connected-daycare-preferred-start-date"]'
-    )
+    this.page.findByDataQa('datepicker-connected-daycare-preferred-start-date')
   )
-  #connectedDaycarePreferredStartDateInputWarning = this.page.find(
-    '[data-qa="input-warning-connected-daycare-preferred-start-date"]'
+  #connectedDaycarePreferredStartDateInputWarning = this.page.findByDataQa(
+    'input-warning-connected-daycare-preferred-start-date'
   )
-  #preferredUnit = new Combobox(this.page.find('[data-qa="preferred-unit"]'))
+  #preferredUnit = new Combobox(this.page.findByDataQa('preferred-unit'))
   #applicantPhone = new TextInput(
-    this.page.find('[data-qa="application-person-phone"]')
+    this.page.findByDataQa('application-person-phone')
   )
   #applicantEmail = new TextInput(
-    this.page.find('[data-qa="application-person-email"]')
+    this.page.findByDataQa('application-person-email')
   )
   #shiftCareCheckbox = new Checkbox(
-    this.page.find('[data-qa="checkbox-service-need-shift-care"]')
+    this.page.findByDataQa('checkbox-service-need-shift-care')
   )
-  #shiftCareAttachmentFileUpload = this.page.find(
-    '[data-qa="file-upload-shift-care"]'
+  #shiftCareAttachmentFileUpload = this.page.findByDataQa(
+    'file-upload-shift-care'
   )
 
   async saveApplication() {
@@ -126,9 +124,7 @@ export default class ApplicationEditView {
   }
 
   async assertUrgencyAttachmentReceivedAtVisible(fileName: string) {
-    const attachment = this.page.find(
-      `[data-qa="urgent-attachment-${fileName}"]`
-    )
+    const attachment = this.page.findByDataQa(`urgent-attachment-${fileName}`)
     await attachment.waitUntilVisible()
     await attachment
       .find('[data-qa="attachment-received-at"]')
@@ -169,9 +165,9 @@ export default class ApplicationEditView {
     )
   }
 
-  #guardianName = this.page.find('[data-qa="guardian-name"]')
-  #guardianSsn = this.page.find('[data-qa="guardian-ssn"]')
-  #guardianAddress = this.page.find('[data-qa="guardian-address"]')
+  #guardianName = this.page.findByDataQa('guardian-name')
+  #guardianSsn = this.page.findByDataQa('guardian-ssn')
+  #guardianAddress = this.page.findByDataQa('guardian-address')
 
   async assertGuardian(
     expectedName: string,
@@ -184,19 +180,19 @@ export default class ApplicationEditView {
   }
 
   #secondGuardianToggle = new Checkbox(
-    this.page.find('[data-qa="application-second-guardian-toggle"]')
+    this.page.findByDataQa('application-second-guardian-toggle')
   )
   #secondGuardianPhone = new TextInput(
-    this.page.find('[data-qa="application-second-guardian-phone"]')
+    this.page.findByDataQa('application-second-guardian-phone')
   )
   #secondGuardianEmail = new TextInput(
-    this.page.find('[data-qa="application-second-guardian-email"]')
+    this.page.findByDataQa('application-second-guardian-email')
   )
 
   #guardianAgreementStatus = (status: OtherGuardianAgreementStatus) =>
     new Radio(
-      this.page.find(
-        `[data-qa="radio-other-guardian-agreement-status-${status ?? 'null'}"]`
+      this.page.findByDataQa(
+        `radio-other-guardian-agreement-status-${status ?? 'null'}`
       )
     )
 

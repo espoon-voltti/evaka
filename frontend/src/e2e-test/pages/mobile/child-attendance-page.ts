@@ -13,23 +13,23 @@ import { Page, TextInput } from '../../utils/page'
 export default class ChildAttendancePage {
   constructor(private readonly page: Page) {}
 
-  #presentTab = this.page.find('[data-qa="present-tab"]')
-  #markPresentButton = this.page.find('[data-qa="mark-present-btn"]')
+  #presentTab = this.page.findByDataQa('present-tab')
+  #markPresentButton = this.page.findByDataQa('mark-present-btn')
   #childLink = (n: number) => this.page.findAll('[data-qa="child-name"]').nth(n)
-  #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
-  markDepartedButton = this.page.find('[data-qa="mark-departed-btn"]')
-  #markAbsentButton = this.page.find('[data-qa="mark-absent-btn"]')
+  #markDepartedLink = this.page.findByDataQa('mark-departed-link')
+  markDepartedButton = this.page.findByDataQa('mark-departed-btn')
+  #markAbsentButton = this.page.findByDataQa('mark-absent-btn')
   #noChildrenIndicator = this.page
     .findAll('[data-qa="no-children-indicator"]')
     .first()
-  #childStatusLabel = this.page.find('[data-qa="child-status"]')
-  #setTimeInput = new TextInput(this.page.find('[data-qa="set-time"]'))
+  #childStatusLabel = this.page.findByDataQa('child-status')
+  #setTimeInput = new TextInput(this.page.findByDataQa('set-time'))
   groupNote = this.page.findAllByDataQa('group-note')
 
   setTimeInfo = this.page.findByDataQa('set-time-info')
 
   #markAbsentByTypeButton = (type: AbsenceType) =>
-    this.page.find(`[data-qa="mark-absent-${type}"]`)
+    this.page.findByDataQa(`mark-absent-${type}`)
 
   markAbsentByCategoryAndTypeButton = (
     category: AbsenceCategory,

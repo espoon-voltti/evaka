@@ -15,8 +15,8 @@ export default class CitizenHeader {
     private readonly type: EnvType = 'desktop'
   ) {}
 
-  #languageMenuToggle = this.page.find('[data-qa="button-select-language"]')
-  #languageOptionList = this.page.find('[data-qa="select-lang"]')
+  #languageMenuToggle = this.page.findByDataQa('button-select-language')
+  #languageOptionList = this.page.findByDataQa('select-lang')
   #childrenNav = this.page.findByDataQa(`nav-children-${this.type}`)
   #unreadChildrenCount = this.page.findByDataQa(
     `nav-children-${this.type}-notification-count`

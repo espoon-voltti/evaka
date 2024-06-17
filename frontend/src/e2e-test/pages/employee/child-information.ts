@@ -35,17 +35,15 @@ import { VasuPage } from './vasu/vasu'
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
-  readonly #deceased = this.page.find('[data-qa="deceased-label"]')
+  readonly #deceased = this.page.findByDataQa('deceased-label')
   readonly #ophPersonOidInput = new TextInput(
-    this.page.find('[data-qa="person-oph-person-oid"]')
+    this.page.findByDataQa('person-oph-person-oid')
   )
 
-  readonly #editButton = this.page.find(
-    '[data-qa="edit-person-settings-button"]'
-  )
+  readonly #editButton = this.page.findByDataQa('edit-person-settings-button')
 
-  readonly confirmButton = this.page.find(
-    '[data-qa="confirm-edited-person-button"]'
+  readonly confirmButton = this.page.findByDataQa(
+    'confirm-edited-person-button'
   )
 
   async navigateToChild(id: UUID) {
@@ -115,7 +113,7 @@ export default class ChildInformationPage {
   additionalInformationSection() {
     return new AdditionalInformationSection(
       this.page,
-      this.page.find('[data-qa="additional-information-section"]')
+      this.page.findByDataQa('additional-information-section')
     )
   }
 }
@@ -374,7 +372,7 @@ export class PedagogicalDocumentsSection extends Section {
     testfileName: string,
     testfilePath: string
   ) {
-    await new FileInput(page.find('[data-qa="btn-upload-file"]')).setInputFiles(
+    await new FileInput(page.findByDataQa('btn-upload-file')).setInputFiles(
       testfilePath
     )
     await waitUntilTrue(async () =>
@@ -861,7 +859,7 @@ export class PlacementsSection extends Section {
   }) {
     await this.find('[data-qa="create-new-placement-button"]').click()
 
-    const modal = new Modal(this.page.find('[data-qa="modal"]'))
+    const modal = new Modal(this.page.findByDataQa('modal'))
     const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
     await unitSelect.fillAndSelectFirst(unitName)
 

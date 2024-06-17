@@ -28,7 +28,7 @@ export class UnitWeekCalendarPage extends UnitCalendarPageBase {
   }
 
   occupancies = new UnitOccupanciesSection(
-    this.page.find('[data-qa="occupancies"]')
+    this.page.findByDataQa('occupancies')
   )
   staffAttendances = new UnitStaffAttendancesTable(
     this.page,
@@ -40,9 +40,9 @@ export class UnitWeekCalendarPage extends UnitCalendarPageBase {
   )
 
   async setFilterStartDate(date: LocalDate) {
-    await new DatePicker(
-      this.page.find('[data-qa="unit-filter-start-date"]')
-    ).fill(date.format())
+    await new DatePicker(this.page.findByDataQa('unit-filter-start-date')).fill(
+      date.format()
+    )
     await this.waitUntilLoaded()
   }
 

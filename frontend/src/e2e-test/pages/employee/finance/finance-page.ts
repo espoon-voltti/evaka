@@ -31,28 +31,28 @@ export class FinancePage {
   constructor(private readonly page: Page) {}
 
   async selectFeeDecisionsTab() {
-    await this.page.find(`[data-qa="fee-decisions-tab"]`).click()
+    await this.page.findByDataQa(`fee-decisions-tab`).click()
     return new FeeDecisionsPage(this.page)
   }
 
   async selectValueDecisionsTab() {
-    await this.page.find(`[data-qa="value-decisions-tab"]`).click()
+    await this.page.findByDataQa(`value-decisions-tab`).click()
     return new ValueDecisionsPage(this.page)
   }
 
   async selectInvoicesTab() {
-    await this.page.find(`[data-qa="invoices-tab"]`).click()
+    await this.page.findByDataQa(`invoices-tab`).click()
     const page = new InvoicesPage(this.page)
     await page.assertLoaded()
     return page
   }
 
   async selectIncomeStatementsTab() {
-    await this.page.find(`[data-qa="income-statements-tab"]`).click()
+    await this.page.findByDataQa(`income-statements-tab`).click()
   }
 
   async selectPaymentsTab() {
-    await this.page.find(`[data-qa="payments-tab"]`).click()
+    await this.page.findByDataQa(`payments-tab`).click()
     return new PaymentsPage(this.page)
   }
 }
@@ -60,21 +60,21 @@ export class FinancePage {
 export class FeeDecisionsPage {
   constructor(private readonly page: Page) {}
 
-  #feeDecisionListPage = this.page.find('[data-qa="fee-decisions-page"]')
+  #feeDecisionListPage = this.page.findByDataQa('fee-decisions-page')
   #firstFeeDecisionRow = this.page
     .findAll('[data-qa="table-fee-decision-row"]')
     .first()
-  #navigateBackButton = this.page.find('[data-qa="navigate-back"]')
+  #navigateBackButton = this.page.findByDataQa('navigate-back')
   #statusFilter = (status: FeeDecisionStatus) =>
     new Checkbox(this.page.findByDataQa(`fee-decision-status-filter-${status}`))
   #allFeeDecisionsToggle = new Checkbox(
-    this.page.find('[data-qa="toggle-all-decisions"]')
+    this.page.findByDataQa('toggle-all-decisions')
   )
   #sendFeeDecisionsButton = new AsyncButton(
-    this.page.find('[data-qa="confirm-decisions"]')
+    this.page.findByDataQa('confirm-decisions')
   )
   #openDecisionHandlerSelectModalButton = new AsyncButton(
-    this.page.find('[data-qa="open-decision-handler-select-modal"]')
+    this.page.findByDataQa('open-decision-handler-select-modal')
   )
 
   async getFeeDecisionCount() {
@@ -126,12 +126,12 @@ export class FeeDecisionsPage {
 export class FeeDecisionDetailsPage {
   constructor(private readonly page: Page) {}
 
-  #partnerName = this.page.find('[data-qa="partner"]')
-  #headOfFamily = this.page.find('[data-qa="head-of-family"]')
-  #decisionHandler = this.page.find('[data-qa="decision-handler"]')
+  #partnerName = this.page.findByDataQa('partner')
+  #headOfFamily = this.page.findByDataQa('head-of-family')
+  #decisionHandler = this.page.findByDataQa('decision-handler')
   #childIncome = this.page.findAll('[data-qa="child-income"]')
   #openDecisionHandlerSelectModalButton = new AsyncButton(
-    this.page.find('[data-qa="open-decision-handler-select-modal"]')
+    this.page.findByDataQa('open-decision-handler-select-modal')
   )
 
   async assertPartnerName(expectedName: string) {
@@ -169,22 +169,22 @@ export class ValueDecisionsPage {
   constructor(private readonly page: Page) {}
 
   readonly #fromDateInput = new DatePickerDeprecated(
-    this.page.find('[data-qa="value-decisions-start-date"]')
+    this.page.findByDataQa('value-decisions-start-date')
   )
   readonly #toDateInput = new DatePickerDeprecated(
-    this.page.find('[data-qa="value-decisions-end-date"]')
+    this.page.findByDataQa('value-decisions-end-date')
   )
   readonly #dateCheckbox = new Checkbox(
-    this.page.find('[data-qa="value-decision-search-by-start-date"]')
+    this.page.findByDataQa('value-decision-search-by-start-date')
   )
   #allValueDecisionsToggle = new Checkbox(
-    this.page.find('[data-qa="toggle-all-decisions"]')
+    this.page.findByDataQa('toggle-all-decisions')
   )
   #sendValueDecisionsButton = new AsyncButton(
-    this.page.find('[data-qa="send-decisions"]')
+    this.page.findByDataQa('send-decisions')
   )
   #openDecisionHandlerSelectModalButton = new AsyncButton(
-    this.page.find('[data-qa="open-decision-handler-select-modal"]')
+    this.page.findByDataQa('open-decision-handler-select-modal')
   )
   #firstValueDecisionRow = this.page
     .findAll('[data-qa="table-value-decision-row"]')
@@ -245,13 +245,13 @@ export class ValueDecisionsPage {
 export class ValueDecisionDetailsPage {
   constructor(private readonly page: Page) {}
 
-  #partnerName = this.page.find('[data-qa="partner"]')
-  #headOfFamily = this.page.find('[data-qa="head-of-family"]')
-  #decisionHandler = this.page.find('[data-qa="decision-handler"]')
+  #partnerName = this.page.findByDataQa('partner')
+  #headOfFamily = this.page.findByDataQa('head-of-family')
+  #decisionHandler = this.page.findByDataQa('decision-handler')
 
-  #sendDecisionButton = this.page.find('[data-qa="button-send-decision"]')
+  #sendDecisionButton = this.page.findByDataQa('button-send-decision')
   #openDecisionHandlerSelectModalButton = new AsyncButton(
-    this.page.find('[data-qa="open-decision-handler-select-modal"]')
+    this.page.findByDataQa('open-decision-handler-select-modal')
   )
   #childIncome = this.page.findAll('[data-qa="child-income"]')
 
@@ -295,13 +295,13 @@ export class FinanceDecisionHandlerSelectModal {
   constructor(private readonly page: Page) {}
 
   #decisionHandlerSelect = new Select(
-    this.page.find('[data-qa="finance-decision-handler-select"]')
+    this.page.findByDataQa('finance-decision-handler-select')
   )
   #decisionHandlerSelectModalResolveBtn = new AsyncButton(
-    this.page.find('[data-qa="modal-okBtn"]')
+    this.page.findByDataQa('modal-okBtn')
   )
   #decisionHandlerSelectModalRejectBtn = new AsyncButton(
-    this.page.find('[data-qa="modal-cancelBtn"]')
+    this.page.findByDataQa('modal-cancelBtn')
   )
 
   async selectDecisionHandler(value: string) {
@@ -324,26 +324,26 @@ export class FinanceDecisionHandlerSelectModal {
 export class InvoicesPage {
   constructor(private readonly page: Page) {}
 
-  #invoicesPage = this.page.find('[data-qa="invoices-page"]')
-  #invoiceDetailsPage = this.page.find('[data-qa="invoice-details-page"]')
+  #invoicesPage = this.page.findByDataQa('invoices-page')
+  #invoiceDetailsPage = this.page.findByDataQa('invoice-details-page')
   #invoices = this.page.find('.invoices')
-  #createInvoicesButton = this.page.find('[data-qa="create-invoices"]')
-  #invoiceInList = this.page.find('[data-qa="table-invoice-row"]')
+  #createInvoicesButton = this.page.findByDataQa('create-invoices')
+  #invoiceInList = this.page.findByDataQa('table-invoice-row')
   #allInvoicesToggle = new Checkbox(
-    this.page.find('[data-qa="toggle-all-invoices"]')
+    this.page.findByDataQa('toggle-all-invoices')
   )
-  #openSendInvoicesDialogButton = this.page.find(
-    '[data-qa="open-send-invoices-dialog"]'
+  #openSendInvoicesDialogButton = this.page.findByDataQa(
+    'open-send-invoices-dialog'
   )
-  #sendInvoicesDialog = this.page.find('[data-qa="send-invoices-dialog"]')
+  #sendInvoicesDialog = this.page.findByDataQa('send-invoices-dialog')
   #sendInvoicesButton = new AsyncButton(
     this.page.find('[data-qa="send-invoices-dialog"] [data-qa="modal-okBtn"]')
   )
-  #navigateBack = this.page.find('[data-qa="navigate-back"]')
-  #invoiceDetailsHeadOfFamily = this.page.find(
-    '[data-qa="invoice-details-head-of-family"]'
+  #navigateBack = this.page.findByDataQa('navigate-back')
+  #invoiceDetailsHeadOfFamily = this.page.findByDataQa(
+    'invoice-details-head-of-family'
   )
-  #addInvoiceRowButton = this.page.find('[data-qa="invoice-button-add-row"]')
+  #addInvoiceRowButton = this.page.findByDataQa('invoice-button-add-row')
   #invoiceRow = (index: number) => {
     const row = this.page.find(
       `[data-qa="invoice-details-invoice-row"]:nth-child(${index + 1})`
@@ -359,10 +359,10 @@ export class InvoicesPage {
     }
   }
   #saveChangesButton = new AsyncButton(
-    this.page.find('[data-qa="invoice-actions-save-changes"]')
+    this.page.findByDataQa('invoice-actions-save-changes')
   )
   #markInvoiceSentButton = new AsyncButton(
-    this.page.find('[data-qa="invoice-actions-mark-sent"]')
+    this.page.findByDataQa('invoice-actions-mark-sent')
   )
 
   async assertLoaded() {
@@ -397,7 +397,7 @@ export class InvoicesPage {
   }
 
   async showSentInvoices() {
-    await this.page.find('[data-qa="invoice-status-filter-SENT"]').click()
+    await this.page.findByDataQa('invoice-status-filter-SENT').click()
   }
 
   async showWaitingForSendingInvoices() {
@@ -460,9 +460,9 @@ export class InvoicesPage {
   }
 
   async freeTextFilter(text: string) {
-    await new TextInput(
-      this.page.find('[data-qa="free-text-search-input"]')
-    ).type(text)
+    await new TextInput(this.page.findByDataQa('free-text-search-input')).type(
+      text
+    )
   }
 
   async markInvoiceSent() {
@@ -480,7 +480,7 @@ export class IncomeStatementsPage {
 
   incomeStatementRows = this.page.findAll(`[data-qa="income-statement-row"]`)
   #providerTypeFilter = (type: ProviderType) =>
-    new Checkable(this.page.find(`[data-qa="provider-type-filter-${type}"]`))
+    new Checkable(this.page.findByDataQa(`provider-type-filter-${type}`))
 
   async waitUntilLoaded() {
     await this.page

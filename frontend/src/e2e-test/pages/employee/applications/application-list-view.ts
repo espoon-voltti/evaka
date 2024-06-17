@@ -12,17 +12,17 @@ export default class ApplicationListView {
   constructor(private page: Page) {}
 
   static url = `${config.employeeUrl}/applications`
-  applicationStatus = this.page.find('[data-qa="application-status"]')
+  applicationStatus = this.page.findByDataQa('application-status')
 
   actionsMenu = (applicationId: string) =>
     this.page
       .find(`[data-application-id="${applicationId}"]`)
       .find('[data-qa="application-actions-menu"]')
 
-  allApplications = this.page.find('[data-qa="application-status-filter-ALL"]')
+  allApplications = this.page.findByDataQa('application-status-filter-ALL')
 
   #actionsMenuItemSelector = (id: string) =>
-    this.page.find(`[data-qa="action-item-${id}"]`)
+    this.page.findByDataQa(`action-item-${id}`)
 
   actionsMenuItems = {
     verify: this.#actionsMenuItemSelector('verify'),
@@ -34,7 +34,7 @@ export default class ApplicationListView {
     )
   }
 
-  #areaFilter = new MultiSelect(this.page.find('[data-qa="area-filter"]'))
+  #areaFilter = new MultiSelect(this.page.findByDataQa('area-filter'))
 
   async toggleArea(areaName: string) {
     await this.#areaFilter.fillAndSelectFirst(areaName)
@@ -44,7 +44,7 @@ export default class ApplicationListView {
     duplicate: this.page.findByDataQa('application-basis-DUPLICATE_APPLICATION')
   }
 
-  #unitFilter = new MultiSelect(this.page.find('[data-qa="unit-selector"]'))
+  #unitFilter = new MultiSelect(this.page.findByDataQa('unit-selector'))
 
   toggleUnit = async (unitName: string) => {
     await this.#unitFilter.fillAndSelectFirst(unitName)
@@ -65,13 +65,13 @@ export default class ApplicationListView {
   }
 
   voucherUnitFilter = {
-    firstChoice: this.page.find('[data-qa="filter-voucher-first-choice"]'),
-    voucherOnly: this.page.find('[data-qa="filter-voucher-all"]'),
-    voucherHide: this.page.find('[data-qa="filter-voucher-hide"]'),
-    noFilter: this.page.find('[data-qa="filter-voucher-no-filter"]')
+    firstChoice: this.page.findByDataQa('filter-voucher-first-choice'),
+    voucherOnly: this.page.findByDataQa('filter-voucher-all'),
+    voucherHide: this.page.findByDataQa('filter-voucher-hide'),
+    noFilter: this.page.findByDataQa('filter-voucher-no-filter')
   }
 
   async filterByApplicationType(type: ApplicationTypeToggle) {
-    await this.page.find(`[data-qa="application-type-filter-${type}"]`).click()
+    await this.page.findByDataQa(`application-type-filter-${type}`).click()
   }
 }

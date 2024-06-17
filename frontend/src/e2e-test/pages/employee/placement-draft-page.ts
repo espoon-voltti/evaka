@@ -9,8 +9,8 @@ import { Combobox, DatePickerDeprecated, Page } from '../../utils/page'
 export class PlacementDraftPage {
   constructor(private page: Page) {}
 
-  #restrictedDetailsWarning = this.page.find(
-    '[data-qa="restricted-details-warning"]'
+  #restrictedDetailsWarning = this.page.findByDataQa(
+    'restricted-details-warning'
   )
 
   readonly startDate = new DatePickerDeprecated(
@@ -22,9 +22,7 @@ export class PlacementDraftPage {
       .find('[data-qa="placement-list"]')
       .find(`[data-qa="placement-item-${unitId}"]`)
 
-  #addOtherUnitCombobox = new Combobox(
-    this.page.find('[data-qa="add-other-unit"]')
-  )
+  #addOtherUnitCombobox = new Combobox(this.page.findByDataQa('add-other-unit'))
 
   async waitUntilLoaded() {
     await this.page
@@ -71,7 +69,7 @@ export class PlacementDraftPage {
   }
 
   async submit() {
-    await this.page.find('[data-qa="send-placement-button"]').click()
+    await this.page.findByDataQa('send-placement-button').click()
   }
 }
 

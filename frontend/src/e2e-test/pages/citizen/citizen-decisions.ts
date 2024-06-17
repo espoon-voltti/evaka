@@ -204,7 +204,7 @@ class CitizenDecisionResponsePage {
 
   #title = this.page.find('h1')
   #decisionBlock = (decisionId: string) =>
-    this.page.find(`[data-qa="decision-${decisionId}"]`)
+    this.page.findByDataQa(`decision-${decisionId}`)
   #acceptRadioButton = (decisionId: string) =>
     this.#decisionBlock(decisionId).find('[data-qa="radio-accept"]')
   #rejectRadioButton = (decisionId: string) =>
@@ -269,7 +269,7 @@ class CitizenDecisionResponsePage {
 }
 
 async function assertUnresolvedDecisionsCount(page: Page, count: number) {
-  const element = page.find('[data-qa="alert-box-unconfirmed-decisions-count"]')
+  const element = page.findByDataQa('alert-box-unconfirmed-decisions-count')
 
   if (count === 0) {
     return element.waitUntilHidden()

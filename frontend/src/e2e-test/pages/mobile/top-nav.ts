@@ -7,7 +7,7 @@ import { Page } from '../../utils/page'
 export default class TopNav {
   constructor(private readonly page: Page) {}
 
-  #userMenu = this.page.find('[data-qa="top-bar-user"]')
+  #userMenu = this.page.findByDataQa('top-bar-user')
 
   systemNotificationBtn = this.page.findByDataQa('system-notification-btn')
   systemNotificationModal = this.page.findByDataQa('system-notification-modal')

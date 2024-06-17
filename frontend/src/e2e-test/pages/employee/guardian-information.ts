@@ -41,13 +41,11 @@ export default class GuardianInformationPage {
       .waitUntilVisible()
   }
 
-  #restrictedDetailsEnabledLabel = this.page.find(
-    '[data-qa="restriction-details-enabled-label"]'
+  #restrictedDetailsEnabledLabel = this.page.findByDataQa(
+    'restriction-details-enabled-label'
   )
-  #personStreetAddress = this.page.find(
-    '[data-qa="person-details-street-address"]'
-  )
-  #timelineButton = this.page.find('[data-qa="timeline-button"]')
+  #personStreetAddress = this.page.findByDataQa('person-details-street-address')
+  #timelineButton = this.page.findByDataQa('timeline-button')
 
   async assertRestrictedDetails(enabled: boolean) {
     switch (enabled) {
@@ -144,7 +142,7 @@ class PartnersSection extends Section {
 
   async addPartner(partnerName: string, startDate: string) {
     await this.#addPartnerButton.click()
-    const modal = new Modal(this.page.find('[data-qa="fridge-partner-modal"]'))
+    const modal = new Modal(this.page.findByDataQa('fridge-partner-modal'))
 
     const combobox = new Combobox(
       modal.find('[data-qa="fridge-partner-person-search"]')
@@ -165,7 +163,7 @@ class ChildrenSection extends Section {
 
   async addChild(childName: string, startDate: string) {
     await this.#addChildButton.click()
-    const modal = new Modal(this.page.find('[data-qa="fridge-child-modal"]'))
+    const modal = new Modal(this.page.findByDataQa('fridge-child-modal'))
 
     const combobox = new Combobox(
       modal.find('[data-qa="fridge-child-person-search"]')
@@ -341,13 +339,13 @@ export class IncomeSection extends Section {
   }
 
   // Incomes
-  #newIncomeButton = this.page.find('[data-qa="add-income-button"]')
+  #newIncomeButton = this.page.findByDataQa('add-income-button')
 
   async openNewIncomeForm() {
     await this.#newIncomeButton.click()
   }
 
-  #incomeDateRange = this.page.find('[data-qa="income-date-range"]')
+  #incomeDateRange = this.page.findByDataQa('income-date-range')
   #incomeStartDateInput = new DatePicker(
     this.#incomeDateRange.find('[data-qa="start-date"]')
   )
@@ -364,28 +362,28 @@ export class IncomeSection extends Section {
   }
 
   #incomeInput = (type: string) =>
-    new TextInput(this.page.find(`[data-qa="income-input-${type}"]`))
+    new TextInput(this.page.findByDataQa(`income-input-${type}`))
 
   async fillIncome(type: string, value: string) {
     await this.#incomeInput(type).fill(value)
   }
 
   #incomeEffect = (effect: string) =>
-    this.page.find(`[data-qa="income-effect-${effect}"]`)
+    this.page.findByDataQa(`income-effect-${effect}`)
 
   async chooseIncomeEffect(effect: string) {
     await this.#incomeEffect(effect).click()
   }
 
   #coefficientSelect = (type: string) =>
-    new Select(this.page.find(`[data-qa="income-coefficient-select-${type}"]`))
+    new Select(this.page.findByDataQa(`income-coefficient-select-${type}`))
 
   async chooseCoefficient(type: string, coefficient: string) {
     await this.#coefficientSelect(type).selectOption({ value: coefficient })
   }
 
-  #saveIncomeButton = this.page.find('[data-qa="save-income"]')
-  #cancelIncomeButton = this.page.find('[data-qa="cancel-income-edit"]')
+  #saveIncomeButton = this.page.findByDataQa('save-income')
+  #cancelIncomeButton = this.page.findByDataQa('cancel-income-edit')
 
   async save() {
     await this.#saveIncomeButton.click()
@@ -418,25 +416,25 @@ export class IncomeSection extends Section {
     await this.find('[data-qa="modal-okBtn"]').click()
   }
 
-  #toggleIncomeItemButton = this.page.find('[data-qa="toggle-income-item"]')
+  #toggleIncomeItemButton = this.page.findByDataQa('toggle-income-item')
 
   async toggleIncome() {
     await this.#toggleIncomeItemButton.click()
   }
 
-  #incomeSum = this.page.find('[data-qa="income-sum-income"]')
+  #incomeSum = this.page.findByDataQa('income-sum-income')
 
   async getIncomeSum() {
     return await this.#incomeSum.text
   }
 
-  #expensesSum = this.page.find('[data-qa="income-sum-expenses"]')
+  #expensesSum = this.page.findByDataQa('income-sum-expenses')
 
   async getExpensesSum() {
     return await this.#expensesSum.text
   }
 
-  #editIncomeItemButton = this.page.find('[data-qa="edit-income-item"]')
+  #editIncomeItemButton = this.page.findByDataQa('edit-income-item')
 
   async edit() {
     await this.#editIncomeItemButton.click()
@@ -502,7 +500,7 @@ class FeeDecisionsSection extends Section {
     await this.find(
       '[data-qa="create-retroactive-fee-decision-button"]'
     ).click()
-    const modal = new Modal(this.page.find('[data-qa="modal"]'))
+    const modal = new Modal(this.page.findByDataQa('modal'))
 
     const startDate = new DatePicker(
       modal.find('[data-qa="retroactive-fee-decision-start-date"]')

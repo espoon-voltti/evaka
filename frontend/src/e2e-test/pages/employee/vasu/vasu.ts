@@ -83,7 +83,7 @@ class VasuPageCommon {
 }
 
 export class VasuEditPage extends VasuPageCommon {
-  readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
+  readonly modalOkButton = this.page.findByDataQa('modal-okBtn')
 
   #followup(nth: number) {
     const question = this.page
@@ -102,16 +102,14 @@ export class VasuEditPage extends VasuPageCommon {
     .findByDataQa('vasu-followup-question')
     .findByDataQa('followup-add-btn')
 
-  readonly #vasuPreviewBtn = this.page.find('[data-qa="vasu-preview-btn"]')
-  readonly #vasuContainer = this.page.find('[data-qa="vasu-container"]')
+  readonly #vasuPreviewBtn = this.page.findByDataQa('vasu-preview-btn')
+  readonly #vasuContainer = this.page.findByDataQa('vasu-container')
 
   readonly #multiSelectQuestionOption = (text: string) =>
-    this.page.find(`[data-qa="multi-select-question-option-${text}"]`)
+    this.page.findByDataQa(`multi-select-question-option-${text}`)
   readonly #multiSelectQuestionOptionTextInput = (text: string) =>
     new TextInput(
-      this.page.find(
-        `[data-qa="multi-select-question-option-text-input-${text}"]`
-      )
+      this.page.findByDataQa(`multi-select-question-option-text-input-${text}`)
     )
 
   async clickMultiSelectQuestionOption(key: string) {
@@ -163,16 +161,16 @@ export class VasuEditPage extends VasuPageCommon {
 }
 
 export class VasuPage extends VasuPageCommon {
-  readonly finalizeButton = this.page.find(
-    '[data-qa="transition-button-MOVED_TO_READY"]'
+  readonly finalizeButton = this.page.findByDataQa(
+    'transition-button-MOVED_TO_READY'
   )
-  readonly markReviewedButton = this.page.find(
-    '[data-qa="transition-button-MOVED_TO_REVIEWED"]'
+  readonly markReviewedButton = this.page.findByDataQa(
+    'transition-button-MOVED_TO_REVIEWED'
   )
-  readonly markClosedButton = this.page.find(
-    '[data-qa="transition-button-MOVED_TO_CLOSED"]'
+  readonly markClosedButton = this.page.findByDataQa(
+    'transition-button-MOVED_TO_CLOSED'
   )
-  readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
+  readonly modalOkButton = this.page.findByDataQa('modal-okBtn')
   readonly #vasuEventListLabels = this.page.findAll(
     '[data-qa="vasu-event-list"] label'
   )
@@ -183,9 +181,9 @@ export class VasuPage extends VasuPageCommon {
     '[data-qa="vasu-event-list"] [data-qa="vasu-state-chip"]'
   )
 
-  readonly #templateName = this.page.find('[data-qa="template-name"]')
+  readonly #templateName = this.page.findByDataQa('template-name')
   readonly #backButton = this.page.findByDataQa('back-button')
-  readonly #editButton = this.page.find('[data-qa="edit-button"]')
+  readonly #editButton = this.page.findByDataQa('edit-button')
 
   // The (first) label for the state chip has no corresponding span, so the index is off by one.
   #valueForLabel = (label: string): Promise<string> =>
@@ -235,7 +233,7 @@ export class VasuPage extends VasuPageCommon {
 
 export class VasuPreviewPage extends VasuPageCommon {
   readonly #multiselectAnswer = (questionNumber: string) =>
-    this.page.find(`[data-qa="value-or-no-record-${questionNumber}"]`)
+    this.page.findByDataQa(`value-or-no-record-${questionNumber}`)
 
   readonly #titleChildName = this.page.findByDataQa('title-child-name')
   readonly #confirmCheckBox = new Checkbox(

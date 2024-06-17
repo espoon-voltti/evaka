@@ -7,5 +7,5 @@ import { Page } from '../../../utils/page'
 export class VasuTemplateEditPage {
   constructor(readonly page: Page) {}
 
-  saveButton = this.page.find('[data-qa="save-template"]')
+  saveButton = this.page.findByDataQa('save-template')
 }

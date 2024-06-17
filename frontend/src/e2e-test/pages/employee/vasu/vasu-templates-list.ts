@@ -8,12 +8,12 @@ import { Page, Select, TextInput } from '../../../utils/page'
 export class VasuTemplatesListPage {
   constructor(readonly page: Page) {}
 
-  addTemplateButton = this.page.find('[data-qa="add-button"]')
-  nameInput = new TextInput(this.page.find('[data-qa="template-name"]'))
-  selectType = new Select(this.page.find('[data-qa="select-type"]'))
-  okButton = this.page.find('[data-qa="modal-okBtn"]')
+  addTemplateButton = this.page.findByDataQa('add-button')
+  nameInput = new TextInput(this.page.findByDataQa('template-name'))
+  selectType = new Select(this.page.findByDataQa('select-type'))
+  okButton = this.page.findByDataQa('modal-okBtn')
   templateRows = this.page.findAll('[data-qa="template-row"]')
-  templateTable = this.page.find('[data-qa="template-table"]')
+  templateTable = this.page.findByDataQa('template-table')
 
   async assertTemplateRowCount(expected: number) {
     await this.templateTable.waitUntilVisible()
