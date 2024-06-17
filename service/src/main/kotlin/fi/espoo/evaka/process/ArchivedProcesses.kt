@@ -5,6 +5,7 @@
 package fi.espoo.evaka.process
 
 import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -127,6 +128,14 @@ fun Database.Read.getArchiveProcessByAssistanceNeedPreschoolDecisionId(
             sql(
                 "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
             )
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.let { processId -> getProcess(processId) }
+}
+
+fun Database.Read.getArchiveProcessByApplicationId(applicationId: ApplicationId): ArchivedProcess? {
+    return createQuery {
+            sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
         }
         .exactlyOneOrNull<ArchivedProcessId?>()
         ?.let { processId -> getProcess(processId) }

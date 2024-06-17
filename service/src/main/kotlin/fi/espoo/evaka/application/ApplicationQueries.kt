@@ -18,8 +18,10 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
@@ -69,6 +71,7 @@ fun Database.Transaction.insertApplication(
     guardianId: PersonId,
     childId: ChildId,
     origin: ApplicationOrigin,
+    createdBy: EvakaUserId,
     hideFromGuardian: Boolean,
     sentDate: LocalDate?,
     allowOtherGuardianAccess: Boolean,
@@ -77,8 +80,8 @@ fun Database.Transaction.insertApplication(
     createUpdate {
             sql(
                 """
-INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified)
-VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)})
+INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified)
+VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)})
 RETURNING id
 """
             )
@@ -1092,6 +1095,10 @@ fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boo
     execute {
         sql("UPDATE application SET checkedByAdmin = ${bind(verified)} WHERE id = ${bind(id)}")
     }
+}
+
+fun Database.Transaction.setApplicationProcessId(id: ApplicationId, processId: ArchivedProcessId) {
+    execute { sql("UPDATE application SET process_id = ${bind(processId)} WHERE id = ${bind(id)}") }
 }
 
 fun Database.Transaction.deleteApplication(id: ApplicationId) = execute {

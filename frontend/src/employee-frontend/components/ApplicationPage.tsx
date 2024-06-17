@@ -16,6 +16,8 @@ import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -46,6 +48,8 @@ import { TitleContext, TitleState } from '../state/title'
 import { asUnitType } from '../types/daycare'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 
+import { applicationMetadataQuery } from './application-page/applications-queries'
+import MetadataSection from './archive-metadata/MetadataSection'
 import { renderResult, UnwrapResult } from './async-rendering'
 
 const getServiceNeedOptionPublicInfosResult = wrapResult(
@@ -80,6 +84,15 @@ const getMessageSubject = (
     applicationData.application.sentDate?.format() ?? '',
     `${applicationData.application.form.child.person.firstName} ${applicationData.application.form.child.person.lastName}`
   )
+
+const ApplicationMetadataSection = React.memo(function DecisionMetadataSection({
+  applicationId
+}: {
+  applicationId: UUID
+}) {
+  const result = useQueryResult(applicationMetadataQuery({ applicationId }))
+  return <MetadataSection metadataResult={result} />
+})
 
 export default React.memo(function ApplicationPage() {
   const { id: applicationId } = useRouteParams(['id'])
@@ -297,8 +310,18 @@ export default React.memo(function ApplicationPage() {
             </FixedSpaceRow>
           )
         )}
+        {!editing &&
+          application.isSuccess &&
+          application.value.permittedActions.includes('READ_METADATA') && (
+            <>
+              <Gap />
+              <Container>
+                <ApplicationMetadataSection applicationId={applicationId} />
+              </Container>
+            </>
+          )}
       </Container>
-
+      <Gap />
       <UnwrapResult
         result={application}
         loading={() => null}

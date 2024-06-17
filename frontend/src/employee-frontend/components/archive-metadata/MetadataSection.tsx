@@ -13,7 +13,10 @@ import {
 } from 'lib-common/generated/api-types/process'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -114,8 +117,19 @@ export default React.memo(function MetadataSection({
               ]}
             />
             <Gap />
-            <H3>{i18n.metadata.documents}</H3>
+            <H3>{i18n.metadata.primaryDocument}</H3>
             <DocumentMetadata document={metadata.primaryDocument} />
+            {metadata.secondaryDocuments.length > 0 && (
+              <>
+                <Gap />
+                <H3>{i18n.metadata.secondaryDocuments}</H3>
+                <FixedSpaceColumn>
+                  {metadata.secondaryDocuments.map((doc, i) => (
+                    <DocumentMetadata key={i} document={doc} />
+                  ))}
+                </FixedSpaceColumn>
+              </>
+            )}
             <Gap />
             <H3>{i18n.metadata.history}</H3>
             <ul>

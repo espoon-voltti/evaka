@@ -59,6 +59,7 @@ export interface DocumentMetadata {
 export interface ProcessMetadata {
   primaryDocument: DocumentMetadata
   process: ArchivedProcess
+  secondaryDocuments: DocumentMetadata[]
 }
 
 /**
@@ -97,7 +98,8 @@ export function deserializeJsonProcessMetadata(json: JsonOf<ProcessMetadata>): P
   return {
     ...json,
     primaryDocument: deserializeJsonDocumentMetadata(json.primaryDocument),
-    process: deserializeJsonArchivedProcess(json.process)
+    process: deserializeJsonArchivedProcess(json.process),
+    secondaryDocuments: json.secondaryDocuments.map(e => deserializeJsonDocumentMetadata(e))
   }
 }
 

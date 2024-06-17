@@ -6,9 +6,11 @@ package fi.espoo.evaka.process
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -25,7 +27,11 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/employee/process-metadata")
 class ProcessMetadataController(private val accessControl: AccessControl) {
-    data class ProcessMetadata(val process: ArchivedProcess, val primaryDocument: DocumentMetadata)
+    data class ProcessMetadata(
+        val process: ArchivedProcess,
+        val primaryDocument: DocumentMetadata,
+        val secondaryDocuments: List<DocumentMetadata>
+    )
 
     data class DocumentMetadata(
         val name: String,
@@ -74,7 +80,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                 childDocumentId
                                             )
                                         }
-                                )
+                                ),
+                            secondaryDocuments = emptyList()
                         )
                     )
                 }
@@ -123,7 +130,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                 decisionId
                                             )
                                         }
-                                )
+                                ),
+                            secondaryDocuments = emptyList()
                         )
                     )
                 }
@@ -173,7 +181,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                 decisionId
                                             )
                                         }
-                                )
+                                ),
+                            secondaryDocuments = emptyList()
                         )
                     )
                 }
@@ -181,6 +190,62 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             .also { response ->
                 Audit.AssistanceNeedPreschoolDecisionReadMetadata.log(
                     targetId = AuditId(decisionId),
+                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                )
+            }
+    }
+
+    @GetMapping("/applications/{applicationId}")
+    fun getApplicationMetadata(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId
+    ): ProcessMetadataResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Application.READ_METADATA,
+                        applicationId
+                    )
+                    val process =
+                        tx.getArchiveProcessByApplicationId(applicationId)
+                            ?: return@read ProcessMetadataResponse(null)
+                    val applicationDocument = tx.getApplicationDocumentMetadata(applicationId)
+                    val decisionDocuments =
+                        tx.getDecisionIdsByApplication(applicationId).map {
+                            it to tx.getApplicationDecisionDocumentMetadata(it)
+                        }
+
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
+                            process = process,
+                            primaryDocument = applicationDocument,
+                            secondaryDocuments =
+                                decisionDocuments.map { (decisionId, doc) ->
+                                    doc.copy(
+                                        downloadPath =
+                                            doc.downloadPath?.takeIf {
+                                                accessControl.hasPermissionFor(
+                                                    tx,
+                                                    user,
+                                                    clock,
+                                                    Action.Decision.DOWNLOAD_PDF,
+                                                    decisionId
+                                                )
+                                            }
+                                    )
+                                }
+                        )
+                    )
+                }
+            }
+            .also { response ->
+                Audit.ApplicationReadMetadata.log(
+                    targetId = AuditId(applicationId),
                     objectId = response.data?.process?.id?.let(AuditId::invoke)
                 )
             }
@@ -254,6 +319,89 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             END AS download_path
         FROM assistance_need_preschool_decision d
         LEFT JOIN evaka_user e ON e.employee_id = d.created_by
+        WHERE d.id = ${bind(decisionId)}
+    """
+                )
+            }
+            .exactlyOne()
+
+    private fun Database.Read.getApplicationDocumentMetadata(
+        applicationId: ApplicationId
+    ): DocumentMetadata =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            CASE 
+                WHEN a.type = 'DAYCARE'
+                THEN 'Varhaiskasvatus- ja palvelusetelihakemus'
+                WHEN a.type = 'PRESCHOOL'
+                THEN 'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen'
+                WHEN a.type = 'CLUB'
+                THEN 'Kerhohakemus'
+            END AS name,
+            coalesce(a.sentdate, a.created) AS created_at,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            TRUE AS confidential,
+            NULL AS download_path
+        FROM application a
+        LEFT JOIN evaka_user e ON e.id = a.created_by
+        WHERE a.id = ${bind(applicationId)}
+    """
+                )
+            }
+            .exactlyOne()
+
+    private fun Database.Read.getDecisionIdsByApplication(
+        applicationId: ApplicationId
+    ): List<DecisionId> =
+        createQuery {
+                sql(
+                    """
+        SELECT d.id
+        FROM application a
+        JOIN decision d ON a.id = d.application_id
+        WHERE a.id = ${bind(applicationId)}
+    """
+                )
+            }
+            .toList()
+
+    private fun Database.Read.getApplicationDecisionDocumentMetadata(
+        decisionId: DecisionId
+    ): DocumentMetadata =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            CASE 
+                WHEN d.type = 'DAYCARE'
+                THEN 'Päätös varhaiskasvatuksesta'
+                WHEN d.type = 'DAYCARE_PART_TIME'
+                THEN 'Päätös osa-aikaisesta varhaiskasvatuksesta'
+                WHEN d.type = 'PRESCHOOL'
+                THEN 'Päätös esiopetuksesta'
+                WHEN d.type = 'PREPARATORY_EDUCATION'
+                THEN 'Päätös valmistavasta opetuksesta'
+                WHEN d.type = 'PRESCHOOL_DAYCARE'
+                THEN 'Päätös liittyvästä varhaiskasvatuksesta'
+                WHEN d.type = 'CLUB'
+                THEN 'Päätös kerhosta'
+                WHEN d.type = 'PRESCHOOL_CLUB'
+                THEN 'Päätös esiopetuksen kerhosta'
+            END AS name,
+            d.created AS created_at,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            TRUE AS confidential,
+            CASE WHEN d.document_key IS NOT NULL 
+                THEN '/employee/decisions/' || d.id || '/download'
+            END AS download_path
+        FROM decision d
+        LEFT JOIN evaka_user e ON e.id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
                 )

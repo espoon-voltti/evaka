@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.shared.auth.UserRole
 
 data class FeatureConfig(
@@ -150,7 +151,16 @@ enum class ArchiveProcessType {
     APPLICATION_PRESCHOOL,
     APPLICATION_CLUB,
     ASSISTANCE_NEED_DECISION_DAYCARE,
-    ASSISTANCE_NEED_DECISION_PRESCHOOL
+    ASSISTANCE_NEED_DECISION_PRESCHOOL;
+
+    companion object {
+        fun fromApplicationType(type: ApplicationType): ArchiveProcessType =
+            when (type) {
+                ApplicationType.DAYCARE -> APPLICATION_DAYCARE
+                ApplicationType.PRESCHOOL -> APPLICATION_PRESCHOOL
+                ApplicationType.CLUB -> APPLICATION_CLUB
+            }
+    }
 }
 
 data class ArchiveProcessConfig(

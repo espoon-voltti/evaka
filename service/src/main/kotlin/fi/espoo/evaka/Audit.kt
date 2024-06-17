@@ -43,6 +43,7 @@ enum class Audit(
     ApplicationCreate,
     ApplicationDelete,
     ApplicationRead,
+    ApplicationReadMetadata,
     ApplicationReadNotifications,
     ApplicationReadDuplicates,
     ApplicationReadActivePlacementsByType,
