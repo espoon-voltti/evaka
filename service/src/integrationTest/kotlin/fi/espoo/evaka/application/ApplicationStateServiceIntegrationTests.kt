@@ -27,9 +27,12 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.preschoolTerms
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -40,9 +43,11 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -82,6 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var service: ApplicationStateService
+    @Autowired private lateinit var metadataController: ProcessMetadataController
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
@@ -1912,6 +1918,155 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     getDecision(tx, DecisionType.PRESCHOOL).id
                 )
             }
+        }
+    }
+
+    @Test
+    fun `metadata is collected`() {
+        val guardian = DevPerson()
+        val child = DevPerson()
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        val testApplicationId =
+            db.transaction { tx ->
+                tx.insert(guardian, DevPersonType.ADULT)
+                tx.insert(child, DevPersonType.RAW_ROW)
+                tx.insert(admin)
+                service.createApplication(
+                    tx = tx,
+                    user = guardian.user(CitizenAuthLevel.STRONG),
+                    now = clock.now(),
+                    origin = ApplicationOrigin.ELECTRONIC,
+                    type = ApplicationType.DAYCARE,
+                    guardian = tx.getPersonById(guardian.id)!!,
+                    child = tx.getPersonById(child.id)!!
+                )
+            }
+        val decisionId =
+            db.transaction { tx ->
+                service.updateOwnApplicationContentsCitizen(
+                    tx = tx,
+                    user = guardian.user(CitizenAuthLevel.STRONG),
+                    now = clock.now(),
+                    applicationId = testApplicationId,
+                    update =
+                        CitizenApplicationUpdate(
+                            form =
+                                ApplicationFormUpdate(
+                                    child =
+                                        ChildDetailsUpdate(
+                                            futureAddress = null,
+                                            allergies = "",
+                                            diet = "",
+                                            assistanceNeeded = false,
+                                            assistanceDescription = ""
+                                        ),
+                                    guardian =
+                                        GuardianUpdate(
+                                            futureAddress = null,
+                                            phoneNumber = "",
+                                            email = null
+                                        ),
+                                    secondGuardian = null,
+                                    otherPartner = null,
+                                    otherChildren = emptyList(),
+                                    preferences =
+                                        Preferences(
+                                            preferredUnits =
+                                                listOf(
+                                                    PreferredUnit(testDaycare.id, testDaycare.name)
+                                                ),
+                                            preferredStartDate = clock.today().plusMonths(5),
+                                            connectedDaycarePreferredStartDate = null,
+                                            serviceNeed =
+                                                ServiceNeed(
+                                                    startTime = "09:00",
+                                                    endTime = "17:00",
+                                                    shiftCare = false,
+                                                    partTime = false,
+                                                    serviceNeedOption = null
+                                                ),
+                                            siblingBasis = null,
+                                            preparatory = false,
+                                            urgent = false
+                                        ),
+                                    maxFeeAccepted = false,
+                                    otherInfo = "",
+                                    clubDetails = null
+                                ),
+                            allowOtherGuardianAccess = true
+                        )
+                )
+                service.sendApplication(
+                    tx,
+                    guardian.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    testApplicationId
+                )
+                service.moveToWaitingPlacement(tx, serviceWorker, clock, testApplicationId)
+                service.createPlacementPlan(
+                    tx,
+                    serviceWorker,
+                    clock,
+                    testApplicationId,
+                    DaycarePlacementPlan(
+                        unitId = testDaycare.id,
+                        period =
+                            FiniteDateRange(
+                                clock.today().plusMonths(5),
+                                clock.today().plusYears(3)
+                            ),
+                        preschoolDaycarePeriod = null
+                    )
+                )
+                service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, testApplicationId)
+                service.confirmDecisionMailed(tx, serviceWorker, clock, testApplicationId)
+                val decisionId =
+                    tx.createQuery {
+                            sql(
+                                "SELECT id FROM decision WHERE application_id = ${bind(testApplicationId)}"
+                            )
+                        }
+                        .exactlyOne<DecisionId>()
+                service.acceptDecision(
+                    tx = tx,
+                    user = guardian.user(CitizenAuthLevel.STRONG),
+                    clock = clock,
+                    applicationId = testApplicationId,
+                    decisionId = decisionId,
+                    requestedStartDate = clock.today().plusMonths(5)
+                )
+                decisionId
+            }
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val metadata =
+            metadataController
+                .getApplicationMetadata(dbInstance(), admin.user, clock, testApplicationId)
+                .data
+        assertNotNull(metadata)
+        assertEquals("1/123.123.a/2020", metadata.process.processNumber)
+        assertEquals(120, metadata.process.archiveDurationMonths)
+        assertEquals(4, metadata.process.history.size)
+        assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
+        assertEquals(guardian.evakaUserId, metadata.process.history[0].enteredBy.id)
+        assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
+        assertEquals(serviceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
+        assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
+        assertEquals(serviceWorker.evakaUserId, metadata.process.history[2].enteredBy.id)
+        assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
+        assertEquals(guardian.evakaUserId, metadata.process.history[3].enteredBy.id)
+        assertEquals("Varhaiskasvatus- ja palvelusetelihakemus", metadata.primaryDocument.name)
+        assertEquals(guardian.evakaUserId, metadata.primaryDocument.createdBy?.id)
+        assertEquals(
+            HelsinkiDateTime.of(clock.today().atStartOfDay()),
+            metadata.primaryDocument.createdAt
+        )
+        assertNull(metadata.primaryDocument.downloadPath)
+        assertEquals(1, metadata.secondaryDocuments.size)
+        metadata.secondaryDocuments[0].also { doc ->
+            assertEquals("Päätös varhaiskasvatuksesta", doc.name)
+            assertEquals(serviceWorker.evakaUserId, doc.createdBy?.id)
+            assertEquals("/employee/decisions/$decisionId/download", doc.downloadPath)
         }
     }
 
