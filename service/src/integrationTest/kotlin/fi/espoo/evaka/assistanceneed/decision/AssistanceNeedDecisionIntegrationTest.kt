@@ -474,7 +474,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 .data
         assertNotNull(metadata)
         assertEquals("1/123.456.a/2024", metadata.process.processNumber)
-        assertEquals(120, metadata.process.archiveDurationMonths)
+        assertEquals(1440, metadata.process.archiveDurationMonths)
         assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", metadata.process.organization)
         assertEquals(4, metadata.process.history.size)
         assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)

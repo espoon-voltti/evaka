@@ -235,12 +235,12 @@ val testFeatureConfig =
                 ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.456.a",
-                        archiveDurationMonths = 120
+                        archiveDurationMonths = 120 * 12
                     ),
                 ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.456.b",
-                        archiveDurationMonths = 120
+                        archiveDurationMonths = 120 * 12
                     ),
             )
     )

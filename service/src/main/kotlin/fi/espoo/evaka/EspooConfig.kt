@@ -196,16 +196,27 @@ class EspooConfig {
             archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
             archiveMetadataConfigs =
                 mapOf(
+                    ArchiveProcessType.APPLICATION_DAYCARE to
+                        ArchiveProcessConfig(
+                            processDefinitionNumber = "12.06.01",
+                            archiveDurationMonths = 10 * 12
+                        ),
+                    ArchiveProcessType.APPLICATION_PRESCHOOL to
+                        ArchiveProcessConfig(
+                            processDefinitionNumber = "12.06.01",
+                            archiveDurationMonths = 10 * 12
+                        ),
+                    ArchiveProcessType.APPLICATION_CLUB to
+                        ArchiveProcessConfig(
+                            processDefinitionNumber = "12.06.01",
+                            archiveDurationMonths = 10 * 12
+                        ),
                     ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
                         ArchiveProcessConfig(
-                            processDefinitionNumber = "todo-1",
-                            archiveDurationMonths = 120
-                        ),
-                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
-                        ArchiveProcessConfig(
-                            processDefinitionNumber = "todo-2",
-                            archiveDurationMonths = 120
-                        ),
+                            processDefinitionNumber = "12.06.03",
+                            archiveDurationMonths = 120 * 12
+                        )
+                    // TODO: ASSISTANCE_NEED_DECISION_PRESCHOOL config
                 )
         )
 
