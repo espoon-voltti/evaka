@@ -160,11 +160,10 @@ describe('DatePicker', () => {
       const date = LocalDate.of(2023, 9, 13)
       const onChange = jest.fn()
 
-      const { rerender, debug } = render(
+      const { rerender } = render(
         jsx(<DatePicker date={null} onChange={onChange} locale="fi" />)
       )
 
-      debug()
       const input = get()
       change(input, date.formatIso())
       expect(onChange.mock.calls).toEqual([[date]])
