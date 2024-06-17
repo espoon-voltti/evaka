@@ -2222,7 +2222,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         varhaiskasvatuspaatos =
                                             VardaReadClient.VarhaiskasvatuspaatosResponse(
                                                 url = old.varhaiskasvatusPaatosToEndUrl,
-                                                lahdejarjestelma = old.sourceSystem,
+                                                lahdejarjestelma =
+                                                    null, // This will be set to new.sourceSystem
                                                 alkamis_pvm = old.beforeEvakaRange.start,
                                                 paattymis_pvm = old.beforeEvakaRange.end,
                                                 hakemus_pvm = old.applicationDate,
@@ -2239,7 +2240,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                                     url = old.varhaiskasvatusSuhdeToEndUrl,
                                                     varhaiskasvatuspaatos =
                                                         old.varhaiskasvatusPaatosToEndUrl,
-                                                    lahdejarjestelma = old.sourceSystem,
+                                                    lahdejarjestelma =
+                                                        old.sourceSystem, // This will be kept
                                                     alkamis_pvm = old.beforeEvakaRange.start,
                                                     paattymis_pvm = old.beforeEvakaRange.end,
                                                     toimipaikka_oid = old.unitOid
@@ -2348,13 +2350,13 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 "SetPaattymisPvm" to
                     (old.maksutietoToEndUrl to
-                        VardaWriteClient.SetPaattymisPvmRequest(dayBeforeEvaka)),
+                        VardaWriteClient.SetPaattymisPvmRequest(old.sourceSystem, dayBeforeEvaka)),
                 "SetPaattymisPvm" to
                     (old.varhaiskasvatusSuhdeToEndUrl to
-                        VardaWriteClient.SetPaattymisPvmRequest(dayBeforeEvaka)),
+                        VardaWriteClient.SetPaattymisPvmRequest(old.sourceSystem, dayBeforeEvaka)),
                 "SetPaattymisPvm" to
                     (old.varhaiskasvatusPaatosToEndUrl to
-                        VardaWriteClient.SetPaattymisPvmRequest(dayBeforeEvaka)),
+                        VardaWriteClient.SetPaattymisPvmRequest(new.sourceSystem, dayBeforeEvaka)),
                 "Delete" to old.varhaiskasvatusSuhdeToDeleteUrl,
                 "Delete" to old.varhaiskasvatusPaatosToDeleteUrl,
                 "Create" to

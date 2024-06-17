@@ -207,7 +207,7 @@ interface VardaWriteClient {
 
     fun <T : VardaEntity> delete(data: T)
 
-    data class SetPaattymisPvmRequest(val paattymis_pvm: LocalDate)
+    data class SetPaattymisPvmRequest(val lahdejarjestelma: String, val paattymis_pvm: LocalDate)
 
     fun setPaattymisPvm(url: URI, body: SetPaattymisPvmRequest)
 }

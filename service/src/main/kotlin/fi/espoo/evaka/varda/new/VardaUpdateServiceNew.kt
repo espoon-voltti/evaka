@@ -620,7 +620,13 @@ class VardaUpdater(
         } else {
             val paattymisPvm: LocalDate? = entity.paattymis_pvm
             if (paattymisPvm == null || paattymisPvm > endDate) {
-                this.setPaattymisPvm(entity.url, VardaWriteClient.SetPaattymisPvmRequest(endDate))
+                this.setPaattymisPvm(
+                    entity.url,
+                    VardaWriteClient.SetPaattymisPvmRequest(
+                        entity.lahdejarjestelma ?: lahdejarjestelma,
+                        endDate
+                    )
+                )
             }
         }
     }
