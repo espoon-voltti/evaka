@@ -27,7 +27,8 @@ enum class ContentTypePattern(
     TIKA_MSOFFICE("application", "x-tika-msoffice", setOf("doc", "docx")),
     TIKA_OOXML("application", "x-tika-ooxml", setOf("doc", "docx")),
     VIDEO_ANY("video", "*", setOf("avi", "mp4", "mpeg", "mov", "ogv", "webm", "3gp")),
-    AUDIO_ANY("audio", "*", setOf("aac", "mid", "midi", "mp3", "oga", "wav", "weba", "3gp"));
+    AUDIO_ANY("audio", "*", setOf("aac", "mid", "midi", "mp3", "oga", "wav", "weba", "3gp")),
+    CSV("text", "csv", setOf("csv"));
 
     fun matchesContentType(contentType: String): Boolean {
         val parts = contentType.split("/", ";")
