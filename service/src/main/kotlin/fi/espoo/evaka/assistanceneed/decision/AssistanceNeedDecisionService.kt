@@ -21,12 +21,16 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedDecisionId
+import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -99,6 +103,15 @@ class AssistanceNeedDecisionService(
                 ),
                 runAt = clock.now()
             )
+
+            tx.getArchiveProcessByAssistanceNeedDecisionId(msg.decisionId)?.also {
+                tx.insertProcessHistoryRow(
+                    processId = it.id,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = clock.now(),
+                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+                )
+            }
 
             logger.info {
                 "Successfully created assistance need decision pdf (id: ${msg.decisionId})."

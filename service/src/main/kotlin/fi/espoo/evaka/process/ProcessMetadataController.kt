@@ -7,6 +7,8 @@ package fi.espoo.evaka.process
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.shared.ArchivedProcessId
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -32,19 +34,19 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val email: String?
     )
 
-    data class ChildDocumentMetadata(
-        val process: ArchivedProcess,
-        val documentName: String,
-        val documentCreatedAt: HelsinkiDateTime?,
-        val documentCreatedBy: EmployeeBasics?,
-        val archiveDurationMonths: Int,
-        val confidentialDocument: Boolean,
-        val downloadable: Boolean
+    data class ProcessMetadata(val process: ArchivedProcess, val primaryDocument: Document)
+
+    data class Document(
+        val name: String,
+        val createdAt: HelsinkiDateTime?,
+        val createdBy: EmployeeBasics?,
+        val confidential: Boolean,
+        val downloadPath: String?
     )
 
     // wrapper that is needed because currently returning null
     // from an endpoint is not serialized correctly
-    data class ChildDocumentMetadataResponse(val data: ChildDocumentMetadata?)
+    data class ProcessMetadataResponse(val data: ProcessMetadata?)
 
     @GetMapping("/child-documents/{childDocumentId}")
     fun getChildDocumentMetadata(
@@ -52,7 +54,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childDocumentId: ChildDocumentId
-    ): ChildDocumentMetadataResponse {
+    ): ProcessMetadataResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -62,25 +64,31 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         Action.ChildDocument.READ_METADATA,
                         childDocumentId
                     )
-                    val document =
-                        tx.getChildDocumentBasics(childDocumentId)
-                            ?: return@read ChildDocumentMetadataResponse(null)
+                    val document = tx.getChildDocumentBasics(childDocumentId)
                     val process =
                         document.processId?.let { tx.getProcess(it) }
-                            ?: return@read ChildDocumentMetadataResponse(null)
-                    ChildDocumentMetadataResponse(
-                        ChildDocumentMetadata(
+                            ?: return@read ProcessMetadataResponse(null)
+                    val downloadAllowed =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.ChildDocument.DOWNLOAD,
+                            childDocumentId
+                        )
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
                             process = process,
-                            documentName = document.name,
-                            documentCreatedAt = document.createdAt,
-                            documentCreatedBy = document.createdBy,
-                            archiveDurationMonths =
-                                document.archiveDurationMonths
-                                    ?: throw IllegalStateException(
-                                        "archiveDurationMonths should always be set when archived process exists"
-                                    ),
-                            confidentialDocument = document.confidential,
-                            downloadable = document.downloadable
+                            primaryDocument =
+                                Document(
+                                    name = document.name,
+                                    createdAt = document.createdAt,
+                                    createdBy = document.createdBy,
+                                    confidential = document.confidential,
+                                    downloadPath =
+                                        "/employee/child-documents/$childDocumentId/pdf"
+                                            .takeIf { document.downloadable && downloadAllowed }
+                                )
                         )
                     )
                 }
@@ -93,10 +101,115 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             }
     }
 
+    @GetMapping("/assistance-need-decisions/{decisionId}")
+    fun getAssistanceNeedDecisionMetadata(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable decisionId: AssistanceNeedDecisionId
+    ): ProcessMetadataResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.READ_METADATA,
+                        decisionId
+                    )
+                    val process =
+                        tx.getArchiveProcessByAssistanceNeedDecisionId(decisionId)
+                            ?: return@read ProcessMetadataResponse(null)
+                    val decision = tx.getAssistanceNeedDecisionBasics(decisionId)
+                    val downloadAllowed =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.AssistanceNeedDecision.DOWNLOAD,
+                            decisionId
+                        )
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
+                            process = process,
+                            primaryDocument =
+                                Document(
+                                    name = "Päätös tuesta varhaiskasvatuksessa",
+                                    createdAt = decision.createdAt,
+                                    createdBy = decision.createdBy,
+                                    confidential = true,
+                                    downloadPath =
+                                        "/employee/assistance-need-decision/$decisionId/pdf"
+                                            .takeIf { decision.downloadable && downloadAllowed }
+                                )
+                        )
+                    )
+                }
+            }
+            .also { response ->
+                Audit.AssistanceNeedDecisionReadMetadata.log(
+                    targetId = AuditId(decisionId),
+                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                )
+            }
+    }
+
+    @GetMapping("/assistance-need-preschool-decisions/{decisionId}")
+    fun getAssistanceNeedPreschoolDecisionMetadata(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable decisionId: AssistanceNeedPreschoolDecisionId
+    ): ProcessMetadataResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.READ_METADATA,
+                        decisionId
+                    )
+                    val process =
+                        tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(decisionId)
+                            ?: return@read ProcessMetadataResponse(null)
+                    val decision = tx.getAssistanceNeedPreschoolDecisionBasics(decisionId)
+                    val downloadAllowed =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.AssistanceNeedPreschoolDecision.DOWNLOAD,
+                            decisionId
+                        )
+                    ProcessMetadataResponse(
+                        ProcessMetadata(
+                            process = process,
+                            primaryDocument =
+                                Document(
+                                    name = "Päätös tuesta esiopetuksessa",
+                                    createdAt = decision.createdAt,
+                                    createdBy = decision.createdBy,
+                                    confidential = true,
+                                    downloadPath =
+                                        "/employee/assistance-need-preschool-decisions/$decisionId/pdf"
+                                            .takeIf { decision.downloadable && downloadAllowed }
+                                )
+                        )
+                    )
+                }
+            }
+            .also { response ->
+                Audit.AssistanceNeedPreschoolDecisionReadMetadata.log(
+                    targetId = AuditId(decisionId),
+                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                )
+            }
+    }
+
     private data class ChildDocumentBasics(
         val name: String,
         val confidential: Boolean,
-        val archiveDurationMonths: Int?,
         val processId: ArchivedProcessId?,
         val createdAt: HelsinkiDateTime?,
         @Nested("created_by") val createdBy: EmployeeBasics?,
@@ -105,14 +218,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
 
     private fun Database.Read.getChildDocumentBasics(
         documentId: ChildDocumentId
-    ): ChildDocumentBasics? =
+    ): ChildDocumentBasics =
         createQuery {
                 sql(
                     """
         SELECT 
             dt.name,
             dt.confidential,
-            dt.archive_duration_months,
             cd.process_id,
             cd.created AS created_at,
             e.id AS created_by_id,
@@ -127,5 +239,53 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
     """
                 )
             }
-            .exactlyOneOrNull()
+            .exactlyOne()
+
+    private data class AssistanceNeedDecisionBasics(
+        val createdAt: HelsinkiDateTime?,
+        @Nested("created_by") val createdBy: EmployeeBasics?,
+        val downloadable: Boolean
+    )
+
+    private fun Database.Read.getAssistanceNeedDecisionBasics(
+        decisionId: AssistanceNeedDecisionId
+    ): AssistanceNeedDecisionBasics =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            d.created AS created_at,
+            e.id AS created_by_id,
+            e.first_name AS created_by_first_name,
+            e.last_name AS created_by_last_name,
+            e.email AS created_by_email,
+            d.document_key IS NOT NULL AS downloadable
+        FROM assistance_need_decision d
+        LEFT JOIN employee e ON e.id = d.created_by
+        WHERE d.id = ${bind(decisionId)}
+    """
+                )
+            }
+            .exactlyOne()
+
+    private fun Database.Read.getAssistanceNeedPreschoolDecisionBasics(
+        decisionId: AssistanceNeedPreschoolDecisionId
+    ): AssistanceNeedDecisionBasics =
+        createQuery {
+                sql(
+                    """
+        SELECT 
+            d.created AS created_at,
+            e.id AS created_by_id,
+            e.first_name AS created_by_first_name,
+            e.last_name AS created_by_last_name,
+            e.email AS created_by_email,
+            d.document_key IS NOT NULL AS downloadable
+        FROM assistance_need_preschool_decision d
+        LEFT JOIN employee e ON e.id = d.created_by
+        WHERE d.id = ${bind(decisionId)}
+    """
+                )
+            }
+            .exactlyOne()
 }

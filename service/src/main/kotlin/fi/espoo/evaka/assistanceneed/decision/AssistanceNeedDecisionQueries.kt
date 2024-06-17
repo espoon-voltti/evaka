@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.assistanceneed.decision
 
+import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -15,14 +17,16 @@ import java.time.LocalDate
 
 fun Database.Transaction.insertAssistanceNeedDecision(
     childId: ChildId,
-    data: AssistanceNeedDecisionForm
+    data: AssistanceNeedDecisionForm,
+    processId: ArchivedProcessId?,
+    user: AuthenticatedUser.Employee
 ): AssistanceNeedDecision {
     val id =
         createQuery {
                 sql(
                     """
 INSERT INTO assistance_need_decision (
-  child_id, validity_period, status, language, decision_made, sent_for_decision,
+  child_id, process_id, created_by, validity_period, status, language, decision_made, sent_for_decision,
   selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
   structural_motivation_opt_special_group, structural_motivation_opt_small_group,
   structural_motivation_opt_group_assistant, structural_motivation_opt_child_assistant,
@@ -36,6 +40,8 @@ INSERT INTO assistance_need_decision (
 )
 VALUES (
     ${bind(childId)}, 
+    ${bind(processId)},
+    ${bind(user.id)},
     ${bind(data.validityPeriod)},
     ${bind(data.status)},
     ${bind(data.language)},

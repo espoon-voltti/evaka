@@ -768,6 +768,8 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inSelectedUnitOfAssistanceNeedDecision()
         ),
+        READ_METADATA(HasGlobalRole(ADMIN)),
+        DOWNLOAD(HasGlobalRole(ADMIN)),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
@@ -813,6 +815,8 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inSelectedUnitOfAssistanceNeedPreschoolDecision()
         ),
+        READ_METADATA(HasGlobalRole(ADMIN)),
+        DOWNLOAD(HasGlobalRole(ADMIN)),
         DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()),
         UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),

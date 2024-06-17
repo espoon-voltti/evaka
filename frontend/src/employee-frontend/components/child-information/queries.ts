@@ -76,7 +76,11 @@ import {
   updateFeeAlteration
 } from '../../generated/api-clients/invoicing'
 import { getFosterParents } from '../../generated/api-clients/pis'
-import { getChildDocumentMetadata } from '../../generated/api-clients/process'
+import {
+  getAssistanceNeedDecisionMetadata,
+  getAssistanceNeedPreschoolDecisionMetadata,
+  getChildDocumentMetadata
+} from '../../generated/api-clients/process'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('childInformation', {
@@ -85,6 +89,10 @@ export const queryKeys = createQueryKeys('childInformation', {
   childDocumentMetadata: (id: UUID) => ['childDocumentMetadata', id],
   childDocumentWriteLock: (id: UUID) => ['childDocument', id, 'lock'],
   assistance: (childId: UUID) => ['assistance', childId],
+  assistanceNeedDecisionMetadata: (decisionId: UUID) => [
+    'assistanceNeedDecisionMetadata',
+    decisionId
+  ],
   assistanceNeedPreschoolDecisionBasics: (childId: UUID) => [
     'assistanceNeedPreschoolDecisionBasics',
     childId
@@ -100,6 +108,10 @@ export const queryKeys = createQueryKeys('childInformation', {
     'assistanceNeedPreschoolDecisionDecisionMakerOptions',
     decisionId,
     unitId
+  ],
+  assistanceNeedPreschoolDecisionMetadata: (decisionId: UUID) => [
+    'assistanceNeedPreschoolDecisionMetadata',
+    decisionId
   ],
   units: () => ['units'],
   backupPickups: (childId: UUID) => ['backupPickups', childId],
@@ -273,6 +285,12 @@ export const deleteOtherAssistanceMeasureMutation = mutation({
   invalidateQueryKeys: ({ childId }) => [queryKeys.assistance(childId)]
 })
 
+export const assistanceNeedDecisionMetadataQuery = query({
+  api: getAssistanceNeedDecisionMetadata,
+  queryKey: ({ decisionId }) =>
+    queryKeys.assistanceNeedDecisionMetadata(decisionId)
+})
+
 export const assistanceNeedPreschoolDecisionBasicsQuery = query({
   api: getAssistanceNeedPreschoolDecisions,
   queryKey: ({ childId }) =>
@@ -292,6 +310,12 @@ export const assistanceNeedPreschoolDecisionMakerOptionsQuery = query({
   ) => getAssistancePreschoolDecisionMakerOptions(arg),
   queryKey: ({ id, unitId }) =>
     queryKeys.assistanceNeedPreschoolDecisionDecisionMakerOptions(id, unitId)
+})
+
+export const assistanceNeedPreschoolDecisionMetadataQuery = query({
+  api: getAssistanceNeedPreschoolDecisionMetadata,
+  queryKey: ({ decisionId }) =>
+    queryKeys.assistanceNeedPreschoolDecisionMetadata(decisionId)
 })
 
 export const createAssistanceNeedPreschoolDecisionMutation = mutation({

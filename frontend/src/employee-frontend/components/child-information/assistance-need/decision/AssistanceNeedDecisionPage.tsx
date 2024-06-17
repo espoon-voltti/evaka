@@ -10,13 +10,15 @@ import { renderResult } from 'employee-frontend/components/async-rendering'
 import { I18nContext, Lang, useTranslation } from 'employee-frontend/state/i18n'
 import { wrapResult } from 'lib-common/api'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import Content from 'lib-components/layout/Container'
+import Content, { Container } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
   FixedSpaceColumn,
@@ -30,6 +32,8 @@ import {
   revertToUnsentAssistanceNeedDecision,
   sendAssistanceNeedDecision
 } from '../../../../generated/api-clients/assistanceneed'
+import MetadataSection from '../../../archive-metadata/MetadataSection'
+import { assistanceNeedDecisionMetadataQuery } from '../../queries'
 
 const getAssistanceNeedDecisionResult = wrapResult(getAssistanceNeedDecision)
 const sendAssistanceNeedDecisionResult = wrapResult(sendAssistanceNeedDecision)
@@ -44,6 +48,17 @@ const StickyFooterContainer = styled.div`
 const canBeEdited = (decision: AssistanceNeedDecision) =>
   decision.status === 'NEEDS_WORK' ||
   (decision.status === 'DRAFT' && decision.sentForDecision === null)
+
+const DecisionMetadataSection = React.memo(function DecisionMetadataSection({
+  decisionId
+}: {
+  decisionId: UUID
+}) {
+  const result = useQueryResult(
+    assistanceNeedDecisionMetadataQuery({ decisionId })
+  )
+  return <MetadataSection metadataResult={result} />
+})
 
 export default React.memo(function AssistanceNeedDecisionPage() {
   const { childId, id } = useRouteParams(['childId', 'id'])
@@ -82,16 +97,29 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       <Content>
         <ReturnButton label={i18n.common.goBack} />
 
-        {renderResult(assistanceNeedDecision, ({ decision }) => (
-          <I18nContext.Provider
-            value={{
-              lang: decision.language.toLowerCase() as Lang,
-              setLang: () => undefined
-            }}
-          >
-            <AssistanceNeedDecisionContent decision={decision} />
-          </I18nContext.Provider>
-        ))}
+        {renderResult(
+          assistanceNeedDecision,
+          ({ decision, permittedActions }) => (
+            <>
+              <I18nContext.Provider
+                value={{
+                  lang: decision.language.toLowerCase() as Lang,
+                  setLang: () => undefined
+                }}
+              >
+                <AssistanceNeedDecisionContent decision={decision} />
+              </I18nContext.Provider>
+              {permittedActions.includes('READ_METADATA') && (
+                <>
+                  <Gap />
+                  <Container>
+                    <DecisionMetadataSection decisionId={decision.id} />
+                  </Container>
+                </>
+              )}
+            </>
+          )
+        )}
       </Content>
       <Gap size="m" />
       <StickyFooter>

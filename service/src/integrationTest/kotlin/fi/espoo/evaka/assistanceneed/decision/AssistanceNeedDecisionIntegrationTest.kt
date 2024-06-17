@@ -11,6 +11,8 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
@@ -26,9 +28,9 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testChild_1
@@ -60,14 +62,22 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private lateinit var assistanceNeedDecisionController: AssistanceNeedDecisionController
     @Autowired private lateinit var assistanceNeedDecisionService: AssistanceNeedDecisionService
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var processMetadataController: ProcessMetadataController
 
     private val assistanceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val decisionMaker =
         AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
     private val testAdmin =
-        DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Ad", lastName = "Min")
+        DevEmployee(
+            id = EmployeeId(UUID.randomUUID()),
+            firstName = "Ad",
+            lastName = "Min",
+            roles = setOf(UserRole.ADMIN)
+        )
     private val admin = AuthenticatedUser.Employee(testAdmin.id, setOf(UserRole.ADMIN))
+
+    private val clock = MockEvakaClock(2024, 3, 5, 13, 30)
 
     private val testDecision =
         AssistanceNeedDecisionForm(
@@ -134,6 +144,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
+            tx.insert(testAdmin)
         }
     }
 
@@ -302,7 +313,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         sendAssistanceNeedDecision(assistanceNeedDecision.id)
 
         val sentDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
-        assertEquals(LocalDate.now(), sentDecision.sentForDecision)
+        assertEquals(clock.today(), sentDecision.sentForDecision)
 
         assertThrows<Forbidden> { sendAssistanceNeedDecision(assistanceNeedDecision.id) }
         assertThrows<Forbidden> {
@@ -414,7 +425,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             decisionMaker,
         )
         val decision = getAssistanceNeedDecision(assistanceNeedDecision.id)
-        assertEquals(LocalDate.now(), decision.decisionMade)
+        assertEquals(clock.today(), decision.decisionMade)
         // decisions cannot be re-decided
         assertThrows<BadRequest> {
             decideAssistanceNeedDecision(
@@ -426,7 +437,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         }
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(clock)
 
         val messages = MockSfiMessagesClient.getMessages()
         assertEquals(1, messages.size)
@@ -438,9 +449,56 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
-    fun `Decision maker can be changed`() {
-        db.transaction { tx -> tx.insert(testAdmin) }
+    fun `Metadata is collected`() {
+        val assistanceNeedDecision =
+            createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))
 
+        sendAssistanceNeedDecision(assistanceNeedDecision.id)
+        decideAssistanceNeedDecision(
+            assistanceNeedDecision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val metadata =
+            processMetadataController
+                .getAssistanceNeedDecisionMetadata(
+                    dbInstance(),
+                    testAdmin.user,
+                    clock,
+                    assistanceNeedDecision.id
+                )
+                .data
+        assertNotNull(metadata)
+        assertEquals("1/123.456.a/2024", metadata.process.processNumber)
+        assertEquals(1440, metadata.process.archiveDurationMonths)
+        assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", metadata.process.organization)
+        assertEquals(4, metadata.process.history.size)
+        assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
+        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[0].enteredBy.id)
+        assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
+        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
+        assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
+        assertEquals(decisionMaker.evakaUserId, metadata.process.history[2].enteredBy.id)
+        assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
+        assertEquals(
+            AuthenticatedUser.SystemInternalUser.evakaUserId,
+            metadata.process.history[3].enteredBy.id
+        )
+        assertEquals("Päätös tuesta varhaiskasvatuksessa", metadata.primaryDocument.name)
+        assertEquals(assistanceWorker.id, metadata.primaryDocument.createdBy?.id)
+        assertEquals(true, metadata.primaryDocument.confidential)
+        assertEquals(
+            "/employee/assistance-need-decision/${assistanceNeedDecision.id}/pdf",
+            metadata.primaryDocument.downloadPath
+        )
+    }
+
+    @Test
+    fun `Decision maker can be changed`() {
         val assistanceNeedDecision =
             createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))
 
@@ -496,7 +554,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     unitSupervisorOfTestDaycare.id,
                     unitSupervisorOfTestDaycare.lastName,
                     unitSupervisorOfTestDaycare.firstName
-                )
+                ),
+                Tuple(testAdmin.id, testAdmin.lastName, testAdmin.firstName)
             ),
             decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
         )
@@ -641,7 +700,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             ),
             decisionMaker,
         )
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(setOf(testAdult_4.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
@@ -1113,7 +1172,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         return assistanceNeedDecisionController.createAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             testChild_1.id,
             request
         )
@@ -1121,7 +1180,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     private fun getAssistanceNeedDecision(id: AssistanceNeedDecisionId): AssistanceNeedDecision {
         return assistanceNeedDecisionController
-            .getAssistanceNeedDecision(dbInstance(), assistanceWorker, RealEvakaClock(), id)
+            .getAssistanceNeedDecision(dbInstance(), assistanceWorker, clock, id)
             .decision
     }
 
@@ -1129,7 +1188,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assistanceNeedDecisionController.deleteAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
@@ -1140,7 +1199,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assistanceNeedDecisionController.sendAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
@@ -1152,7 +1211,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assistanceNeedDecisionController.updateAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
-            RealEvakaClock(),
+            clock,
             decisionId,
             request
         )
@@ -1165,7 +1224,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assistanceNeedDecisionController.markAssistanceNeedDecisionAsOpened(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
@@ -1178,7 +1237,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assistanceNeedDecisionController.decideAssistanceNeedDecision(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id,
             request
         )
@@ -1193,7 +1252,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assistanceNeedDecisionController.updateAssistanceNeedDecisionDecisionMaker(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id,
             request
         )
@@ -1206,7 +1265,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         return assistanceNeedDecisionController.getAssistanceDecisionMakerOptions(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id
         )
     }
@@ -1219,7 +1278,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assistanceNeedDecisionController.annulAssistanceNeedDecision(
             dbInstance(),
             user,
-            RealEvakaClock(),
+            clock,
             id,
             AssistanceNeedDecisionController.AnnulAssistanceNeedDecisionRequest(reason)
         )

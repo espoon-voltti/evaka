@@ -7,6 +7,12 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.deleteProcessByAssistanceNeedDecisionId
+import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedDecisionId
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -22,6 +28,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -80,7 +87,34 @@ class AssistanceNeedDecisionController(
                             )
                     }
 
-                    tx.insertAssistanceNeedDecision(childId, decision)
+                    val now = clock.now()
+                    val processId =
+                        featureConfig.archiveMetadataConfigs[
+                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE]
+                            ?.let { config ->
+                                tx.insertProcess(
+                                        processDefinitionNumber = config.processDefinitionNumber,
+                                        year = now.year,
+                                        organization = featureConfig.archiveMetadataOrganization,
+                                        archiveDurationMonths = config.archiveDurationMonths
+                                    )
+                                    .id
+                                    .also { processId ->
+                                        tx.insertProcessHistoryRow(
+                                            processId = processId,
+                                            state = ArchivedProcessState.INITIAL,
+                                            now = now,
+                                            userId = user.evakaUserId
+                                        )
+                                    }
+                            }
+
+                    tx.insertAssistanceNeedDecision(
+                        childId = childId,
+                        data = decision,
+                        processId = processId,
+                        user = user
+                    )
                 }
             }
             .also { assistanceNeedDecision ->
@@ -120,6 +154,28 @@ class AssistanceNeedDecisionController(
                 }
             }
             .also { Audit.ChildAssistanceNeedDecisionRead.log(targetId = AuditId(id)) }
+    }
+
+    @GetMapping("/employee/assistance-need-decision/{id}/pdf")
+    fun getAssistanceNeedDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedDecisionId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.DOWNLOAD,
+                        id
+                    )
+                }
+                assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
+            }
+            .also { Audit.ChildAssistanceNeedDecisionDownloadEmployee.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -215,6 +271,17 @@ class AssistanceNeedDecisionController(
 
                     if (decision.child?.id == null) {
                         throw BadRequest("The decision must have a child")
+                    }
+
+                    tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also { process ->
+                        if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
+                            tx.insertProcessHistoryRow(
+                                processId = process.id,
+                                state = ArchivedProcessState.PREPARATION,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
                     }
 
                     tx.updateAssistanceNeedDecision(
@@ -335,6 +402,7 @@ class AssistanceNeedDecisionController(
                         Action.AssistanceNeedDecision.DELETE,
                         id
                     )
+                    deleteProcessByAssistanceNeedDecisionId(tx, id)
                     if (!tx.deleteAssistanceNeedDecision(id)) {
                         throw NotFound(
                             "Assistance need decision $id cannot found or cannot be deleted",
@@ -424,6 +492,15 @@ class AssistanceNeedDecisionController(
                     )
 
                     if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                        tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also {
+                            tx.insertProcessHistoryRow(
+                                processId = it.id,
+                                state = ArchivedProcessState.DECIDING,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
+
                         asyncJobRunner.plan(
                             tx,
                             listOf(

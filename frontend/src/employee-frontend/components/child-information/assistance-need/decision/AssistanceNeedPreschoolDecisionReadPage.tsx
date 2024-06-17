@@ -7,10 +7,12 @@ import { useNavigate } from 'react-router-dom'
 
 import { AssistanceNeedPreschoolDecisionResponse } from 'lib-common/generated/api-types/assistanceneed'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import AssistanceNeedPreschoolDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedPreschoolDecisionReadOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Container } from 'lib-components/layout/Container'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
   FixedSpaceColumn,
@@ -20,12 +22,25 @@ import { Gap } from 'lib-components/white-space'
 import { translations } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../../state/i18n'
+import MetadataSection from '../../../archive-metadata/MetadataSection'
 import { renderResult } from '../../../async-rendering'
 import {
+  assistanceNeedPreschoolDecisionMetadataQuery,
   assistanceNeedPreschoolDecisionQuery,
   sendAssistanceNeedPreschoolDecisionMutation,
   unsendAssistanceNeedPreschoolDecisionMutation
 } from '../../queries'
+
+const DecisionMetadataSection = React.memo(function DecisionMetadataSection({
+  decisionId
+}: {
+  decisionId: UUID
+}) {
+  const result = useQueryResult(
+    assistanceNeedPreschoolDecisionMetadataQuery({ decisionId })
+  )
+  return <MetadataSection metadataResult={result} />
+})
 
 const DecisionReadView = React.memo(function DecisionReadView({
   decision: { decision, permittedActions }
@@ -51,6 +66,14 @@ const DecisionReadView = React.memo(function DecisionReadView({
             .childInformation.assistanceNeedPreschoolDecision
         }
       />
+      {permittedActions.includes('READ_METADATA') && (
+        <>
+          <Gap />
+          <Container>
+            <DecisionMetadataSection decisionId={decision.id} />
+          </Container>
+        </>
+      )}
       <Gap size="m" />
       <StickyFooter>
         <FixedSpaceRow justifyContent="space-between" alignItems="center">

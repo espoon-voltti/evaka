@@ -10,6 +10,12 @@ import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
 import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.deleteProcessByAssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -23,6 +29,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -35,7 +42,8 @@ import org.springframework.web.bind.annotation.RestController
 class AssistanceNeedPreschoolDecisionController(
     private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService
 ) {
     @PostMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
@@ -54,7 +62,29 @@ class AssistanceNeedPreschoolDecisionController(
                         childId
                     )
 
-                    tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId)
+                    val now = clock.now()
+                    val processId =
+                        featureConfig.archiveMetadataConfigs[
+                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
+                            ?.let { config ->
+                                tx.insertProcess(
+                                        processDefinitionNumber = config.processDefinitionNumber,
+                                        year = now.year,
+                                        organization = featureConfig.archiveMetadataOrganization,
+                                        archiveDurationMonths = config.archiveDurationMonths
+                                    )
+                                    .id
+                                    .also { processId ->
+                                        tx.insertProcessHistoryRow(
+                                            processId = processId,
+                                            state = ArchivedProcessState.INITIAL,
+                                            now = now,
+                                            userId = user.evakaUserId
+                                        )
+                                    }
+                            }
+
+                    tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId, processId, user)
                 }
             }
             .also { assistanceNeedDecision ->
@@ -93,6 +123,32 @@ class AssistanceNeedPreschoolDecisionController(
                 }
             }
             .also { Audit.ChildAssistanceNeedPreschoolDecisionRead.log(targetId = AuditId(id)) }
+    }
+
+    @GetMapping("/employee/assistance-need-preschool-decisions/{id}/pdf")
+    fun getAssistanceNeedPreschoolDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedPreschoolDecisionId
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.AssistanceNeedPreschoolDecision.DOWNLOAD,
+                        id
+                    )
+                }
+                assistanceNeedPreschoolDecisionService.getDecisionPdfResponse(dbc, id)
+            }
+            .also {
+                Audit.ChildAssistanceNeedPreschoolDecisionDownloadEmployee.log(
+                    targetId = AuditId(id)
+                )
+            }
     }
 
     @PutMapping(
@@ -144,6 +200,17 @@ class AssistanceNeedPreschoolDecisionController(
 
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
                     if (!decision.isValid) throw BadRequest("Decision form is not valid")
+
+                    tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(id)?.also { process ->
+                        if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
+                            tx.insertProcessHistoryRow(
+                                processId = process.id,
+                                state = ArchivedProcessState.PREPARATION,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
+                    }
 
                     tx.updateAssistanceNeedPreschoolDecisionToSent(id, clock.today())
                 }
@@ -274,6 +341,15 @@ class AssistanceNeedPreschoolDecisionController(
                     )
 
                     if (decided) {
+                        tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(id)?.also {
+                            tx.insertProcessHistoryRow(
+                                processId = it.id,
+                                state = ArchivedProcessState.DECIDING,
+                                now = clock.now(),
+                                userId = user.evakaUserId
+                            )
+                        }
+
                         asyncJobRunner.plan(
                             tx,
                             listOf(AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id)),
@@ -390,6 +466,7 @@ class AssistanceNeedPreschoolDecisionController(
                         Action.AssistanceNeedPreschoolDecision.DELETE,
                         id
                     )
+                    deleteProcessByAssistanceNeedPreschoolDecisionId(tx, id)
                     if (!tx.deleteAssistanceNeedPreschoolDecision(id)) {
                         throw NotFound(
                             "Assistance need preschool decision $id cannot found or cannot be deleted",

@@ -18,12 +18,16 @@ import fi.espoo.evaka.pdfgen.Template
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByAssistanceNeedPreschoolDecisionId
+import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -101,6 +105,15 @@ class AssistanceNeedPreschoolDecisionService(
                 ),
                 runAt = clock.now()
             )
+
+            tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(msg.decisionId)?.also {
+                tx.insertProcessHistoryRow(
+                    processId = it.id,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = clock.now(),
+                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+                )
+            }
 
             logger.info {
                 "Successfully created assistance need preschool decision pdf (id: $decisionId)."

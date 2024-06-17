@@ -285,11 +285,11 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         metadata.also {
             assertEquals("1/123.456.789/2022", it.process.processNumber)
             assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", it.process.organization)
-            assertEquals("HOJKS", it.documentName)
-            assertEquals(true, it.confidentialDocument)
-            assertNotNull(it.documentCreatedAt)
-            assertEquals(employeeUser.id, it.documentCreatedBy?.id)
-            assertEquals(120, it.archiveDurationMonths)
+            assertEquals(120, it.process.archiveDurationMonths)
+            assertEquals("HOJKS", it.primaryDocument.name)
+            assertEquals(true, it.primaryDocument.confidential)
+            assertNotNull(it.primaryDocument.createdAt)
+            assertEquals(employeeUser.id, it.primaryDocument.createdBy?.id)
             it.process.history.also { history ->
                 assertEquals(1, history.size)
                 assertEquals(ArchivedProcessState.INITIAL, history.first().state)

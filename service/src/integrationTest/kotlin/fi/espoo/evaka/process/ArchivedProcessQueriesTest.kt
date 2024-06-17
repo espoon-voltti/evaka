@@ -23,29 +23,36 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val year1 = 2022
         val year2 = 2023
         val organization = "Espoon kaupungin esiopetus ja varhaiskasvatus"
+        val archiveMonths = 120
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition1, year1, organization) }.number
+            db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
+                .number
         )
         assertEquals(
             2,
-            db.transaction { it.insertProcess(definition1, year1, organization) }.number
+            db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
+                .number
         )
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition2, year1, organization) }.number
+            db.transaction { it.insertProcess(definition2, year1, organization, archiveMonths) }
+                .number
         )
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition1, year2, organization) }.number
+            db.transaction { it.insertProcess(definition1, year2, organization, archiveMonths) }
+                .number
         )
         assertEquals(
             1,
-            db.transaction { it.insertProcess(definition2, year2, organization) }.number
+            db.transaction { it.insertProcess(definition2, year2, organization, archiveMonths) }
+                .number
         )
         assertEquals(
             3,
-            db.transaction { it.insertProcess(definition1, year1, organization) }.number
+            db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
+                .number
         )
     }
 
@@ -59,7 +66,8 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it.insertProcess(
                         processDefinitionNumber = "123.456.789",
                         year = 2022,
-                        organization = "Espoon kaupungin esiopetus ja varhaiskasvatus"
+                        organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
+                        archiveDurationMonths = 120
                     )
                 }
                 .id
