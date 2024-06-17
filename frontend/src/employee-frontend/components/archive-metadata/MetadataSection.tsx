@@ -8,7 +8,7 @@ import React from 'react'
 import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import {
-  Document,
+  DocumentMetadata,
   ProcessMetadataResponse
 } from 'lib-common/generated/api-types/process'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -24,7 +24,7 @@ import LabelValueList from '../common/LabelValueList'
 const DocumentMetadata = React.memo(function DocumentMetadata({
   document
 }: {
-  document: Document
+  document: DocumentMetadata
 }) {
   const { i18n } = useTranslation()
 
@@ -62,7 +62,7 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
           {
             label: i18n.metadata.createdBy,
             value: document.createdBy
-              ? `${document.createdBy.firstName} ${document.createdBy.lastName} ${document.createdBy.email ? `(${document.createdBy.email})` : ''} `
+              ? `${document.createdBy.name} (${i18n.common.userTypes[document.createdBy.type]}) `
               : '-'
           },
           {

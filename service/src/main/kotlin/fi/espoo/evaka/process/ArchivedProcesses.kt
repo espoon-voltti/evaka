@@ -100,6 +100,16 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
         }
         .exactlyOneOrNull()
 
+fun Database.Read.getArchiveProcessByChildDocumentId(
+    documentId: ChildDocumentId
+): ArchivedProcess? {
+    return createQuery {
+            sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}")
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.let { processId -> getProcess(processId) }
+}
+
 fun Database.Read.getArchiveProcessByAssistanceNeedDecisionId(
     decisionId: AssistanceNeedDecisionId
 ): ArchivedProcess? {

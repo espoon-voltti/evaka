@@ -43,31 +43,21 @@ export type ArchivedProcessState =
   | 'COMPLETED'
 
 /**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.Document
+* Generated from fi.espoo.evaka.process.ProcessMetadataController.DocumentMetadata
 */
-export interface Document {
+export interface DocumentMetadata {
   confidential: boolean
   createdAt: HelsinkiDateTime | null
-  createdBy: EmployeeBasics | null
+  createdBy: EvakaUser | null
   downloadPath: string | null
   name: string
-}
-
-/**
-* Generated from fi.espoo.evaka.process.ProcessMetadataController.EmployeeBasics
-*/
-export interface EmployeeBasics {
-  email: string | null
-  firstName: string
-  id: UUID
-  lastName: string
 }
 
 /**
 * Generated from fi.espoo.evaka.process.ProcessMetadataController.ProcessMetadata
 */
 export interface ProcessMetadata {
-  primaryDocument: Document
+  primaryDocument: DocumentMetadata
   process: ArchivedProcess
 }
 
@@ -95,7 +85,7 @@ export function deserializeJsonArchivedProcessHistoryRow(json: JsonOf<ArchivedPr
 }
 
 
-export function deserializeJsonDocument(json: JsonOf<Document>): Document {
+export function deserializeJsonDocumentMetadata(json: JsonOf<DocumentMetadata>): DocumentMetadata {
   return {
     ...json,
     createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null
@@ -106,7 +96,7 @@ export function deserializeJsonDocument(json: JsonOf<Document>): Document {
 export function deserializeJsonProcessMetadata(json: JsonOf<ProcessMetadata>): ProcessMetadata {
   return {
     ...json,
-    primaryDocument: deserializeJsonDocument(json.primaryDocument),
+    primaryDocument: deserializeJsonDocumentMetadata(json.primaryDocument),
     process: deserializeJsonArchivedProcess(json.process)
   }
 }
