@@ -64,10 +64,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
     () =>
       isChangeRetroactive(
         form.endDate && form.endDate.isEqualOrAfter(form.startDate)
-          ? new FiniteDateRange(
-              form.startDate,
-              form.endDate ? form.endDate : LocalDate.todayInSystemTz()
-            )
+          ? new FiniteDateRange(form.startDate, form.endDate)
           : null,
         null,
         false,
@@ -110,7 +107,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
     }
 
     if (form.endDate === null) {
-      errors.push(i18n.validationError.mandatoryField)
+      errors.push(i18n.validationError.endDateIsMandatoryField)
     } else {
       if (form.startDate.isAfter(form.endDate)) {
         errors.push(i18n.validationError.invertedDateRange)
