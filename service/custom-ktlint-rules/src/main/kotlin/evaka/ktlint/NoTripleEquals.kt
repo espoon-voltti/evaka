@@ -4,6 +4,8 @@
 
 package evaka.ktlint
 
+import com.pinterest.ktlint.rule.engine.core.api.AutocorrectDecision
+import com.pinterest.ktlint.rule.engine.core.api.RuleAutocorrectApproveHandler
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 import org.jetbrains.kotlin.com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.lexer.KtSingleValueToken
@@ -15,11 +17,11 @@ private fun KtOperationReferenceExpression.replaceOperator(token: KtSingleValueT
         LeafPsiElement(token, token.value)
     )
 
-class NoTripleEquals : EvakaRule("no-triple-equals") {
+class NoTripleEquals : EvakaRule("no-triple-equals"), RuleAutocorrectApproveHandler {
     override fun beforeVisitChildNodes(
         node: ASTNode,
-        autoCorrect: Boolean,
-        emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> Unit
+        emit:
+            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
     ) {
         val expression = node.psi as? KtOperationReferenceExpression ?: return
         val correctOperator =
@@ -28,8 +30,7 @@ class NoTripleEquals : EvakaRule("no-triple-equals") {
                 KtTokens.EXCLEQEQEQ -> KtTokens.EXCLEQ
                 else -> return
             }
-        emit(node.startOffset, ERROR_MESSAGE, true)
-        if (autoCorrect) {
+        if (emit(node.startOffset, ERROR_MESSAGE, true) == AutocorrectDecision.ALLOW_AUTOCORRECT) {
             expression.replaceOperator(correctOperator)
         }
     }
