@@ -6,9 +6,17 @@
 
 set -euo pipefail
 
-# For log tagging (with a default value and error logging without crashing)
-# shellcheck disable=SC2155
-export HOST_IP=$(curl --silent --fail --show-error http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')
+# For logs
+if [ "${EC2_HOST:-false}" = "true" ]; then
+  HOST_IP="$(curl --silent --fail --show-error http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')"
+  export HOST_IP
+elif test -n "${ECS_CONTAINER_METADATA_URI:-}"; then
+  JSON="$(curl --silent --fail --show-error "${ECS_CONTAINER_METADATA_URI}"/task || printf 'UNAVAILABLE')"
+  HOST_IP="$(echo "$JSON" | jq -r '.Containers[0].Networks[0].IPv4Addresses[0]' || printf 'UNAVAILABLE')"
+  export HOST_IP
+else
+  export HOST_IP="UNAVAILABLE"
+fi
 
 # Download deployment specific files from S3 if in a non-local environment
 if [ "${VOLTTI_ENV:-X}" != "local" ]; then
