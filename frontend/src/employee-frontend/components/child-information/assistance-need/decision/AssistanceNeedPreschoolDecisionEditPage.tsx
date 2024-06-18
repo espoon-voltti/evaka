@@ -35,6 +35,7 @@ import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { Employee } from 'lib-common/generated/api-types/pis'
 import { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -1005,7 +1006,11 @@ export default React.memo(function AssistanceNeedPreschoolDecisionEditPage() {
     assistanceNeedPreschoolDecisionQuery({ id: decisionId })
   )
   const unitsResult = useQueryResult(
-    unitsQuery({ areaIds: null, type: 'ALL', from: null })
+    unitsQuery({
+      areaIds: null,
+      type: 'ALL',
+      from: LocalDate.todayInHelsinkiTz()
+    })
   ).map((units) =>
     units.filter((u) => u.careTypes.some((type) => type !== 'CLUB'))
   )

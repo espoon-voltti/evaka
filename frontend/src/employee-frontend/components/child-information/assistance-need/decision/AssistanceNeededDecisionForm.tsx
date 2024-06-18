@@ -14,6 +14,7 @@ import {
   AssistanceNeedDecisionGuardian
 } from 'lib-common/generated/api-types/assistanceneed'
 import { Employee } from 'lib-common/generated/api-types/pis'
+import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -215,7 +216,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
     unitsQuery({
       areaIds: null,
       type: 'ALL',
-      from: null
+      from: LocalDate.todayInHelsinkiTz()
     })
   )
   const employees = useQueryResult(getEmployeesQuery())
