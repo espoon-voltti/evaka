@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class MessageEditorPage {
-  constructor(private readonly page: Page) {}
-
-  noReceiversInfo = this.page.findByDataQa('info-no-receivers')
+  noReceiversInfo: Element
+  constructor(private readonly page: Page) {
+    this.noReceiversInfo = page.findByDataQa('info-no-receivers')
+  }
 }

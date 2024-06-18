@@ -8,23 +8,35 @@ import { UUID } from 'lib-common/types'
 
 import { waitUntilDefined, waitUntilEqual } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
-import { Checkbox, FileInput, Page, Radio, TextInput } from '../../utils/page'
+import {
+  Checkbox,
+  FileInput,
+  Page,
+  Radio,
+  TextInput,
+  Element
+} from '../../utils/page'
 
 export default class CitizenApplicationsPage {
-  constructor(private readonly page: Page) {}
+  #createNewApplicationButton: Element
+  #transferApplicationNotification: Element
+  #duplicateApplicationNotification: Element
+  #applicationTitle: Element
+  constructor(private readonly page: Page) {
+    this.#createNewApplicationButton = page.findByDataQa('submit')
+    this.#transferApplicationNotification = page.findByDataQa(
+      'transfer-application-notification'
+    )
+    this.#duplicateApplicationNotification = page.findByDataQa(
+      'duplicate-application-notification'
+    )
+    this.#applicationTitle = page.findByDataQa('application-type-title')
+  }
 
   #newApplicationButton = (childId: string) =>
     this.page.findByDataQa(`new-application-${childId}`)
   #applicationTypeRadio = (type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB') =>
     new Radio(this.page.findByDataQa(`type-radio-${type}`))
-  #createNewApplicationButton = this.page.findByDataQa('submit')
-  #transferApplicationNotification = this.page.findByDataQa(
-    'transfer-application-notification'
-  )
-  #duplicateApplicationNotification = this.page.findByDataQa(
-    'duplicate-application-notification'
-  )
-  #applicationTitle = this.page.findByDataQa('application-type-title')
   #openApplicationButton = (id: string) =>
     this.page.findByDataQa(`button-open-application-${id}`)
   #cancelApplicationButton = (id: string) =>
@@ -122,48 +134,63 @@ export default class CitizenApplicationsPage {
 }
 
 class CitizenApplicationReadView {
-  constructor(private readonly page: Page) {}
-
-  contactInfoSection = this.page.findByDataQa('contact-info-section')
-  unitPreferenceSection = this.page.findByDataQa('unit-preference-section')
-  assistanceNeedDescription = new TextInput(
-    this.page.findByDataQa('assistance-need-description')
-  )
+  contactInfoSection: Element
+  unitPreferenceSection: Element
+  assistanceNeedDescription: TextInput
+  constructor(private readonly page: Page) {
+    this.contactInfoSection = page.findByDataQa('contact-info-section')
+    this.unitPreferenceSection = page.findByDataQa('unit-preference-section')
+    this.assistanceNeedDescription = new TextInput(
+      page.findByDataQa('assistance-need-description')
+    )
+  }
 }
 
 class CitizenApplicationEditor {
-  constructor(private readonly page: Page) {}
+  #verifyButton: Element
+  #verifyCheckbox: Checkbox
+  #allowOtherGuardianAccess: Checkbox
+  #sendButton: Element
+  #applicationSentModal: Element
+  #errorsTitle: Element
+  #preferredStartDateInput: TextInput
+  #preferredStartDateWarning: Element
+  #preferredStartDateInfo: Element
+  saveAsDraftButton: Element
+  modalOkBtn: Element
+  guardianPhoneInput: TextInput
+  constructor(private readonly page: Page) {
+    this.#verifyButton = page.findByDataQa('verify-btn')
+    this.#verifyCheckbox = new Checkbox(page.findByDataQa('verify-checkbox'))
+    this.#allowOtherGuardianAccess = new Checkbox(
+      page.findByDataQa('allow-other-guardian-access')
+    )
+    this.#sendButton = page.findByDataQa('send-btn')
+    this.#applicationSentModal = page.findByDataQa(
+      'info-message-application-sent'
+    )
+    this.#errorsTitle = page.findByDataQa('application-has-errors-title')
+    this.#preferredStartDateInput = new TextInput(
+      page.findByDataQa('preferredStartDate-input')
+    )
+    this.#preferredStartDateWarning = page.findByDataQa(
+      'daycare-processing-time-warning'
+    )
+    this.#preferredStartDateInfo = page.findByDataQa(
+      'preferredStartDate-input-info'
+    )
+    this.saveAsDraftButton = page.findByDataQa('save-as-draft-btn')
+    this.modalOkBtn = page.findByDataQa('modal-okBtn')
+    this.guardianPhoneInput = new TextInput(
+      page.findByDataQa('guardianPhone-input')
+    )
+  }
 
-  #verifyButton = this.page.findByDataQa('verify-btn')
-  #verifyCheckbox = new Checkbox(this.page.findByDataQa('verify-checkbox'))
-  #allowOtherGuardianAccess = new Checkbox(
-    this.page.findByDataQa('allow-other-guardian-access')
-  )
-  #sendButton = this.page.findByDataQa('send-btn')
-  #applicationSentModal = this.page.findByDataQa(
-    'info-message-application-sent'
-  )
-  #errorsTitle = this.page.findByDataQa('application-has-errors-title')
   #section = (name: string) => this.page.findByDataQa(`${name}-section`)
   #sectionHeader = (name: string) =>
     this.page.findByDataQa(`${name}-section-header`)
   #preferredUnitsInput = new TextInput(
     this.page.find('[data-qa="preferredUnits-input"] input')
-  )
-  #preferredStartDateInput = new TextInput(
-    this.page.findByDataQa('preferredStartDate-input')
-  )
-  #preferredStartDateWarning = this.page.findByDataQa(
-    'daycare-processing-time-warning'
-  )
-  #preferredStartDateInfo = this.page.findByDataQa(
-    'preferredStartDate-input-info'
-  )
-
-  saveAsDraftButton = this.page.findByDataQa('save-as-draft-btn')
-  modalOkBtn = this.page.findByDataQa('modal-okBtn')
-  guardianPhoneInput = new TextInput(
-    this.page.findByDataQa('guardianPhone-input')
   )
 
   async writeAssistanceNeedDescription(description: string) {

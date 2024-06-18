@@ -44,12 +44,16 @@ export type MealTimes = {
 }
 
 export class UnitPage {
-  constructor(private readonly page: Page) {}
-
-  #unitInfoTab = this.page.findByDataQa('unit-info-tab')
-  #groupsTab = this.page.findByDataQa('groups-tab')
-  #calendarTab = this.page.findByDataQa('calendar-tab')
-  #applicationProcessTab = this.page.findByDataQa('application-process-tab')
+  #unitInfoTab: Element
+  #groupsTab: Element
+  #calendarTab: Element
+  #applicationProcessTab: Element
+  constructor(private readonly page: Page) {
+    this.#unitInfoTab = page.findByDataQa('unit-info-tab')
+    this.#groupsTab = page.findByDataQa('groups-tab')
+    this.#calendarTab = page.findByDataQa('calendar-tab')
+    this.#applicationProcessTab = page.findByDataQa('application-process-tab')
+  }
 
   static async openUnit(page: Page, id: string): Promise<UnitPage> {
     await page.goto(`${config.employeeUrl}/units/${id}`)
@@ -112,10 +116,14 @@ export class UnitCalendarPage extends UnitCalendarPageBase {
 }
 
 export class UnitInfoPage {
-  constructor(private readonly page: Page) {}
-
-  #unitName = this.page.findByDataQa('unit-name')
-  #visitingAddress = this.page.findByDataQa('unit-visiting-address')
+  #unitName: Element
+  #visitingAddress: Element
+  #unitDetailsLink: Element
+  constructor(private readonly page: Page) {
+    this.#unitName = page.findByDataQa('unit-name')
+    this.#visitingAddress = page.findByDataQa('unit-visiting-address')
+    this.#unitDetailsLink = page.findByDataQa('unit-details-link')
+  }
 
   async waitUntilLoaded() {
     await this.page
@@ -152,8 +160,6 @@ export class UnitInfoPage {
     this.page.findByDataQa('daycare-mobile-devices')
   )
 
-  #unitDetailsLink = this.page.findByDataQa('unit-details-link')
-
   async openUnitDetails(): Promise<UnitDetailsPage> {
     await this.#unitDetailsLink.click()
     const unitDetails = new UnitDetailsPage(this.page)
@@ -163,9 +169,17 @@ export class UnitInfoPage {
 }
 
 export class UnitDetailsPage {
-  constructor(private readonly page: Page) {}
+  #editUnitButton: Element
+  #unitManagerName: Element
+  #unitManagerPhone: Element
+  #unitManagerEmail: Element
+  constructor(private readonly page: Page) {
+    this.#editUnitButton = page.findByDataQa('enable-edit-button')
+    this.#unitManagerName = page.findByDataQa('unit-manager-name')
+    this.#unitManagerPhone = page.findByDataQa('unit-manager-phone')
+    this.#unitManagerEmail = page.findByDataQa('unit-manager-email')
+  }
 
-  readonly #editUnitButton = this.page.findByDataQa('enable-edit-button')
   readonly #unitName = this.page
     .find('[data-qa="unit-editor-container"]')
     .find('h1')
@@ -183,10 +197,6 @@ export class UnitDetailsPage {
       .find(`[data-qa="unit-timerange-detail-${dayNumber}"]`)
       .assertTextEquals(expectedTime)
   }
-
-  readonly #unitManagerName = this.page.findByDataQa('unit-manager-name')
-  readonly #unitManagerPhone = this.page.findByDataQa('unit-manager-phone')
-  readonly #unitManagerEmail = this.page.findByDataQa('unit-manager-email')
 
   async assertManagerData(name: string, phone: string, email: string) {
     await this.#unitManagerName.assertTextEquals(name)
@@ -215,16 +225,38 @@ export class UnitDetailsPage {
 }
 
 export class UnitEditor {
-  constructor(private readonly page: Page) {}
-
-  readonly #unitNameInput = new TextInput(
-    this.page.findByDataQa('unit-name-input')
-  )
-  readonly #areaSelect = new Combobox(this.page.findByDataQa('area-select'))
-
-  readonly providesShiftCare: Checkbox = new Checkbox(
-    this.page.findByDataQa('provides-shift-care')
-  )
+  #unitNameInput: TextInput
+  #areaSelect: Combobox
+  providesShiftCare: Checkbox
+  #managerNameInput: TextInput
+  #managerPhoneInputField: TextInput
+  #managerEmailInputField: TextInput
+  #checkInvoicedByMunicipality: Element
+  #invoiceByMunicipality: Checkbox
+  saveButton: Element
+  constructor(private readonly page: Page) {
+    this.#unitNameInput = new TextInput(page.findByDataQa('unit-name-input'))
+    this.#areaSelect = new Combobox(page.findByDataQa('area-select'))
+    this.providesShiftCare = new Checkbox(
+      page.findByDataQa('provides-shift-care')
+    )
+    this.#managerNameInput = new TextInput(
+      page.findByDataQa('manager-name-input')
+    )
+    this.#managerPhoneInputField = new TextInput(
+      page.findByDataQa('qa-unit-manager-phone-input-field')
+    )
+    this.#managerEmailInputField = new TextInput(
+      page.findByDataQa('qa-unit-manager-email-input-field')
+    )
+    this.#checkInvoicedByMunicipality = page.findByDataQa(
+      'check-invoice-by-municipality'
+    )
+    this.#invoiceByMunicipality = new Checkbox(
+      page.findByDataQa('check-invoice-by-municipality')
+    )
+    this.saveButton = page.findByDataQa('save-button')
+  }
 
   #timeInput(dayNumber: number, startEnd: 'start' | 'end') {
     return new TextInput(this.page.findByDataQa(`${dayNumber}-${startEnd}`))
@@ -303,18 +335,6 @@ export class UnitEditor {
     return new TextInput(this.page.findByDataQa(`${type}-post-office-input`))
   }
 
-  readonly #managerNameInput = new TextInput(
-    this.page.findByDataQa('manager-name-input')
-  )
-
-  readonly #managerPhoneInputField = new TextInput(
-    this.page.findByDataQa('qa-unit-manager-phone-input-field')
-  )
-
-  readonly #managerEmailInputField = new TextInput(
-    this.page.findByDataQa('qa-unit-manager-email-input-field')
-  )
-
   readonly #closingDateInput = this.page.find(
     '[data-qa="closing-date-input"] input'
   )
@@ -332,18 +352,9 @@ export class UnitEditor {
     this.page.find('#unit-handler-address')
   )
 
-  readonly #checkInvoicedByMunicipality = this.page.findByDataQa(
-    'check-invoice-by-municipality'
-  )
   readonly #unitCostCenterInput = new TextInput(
     this.page.find('#unit-cost-center')
   )
-
-  readonly #invoiceByMunicipality = new Checkbox(
-    this.page.findByDataQa('check-invoice-by-municipality')
-  )
-
-  saveButton = this.page.findByDataQa('save-button')
 
   static async openById(page: Page, unitId: UUID) {
     await page.goto(`${config.employeeUrl}/units/${unitId}/details`)
@@ -809,7 +820,12 @@ class AclRow extends Element {
 }
 
 export class ApplicationProcessPage {
-  constructor(private readonly page: Page) {}
+  waitingConfirmation: WaitingConfirmationSection
+  constructor(private readonly page: Page) {
+    this.waitingConfirmation = new WaitingConfirmationSection(
+      page.findByDataQa('waiting-confirmation-section')
+    )
+  }
 
   async waitUntilLoaded() {
     await this.page
@@ -817,9 +833,6 @@ export class ApplicationProcessPage {
       .waitUntilVisible()
   }
 
-  waitingConfirmation = new WaitingConfirmationSection(
-    this.page.findByDataQa('waiting-confirmation-section')
-  )
   placementProposals = new PlacementProposalsSection(this.page)
 
   async waitUntilVisible() {
@@ -854,15 +867,16 @@ class WaitingConfirmationSection extends Element {
 }
 
 class PlacementProposalsSection {
-  constructor(private readonly page: Page) {}
+  #placementProposalTable: Element
+  #acceptButton: Element
+  constructor(private readonly page: Page) {
+    this.#placementProposalTable = page.findByDataQa('placement-proposal-table')
+    this.#acceptButton = page.findByDataQa('placement-proposals-accept-button')
+  }
 
   #applicationRow(applicationId: string) {
     return this.page.findByDataQa(`placement-proposal-row-${applicationId}`)
   }
-
-  #placementProposalTable = this.page.findByDataQa('placement-proposal-table')
-
-  #acceptButton = this.page.findByDataQa('placement-proposals-accept-button')
 
   async assertAcceptButtonDisabled() {
     await waitUntilTrue(() => this.#acceptButton.disabled)

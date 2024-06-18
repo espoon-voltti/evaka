@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../../utils/page'
+import { Page, Element } from '../../../utils/page'
 
 export class VasuTemplateEditPage {
-  constructor(readonly page: Page) {}
-
-  saveButton = this.page.findByDataQa('save-template')
+  saveButton: Element
+  constructor(readonly page: Page) {
+    this.saveButton = page.findByDataQa('save-template')
+  }
 }

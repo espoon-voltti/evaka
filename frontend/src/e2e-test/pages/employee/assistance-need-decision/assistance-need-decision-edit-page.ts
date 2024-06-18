@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Page, TextInput, Combobox } from '../../../utils/page'
+import { Page, TextInput, Combobox, Element } from '../../../utils/page'
 
 export default class AssistanceNeedDecisionEditPage {
-  constructor(private readonly page: Page) {}
-
-  readonly #decisionMakerSelect = this.page.findByDataQa(
-    'decision-maker-select'
-  )
-
-  pedagogicalMotivationInput = new TextInput(
-    this.page.findByDataQa('pedagogical-motivation-field')
-  )
-  guardiansHeardOnInput = new TextInput(
-    this.page.findByDataQa('guardians-heard-on')
-  )
+  #decisionMakerSelect: Element
+  pedagogicalMotivationInput: TextInput
+  guardiansHeardOnInput: TextInput
+  constructor(private readonly page: Page) {
+    this.#decisionMakerSelect = page.findByDataQa('decision-maker-select')
+    this.pedagogicalMotivationInput = new TextInput(
+      page.findByDataQa('pedagogical-motivation-field')
+    )
+    this.guardiansHeardOnInput = new TextInput(
+      page.findByDataQa('guardians-heard-on')
+    )
+  }
 
   async assertDeciderSelectVisible() {
     await this.#decisionMakerSelect.waitUntilVisible()

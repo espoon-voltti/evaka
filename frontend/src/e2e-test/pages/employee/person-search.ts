@@ -4,15 +4,37 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { Checkbox, Page, TextInput } from '../../utils/page'
+import {
+  Checkbox,
+  Page,
+  TextInput,
+  ElementCollection,
+  Element
+} from '../../utils/page'
 
 export default class PersonSearchPage {
-  constructor(private readonly page: Page) {}
+  searchInput: TextInput
+  searchResults: ElementCollection
+  #createPersonButton: Element
+  #addSsnButton: Element
+  #noSsnText: Element
+  #disableSsnAddingCheckbox: Checkbox
+  #ssnInput: TextInput
+  #modalConfirm: Element
+  constructor(private readonly page: Page) {
+    this.searchInput = new TextInput(page.findByDataQa('search-input'))
+    this.searchResults = page.findAllByDataQa('person-row')
+    this.#createPersonButton = page.findByDataQa('create-person-button')
+    this.#addSsnButton = page.findByDataQa('add-ssn-button')
+    this.#noSsnText = page.findByDataQa('no-ssn')
+    this.#disableSsnAddingCheckbox = new Checkbox(
+      page.findByDataQa('disable-ssn-adding')
+    )
+    this.#ssnInput = new TextInput(page.findByDataQa('ssn-input'))
+    this.#modalConfirm = page.findByDataQa('modal-okBtn')
+  }
 
-  searchInput = new TextInput(this.page.findByDataQa('search-input'))
-  searchResults = this.page.findAllByDataQa('person-row')
   #personLink = this.page.find('[data-qa="person-row"] a')
-  #createPersonButton = this.page.findByDataQa('create-person-button')
   #createPersonModal = {
     modal: this.page.findByDataQa('modal'),
     firstNameInput: new TextInput(this.page.findByDataQa('first-name-input')),
@@ -33,13 +55,6 @@ export default class PersonSearchPage {
     address: this.page.findByDataQa('person-address'),
     ssn: this.page.findByDataQa('person-ssn')
   }
-  #addSsnButton = this.page.findByDataQa('add-ssn-button')
-  #noSsnText = this.page.findByDataQa('no-ssn')
-  #disableSsnAddingCheckbox = new Checkbox(
-    this.page.findByDataQa('disable-ssn-adding')
-  )
-  #ssnInput = new TextInput(this.page.findByDataQa('ssn-input'))
-  #modalConfirm = this.page.findByDataQa('modal-okBtn')
 
   async createPerson(personData: {
     firstName: string

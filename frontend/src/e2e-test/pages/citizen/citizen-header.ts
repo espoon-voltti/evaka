@@ -5,23 +5,28 @@
 import { Lang } from 'lib-customizations/citizen'
 
 import { waitUntilFalse } from '../../utils'
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export type EnvType = 'desktop' | 'mobile'
 
 export default class CitizenHeader {
+  #languageMenuToggle: Element
+  #languageOptionList: Element
+  #childrenNav: Element
+  #unreadChildrenCount: Element
+  #subNavMenu: Element
   constructor(
     private readonly page: Page,
     private readonly type: EnvType = 'desktop'
-  ) {}
-
-  #languageMenuToggle = this.page.findByDataQa('button-select-language')
-  #languageOptionList = this.page.findByDataQa('select-lang')
-  #childrenNav = this.page.findByDataQa(`nav-children-${this.type}`)
-  #unreadChildrenCount = this.page.findByDataQa(
-    `nav-children-${this.type}-notification-count`
-  )
-  #subNavMenu = this.page.findByDataQa(`sub-nav-menu-${this.type}`)
+  ) {
+    this.#languageMenuToggle = page.findByDataQa('button-select-language')
+    this.#languageOptionList = page.findByDataQa('select-lang')
+    this.#childrenNav = page.findByDataQa(`nav-children-${this.type}`)
+    this.#unreadChildrenCount = page.findByDataQa(
+      `nav-children-${this.type}-notification-count`
+    )
+    this.#subNavMenu = page.findByDataQa(`sub-nav-menu-${this.type}`)
+  }
 
   #languageOption(lang: Lang) {
     return this.#languageOptionList.find(`[data-qa="lang-${lang}"]`)

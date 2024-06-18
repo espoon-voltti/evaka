@@ -5,16 +5,19 @@
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import LocalDate from 'lib-common/local-date'
 
-import { Page, TextInput } from '../../utils/page'
+import { Page, TextInput, Element } from '../../utils/page'
 
 export default class MobileAbsencesPage {
-  constructor(private readonly page: Page) {}
+  #markAbsentBtn: Element
+  #confirmDeleteBtn: Element
+  constructor(private readonly page: Page) {
+    this.#markAbsentBtn = page.findByDataQa('mark-absent-btn')
+    this.#confirmDeleteBtn = page.findByDataQa('modal-okBtn')
+  }
 
-  #markAbsentBtn = this.page.findByDataQa('mark-absent-btn')
   #firstDeleteAbsencePeriodBtn = this.page
     .findAll('[data-qa="delete-absence-period"]')
     .first()
-  #confirmDeleteBtn = this.page.findByDataQa('modal-okBtn')
 
   async markAbsent() {
     return this.#markAbsentBtn.click()

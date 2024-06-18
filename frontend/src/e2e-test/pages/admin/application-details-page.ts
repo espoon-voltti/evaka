@@ -2,26 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput } from '../../utils/page'
+import { Page, TextInput, Element, ElementCollection } from '../../utils/page'
 
 export default class ApplicationDetailsPage {
-  constructor(private page: Page) {}
-
-  #guardianName = this.page.findByDataQa('guardian-name')
-
-  #vtjGuardianName = this.page.findByDataQa('vtj-guardian-name')
-
-  #otherGuardianAgreementStatus = this.page.findByDataQa('agreement-status')
-
-  #otherGuardianSameAddress = this.page.findByDataQa(
-    'other-vtj-guardian-lives-in-same-address'
-  )
-
-  #noOtherVtjGuardianText = this.page.findByDataQa('no-other-vtj-guardian')
-
-  #applicationStatus = this.page.findByDataQa('application-status')
-
-  #notes = this.page.findAllByDataQa('note-container')
+  #guardianName: Element
+  #vtjGuardianName: Element
+  #otherGuardianAgreementStatus: Element
+  #otherGuardianSameAddress: Element
+  #noOtherVtjGuardianText: Element
+  #applicationStatus: Element
+  #notes: ElementCollection
+  constructor(private page: Page) {
+    this.#guardianName = page.findByDataQa('guardian-name')
+    this.#vtjGuardianName = page.findByDataQa('vtj-guardian-name')
+    this.#otherGuardianAgreementStatus = page.findByDataQa('agreement-status')
+    this.#otherGuardianSameAddress = page.findByDataQa(
+      'other-vtj-guardian-lives-in-same-address'
+    )
+    this.#noOtherVtjGuardianText = page.findByDataQa('no-other-vtj-guardian')
+    this.#applicationStatus = page.findByDataQa('application-status')
+    this.#notes = page.findAllByDataQa('note-container')
+  }
 
   async assertGuardianName(expectedName: string) {
     await this.#guardianName.findText(expectedName).waitUntilVisible()

@@ -25,7 +25,18 @@ import { IncomeStatementPage } from './IncomeStatementPage'
 import { TimelinePage } from './timeline/timeline-page'
 
 export default class GuardianInformationPage {
-  constructor(private readonly page: Page) {}
+  #restrictedDetailsEnabledLabel: Element
+  #personStreetAddress: Element
+  #timelineButton: Element
+  constructor(private readonly page: Page) {
+    this.#restrictedDetailsEnabledLabel = page.findByDataQa(
+      'restriction-details-enabled-label'
+    )
+    this.#personStreetAddress = page.findByDataQa(
+      'person-details-street-address'
+    )
+    this.#timelineButton = page.findByDataQa('timeline-button')
+  }
 
   async navigateToGuardian(personId: UUID) {
     await this.page.goto(config.employeeUrl + '/profile/' + personId)
@@ -40,12 +51,6 @@ export default class GuardianInformationPage {
       .find('[data-qa="family-overview-section"][data-isloading="false"]')
       .waitUntilVisible()
   }
-
-  #restrictedDetailsEnabledLabel = this.page.findByDataQa(
-    'restriction-details-enabled-label'
-  )
-  #personStreetAddress = this.page.findByDataQa('person-details-street-address')
-  #timelineButton = this.page.findByDataQa('timeline-button')
 
   async assertRestrictedDetails(enabled: boolean) {
     switch (enabled) {
@@ -304,6 +309,27 @@ class DecisionsSection extends Section {
 }
 
 export class IncomeSection extends Section {
+  #newIncomeButton: Element
+  #incomeDateRange: Element
+  #saveIncomeButton: Element
+  #cancelIncomeButton: Element
+  #toggleIncomeItemButton: Element
+  #incomeSum: Element
+  #expensesSum: Element
+  #editIncomeItemButton: Element
+
+  constructor(page: Page, root: Element) {
+    super(page, root)
+    this.#newIncomeButton = page.findByDataQa('add-income-button')
+    this.#incomeDateRange = page.findByDataQa('income-date-range')
+    this.#saveIncomeButton = page.findByDataQa('save-income')
+    this.#cancelIncomeButton = page.findByDataQa('cancel-income-edit')
+    this.#toggleIncomeItemButton = page.findByDataQa('toggle-income-item')
+    this.#incomeSum = page.findByDataQa('income-sum-income')
+    this.#expensesSum = page.findByDataQa('income-sum-expenses')
+    this.#editIncomeItemButton = page.findByDataQa('edit-income-item')
+  }
+
   // Income statements
 
   #incomeStatementRows = this.findAll(`[data-qa="income-statement-row"]`)
@@ -338,14 +364,10 @@ export class IncomeSection extends Section {
     return this.#incomeStatementRows.nth(nth).text
   }
 
-  // Incomes
-  #newIncomeButton = this.page.findByDataQa('add-income-button')
-
   async openNewIncomeForm() {
     await this.#newIncomeButton.click()
   }
 
-  #incomeDateRange = this.page.findByDataQa('income-date-range')
   #incomeStartDateInput = new DatePicker(
     this.#incomeDateRange.find('[data-qa="start-date"]')
   )
@@ -382,9 +404,6 @@ export class IncomeSection extends Section {
     await this.#coefficientSelect(type).selectOption({ value: coefficient })
   }
 
-  #saveIncomeButton = this.page.findByDataQa('save-income')
-  #cancelIncomeButton = this.page.findByDataQa('cancel-income-edit')
-
   async save() {
     await this.#saveIncomeButton.click()
     await this.#saveIncomeButton.waitUntilHidden()
@@ -416,25 +435,17 @@ export class IncomeSection extends Section {
     await this.find('[data-qa="modal-okBtn"]').click()
   }
 
-  #toggleIncomeItemButton = this.page.findByDataQa('toggle-income-item')
-
   async toggleIncome() {
     await this.#toggleIncomeItemButton.click()
   }
-
-  #incomeSum = this.page.findByDataQa('income-sum-income')
 
   async getIncomeSum() {
     return await this.#incomeSum.text
   }
 
-  #expensesSum = this.page.findByDataQa('income-sum-expenses')
-
   async getExpensesSum() {
     return await this.#expensesSum.text
   }
-
-  #editIncomeItemButton = this.page.findByDataQa('edit-income-item')
 
   async edit() {
     await this.#editIncomeItemButton.click()

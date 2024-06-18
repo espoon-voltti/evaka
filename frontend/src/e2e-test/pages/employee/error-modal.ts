@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class ErrorModal {
-  constructor(private page: Page) {}
+  #modal: Element
+  constructor(private page: Page) {
+    this.#modal = page.findByDataQa('app-error-modal')
+  }
 
-  #modal = this.page.findByDataQa('app-error-modal')
   #title = this.#modal.find('[data-qa="title"]')
   #text = this.#modal.find('[data-qa="text"]')
 

@@ -10,10 +10,15 @@ import {
 import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Modal, Page, TextInput } from '../../utils/page'
+import { Modal, Page, TextInput, Element } from '../../utils/page'
 
 export default class MobileNotePage {
-  constructor(private readonly page: Page) {}
+  #createNoteButton: Element
+  #deleteNoteButton: Element
+  constructor(private readonly page: Page) {
+    this.#createNoteButton = page.findByDataQa('create-daily-note-btn')
+    this.#deleteNoteButton = page.findByDataQa('open-delete-dialog-btn')
+  }
 
   #stickyNote = {
     note: this.page.findAll('[data-qa="sticky-note"]'),
@@ -24,8 +29,6 @@ export default class MobileNotePage {
     input: new TextInput(this.page.findByDataQa('sticky-note-input'))
   }
 
-  #createNoteButton = this.page.findByDataQa('create-daily-note-btn')
-  #deleteNoteButton = this.page.findByDataQa('open-delete-dialog-btn')
   #note = {
     dailyNote: new TextInput(this.page.findByDataQa('daily-note-note-input')),
     sleepingTimeHours: new TextInput(

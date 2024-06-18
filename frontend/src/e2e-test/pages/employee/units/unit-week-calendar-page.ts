@@ -22,14 +22,20 @@ import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 
 export class UnitWeekCalendarPage extends UnitCalendarPageBase {
+  occupancies: UnitOccupanciesSection
+
+  constructor(page: Page) {
+    super(page)
+    this.occupancies = new UnitOccupanciesSection(
+      page.findByDataQa('occupancies')
+    )
+  }
+
   async openMonthCalendar(): Promise<UnitMonthCalendarPage> {
     await this.monthModeButton.click()
     return new UnitMonthCalendarPage(this.page)
   }
 
-  occupancies = new UnitOccupanciesSection(
-    this.page.findByDataQa('occupancies')
-  )
   staffAttendances = new UnitStaffAttendancesTable(
     this.page,
     this.page.findByDataQa('staff-attendances-table')

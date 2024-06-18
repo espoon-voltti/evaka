@@ -13,24 +13,23 @@ import {
 } from '../../utils/page'
 
 export default class CitizenMapPage {
-  constructor(private readonly page: Page) {}
+  daycareFilter: Radio
+  preschoolFilter: Radio
+  clubFilter: Radio
+  unitDetailsPanel: UnitDetailsPanel
+  map: Map
+  searchInput: MapSearchInput
+  constructor(private readonly page: Page) {
+    this.daycareFilter = new Radio(page.findByDataQa('map-filter-DAYCARE'))
+    this.preschoolFilter = new Radio(page.findByDataQa('map-filter-PRESCHOOL'))
+    this.clubFilter = new Radio(page.findByDataQa('map-filter-CLUB'))
+    this.unitDetailsPanel = new UnitDetailsPanel(
+      page.findByDataQa('map-unit-details')
+    )
+    this.map = new Map(page.findByDataQa('map-view'))
+    this.searchInput = new MapSearchInput(page.findByDataQa('map-search-input'))
+  }
 
-  readonly daycareFilter = new Radio(
-    this.page.findByDataQa('map-filter-DAYCARE')
-  )
-  readonly preschoolFilter = new Radio(
-    this.page.findByDataQa('map-filter-PRESCHOOL')
-  )
-  readonly clubFilter = new Radio(this.page.findByDataQa('map-filter-CLUB'))
-
-  readonly unitDetailsPanel = new UnitDetailsPanel(
-    this.page.findByDataQa('map-unit-details')
-  )
-
-  readonly map = new Map(this.page.findByDataQa('map-view'))
-  readonly searchInput = new MapSearchInput(
-    this.page.findByDataQa('map-search-input')
-  )
   readonly languageChips = {
     fi: new SelectionChip(this.page.findByDataQa('map-filter-fi')),
     sv: new SelectionChip(this.page.findByDataQa('map-filter-sv'))

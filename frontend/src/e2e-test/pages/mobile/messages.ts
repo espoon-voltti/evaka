@@ -3,23 +3,29 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilTrue } from '../../utils'
-import { Element, Page } from '../../utils/page'
+import { Element, Page, ElementCollection } from '../../utils/page'
 
 import MobileMessageEditor from './message-editor'
 
 export default class MobileMessagesPage {
-  constructor(private readonly page: Page) {}
-
-  messagesContainer = this.page.findByDataQa('messages-page-content-area')
-  noAccountInfo = this.page.findByDataQa('info-no-account-access')
-
-  receivedTab = this.page.findByDataQa('received-tab')
-  sentTab = this.page.findByDataQa('sent-tab')
-  draftsTab = this.page.findByDataQa('drafts-tab')
-
-  threads = this.page.findAllByDataQa('message-preview')
-  titles = this.page.findAllByDataQa('message-preview-title')
-  newMessage = this.page.findByDataQa('new-message-btn')
+  messagesContainer: Element
+  noAccountInfo: Element
+  receivedTab: Element
+  sentTab: Element
+  draftsTab: Element
+  threads: ElementCollection
+  titles: ElementCollection
+  newMessage: Element
+  constructor(private readonly page: Page) {
+    this.messagesContainer = page.findByDataQa('messages-page-content-area')
+    this.noAccountInfo = page.findByDataQa('info-no-account-access')
+    this.receivedTab = page.findByDataQa('received-tab')
+    this.sentTab = page.findByDataQa('sent-tab')
+    this.draftsTab = page.findByDataQa('drafts-tab')
+    this.threads = page.findAllByDataQa('message-preview')
+    this.titles = page.findAllByDataQa('message-preview-title')
+    this.newMessage = page.findByDataQa('new-message-btn')
+  }
 
   async getThreadTitle(index: number) {
     return this.titles.nth(index).text
@@ -49,9 +55,10 @@ export class ReceivedThreadPreview extends Element {
 }
 
 export class SentTab {
-  constructor(private readonly page: Page) {}
-
-  messages = this.page.findAllByDataQa('sent-message-preview')
+  messages: ElementCollection
+  constructor(private readonly page: Page) {
+    this.messages = page.findAllByDataQa('sent-message-preview')
+  }
 
   message(nth: number) {
     return new SentMessagePreview(this.page, this.messages.nth(nth))
@@ -75,16 +82,20 @@ export class SentMessagePreview extends Element {
 }
 
 export class SentMessage {
-  constructor(private readonly page: Page) {}
-
-  topBarTitle = this.page.findByDataQa('top-bar-title')
-  content = this.page.findByDataQa('single-message-content')
+  topBarTitle: Element
+  content: Element
+  constructor(private readonly page: Page) {
+    this.topBarTitle = page.findByDataQa('top-bar-title')
+    this.content = page.findByDataQa('single-message-content')
+  }
 }
 
 export class DraftsTab {
-  constructor(private readonly page: Page) {}
+  list: Element
+  constructor(private readonly page: Page) {
+    this.list = page.findByDataQa('draft-list')
+  }
 
-  list = this.page.findByDataQa('draft-list')
   messages = this.list.findAllByDataQa('draft-message-preview')
 
   message(nth: number) {

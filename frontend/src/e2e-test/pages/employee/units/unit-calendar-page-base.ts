@@ -6,24 +6,28 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual } from '../../../utils'
-import { Page } from '../../../utils/page'
+import { Page, Element } from '../../../utils/page'
 
 import { UnitCalendarEventsSection } from './unit'
 
 /** Common elements and actions for both month and week calendar pages */
 export class UnitCalendarPageBase {
-  constructor(protected readonly page: Page) {}
+  monthModeButton: Element
+  weekModeButton: Element
+  nextWeekButton: Element
+  previousWeekButton: Element
+  constructor(protected readonly page: Page) {
+    this.monthModeButton = page.findByDataQa('choose-calendar-mode-month')
+    this.weekModeButton = page.findByDataQa('choose-calendar-mode-week')
+    this.nextWeekButton = page.findByDataQa('next-week')
+    this.previousWeekButton = page.findByDataQa('previous-week')
+  }
 
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="unit-attendances"][data-isloading="false"]')
       .waitUntilVisible()
   }
-
-  monthModeButton = this.page.findByDataQa('choose-calendar-mode-month')
-  weekModeButton = this.page.findByDataQa('choose-calendar-mode-week')
-  nextWeekButton = this.page.findByDataQa('next-week')
-  previousWeekButton = this.page.findByDataQa('previous-week')
 
   calendarEventsSection = new UnitCalendarEventsSection(this.page)
 

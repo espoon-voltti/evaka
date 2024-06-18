@@ -16,26 +16,37 @@ export class MockStrongAuthPage {
   }
 }
 export default class CitizenMessagesPage {
-  constructor(private readonly page: Page) {}
+  #messageReplyContent: TextInput
+  #threadListItem: Element
+  #threadTitle: Element
+  #redactedThreadTitle: Element
+  #strongAuthLink: Element
+  #openReplyEditorButton: Element
+  #sendReplyButton: Element
+  #messageEditor: Element
+  discardMessageButton: Element
+  constructor(private readonly page: Page) {
+    this.#messageReplyContent = new TextInput(
+      page.findByDataQa('message-reply-content')
+    )
+    this.#threadListItem = page.findByDataQa('thread-list-item')
+    this.#threadTitle = page.findByDataQa('thread-reader-title')
+    this.#redactedThreadTitle = page.findByDataQa(
+      'redacted-thread-reader-title'
+    )
+    this.#strongAuthLink = page.findByDataQa('strong-auth-link')
+    this.#openReplyEditorButton = page.findByDataQa(`${this.replyButtonTag}`)
+    this.#sendReplyButton = page.findByDataQa('message-send-btn')
+    this.#messageEditor = page.findByDataQa('message-editor')
+    this.discardMessageButton = page.findByDataQa('message-discard-btn')
+  }
 
   replyButtonTag = 'message-reply-editor-btn'
 
-  #messageReplyContent = new TextInput(
-    this.page.findByDataQa('message-reply-content')
-  )
-  #threadListItem = this.page.findByDataQa('thread-list-item')
-  #threadTitle = this.page.findByDataQa('thread-reader-title')
-  #redactedThreadTitle = this.page.findByDataQa('redacted-thread-reader-title')
-  #strongAuthLink = this.page.findByDataQa('strong-auth-link')
   #inboxEmpty = this.page.find('[data-qa="inbox-empty"][data-loading="false"]')
   #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
   #threadUrgent = this.page.findByDataQa('thread-reader').findByDataQa('urgent')
-  #openReplyEditorButton = this.page.findByDataQa(`${this.replyButtonTag}`)
-  #sendReplyButton = this.page.findByDataQa('message-send-btn')
   newMessageButton = this.page.findAllByDataQa('new-message-btn').first()
-  #messageEditor = this.page.findByDataQa('message-editor')
-
-  discardMessageButton = this.page.findByDataQa('message-discard-btn')
 
   async createNewMessage(): Promise<CitizenMessageEditor> {
     await this.newMessageButton.click()

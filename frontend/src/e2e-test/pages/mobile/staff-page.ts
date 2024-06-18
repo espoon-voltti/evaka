@@ -19,14 +19,20 @@ import {
 } from '../../utils/page'
 
 export default class StaffPage {
-  constructor(private readonly page: Page) {}
-
-  #staffCount = this.page.findByDataQa('staff-count')
-  #staffOtherCount = this.page.findByDataQa('staff-other-count')
-  #cancelButton = this.page.findByDataQa('cancel-button')
-  #confirmButton = this.page.findByDataQa('confirm-button')
-  #occupancyRealized = this.page.findByDataQa('realized-occupancy')
-  #updated = this.page.findByDataQa('updated')
+  #staffCount: Element
+  #staffOtherCount: Element
+  #cancelButton: Element
+  #confirmButton: Element
+  #occupancyRealized: Element
+  #updated: Element
+  constructor(private readonly page: Page) {
+    this.#staffCount = page.findByDataQa('staff-count')
+    this.#staffOtherCount = page.findByDataQa('staff-other-count')
+    this.#cancelButton = page.findByDataQa('cancel-button')
+    this.#confirmButton = page.findByDataQa('confirm-button')
+    this.#occupancyRealized = page.findByDataQa('realized-occupancy')
+    this.#updated = page.findByDataQa('updated')
+  }
 
   private countButton(parent: Element, which: 'plus' | 'minus') {
     return parent.find(`[data-qa="${which}-button"]`)
@@ -102,21 +108,23 @@ export class StaffAttendancePage {
   arrivalTime: Element
   departureTime: Element
 
+  #addNewExternalMemberButton: Element
+  pinInput: Element
+
   constructor(private readonly page: Page) {
     this.editButton = this.page.findByDataQa('edit')
     this.arrivalTime = this.page.findByDataQa('arrival-time')
     this.departureTime = this.page.findByDataQa('departure-time')
+    this.#addNewExternalMemberButton = page.findByDataQa(
+      'add-external-member-btn'
+    )
+    this.pinInput = page.findByDataQa('pin-input')
   }
 
   #tabs = {
     present: this.page.findByDataQa('present-tab'),
     absent: this.page.findByDataQa('absent-tab')
   }
-
-  #addNewExternalMemberButton = this.page.findByDataQa(
-    'add-external-member-btn'
-  )
-  pinInput = this.page.findByDataQa('pin-input')
 
   anyArrivalPage = {
     arrivedInput: new TextInput(this.page.findByDataQa('input-arrived')),

@@ -15,7 +15,12 @@ import {
 import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 
 export class UnitGroupsPage {
-  constructor(private readonly page: Page) {}
+  childCapacityFactorColumnHeading: Element
+  constructor(private readonly page: Page) {
+    this.childCapacityFactorColumnHeading = page.findByDataQa(
+      `child-capacity-factor-heading`
+    )
+  }
 
   async waitUntilLoaded() {
     await this.page
@@ -58,10 +63,6 @@ export class UnitGroupsPage {
       .find(`[data-qa="child-capacity-factor-${childId}"]`)
       .assertTextEquals(factor)
   }
-
-  readonly childCapacityFactorColumnHeading = this.page.findByDataQa(
-    `child-capacity-factor-heading`
-  )
 
   readonly childCapacityFactorColumnData = this.page.findAll(
     `[data-qa="child-capacity-factor-column"]`

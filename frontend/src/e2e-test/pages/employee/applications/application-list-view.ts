@@ -6,20 +6,26 @@ import { ApplicationTypeToggle } from 'lib-common/generated/api-types/applicatio
 
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
-import { MultiSelect, Page } from '../../../utils/page'
+import { MultiSelect, Page, Element } from '../../../utils/page'
 
 export default class ApplicationListView {
-  constructor(private page: Page) {}
+  applicationStatus: Element
+  allApplications: Element
+  #areaFilter: MultiSelect
+  #unitFilter: MultiSelect
+  constructor(private page: Page) {
+    this.applicationStatus = page.findByDataQa('application-status')
+    this.allApplications = page.findByDataQa('application-status-filter-ALL')
+    this.#areaFilter = new MultiSelect(page.findByDataQa('area-filter'))
+    this.#unitFilter = new MultiSelect(page.findByDataQa('unit-selector'))
+  }
 
   static url = `${config.employeeUrl}/applications`
-  applicationStatus = this.page.findByDataQa('application-status')
 
   actionsMenu = (applicationId: string) =>
     this.page
       .find(`[data-application-id="${applicationId}"]`)
       .find('[data-qa="application-actions-menu"]')
-
-  allApplications = this.page.findByDataQa('application-status-filter-ALL')
 
   #actionsMenuItemSelector = (id: string) =>
     this.page.findByDataQa(`action-item-${id}`)
@@ -34,8 +40,6 @@ export default class ApplicationListView {
     )
   }
 
-  #areaFilter = new MultiSelect(this.page.findByDataQa('area-filter'))
-
   async toggleArea(areaName: string) {
     await this.#areaFilter.fillAndSelectFirst(areaName)
   }
@@ -43,8 +47,6 @@ export default class ApplicationListView {
   specialFilterItems = {
     duplicate: this.page.findByDataQa('application-basis-DUPLICATE_APPLICATION')
   }
-
-  #unitFilter = new MultiSelect(this.page.findByDataQa('unit-selector'))
 
   toggleUnit = async (unitName: string) => {
     await this.#unitFilter.fillAndSelectFirst(unitName)

@@ -16,22 +16,36 @@ import {
   Modal,
   Radio,
   Select,
-  TextInput
+  TextInput,
+  Page
 } from '../../../utils/page'
 
 import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { UnitWeekCalendarPage } from './unit-week-calendar-page'
 
 export class UnitMonthCalendarPage extends UnitCalendarPageBase {
+  #unitName: Element
+  #groupSelector: Select
+  previousWeekButton: Element
+  nextWeekButton: Element
+  #addAbsencesButton: Element
+
+  constructor(page: Page) {
+    super(page)
+    this.#unitName = page.findByDataQa('attendances-unit-name')
+    this.#groupSelector = new Select(
+      page.findByDataQa('attendances-group-select')
+    )
+    this.previousWeekButton = page.findByDataQa('previous-week')
+    this.nextWeekButton = page.findByDataQa('next-week')
+    this.#addAbsencesButton = page.findByDataQa('add-absences-button')
+  }
+
   async openWeekCalendar(): Promise<UnitWeekCalendarPage> {
     await this.weekModeButton.click()
     return new UnitWeekCalendarPage(this.page)
   }
 
-  #unitName = this.page.findByDataQa('attendances-unit-name')
-  #groupSelector = new Select(
-    this.page.findByDataQa('attendances-group-select')
-  )
   childRow = (childId: UUID) =>
     this.page.findByDataQa(`absence-child-row-${childId}`)
 
@@ -40,11 +54,7 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
       this.childRow(childId).findByDataQa(`absence-cell-${date.formatIso()}`)
     )
 
-  previousWeekButton = this.page.findByDataQa('previous-week')
-  nextWeekButton = this.page.findByDataQa('next-week')
-
   #staffAttendanceCells = this.page.findAll('[data-qa="staff-attendance-cell"]')
-  #addAbsencesButton = this.page.findByDataQa('add-absences-button')
 
   async assertUnitName(expectedName: string) {
     await this.#unitName.assertTextEquals(expectedName)

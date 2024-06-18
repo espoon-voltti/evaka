@@ -6,18 +6,25 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { waitUntilEqual } from '../../utils'
-import { AsyncButton, Page, TextInput } from '../../utils/page'
+import {
+  AsyncButton,
+  Page,
+  TextInput,
+  ElementCollection
+} from '../../utils/page'
 
 import { EnvType } from './citizen-header'
 
 export class CitizenChildPage {
+  #placements: ElementCollection
+  #terminatedPlacements: ElementCollection
   constructor(
     private readonly page: Page,
     private readonly env: EnvType = 'desktop'
-  ) {}
-
-  #placements = this.page.findAllByDataQa('placement')
-  #terminatedPlacements = this.page.findAllByDataQa('terminated-placement')
+  ) {
+    this.#placements = page.findAllByDataQa('placement')
+    this.#terminatedPlacements = page.findAllByDataQa('terminated-placement')
+  }
 
   async assertChildNameIsShown(name: string) {
     await this.page.find(`h1:has-text("${name}")`).waitUntilVisible()

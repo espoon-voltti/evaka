@@ -2,10 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class AssistanceNeedDecisionPage {
-  constructor(private readonly page: Page) {}
+  structuralMotivationDescription: Element
+  otherRepresentativeDetails: Element
+  constructor(private readonly page: Page) {
+    this.structuralMotivationDescription = page.findByDataQa(
+      'structural-motivation-description'
+    )
+    this.otherRepresentativeDetails = page.findByDataQa(
+      'other-representative-details'
+    )
+  }
 
   private getLabelledValue(label: string) {
     return this.page.findByDataQa(`labelled-value-${label}`).text
@@ -19,9 +28,6 @@ export default class AssistanceNeedDecisionPage {
       .findByDataQa('structural-motivation-section')
       .findByDataQa(`list-option-${opt}`)
       .waitUntilVisible()
-  readonly structuralMotivationDescription = this.page.findByDataQa(
-    'structural-motivation-description'
-  )
   readonly careMotivation = this.getLabelledValue('care-motivation')
   readonly assertServiceOption = (opt: string) =>
     this.page
@@ -29,9 +35,6 @@ export default class AssistanceNeedDecisionPage {
       .findByDataQa(`list-option-${opt}`)
       .waitUntilVisible()
   readonly guardiansHeardOn = this.getLabelledValue('guardians-heard-at')
-  readonly otherRepresentativeDetails = this.page.findByDataQa(
-    'other-representative-details'
-  )
   readonly viewOfGuardians = this.getLabelledValue('view-of-the-guardians')
   readonly futureLevelOfAssistance = this.getLabelledValue(
     'future-level-of-assistance'

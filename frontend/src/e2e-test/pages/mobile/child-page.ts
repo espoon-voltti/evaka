@@ -4,36 +4,47 @@
 
 import { DevChild } from '../../generated/api-types'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class MobileChildPage {
-  constructor(private readonly page: Page) {}
-
-  childName = this.page.findByDataQa('child-name')
-  reservation = this.page.findByDataQa('reservation')
-  termBreak = this.page.findByDataQa('term-break')
-  markPresentLink = this.page.findByDataQa('mark-present-link')
-  markDepartedLink = this.page.findByDataQa('mark-departed-link')
-  markAbsentLink = this.page.findByDataQa('mark-absent-link')
-  cancelArrivalButton = this.page.findByDataQa('cancel-arrival-button')
-  returnToPresentButton = this.page.findByDataQa('return-to-present-btn')
-
-  modalOkButton = this.page.findByDataQa('modal-okBtn')
-
-  markReservationsLink = this.page.findByDataQa('mark-reservations')
-  markAbsentBeforehandLink = this.page.findByDataQa('mark-absent-beforehand')
-  sensitiveInfoLink = this.page.findByDataQa('link-child-sensitive-info')
-
-  messageEditorLink = this.page.findByDataQa('link-new-message')
-
-  notesLink = this.page.findByDataQa('link-child-daycare-daily-note')
-
-  notesExistsBubble = this.page.findByDataQa('daily-note-icon-bubble')
-
-  saveNoteButton = this.page.findByDataQa('create-daily-note-btn')
-
-  goBack = this.page.findByDataQa('back-btn')
-  goBackFromSensitivePage = this.page.findByDataQa('go-back')
+  childName: Element
+  reservation: Element
+  termBreak: Element
+  markPresentLink: Element
+  markDepartedLink: Element
+  markAbsentLink: Element
+  cancelArrivalButton: Element
+  returnToPresentButton: Element
+  modalOkButton: Element
+  markReservationsLink: Element
+  markAbsentBeforehandLink: Element
+  sensitiveInfoLink: Element
+  messageEditorLink: Element
+  notesLink: Element
+  notesExistsBubble: Element
+  saveNoteButton: Element
+  goBack: Element
+  goBackFromSensitivePage: Element
+  constructor(private readonly page: Page) {
+    this.childName = page.findByDataQa('child-name')
+    this.reservation = page.findByDataQa('reservation')
+    this.termBreak = page.findByDataQa('term-break')
+    this.markPresentLink = page.findByDataQa('mark-present-link')
+    this.markDepartedLink = page.findByDataQa('mark-departed-link')
+    this.markAbsentLink = page.findByDataQa('mark-absent-link')
+    this.cancelArrivalButton = page.findByDataQa('cancel-arrival-button')
+    this.returnToPresentButton = page.findByDataQa('return-to-present-btn')
+    this.modalOkButton = page.findByDataQa('modal-okBtn')
+    this.markReservationsLink = page.findByDataQa('mark-reservations')
+    this.markAbsentBeforehandLink = page.findByDataQa('mark-absent-beforehand')
+    this.sensitiveInfoLink = page.findByDataQa('link-child-sensitive-info')
+    this.messageEditorLink = page.findByDataQa('link-new-message')
+    this.notesLink = page.findByDataQa('link-child-daycare-daily-note')
+    this.notesExistsBubble = page.findByDataQa('daily-note-icon-bubble')
+    this.saveNoteButton = page.findByDataQa('create-daily-note-btn')
+    this.goBack = page.findByDataQa('back-btn')
+    this.goBackFromSensitivePage = page.findByDataQa('go-back')
+  }
 
   sensitiveInfo = {
     name: this.page.findByDataQa('child-info-name'),

@@ -3,19 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class EmployeeNav {
-  constructor(private readonly page: Page) {}
-
-  readonly #userNameBtn = this.page.findByDataQa('username')
-
-  readonly applicationsTab = this.page.findByDataQa('applications-nav')
-  readonly unitsTab = this.page.findByDataQa('units-nav')
-  readonly searchTab = this.page.findByDataQa('search-nav')
-  readonly financeTab = this.page.findByDataQa('finance-nav')
-  readonly reportsTab = this.page.findByDataQa('reports-nav')
-  readonly messagesTab = this.page.findByDataQa('messages-nav')
+  #userNameBtn: Element
+  applicationsTab: Element
+  unitsTab: Element
+  searchTab: Element
+  financeTab: Element
+  reportsTab: Element
+  messagesTab: Element
+  constructor(private readonly page: Page) {
+    this.#userNameBtn = page.findByDataQa('username')
+    this.applicationsTab = page.findByDataQa('applications-nav')
+    this.unitsTab = page.findByDataQa('units-nav')
+    this.searchTab = page.findByDataQa('search-nav')
+    this.financeTab = page.findByDataQa('finance-nav')
+    this.reportsTab = page.findByDataQa('reports-nav')
+    this.messagesTab = page.findByDataQa('messages-nav')
+  }
 
   async openAndClickDropdownMenuItem(
     item:

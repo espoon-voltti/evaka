@@ -25,16 +25,20 @@ export interface TestEventTime {
 }
 
 export class DiscussionSurveyListPage {
-  constructor(protected readonly page: Page) {}
+  createSurveyButton: Element
+  surveyList: Element
+  constructor(protected readonly page: Page) {
+    this.createSurveyButton = page.findByDataQa(
+      'create-discussion-survey-button'
+    )
+    this.surveyList = page.findByDataQa('discussion-survey-list')
+  }
 
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="discussion-survey-ist"][data-isloading="false"]')
       .waitUntilVisible()
   }
-
-  createSurveyButton = this.page.findByDataQa('create-discussion-survey-button')
-  surveyList = this.page.findByDataQa('discussion-survey-list')
 
   async openDiscussionSurvey(surveyId: string) {
     const surveyItem = this.surveyList.findByDataQa(`survey-${surveyId}`)
@@ -63,17 +67,22 @@ export class DiscussionSurveyListPage {
 }
 
 export class CreateDiscussionSurveyEditor {
-  constructor(protected readonly page: Page) {}
-
-  submitSurveyButton = this.page.findByDataQa('survey-editor-submit-button')
-  titleInput = new TextInput(this.page.findByDataQa('survey-title-input'))
-  descriptionInput = new TextInput(
-    this.page.findByDataQa('survey-description-input')
-  )
-  attendeeSelect = new TreeDropdown(
-    this.page.findByDataQa('survey-attendees-select')
-  )
-  newTimesCalendar = this.page.findByDataQa('survey-times-calendar')
+  submitSurveyButton: Element
+  titleInput: TextInput
+  descriptionInput: TextInput
+  attendeeSelect: TreeDropdown
+  newTimesCalendar: Element
+  constructor(protected readonly page: Page) {
+    this.submitSurveyButton = page.findByDataQa('survey-editor-submit-button')
+    this.titleInput = new TextInput(page.findByDataQa('survey-title-input'))
+    this.descriptionInput = new TextInput(
+      page.findByDataQa('survey-description-input')
+    )
+    this.attendeeSelect = new TreeDropdown(
+      page.findByDataQa('survey-attendees-select')
+    )
+    this.newTimesCalendar = page.findByDataQa('survey-times-calendar')
+  }
 
   async waitUntilLoaded() {
     await this.submitSurveyButton.waitUntilVisible()
@@ -100,17 +109,20 @@ export class CreateDiscussionSurveyEditor {
 }
 
 export class DiscussionSurveyReadView {
-  constructor(protected readonly page: Page) {}
+  editSurveyButton: Element
+  deleteSurveyButton: Element
+  surveyTimesCalendar: Element
+  constructor(protected readonly page: Page) {
+    this.editSurveyButton = page.findByDataQa('survey-edit-button')
+    this.deleteSurveyButton = page.findByDataQa('survey-delete-button')
+    this.surveyTimesCalendar = page.findByDataQa('reservation-calendar')
+  }
 
   async waitUntilLoaded() {
     await this.page
       .findByDataQa('survey-reservation-calendar-title')
       .waitUntilVisible()
   }
-
-  editSurveyButton = this.page.findByDataQa('survey-edit-button')
-  deleteSurveyButton = this.page.findByDataQa('survey-delete-button')
-  surveyTimesCalendar = this.page.findByDataQa('reservation-calendar')
 
   async addEventTimeForDay(date: LocalDate, eventTime: TestEventTime) {
     const calendarDay = this.surveyTimesCalendar.findByDataQa(
@@ -211,16 +223,20 @@ export class DiscussionSurveyReadView {
 }
 
 export class DiscussionSurveyEditor {
-  constructor(protected readonly page: Page) {}
-
-  titleInput = new TextInput(this.page.findByDataQa('survey-title-input'))
-  descriptionInput = new TextInput(
-    this.page.findByDataQa('survey-description-input')
-  )
-  attendeeInput = new TreeDropdown(
-    this.page.findByDataQa('survey-attendees-select')
-  )
-  submitButton = this.page.findByDataQa('survey-editor-submit-button')
+  titleInput: TextInput
+  descriptionInput: TextInput
+  attendeeInput: TreeDropdown
+  submitButton: Element
+  constructor(protected readonly page: Page) {
+    this.titleInput = new TextInput(page.findByDataQa('survey-title-input'))
+    this.descriptionInput = new TextInput(
+      page.findByDataQa('survey-description-input')
+    )
+    this.attendeeInput = new TreeDropdown(
+      page.findByDataQa('survey-attendees-select')
+    )
+    this.submitButton = page.findByDataQa('survey-editor-submit-button')
+  }
 
   async waitUntilLoaded() {
     await this.submitButton.waitUntilVisible()

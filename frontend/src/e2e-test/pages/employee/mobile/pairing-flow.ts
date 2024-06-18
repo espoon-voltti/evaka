@@ -2,21 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput } from '../../../utils/page'
+import { Page, TextInput, Element } from '../../../utils/page'
 
 export class PairingFlow {
-  constructor(private readonly page: Page) {}
-
-  #mobileStartPairingBtn = this.page.findByDataQa('start-pairing-btn')
-  #mobilePairingTitle1 = this.page.findByDataQa('mobile-pairing-wizard-title-1')
-  #mobilePairingTitle3 = this.page.findByDataQa('mobile-pairing-wizard-title-3')
-  #challengeKeyInput = new TextInput(
-    this.page.findByDataQa('challenge-key-input')
-  )
-  #submitChallengeKeyBtn = this.page.findByDataQa('submit-challenge-key-btn')
-  #responseKey = this.page.findByDataQa('response-key')
-  #startCtaLink = this.page.findByDataQa('start-cta-link')
-  #topBarTitle = this.page.findByDataQa('top-bar-title')
+  #mobileStartPairingBtn: Element
+  #mobilePairingTitle1: Element
+  #mobilePairingTitle3: Element
+  #challengeKeyInput: TextInput
+  #submitChallengeKeyBtn: Element
+  #responseKey: Element
+  #startCtaLink: Element
+  #topBarTitle: Element
+  constructor(private readonly page: Page) {
+    this.#mobileStartPairingBtn = page.findByDataQa('start-pairing-btn')
+    this.#mobilePairingTitle1 = page.findByDataQa(
+      'mobile-pairing-wizard-title-1'
+    )
+    this.#mobilePairingTitle3 = page.findByDataQa(
+      'mobile-pairing-wizard-title-3'
+    )
+    this.#challengeKeyInput = new TextInput(
+      page.findByDataQa('challenge-key-input')
+    )
+    this.#submitChallengeKeyBtn = page.findByDataQa('submit-challenge-key-btn')
+    this.#responseKey = page.findByDataQa('response-key')
+    this.#startCtaLink = page.findByDataQa('start-cta-link')
+    this.#topBarTitle = page.findByDataQa('top-bar-title')
+  }
 
   async startPairing() {
     await this.#mobileStartPairingBtn.click()

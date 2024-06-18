@@ -16,7 +16,9 @@ import {
   Page,
   Select,
   StaticChip,
-  TextInput
+  TextInput,
+  Element,
+  ElementCollection
 } from '../../utils/page'
 
 export default class ReportsPage {
@@ -96,9 +98,10 @@ export class MissingHeadOfFamilyReport {
 }
 
 export class NonSsnChildrenReport {
-  constructor(private page: Page) {}
-
-  #nameHeader = this.page.findByDataQa(`child-name-header`)
+  #nameHeader: Element
+  constructor(private page: Page) {
+    this.#nameHeader = page.findByDataQa(`child-name-header`)
+  }
 
   async changeSortOrder() {
     await this.#nameHeader.click()
@@ -125,10 +128,12 @@ export class NonSsnChildrenReport {
 }
 
 export class ApplicationsReport {
-  constructor(private page: Page) {}
-
-  #table = this.page.findByDataQa(`report-application-table`)
-  #areaSelector = new Combobox(this.page.findByDataQa('select-area'))
+  #table: Element
+  #areaSelector: Combobox
+  constructor(private page: Page) {
+    this.#table = page.findByDataQa(`report-application-table`)
+    this.#areaSelector = new Combobox(page.findByDataQa('select-area'))
+  }
 
   private async areaWithNameExists(area: string, exists = true) {
     await this.#table.waitUntilVisible()
@@ -217,11 +222,12 @@ export class PlacementGuaranteeReport {
 }
 
 export class PlacementSketchingReport {
-  constructor(private page: Page) {}
-
-  #applicationStatus = new MultiSelect(
-    this.page.findByDataQa('select-application-status')
-  )
+  #applicationStatus: MultiSelect
+  constructor(private page: Page) {
+    this.#applicationStatus = new MultiSelect(
+      page.findByDataQa('select-application-status')
+    )
+  }
 
   async assertRow(
     applicationId: string,
@@ -256,11 +262,14 @@ export class PlacementSketchingReport {
 }
 
 export class VoucherServiceProvidersReport {
-  constructor(private page: Page) {}
-
-  #month = new Select(this.page.findByDataQa('select-month'))
-  #year = new Select(this.page.findByDataQa('select-year'))
-  #area = new Select(this.page.findByDataQa('select-area'))
+  #month: Select
+  #year: Select
+  #area: Select
+  constructor(private page: Page) {
+    this.#month = new Select(page.findByDataQa('select-month'))
+    this.#year = new Select(page.findByDataQa('select-year'))
+    this.#area = new Select(page.findByDataQa('select-area'))
+  }
 
   #downloadCsvLink = this.page.find('[data-qa="download-csv"] a')
 
@@ -312,9 +321,10 @@ export class VoucherServiceProvidersReport {
 }
 
 export class ServiceVoucherUnitReport {
-  constructor(private page: Page) {}
-
-  #childRows = this.page.findAllByDataQa('child-row')
+  #childRows: ElementCollection
+  constructor(private page: Page) {
+    this.#childRows = page.findAllByDataQa('child-row')
+  }
 
   async assertChildRowCount(expected: number) {
     await waitUntilEqual(() => this.#childRows.count(), expected)
@@ -378,9 +388,11 @@ export class ManualDuplicationReport {
 }
 
 export class VardaErrorsReport {
-  constructor(private page: Page) {}
+  #errorsTable: Element
+  constructor(private page: Page) {
+    this.#errorsTable = page.findByDataQa('varda-errors-table')
+  }
 
-  #errorsTable = this.page.findByDataQa('varda-errors-table')
   #errorRows = this.page.findAll('[data-qa="varda-error-row"]')
   #errors = (childId: string) => this.page.findByDataQa(`errors-${childId}`)
   #resetChild = (childId: string) =>
@@ -403,9 +415,10 @@ export class VardaErrorsReport {
 }
 
 export class AssistanceNeedDecisionsReport {
-  constructor(private page: Page) {}
-
-  rows = this.page.findAllByDataQa('assistance-need-decision-row')
+  rows: ElementCollection
+  constructor(private page: Page) {
+    this.rows = page.findAllByDataQa('assistance-need-decision-row')
+  }
 
   async row(nth: number) {
     const row = this.rows.nth(nth)
@@ -427,26 +440,36 @@ export class AssistanceNeedDecisionsReport {
 }
 
 export class AssistanceNeedDecisionsReportDecision {
-  constructor(private page: Page) {}
-
-  decisionMaker = this.page.findByDataQa('labelled-value-decision-maker')
-  decisionStatus = new StaticChip(this.page.findByDataQa('decision-status'))
-  annulmentReason = this.page.findByDataQa('labelled-value-annulment-reason')
-  returnForEditBtn = this.page.findByDataQa('return-for-edit')
+  decisionMaker: Element
+  decisionStatus: StaticChip
+  annulmentReason: Element
+  returnForEditBtn: Element
+  approveBtn: Element
+  rejectBtn: Element
+  annulBtn: Element
+  annulReasonInput: TextInput
+  modalOkBtn: Element
+  mismatchModalLink: Element
+  constructor(private page: Page) {
+    this.decisionMaker = page.findByDataQa('labelled-value-decision-maker')
+    this.decisionStatus = new StaticChip(page.findByDataQa('decision-status'))
+    this.annulmentReason = page.findByDataQa('labelled-value-annulment-reason')
+    this.returnForEditBtn = page.findByDataQa('return-for-edit')
+    this.approveBtn = page.findByDataQa('approve-button')
+    this.rejectBtn = page.findByDataQa('reject-button')
+    this.annulBtn = page.findByDataQa('annul-button')
+    this.annulReasonInput = new TextInput(
+      page.findByDataQa('annul-reason-input')
+    )
+    this.modalOkBtn = page.findByDataQa('modal-okBtn')
+    this.mismatchModalLink = page.findByDataQa('mismatch-modal-link')
+  }
 
   get returnForEditModal() {
     return {
       okBtn: this.page.findByDataQa('modal-okBtn')
     }
   }
-
-  approveBtn = this.page.findByDataQa('approve-button')
-  rejectBtn = this.page.findByDataQa('reject-button')
-  annulBtn = this.page.findByDataQa('annul-button')
-  annulReasonInput = new TextInput(this.page.findByDataQa('annul-reason-input'))
-  modalOkBtn = this.page.findByDataQa('modal-okBtn')
-
-  mismatchModalLink = this.page.findByDataQa('mismatch-modal-link')
 
   get mismatchModal() {
     return {
@@ -457,28 +480,39 @@ export class AssistanceNeedDecisionsReportDecision {
 }
 
 export class AssistanceNeedPreschoolDecisionsReportDecision {
-  constructor(private page: Page) {}
-
-  returnForEditBtn = this.page.findByDataQa('return-for-edit-button')
-  approveBtn = this.page.findByDataQa('approve-button')
-  rejectBtn = this.page.findByDataQa('reject-button')
-  annulBtn = this.page.findByDataQa('annul-button')
-  annulReasonInput = new TextInput(this.page.findByDataQa('annul-reason-input'))
-  modalOkBtn = this.page.findByDataQa('modal-okBtn')
-
-  status = this.page.findByDataQa('status')
-  annulmentReason = this.page.findByDataQa('annulment-reason')
+  returnForEditBtn: Element
+  approveBtn: Element
+  rejectBtn: Element
+  annulBtn: Element
+  annulReasonInput: TextInput
+  modalOkBtn: Element
+  status: Element
+  annulmentReason: Element
+  constructor(private page: Page) {
+    this.returnForEditBtn = page.findByDataQa('return-for-edit-button')
+    this.approveBtn = page.findByDataQa('approve-button')
+    this.rejectBtn = page.findByDataQa('reject-button')
+    this.annulBtn = page.findByDataQa('annul-button')
+    this.annulReasonInput = new TextInput(
+      page.findByDataQa('annul-reason-input')
+    )
+    this.modalOkBtn = page.findByDataQa('modal-okBtn')
+    this.status = page.findByDataQa('status')
+    this.annulmentReason = page.findByDataQa('annulment-reason')
+  }
 }
 
 export class AssistanceNeedsAndActionsReport {
-  constructor(private page: Page) {}
-  needsAndActionsRows = this.page.findAllByDataQa(
-    'assistance-needs-and-actions-row'
-  )
-
-  childRows = this.page.findAllByDataQa('child-row')
-
-  careAreaSelect = new Combobox(this.page.findByDataQa('care-area-filter'))
+  needsAndActionsRows: ElementCollection
+  childRows: ElementCollection
+  careAreaSelect: Combobox
+  constructor(private page: Page) {
+    this.needsAndActionsRows = page.findAllByDataQa(
+      'assistance-needs-and-actions-row'
+    )
+    this.childRows = page.findAllByDataQa('child-row')
+    this.careAreaSelect = new Combobox(page.findByDataQa('care-area-filter'))
+  }
 
   async selectCareAreaFilter(area: string) {
     await this.careAreaSelect.fillAndSelectFirst(area)

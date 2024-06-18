@@ -14,10 +14,13 @@ import {
 } from '../../../utils/page'
 
 export class DocumentTemplatesListPage {
-  constructor(private readonly page: Page) {}
+  createNewButton: Element
+  importTemplate: Element
+  constructor(private readonly page: Page) {
+    this.createNewButton = page.findByDataQa('create-template-button')
+    this.importTemplate = page.findByDataQa('import-template')
+  }
 
-  readonly createNewButton = this.page.findByDataQa('create-template-button')
-  readonly importTemplate = this.page.findByDataQa('import-template')
   readonly templateImportModal = new TemplateImportModal(
     this.page.findByDataQa('template-import-modal').locator
   )
@@ -95,31 +98,32 @@ export class TemplateImportModal extends Element {
 }
 
 export class DocumentTemplateEditorPage {
-  constructor(private readonly page: Page) {}
-
-  readonly createNewSectionButton = this.page.findByDataQa(
-    'create-section-button'
-  )
-  readonly sectionNameInput = new TextInput(
-    this.page.findByDataQa('name-input')
-  )
-  readonly confirmCreateSectionButton = this.page.findByDataQa('modal-okBtn')
+  createNewSectionButton: Element
+  sectionNameInput: TextInput
+  confirmCreateSectionButton: Element
+  questionLabelInput: TextInput
+  confirmCreateQuestionButton: Element
+  publishCheckbox: Checkbox
+  saveButton: Element
+  constructor(private readonly page: Page) {
+    this.createNewSectionButton = page.findByDataQa('create-section-button')
+    this.sectionNameInput = new TextInput(page.findByDataQa('name-input'))
+    this.confirmCreateSectionButton = page.findByDataQa('modal-okBtn')
+    this.questionLabelInput = new TextInput(
+      page.findByDataQa('question-label-input')
+    )
+    this.confirmCreateQuestionButton = page.findByDataQa('modal-okBtn')
+    this.publishCheckbox = new Checkbox(
+      page.findByDataQa('ready-to-publish-checkbox')
+    )
+    this.saveButton = page.findByDataQa('save-template')
+  }
 
   getSection(name: string) {
     return new Section(
       this.page.find('[data-qa="template-section"]', { hasText: name })
     )
   }
-
-  readonly questionLabelInput = new TextInput(
-    this.page.findByDataQa('question-label-input')
-  )
-  readonly confirmCreateQuestionButton = this.page.findByDataQa('modal-okBtn')
-
-  readonly publishCheckbox = new Checkbox(
-    this.page.findByDataQa('ready-to-publish-checkbox')
-  )
-  readonly saveButton = this.page.findByDataQa('save-template')
 }
 
 class Section {

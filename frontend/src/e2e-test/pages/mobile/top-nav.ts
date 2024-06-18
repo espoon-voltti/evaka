@@ -2,15 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class TopNav {
-  constructor(private readonly page: Page) {}
+  #userMenu: Element
+  systemNotificationBtn: Element
+  systemNotificationModal: Element
+  constructor(private readonly page: Page) {
+    this.#userMenu = page.findByDataQa('top-bar-user')
+    this.systemNotificationBtn = page.findByDataQa('system-notification-btn')
+    this.systemNotificationModal = page.findByDataQa(
+      'system-notification-modal'
+    )
+  }
 
-  #userMenu = this.page.findByDataQa('top-bar-user')
-
-  systemNotificationBtn = this.page.findByDataQa('system-notification-btn')
-  systemNotificationModal = this.page.findByDataQa('system-notification-modal')
   systemNotificationModalClose =
     this.systemNotificationModal.findByDataQa('modal-okBtn')
 
