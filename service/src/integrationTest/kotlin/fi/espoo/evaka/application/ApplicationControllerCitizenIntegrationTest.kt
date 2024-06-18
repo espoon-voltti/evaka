@@ -38,7 +38,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.RAW_ROW)
             tx.insert(testArea)
             tx.insert(testDaycare)
