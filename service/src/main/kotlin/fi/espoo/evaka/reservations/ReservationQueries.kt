@@ -6,6 +6,7 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -304,6 +305,7 @@ data class ReservationPlacement(
     val childId: ChildId,
     val range: FiniteDateRange,
     val type: PlacementType,
+    val unitLanguage: Language,
     val operationTimes: List<TimeRange?>,
     val shiftCareOperationTimes: List<TimeRange?>?,
     val shiftCareOpenOnHolidays: Boolean,
@@ -323,6 +325,7 @@ data class ReservationPlacementRow(
     val placementId: PlacementId,
     val range: FiniteDateRange,
     val type: PlacementType,
+    val unitLanguage: Language,
     val operationTimes: List<TimeRange?>,
     val shiftCareOperationTimes: List<TimeRange?>?,
     val shiftCareOpenOnHolidays: Boolean,
@@ -345,6 +348,7 @@ SELECT
     pl.id AS placement_id,
     daterange(pl.start_date, pl.end_date, '[]') AS range,
     pl.type,
+    u.language AS unit_language,
     u.operation_times,
     u.shift_care_operation_times,
     u.shift_care_open_on_holidays,
@@ -371,6 +375,7 @@ WHERE
                 childId = rows[0].childId,
                 range = rows[0].range,
                 type = rows[0].type,
+                unitLanguage = rows[0].unitLanguage,
                 operationTimes = rows[0].operationTimes,
                 shiftCareOperationTimes = rows[0].shiftCareOperationTimes,
                 shiftCareOpenOnHolidays = rows[0].shiftCareOpenOnHolidays,

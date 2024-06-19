@@ -579,8 +579,8 @@ const hasReservationsForEveryChild = (
         (child) =>
           child.childId === childId &&
           (child.reservations.length > 0 ||
-            child.scheduleType !== 'RESERVATION_REQUIRED') &&
-          child.absence === null
+            (child.scheduleType !== 'RESERVATION_REQUIRED' &&
+              child.absence === null))
       )
     )
   )
@@ -620,7 +620,10 @@ const allChildrenAreAbsent = (
   calendarDays.every((day) =>
     selectedChildren.every((childId) =>
       day.children.some(
-        (child) => child.childId === childId && child.absence !== null
+        (child) =>
+          child.childId === childId &&
+          child.reservations.length === 0 &&
+          child.absence !== null
       )
     )
   )

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import zip from 'lodash/zip'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
@@ -29,6 +31,7 @@ import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
+  getAbsences,
   resetServiceState
 } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
@@ -76,14 +79,18 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       fixtures.enduserChildFixtureKaarina,
       fixtures.enduserChildFixturePorriHatterRestricted
     ]
-    const placementFixtures = children.map((child) =>
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        fixtures.daycareFixture.id,
-        today,
-        today.addYears(1)
-      )
+    const placementTypes = ['DAYCARE', 'PRESCHOOL_DAYCARE', 'DAYCARE'] as const
+
+    const placementFixtures = zip(children, placementTypes).map(
+      ([child, placementType]) =>
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child!.id,
+          fixtures.daycareFixture.id,
+          today,
+          today.addYears(1),
+          placementType
+        )
     )
     await createDaycarePlacements({ body: placementFixtures })
     await createDefaultServiceNeedOptions()
@@ -275,6 +282,40 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await dayView.assertNoReservation(children[0].id)
     await dayView.assertReservations(children[1].id, [reservation1])
     await dayView.assertNoReservation(children[2].id)
+  })
+
+  test('Citizen creates a part-day reservation for a preschooler from day view', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    const reservationDay = today.addDays(14)
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+
+    const reservation1 = {
+      startTime: '09:00',
+      endTime: '13:00'
+    }
+
+    expect(children.length).toEqual(3)
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertNoReservation(children[1].id)
+    await dayView.assertNoReservation(children[2].id)
+
+    const editor = await dayView.edit()
+    const child = editor.childSection(children[1].id)
+    await child.reservationStart.fill(reservation1.startTime)
+    await child.reservationEnd.fill(reservation1.endTime)
+    await editor.saveButton.click()
+
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertReservations(children[1].id, [reservation1])
+    await dayView.assertNoReservation(children[2].id)
+
+    const absences = await getAbsences({
+      childId: children[1].id,
+      date: reservationDay
+    })
+    expect(absences.map((a) => a.category)).toEqual(['BILLABLE'])
   })
 
   test('If absence modal is opened from day view, that day is filled by default', async () => {

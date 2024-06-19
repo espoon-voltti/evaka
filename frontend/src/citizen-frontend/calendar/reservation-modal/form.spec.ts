@@ -2551,6 +2551,104 @@ describe('resetTimes', () => {
       })
     })
 
+    it('Reservation + absence', () => {
+      const range = new FiniteDateRange(monday, monday)
+
+      const calendarDays: ReservationResponseDay[] = [
+        {
+          date: monday,
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              reservations: [
+                {
+                  type: 'TIMES',
+                  range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                  staffCreated: false
+                }
+              ],
+              absence: { type: 'OTHER_ABSENCE', editable: true }
+            }
+          ]
+        }
+      ]
+
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'IRREGULAR',
+          selectedRange: range,
+          selectedChildren: ['child-1']
+        })
+      ).toEqual({
+        branch: 'irregularTimes',
+        state: [
+          {
+            date: monday,
+            day: {
+              branch: 'reservation',
+              state: {
+                validTimeRange: defaultReservableTimeRange,
+                reservation: {
+                  branch: 'timeRanges',
+                  state: [timeInputState('08:00', '16:00')]
+                }
+              }
+            }
+          }
+        ]
+      })
+    })
+
+    it('Reservation + absence marked by employee', () => {
+      const range = new FiniteDateRange(monday, monday)
+
+      const calendarDays: ReservationResponseDay[] = [
+        {
+          date: monday,
+          holiday: false,
+          children: [
+            {
+              ...emptyChild,
+              childId: 'child-1',
+              reservations: [
+                {
+                  type: 'TIMES',
+                  range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                  staffCreated: false
+                }
+              ],
+              absence: { type: 'OTHER_ABSENCE', editable: false }
+            }
+          ]
+        }
+      ]
+
+      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+
+      expect(
+        resetTimes(dayProperties, undefined, {
+          repetition: 'IRREGULAR',
+          selectedRange: range,
+          selectedChildren: ['child-1']
+        })
+      ).toEqual({
+        branch: 'irregularTimes',
+        state: [
+          {
+            date: monday,
+            day: {
+              branch: 'readOnly',
+              state: 'absentNotEditable'
+            }
+          }
+        ]
+      })
+    })
+
     it('Holidays', () => {
       // MO TU WE
       //    s  s

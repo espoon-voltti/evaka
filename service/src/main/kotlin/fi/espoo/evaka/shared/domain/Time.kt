@@ -179,6 +179,12 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
             val to = date.with(lastDayOfMonth())
             return FiniteDateRange(from, to)
         }
+
+        fun ofYear(year: Int): FiniteDateRange {
+            val from = LocalDate.of(year, 1, 1)
+            val to = LocalDate.of(year, 12, 31)
+            return FiniteDateRange(from, to)
+        }
     }
 }
 

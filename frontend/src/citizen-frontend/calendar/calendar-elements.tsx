@@ -169,7 +169,9 @@ const groupChildren = (
           }
         }
 
-        if (child.absence) {
+        // This block of code also appears later in this function. When the feature flag is removed,
+        // also remove this block.
+        if (!featureFlags.automaticFixedScheduleAbsences && child.absence) {
           return {
             childId: child.childId,
             type:
@@ -204,6 +206,19 @@ const groupChildren = (
                 formatReservation(reservation, child.reservableTimeRange, i18n)
               )
               .join(', ')
+          }
+        }
+
+        if (child.absence) {
+          return {
+            childId: child.childId,
+            type:
+              child.absence.type === 'FREE_ABSENCE'
+                ? 'absent-free'
+                : featureFlags.citizenAttendanceSummary &&
+                    child.absence.type === 'PLANNED_ABSENCE'
+                  ? 'absent-planned'
+                  : 'absent'
           }
         }
 

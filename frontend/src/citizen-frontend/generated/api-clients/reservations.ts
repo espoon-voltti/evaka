@@ -60,12 +60,17 @@ export async function postAbsences(
 */
 export async function postReservations(
   request: {
+    automaticFixedScheduleAbsencesEnabled?: boolean | null,
     body: DailyReservationRequest[]
   }
 ): Promise<void> {
+  const params = createUrlSearchParams(
+    ['automaticFixedScheduleAbsencesEnabled', request.automaticFixedScheduleAbsencesEnabled?.toString()]
+  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/reservations`.toString(),
     method: 'POST',
+    params,
     data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
   })
   return json

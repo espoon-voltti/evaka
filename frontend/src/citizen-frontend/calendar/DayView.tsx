@@ -212,15 +212,27 @@ function View({
     >
       {(childIndex) => {
         const child = modalData.response.children[childIndex]
-        return child.absence !== null ? (
-          <Absence absence={child.absence} />
-        ) : (
-          <Reservations
-            reservations={child.reservations}
-            scheduleType={child.scheduleType}
-            reservableTimeRange={child.reservableTimeRange}
-          />
-        )
+        if (!featureFlags.automaticFixedScheduleAbsences) {
+          return child.absence !== null ? (
+            <Absence absence={child.absence} />
+          ) : (
+            <Reservations
+              reservations={child.reservations}
+              scheduleType={child.scheduleType}
+              reservableTimeRange={child.reservableTimeRange}
+            />
+          )
+        } else {
+          return child.reservations.length === 0 && child.absence !== null ? (
+            <Absence absence={child.absence} />
+          ) : (
+            <Reservations
+              reservations={child.reservations}
+              scheduleType={child.scheduleType}
+              reservableTimeRange={child.reservableTimeRange}
+            />
+          )
+        }
       }}
     </DayModal>
   )

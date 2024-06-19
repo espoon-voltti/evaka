@@ -4,6 +4,8 @@
 
 // GENERATED FILE: no manual modifications
 
+import LocalDate from 'lib-common/local-date'
+import { Absence } from 'lib-common/generated/api-types/absence'
 import { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import { Autocomplete } from './api-types'
 import { Caretaker } from './api-types'
@@ -96,6 +98,7 @@ import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecision } from './api-types'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonAbsence } from 'lib-common/generated/api-types/absence'
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
 import { deserializeJsonDecision } from 'lib-common/generated/api-types/decision'
 import { deserializeJsonEmployee } from 'lib-common/generated/api-types/pis'
@@ -1582,6 +1585,32 @@ export async function forceFullVtjRefresh(
       method: 'POST'
     })
     return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.getAbsences
+*/
+export async function getAbsences(
+  request: {
+    childId: UUID,
+    date: LocalDate
+  }
+): Promise<Absence[]> {
+  try {
+    const params = createUrlSearchParams(
+      ['childId', request.childId],
+      ['date', request.date.formatIso()]
+    )
+    const { data: json } = await devClient.request<JsonOf<Absence[]>>({
+      url: uri`/absences`.toString(),
+      method: 'GET',
+      params
+    })
+    return json.map(e => deserializeJsonAbsence(e))
   } catch (e) {
     throw new DevApiError(e)
   }
