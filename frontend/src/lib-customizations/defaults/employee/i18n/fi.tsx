@@ -62,7 +62,8 @@ export const fi = {
     assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa',
     assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa',
     clubTerm: 'Kerhon lukukausi',
-    clubTerms: 'Kerhojen lukukaudet'
+    clubTerms: 'Kerhojen lukukaudet',
+    placementTool: 'Optimointityökalu'
   },
   common: {
     yes: 'Kyllä',
@@ -4938,6 +4939,11 @@ export const fi = {
     setNotification: 'Aseta ilmoitus',
     text: 'Teksti',
     validTo: 'Poistuu näkyvistä'
+  },
+  placementTool: {
+    title: 'Optimointityökalu',
+    description:
+      'Voit luoda optimointityökalulla tuotetuista sijoitusehdotuksista hakemukset eVakaan. Hakemukset luodaan suoraan odottamaan päätöstä.'
   },
   components
 }
