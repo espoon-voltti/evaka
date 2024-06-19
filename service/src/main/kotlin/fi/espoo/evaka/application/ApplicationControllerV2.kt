@@ -168,7 +168,7 @@ class ApplicationControllerV2(
     @PostMapping("/placement-tool", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createPlacementToolApplications(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestPart("file") file: MultipartFile
     ): UUID {
