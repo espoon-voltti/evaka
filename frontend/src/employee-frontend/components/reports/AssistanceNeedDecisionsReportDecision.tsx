@@ -337,7 +337,7 @@ const DecisionModal = React.memo(function DecisionModal({
               status: decisionStatus
             }
           })
-          if (result.isFailure && result.statusCode === 409) {
+          if (result.isFailure) {
             onFailed()
           } else {
             onClose(true)
@@ -361,7 +361,6 @@ const ApproveFailedModal = React.memo(function ApproveFailedModal({
     <InfoModal
       type="danger"
       title={t.title}
-      text={t.text}
       icon={faTimes}
       reject={{
         action: onClose,
