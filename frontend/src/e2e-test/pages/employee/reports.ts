@@ -416,7 +416,7 @@ export class VardaErrorsReport {
 
 export class AssistanceNeedDecisionsReport {
   rows: ElementCollection
-  constructor(private page: Page) {
+  constructor(page: Page) {
     this.rows = page.findAllByDataQa('assistance-need-decision-row')
   }
 
@@ -488,7 +488,7 @@ export class AssistanceNeedPreschoolDecisionsReportDecision {
   modalOkBtn: Element
   status: Element
   annulmentReason: Element
-  constructor(private page: Page) {
+  constructor(page: Page) {
     this.returnForEditBtn = page.findByDataQa('return-for-edit-button')
     this.approveBtn = page.findByDataQa('approve-button')
     this.rejectBtn = page.findByDataQa('reject-button')

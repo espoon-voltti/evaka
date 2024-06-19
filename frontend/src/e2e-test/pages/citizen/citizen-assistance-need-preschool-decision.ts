@@ -20,7 +20,7 @@ export default class AssistanceNeedPreschoolDecisionPage {
   viewOfGuardians: Element
   preparer1: Element
   decisionMaker: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.status = page.findByDataQa('status')
     this.type = page.findByDataQa('type')
     this.validFrom = page.findByDataQa('valid-from')

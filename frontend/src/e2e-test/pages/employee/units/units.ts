@@ -9,6 +9,7 @@ import { waitUntilEqual } from '../../../utils'
 import {
   Checkbox,
   Element,
+  ElementCollection,
   MultiSelect,
   Page,
   TextInput
@@ -23,6 +24,7 @@ export default class UnitsPage {
   careTypesSelect: MultiSelect
   #showClosedUnits: Checkbox
   #table: Element
+  #rows: ElementCollection
   constructor(private readonly page: Page) {
     this.#createNewUnitButton = page.findByDataQa('create-new-unit')
     this.#unitNameFilter = new TextInput(page.findByDataQa('unit-name-filter'))
@@ -34,6 +36,7 @@ export default class UnitsPage {
     )
     this.#showClosedUnits = new Checkbox(page.findByDataQa('include-closed'))
     this.#table = page.findByDataQa('table-of-units')
+    this.#rows = this.#table.findAllByDataQa('unit-row')
   }
 
   static async open(page: Page) {
@@ -52,8 +55,6 @@ export default class UnitsPage {
       await this.#showClosedUnits.uncheck()
     }
   }
-
-  #rows = this.#table.findAll('[data-qa="unit-row"]')
 
   async assertRowCount(expectedCount: number) {
     await waitUntilEqual(() => this.#rows.count(), expectedCount)

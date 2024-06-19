@@ -6,12 +6,13 @@ import { Page, Element } from '../../utils/page'
 
 export default class ErrorModal {
   #modal: Element
-  constructor(private page: Page) {
+  #title: Element
+  #text: Element
+  constructor(page: Page) {
     this.#modal = page.findByDataQa('app-error-modal')
+    this.#title = this.#modal.find('[data-qa="title"]')
+    this.#text = this.#modal.find('[data-qa="text"]')
   }
-
-  #title = this.#modal.find('[data-qa="title"]')
-  #text = this.#modal.find('[data-qa="text"]')
 
   async ensureTitle(title: string) {
     await this.#title.findText(title).waitUntilVisible()

@@ -319,7 +319,7 @@ export class FinanceDecisionHandlerSelectModal {
   #decisionHandlerSelect: Select
   #decisionHandlerSelectModalResolveBtn: AsyncButton
   #decisionHandlerSelectModalRejectBtn: AsyncButton
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.#decisionHandlerSelect = new Select(
       page.findByDataQa('finance-decision-handler-select')
     )

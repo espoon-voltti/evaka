@@ -84,7 +84,7 @@ export class SentMessagePreview extends Element {
 export class SentMessage {
   topBarTitle: Element
   content: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.topBarTitle = page.findByDataQa('top-bar-title')
     this.content = page.findByDataQa('single-message-content')
   }
@@ -92,11 +92,11 @@ export class SentMessage {
 
 export class DraftsTab {
   list: Element
+  private messages: ElementCollection
   constructor(private readonly page: Page) {
     this.list = page.findByDataQa('draft-list')
+    this.messages = this.list.findAllByDataQa('draft-message-preview')
   }
-
-  messages = this.list.findAllByDataQa('draft-message-preview')
 
   message(nth: number) {
     return new DraftMessagePreview(this.page, this.messages.nth(nth))

@@ -8,7 +8,7 @@ export class EmployeePinPage {
   inputInfo: Element
   pinLockedAlertBox: Element
   pinSendButton: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.pinInput = new TextInput(page.findByDataQa('pin-code-input'))
     this.inputInfo = page.findByDataQa('pin-code-input-info')
     this.pinLockedAlertBox = page.findByDataQa('pin-locked-alert-box')

@@ -744,7 +744,7 @@ class HolidayModal extends Element {
 class DayModal {
   childName: ElementCollection
   closeModal: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.childName = page.findAllByDataQa('child-name')
     this.closeModal = page.findByDataQa('day-view-close-button')
   }

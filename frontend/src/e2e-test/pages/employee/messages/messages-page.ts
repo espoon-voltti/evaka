@@ -26,6 +26,8 @@ export default class MessagesPage {
   #messageReplyContent: TextInput
   #emptyInboxText: Element
   #unitAccount: Element
+  #draftMessagesBoxRow: TextInput
+  unitReceived: Element
   constructor(private readonly page: Page) {
     this.newMessageButton = page.findByDataQa('new-message-btn')
     this.#personalAccount = page.findByDataQa('personal-account')
@@ -40,6 +42,12 @@ export default class MessagesPage {
     )
     this.#emptyInboxText = page.findByDataQa('empty-inbox-text')
     this.#unitAccount = page.findByDataQa('unit-accounts')
+    this.#draftMessagesBoxRow = new TextInput(
+      this.#personalAccount.findByDataQa('message-box-row-drafts')
+    )
+    this.unitReceived = this.#unitAccount.findByDataQa(
+      'message-box-row-received'
+    )
   }
 
   async openSentMessages(nth = 0) {
@@ -47,13 +55,8 @@ export default class MessagesPage {
     return new SentMessagesPage(this.page)
   }
 
-  #draftMessagesBoxRow = new TextInput(
-    this.#personalAccount.find('[data-qa="message-box-row-drafts"]')
-  )
   #messageContent = (index = 0) =>
     this.page.findByDataQa(`message-content"][data-index="${index}`)
-
-  unitReceived = this.#unitAccount.find('[data-qa="message-box-row-received"]')
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()

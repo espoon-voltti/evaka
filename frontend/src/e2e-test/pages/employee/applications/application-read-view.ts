@@ -8,7 +8,13 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilTrue } from '../../../utils'
-import { DatePickerDeprecated, Page, Radio, Element } from '../../../utils/page'
+import {
+  DatePickerDeprecated,
+  Page,
+  Radio,
+  Element,
+  ElementCollection
+} from '../../../utils/page'
 import MessagesPage from '../messages/messages-page'
 
 import ApplicationEditView from './application-edit-view'
@@ -23,6 +29,8 @@ export default class ApplicationReadView {
   #applicationStatus: Element
   #sendMessageButton: Element
   notesList: Element
+  #title: Element
+  private notes: ElementCollection
   constructor(private page: Page) {
     this.#editButton = page.findByDataQa('edit-application')
     this.#vtjGuardianName = page.findByDataQa('vtj-guardian-name')
@@ -33,10 +41,9 @@ export default class ApplicationReadView {
     this.#applicationStatus = page.findByDataQa('application-status')
     this.#sendMessageButton = page.findByDataQa('send-message-button')
     this.notesList = page.findByDataQa('application-notes-list')
+    this.#title = this.page.findByDataQa('application-title').find('h1')
+    this.notes = this.notesList.findAllByDataQa('note-container')
   }
-
-  #title = this.page.findByDataQa('application-title').find('h1')
-  notes = this.notesList.findAllByDataQa('note-container')
 
   async waitUntilLoaded() {
     await this.page.findByDataQa('application-read-view').waitUntilVisible()

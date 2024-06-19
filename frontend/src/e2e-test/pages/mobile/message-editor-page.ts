@@ -6,7 +6,7 @@ import { Page, Element } from '../../utils/page'
 
 export default class MessageEditorPage {
   noReceiversInfo: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.noReceiversInfo = page.findByDataQa('info-no-receivers')
   }
 }

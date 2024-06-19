@@ -8,16 +8,16 @@ export default class TopNav {
   #userMenu: Element
   systemNotificationBtn: Element
   systemNotificationModal: Element
-  constructor(private readonly page: Page) {
+  systemNotificationModalClose: Element
+  constructor(readonly page: Page) {
     this.#userMenu = page.findByDataQa('top-bar-user')
     this.systemNotificationBtn = page.findByDataQa('system-notification-btn')
     this.systemNotificationModal = page.findByDataQa(
       'system-notification-modal'
     )
+    this.systemNotificationModalClose =
+      this.systemNotificationModal.findByDataQa('modal-okBtn')
   }
-
-  systemNotificationModalClose =
-    this.systemNotificationModal.findByDataQa('modal-okBtn')
 
   async openUserMenu() {
     await this.#userMenu.click()

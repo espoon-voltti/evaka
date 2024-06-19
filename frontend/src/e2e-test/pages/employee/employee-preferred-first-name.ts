@@ -10,7 +10,7 @@ import { AsyncButton, Page, Select } from '../../utils/page'
 export class EmployeePreferredFirstNamePage {
   preferredFirstNameSelect: Select
   confirmButton: AsyncButton
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.preferredFirstNameSelect = new Select(
       page.findByDataQa('select-preferred-first-name')
     )

@@ -11,7 +11,7 @@ export default class AssistanceNeedPreschoolDecisionPreviewPage {
   preparedBy1: Element
   decisionMaker: Element
   sendDecisionButton: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.guardiansHeardOn = page.findByDataQa(`guardians-heard-on`)
     this.validFrom = page.findByDataQa('valid-from')
     this.selectedUnit = page.findByDataQa('unit')

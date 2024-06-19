@@ -13,7 +13,7 @@ export class PairingFlow {
   #responseKey: Element
   #startCtaLink: Element
   #topBarTitle: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.#mobileStartPairingBtn = page.findByDataQa('start-pairing-btn')
     this.#mobilePairingTitle1 = page.findByDataQa(
       'mobile-pairing-wizard-title-1'

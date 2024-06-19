@@ -317,6 +317,8 @@ export class IncomeSection extends Section {
   #incomeSum: Element
   #expensesSum: Element
   #editIncomeItemButton: Element
+  #incomeStartDateInput: DatePicker
+  #incomeEndDateInput: DatePicker
 
   constructor(page: Page, root: Element) {
     super(page, root)
@@ -328,6 +330,13 @@ export class IncomeSection extends Section {
     this.#incomeSum = page.findByDataQa('income-sum-income')
     this.#expensesSum = page.findByDataQa('income-sum-expenses')
     this.#editIncomeItemButton = page.findByDataQa('edit-income-item')
+
+    this.#incomeStartDateInput = new DatePicker(
+      this.#incomeDateRange.findByDataQa('start-date')
+    )
+    this.#incomeEndDateInput = new DatePicker(
+      this.#incomeDateRange.findByDataQa('end-date')
+    )
   }
 
   // Income statements
@@ -367,13 +376,6 @@ export class IncomeSection extends Section {
   async openNewIncomeForm() {
     await this.#newIncomeButton.click()
   }
-
-  #incomeStartDateInput = new DatePicker(
-    this.#incomeDateRange.find('[data-qa="start-date"]')
-  )
-  #incomeEndDateInput = new DatePicker(
-    this.#incomeDateRange.find('[data-qa="end-date"]')
-  )
 
   async fillIncomeStartDate(value: string) {
     await this.#incomeStartDateInput.fill(value)

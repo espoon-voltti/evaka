@@ -9,7 +9,7 @@ export default class CitizenPersonalDetails {
   personalDetailsSection: CitizenPersonalDetailsSection
   loginDetailsSection: LoginDetailsSection
   notificationSettingsSectiong: CitizenNotificationSettingsSection
-  constructor(private readonly page: Page) {
+  constructor(page: Page) {
     this.personalDetailsSection = new CitizenPersonalDetailsSection(
       page.findByDataQa('personal-details-section')
     )

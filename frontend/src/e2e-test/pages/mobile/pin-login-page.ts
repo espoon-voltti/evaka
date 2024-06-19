@@ -9,7 +9,7 @@ export default class PinLoginPage {
   #pinInput: TextInput
   #pinSubmit: TextInput
   #pinInfo: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.#staffSelect = new Select(page.findByDataQa('select-staff'))
     this.#pinInput = new TextInput(page.findByDataQa('pin-input'))
     this.#pinSubmit = new TextInput(page.findByDataQa('pin-submit'))

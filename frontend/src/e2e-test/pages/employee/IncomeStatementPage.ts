@@ -8,15 +8,17 @@ export class IncomeStatementPage {
   #form: Element
   #childOtherInfo: Element
   #noAttachments: Element
+  #handledCheckbox: Checkbox
+  #noteInput: TextInput
+  #submitBtn: Element
   constructor(private readonly page: Page) {
     this.#form = page.findByDataQa(`handler-notes-form`)
     this.#childOtherInfo = page.findByDataQa('other-info')
     this.#noAttachments = page.findByDataQa('no-attachments')
+    this.#handledCheckbox = new Checkbox(this.#form.findByDataQa('set-handled'))
+    this.#noteInput = new TextInput(this.#form.find('input[type="text"]'))
+    this.#submitBtn = this.#form.find('button')
   }
-
-  #handledCheckbox = new Checkbox(this.#form.find('[data-qa="set-handled"]'))
-  #noteInput = new TextInput(this.#form.find('input[type="text"]'))
-  #submitBtn = this.#form.find('button')
 
   #attachments = this.page.findAll('[data-qa="attachments"]')
 

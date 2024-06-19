@@ -25,7 +25,7 @@ export default class StaffPage {
   #confirmButton: Element
   #occupancyRealized: Element
   #updated: Element
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.#staffCount = page.findByDataQa('staff-count')
     this.#staffOtherCount = page.findByDataQa('staff-other-count')
     this.#cancelButton = page.findByDataQa('cancel-button')

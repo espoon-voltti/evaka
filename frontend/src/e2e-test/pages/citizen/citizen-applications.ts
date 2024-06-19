@@ -137,7 +137,7 @@ class CitizenApplicationReadView {
   contactInfoSection: Element
   unitPreferenceSection: Element
   assistanceNeedDescription: TextInput
-  constructor(private readonly page: Page) {
+  constructor(readonly page: Page) {
     this.contactInfoSection = page.findByDataQa('contact-info-section')
     this.unitPreferenceSection = page.findByDataQa('unit-preference-section')
     this.assistanceNeedDescription = new TextInput(
