@@ -119,7 +119,7 @@ const MealReportData = ({
     return (
       <>
         <H2>
-          {i18n.common.datetime.weekdays[report.date.getIsoDayOfWeek()]}{' '}
+          {i18n.common.datetime.weekdays[report.date.getIsoDayOfWeek() - 1]}{' '}
           {report.date.format()}
         </H2>
         <ReportDownload
