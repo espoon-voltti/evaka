@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
@@ -830,6 +831,60 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     @Test
+    fun `decisions can be made out of order and end dates are automatically set`() {
+        val startDate1 = LocalDate.of(2022, 1, 10)
+        val startDate2 = LocalDate.of(2022, 1, 20)
+        val startDate3 = LocalDate.of(2022, 1, 30)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = startDate1,
+                    endDate = startDate3.plusYears(1),
+                )
+            )
+        }
+
+        // note the order
+        val decisionIds =
+            listOf(startDate1, startDate3, startDate2).map { startDate ->
+                val decision =
+                    createAssistanceNeedDecision(
+                        AssistanceNeedDecisionRequest(
+                            testDecision.copy(
+                                validityPeriod = DateRange(startDate, null),
+                                selectedUnit = UnitIdInfo(testDaycare.id)
+                            )
+                        )
+                    )
+                sendAssistanceNeedDecision(decision.id)
+                decideAssistanceNeedDecision(
+                    decision.id,
+                    AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                        status = AssistanceNeedDecisionStatus.ACCEPTED
+                    ),
+                    decisionMaker
+                )
+                decision.id
+            }
+
+        assertEquals(
+            DateRange(startDate1, startDate2.minusDays(1)),
+            getAssistanceNeedDecision(decisionIds[0]).validityPeriod
+        )
+        assertEquals(
+            DateRange(startDate3, null),
+            getAssistanceNeedDecision(decisionIds[1]).validityPeriod
+        )
+        assertEquals(
+            DateRange(startDate2, startDate3.minusDays(1)),
+            getAssistanceNeedDecision(decisionIds[2]).validityPeriod
+        )
+    }
+
+    @Test
     fun `endActiveDaycareAssistanceDecisions should not set end date if already set`() {
         val startDate = LocalDate.of(2022, 1, 1)
         val endDate = LocalDate.of(2022, 12, 31)
@@ -854,17 +909,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     )
                 )
             )
-        updateAssistanceNeedDecision(
-            AssistanceNeedDecisionRequest(
-                decision
-                    .toForm()
-                    .copy(
-                        assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME),
-                        validityPeriod = DateRange(startDate, LocalDate.of(2022, 6, 30))
-                    )
-            ),
-            decision.id
-        )
         sendAssistanceNeedDecision(decision.id)
         decideAssistanceNeedDecision(
             decision.id,
@@ -874,10 +918,23 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             decisionMaker
         )
 
+        val updatedEndDate = LocalDate.of(2022, 6, 30)
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+                UPDATE assistance_need_decision 
+                SET validity_period = ${bind(FiniteDateRange(startDate, updatedEndDate))}
+                WHERE id = ${bind(decision.id)}
+            """
+                )
+            }
+        }
+
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
 
         assertEquals(
-            DateRange(startDate, LocalDate.of(2022, 6, 30)),
+            DateRange(startDate, updatedEndDate),
             getAssistanceNeedDecision(decision.id).validityPeriod
         )
     }

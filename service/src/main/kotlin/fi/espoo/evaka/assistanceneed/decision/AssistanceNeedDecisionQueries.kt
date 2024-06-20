@@ -351,7 +351,8 @@ fun Database.Transaction.decideAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
     status: AssistanceNeedDecisionStatus,
     decisionMade: LocalDate?,
-    unreadGuardianIds: List<PersonId>?
+    unreadGuardianIds: List<PersonId>?,
+    validTo: LocalDate?
 ) {
     createUpdate {
             sql(
@@ -360,7 +361,8 @@ UPDATE assistance_need_decision
 SET 
     status = ${bind(status)},
     decision_made = ${bind(decisionMade)},
-    unread_guardian_ids = ${bind(unreadGuardianIds)}
+    unread_guardian_ids = ${bind(unreadGuardianIds)},
+    validity_period = daterange(lower(validity_period), ${bind(validTo)}, '[]')
 WHERE id = ${bind(id)} AND status IN ('DRAFT', 'NEEDS_WORK')
 """
             )
@@ -377,10 +379,10 @@ fun Database.Transaction.endActiveAssistanceNeedDecisions(
         sql(
             """
 UPDATE assistance_need_decision
-SET validity_period = daterange(lower(validity_period), ${bind(endDate.minusDays(1))}, '[]')
+SET validity_period = daterange(lower(validity_period), ${bind(endDate)}, '[]')
 WHERE
     id <> ${bind(excludingId)} AND
-    (upper(validity_period) IS NULL OR upper(validity_period) > ${bind(endDate.minusDays(1))}) AND
+    validity_period @> ${bind(endDate)} AND
     child_id = ${bind(childId)} AND
     status = 'ACCEPTED'
 """
@@ -419,24 +421,23 @@ WHERE daycare_assistance_decision_with_new_end_date.id = assistance_need_decisio
     )
 }
 
-fun Database.Read.hasLaterAssistanceNeedDecisions(
+fun Database.Read.getNextAssistanceNeedDecisionValidFrom(
     childId: ChildId,
     startDate: LocalDate,
-): Boolean =
+) =
     createQuery {
             sql(
                 """
-SELECT EXISTS (
-    SELECT 1
-    FROM assistance_need_decision
-    WHERE child_id = ${bind(childId)}
-      AND ${bind(startDate)} <= lower(validity_period)
-      AND status = 'ACCEPTED'
-)
+SELECT min(lower(validity_period))
+FROM assistance_need_decision
+WHERE child_id = ${bind(childId)}
+  AND lower(validity_period) >= ${bind(startDate)}
+  AND status = 'ACCEPTED'
 """
             )
         }
-        .exactlyOne()
+        .mapTo<LocalDate>()
+        .exactlyOneOrNull()
 
 fun Database.Transaction.annulAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,

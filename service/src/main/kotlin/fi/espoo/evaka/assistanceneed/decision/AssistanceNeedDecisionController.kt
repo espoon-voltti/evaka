@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -460,35 +459,33 @@ class AssistanceNeedDecisionController(
                         )
                     }
 
-                    if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
-                        if (
-                            tx.hasLaterAssistanceNeedDecisions(
-                                decision.child.id,
-                                decision.validityPeriod.start
+                    val validTo =
+                        if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
+                            tx.endActiveAssistanceNeedDecisions(
+                                decision.id,
+                                decision.validityPeriod.start.minusDays(1),
+                                decision.child.id
                             )
-                        ) {
-                            throw Conflict(
-                                "Another decision has the same or later start date and must be annulled",
-                                "CONFLICTING_DECISION"
-                            )
-                        }
-                        tx.endActiveAssistanceNeedDecisions(
-                            decision.id,
-                            decision.validityPeriod.start,
-                            decision.child.id
-                        )
-                    }
+                            tx.getNextAssistanceNeedDecisionValidFrom(
+                                    decision.child.id,
+                                    decision.validityPeriod.start
+                                )
+                                ?.minusDays(1)
+                        } else null
 
                     tx.decideAssistanceNeedDecision(
-                        id,
-                        body.status,
-                        if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
-                        else clock.today(),
-                        if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
-                            null
-                        } else {
-                            tx.getChildGuardians(decision.child.id)
-                        }
+                        id = id,
+                        status = body.status,
+                        decisionMade =
+                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
+                            else clock.today(),
+                        unreadGuardianIds =
+                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                                null
+                            } else {
+                                tx.getChildGuardians(decision.child.id)
+                            },
+                        validTo = validTo
                     )
 
                     if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {

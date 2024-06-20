@@ -3526,8 +3526,7 @@ export const fi = {
       },
       approveFailedModal: {
         title: 'Päätöksen hyväksyminen epäonnistui',
-        okBtn: 'Sulje',
-        text: 'Päätöksen hyväksyminen epäonnistui, koska toinen hyväksytty päätös on tehty alkaen samasta tai myöhemmästä päivästä. Mitätöi toinen päätös ensin.'
+        okBtn: 'Sulje'
       },
       annulModal: {
         title: 'Mitätöidäänkö päätös?',
