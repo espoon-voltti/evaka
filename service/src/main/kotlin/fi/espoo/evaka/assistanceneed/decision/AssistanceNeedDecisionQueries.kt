@@ -382,8 +382,7 @@ UPDATE assistance_need_decision
 SET validity_period = daterange(lower(validity_period), ${bind(endDate)}, '[]')
 WHERE
     id <> ${bind(excludingId)} AND
-    lower(validity_period) <= ${bind(endDate)} AND 
-    (upper(validity_period) IS NULL OR upper(validity_period) > ${bind(endDate)}) AND
+    validity_period @> ${bind(endDate)} AND
     child_id = ${bind(childId)} AND
     status = 'ACCEPTED'
 """
