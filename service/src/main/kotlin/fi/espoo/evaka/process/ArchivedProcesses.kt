@@ -5,6 +5,7 @@
 package fi.espoo.evaka.process
 
 import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
@@ -79,7 +80,7 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
     SELECT ap.id, ap.process_definition_number, ap.year, ap.number, ap.organization, ap.archive_duration_months,
     (
         SELECT coalesce(
-            jsonb_agg(json_build_object(
+            jsonb_agg(jsonb_build_object(
                 'rowIndex', row_index,
                 'state', state,
                 'enteredAt', entered_at,
@@ -100,6 +101,16 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
         }
         .exactlyOneOrNull()
 
+fun Database.Read.getArchiveProcessByChildDocumentId(
+    documentId: ChildDocumentId
+): ArchivedProcess? {
+    return createQuery {
+            sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}")
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.let { processId -> getProcess(processId) }
+}
+
 fun Database.Read.getArchiveProcessByAssistanceNeedDecisionId(
     decisionId: AssistanceNeedDecisionId
 ): ArchivedProcess? {
@@ -117,6 +128,14 @@ fun Database.Read.getArchiveProcessByAssistanceNeedPreschoolDecisionId(
             sql(
                 "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
             )
+        }
+        .exactlyOneOrNull<ArchivedProcessId?>()
+        ?.let { processId -> getProcess(processId) }
+}
+
+fun Database.Read.getArchiveProcessByApplicationId(applicationId: ApplicationId): ArchivedProcess? {
+    return createQuery {
+            sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
         }
         .exactlyOneOrNull<ArchivedProcessId?>()
         ?.let { processId -> getProcess(processId) }

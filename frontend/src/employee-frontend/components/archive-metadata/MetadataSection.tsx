@@ -8,12 +8,15 @@ import React from 'react'
 import { Result } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import {
-  Document,
+  DocumentMetadata,
   ProcessMetadataResponse
 } from 'lib-common/generated/api-types/process'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -24,7 +27,7 @@ import LabelValueList from '../common/LabelValueList'
 const DocumentMetadata = React.memo(function DocumentMetadata({
   document
 }: {
-  document: Document
+  document: DocumentMetadata
 }) {
   const { i18n } = useTranslation()
 
@@ -62,7 +65,7 @@ const DocumentMetadata = React.memo(function DocumentMetadata({
           {
             label: i18n.metadata.createdBy,
             value: document.createdBy
-              ? `${document.createdBy.firstName} ${document.createdBy.lastName} ${document.createdBy.email ? `(${document.createdBy.email})` : ''} `
+              ? `${document.createdBy.name} (${i18n.common.userTypes[document.createdBy.type]}) `
               : '-'
           },
           {
@@ -114,8 +117,19 @@ export default React.memo(function MetadataSection({
               ]}
             />
             <Gap />
-            <H3>{i18n.metadata.documents}</H3>
+            <H3>{i18n.metadata.primaryDocument}</H3>
             <DocumentMetadata document={metadata.primaryDocument} />
+            {metadata.secondaryDocuments.length > 0 && (
+              <>
+                <Gap />
+                <H3>{i18n.metadata.secondaryDocuments}</H3>
+                <FixedSpaceColumn>
+                  {metadata.secondaryDocuments.map((doc, i) => (
+                    <DocumentMetadata key={i} document={doc} />
+                  ))}
+                </FixedSpaceColumn>
+              </>
+            )}
             <Gap />
             <H3>{i18n.metadata.history}</H3>
             <ul>

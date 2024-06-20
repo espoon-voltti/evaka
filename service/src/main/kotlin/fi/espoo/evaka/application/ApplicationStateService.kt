@@ -52,8 +52,13 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.getArchiveProcessByApplicationId
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -106,6 +111,7 @@ class ApplicationStateService(
             guardianId = guardian.id,
             childId = child.id,
             origin = origin,
+            createdBy = user.evakaUserId,
             hideFromGuardian = hideFromGuardian,
             sentDate = sentDate,
             allowOtherGuardianAccess = allowOtherGuardianAccess,
@@ -288,6 +294,27 @@ class ApplicationStateService(
 
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, SENT)
+
+        featureConfig.archiveMetadataConfigs[
+                ArchiveProcessType.fromApplicationType(application.type)]
+            ?.also { config ->
+                val processId =
+                    tx.insertProcess(
+                            processDefinitionNumber = config.processDefinitionNumber,
+                            year = clock.now().year,
+                            organization = featureConfig.archiveMetadataOrganization,
+                            archiveDurationMonths = config.archiveDurationMonths
+                        )
+                        .id
+                tx.insertProcessHistoryRow(
+                    processId = processId,
+                    state = ArchivedProcessState.INITIAL,
+                    now = clock.now(),
+                    userId = user.evakaUserId
+                )
+                tx.setApplicationProcessId(applicationId, processId)
+            }
+
         Audit.ApplicationSend.log(targetId = AuditId(applicationId))
     }
 
@@ -328,6 +355,18 @@ class ApplicationStateService(
         )
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
+
+        tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
+            if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
+                tx.insertProcessHistoryRow(
+                    processId = process.id,
+                    state = ArchivedProcessState.PREPARATION,
+                    now = clock.now(),
+                    userId = user.evakaUserId
+                )
+            }
+        }
+
         Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
     }
 
@@ -369,6 +408,18 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
         tx.updateApplicationStatus(application.id, CANCELLED)
+
+        tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
+            if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
+                tx.insertProcessHistoryRow(
+                    processId = process.id,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = clock.now(),
+                    userId = user.evakaUserId
+                )
+            }
+        }
+
         Audit.ApplicationCancel.log(targetId = AuditId(applicationId))
     }
 
@@ -729,7 +780,19 @@ class ApplicationStateService(
 
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, ACTIVE)
+
+            tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
+                if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
+                    tx.insertProcessHistoryRow(
+                        processId = process.id,
+                        state = ArchivedProcessState.COMPLETED,
+                        now = clock.now(),
+                        userId = user.evakaUserId
+                    )
+                }
+            }
         }
+
         Audit.DecisionAccept.log(
             targetId = AuditId(decisionId),
             meta =
@@ -789,6 +852,18 @@ class ApplicationStateService(
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, REJECTED)
         }
+
+        tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
+            if (process.history.none { it.state == ArchivedProcessState.COMPLETED }) {
+                tx.insertProcessHistoryRow(
+                    processId = process.id,
+                    state = ArchivedProcessState.COMPLETED,
+                    now = clock.now(),
+                    userId = user.evakaUserId
+                )
+            }
+        }
+
         Audit.DecisionReject.log(
             targetId = AuditId(decisionId),
             meta = mapOf("childId" to decision.childId)
@@ -1156,6 +1231,18 @@ class ApplicationStateService(
                 application.id,
                 if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
             )
+
+            tx.getArchiveProcessByApplicationId(application.id)?.also { process ->
+                if (process.history.none { it.state == ArchivedProcessState.DECIDING }) {
+                    tx.insertProcessHistoryRow(
+                        processId = process.id,
+                        state = ArchivedProcessState.DECIDING,
+                        now = clock.now(),
+                        userId = user.evakaUserId
+                    )
+                }
+            }
+
             decisionIds
         } else {
             emptyList()
