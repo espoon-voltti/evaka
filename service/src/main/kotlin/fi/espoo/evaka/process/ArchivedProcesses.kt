@@ -80,7 +80,7 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
     SELECT ap.id, ap.process_definition_number, ap.year, ap.number, ap.organization, ap.archive_duration_months,
     (
         SELECT coalesce(
-            jsonb_agg(json_build_object(
+            jsonb_agg(jsonb_build_object(
                 'rowIndex', row_index,
                 'state', state,
                 'enteredAt', entered_at,

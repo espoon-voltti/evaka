@@ -340,7 +340,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                 WHEN a.type = 'CLUB'
                 THEN 'Kerhohakemus'
             END AS name,
-            coalesce(a.sentdate, a.created) AS created_at,
+            coalesce(a.sentdate at time zone 'europe/helsinki', a.created) AS created_at,
             e.id AS created_by_id,
             e.name AS created_by_name,
             e.type AS created_by_type,
