@@ -292,7 +292,7 @@ export default React.memo(function MessageEditor({
 
             <Gap size="s" />
 
-            <label>
+            <TextAreaLabel>
               <Bold>{required(i18n.messages.messageEditor.message)}</Bold>
               <Gap size="s" />
               <StyledTextArea
@@ -305,7 +305,7 @@ export default React.memo(function MessageEditor({
                 }
                 data-qa="input-content"
               />
-            </label>
+            </TextAreaLabel>
 
             <Gap size="s" />
             {displaySendError && (
@@ -389,6 +389,12 @@ const FormArea = styled.div`
   padding: ${defaultMargins.m};
   display: flex;
   flex-direction: column;
+`
+
+const TextAreaLabel = styled.label`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 `
 
 const StyledTextArea = styled.textarea`
