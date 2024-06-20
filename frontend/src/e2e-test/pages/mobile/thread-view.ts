@@ -2,16 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput } from '../../utils/page'
+import { Page, TextInput, Element } from '../../utils/page'
 
 export default class ThreadViewPage {
-  constructor(private readonly page: Page) {}
-
-  goBack = this.page.findByDataQa('go-back')
-  replyButton = this.page.findByDataQa('message-reply-editor-btn')
-  replyContent = new TextInput(this.page.findByDataQa('message-reply-content'))
-  sendReplyButton = this.page.findByDataQa('message-send-btn')
-  discardReplyButton = this.page.findByDataQa('message-discard-btn')
+  goBack: Element
+  replyButton: Element
+  replyContent: TextInput
+  sendReplyButton: Element
+  discardReplyButton: Element
+  constructor(private readonly page: Page) {
+    this.goBack = page.findByDataQa('go-back')
+    this.replyButton = page.findByDataQa('message-reply-editor-btn')
+    this.replyContent = new TextInput(
+      page.findByDataQa('message-reply-content')
+    )
+    this.sendReplyButton = page.findByDataQa('message-send-btn')
+    this.discardReplyButton = page.findByDataQa('message-discard-btn')
+  }
 
   singleMessageContents = this.page.findAll(
     '[data-qa="single-message-content"]'

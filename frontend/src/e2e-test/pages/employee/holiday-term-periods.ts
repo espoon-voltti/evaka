@@ -5,10 +5,33 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
-import { Checkbox, DatePicker, Page, Radio, TextInput } from '../../utils/page'
+import {
+  Checkbox,
+  DatePicker,
+  Page,
+  Radio,
+  TextInput,
+  ElementCollection,
+  Element
+} from '../../utils/page'
 
 export class HolidayAndTermPeriodsPage {
-  constructor(private readonly page: Page) {}
+  #periodRows: ElementCollection
+  #questionnaireRows: ElementCollection
+  #preschoolTermRows: ElementCollection
+  #clubTermRows: ElementCollection
+  confirmCheckbox: Checkbox
+  #addTermBreakButton: Element
+  #termBreakRows: ElementCollection
+  constructor(private readonly page: Page) {
+    this.#periodRows = page.findAllByDataQa('holiday-period-row')
+    this.#questionnaireRows = page.findAllByDataQa('questionnaire-row')
+    this.#preschoolTermRows = page.findAllByDataQa('preschool-term-row')
+    this.#clubTermRows = page.findAllByDataQa('club-term-row')
+    this.confirmCheckbox = new Checkbox(page.findByDataQa('confirm-checkbox'))
+    this.#addTermBreakButton = page.findByDataQa('add-term-break-button')
+    this.#termBreakRows = page.findAllByDataQa('term-break')
+  }
 
   get visiblePeriods(): Promise<string[]> {
     return this.page.findAllByDataQa('holiday-period').allTexts()
@@ -35,12 +58,6 @@ export class HolidayAndTermPeriodsPage {
       .findAllByDataQa(`term-break-${date.formatIso()}`)
       .allTexts()
   }
-
-  #periodRows = this.page.findAllByDataQa('holiday-period-row')
-  #questionnaireRows = this.page.findAllByDataQa('questionnaire-row')
-
-  #preschoolTermRows = this.page.findAllByDataQa('preschool-term-row')
-  #clubTermRows = this.page.findAllByDataQa('club-term-row')
 
   get visibleQuestionnaires(): Promise<string[]> {
     return this.#questionnaireRows.allTexts()
@@ -92,8 +109,6 @@ export class HolidayAndTermPeriodsPage {
       }
     }
   }
-
-  confirmCheckbox = new Checkbox(this.page.findByDataQa('confirm-checkbox'))
 
   #questionnaireInputs = {
     activeStart: new DatePicker(this.page.findByDataQa('input-start')),
@@ -187,9 +202,6 @@ export class HolidayAndTermPeriodsPage {
       }
     }
   }
-
-  #addTermBreakButton = this.page.findByDataQa('add-term-break-button')
-  #termBreakRows = this.page.findAllByDataQa('term-break')
 
   #preschoolTermInputs = {
     finnishPreschoolStart: new DatePicker(

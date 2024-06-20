@@ -8,28 +8,37 @@ import {
 } from 'lib-common/generated/api-types/absence'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Page, TextInput } from '../../utils/page'
+import { Page, TextInput, Element, ElementCollection } from '../../utils/page'
 
 export default class ChildAttendancePage {
-  constructor(private readonly page: Page) {}
+  #presentTab: Element
+  #markPresentButton: Element
+  #markDepartedLink: Element
+  markDepartedButton: Element
+  #markAbsentButton: Element
+  #childStatusLabel: Element
+  #setTimeInput: TextInput
+  groupNote: ElementCollection
+  setTimeInfo: Element
+  constructor(private readonly page: Page) {
+    this.#presentTab = page.findByDataQa('present-tab')
+    this.#markPresentButton = page.findByDataQa('mark-present-btn')
+    this.#markDepartedLink = page.findByDataQa('mark-departed-link')
+    this.markDepartedButton = page.findByDataQa('mark-departed-btn')
+    this.#markAbsentButton = page.findByDataQa('mark-absent-btn')
+    this.#childStatusLabel = page.findByDataQa('child-status')
+    this.#setTimeInput = new TextInput(page.findByDataQa('set-time'))
+    this.groupNote = page.findAllByDataQa('group-note')
+    this.setTimeInfo = page.findByDataQa('set-time-info')
+  }
 
-  #presentTab = this.page.find('[data-qa="present-tab"]')
-  #markPresentButton = this.page.find('[data-qa="mark-present-btn"]')
   #childLink = (n: number) => this.page.findAll('[data-qa="child-name"]').nth(n)
-  #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
-  markDepartedButton = this.page.find('[data-qa="mark-departed-btn"]')
-  #markAbsentButton = this.page.find('[data-qa="mark-absent-btn"]')
   #noChildrenIndicator = this.page
     .findAll('[data-qa="no-children-indicator"]')
     .first()
-  #childStatusLabel = this.page.find('[data-qa="child-status"]')
-  #setTimeInput = new TextInput(this.page.find('[data-qa="set-time"]'))
-  groupNote = this.page.findAllByDataQa('group-note')
-
-  setTimeInfo = this.page.findByDataQa('set-time-info')
 
   #markAbsentByTypeButton = (type: AbsenceType) =>
-    this.page.find(`[data-qa="mark-absent-${type}"]`)
+    this.page.findByDataQa(`mark-absent-${type}`)
 
   markAbsentByCategoryAndTypeButton = (
     category: AbsenceCategory,

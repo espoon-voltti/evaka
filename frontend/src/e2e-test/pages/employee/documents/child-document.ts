@@ -2,16 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, TextInput } from '../../../utils/page'
+import { Page, TextInput, Element } from '../../../utils/page'
 
 export class ChildDocumentPage {
-  constructor(private readonly page: Page) {}
-
-  readonly status = this.page.findByDataQa('document-state-chip')
-  readonly savingIndicator = this.page.findByDataQa('saving-spinner')
-  readonly previewButton = this.page.findByDataQa('preview-button')
-  readonly editButton = this.page.findByDataQa('edit-button')
-  readonly returnButton = this.page.findByDataQa('return-button')
+  status: Element
+  savingIndicator: Element
+  previewButton: Element
+  editButton: Element
+  returnButton: Element
+  constructor(private readonly page: Page) {
+    this.status = page.findByDataQa('document-state-chip')
+    this.savingIndicator = page.findByDataQa('saving-spinner')
+    this.previewButton = page.findByDataQa('preview-button')
+    this.editButton = page.findByDataQa('edit-button')
+    this.returnButton = page.findByDataQa('return-button')
+  }
 
   getTextQuestion(sectionName: string, questionName: string) {
     const section = this.page.find('[data-qa="document-section"]', {

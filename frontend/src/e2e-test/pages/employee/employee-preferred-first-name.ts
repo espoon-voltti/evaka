@@ -8,15 +8,14 @@ import { waitUntilEqual } from '../../utils'
 import { AsyncButton, Page, Select } from '../../utils/page'
 
 export class EmployeePreferredFirstNamePage {
-  constructor(private readonly page: Page) {}
-
-  readonly preferredFirstNameSelect = new Select(
-    this.page.findByDataQa('select-preferred-first-name')
-  )
-
-  readonly confirmButton = new AsyncButton(
-    this.page.findByDataQa('confirm-button')
-  )
+  preferredFirstNameSelect: Select
+  confirmButton: AsyncButton
+  constructor(readonly page: Page) {
+    this.preferredFirstNameSelect = new Select(
+      page.findByDataQa('select-preferred-first-name')
+    )
+    this.confirmButton = new AsyncButton(page.findByDataQa('confirm-button'))
+  }
 
   async assertSelectedPreferredFirstName(expectedPreferredFirstName: string) {
     await waitUntilEqual(

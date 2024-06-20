@@ -5,11 +5,10 @@
 import { Page, TextInput } from '../../utils/page'
 
 export class EmployeesPage {
-  constructor(private readonly page: Page) {}
-
-  readonly nameInput = new TextInput(
-    this.page.findByDataQa('employee-name-filter')
-  )
+  nameInput: TextInput
+  constructor(private readonly page: Page) {
+    this.nameInput = new TextInput(page.findByDataQa('employee-name-filter'))
+  }
 
   get visibleUsers(): Promise<string[]> {
     return this.page.findAllByDataQa('employee-name').allTexts()

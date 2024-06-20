@@ -3,13 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Checkbox, FileInput, Page, TextInput } from '../../utils/page'
+import { Checkbox, FileInput, Page, TextInput, Element } from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
-  constructor(private readonly page: Page) {}
-
-  private startDate = this.page.findByDataQa('start-date')
-  private otherInfo = this.page.findByDataQa('other-info')
+  startDate: Element
+  otherInfo: Element
+  constructor(private readonly page: Page) {
+    this.startDate = page.findByDataQa('start-date')
+    this.otherInfo = page.findByDataQa('other-info')
+  }
 
   async waitUntilReady() {
     await this.startDate.waitUntilVisible()
@@ -37,13 +39,16 @@ export class CitizenChildIncomeStatementViewPage {
 }
 
 export class CitizenChildIncomeStatementEditPage {
-  constructor(private readonly page: Page) {}
-
-  startDateInput = new TextInput(this.page.findByDataQa('start-date'))
-
-  private otherInfoInput = new TextInput(this.page.findByDataQa('other-info'))
-  private assure = new Checkbox(this.page.findByDataQa('assure-checkbox'))
-  private saveButton = this.page.findByDataQa('save-btn')
+  startDateInput: TextInput
+  otherInfoInput: TextInput
+  assure: Checkbox
+  saveButton: Element
+  constructor(private readonly page: Page) {
+    this.startDateInput = new TextInput(page.findByDataQa('start-date'))
+    this.otherInfoInput = new TextInput(page.findByDataQa('other-info'))
+    this.assure = new Checkbox(page.findByDataQa('assure-checkbox'))
+    this.saveButton = page.findByDataQa('save-btn')
+  }
 
   async waitUntilReady() {
     await this.startDateInput.waitUntilVisible()

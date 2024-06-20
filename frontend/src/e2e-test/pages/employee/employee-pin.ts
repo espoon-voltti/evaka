@@ -1,18 +1,17 @@
 // SPDX-FileCopyrightText: 2017-2022 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
-import { Page, TextInput } from '../../utils/page'
+import { Page, TextInput, Element } from '../../utils/page'
 
 export class EmployeePinPage {
-  constructor(private readonly page: Page) {}
-
-  readonly pinInput = new TextInput(
-    this.page.find('[data-qa="pin-code-input"]')
-  )
-  readonly inputInfo = this.page.find('[data-qa="pin-code-input-info"]')
-  readonly pinLockedAlertBox = this.page.find(
-    '[data-qa="pin-locked-alert-box"]'
-  )
-
-  readonly pinSendButton = this.page.find('[data-qa="send-pin-button"]')
+  pinInput: TextInput
+  inputInfo: Element
+  pinLockedAlertBox: Element
+  pinSendButton: Element
+  constructor(readonly page: Page) {
+    this.pinInput = new TextInput(page.findByDataQa('pin-code-input'))
+    this.inputInfo = page.findByDataQa('pin-code-input-info')
+    this.pinLockedAlertBox = page.findByDataQa('pin-locked-alert-box')
+    this.pinSendButton = page.findByDataQa('send-pin-button')
+  }
 }

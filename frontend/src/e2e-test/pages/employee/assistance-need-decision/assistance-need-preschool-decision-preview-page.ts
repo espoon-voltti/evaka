@@ -2,15 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../../utils/page'
+import { Page, Element } from '../../../utils/page'
 
 export default class AssistanceNeedPreschoolDecisionPreviewPage {
-  constructor(private readonly page: Page) {}
-  guardiansHeardOn = this.page.findByDataQa(`guardians-heard-on`)
-  validFrom = this.page.findByDataQa('valid-from')
-  selectedUnit = this.page.findByDataQa('unit')
-  preparedBy1 = this.page.findByDataQa('preparer-1')
-  decisionMaker = this.page.findByDataQa('decision-maker')
-
-  readonly sendDecisionButton = this.page.findByDataQa('send-decision')
+  guardiansHeardOn: Element
+  validFrom: Element
+  selectedUnit: Element
+  preparedBy1: Element
+  decisionMaker: Element
+  sendDecisionButton: Element
+  constructor(readonly page: Page) {
+    this.guardiansHeardOn = page.findByDataQa(`guardians-heard-on`)
+    this.validFrom = page.findByDataQa('valid-from')
+    this.selectedUnit = page.findByDataQa('unit')
+    this.preparedBy1 = page.findByDataQa('preparer-1')
+    this.decisionMaker = page.findByDataQa('decision-maker')
+    this.sendDecisionButton = page.findByDataQa('send-decision')
+  }
 }

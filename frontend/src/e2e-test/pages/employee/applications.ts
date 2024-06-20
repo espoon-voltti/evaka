@@ -10,7 +10,7 @@ export default class ApplicationsPage {
   constructor(private readonly page: Page) {}
 
   applicationStatusFilter(status: 'ALL') {
-    return this.page.find(`[data-qa="application-status-filter-${status}"]`)
+    return this.page.findByDataQa(`application-status-filter-${status}`)
   }
 
   async toggleApplicationStatusFilter(status: 'ALL') {
@@ -23,7 +23,7 @@ export default class ApplicationsPage {
   }
 
   readonly details = {
-    applicantDeadIndicator: this.page.find('[data-qa="applicant-dead"]')
+    applicantDeadIndicator: this.page.findByDataQa('applicant-dead')
   }
 }
 

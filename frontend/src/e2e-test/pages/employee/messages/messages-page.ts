@@ -10,39 +10,53 @@ import {
   Checkbox,
   Combobox,
   TreeDropdown,
-  Element
+  Element,
+  ElementCollection
 } from '../../../utils/page'
 
 export default class MessagesPage {
-  constructor(private readonly page: Page) {}
+  newMessageButton: Element
+  #personalAccount: Element
+  #messageCopiesInbox: Element
+  receivedMessage: Element
+  #draftMessage: Element
+  #openReplyEditorButton: Element
+  sendReplyButton: Element
+  discardMessageButton: Element
+  #messageReplyContent: TextInput
+  #emptyInboxText: Element
+  #unitAccount: Element
+  #draftMessagesBoxRow: TextInput
+  unitReceived: Element
+  constructor(private readonly page: Page) {
+    this.newMessageButton = page.findByDataQa('new-message-btn')
+    this.#personalAccount = page.findByDataQa('personal-account')
+    this.#messageCopiesInbox = page.findByDataQa('message-box-row-copies')
+    this.receivedMessage = page.findByDataQa('received-message-row')
+    this.#draftMessage = page.findByDataQa('draft-message-row')
+    this.#openReplyEditorButton = page.findByDataQa(`message-reply-editor-btn`)
+    this.sendReplyButton = page.findByDataQa('message-send-btn')
+    this.discardMessageButton = page.findByDataQa('message-discard-btn')
+    this.#messageReplyContent = new TextInput(
+      page.findByDataQa('message-reply-content')
+    )
+    this.#emptyInboxText = page.findByDataQa('empty-inbox-text')
+    this.#unitAccount = page.findByDataQa('unit-accounts')
+    this.#draftMessagesBoxRow = new TextInput(
+      this.#personalAccount.findByDataQa('message-box-row-drafts')
+    )
+    this.unitReceived = this.#unitAccount.findByDataQa(
+      'message-box-row-received'
+    )
+  }
 
   async openSentMessages(nth = 0) {
     await this.page.findAllByDataQa('message-box-row-sent').nth(nth).click()
     return new SentMessagesPage(this.page)
   }
 
-  newMessageButton = this.page.find('[data-qa="new-message-btn"]')
-  #personalAccount = this.page.find('[data-qa="personal-account"]')
-  #draftMessagesBoxRow = new TextInput(
-    this.#personalAccount.find('[data-qa="message-box-row-drafts"]')
-  )
-  #messageCopiesInbox = this.page.findByDataQa('message-box-row-copies')
-  receivedMessage = this.page.find('[data-qa="received-message-row"]')
-  #draftMessage = this.page.find('[data-qa="draft-message-row"]')
   #messageContent = (index = 0) =>
-    this.page.find(`[data-qa="message-content"][data-index="${index}"]`)
-
-  #openReplyEditorButton = this.page.find(
-    `[data-qa="message-reply-editor-btn"]`
-  )
-  sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
-  discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
-  #messageReplyContent = new TextInput(
-    this.page.find('[data-qa="message-reply-content"]')
-  )
-  #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
-  #unitAccount = this.page.find('[data-qa="unit-accounts"]')
-  unitReceived = this.#unitAccount.find('[data-qa="message-box-row-received"]')
+    this.page.findByDataQa(`message-content"][data-index="${index}`)
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
@@ -135,9 +149,10 @@ export default class MessagesPage {
 }
 
 export class SentMessagesPage {
-  constructor(private readonly page: Page) {}
-
-  sentMessages = this.page.findAllByDataQa('sent-message-row')
+  sentMessages: ElementCollection
+  constructor(private readonly page: Page) {
+    this.sentMessages = page.findAllByDataQa('sent-message-row')
+  }
 
   async assertMessageParticipants(nth: number, participants: string) {
     await this.sentMessages

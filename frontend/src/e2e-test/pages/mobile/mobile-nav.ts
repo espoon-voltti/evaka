@@ -4,23 +4,25 @@
 
 import { UUID } from 'lib-common/types'
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class MobileNav {
-  constructor(private readonly page: Page) {}
-
-  readonly #groupSelectorButton = this.page.find(
-    '[data-qa="group-selector-button"]'
-  )
-
-  private groupWithId(id: UUID) {
-    return this.page.find(`[data-qa="group--${id}"]`)
+  #groupSelectorButton: Element
+  children: Element
+  staff: Element
+  messages: Element
+  settings: Element
+  constructor(private readonly page: Page) {
+    this.#groupSelectorButton = page.findByDataQa('group-selector-button')
+    this.children = page.findByDataQa('bottomnav-children')
+    this.staff = page.findByDataQa('bottomnav-staff')
+    this.messages = page.findByDataQa('bottomnav-messages')
+    this.settings = page.findByDataQa('bottomnav-settings')
   }
 
-  children = this.page.find('[data-qa="bottomnav-children"]')
-  staff = this.page.find('[data-qa="bottomnav-staff"]')
-  messages = this.page.find('[data-qa="bottomnav-messages"]')
-  settings = this.page.find('[data-qa="bottomnav-settings"]')
+  private groupWithId(id: UUID) {
+    return this.page.findByDataQa(`group--${id}`)
+  }
 
   get selectedGroupName() {
     return this.#groupSelectorButton.text

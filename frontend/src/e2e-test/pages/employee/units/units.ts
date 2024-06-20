@@ -9,6 +9,7 @@ import { waitUntilEqual } from '../../../utils'
 import {
   Checkbox,
   Element,
+  ElementCollection,
   MultiSelect,
   Page,
   TextInput
@@ -17,26 +18,31 @@ import {
 import { UnitEditor, UnitPage } from './unit'
 
 export default class UnitsPage {
-  constructor(private readonly page: Page) {}
-
-  #createNewUnitButton = this.page.find('[data-qa="create-new-unit"]')
+  #createNewUnitButton: Element
+  #unitNameFilter: TextInput
+  providerTypesSelect: MultiSelect
+  careTypesSelect: MultiSelect
+  #showClosedUnits: Checkbox
+  #table: Element
+  #rows: ElementCollection
+  constructor(private readonly page: Page) {
+    this.#createNewUnitButton = page.findByDataQa('create-new-unit')
+    this.#unitNameFilter = new TextInput(page.findByDataQa('unit-name-filter'))
+    this.providerTypesSelect = new MultiSelect(
+      page.findByDataQa('provider-types-select')
+    )
+    this.careTypesSelect = new MultiSelect(
+      page.findByDataQa('care-types-select')
+    )
+    this.#showClosedUnits = new Checkbox(page.findByDataQa('include-closed'))
+    this.#table = page.findByDataQa('table-of-units')
+    this.#rows = this.#table.findAllByDataQa('unit-row')
+  }
 
   static async open(page: Page) {
     await page.goto(config.employeeUrl + '/units')
     return new UnitsPage(page)
   }
-
-  #unitNameFilter = new TextInput(
-    this.page.find('[data-qa="unit-name-filter"]')
-  )
-
-  providerTypesSelect = new MultiSelect(
-    this.page.findByDataQa('provider-types-select')
-  )
-
-  careTypesSelect = new MultiSelect(this.page.findByDataQa('care-types-select'))
-
-  #showClosedUnits = new Checkbox(this.page.find('[data-qa="include-closed"]'))
 
   async filterByName(text: string) {
     await this.#unitNameFilter.fill(text)
@@ -50,9 +56,6 @@ export default class UnitsPage {
     }
   }
 
-  #table = this.page.find('[data-qa="table-of-units"]')
-  #rows = this.#table.findAll('[data-qa="unit-row"]')
-
   async assertRowCount(expectedCount: number) {
     await waitUntilEqual(() => this.#rows.count(), expectedCount)
   }
@@ -60,7 +63,7 @@ export default class UnitsPage {
   unitRow(id: UUID) {
     return new UnitRow(
       this.page,
-      this.page.find(`[data-qa="unit-row"][data-id="${id}"]`)
+      this.page.findByDataQa(`unit-row"][data-id="${id}`)
     )
   }
 

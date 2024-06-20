@@ -25,7 +25,18 @@ import { IncomeStatementPage } from './IncomeStatementPage'
 import { TimelinePage } from './timeline/timeline-page'
 
 export default class GuardianInformationPage {
-  constructor(private readonly page: Page) {}
+  #restrictedDetailsEnabledLabel: Element
+  #personStreetAddress: Element
+  #timelineButton: Element
+  constructor(private readonly page: Page) {
+    this.#restrictedDetailsEnabledLabel = page.findByDataQa(
+      'restriction-details-enabled-label'
+    )
+    this.#personStreetAddress = page.findByDataQa(
+      'person-details-street-address'
+    )
+    this.#timelineButton = page.findByDataQa('timeline-button')
+  }
 
   async navigateToGuardian(personId: UUID) {
     await this.page.goto(config.employeeUrl + '/profile/' + personId)
@@ -40,14 +51,6 @@ export default class GuardianInformationPage {
       .find('[data-qa="family-overview-section"][data-isloading="false"]')
       .waitUntilVisible()
   }
-
-  #restrictedDetailsEnabledLabel = this.page.find(
-    '[data-qa="restriction-details-enabled-label"]'
-  )
-  #personStreetAddress = this.page.find(
-    '[data-qa="person-details-street-address"]'
-  )
-  #timelineButton = this.page.find('[data-qa="timeline-button"]')
 
   async assertRestrictedDetails(enabled: boolean) {
     switch (enabled) {
@@ -144,7 +147,7 @@ class PartnersSection extends Section {
 
   async addPartner(partnerName: string, startDate: string) {
     await this.#addPartnerButton.click()
-    const modal = new Modal(this.page.find('[data-qa="fridge-partner-modal"]'))
+    const modal = new Modal(this.page.findByDataQa('fridge-partner-modal'))
 
     const combobox = new Combobox(
       modal.find('[data-qa="fridge-partner-person-search"]')
@@ -165,7 +168,7 @@ class ChildrenSection extends Section {
 
   async addChild(childName: string, startDate: string) {
     await this.#addChildButton.click()
-    const modal = new Modal(this.page.find('[data-qa="fridge-child-modal"]'))
+    const modal = new Modal(this.page.findByDataQa('fridge-child-modal'))
 
     const combobox = new Combobox(
       modal.find('[data-qa="fridge-child-person-search"]')
@@ -306,6 +309,36 @@ class DecisionsSection extends Section {
 }
 
 export class IncomeSection extends Section {
+  #newIncomeButton: Element
+  #incomeDateRange: Element
+  #saveIncomeButton: Element
+  #cancelIncomeButton: Element
+  #toggleIncomeItemButton: Element
+  #incomeSum: Element
+  #expensesSum: Element
+  #editIncomeItemButton: Element
+  #incomeStartDateInput: DatePicker
+  #incomeEndDateInput: DatePicker
+
+  constructor(page: Page, root: Element) {
+    super(page, root)
+    this.#newIncomeButton = page.findByDataQa('add-income-button')
+    this.#incomeDateRange = page.findByDataQa('income-date-range')
+    this.#saveIncomeButton = page.findByDataQa('save-income')
+    this.#cancelIncomeButton = page.findByDataQa('cancel-income-edit')
+    this.#toggleIncomeItemButton = page.findByDataQa('toggle-income-item')
+    this.#incomeSum = page.findByDataQa('income-sum-income')
+    this.#expensesSum = page.findByDataQa('income-sum-expenses')
+    this.#editIncomeItemButton = page.findByDataQa('edit-income-item')
+
+    this.#incomeStartDateInput = new DatePicker(
+      this.#incomeDateRange.findByDataQa('start-date')
+    )
+    this.#incomeEndDateInput = new DatePicker(
+      this.#incomeDateRange.findByDataQa('end-date')
+    )
+  }
+
   // Income statements
 
   #incomeStatementRows = this.findAll(`[data-qa="income-statement-row"]`)
@@ -340,20 +373,9 @@ export class IncomeSection extends Section {
     return this.#incomeStatementRows.nth(nth).text
   }
 
-  // Incomes
-  #newIncomeButton = this.page.find('[data-qa="add-income-button"]')
-
   async openNewIncomeForm() {
     await this.#newIncomeButton.click()
   }
-
-  #incomeDateRange = this.page.find('[data-qa="income-date-range"]')
-  #incomeStartDateInput = new DatePicker(
-    this.#incomeDateRange.find('[data-qa="start-date"]')
-  )
-  #incomeEndDateInput = new DatePicker(
-    this.#incomeDateRange.find('[data-qa="end-date"]')
-  )
 
   async fillIncomeStartDate(value: string) {
     await this.#incomeStartDateInput.fill(value)
@@ -364,28 +386,25 @@ export class IncomeSection extends Section {
   }
 
   #incomeInput = (type: string) =>
-    new TextInput(this.page.find(`[data-qa="income-input-${type}"]`))
+    new TextInput(this.page.findByDataQa(`income-input-${type}`))
 
   async fillIncome(type: string, value: string) {
     await this.#incomeInput(type).fill(value)
   }
 
   #incomeEffect = (effect: string) =>
-    this.page.find(`[data-qa="income-effect-${effect}"]`)
+    this.page.findByDataQa(`income-effect-${effect}`)
 
   async chooseIncomeEffect(effect: string) {
     await this.#incomeEffect(effect).click()
   }
 
   #coefficientSelect = (type: string) =>
-    new Select(this.page.find(`[data-qa="income-coefficient-select-${type}"]`))
+    new Select(this.page.findByDataQa(`income-coefficient-select-${type}`))
 
   async chooseCoefficient(type: string, coefficient: string) {
     await this.#coefficientSelect(type).selectOption({ value: coefficient })
   }
-
-  #saveIncomeButton = this.page.find('[data-qa="save-income"]')
-  #cancelIncomeButton = this.page.find('[data-qa="cancel-income-edit"]')
 
   async save() {
     await this.#saveIncomeButton.click()
@@ -418,25 +437,17 @@ export class IncomeSection extends Section {
     await this.find('[data-qa="modal-okBtn"]').click()
   }
 
-  #toggleIncomeItemButton = this.page.find('[data-qa="toggle-income-item"]')
-
   async toggleIncome() {
     await this.#toggleIncomeItemButton.click()
   }
-
-  #incomeSum = this.page.find('[data-qa="income-sum-income"]')
 
   async getIncomeSum() {
     return await this.#incomeSum.text
   }
 
-  #expensesSum = this.page.find('[data-qa="income-sum-expenses"]')
-
   async getExpensesSum() {
     return await this.#expensesSum.text
   }
-
-  #editIncomeItemButton = this.page.find('[data-qa="edit-income-item"]')
 
   async edit() {
     await this.#editIncomeItemButton.click()
@@ -502,7 +513,7 @@ class FeeDecisionsSection extends Section {
     await this.find(
       '[data-qa="create-retroactive-fee-decision-button"]'
     ).click()
-    const modal = new Modal(this.page.find('[data-qa="modal"]'))
+    const modal = new Modal(this.page.findByDataQa('modal'))
 
     const startDate = new DatePicker(
       modal.find('[data-qa="retroactive-fee-decision-start-date"]')

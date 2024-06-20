@@ -8,16 +8,17 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { waitUntilTrue } from '../../utils'
-import { Checkbox, Combobox, Page } from '../../utils/page'
+import { Checkbox, Combobox, Page, Element } from '../../utils/page'
 import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
 
 import ApplicationDetailsPage from './application-details-page'
 
 export class SearchFilter {
-  constructor(private page: Page) {}
-
-  #statusRadioAll = this.page.findByDataQa('application-status-filter-ALL')
+  #statusRadioAll: Element
+  constructor(private page: Page) {
+    this.#statusRadioAll = page.findByDataQa('application-status-filter-ALL')
+  }
 
   async filterByTransferOnly() {
     await this.page.findByDataQa('filter-transfer-only').click()
@@ -60,37 +61,48 @@ export class DecisionEditorPage {
 }
 
 export class ApplicationWorkbenchPage {
-  constructor(private page: Page) {}
+  #applicationPlacementProposalStatusIndicator: Element
+  #applicationPlacementProposalStatusTooltip: Element
+  applicationsSent: Element
+  #applicationsWaitingPlacement: Element
+  #applicationsWaitingDecision: Element
+  #applicationsWaitingUnitConfirmation: Element
+  applicationsAll: Element
+  #applicationList: Element
+  #btnCloseApplication: Element
+  #agreementStatus: Element
+  #otherGuardianTel: Element
+  #otherGuardianEmail: Element
+  #withdrawPlacementProposalsButton: Element
+  constructor(private page: Page) {
+    this.#applicationPlacementProposalStatusIndicator = page.findByDataQa(
+      'placement-proposal-status'
+    )
+    this.#applicationPlacementProposalStatusTooltip = page.findByDataQa(
+      'placement-proposal-status-tooltip'
+    )
+    this.applicationsSent = page.findByDataQa('application-status-filter-SENT')
+    this.#applicationsWaitingPlacement = page.findByDataQa(
+      'application-status-filter-WAITING_PLACEMENT'
+    )
+    this.#applicationsWaitingDecision = page.findByDataQa(
+      'application-status-filter-WAITING_DECISION'
+    )
+    this.#applicationsWaitingUnitConfirmation = page.findByDataQa(
+      'application-status-filter-WAITING_UNIT_CONFIRMATION'
+    )
+    this.applicationsAll = page.findByDataQa('application-status-filter-ALL')
+    this.#applicationList = page.findByDataQa('applications-list')
+    this.#btnCloseApplication = page.findByDataQa('close-application')
+    this.#agreementStatus = page.findByDataQa('agreement-status')
+    this.#otherGuardianTel = page.findByDataQa('second-guardian-phone')
+    this.#otherGuardianEmail = page.findByDataQa('second-guardian-email')
+    this.#withdrawPlacementProposalsButton = page.findByDataQa(
+      'action-bar-withdrawPlacementProposal'
+    )
+  }
 
   searchFilter = new SearchFilter(this.page)
-
-  #applicationPlacementProposalStatusIndicator = this.page.findByDataQa(
-    'placement-proposal-status'
-  )
-  #applicationPlacementProposalStatusTooltip = this.page.findByDataQa(
-    'placement-proposal-status-tooltip'
-  )
-  applicationsSent = this.page.findByDataQa('application-status-filter-SENT')
-  #applicationsWaitingPlacement = this.page.findByDataQa(
-    'application-status-filter-WAITING_PLACEMENT'
-  )
-  #applicationsWaitingDecision = this.page.findByDataQa(
-    'application-status-filter-WAITING_DECISION'
-  )
-  #applicationsWaitingUnitConfirmation = this.page.findByDataQa(
-    'application-status-filter-WAITING_UNIT_CONFIRMATION'
-  )
-  applicationsAll = this.page.findByDataQa('application-status-filter-ALL')
-  // only matches when applications have been loaded
-  #applicationList = this.page.findByDataQa('applications-list')
-  #btnCloseApplication = this.page.findByDataQa('close-application')
-  #agreementStatus = this.page.findByDataQa('agreement-status')
-  #otherGuardianTel = this.page.findByDataQa('second-guardian-phone')
-  #otherGuardianEmail = this.page.findByDataQa('second-guardian-email')
-
-  #withdrawPlacementProposalsButton = this.page.findByDataQa(
-    'action-bar-withdrawPlacementProposal'
-  )
 
   getApplicationListItem(applicationId: string) {
     return this.#applicationList.find(

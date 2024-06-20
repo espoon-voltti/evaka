@@ -5,16 +5,19 @@
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import LocalDate from 'lib-common/local-date'
 
-import { Page, TextInput } from '../../utils/page'
+import { Page, TextInput, Element } from '../../utils/page'
 
 export default class MobileAbsencesPage {
-  constructor(private readonly page: Page) {}
+  #markAbsentBtn: Element
+  #confirmDeleteBtn: Element
+  constructor(private readonly page: Page) {
+    this.#markAbsentBtn = page.findByDataQa('mark-absent-btn')
+    this.#confirmDeleteBtn = page.findByDataQa('modal-okBtn')
+  }
 
-  #markAbsentBtn = this.page.find('[data-qa="mark-absent-btn"]')
   #firstDeleteAbsencePeriodBtn = this.page
     .findAll('[data-qa="delete-absence-period"]')
     .first()
-  #confirmDeleteBtn = this.page.find('[data-qa="modal-okBtn"]')
 
   async markAbsent() {
     return this.#markAbsentBtn.click()
@@ -25,7 +28,7 @@ export default class MobileAbsencesPage {
   }
 
   absenceChip(absenceType: AbsenceType) {
-    return this.page.find(`[data-qa="mark-absent-${absenceType}"]`)
+    return this.page.findByDataQa(`mark-absent-${absenceType}`)
   }
 
   async markNewAbsencePeriod(
@@ -33,10 +36,10 @@ export default class MobileAbsencesPage {
     to: LocalDate,
     absenceType: AbsenceType
   ) {
-    await new TextInput(this.page.find('[data-qa="start-date-input"]')).fill(
+    await new TextInput(this.page.findByDataQa('start-date-input')).fill(
       from.formatIso()
     )
-    await new TextInput(this.page.find('[data-qa="end-date-input"]')).fill(
+    await new TextInput(this.page.findByDataQa('end-date-input')).fill(
       to.formatIso()
     )
     await this.absenceChip(absenceType).click()

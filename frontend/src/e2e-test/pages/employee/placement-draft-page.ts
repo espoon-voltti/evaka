@@ -4,27 +4,26 @@
 
 import { UUID } from 'lib-common/types'
 
-import { Combobox, DatePickerDeprecated, Page } from '../../utils/page'
+import { Combobox, DatePickerDeprecated, Page, Element } from '../../utils/page'
 
 export class PlacementDraftPage {
-  constructor(private page: Page) {}
-
-  #restrictedDetailsWarning = this.page.find(
-    '[data-qa="restricted-details-warning"]'
-  )
-
-  readonly startDate = new DatePickerDeprecated(
-    this.page.findByDataQa('start-date')
-  )
+  #restrictedDetailsWarning: Element
+  startDate: DatePickerDeprecated
+  #addOtherUnitCombobox: Combobox
+  constructor(private page: Page) {
+    this.#restrictedDetailsWarning = page.findByDataQa(
+      'restricted-details-warning'
+    )
+    this.startDate = new DatePickerDeprecated(page.findByDataQa('start-date'))
+    this.#addOtherUnitCombobox = new Combobox(
+      page.findByDataQa('add-other-unit')
+    )
+  }
 
   #unitCard = (unitId: UUID) =>
     this.page
       .find('[data-qa="placement-list"]')
       .find(`[data-qa="placement-item-${unitId}"]`)
-
-  #addOtherUnitCombobox = new Combobox(
-    this.page.find('[data-qa="add-other-unit"]')
-  )
 
   async waitUntilLoaded() {
     await this.page
@@ -71,7 +70,7 @@ export class PlacementDraftPage {
   }
 
   async submit() {
-    await this.page.find('[data-qa="send-placement-button"]').click()
+    await this.page.findByDataQa('send-placement-button').click()
   }
 }
 

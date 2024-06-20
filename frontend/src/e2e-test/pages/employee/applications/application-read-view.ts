@@ -8,28 +8,45 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { waitUntilTrue } from '../../../utils'
-import { DatePickerDeprecated, Page, Radio } from '../../../utils/page'
+import {
+  DatePickerDeprecated,
+  Page,
+  Radio,
+  Element,
+  ElementCollection
+} from '../../../utils/page'
 import MessagesPage from '../messages/messages-page'
 
 import ApplicationEditView from './application-edit-view'
 
 export default class ApplicationReadView {
-  constructor(private page: Page) {}
-
-  #title = this.page.find('[data-qa="application-title"]').find('h1')
-  #editButton = this.page.find('[data-qa="edit-application"]')
-  #vtjGuardianName = this.page.find('[data-qa="vtj-guardian-name"]')
-  #vtjGuardianPhone = this.page.find('[data-qa="vtj-guardian-phone"]')
-  #vtjGuardianEmail = this.page.find('[data-qa="vtj-guardian-email"]')
-  #givenOtherGuardianPhone = this.page.find('[data-qa="second-guardian-phone"]')
-  #giveOtherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
-  #applicationStatus = this.page.find('[data-qa="application-status"]')
-  #sendMessageButton = this.page.findByDataQa('send-message-button')
-  notesList = this.page.findByDataQa('application-notes-list')
-  notes = this.notesList.findAllByDataQa('note-container')
+  #editButton: Element
+  #vtjGuardianName: Element
+  #vtjGuardianPhone: Element
+  #vtjGuardianEmail: Element
+  #givenOtherGuardianPhone: Element
+  #giveOtherGuardianEmail: Element
+  #applicationStatus: Element
+  #sendMessageButton: Element
+  notesList: Element
+  #title: Element
+  private notes: ElementCollection
+  constructor(private page: Page) {
+    this.#editButton = page.findByDataQa('edit-application')
+    this.#vtjGuardianName = page.findByDataQa('vtj-guardian-name')
+    this.#vtjGuardianPhone = page.findByDataQa('vtj-guardian-phone')
+    this.#vtjGuardianEmail = page.findByDataQa('vtj-guardian-email')
+    this.#givenOtherGuardianPhone = page.findByDataQa('second-guardian-phone')
+    this.#giveOtherGuardianEmail = page.findByDataQa('second-guardian-email')
+    this.#applicationStatus = page.findByDataQa('application-status')
+    this.#sendMessageButton = page.findByDataQa('send-message-button')
+    this.notesList = page.findByDataQa('application-notes-list')
+    this.#title = this.page.findByDataQa('application-title').find('h1')
+    this.notes = this.notesList.findAllByDataQa('note-container')
+  }
 
   async waitUntilLoaded() {
-    await this.page.find('[data-qa="application-read-view"]').waitUntilVisible()
+    await this.page.findByDataQa('application-read-view').waitUntilVisible()
     await this.page
       .find('[data-qa="vtj-guardian-section"][data-isloading="false"]')
       .waitUntilVisible()
@@ -89,7 +106,7 @@ export default class ApplicationReadView {
   }
 
   async acceptDecision(type: DecisionType) {
-    const decision = this.page.find(`[data-qa="application-decision-${type}"]`)
+    const decision = this.page.findByDataQa(`application-decision-${type}`)
 
     const acceptRadio = new Radio(
       decision.find('[data-qa="decision-radio-accept"]')
@@ -120,9 +137,7 @@ export default class ApplicationReadView {
     fileName: string,
     byPaper = true
   ) {
-    const attachment = this.page.find(
-      `[data-qa="urgent-attachment-${fileName}"]`
-    )
+    const attachment = this.page.findByDataQa(`urgent-attachment-${fileName}`)
     await attachment.waitUntilVisible()
 
     const text = attachment.find(`[data-qa="attachment-received-at"]`)
@@ -154,7 +169,7 @@ export default class ApplicationReadView {
   }
 
   async assertApplicantIsDead() {
-    await this.page.find('[data-qa="applicant-dead"]').waitUntilVisible()
+    await this.page.findByDataQa('applicant-dead').waitUntilVisible()
   }
 
   async assertDueDate(dueDate: LocalDate) {

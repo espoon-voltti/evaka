@@ -33,20 +33,18 @@ import { IncomeSection } from './guardian-information'
 import { VasuPage } from './vasu/vasu'
 
 export default class ChildInformationPage {
-  constructor(private readonly page: Page) {}
-
-  readonly #deceased = this.page.find('[data-qa="deceased-label"]')
-  readonly #ophPersonOidInput = new TextInput(
-    this.page.find('[data-qa="person-oph-person-oid"]')
-  )
-
-  readonly #editButton = this.page.find(
-    '[data-qa="edit-person-settings-button"]'
-  )
-
-  readonly confirmButton = this.page.find(
-    '[data-qa="confirm-edited-person-button"]'
-  )
+  #deceased: Element
+  #ophPersonOidInput: TextInput
+  #editButton: Element
+  confirmButton: Element
+  constructor(private readonly page: Page) {
+    this.#deceased = page.findByDataQa('deceased-label')
+    this.#ophPersonOidInput = new TextInput(
+      page.findByDataQa('person-oph-person-oid')
+    )
+    this.#editButton = page.findByDataQa('edit-person-settings-button')
+    this.confirmButton = page.findByDataQa('confirm-edited-person-button')
+  }
 
   async navigateToChild(id: UUID) {
     await this.page.goto(config.employeeUrl + '/child-information/' + id)
@@ -115,7 +113,7 @@ export default class ChildInformationPage {
   additionalInformationSection() {
     return new AdditionalInformationSection(
       this.page,
-      this.page.find('[data-qa="additional-information-section"]')
+      this.page.findByDataQa('additional-information-section')
     )
   }
 }
@@ -130,26 +128,32 @@ class Section extends Element {
 }
 
 export class AdditionalInformationSection extends Section {
+  languageAtHome: Element
+  languageAtHomeCombobox: Combobox
+  languageAtHomeDetails: Element
+  languageAtHomeDetailsInput: TextInput
+  specialDietCombobox: Combobox
+
+  constructor(page: Page, root: Element) {
+    super(page, root)
+    this.languageAtHome = page.findByDataQa('person-language-at-home')
+    this.languageAtHomeCombobox = new Combobox(
+      page.findByDataQa('input-language-at-home')
+    )
+    this.languageAtHomeDetails = page.findByDataQa(
+      'person-language-at-home-details'
+    )
+    this.languageAtHomeDetailsInput = new TextInput(
+      page.findByDataQa('input-language-at-home-details')
+    )
+    this.specialDietCombobox = new Combobox(page.findByDataQa('diet-input'))
+  }
+
   medication = this.find('[data-qa="medication"]')
   editBtn = this.find('[data-qa="edit-child-settings-button"]')
   medicationInput = new TextInput(this.find('[data-qa="medication-input"]'))
   confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
 
-  readonly languageAtHome = this.page.findByDataQa('person-language-at-home')
-  readonly languageAtHomeCombobox = new Combobox(
-    this.page.findByDataQa('input-language-at-home')
-  )
-
-  readonly languageAtHomeDetails = this.page.findByDataQa(
-    'person-language-at-home-details'
-  )
-  readonly languageAtHomeDetailsInput = new TextInput(
-    this.page.findByDataQa('input-language-at-home-details')
-  )
-
-  readonly specialDietCombobox = new Combobox(
-    this.page.findByDataQa('diet-input')
-  )
   readonly specialDiet = this.page.findByDataQa('diet-value-display')
 }
 
@@ -374,7 +378,7 @@ export class PedagogicalDocumentsSection extends Section {
     testfileName: string,
     testfilePath: string
   ) {
-    await new FileInput(page.find('[data-qa="btn-upload-file"]')).setInputFiles(
+    await new FileInput(page.findByDataQa('btn-upload-file')).setInputFiles(
       testfilePath
     )
     await waitUntilTrue(async () =>
@@ -386,6 +390,19 @@ export class PedagogicalDocumentsSection extends Section {
 }
 
 export class ChildDocumentsSection extends Section {
+  createDocumentButton: Element
+  createModalTemplateSelect: Select
+  modalOk: Element
+
+  constructor(page: Page, root: Element) {
+    super(page, root)
+    this.createDocumentButton = page.findByDataQa('create-document')
+    this.createModalTemplateSelect = new Select(
+      page.findByDataQa('template-select')
+    )
+    this.modalOk = page.findByDataQa('modal-okBtn')
+  }
+
   readonly #addNewVasu = this.find('[data-qa="add-new-vasu-button"]')
 
   async addNewVasu() {
@@ -409,12 +426,6 @@ export class ChildDocumentsSection extends Section {
     await this.page.findByDataQa(`curriculum-document-${id}`).click()
     return new VasuPage(this.page)
   }
-
-  readonly createDocumentButton = this.page.findByDataQa('create-document')
-  readonly createModalTemplateSelect = new Select(
-    this.page.findByDataQa('template-select')
-  )
-  readonly modalOk = this.page.findByDataQa('modal-okBtn')
 
   async assertChildDocuments(expectedRows: { id: UUID }[]) {
     const rows = this.page
@@ -861,7 +872,7 @@ export class PlacementsSection extends Section {
   }) {
     await this.find('[data-qa="create-new-placement-button"]').click()
 
-    const modal = new Modal(this.page.find('[data-qa="modal"]'))
+    const modal = new Modal(this.page.findByDataQa('modal'))
     const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
     await unitSelect.fillAndSelectFirst(unitName)
 
@@ -896,6 +907,23 @@ export class PlacementsSection extends Section {
 }
 
 export class AssistanceSection extends Section {
+  createAssistanceNeedVoucherCoefficientBtn: Element
+  createAssistanceNeedVoucherCoefficientForm: Element
+  editAssistanceNeedVoucherCoefficientForm: Element
+
+  constructor(page: Page, root: Element) {
+    super(page, root)
+    this.createAssistanceNeedVoucherCoefficientBtn = page.findByDataQa(
+      'assistance-need-voucher-coefficient-create-btn'
+    )
+    this.createAssistanceNeedVoucherCoefficientForm = page.findByDataQa(
+      'create-new-assistance-need-voucher-coefficient'
+    )
+    this.editAssistanceNeedVoucherCoefficientForm = page.findByDataQa(
+      'table-assistance-need-voucher-coefficient-editor'
+    )
+  }
+
   createAssistanceFactorButton = this.findByDataQa(
     'assistance-factor-create-btn'
   )
@@ -1052,16 +1080,6 @@ export class AssistanceSection extends Section {
     }
   }
 
-  readonly createAssistanceNeedVoucherCoefficientBtn = this.page.findByDataQa(
-    'assistance-need-voucher-coefficient-create-btn'
-  )
-  readonly createAssistanceNeedVoucherCoefficientForm = this.page.findByDataQa(
-    'create-new-assistance-need-voucher-coefficient'
-  )
-  readonly editAssistanceNeedVoucherCoefficientForm = this.page.findByDataQa(
-    'table-assistance-need-voucher-coefficient-editor'
-  )
-
   readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
 }
 
@@ -1139,21 +1157,22 @@ class MessageBlocklistSection extends Section {
 }
 
 class FeeAlterationEditorPage {
-  constructor(private readonly page: Page) {}
-
-  readonly startDateInput = new DatePickerDeprecated(
-    this.page.findByDataQa('date-range-input-start-date')
-  )
-  readonly endDateInput = new DatePickerDeprecated(
-    this.page.findByDataQa('date-range-input-end-date')
-  )
-
-  readonly alterationValueInput = new TextInput(
-    this.page.findByDataQa('fee-alteration-amount-input')
-  )
-  readonly saveButton = this.page.findByDataQa(
-    'fee-alteration-editor-save-button'
-  )
+  startDateInput: DatePickerDeprecated
+  endDateInput: DatePickerDeprecated
+  alterationValueInput: TextInput
+  saveButton: Element
+  constructor(private readonly page: Page) {
+    this.startDateInput = new DatePickerDeprecated(
+      page.findByDataQa('date-range-input-start-date')
+    )
+    this.endDateInput = new DatePickerDeprecated(
+      page.findByDataQa('date-range-input-end-date')
+    )
+    this.alterationValueInput = new TextInput(
+      page.findByDataQa('fee-alteration-amount-input')
+    )
+    this.saveButton = page.findByDataQa('fee-alteration-editor-save-button')
+  }
 
   async uploadedCount() {
     return this.page.findAllByDataQa('file-download-button').count()

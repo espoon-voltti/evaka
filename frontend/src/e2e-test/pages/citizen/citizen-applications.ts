@@ -8,35 +8,47 @@ import { UUID } from 'lib-common/types'
 
 import { waitUntilDefined, waitUntilEqual } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
-import { Checkbox, FileInput, Page, Radio, TextInput } from '../../utils/page'
+import {
+  Checkbox,
+  FileInput,
+  Page,
+  Radio,
+  TextInput,
+  Element
+} from '../../utils/page'
 
 export default class CitizenApplicationsPage {
-  constructor(private readonly page: Page) {}
+  #createNewApplicationButton: Element
+  #transferApplicationNotification: Element
+  #duplicateApplicationNotification: Element
+  #applicationTitle: Element
+  constructor(private readonly page: Page) {
+    this.#createNewApplicationButton = page.findByDataQa('submit')
+    this.#transferApplicationNotification = page.findByDataQa(
+      'transfer-application-notification'
+    )
+    this.#duplicateApplicationNotification = page.findByDataQa(
+      'duplicate-application-notification'
+    )
+    this.#applicationTitle = page.findByDataQa('application-type-title')
+  }
 
   #newApplicationButton = (childId: string) =>
-    this.page.find(`[data-qa="new-application-${childId}"]`)
+    this.page.findByDataQa(`new-application-${childId}`)
   #applicationTypeRadio = (type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB') =>
-    new Radio(this.page.find(`[data-qa="type-radio-${type}"]`))
-  #createNewApplicationButton = this.page.find('[data-qa="submit"]')
-  #transferApplicationNotification = this.page.find(
-    '[data-qa="transfer-application-notification"]'
-  )
-  #duplicateApplicationNotification = this.page.find(
-    '[data-qa="duplicate-application-notification"]'
-  )
-  #applicationTitle = this.page.find('[data-qa="application-type-title"]')
+    new Radio(this.page.findByDataQa(`type-radio-${type}`))
   #openApplicationButton = (id: string) =>
-    this.page.find(`[data-qa="button-open-application-${id}"]`)
+    this.page.findByDataQa(`button-open-application-${id}`)
   #cancelApplicationButton = (id: string) =>
-    this.page.find(`[data-qa="button-remove-application-${id}"]`)
+    this.page.findByDataQa(`button-remove-application-${id}`)
   #childTitle = (childId: string) =>
-    this.page.find(`[data-qa="title-applications-child-name-${childId}"]`)
+    this.page.findByDataQa(`title-applications-child-name-${childId}`)
   #applicationType = (id: string) =>
-    this.page.find(`[data-qa="title-application-type-${id}"]`)
+    this.page.findByDataQa(`title-application-type-${id}`)
   #applicationPreferredStartDate = (id: string) =>
-    this.page.find(`[data-qa="application-period-${id}"]`)
+    this.page.findByDataQa(`application-period-${id}`)
   #applicationStatus = (id: string) =>
-    this.page.find(`[data-qa="application-status-${id}"]`)
+    this.page.findByDataQa(`application-status-${id}`)
 
   async createApplication(
     childId: string,
@@ -109,7 +121,7 @@ export default class CitizenApplicationsPage {
 
   async cancelApplication(id: string) {
     await this.#cancelApplicationButton(id).click()
-    await this.page.find('[data-qa="modal-okBtn"]').click()
+    await this.page.findByDataQa('modal-okBtn').click()
   }
 
   async assertApplicationDoesNotExist(id: string) {
@@ -122,48 +134,63 @@ export default class CitizenApplicationsPage {
 }
 
 class CitizenApplicationReadView {
-  constructor(private readonly page: Page) {}
-
-  contactInfoSection = this.page.findByDataQa('contact-info-section')
-  unitPreferenceSection = this.page.findByDataQa('unit-preference-section')
-  assistanceNeedDescription = new TextInput(
-    this.page.findByDataQa('assistance-need-description')
-  )
+  contactInfoSection: Element
+  unitPreferenceSection: Element
+  assistanceNeedDescription: TextInput
+  constructor(readonly page: Page) {
+    this.contactInfoSection = page.findByDataQa('contact-info-section')
+    this.unitPreferenceSection = page.findByDataQa('unit-preference-section')
+    this.assistanceNeedDescription = new TextInput(
+      page.findByDataQa('assistance-need-description')
+    )
+  }
 }
 
 class CitizenApplicationEditor {
-  constructor(private readonly page: Page) {}
+  #verifyButton: Element
+  #verifyCheckbox: Checkbox
+  #allowOtherGuardianAccess: Checkbox
+  #sendButton: Element
+  #applicationSentModal: Element
+  #errorsTitle: Element
+  #preferredStartDateInput: TextInput
+  #preferredStartDateWarning: Element
+  #preferredStartDateInfo: Element
+  saveAsDraftButton: Element
+  modalOkBtn: Element
+  guardianPhoneInput: TextInput
+  constructor(private readonly page: Page) {
+    this.#verifyButton = page.findByDataQa('verify-btn')
+    this.#verifyCheckbox = new Checkbox(page.findByDataQa('verify-checkbox'))
+    this.#allowOtherGuardianAccess = new Checkbox(
+      page.findByDataQa('allow-other-guardian-access')
+    )
+    this.#sendButton = page.findByDataQa('send-btn')
+    this.#applicationSentModal = page.findByDataQa(
+      'info-message-application-sent'
+    )
+    this.#errorsTitle = page.findByDataQa('application-has-errors-title')
+    this.#preferredStartDateInput = new TextInput(
+      page.findByDataQa('preferredStartDate-input')
+    )
+    this.#preferredStartDateWarning = page.findByDataQa(
+      'daycare-processing-time-warning'
+    )
+    this.#preferredStartDateInfo = page.findByDataQa(
+      'preferredStartDate-input-info'
+    )
+    this.saveAsDraftButton = page.findByDataQa('save-as-draft-btn')
+    this.modalOkBtn = page.findByDataQa('modal-okBtn')
+    this.guardianPhoneInput = new TextInput(
+      page.findByDataQa('guardianPhone-input')
+    )
+  }
 
-  #verifyButton = this.page.find('[data-qa="verify-btn"]')
-  #verifyCheckbox = new Checkbox(this.page.find('[data-qa="verify-checkbox"]'))
-  #allowOtherGuardianAccess = new Checkbox(
-    this.page.findByDataQa('allow-other-guardian-access')
-  )
-  #sendButton = this.page.find('[data-qa="send-btn"]')
-  #applicationSentModal = this.page.find(
-    '[data-qa="info-message-application-sent"]'
-  )
-  #errorsTitle = this.page.find('[data-qa="application-has-errors-title"]')
-  #section = (name: string) => this.page.find(`[data-qa="${name}-section"]`)
+  #section = (name: string) => this.page.findByDataQa(`${name}-section`)
   #sectionHeader = (name: string) =>
-    this.page.find(`[data-qa="${name}-section-header"]`)
+    this.page.findByDataQa(`${name}-section-header`)
   #preferredUnitsInput = new TextInput(
     this.page.find('[data-qa="preferredUnits-input"] input')
-  )
-  #preferredStartDateInput = new TextInput(
-    this.page.find('[data-qa="preferredStartDate-input"]')
-  )
-  #preferredStartDateWarning = this.page.find(
-    '[data-qa="daycare-processing-time-warning"]'
-  )
-  #preferredStartDateInfo = this.page.find(
-    '[data-qa="preferredStartDate-input-info"]'
-  )
-
-  saveAsDraftButton = this.page.findByDataQa('save-as-draft-btn')
-  modalOkBtn = this.page.findByDataQa('modal-okBtn')
-  guardianPhoneInput = new TextInput(
-    this.page.findByDataQa('guardianPhone-input')
   )
 
   async writeAssistanceNeedDescription(description: string) {
@@ -223,12 +250,12 @@ class CitizenApplicationEditor {
 
   async selectBooleanRadio(field: string, value: boolean) {
     await new Radio(
-      this.page.find(`[data-qa="${field}-input-${String(value)}"]`)
+      this.page.findByDataQa(`${field}-input-${String(value)}`)
     ).click()
   }
 
   async setCheckbox(field: string, value: boolean) {
-    const element = new Checkbox(this.page.find(`[data-qa="${field}-input"]`))
+    const element = new Checkbox(this.page.findByDataQa(`${field}-input`))
 
     if ((await element.checked) !== value) {
       await element.click()
@@ -241,7 +268,7 @@ class CitizenApplicationEditor {
     clearFirst = true,
     pressEnterAfter = false
   ) {
-    const element = new TextInput(this.page.find(`[data-qa="${field}-input"]`))
+    const element = new TextInput(this.page.findByDataQa(`${field}-input`))
     if (clearFirst) {
       await element.clear()
     }
@@ -278,13 +305,11 @@ class CitizenApplicationEditor {
           } else if (field === 'siblingBasis') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await this.setCheckbox(field, value)
-            await new Checkbox(
-              this.page.find('[data-qa="other-sibling"]')
-            ).click()
+            await new Checkbox(this.page.findByDataQa('other-sibling')).click()
           } else if (field === 'otherGuardianAgreementStatus' && value) {
             await new Radio(
-              this.page.find(
-                `[data-qa="otherGuardianAgreementStatus-${String(value)}"]`
+              this.page.findByDataQa(
+                `otherGuardianAgreementStatus-${String(value)}`
               )
             ).click()
           } else if (
@@ -293,7 +318,7 @@ class CitizenApplicationEditor {
           ) {
             for (let i = 0; i < data.contactInfo?.otherChildren?.length; i++) {
               if (i > 0) {
-                await this.page.find('[data-qa="add-other-child"]').click()
+                await this.page.findByDataQa('add-other-child').click()
               }
               await this.fillInput(
                 `otherChildren[${i}].firstName`,

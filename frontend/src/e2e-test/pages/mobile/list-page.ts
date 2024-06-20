@@ -4,19 +4,27 @@
 
 import { UUID } from 'lib-common/types'
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class MobileListPage {
-  constructor(private readonly page: Page) {}
-
-  unreadMessagesIndicator = this.page.findByDataQa('unread-messages-indicator')
-
-  confirmedDaysTab = this.page.findByDataQa('confirmed-days-tab')
-
-  comingChildrenTab = this.page.findByDataQa('coming-tab')
-  presentChildrenTab = this.page.findByDataQa('present-tab')
-  departedChildrenTab = this.page.findByDataQa('departed-tab')
-  absentChildrenTab = this.page.findByDataQa('absent-tab')
+  unreadMessagesIndicator: Element
+  confirmedDaysTab: Element
+  comingChildrenTab: Element
+  presentChildrenTab: Element
+  departedChildrenTab: Element
+  absentChildrenTab: Element
+  groupSelectorButton: Element
+  constructor(private readonly page: Page) {
+    this.unreadMessagesIndicator = page.findByDataQa(
+      'unread-messages-indicator'
+    )
+    this.confirmedDaysTab = page.findByDataQa('confirmed-days-tab')
+    this.comingChildrenTab = page.findByDataQa('coming-tab')
+    this.presentChildrenTab = page.findByDataQa('present-tab')
+    this.departedChildrenTab = page.findByDataQa('departed-tab')
+    this.absentChildrenTab = page.findByDataQa('absent-tab')
+    this.groupSelectorButton = page.findByDataQa('group-selector-button')
+  }
 
   childRow = (childId: UUID) => this.page.findByDataQa(`child-${childId}`)
 
@@ -60,8 +68,6 @@ export default class MobileListPage {
 
     return Object.fromEntries(await Promise.all([...counts, total]))
   }
-
-  groupSelectorButton = this.page.findByDataQa('group-selector-button')
 
   selectedGroupElement = (id: string) =>
     this.page.findByDataQa(`selected-group--${id}`)

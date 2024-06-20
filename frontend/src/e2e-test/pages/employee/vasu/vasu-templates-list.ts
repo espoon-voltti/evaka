@@ -3,17 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../../utils'
-import { Page, Select, TextInput } from '../../../utils/page'
+import { Page, Select, TextInput, Element } from '../../../utils/page'
 
 export class VasuTemplatesListPage {
-  constructor(readonly page: Page) {}
+  addTemplateButton: Element
+  nameInput: TextInput
+  selectType: Select
+  okButton: Element
+  templateTable: Element
+  constructor(readonly page: Page) {
+    this.addTemplateButton = page.findByDataQa('add-button')
+    this.nameInput = new TextInput(page.findByDataQa('template-name'))
+    this.selectType = new Select(page.findByDataQa('select-type'))
+    this.okButton = page.findByDataQa('modal-okBtn')
+    this.templateTable = page.findByDataQa('template-table')
+  }
 
-  addTemplateButton = this.page.find('[data-qa="add-button"]')
-  nameInput = new TextInput(this.page.find('[data-qa="template-name"]'))
-  selectType = new Select(this.page.find('[data-qa="select-type"]'))
-  okButton = this.page.find('[data-qa="modal-okBtn"]')
   templateRows = this.page.findAll('[data-qa="template-row"]')
-  templateTable = this.page.find('[data-qa="template-table"]')
 
   async assertTemplateRowCount(expected: number) {
     await this.templateTable.waitUntilVisible()

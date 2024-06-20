@@ -14,46 +14,77 @@ import {
   FileInput,
   Page,
   Radio,
-  TextInput
+  TextInput,
+  Element
 } from '../../../utils/page'
 
 import ApplicationReadView from './application-read-view'
 
 export default class ApplicationEditView {
-  constructor(private readonly page: Page) {}
-
-  #saveButton = this.page.find('[data-qa="save-application"]')
-  #urgentCheckbox = new Checkbox(this.page.find('[data-qa="checkbox-urgent"]'))
-  #urgentAttachmentFileUpload = this.page.find('[data-qa="file-upload-urgent"]')
-  #preferredStartDate = new DatePickerDeprecated(
-    this.page.find('[data-qa="datepicker-start-date"]')
-  )
-  #startTime = new TextInput(this.page.find('[data-qa="start-time"]'))
-  #endTime = new TextInput(this.page.find('[data-qa="end-time"]'))
-  #connectedDaycare = new Checkbox(
-    this.page.find('[data-qa="checkbox-service-need-connected"]')
-  )
-  #connectedDaycarePreferredStartDate = new DatePickerDeprecated(
-    this.page.find(
-      '[data-qa="datepicker-connected-daycare-preferred-start-date"]'
+  #saveButton: Element
+  #urgentCheckbox: Checkbox
+  #urgentAttachmentFileUpload: Element
+  #preferredStartDate: DatePickerDeprecated
+  #startTime: TextInput
+  #endTime: TextInput
+  #connectedDaycare: Checkbox
+  #connectedDaycarePreferredStartDate: DatePickerDeprecated
+  #connectedDaycarePreferredStartDateInputWarning: Element
+  #preferredUnit: Combobox
+  #applicantPhone: TextInput
+  #applicantEmail: TextInput
+  #shiftCareCheckbox: Checkbox
+  #shiftCareAttachmentFileUpload: Element
+  #guardianName: Element
+  #guardianSsn: Element
+  #guardianAddress: Element
+  #secondGuardianToggle: Checkbox
+  #secondGuardianPhone: TextInput
+  #secondGuardianEmail: TextInput
+  constructor(private readonly page: Page) {
+    this.#saveButton = page.findByDataQa('save-application')
+    this.#urgentCheckbox = new Checkbox(page.findByDataQa('checkbox-urgent'))
+    this.#urgentAttachmentFileUpload = page.findByDataQa('file-upload-urgent')
+    this.#preferredStartDate = new DatePickerDeprecated(
+      page.findByDataQa('datepicker-start-date')
     )
-  )
-  #connectedDaycarePreferredStartDateInputWarning = this.page.find(
-    '[data-qa="input-warning-connected-daycare-preferred-start-date"]'
-  )
-  #preferredUnit = new Combobox(this.page.find('[data-qa="preferred-unit"]'))
-  #applicantPhone = new TextInput(
-    this.page.find('[data-qa="application-person-phone"]')
-  )
-  #applicantEmail = new TextInput(
-    this.page.find('[data-qa="application-person-email"]')
-  )
-  #shiftCareCheckbox = new Checkbox(
-    this.page.find('[data-qa="checkbox-service-need-shift-care"]')
-  )
-  #shiftCareAttachmentFileUpload = this.page.find(
-    '[data-qa="file-upload-shift-care"]'
-  )
+    this.#startTime = new TextInput(page.findByDataQa('start-time'))
+    this.#endTime = new TextInput(page.findByDataQa('end-time'))
+    this.#connectedDaycare = new Checkbox(
+      page.findByDataQa('checkbox-service-need-connected')
+    )
+    this.#connectedDaycarePreferredStartDate = new DatePickerDeprecated(
+      page.findByDataQa('datepicker-connected-daycare-preferred-start-date')
+    )
+    this.#connectedDaycarePreferredStartDateInputWarning = page.findByDataQa(
+      'input-warning-connected-daycare-preferred-start-date'
+    )
+    this.#preferredUnit = new Combobox(page.findByDataQa('preferred-unit'))
+    this.#applicantPhone = new TextInput(
+      page.findByDataQa('application-person-phone')
+    )
+    this.#applicantEmail = new TextInput(
+      page.findByDataQa('application-person-email')
+    )
+    this.#shiftCareCheckbox = new Checkbox(
+      page.findByDataQa('checkbox-service-need-shift-care')
+    )
+    this.#shiftCareAttachmentFileUpload = page.findByDataQa(
+      'file-upload-shift-care'
+    )
+    this.#guardianName = page.findByDataQa('guardian-name')
+    this.#guardianSsn = page.findByDataQa('guardian-ssn')
+    this.#guardianAddress = page.findByDataQa('guardian-address')
+    this.#secondGuardianToggle = new Checkbox(
+      page.findByDataQa('application-second-guardian-toggle')
+    )
+    this.#secondGuardianPhone = new TextInput(
+      page.findByDataQa('application-second-guardian-phone')
+    )
+    this.#secondGuardianEmail = new TextInput(
+      page.findByDataQa('application-second-guardian-email')
+    )
+  }
 
   async saveApplication() {
     await this.#saveButton.click()
@@ -126,9 +157,7 @@ export default class ApplicationEditView {
   }
 
   async assertUrgencyAttachmentReceivedAtVisible(fileName: string) {
-    const attachment = this.page.find(
-      `[data-qa="urgent-attachment-${fileName}"]`
-    )
+    const attachment = this.page.findByDataQa(`urgent-attachment-${fileName}`)
     await attachment.waitUntilVisible()
     await attachment
       .find('[data-qa="attachment-received-at"]')
@@ -169,10 +198,6 @@ export default class ApplicationEditView {
     )
   }
 
-  #guardianName = this.page.find('[data-qa="guardian-name"]')
-  #guardianSsn = this.page.find('[data-qa="guardian-ssn"]')
-  #guardianAddress = this.page.find('[data-qa="guardian-address"]')
-
   async assertGuardian(
     expectedName: string,
     expectedSsn: string,
@@ -183,20 +208,10 @@ export default class ApplicationEditView {
     await this.#guardianAddress.findText(expectedAddress).waitUntilVisible()
   }
 
-  #secondGuardianToggle = new Checkbox(
-    this.page.find('[data-qa="application-second-guardian-toggle"]')
-  )
-  #secondGuardianPhone = new TextInput(
-    this.page.find('[data-qa="application-second-guardian-phone"]')
-  )
-  #secondGuardianEmail = new TextInput(
-    this.page.find('[data-qa="application-second-guardian-email"]')
-  )
-
   #guardianAgreementStatus = (status: OtherGuardianAgreementStatus) =>
     new Radio(
-      this.page.find(
-        `[data-qa="radio-other-guardian-agreement-status-${status ?? 'null'}"]`
+      this.page.findByDataQa(
+        `radio-other-guardian-agreement-status-${status ?? 'null'}`
       )
     )
 

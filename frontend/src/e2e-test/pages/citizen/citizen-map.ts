@@ -13,27 +13,26 @@ import {
 } from '../../utils/page'
 
 export default class CitizenMapPage {
-  constructor(private readonly page: Page) {}
+  daycareFilter: Radio
+  preschoolFilter: Radio
+  clubFilter: Radio
+  unitDetailsPanel: UnitDetailsPanel
+  map: Map
+  searchInput: MapSearchInput
+  constructor(private readonly page: Page) {
+    this.daycareFilter = new Radio(page.findByDataQa('map-filter-DAYCARE'))
+    this.preschoolFilter = new Radio(page.findByDataQa('map-filter-PRESCHOOL'))
+    this.clubFilter = new Radio(page.findByDataQa('map-filter-CLUB'))
+    this.unitDetailsPanel = new UnitDetailsPanel(
+      page.findByDataQa('map-unit-details')
+    )
+    this.map = new Map(page.findByDataQa('map-view'))
+    this.searchInput = new MapSearchInput(page.findByDataQa('map-search-input'))
+  }
 
-  readonly daycareFilter = new Radio(
-    this.page.find('[data-qa="map-filter-DAYCARE"]')
-  )
-  readonly preschoolFilter = new Radio(
-    this.page.find('[data-qa="map-filter-PRESCHOOL"]')
-  )
-  readonly clubFilter = new Radio(this.page.find('[data-qa="map-filter-CLUB"]'))
-
-  readonly unitDetailsPanel = new UnitDetailsPanel(
-    this.page.find('[data-qa="map-unit-details"]')
-  )
-
-  readonly map = new Map(this.page.find('[data-qa="map-view"]'))
-  readonly searchInput = new MapSearchInput(
-    this.page.find('[data-qa="map-search-input"]')
-  )
   readonly languageChips = {
-    fi: new SelectionChip(this.page.find('[data-qa="map-filter-fi"]')),
-    sv: new SelectionChip(this.page.find('[data-qa="map-filter-sv"]'))
+    fi: new SelectionChip(this.page.findByDataQa('map-filter-fi')),
+    sv: new SelectionChip(this.page.findByDataQa('map-filter-sv'))
   }
 
   async setLanguageFilter(language: 'fi' | 'sv', selected: boolean) {
@@ -44,7 +43,7 @@ export default class CitizenMapPage {
   }
 
   listItemFor(daycare: DevDaycare) {
-    return this.page.find(`[data-qa="map-unit-list-${daycare.id}"]`)
+    return this.page.findByDataQa(`map-unit-list-${daycare.id}`)
   }
 
   async testMapPopup(daycare: DevDaycare) {

@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class UnreadMobileMessagesPage {
-  constructor(private readonly page: Page) {}
-
-  pinLoginButton = this.page.find(`[data-qa="pin-login-button"]`)
+  pinLoginButton: Element
+  constructor(private readonly page: Page) {
+    this.pinLoginButton = page.findByDataQa(`pin-login-button`)
+  }
 
   linkToGroup(groupId: string) {
-    return this.page.find(`[data-qa="link-to-group-messages-${groupId}"]`)
+    return this.page.findByDataQa(`link-to-group-messages-${groupId}`)
   }
 
   async groupLinksExist() {

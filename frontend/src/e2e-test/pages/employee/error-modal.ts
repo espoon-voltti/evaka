@@ -2,14 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class ErrorModal {
-  constructor(private page: Page) {}
-
-  #modal = this.page.find('[data-qa="app-error-modal"]')
-  #title = this.#modal.find('[data-qa="title"]')
-  #text = this.#modal.find('[data-qa="text"]')
+  #modal: Element
+  #title: Element
+  #text: Element
+  constructor(page: Page) {
+    this.#modal = page.findByDataQa('app-error-modal')
+    this.#title = this.#modal.find('[data-qa="title"]')
+    this.#text = this.#modal.find('[data-qa="text"]')
+  }
 
   async ensureTitle(title: string) {
     await this.#title.findText(title).waitUntilVisible()

@@ -6,17 +6,20 @@ import { waitUntilFalse, waitUntilTrue } from '../../utils'
 import { Checkbox, Element, Page, Select, TextInput } from '../../utils/page'
 
 export default class CitizenPersonalDetails {
-  constructor(private readonly page: Page) {}
-
-  personalDetailsSection = new CitizenPersonalDetailsSection(
-    this.page.findByDataQa('personal-details-section')
-  )
-  loginDetailsSection = new LoginDetailsSection(
-    this.page.findByDataQa('login-details-section')
-  )
-  notificationSettingsSectiong = new CitizenNotificationSettingsSection(
-    this.page.findByDataQa('notification-settings-section')
-  )
+  personalDetailsSection: CitizenPersonalDetailsSection
+  loginDetailsSection: LoginDetailsSection
+  notificationSettingsSectiong: CitizenNotificationSettingsSection
+  constructor(page: Page) {
+    this.personalDetailsSection = new CitizenPersonalDetailsSection(
+      page.findByDataQa('personal-details-section')
+    )
+    this.loginDetailsSection = new LoginDetailsSection(
+      page.findByDataQa('login-details-section')
+    )
+    this.notificationSettingsSectiong = new CitizenNotificationSettingsSection(
+      page.findByDataQa('notification-settings-section')
+    )
+  }
 }
 
 export class CitizenPersonalDetailsSection extends Element {

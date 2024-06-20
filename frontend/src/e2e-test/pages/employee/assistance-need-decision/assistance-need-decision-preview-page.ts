@@ -2,10 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page } from '../../../utils/page'
+import { Page, Element } from '../../../utils/page'
 
 export default class AssistanceNeedDecisionPreviewPage {
-  constructor(private readonly page: Page) {}
+  sendDecisionButton: Element
+  revertToUnsent: Element
+  constructor(private readonly page: Page) {
+    this.sendDecisionButton = page.findByDataQa('send-decision')
+    this.revertToUnsent = page.findByDataQa('revert-to-unsent')
+  }
 
   private getLabelledValue(label: string) {
     return this.page.findByDataQa(`labelled-value-${label}`).text
@@ -79,8 +84,6 @@ export default class AssistanceNeedDecisionPreviewPage {
     return this.getLabelledValue('decision-maker')
   }
 
-  readonly sendDecisionButton = this.page.findByDataQa('send-decision')
-  readonly revertToUnsent = this.page.findByDataQa('revert-to-unsent')
   get decisionSentAt() {
     return this.page.findByDataQa('decision-sent-at')
   }

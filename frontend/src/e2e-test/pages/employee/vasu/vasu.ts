@@ -83,7 +83,16 @@ class VasuPageCommon {
 }
 
 export class VasuEditPage extends VasuPageCommon {
-  readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
+  modalOkButton: Element
+  #vasuPreviewBtn: Element
+  #vasuContainer: Element
+
+  constructor(page: Page) {
+    super(page)
+    this.modalOkButton = page.findByDataQa('modal-okBtn')
+    this.#vasuPreviewBtn = page.findByDataQa('vasu-preview-btn')
+    this.#vasuContainer = page.findByDataQa('vasu-container')
+  }
 
   #followup(nth: number) {
     const question = this.page
@@ -102,16 +111,11 @@ export class VasuEditPage extends VasuPageCommon {
     .findByDataQa('vasu-followup-question')
     .findByDataQa('followup-add-btn')
 
-  readonly #vasuPreviewBtn = this.page.find('[data-qa="vasu-preview-btn"]')
-  readonly #vasuContainer = this.page.find('[data-qa="vasu-container"]')
-
   readonly #multiSelectQuestionOption = (text: string) =>
-    this.page.find(`[data-qa="multi-select-question-option-${text}"]`)
+    this.page.findByDataQa(`multi-select-question-option-${text}`)
   readonly #multiSelectQuestionOptionTextInput = (text: string) =>
     new TextInput(
-      this.page.find(
-        `[data-qa="multi-select-question-option-text-input-${text}"]`
-      )
+      this.page.findByDataQa(`multi-select-question-option-text-input-${text}`)
     )
 
   async clickMultiSelectQuestionOption(key: string) {
@@ -163,16 +167,29 @@ export class VasuEditPage extends VasuPageCommon {
 }
 
 export class VasuPage extends VasuPageCommon {
-  readonly finalizeButton = this.page.find(
-    '[data-qa="transition-button-MOVED_TO_READY"]'
-  )
-  readonly markReviewedButton = this.page.find(
-    '[data-qa="transition-button-MOVED_TO_REVIEWED"]'
-  )
-  readonly markClosedButton = this.page.find(
-    '[data-qa="transition-button-MOVED_TO_CLOSED"]'
-  )
-  readonly modalOkButton = this.page.find('[data-qa="modal-okBtn"]')
+  finalizeButton: Element
+  markReviewedButton: Element
+  markClosedButton: Element
+  modalOkButton: Element
+  #templateName: Element
+  #backButton: Element
+  #editButton: Element
+
+  constructor(page: Page) {
+    super(page)
+    this.finalizeButton = page.findByDataQa('transition-button-MOVED_TO_READY')
+    this.markReviewedButton = page.findByDataQa(
+      'transition-button-MOVED_TO_REVIEWED'
+    )
+    this.markClosedButton = page.findByDataQa(
+      'transition-button-MOVED_TO_CLOSED'
+    )
+    this.modalOkButton = page.findByDataQa('modal-okBtn')
+    this.#templateName = page.findByDataQa('template-name')
+    this.#backButton = page.findByDataQa('back-button')
+    this.#editButton = page.findByDataQa('edit-button')
+  }
+
   readonly #vasuEventListLabels = this.page.findAll(
     '[data-qa="vasu-event-list"] label'
   )
@@ -182,10 +199,6 @@ export class VasuPage extends VasuPageCommon {
   readonly documentState = this.page.find(
     '[data-qa="vasu-event-list"] [data-qa="vasu-state-chip"]'
   )
-
-  readonly #templateName = this.page.find('[data-qa="template-name"]')
-  readonly #backButton = this.page.findByDataQa('back-button')
-  readonly #editButton = this.page.find('[data-qa="edit-button"]')
 
   // The (first) label for the state chip has no corresponding span, so the index is off by one.
   #valueForLabel = (label: string): Promise<string> =>
@@ -234,14 +247,19 @@ export class VasuPage extends VasuPageCommon {
 }
 
 export class VasuPreviewPage extends VasuPageCommon {
-  readonly #multiselectAnswer = (questionNumber: string) =>
-    this.page.find(`[data-qa="value-or-no-record-${questionNumber}"]`)
+  #titleChildName: Element
+  #confirmCheckBox: Checkbox
+  #confirmButton: Element
 
-  readonly #titleChildName = this.page.findByDataQa('title-child-name')
-  readonly #confirmCheckBox = new Checkbox(
-    this.page.findByDataQa('confirm-checkbox')
-  )
-  readonly #confirmButton = this.page.findByDataQa('confirm-button')
+  constructor(page: Page) {
+    super(page)
+    this.#titleChildName = page.findByDataQa('title-child-name')
+    this.#confirmCheckBox = new Checkbox(page.findByDataQa('confirm-checkbox'))
+    this.#confirmButton = page.findByDataQa('confirm-button')
+  }
+
+  readonly #multiselectAnswer = (questionNumber: string) =>
+    this.page.findByDataQa(`value-or-no-record-${questionNumber}`)
 
   async assertTitleChildName(expectedName: string) {
     await this.#titleChildName.assertTextEquals(expectedName)

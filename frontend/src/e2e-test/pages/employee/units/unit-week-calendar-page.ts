@@ -22,14 +22,20 @@ import { UnitCalendarPageBase } from './unit-calendar-page-base'
 import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 
 export class UnitWeekCalendarPage extends UnitCalendarPageBase {
+  occupancies: UnitOccupanciesSection
+
+  constructor(page: Page) {
+    super(page)
+    this.occupancies = new UnitOccupanciesSection(
+      page.findByDataQa('occupancies')
+    )
+  }
+
   async openMonthCalendar(): Promise<UnitMonthCalendarPage> {
     await this.monthModeButton.click()
     return new UnitMonthCalendarPage(this.page)
   }
 
-  occupancies = new UnitOccupanciesSection(
-    this.page.find('[data-qa="occupancies"]')
-  )
   staffAttendances = new UnitStaffAttendancesTable(
     this.page,
     this.page.findByDataQa('staff-attendances-table')
@@ -40,9 +46,9 @@ export class UnitWeekCalendarPage extends UnitCalendarPageBase {
   )
 
   async setFilterStartDate(date: LocalDate) {
-    await new DatePicker(
-      this.page.find('[data-qa="unit-filter-start-date"]')
-    ).fill(date.format())
+    await new DatePicker(this.page.findByDataQa('unit-filter-start-date')).fill(
+      date.format()
+    )
     await this.waitUntilLoaded()
   }
 
