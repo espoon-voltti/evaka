@@ -4,7 +4,7 @@
 
 import { fi } from 'date-fns/locale/fi'
 import React from 'react'
-import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker'
+import ReactDatePicker from 'react-datepicker'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -106,7 +106,6 @@ interface CommonProps {
   type?: 'full-width' | 'half-width' | 'short'
   dateFormat?: string[]
   'data-qa'?: string
-  options?: Partial<ReactDatePickerProps>
   disabled?: boolean
   className?: string
   placeholder?: string
@@ -120,8 +119,7 @@ interface DatePickerClearableProps extends CommonProps {
   onCleared: () => void
 }
 
-const defaultProps: Partial<ReactDatePickerProps> = {
-  popperPlacement: 'bottom',
+const defaultProps = {
   showMonthDropdown: true,
   showYearDropdown: true
 }
@@ -136,8 +134,8 @@ export function DatePickerDeprecated({
   maxDate,
   type = 'half-width',
   dateFormat = DATE_FORMATS_PARSED,
-  options,
   disabled,
+  placeholder,
   className,
   'data-qa': dataQa
 }: DatePickerProps) {
@@ -155,8 +153,8 @@ export function DatePickerDeprecated({
         dateFormat={dateFormat}
         minDate={minDate?.toSystemTzDate()}
         maxDate={maxDate?.toSystemTzDate()}
-        onChange={(newDate) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        onChange={(newDate: Date | Date[] | null) => {
+          if (newDate == null) return
           const date: Date = Array.isArray(newDate) ? newDate[0] : newDate
           onChange(
             date
@@ -166,9 +164,9 @@ export function DatePickerDeprecated({
         }}
         onFocus={onFocus}
         disabled={disabled}
+        placeholderText={placeholder}
         data-qa={dataQa}
         strictParsing
-        {...options}
       />
     </DatePickerContainer>
   )
@@ -186,7 +184,7 @@ export function DatePickerClearableDeprecated({
   maxDate,
   dateFormat = DATE_FORMATS_PARSED,
   type = 'half-width',
-  options,
+  placeholder,
   className,
   'data-qa': dataQa
 }: DatePickerClearableProps) {
@@ -205,17 +203,16 @@ export function DatePickerClearableDeprecated({
         minDate={minDate?.toSystemTzDate()}
         maxDate={maxDate?.toSystemTzDate()}
         strictParsing
-        onChange={(newDate) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const date: Date = Array.isArray(newDate) ? newDate[0] : newDate
-          if (!date) {
+        onChange={(newDate: Date | Date[] | null) => {
+          const date = Array.isArray(newDate) ? newDate[0] : newDate
+          if (date === null) {
             onCleared()
           } else {
             onChange(LocalDate.fromSystemTzDate(date))
           }
         }}
         onFocus={onFocus}
-        {...options}
+        placeholderText={placeholder}
       />
     </DatePickerContainer>
   )
