@@ -38,11 +38,12 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (error.response) {
       const response: LogResponse = {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         message: includeErrorMessage
           ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             error.response.data?.message || 'Invalid downstream error response'
           : null,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
         errorCode: error.response.data?.errorCode
       }
       if (!res.headersSent) {

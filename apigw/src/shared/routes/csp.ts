@@ -14,6 +14,7 @@ router.post(
   (req, res) => {
     logWarn('CSP report received', req, {
       user: req.user,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       report: req.body
     })
     res.sendStatus(200)

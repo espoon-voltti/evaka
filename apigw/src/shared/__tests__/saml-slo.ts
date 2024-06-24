@@ -227,6 +227,7 @@ async function callSLOEndpointAndAssertResult(
     new RegExp(`^${IDP_ENTRY_POINT_URL}\\?SAMLResponse=?`)
   )
   const logoutResponse = getSamlMessageFromRedirectResponse(res)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const logoutResponseJson = await xml2js.parseStringPromise(logoutResponse)
   expect(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

@@ -153,7 +153,7 @@ export function sessionSupport(
     const session = await redisClient.get(sessionKey(sid))
     await redisClient.del([sessionKey(sid), logoutKey(logoutToken)])
     if (!session) return
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
     const user = JSON.parse(session)?.passport?.user
     if (!user) return
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return

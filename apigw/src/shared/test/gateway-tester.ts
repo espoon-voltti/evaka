@@ -102,6 +102,7 @@ export class GatewayTester {
     postData?: any
   ): Promise<void> {
     if (this.sessionType === 'employee') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       postData =
         postData !== undefined
           ? postData
@@ -124,6 +125,7 @@ export class GatewayTester {
       )
       this.nockScope.done()
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       postData = postData !== undefined ? postData : { preset: 'dummy' }
       this.nockScope.post('/system/citizen-login').reply(200, user)
       await this.client.post(
