@@ -54,6 +54,7 @@ async function mobileLogin(
 
 export const refreshMobileSession = toMiddleware(async (req, res) => {
   if (!req.user) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const token = req.signedCookies[mobileLongTermCookieName]
     if (token) {
       const deviceIdentity = await identifyMobileDevice(req, token)

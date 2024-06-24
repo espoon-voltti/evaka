@@ -148,7 +148,9 @@ const middlewareLogger = pino(_.merge({}, BASE_LOGGER_OPTS, ACCESS_LOGGER_OPTS))
 
 function tracingReqSerializer(req: UserPinoRequest): UserPinoRequest {
   return {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     spanId: req.raw.spanId,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     traceId: req.raw.traceId,
     ...req
   }
@@ -158,6 +160,7 @@ function tracingReqSerializer(req: UserPinoRequest): UserPinoRequest {
  * A request serializer for pino-http which enriches the req object with the user id hash
  */
 export function userIdHashReqSerializer(req: UserPinoRequest): UserPinoRequest {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const userId = req.raw.user?.id || null
   req.userIdHash = userId != null ? createSha256Hash(userId) : ''
   return req

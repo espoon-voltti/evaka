@@ -35,14 +35,18 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
       }
       return
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (error.response) {
       const response: LogResponse = {
         message: includeErrorMessage
-          ? error.response.data?.message || 'Invalid downstream error response'
+          ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            error.response.data?.message || 'Invalid downstream error response'
           : null,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         errorCode: error.response.data?.errorCode
       }
       if (!res.headersSent) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         res.status(error.response.status).json(response)
       }
       return
@@ -57,6 +61,7 @@ export const fallbackErrorHandler: ErrorRequestHandler = (
   _next
 ) => {
   logError(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     `Internal server error: ${error.message || error || 'No error object'}`,
     req,
     undefined,

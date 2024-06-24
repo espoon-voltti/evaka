@@ -3,13 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInMonths } from 'date-fns'
-import * as invalidlyTypedForge from 'node-forge'
+import nodeForge from 'node-forge'
 
 import certificates, { TrustedCertificates } from '../certificates'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const forge = (invalidlyTypedForge as any)
-  .default as typeof import('node-forge')
 
 describe('SAML certificates', () => {
   test('at least one certificate must exist', () => {
@@ -21,7 +17,8 @@ describe('SAML certificates', () => {
     (certificateName) => {
       const computeHash = false
       const strict = true
-      const certificate = forge.pki.certificateFromPem(
+      const certificate = nodeForge.pki.certificateFromPem(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         certificates[certificateName],
         computeHash,
         strict

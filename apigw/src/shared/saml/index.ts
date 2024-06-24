@@ -141,6 +141,7 @@ export function createSamlStrategy<T>(
 }
 
 export function parseRelayState(req: express.Request): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const relayState = req.body?.RelayState || req.query.RelayState
 
   if (typeof relayState === 'string' && path.isAbsolute(relayState)) {

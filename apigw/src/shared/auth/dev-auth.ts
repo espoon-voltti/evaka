@@ -60,8 +60,10 @@ export function createDevAuthRouter({
         }
       } catch (err) {
         if (!res.headersSent) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           if (err instanceof AxiosError && err.response?.data?.errorCode) {
             res.redirect(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
               `${root}?loginError=true&errorCode=${err.response.data.errorCode}`
             )
           } else {

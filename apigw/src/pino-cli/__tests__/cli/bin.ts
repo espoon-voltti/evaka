@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 import lodash from 'lodash'
 
 import {
+  AccessLog,
   AuditLog,
   MiscLog,
   PinoAccessLog,
@@ -21,7 +22,7 @@ import {
   validPinoAppAuditLogMessage,
   validPinoMiscLogMessage,
   validPinoMiscLogMessageWithError
-} from '../../test-utils/fixtures/log-messages'
+} from '../../test-utils/fixtures/log-messages.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const cliPath = path.join(
@@ -98,7 +99,9 @@ describe('transport', () => {
 
   describe('given a valid pino access log for the health check url', () => {
     test('filters the log message from the output', () => {
-      const pinoAccessLogMessage = lodash.cloneDeep(validPinoAccessLogMessage)
+      const pinoAccessLogMessage = lodash.cloneDeep<PinoAccessLog>(
+        validPinoAccessLogMessage
+      )
       pinoAccessLogMessage.req.url = '/health'
       pinoAccessLogMessage.req.path = '/health'
 
@@ -127,10 +130,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing @timestamp field', () => {
       test('returns a log message in proper format without the @timestamp field', () => {
-        const invalidPinoAccessLogMessage: Partial<PinoAccessLog> =
-          lodash.cloneDeep(validPinoAccessLogMessage)
+        const invalidPinoAccessLogMessage = lodash.cloneDeep<
+          Partial<PinoAccessLog>
+        >(validPinoAccessLogMessage)
         delete invalidPinoAccessLogMessage['@timestamp']
-        const logMessage: Partial<PinoAccessLog> = lodash.cloneDeep(
+        const logMessage = lodash.cloneDeep<Partial<AccessLog>>(
           expected.validAccessLogMessage
         )
         delete logMessage['@timestamp']
@@ -203,6 +207,7 @@ describe('transport', () => {
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.remoteAddress
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.clientIp = ''
@@ -222,6 +227,7 @@ describe('transport', () => {
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.res.contentLength
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.contentLength = -1
@@ -277,6 +283,7 @@ describe('transport', () => {
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.method
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.httpMethod = ''
@@ -296,6 +303,7 @@ describe('transport', () => {
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.path
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.path = ''
@@ -315,6 +323,7 @@ describe('transport', () => {
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.queryString
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.queryString = ''
@@ -351,6 +360,7 @@ describe('transport', () => {
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.res.statusCode
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.statusCode = ''
@@ -370,6 +380,7 @@ describe('transport', () => {
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.userIdHash
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.userIdHash = ''
@@ -454,10 +465,9 @@ describe('transport', () => {
 
     describe('given a log message with a missing @timestamp field', () => {
       test('returns a log message in proper format without the @timestamp field', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const invalidPinoAppAuditLogMessage: any = lodash.cloneDeep(
-          validPinoAppAuditLogMessage
-        )
+        const invalidPinoAppAuditLogMessage = lodash.cloneDeep<
+          Partial<PinoAppAuditLog>
+        >(validPinoAppAuditLogMessage)
         delete invalidPinoAppAuditLogMessage['@timestamp']
         const logMessage: Partial<AuditLog> = lodash.cloneDeep(
           expected.validAuditLogMessage
@@ -1056,7 +1066,7 @@ describe('transport', () => {
 
     describe('given a log message with a missing parentSpanId field', () => {
       test('returns a valid log message in proper format with the parentSpanId field set to an empty string', () => {
-        const invalidPinoMiscLogMessage = lodash.cloneDeep(
+        const invalidPinoMiscLogMessage = lodash.cloneDeep<PinoMiscLog>(
           validPinoMiscLogMessage
         )
         delete invalidPinoMiscLogMessage.parentSpanId
@@ -1074,7 +1084,7 @@ describe('transport', () => {
 
     describe('given a log message with a missing spanId field', () => {
       test('returns a valid log message in proper format with the spanId field set to an empty string', () => {
-        const invalidPinoMiscLogMessage = lodash.cloneDeep(
+        const invalidPinoMiscLogMessage = lodash.cloneDeep<PinoMiscLog>(
           validPinoMiscLogMessage
         )
         delete invalidPinoMiscLogMessage.spanId
@@ -1092,7 +1102,7 @@ describe('transport', () => {
 
     describe('given a log message with a missing traceId field', () => {
       test('returns a valid log message in proper format with the traceId field set to an empty string', () => {
-        const invalidPinoMiscLogMessage = lodash.cloneDeep(
+        const invalidPinoMiscLogMessage = lodash.cloneDeep<PinoMiscLog>(
           validPinoMiscLogMessage
         )
         delete invalidPinoMiscLogMessage.traceId

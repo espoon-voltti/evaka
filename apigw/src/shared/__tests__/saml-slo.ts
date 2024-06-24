@@ -93,6 +93,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPreAuth.status).toBe(200)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
@@ -111,6 +112,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(res.status).toBe(200)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(res.data?.loggedIn).toBe(true)
     tester.nockScope.done()
 
@@ -128,6 +130,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPostLogout.status).toBe(200)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 
@@ -146,6 +149,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPreAuth.status).toBe(200)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
@@ -163,6 +167,7 @@ describe('SAML Single Logout', () => {
     const res = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(res.data?.loggedIn).toBe(true)
     tester.nockScope.done()
 
@@ -195,6 +200,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPostLogout.status).toBe(200)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 })
@@ -223,6 +229,7 @@ async function callSLOEndpointAndAssertResult(
   const logoutResponse = getSamlMessageFromRedirectResponse(res)
   const logoutResponseJson = await xml2js.parseStringPromise(logoutResponse)
   expect(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     logoutResponseJson['samlp:LogoutResponse']['samlp:Status'][0][
       'samlp:StatusCode'
     ][0]['$'].Value

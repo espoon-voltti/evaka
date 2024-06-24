@@ -57,6 +57,7 @@ function createLoginHandler({
             parseDescriptionFromSamlError(err, req) ||
             'Could not parse SAML message'
 
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           if (err.message === 'InResponseTo is not valid' && req.user) {
             // When user uses browse back functionality after login we get invalid InResponseTo
             // This will ignore the error
@@ -71,8 +72,10 @@ function createLoginHandler({
             `Failed to authenticate user. Description: ${description}. Details: ${err}`
           )
 
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           if (err instanceof AxiosError && err.response?.data?.errorCode) {
             return res.redirect(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
               `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
             )
           }
@@ -108,8 +111,10 @@ function createLoginHandler({
             `Error logging user in. Error: ${err}`
           )
           if (!res.headersSent) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (err instanceof AxiosError && err.response?.data?.errorCode) {
               res.redirect(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
               )
             } else {
