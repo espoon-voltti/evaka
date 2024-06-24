@@ -93,7 +93,7 @@
     "@types/react-linkify": "^1.0.1",
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-components": "^5.1.26",
-    "@types/uuid": "^9.0.2",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
     "babel-loader": "^9.1.2",
