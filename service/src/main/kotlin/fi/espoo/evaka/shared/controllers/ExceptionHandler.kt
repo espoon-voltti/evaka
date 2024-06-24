@@ -99,6 +99,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     // We don't want alerts from ClientAbortExceptions or return any http responses to them
+    @Suppress("ktlint:standard:function-naming")
     @ExceptionHandler(value = [IOException::class])
     fun IOExceptions(
         req: HttpServletRequest,
