@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, beforeEach, expect, it, test } from '@jest/globals'
 import type { CacheProvider } from '@node-saml/passport-saml'
 
 import redisCacheProvider from '../saml/passport-saml-cache-redis.js'
