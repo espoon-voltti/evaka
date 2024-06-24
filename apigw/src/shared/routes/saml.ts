@@ -146,7 +146,7 @@ function createLogoutHandler({
       logAuditEvent(
         `evaka.saml.${strategyName}.sign_out_failed`,
         req,
-        `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err}.`
+        `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err?.toString()}.`
       )
       throw err
     }

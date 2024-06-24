@@ -100,7 +100,7 @@ function parseEnum<T extends string>(
     for (const variant of variants) {
       if (value === variant) return variant
     }
-    throw new Error(`Invalid enum (expected one of ${variants})`)
+    throw new Error(`Invalid enum (expected one of ${variants.toString()})`)
   }
 }
 
