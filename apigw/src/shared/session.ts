@@ -136,7 +136,7 @@ export function sessionSupport(
     if (!req.session) return
     if (!req.session.logoutToken) return
     if (!isDate(req.session.cookie.expires)) return
-    const sessionExpires = req.session.cookie.expires as Date
+    const sessionExpires = req.session.cookie.expires
     const logoutExpires = new Date(req.session.logoutToken.expiresAt)
     // Logout token should always expire at least 30 minutes later than the session
     if (differenceInMinutes(logoutExpires, sessionExpires) < 30) {
