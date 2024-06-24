@@ -19,7 +19,7 @@ typealias Ssn = String
 
 data class MockVtjDataset(
     val persons: List<MockVtjPerson>,
-    val guardianDependants: Map<Ssn, List<Ssn>>,
+    val guardianDependants: Map<Ssn, List<Ssn>>
 )
 
 data class MockVtjPerson(
@@ -45,7 +45,7 @@ data class MockVtjPerson(
             dateOfDeath = dateOfDeath,
             residenceCode = residenceCode,
             dependants = emptyList(),
-            guardians = emptyList(),
+            guardians = emptyList()
         )
 
     companion object {
@@ -72,7 +72,7 @@ data class MockVtjPerson(
                         )
                     },
                 residenceCode = person.residenceCode,
-                nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
+                nativeLanguage = NativeLanguage(languageName = "FI", code = "fi")
             )
 
         fun from(dto: PersonDTO): MockVtjPerson =
@@ -120,18 +120,17 @@ class MockPersonDetailsService : IPersonDetailsService {
 
         fun getAllPersons(): List<VtjPerson> =
             persons.values.map {
-                it.toVtjPerson()
+                it
+                    .toVtjPerson()
                     .copy(
                         guardians = getGuardians(it.socialSecurityNumber),
                         dependants = getDependants(it.socialSecurityNumber)
                     )
             }
 
-        fun getGuardians(ssn: Ssn): List<VtjPerson> =
-            (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
+        fun getGuardians(ssn: Ssn): List<VtjPerson> = (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
 
-        fun getDependants(ssn: Ssn): List<VtjPerson> =
-            (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
+        fun getDependants(ssn: Ssn): List<VtjPerson> = (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
 
         fun add(dataset: MockVtjDataset) {
             dataset.persons.forEach(::addPerson)
@@ -156,7 +155,10 @@ class MockPersonDetailsService : IPersonDetailsService {
             persons.forEach { addPerson(MockVtjPerson.from(it)) }
         }
 
-        fun addDependants(guardian: Ssn, dependants: Sequence<Ssn>) {
+        fun addDependants(
+            guardian: Ssn,
+            dependants: Sequence<Ssn>
+        ) {
             require(persons.containsKey(guardian)) { "Guardian $guardian not found" }
             dependants.forEach { dependant ->
                 require(persons.containsKey(dependant)) { "Dependant $dependant not found" }
@@ -165,15 +167,24 @@ class MockPersonDetailsService : IPersonDetailsService {
             }
         }
 
-        fun addDependants(guardian: Ssn, vararg dependants: Ssn) {
+        fun addDependants(
+            guardian: Ssn,
+            vararg dependants: Ssn
+        ) {
             addDependants(guardian, dependants.asSequence())
         }
 
-        fun addDependants(guardian: ExternalIdentifier, vararg dependants: ExternalIdentifier) {
+        fun addDependants(
+            guardian: ExternalIdentifier,
+            vararg dependants: ExternalIdentifier
+        ) {
             addDependants(guardian.toString(), dependants.asSequence().map { it.toString() })
         }
 
-        fun addDependants(guardian: DevPerson, vararg dependants: DevPerson) {
+        fun addDependants(
+            guardian: DevPerson,
+            vararg dependants: DevPerson
+        ) {
             addDependants(guardian.ssn!!, dependants.asSequence().map { it.ssn!! })
         }
     }

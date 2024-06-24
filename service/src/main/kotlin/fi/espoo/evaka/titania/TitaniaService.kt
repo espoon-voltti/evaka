@@ -23,8 +23,9 @@ private val logger = KotlinLogging.logger {}
 private val MAX_DRIFT: Duration = Duration.ofMinutes(5)
 
 @Service
-class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
-
+class TitaniaService(
+    private val idConverter: TitaniaEmployeeIdConverter
+) {
     fun updateWorkingTimeEvents(
         tx: Database.Transaction,
         request: UpdateWorkingTimeEventsRequest
@@ -62,8 +63,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
             unknownEmployeeNumbers
                 .map { employeeNumber ->
                     persons.find { person -> person.first == employeeNumber }!!.second
-                }
-                .map { person ->
+                }.map { person ->
                     NewEmployee(
                         firstName = person.firstName(),
                         lastName = person.lastName(),
@@ -166,10 +166,15 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         val attendances =
             tx.findStaffAttendancesBy(employeeIds = employeeIdToNumber.keys, period = period)
         val plans =
-            tx.findStaffAttendancePlansBy(employeeIds = employeeIdToNumber.keys, period = period)
+            tx
+                .findStaffAttendancePlansBy(employeeIds = employeeIdToNumber.keys, period = period)
                 .groupBy { it.employeeId }
 
-        data class EmployeeKey(val id: EmployeeId, val firstName: String, val lastName: String)
+        data class EmployeeKey(
+            val id: EmployeeId,
+            val firstName: String,
+            val lastName: String
+        )
 
         val persons =
             attendances
@@ -230,9 +235,11 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                                     arrivedPlan,
                                                                     attendances
                                                                 )
-                                                            )
+                                                            ) {
                                                                 null
-                                                            else "PM"
+                                                            } else {
+                                                                "PM"
+                                                            }
                                                     },
                                                 endTime =
                                                     when (departed?.toLocalTime()) {
@@ -257,28 +264,31 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                         StaffAttendanceType.OVERTIME ->
                                                             if (
                                                                 departed == null ||
-                                                                    departedPlan != null
-                                                            )
+                                                                departedPlan != null
+                                                            ) {
                                                                 null
-                                                            else "YT"
+                                                            } else {
+                                                                "YT"
+                                                            }
                                                         StaffAttendanceType.JUSTIFIED_CHANGE ->
                                                             if (
                                                                 departed == null ||
-                                                                    isNotLastInPlan(
-                                                                        departed,
-                                                                        departedPlan,
-                                                                        attendances
-                                                                    )
-                                                            )
+                                                                isNotLastInPlan(
+                                                                    departed,
+                                                                    departedPlan,
+                                                                    attendances
+                                                                )
+                                                            ) {
                                                                 null
-                                                            else "PM"
+                                                            } else {
+                                                                "PM"
+                                                            }
                                                     }
                                             )
                                         }
                             )
                     )
-                }
-                .toList()
+                }.toList()
 
         val response =
             GetStampedWorkingTimeEventsResponse(
@@ -308,8 +318,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
     private fun calculateFromPlans(
         plans: List<StaffAttendancePlan>?,
         event: HelsinkiDateTime
-    ): Pair<HelsinkiDateTime, StaffAttendancePlan?> {
-        return plans?.firstNotNullOfOrNull { plan ->
+    ): Pair<HelsinkiDateTime, StaffAttendancePlan?> =
+        plans?.firstNotNullOfOrNull { plan ->
             when {
                 event.durationSince(plan.startTime).abs() <= MAX_DRIFT -> Pair(plan.startTime, plan)
                 event.durationSince(plan.endTime).abs() <= MAX_DRIFT -> Pair(plan.endTime, plan)
@@ -323,7 +333,6 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                         .contains(HelsinkiDateTimeRange(event, event))
                 }
             )
-    }
 
     private fun isNotFirstInPlan(
         event: HelsinkiDateTime,
@@ -335,14 +344,15 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         event: HelsinkiDateTime,
         plan: StaffAttendancePlan?,
         attendances: List<RawAttendance>
-    ) =
-        plan != null &&
-            attendances.any { isInPlan(it, plan) && it.departed != null && it.departed > event }
+    ) = plan != null &&
+        attendances.any { isInPlan(it, plan) && it.departed != null && it.departed > event }
 
-    private fun isInPlan(attendance: RawAttendance, plan: StaffAttendancePlan) =
-        attendance.departed != null &&
-            HelsinkiDateTimeRange(plan.startTime, plan.endTime)
-                .contains(HelsinkiDateTimeRange(attendance.arrived, attendance.departed))
+    private fun isInPlan(
+        attendance: RawAttendance,
+        plan: StaffAttendancePlan
+    ) = attendance.departed != null &&
+        HelsinkiDateTimeRange(plan.startTime, plan.endTime)
+            .contains(HelsinkiDateTimeRange(attendance.arrived, attendance.departed))
 }
 
 data class TitaniaUpdateResponse(

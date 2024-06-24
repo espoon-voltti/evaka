@@ -62,7 +62,6 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `Unit supervisor can see own unit's report results`() {
-
         val testData = initTestData(mockClock.today())
         val results =
             preschoolAbsenceReport.getPreschoolAbsenceReport(

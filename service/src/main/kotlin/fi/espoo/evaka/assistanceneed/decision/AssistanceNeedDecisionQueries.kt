@@ -23,8 +23,8 @@ fun Database.Transaction.insertAssistanceNeedDecision(
 ): AssistanceNeedDecision {
     val id =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO assistance_need_decision (
   child_id, process_id, created_by, validity_period, status, language, decision_made, sent_for_decision,
   selected_unit, pedagogical_motivation, structural_motivation_opt_smaller_group,
@@ -81,9 +81,8 @@ VALUES (
 )
 RETURNING id
 """
-                )
-            }
-            .exactlyOne<AssistanceNeedDecisionId>()
+            )
+        }.exactlyOne<AssistanceNeedDecisionId>()
 
     executeBatch(data.guardianInfo) {
         sql(
@@ -106,12 +105,10 @@ INSERT INTO assistance_need_decision_guardian (
     return getAssistanceNeedDecisionById(id)
 }
 
-fun Database.Read.getAssistanceNeedDecisionById(
-    id: AssistanceNeedDecisionId
-): AssistanceNeedDecision =
+fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): AssistanceNeedDecision =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.last_name) child_name, validity_period, status,
   ad.language, decision_made, sent_for_decision, pedagogical_motivation, structural_motivation_opt_smaller_group,
   structural_motivation_opt_special_group, structural_motivation_opt_small_group,
@@ -145,9 +142,8 @@ LEFT JOIN person child ON child.id = ad.child_id
 WHERE ad.id = ${bind(id)}
 GROUP BY ad.id, child_id, validity_period, unit.id, p1.id, p2.id, dm.id, child.id;
 """
-            )
-        }
-        .exactlyOneOrNull<AssistanceNeedDecision>()
+        )
+    }.exactlyOneOrNull<AssistanceNeedDecision>()
         ?: throw NotFound("Assistance need decision $id not found")
 
 fun Database.Transaction.updateAssistanceNeedDecision(
@@ -156,8 +152,8 @@ fun Database.Transaction.updateAssistanceNeedDecision(
     decisionMakerHasOpened: Boolean? = null
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE assistance_need_decision
 SET 
     validity_period = ${bind(data.validityPeriod)}, 
@@ -199,9 +195,8 @@ SET
     decision_maker_has_opened = COALESCE(${bind(decisionMakerHasOpened)}, decision_maker_has_opened)
 WHERE id = ${bind(id)} AND status IN ('DRAFT', 'NEEDS_WORK')
 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 
     executeBatch(data.guardianInfo) {
         sql(
@@ -220,41 +215,38 @@ fun Database.Read.getAssistanceNeedDecisionsByChildId(
     filter: AccessControlFilter<AssistanceNeedDecisionId>
 ): List<AssistanceNeedDecisionBasics> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created,
     selected_unit selected_unit_id, unit.name selected_unit_name
 FROM assistance_need_decision ad
 LEFT JOIN daycare unit ON unit.id = selected_unit
 WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("ad"))}
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM assistance_need_decision
                 WHERE id = ${bind(id)} AND status IN ('DRAFT', 'NEEDS_WORK')
                 RETURNING id
                 """
-            )
-        }
-        .exactlyOneOrNull<AssistanceNeedDecisionId>() != null
+        )
+    }.exactlyOneOrNull<AssistanceNeedDecisionId>() != null
 
 fun Database.Transaction.markAssistanceNeedDecisionAsOpened(id: AssistanceNeedDecisionId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE assistance_need_decision
                 SET decision_maker_has_opened = TRUE
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Read.getAssistanceNeedDecisionsForCitizen(
@@ -262,8 +254,8 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
     userId: PersonId
 ): List<AssistanceNeedDecisionCitizenListItem> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
@@ -277,36 +269,33 @@ JOIN assistance_need_decision ad ON ad.child_id = c.child_id
 LEFT JOIN daycare unit ON unit.id = selected_unit
 WHERE status IN ('REJECTED', 'ACCEPTED', 'ANNULLED') AND decision_made IS NOT NULL
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisionId): String? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT document_key
                 FROM assistance_need_decision ad
                 WHERE ad.id = ${bind(id)}
                 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Transaction.updateAssistanceNeedDocumentKey(
     id: AssistanceNeedDecisionId,
     key: String
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE assistance_need_decision
                 SET document_key = ${bind(key)}
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
@@ -314,15 +303,14 @@ fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
     guardianId: PersonId
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE assistance_need_decision
                 SET unread_guardian_ids = array_remove(unread_guardian_ids, ${bind(guardianId)})
                 WHERE id = ${bind(assistanceNeedDecisionId)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
@@ -330,8 +318,8 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
     userId: PersonId
 ): List<UnreadAssistanceNeedDecisionItem> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
@@ -343,9 +331,8 @@ JOIN children c ON c.child_id = ad.child_id
 WHERE (${bind(userId)} = ANY(ad.unread_guardian_ids)) AND status IN ('REJECTED', 'ACCEPTED')
 GROUP BY ad.child_id
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Transaction.decideAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
@@ -355,8 +342,8 @@ fun Database.Transaction.decideAssistanceNeedDecision(
     validTo: LocalDate?
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE assistance_need_decision
 SET 
     status = ${bind(status)},
@@ -365,9 +352,8 @@ SET
     validity_period = daterange(lower(validity_period), ${bind(validTo)}, '[]')
 WHERE id = ${bind(id)} AND status IN ('DRAFT', 'NEEDS_WORK')
 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.endActiveAssistanceNeedDecisions(
@@ -390,9 +376,10 @@ WHERE
     }
 }
 
-fun Database.Transaction.endActiveDaycareAssistanceDecisions(date: LocalDate) = execute {
-    sql(
-        """
+fun Database.Transaction.endActiveDaycareAssistanceDecisions(date: LocalDate) =
+    execute {
+        sql(
+            """
 WITH daycare_assistance_decision_with_new_end_date AS (
     SELECT daycare_assistance_decision.id, max(placement.end_date) AS new_end_date
     FROM assistance_need_decision daycare_assistance_decision
@@ -418,38 +405,34 @@ SET validity_period = daterange(lower(validity_period), new_end_date, '[]')
 FROM daycare_assistance_decision_with_new_end_date
 WHERE daycare_assistance_decision_with_new_end_date.id = assistance_need_decision.id
 """
-    )
-}
+        )
+    }
 
 fun Database.Read.getNextAssistanceNeedDecisionValidFrom(
     childId: ChildId,
-    startDate: LocalDate,
-) =
-    createQuery {
-            sql(
-                """
+    startDate: LocalDate
+) = createQuery {
+    sql(
+        """
 SELECT min(lower(validity_period))
 FROM assistance_need_decision
 WHERE child_id = ${bind(childId)}
   AND lower(validity_period) >= ${bind(startDate)}
   AND status = 'ACCEPTED'
 """
-            )
-        }
-        .mapTo<LocalDate>()
-        .exactlyOneOrNull()
+    )
+}.mapTo<LocalDate>()
+    .exactlyOneOrNull()
 
 fun Database.Transaction.annulAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
-    reason: String,
-) =
-    createUpdate {
-            sql(
-                """
+    reason: String
+) = createUpdate {
+    sql(
+        """
 UPDATE assistance_need_decision
 SET status = 'ANNULLED', annulment_reason = ${bind(reason)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()

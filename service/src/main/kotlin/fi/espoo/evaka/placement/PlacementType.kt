@@ -89,7 +89,7 @@ enum class PlacementType : DatabaseEnum {
     fun scheduleType(
         date: LocalDate,
         clubTerms: List<ClubTerm>,
-        preschoolTerms: List<PreschoolTerm>,
+        preschoolTerms: List<PreschoolTerm>
     ): ScheduleType =
         when (this) {
             CLUB ->
@@ -143,7 +143,7 @@ enum class PlacementType : DatabaseEnum {
         date: LocalDate,
         dailyPreschoolTime: TimeRange?,
         dailyPreparatoryTime: TimeRange?,
-        preschoolTerms: List<PreschoolTerm>,
+        preschoolTerms: List<PreschoolTerm>
     ): TimeRange? =
         when (this) {
             CLUB,
@@ -162,17 +162,21 @@ enum class PlacementType : DatabaseEnum {
             PRESCHOOL ->
                 if (
                     preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) } ==
-                        ScheduleType.FIXED_SCHEDULE
-                )
+                    ScheduleType.FIXED_SCHEDULE
+                ) {
                     dailyPreschoolTime
-                else null
+                } else {
+                    null
+                }
             PREPARATORY ->
                 if (
                     preschoolTerms.firstNotNullOfOrNull { it.scheduleType(date) } ==
-                        ScheduleType.FIXED_SCHEDULE
-                )
+                    ScheduleType.FIXED_SCHEDULE
+                ) {
                     dailyPreparatoryTime
-                else null
+                } else {
+                    null
+                }
         }
 
     override val sqlType: String = "placement_type"

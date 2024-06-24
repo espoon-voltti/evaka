@@ -72,7 +72,9 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired lateinit var emailMessageProvider: IEmailMessageProvider
+
     @Autowired lateinit var emailEnv: EmailEnv
 
     @BeforeEach
@@ -199,16 +201,18 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         createPlacement(startDate, endDate)
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "UPDATE voucher_value_decision d SET decision_type = :decisionType WHERE child_id = :childId"
-                )
-                .bind("decisionType", VoucherValueDecisionType.RELIEF_ACCEPTED)
+                ).bind("decisionType", VoucherValueDecisionType.RELIEF_ACCEPTED)
                 .bind("childId", testChild_1.id)
                 .execute()
 
             it.execute {
                 sql(
-                    "UPDATE daycare SET finance_decision_handler = ${bind(testDecisionMaker_2.id)} WHERE id = ${bind(testVoucherDaycare.id)}"
+                    "UPDATE daycare SET finance_decision_handler = ${bind(
+                        testDecisionMaker_2.id
+                    )} WHERE id = ${bind(testVoucherDaycare.id)}"
                 )
             }
         }
@@ -377,7 +381,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE placement SET start_date = :now WHERE id = :placementId")
+            it
+                .createUpdate("UPDATE placement SET start_date = :now WHERE id = :placementId")
                 .bind("placementId", placementId)
                 .bind("now", now.toLocalDate())
                 .execute()
@@ -639,7 +644,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 ssn = "291090-9986",
                 email = "optout@test.com",
                 forceManualFeeDecisions = false,
-                enabledEmailTypes = listOf(),
+                enabledEmailTypes = listOf()
             )
         db.transaction {
             it.insert(optOutAdult, DevPersonType.RAW_ROW)
@@ -672,10 +677,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "UPDATE voucher_value_decision SET decision_type='RELIEF_ACCEPTED' WHERE id = :id"
-                )
-                .bind("id", decision.id)
+                ).bind("id", decision.id)
                 .execute()
         }
 
@@ -732,10 +737,18 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
-        return data.get().placements.first().id
+        return data
+            .get()
+            .placements
+            .first()
+            .id
     }
 
-    private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {
+    private fun updatePlacement(
+        id: PlacementId,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) {
         val body = PlacementUpdateRequestBody(startDate = startDate, endDate = endDate)
 
         http
@@ -750,15 +763,17 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun deletePlacement(id: PlacementId) {
-        http.delete("/placements/$id").asUser(serviceWorker).withMockedTime(now).response().also {
-            (_, res, _) ->
+        http.delete("/placements/$id").asUser(serviceWorker).withMockedTime(now).response().also { (_, res, _) ->
             assertEquals(200, res.statusCode)
         }
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
     }
 
-    private fun changeHeadOfFamily(child: DevPerson, headOfFamilyId: PersonId) {
+    private fun changeHeadOfFamily(
+        child: DevPerson,
+        headOfFamilyId: PersonId
+    ) {
         db.transaction {
             it.execute { sql("DELETE FROM fridge_child WHERE child_id = ${bind(child.id)}") }
         }
@@ -791,8 +806,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .post("/value-decisions/search")
                 .jsonBody(
                     """{"page": 0, "pageSize": 100, "statuses": ["$status"], "searchTerms": "$searchTerms", "distinctions": $distinctionsString}"""
-                )
-                .withMockedTime(now)
+                ).withMockedTime(now)
                 .asUser(financeWorker)
                 .responseObject<PagedVoucherValueDecisionSummaries>(jsonMapper)
         return data.get()
@@ -832,12 +846,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun getAllValueDecisions(): List<VoucherValueDecision> {
-        return db.read {
+        return db
+            .read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT * FROM voucher_value_decision")
+                it
+                    .createQuery("SELECT * FROM voucher_value_decision")
                     .toList<VoucherValueDecision>()
-            }
-            .shuffled() // randomize order to expose assumptions
+            }.shuffled() // randomize order to expose assumptions
     }
 
     private fun getPdfStatus(
@@ -862,7 +877,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun markValueDecisionsSent(
         decisionIds: List<VoucherValueDecisionId>,
         expectedStatusCode: Int = 200,
-        expectedErrorCode: String? = null,
+        expectedErrorCode: String? = null
     ) {
         http
             .post("/value-decisions/mark-sent")

@@ -40,8 +40,7 @@ data class TimeRange(
         }
     }
 
-    override fun overlaps(other: TimeRange): Boolean =
-        this.start < other.end && other.start < this.end
+    override fun overlaps(other: TimeRange): Boolean = this.start < other.end && other.start < this.end
 
     override fun leftAdjacentTo(other: TimeRange): Boolean = this.end.compareTo(other.start) == 0
 
@@ -51,11 +50,9 @@ data class TimeRange(
 
     override fun strictlyRightTo(other: TimeRange): Boolean = other.end <= this.start
 
-    override fun intersection(other: TimeRange): TimeRange? =
-        tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
+    override fun intersection(other: TimeRange): TimeRange? = tryCreate(maxOf(this.start, other.start), minOf(this.end, other.end))
 
-    override fun gap(other: TimeRange): TimeRange? =
-        tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
+    override fun gap(other: TimeRange): TimeRange? = tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
 
     override fun subtract(other: TimeRange): BoundedRange.SubtractResult<TimeRange> =
         if (this.overlaps(other)) {
@@ -74,10 +71,11 @@ data class TimeRange(
                     BoundedRange.SubtractResult.None
                 }
             }
-        } else BoundedRange.SubtractResult.Original(this)
+        } else {
+            BoundedRange.SubtractResult.Original(this)
+        }
 
-    override fun merge(other: TimeRange): TimeRange =
-        TimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
+    override fun merge(other: TimeRange): TimeRange = TimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
 
     override fun relationTo(other: TimeRange): BoundedRange.Relation<TimeRange> =
         when {
@@ -123,12 +121,9 @@ data class TimeRange(
 
     fun includes(point: LocalTime) = this.includes(TimeRangeEndpoint.Start(point))
 
-    override fun contains(other: TimeRange): Boolean =
-        this.start <= other.start && other.end <= this.end
+    override fun contains(other: TimeRange): Boolean = this.start <= other.start && other.end <= this.end
 
-    fun toDbString(): String {
-        return "(${this.start.toDbString()},${this.end.toDbString()})"
-    }
+    fun toDbString(): String = "(${this.start.toDbString()},${this.end.toDbString()})"
 
     val duration: Duration
         get() {
@@ -150,16 +145,18 @@ data class TimeRange(
         )
     }
 
-    fun fixMidnightEndTime(): TimeRange {
-        return if (this.end == TimeRangeEndpoint.End(LocalTime.of(23, 59))) {
+    fun fixMidnightEndTime(): TimeRange =
+        if (this.end == TimeRangeEndpoint.End(LocalTime.of(23, 59))) {
             TimeRange(this.start, TimeRangeEndpoint.End(LocalTime.MIDNIGHT))
         } else {
             this
         }
-    }
 
     companion object {
-        private fun tryCreate(start: TimeRangeEndpoint, end: TimeRangeEndpoint): TimeRange? =
+        private fun tryCreate(
+            start: TimeRangeEndpoint,
+            end: TimeRangeEndpoint
+        ): TimeRange? =
             try {
                 TimeRange(start.asStart(), end.asEnd())
             } catch (e: IllegalArgumentException) {
@@ -168,19 +165,27 @@ data class TimeRange(
     }
 }
 
-private data class SerializableTimeRange(val start: LocalTime, val end: LocalTime)
+private data class SerializableTimeRange(
+    val start: LocalTime,
+    val end: LocalTime
+)
 
 class TimeRangeJsonSerializer : JsonSerializer<TimeRange>() {
-    override fun serialize(value: TimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
-        return serializers.defaultSerializeValue(
-            SerializableTimeRange(value.start.inner, value.end.inner),
-            gen
-        )
-    }
+    override fun serialize(
+        value: TimeRange,
+        gen: JsonGenerator,
+        serializers: SerializerProvider
+    ) = serializers.defaultSerializeValue(
+        SerializableTimeRange(value.start.inner, value.end.inner),
+        gen
+    )
 }
 
 class TimeRangeJsonDeserializer : JsonDeserializer<TimeRange>() {
-    override fun deserialize(parser: JsonParser, ctx: DeserializationContext): TimeRange {
+    override fun deserialize(
+        parser: JsonParser,
+        ctx: DeserializationContext
+    ): TimeRange {
         val value = parser.readValueAs(SerializableTimeRange::class.java)
         return TimeRange(value.start, value.end)
     }

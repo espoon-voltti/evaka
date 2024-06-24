@@ -41,10 +41,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
-class ChildDocumentControllerCitizenIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class ChildDocumentControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired lateinit var controller: ChildDocumentControllerCitizen
+
     @Autowired lateinit var employeeController: ChildDocumentController
 
     val clock = MockEvakaClock(2022, 1, 1, 15, 0)
@@ -63,7 +64,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         label = "Eka",
                         questions =
                             listOf(
-                                Question.TextQuestion(id = "q1", label = "kysymys 1"),
+                                Question.TextQuestion(id = "q1", label = "kysymys 1")
                             )
                     )
                 )
@@ -198,21 +199,18 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     private fun getUnreadCount() = controller.getUnreadDocumentsCount(dbInstance(), citizen, clock)
 
-    private fun getDocumentsByChild(childId: ChildId) =
-        controller.getDocuments(dbInstance(), citizen, clock, childId)
+    private fun getDocumentsByChild(childId: ChildId) = controller.getDocuments(dbInstance(), citizen, clock, childId)
 
-    private fun getDocument(id: ChildDocumentId) =
-        controller.getDocument(dbInstance(), citizen, clock, id)
+    private fun getDocument(id: ChildDocumentId) = controller.getDocument(dbInstance(), citizen, clock, id)
 
-    private fun downloadChildDocument(id: ChildDocumentId) =
-        controller.downloadChildDocument(dbInstance(), citizen, clock, id)
+    private fun downloadChildDocument(id: ChildDocumentId) = controller.downloadChildDocument(dbInstance(), citizen, clock, id)
 
-    private fun putDocumentRead(id: ChildDocumentId) =
-        controller.putDocumentRead(dbInstance(), citizen, clock, id)
+    private fun putDocumentRead(id: ChildDocumentId) = controller.putDocumentRead(dbInstance(), citizen, clock, id)
 
-    private fun publishDocument(id: ChildDocumentId) =
-        employeeController.publishDocument(dbInstance(), employeeUser, clock, id)
+    private fun publishDocument(id: ChildDocumentId) = employeeController.publishDocument(dbInstance(), employeeUser, clock, id)
 
-    private fun updateDocumentContent(id: ChildDocumentId, content: DocumentContent) =
-        employeeController.updateDocumentContent(dbInstance(), employeeUser, clock, id, content)
+    private fun updateDocumentContent(
+        id: ChildDocumentId,
+        content: DocumentContent
+    ) = employeeController.updateDocumentContent(dbInstance(), employeeUser, clock, id, content)
 }

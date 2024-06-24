@@ -5,5 +5,8 @@
 package fi.espoo.evaka.espoo.bi
 
 interface EspooBiClient {
-    fun sendBiCsvFile(fileName: String, stream: EspooBiJob.CsvInputStream)
+    fun sendBiCsvFile(
+        fileName: String,
+        stream: EspooBiJob.CsvInputStream
+    )
 }

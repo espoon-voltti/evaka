@@ -6,4 +6,7 @@ package fi.espoo.evaka.vtjclient.dto
 
 import java.time.LocalDate
 
-data class RestrictedDetails(val enabled: Boolean, val endDate: LocalDate? = null)
+data class RestrictedDetails(
+    val enabled: Boolean,
+    val endDate: LocalDate? = null
+)

@@ -58,7 +58,6 @@ const val DEFAULT_PERSON_SSN = "270372-905L"
 
 @ExtendWith(MockitoExtension::class)
 class VtjClientServiceTest {
-
     @Spy var vtjObjectFactory: ObjectFactory = ObjectFactory()
 
     @Mock lateinit var mockWSTemplate: WebServiceTemplate
@@ -297,27 +296,26 @@ class VtjClientServiceTest {
         postalOffice: String = "Jokukaupunki",
         postalCode: String = "00100",
         dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27)
-    ) =
-        PersonDTO(
-            id = id,
-            duplicateOf = null,
-            identity = externalId,
-            ssnAddingDisabled = false,
-            firstName = firstName,
-            lastName = lastName,
-            preferredName = preferredName,
-            email = email,
-            phone = phone,
-            backupPhone = backupPhone,
-            language = language,
-            dateOfBirth = dateOfBirth,
-            streetAddress = streetAddress,
-            postOffice = postalOffice,
-            postalCode = postalCode,
-            residenceCode = "",
-            restrictedDetailsEnabled = false,
-            restrictedDetailsEndDate = null,
-        )
+    ) = PersonDTO(
+        id = id,
+        duplicateOf = null,
+        identity = externalId,
+        ssnAddingDisabled = false,
+        firstName = firstName,
+        lastName = lastName,
+        preferredName = preferredName,
+        email = email,
+        phone = phone,
+        backupPhone = backupPhone,
+        language = language,
+        dateOfBirth = dateOfBirth,
+        streetAddress = streetAddress,
+        postOffice = postalOffice,
+        postalCode = postalCode,
+        residenceCode = "",
+        restrictedDetailsEnabled = false,
+        restrictedDetailsEndDate = null
+    )
 
     private fun createPersonResponse(forSsn: String? = DEFAULT_PERSON_SSN) =
         Henkilo().apply { henkilotunnus = Henkilo.Henkilotunnus().apply { value = forSsn } }
@@ -330,7 +328,10 @@ class VtjClientServiceTest {
         return VTJQuery(requestingUserId = requestedBy.id.raw, type = type, ssn = ssn)
     }
 
-    private fun ILoggingEvent.assertLogArgumentsContain(query: VTJQuery, status: String) {
+    private fun ILoggingEvent.assertLogArgumentsContain(
+        query: VTJQuery,
+        status: String
+    ) {
         // is there an easier way to verify that the values were passed to the logger?
         // this is dumb because it relies on internals of MapEntriesAppendingMarker
 

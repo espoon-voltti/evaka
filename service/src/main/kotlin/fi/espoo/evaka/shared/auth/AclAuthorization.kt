@@ -11,7 +11,9 @@ sealed class AclAuthorization<in T> {
         override fun isAuthorized(id: Any): Boolean = true
     }
 
-    data class Subset<T>(val ids: Set<T>) : AclAuthorization<T>() {
+    data class Subset<T>(
+        val ids: Set<T>
+    ) : AclAuthorization<T>() {
         override fun isAuthorized(id: T): Boolean = ids.contains(id)
     }
 }

@@ -206,9 +206,14 @@ data class UnitInfo(
     fun toForm() = UnitIdInfo(id)
 }
 
-data class UnitIdInfo(val id: DaycareId?)
+data class UnitIdInfo(
+    val id: DaycareId?
+)
 
-data class UnitInfoBasics(@PropagateNull val id: DaycareId?, val name: String? = null)
+data class UnitInfoBasics(
+    @PropagateNull val id: DaycareId?,
+    val name: String? = null
+)
 
 data class AssistanceNeedDecisionChild(
     @PropagateNull val id: ChildId?,
@@ -228,4 +233,7 @@ data class AssistanceNeedDecisionCitizenListItem(
     val isUnread: Boolean
 )
 
-data class UnreadAssistanceNeedDecisionItem(val childId: ChildId, val count: Int)
+data class UnreadAssistanceNeedDecisionItem(
+    val childId: ChildId,
+    val count: Int
+)

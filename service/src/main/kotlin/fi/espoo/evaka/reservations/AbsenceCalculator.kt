@@ -96,11 +96,10 @@ fun getExpectedAbsenceCategories(
     return when (placementType) {
         PlacementType.PRESCHOOL ->
             setOfNotNull(
-                    AbsenceCategory.NONBILLABLE.takeIf {
-                        overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
-                    }
-                )
-                .takeIf { preschoolEducationOnGoing }
+                AbsenceCategory.NONBILLABLE.takeIf {
+                    overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
+                }
+            ).takeIf { preschoolEducationOnGoing }
         PlacementType.PRESCHOOL_DAYCARE,
         PlacementType.PRESCHOOL_CLUB ->
             if (preschoolEducationOnGoing) {
@@ -122,11 +121,10 @@ fun getExpectedAbsenceCategories(
             }
         PlacementType.PREPARATORY ->
             setOfNotNull(
-                    AbsenceCategory.NONBILLABLE.takeIf {
-                        overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
-                    }
-                )
-                .takeIf { preparatoryEducationOnGoing }
+                AbsenceCategory.NONBILLABLE.takeIf {
+                    overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
+                }
+            ).takeIf { preparatoryEducationOnGoing }
         PlacementType.PREPARATORY_DAYCARE ->
             if (preparatoryEducationOnGoing) {
                 setOfNotNull(

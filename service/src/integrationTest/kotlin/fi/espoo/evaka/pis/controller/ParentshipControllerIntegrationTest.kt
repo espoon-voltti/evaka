@@ -199,14 +199,14 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `can delete parentship`(user: AuthenticatedUser.Employee) {
         val parentship =
             db.transaction { tx ->
-                tx.createParentship(
+                tx
+                    .createParentship(
                         child.id,
                         parent.id,
                         child.dateOfBirth,
                         child.dateOfBirth.plusDays(100),
                         Creator.DVV
-                    )
-                    .also {
+                    ).also {
                         tx.createParentship(
                             child.id,
                             parent.id,
@@ -230,14 +230,14 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `cannot delete parentship`(user: AuthenticatedUser.Employee) {
         val parentship =
             db.transaction { tx ->
-                tx.createParentship(
+                tx
+                    .createParentship(
                         child.id,
                         parent.id,
                         child.dateOfBirth,
                         child.dateOfBirth.plusDays(100),
                         Creator.DVV
-                    )
-                    .also {
+                    ).also {
                         tx.createParentship(
                             child.id,
                             parent.id,

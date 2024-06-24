@@ -53,7 +53,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     private val testPeriod = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
 
     @BeforeEach
@@ -150,7 +149,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 )
                 val ids =
                     @Suppress("DEPRECATION")
-                    tx.createQuery("SELECT id FROM voucher_value_decision")
+                    tx
+                        .createQuery("SELECT id FROM voucher_value_decision")
                         .toList<VoucherValueDecisionId>()
                 ids.map { id -> tx.getVoucherValueDecision(id)!! }
             }
@@ -159,8 +159,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 { it.headOfFamily.lastName },
                 { it.headOfFamily.firstName },
                 { it.incomeEffect }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, IncomeEffect.NOT_AVAILABLE),
                 Tuple(testAdult_2.lastName, testAdult_2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
@@ -268,8 +267,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 { it.headOfFamily.lastName },
                 { it.headOfFamily.firstName },
                 { it.difference }
-            )
-            .containsExactly(
+            ).containsExactly(
                 Tuple(
                     testAdult_2.lastName,
                     testAdult_2.firstName,
@@ -901,15 +899,14 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
         listOf(
-                baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
-                baseDecision(testChild_2).copy(headOfFamilyId = testAdult_2.id),
-                baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
-                baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id)
-            )
-            .forEach { decision ->
-                db.transaction { tx -> tx.upsertValueDecisions(listOf(decision)) }
-                Thread.sleep(10)
-            }
+            baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
+            baseDecision(testChild_2).copy(headOfFamilyId = testAdult_2.id),
+            baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
+            baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id)
+        ).forEach { decision ->
+            db.transaction { tx -> tx.upsertValueDecisions(listOf(decision)) }
+            Thread.sleep(10)
+        }
 
         val sortByCreated = { direction: SortDirection ->
             db.read { tx ->
@@ -979,8 +976,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 { it.headOfFamily.lastName },
                 { it.headOfFamily.firstName },
                 { it.child.dateOfBirth }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_1.dateOfBirth),
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_2.dateOfBirth)
             )
@@ -1009,7 +1005,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
             assertEquals(
                 1,
-                tx.searchValueDecisions(
+                tx
+                    .searchValueDecisions(
                         evakaClock =
                             MockEvakaClock(HelsinkiDateTime.of(now.today(), LocalTime.of(15, 6))),
                         postOffice = "ESPOO",
@@ -1026,8 +1023,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         difference = emptySet(),
                         distinctiveParams =
                             listOf(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
-                    )
-                    .data
+                    ).data
                     .size
             )
 
@@ -1042,7 +1038,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
             assertEquals(
                 0,
-                tx.searchValueDecisions(
+                tx
+                    .searchValueDecisions(
                         evakaClock =
                             MockEvakaClock(HelsinkiDateTime.of(now.today(), LocalTime.of(15, 6))),
                         postOffice = "ESPOO",
@@ -1059,8 +1056,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         difference = emptySet(),
                         distinctiveParams =
                             listOf(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
-                    )
-                    .data
+                    ).data
                     .size
             )
         }
@@ -1107,9 +1103,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         assertEquals(
             2,
             searchWithStatuses(
-                    listOf(VoucherValueDecisionStatus.DRAFT, VoucherValueDecisionStatus.SENT)
-                )
-                .size
+                listOf(VoucherValueDecisionStatus.DRAFT, VoucherValueDecisionStatus.SENT)
+            ).size
         )
         assertEquals(
             1,
@@ -1117,11 +1112,10 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         )
     }
 
-    private fun searchWithStatuses(
-        statuses: List<VoucherValueDecisionStatus>
-    ): List<VoucherValueDecisionSummary> {
-        return db.read { tx ->
-            tx.searchValueDecisions(
+    private fun searchWithStatuses(statuses: List<VoucherValueDecisionStatus>): List<VoucherValueDecisionSummary> =
+        db.read { tx ->
+            tx
+                .searchValueDecisions(
                     evakaClock =
                         MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
                     postOffice = "ESPOO",
@@ -1137,8 +1131,6 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                     financeDecisionHandlerId = null,
                     difference = emptySet(),
                     distinctiveParams = emptyList()
-                )
-                .data
+                ).data
         }
-    }
 }

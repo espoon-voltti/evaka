@@ -26,15 +26,18 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class MobileDevicesController(private val accessControl: AccessControl) {
+class MobileDevicesController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/mobile-devices")
     fun getMobileDevices(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
-    ): List<MobileDevice> {
-        return db.connect { dbc ->
+    ): List<MobileDevice> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -45,22 +48,21 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                     )
                     it.listSharedDevices(unitId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.MobileDevicesList.log(
                     targetId = AuditId(unitId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @GetMapping("/mobile-devices/personal")
     fun getPersonalMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<MobileDevice> {
-        return db.connect { dbc ->
+    ): List<MobileDevice> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -70,16 +72,16 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                     )
                     it.listPersonalDevices(user.id)
                 }
-            }
-            .also {
+            }.also {
                 Audit.MobileDevicesList.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
-    data class RenameRequest(val name: String)
+    data class RenameRequest(
+        val name: String
+    )
 
     @PutMapping("/mobile-devices/{id}/name")
     fun putMobileDeviceName(
@@ -127,7 +129,8 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     val employee = tx.getEmployeeUser(params.employeeId)
                     if (employee?.active == false) {
@@ -148,8 +151,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                         }
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PinLogin.log(
                     targetId = AuditId(params.employeeId),
                     meta = mapOf("status" to it.status)
@@ -157,7 +159,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             }
 }
 
-data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)
+data class PinLoginRequest(
+    val pin: String,
+    val employeeId: EmployeeId
+)
 
 enum class PinLoginStatus {
     SUCCESS,
@@ -165,6 +170,12 @@ enum class PinLoginStatus {
     PIN_LOCKED
 }
 
-data class Employee(val firstName: String, val lastName: String)
+data class Employee(
+    val firstName: String,
+    val lastName: String
+)
 
-data class PinLoginResponse(val status: PinLoginStatus, val employee: Employee? = null)
+data class PinLoginResponse(
+    val status: PinLoginStatus,
+    val employee: Employee? = null
+)

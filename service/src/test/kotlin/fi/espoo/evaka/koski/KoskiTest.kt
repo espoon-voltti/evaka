@@ -28,7 +28,7 @@ class KoskiTest {
 
     Absent 22.3 - 26.3, but no Koski absence is generated:
         - the actual absence period is just 5 days
-         */
+     */
     @Test
     fun testSimpleAbsenceScenario1() {
         val timelines =
@@ -43,7 +43,7 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 23),
                                 LocalDate.of(2021, 3, 24),
                                 LocalDate.of(2021, 3, 25),
-                                LocalDate.of(2021, 3, 26),
+                                LocalDate.of(2021, 3, 26)
                             )
                     )
             )
@@ -65,7 +65,7 @@ class KoskiTest {
     Week 15  12 13 14 15 16 17 18
 
     Absent 22.3 - 29.3, and a Koski absence is generated
-         */
+     */
     @Test
     fun testSimpleAbsenceScenario2() {
         val timelines =
@@ -81,7 +81,7 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 24),
                                 LocalDate.of(2021, 3, 25),
                                 LocalDate.of(2021, 3, 26),
-                                LocalDate.of(2021, 3, 29),
+                                LocalDate.of(2021, 3, 29)
                             )
                     )
             )
@@ -106,7 +106,7 @@ class KoskiTest {
     Week 15  12 13 14 15 16 17 18
 
     Sick leave 22.3 - 29.3, and a Koski absence is generated
-         */
+     */
     @Test
     fun testSimpleAbsenceScenario3() {
         val timelines =
@@ -122,7 +122,7 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 24),
                                 LocalDate.of(2021, 3, 25),
                                 LocalDate.of(2021, 3, 26),
-                                LocalDate.of(2021, 3, 29),
+                                LocalDate.of(2021, 3, 29)
                             )
                     )
             )
@@ -148,7 +148,7 @@ class KoskiTest {
 
     Absent 26.3 - 5.4, but no Koski absence is generated:
         - the actual absence period is just 7 days (26.3 - 1.4), since public holidays and weekend days are skipped
-         */
+     */
     @Test
     fun testComplexAbsenceScenario1() {
         val timelines =
@@ -163,7 +163,7 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 29),
                                 LocalDate.of(2021, 3, 30),
                                 LocalDate.of(2021, 3, 31),
-                                LocalDate.of(2021, 4, 1),
+                                LocalDate.of(2021, 4, 1)
                             )
                     )
             )
@@ -185,7 +185,7 @@ class KoskiTest {
     Week 15  12 13 14 15 16 17 18
 
     Absent 29.3 - 6.4, and a Koski absence is generated
-         */
+     */
     @Test
     fun testComplexAbsenceScenario2() {
         val timelines =
@@ -199,7 +199,7 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 29),
                                 LocalDate.of(2021, 3, 30),
                                 LocalDate.of(2021, 3, 31),
-                                LocalDate.of(2021, 4, 1),
+                                LocalDate.of(2021, 4, 1)
                             ),
                         AbsenceType.OTHER_ABSENCE to setOf(LocalDate.of(2021, 4, 6))
                     )

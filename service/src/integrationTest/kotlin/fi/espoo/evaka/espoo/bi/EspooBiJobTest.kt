@@ -62,7 +62,10 @@ class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
         val request = mockEndpoint.getCapturedRequests().values.single()
         val expected = record.toByteArray(CSV_CHARSET)
         val chunks =
-            request.body.asSequence().chunked(expected.size, List<Byte>::toByteArray).toList()
+            request.body
+                .asSequence()
+                .chunked(expected.size, List<Byte>::toByteArray)
+                .toList()
         assertEquals(recordCount, chunks.size)
         for (chunk in chunks) {
             assertContentEquals(expected, chunk)

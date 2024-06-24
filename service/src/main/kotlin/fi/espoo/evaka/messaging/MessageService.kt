@@ -29,7 +29,7 @@ class MessageService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val notificationEmailService: MessageNotificationEmailService,
     private val messagePushNotifications: MessagePushNotifications,
-    private val featureConfig: FeatureConfig,
+    private val featureConfig: FeatureConfig
 ) {
     init {
         asyncJobRunner.registerHandler(::handleMarkMessageAsSent)
@@ -59,7 +59,7 @@ class MessageService(
         sender: MessageAccountId,
         msg: NewMessageStub,
         recipients: Set<MessageAccountId>,
-        children: Set<ChildId>,
+        children: Set<ChildId>
     ): MessageThreadId {
         val contentId = tx.insertMessageContent(msg.content, sender)
         val threadId =
@@ -124,13 +124,11 @@ class MessageService(
                     .groupBy { (_, childId) -> childId }
                     .mapValues { (_, accountChildPairs) ->
                         accountChildPairs.map { it.first }.toSet()
-                    }
-                    .toList()
+                    }.toList()
                     .groupBy { (_, accounts) -> accounts }
                     .mapValues { (_, childAccountPairs) ->
                         childAccountPairs.map { it.first }.toSet()
-                    }
-                    .toList()
+                    }.toList()
             }
         // for each recipient group, create a thread, message and message_recipients
         // while re-using
@@ -212,7 +210,10 @@ class MessageService(
         return contentId
     }
 
-    data class ThreadReply(val threadId: MessageThreadId, val message: Message)
+    data class ThreadReply(
+        val threadId: MessageThreadId,
+        val message: Message
+    )
 
     fun replyToThread(
         db: Database.Connection,
@@ -230,14 +231,17 @@ class MessageService(
                 ?: throw NotFound("Message not found")
 
         if (isCopy) throw BadRequest("Message copies cannot be replied to")
-        if (type == MessageType.BULLETIN && !senders.contains(senderAccount))
+        if (type == MessageType.BULLETIN && !senders.contains(senderAccount)) {
             throw Forbidden("Only the author can reply to bulletin")
+        }
 
         val previousParticipants = recipients + senders
-        if (!previousParticipants.contains(senderAccount))
+        if (!previousParticipants.contains(senderAccount)) {
             throw Forbidden("Not authorized to post to message")
-        if (!previousParticipants.containsAll(recipientAccountIds))
+        }
+        if (!previousParticipants.containsAll(recipientAccountIds)) {
             throw Forbidden("Not authorized to widen the audience")
+        }
 
         val message =
             db.transaction { tx ->
@@ -276,9 +280,8 @@ fun AsyncJobRunner<AsyncJob>.scheduleMarkMessagesAsSent(
     tx: Database.Transaction,
     messageContentId: MessageContentId,
     now: HelsinkiDateTime
-) =
-    this.plan(
-        tx,
-        listOf(AsyncJob.MarkMessagesAsSent(messageContentId, now)),
-        runAt = now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS)
-    )
+) = this.plan(
+    tx,
+    listOf(AsyncJob.MarkMessagesAsSent(messageContentId, now)),
+    runAt = now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS)
+)

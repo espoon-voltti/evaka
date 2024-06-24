@@ -70,7 +70,10 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val testUser =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
 
-    private fun getAndAssert(date: LocalDate, expected: InvoiceReport) {
+    private fun getAndAssert(
+        date: LocalDate,
+        expected: InvoiceReport
+    ) {
         val (_, response, result) =
             http
                 .get("/reports/invoices", listOf("date" to date.format(DateTimeFormatter.ISO_DATE)))
@@ -113,13 +116,12 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insertInvoices(testInvoices)
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     """
-                UPDATE invoice SET sent_at = :sentAt
-                """
-                        .trimIndent()
-                )
-                .bind("sentAt", date)
+                    UPDATE invoice SET sent_at = :sentAt
+                    """.trimIndent()
+                ).bind("sentAt", date)
                 .execute()
         }
     }

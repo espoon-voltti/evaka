@@ -17,16 +17,17 @@ import java.util.Objects
  * (24 hours -> 86 400 000 000 microseconds) assigned to one same value contains internally 86 400
  * 000 000 entries, but the equivalent `DateTimeMap<T>` contains just 1 entry.
  */
-class DateTimeMap<T> private constructor(entries: List<Pair<HelsinkiDateTimeRange, T>>) :
-    RangeBasedMap<T, HelsinkiDateTime, HelsinkiDateTimeRange, DateTimeMap<T>>(entries) {
-    override fun List<Pair<HelsinkiDateTimeRange, T>>.toThis(): DateTimeMap<T> =
-        if (isEmpty()) empty() else DateTimeMap(this)
+class DateTimeMap<T> private constructor(
+    entries: List<Pair<HelsinkiDateTimeRange, T>>
+) : RangeBasedMap<T, HelsinkiDateTime, HelsinkiDateTimeRange, DateTimeMap<T>>(entries) {
+    override fun List<Pair<HelsinkiDateTimeRange, T>>.toThis(): DateTimeMap<T> = if (isEmpty()) empty() else DateTimeMap(this)
 
-    override fun range(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange =
-        HelsinkiDateTimeRange(start, end)
+    override fun range(
+        start: HelsinkiDateTime,
+        end: HelsinkiDateTime
+    ): HelsinkiDateTimeRange = HelsinkiDateTimeRange(start, end)
 
-    override fun equals(other: Any?): Boolean =
-        other is DateTimeMap<*> && this.entries == other.entries
+    override fun equals(other: Any?): Boolean = other is DateTimeMap<*> && this.entries == other.entries
 
     override fun hashCode(): Int = Objects.hash(entries)
 
@@ -53,22 +54,29 @@ class DateTimeMap<T> private constructor(entries: List<Pair<HelsinkiDateTimeRang
         private val EMPTY: DateTimeMap<*> = DateTimeMap<Any>(emptyList())
 
         fun <T> empty(): DateTimeMap<T> {
-            @Suppress("UNCHECKED_CAST") return EMPTY as DateTimeMap<T>
+            @Suppress("UNCHECKED_CAST")
+            return EMPTY as DateTimeMap<T>
         }
+
         /** Returns a new datetime map containing all the given entries */
-        fun <T> of(vararg ranges: Pair<HelsinkiDateTimeRange, T>): DateTimeMap<T> =
-            empty<T>().setAll(ranges.asSequence())
+        fun <T> of(vararg ranges: Pair<HelsinkiDateTimeRange, T>): DateTimeMap<T> = empty<T>().setAll(ranges.asSequence())
+
         /** Returns a new datetime map containing all the given ranges mapped to the given value. */
-        fun <T> of(ranges: Iterable<HelsinkiDateTimeRange>, value: T): DateTimeMap<T> =
-            empty<T>().setAll(ranges.asSequence().map { it to value })
+        fun <T> of(
+            ranges: Iterable<HelsinkiDateTimeRange>,
+            value: T
+        ): DateTimeMap<T> = empty<T>().setAll(ranges.asSequence().map { it to value })
+
         /** Returns a new datetime map containing all the given ranges mapped to the given value. */
-        fun <T> of(ranges: Sequence<HelsinkiDateTimeRange>, value: T): DateTimeMap<T> =
-            empty<T>().setAll(ranges.map { it to value })
+        fun <T> of(
+            ranges: Sequence<HelsinkiDateTimeRange>,
+            value: T
+        ): DateTimeMap<T> = empty<T>().setAll(ranges.map { it to value })
+
         /** Returns a new datetime map containing all the given entries */
-        fun <T> of(ranges: Iterable<Pair<HelsinkiDateTimeRange, T>>): DateTimeMap<T> =
-            empty<T>().setAll(ranges.asSequence())
+        fun <T> of(ranges: Iterable<Pair<HelsinkiDateTimeRange, T>>): DateTimeMap<T> = empty<T>().setAll(ranges.asSequence())
+
         /** Returns a new datetime map containing all the given entries */
-        fun <T> of(ranges: Sequence<Pair<HelsinkiDateTimeRange, T>>): DateTimeMap<T> =
-            empty<T>().setAll(ranges)
+        fun <T> of(ranges: Sequence<Pair<HelsinkiDateTimeRange, T>>): DateTimeMap<T> = empty<T>().setAll(ranges)
     }
 }

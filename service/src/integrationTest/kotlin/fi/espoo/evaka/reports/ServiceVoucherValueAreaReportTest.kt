@@ -150,43 +150,40 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                 .get(
                     "/reports/service-voucher-value/units",
                     listOf("areaId" to areaId, "year" to year, "month" to month)
-                )
-                .asUser(adminUser)
+                ).asUser(adminUser)
                 .responseObject<ServiceVoucherReport>(jsonMapper)
         assertEquals(200, response.statusCode)
 
         return data.get().rows
     }
 
-    private fun createTestSetOfDecisions(): Int {
-        return listOf(
-                createVoucherDecision(
-                    janFirst,
-                    testDaycare.id,
-                    87000,
-                    28800,
-                    testAdult_1.id,
-                    testChild_1
-                ),
-                createVoucherDecision(
-                    janFirst,
-                    testDaycare.id,
-                    52200,
-                    28800,
-                    testAdult_2.id,
-                    testChild_2
-                ),
-                createVoucherDecision(
-                    janFirst,
-                    testDaycare.id,
-                    134850,
-                    0,
-                    testAdult_3.id,
-                    testChild_3
-                )
+    private fun createTestSetOfDecisions(): Int =
+        listOf(
+            createVoucherDecision(
+                janFirst,
+                testDaycare.id,
+                87000,
+                28800,
+                testAdult_1.id,
+                testChild_1
+            ),
+            createVoucherDecision(
+                janFirst,
+                testDaycare.id,
+                52200,
+                28800,
+                testAdult_2.id,
+                testChild_2
+            ),
+            createVoucherDecision(
+                janFirst,
+                testDaycare.id,
+                134850,
+                0,
+                testAdult_3.id,
+                testChild_3
             )
-            .sumOf { decision -> decision.voucherValue - decision.coPayment }
-    }
+        ).sumOf { decision -> decision.voucherValue - decision.coPayment }
 
     private val financeUser =
         AuthenticatedUser.Employee(

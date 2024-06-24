@@ -33,8 +33,7 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class HolidayPeriodControllerCitizenIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private final val freePeriodQuestionnaire =
         FixedPeriodQuestionnaireBody(
             active = FiniteDateRange(LocalDate.of(2021, 4, 1), LocalDate.of(2021, 5, 31)),
@@ -258,18 +257,23 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             .also { assertEquals(expectedStatus, it.second.statusCode) }
     }
 
-    private fun freeAbsence(start: LocalDate, end: LocalDate) =
-        FixedPeriodsBody(mapOf(child1.id to FiniteDateRange(start, end)))
+    private fun freeAbsence(
+        start: LocalDate,
+        end: LocalDate
+    ) = FixedPeriodsBody(mapOf(child1.id to FiniteDateRange(start, end)))
 
     private fun createFixedPeriodQuestionnaire(body: FixedPeriodQuestionnaireBody) =
         db.transaction { it.createFixedPeriodQuestionnaire(body) }
 
-    private data class Absence(val childId: ChildId, val date: LocalDate, val type: AbsenceType)
+    private data class Absence(
+        val childId: ChildId,
+        val date: LocalDate,
+        val type: AbsenceType
+    )
 
     private fun Database.Read.getAllAbsences(): List<Absence> =
         @Suppress("DEPRECATION")
         createQuery(
-                "SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date"
-            )
-            .toList<Absence>()
+            "SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date"
+        ).toList<Absence>()
 }

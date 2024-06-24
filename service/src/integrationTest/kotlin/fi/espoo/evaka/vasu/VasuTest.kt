@@ -10,7 +10,6 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class VasuTest {
-
     @Test
     fun `matchesStructurally returns true for equal objects`() {
         val content = getDefaultTemplateContent(CurriculumType.DAYCARE, OfficialLanguage.FI)
@@ -62,8 +61,7 @@ class VasuTest {
         assertFalse(getSampleContent().matchesStructurally(getSampleContent(listOf("3"))))
     }
 
-    private fun getSampleContent(value: List<String> = listOf()) =
-        VasuContent(sections = getSampleSections(value))
+    private fun getSampleContent(value: List<String> = listOf()) = VasuContent(sections = getSampleSections(value))
 
     private fun getSampleSections(value: List<String> = listOf()) =
         listOf(VasuSection(name = "foo", questions = listOf(getSampleQuestion(value))))

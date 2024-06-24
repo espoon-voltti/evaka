@@ -405,7 +405,7 @@ class FiniteDateRangeTest {
             BoundedRange.Relation.Overlap(
                 left = null,
                 overlap = a,
-                right = null,
+                right = null
             ),
             a.relationTo(a)
         )
@@ -438,5 +438,8 @@ class FiniteDateRangeTest {
 
     private fun testDate(day: Int) = LocalDate.of(2019, 1, day)
 
-    private fun testRange(from: Int, to: Int) = FiniteDateRange(testDate(from), testDate(to))
+    private fun testRange(
+        from: Int,
+        to: Int
+    ) = FiniteDateRange(testDate(from), testDate(to))
 }

@@ -48,8 +48,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         val inputJson =
             """
             {"externalId": "$externalId", "firstName": "Teppo", "lastName": "Testaaja", "email": null}
-        """
-                .trimIndent()
+            """.trimIndent()
 
         val (_, res, result) =
             http

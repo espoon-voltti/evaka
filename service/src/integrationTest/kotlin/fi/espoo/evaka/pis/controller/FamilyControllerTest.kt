@@ -148,7 +148,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             listOf(
-                (fosterParentAndHouseholdHead to FamilyContactRole.LOCAL_FOSTER_PARENT),
+                (fosterParentAndHouseholdHead to FamilyContactRole.LOCAL_FOSTER_PARENT)
             ),
             getFamilyContactSummary().map { (it.id to it.role) }
         )
@@ -213,7 +213,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         first = conflictHeadOfChild,
                         second = it,
                         startDate = currentlyValid.start,
-                        endDate = currentlyValid.end,
+                        endDate = currentlyValid.end
                     )
                 )
             }
@@ -247,6 +247,5 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun getFamilyContactSummary() =
-        controller.getFamilyContactSummary(dbInstance(), user, clock, child)
+    private fun getFamilyContactSummary() = controller.getFamilyContactSummary(dbInstance(), user, clock, child)
 }

@@ -51,7 +51,12 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private val placementEnd = today.plusDays(30)
 
     private val mockClock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(17, 19, 30)))
-    private val roundedNow = mockClock.now().toLocalTime().withSecond(0).withNano(0)
+    private val roundedNow =
+        mockClock
+            .now()
+            .toLocalTime()
+            .withSecond(0)
+            .withNano(0)
 
     @BeforeEach
     fun beforeEach() {
@@ -73,7 +78,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendances)
-        assertEquals(arrived, child.attendances[0].arrived.toLocalTime().withSecond(0).withNano(0))
+        assertEquals(
+            arrived,
+            child.attendances[0]
+                .arrived
+                .toLocalTime()
+                .withSecond(0)
+                .withNano(0)
+        )
         assertNull(child.attendances[0].departed)
         assertTrue(child.absences.isEmpty())
     }
@@ -178,7 +190,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]
+                .departed
+                ?.toLocalTime()
+                ?.withSecond(0)
+                ?.withNano(0)
         )
         assertTrue(child.absences.isEmpty())
     }
@@ -197,7 +213,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]
+                .departed
+                ?.toLocalTime()
+                ?.withSecond(0)
+                ?.withNano(0)
         )
         assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
     }
@@ -216,7 +236,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]
+                .departed
+                ?.toLocalTime()
+                ?.withSecond(0)
+                ?.withNano(0)
         )
         assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
@@ -235,7 +259,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]
+                .departed
+                ?.toLocalTime()
+                ?.withSecond(0)
+                ?.withNano(0)
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
@@ -248,7 +276,13 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPlacement(PlacementType.DAYCARE)
         givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
-        val departed = mockClock.now().toLocalTime().minusMinutes(20).withSecond(0).withNano(0)
+        val departed =
+            mockClock
+                .now()
+                .toLocalTime()
+                .minusMinutes(20)
+                .withSecond(0)
+                .withNano(0)
         markDeparted(departed, null, null)
 
         val child = expectOneAttendanceStatus()
@@ -260,7 +294,13 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildPlacement(PlacementType.DAYCARE)
         givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
 
-        val departed = mockClock.now().toLocalTime().withSecond(0).withNano(0).minusMinutes(40)
+        val departed =
+            mockClock
+                .now()
+                .toLocalTime()
+                .withSecond(0)
+                .withNano(0)
+                .minusMinutes(40)
         markDeparted(departed, null, null)
 
         val child = expectOneAttendanceStatus()
@@ -473,7 +513,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(AttendanceStatus.DEPARTED, child.status)
     }
 
-    private fun givenChildAbsent(absenceType: AbsenceType, vararg categories: AbsenceCategory) {
+    private fun givenChildAbsent(
+        absenceType: AbsenceType,
+        vararg categories: AbsenceCategory
+    ) {
         categories.forEach { category ->
             db.transaction {
                 it.insert(
@@ -496,8 +539,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             testDaycare.id
         )
 
-    private fun expectOneAttendanceStatus():
-        ChildAttendanceController.ChildAttendanceStatusResponse {
+    private fun expectOneAttendanceStatus(): ChildAttendanceController.ChildAttendanceStatusResponse {
         val attendances = getAttendanceStatuses()
         assertEquals(1, attendances.size)
         return attendances.values.first()
@@ -529,8 +571,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         )
     }
 
-    private fun getExpectedAbsencesOnDeparture(departed: LocalTime): Set<AbsenceCategory>? {
-        return childAttendanceController.getChildExpectedAbsencesOnDeparture(
+    private fun getExpectedAbsencesOnDeparture(departed: LocalTime): Set<AbsenceCategory>? =
+        childAttendanceController.getChildExpectedAbsencesOnDeparture(
             dbInstance(),
             mobileUser,
             mockClock,
@@ -538,7 +580,6 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             testChild_1.id,
             ChildAttendanceController.ExpectedAbsencesOnDepartureRequest(departed)
         )
-    }
 
     private fun markDeparted(
         departed: LocalTime,

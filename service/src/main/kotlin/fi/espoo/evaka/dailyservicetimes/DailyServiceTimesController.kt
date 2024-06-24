@@ -29,8 +29,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class DailyServiceTimesController(private val accessControl: AccessControl) {
-
+class DailyServiceTimesController(
+    private val accessControl: AccessControl
+) {
     data class DailyServiceTimesResponse(
         val dailyServiceTimes: DailyServiceTimes,
         val permittedActions: Set<Action.DailyServiceTime>
@@ -45,8 +46,9 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<DailyServiceTimesResponse> {
-        return db.connect { dbc ->
+    ): List<DailyServiceTimesResponse> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -63,14 +65,12 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildDailyServiceTimesRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PostMapping(
         "/children/{childId}/daily-service-times", // deprecated
@@ -153,7 +153,8 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     )
                 }
                 val overlapping =
-                    tx.getOverlappingChildDailyServiceTimes(old.childId, body.validityPeriod)
+                    tx
+                        .getOverlappingChildDailyServiceTimes(old.childId, body.validityPeriod)
                         .filter { it.id != id }
                 if (overlapping.isNotEmpty()) {
                     throw BadRequest(
@@ -175,7 +176,9 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = AuditId(id))
     }
 
-    data class DailyServiceTimesEndDate(val endDate: LocalDate?)
+    data class DailyServiceTimesEndDate(
+        val endDate: LocalDate?
+    )
 
     @PutMapping(
         "/daily-service-times/{id}/end", // deprecated
@@ -316,8 +319,9 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         childId: ChildId,
         validityPeriod: DateRange
     ) {
-        if ((validityPeriod.end ?: LocalDate.MAX) <= today)
+        if ((validityPeriod.end ?: LocalDate.MAX) <= today) {
             throw Error("Unexpected validity period")
+        }
 
         val actionableRange =
             DateRange(

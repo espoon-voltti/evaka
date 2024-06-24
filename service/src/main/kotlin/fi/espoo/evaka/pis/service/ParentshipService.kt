@@ -30,7 +30,9 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class ParentshipService(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     private val logger = KotlinLogging.logger {}
 
     fun createParentship(
@@ -96,7 +98,8 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         id: ParentshipId
     ) {
         try {
-            tx.getParentship(id)
+            tx
+                .getParentship(id)
                 ?.takeIf { it.conflict }
                 ?.let {
                     tx.retryParentship(id = it.id, now = clock.now(), userId = user.evakaUserId)
@@ -112,7 +115,11 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun deleteParentship(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId) {
+    fun deleteParentship(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        id: ParentshipId
+    ) {
         val parentship = tx.getParentship(id)
         val success = tx.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
@@ -137,7 +144,11 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     }
 }
 
-private fun validateDates(childDateOfBirth: LocalDate, startDate: LocalDate, endDate: LocalDate) {
+private fun validateDates(
+    childDateOfBirth: LocalDate,
+    startDate: LocalDate,
+    endDate: LocalDate
+) {
     if (startDate < childDateOfBirth) {
         throw BadRequest("Parentship start date cannot be before child's date of birth")
     }

@@ -53,21 +53,24 @@ data class FeeDecision(
 
     override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
 
-    override fun contentEquals(decision: FeeDecision): Boolean =
-        FeeDecisionDifference.getDifference(this, decision).isEmpty()
+    override fun contentEquals(decision: FeeDecision): Boolean = FeeDecisionDifference.getDifference(this, decision).isEmpty()
 
-    override fun overlapsWith(other: FeeDecision): Boolean {
-        return DateRange(this.validFrom, this.validTo)
+    override fun overlapsWith(other: FeeDecision): Boolean =
+        DateRange(this.validFrom, this.validTo)
             .overlaps(DateRange(other.validFrom, other.validTo)) &&
             (
-            // Check if any of the adults are on the other decision
-            this.headOfFamilyId == other.headOfFamilyId ||
-                (this.partnerId != null &&
-                    other.partnerId != null &&
-                    (this.headOfFamilyId == other.partnerId ||
-                        this.partnerId == other.headOfFamilyId ||
-                        this.partnerId == other.partnerId)))
-    }
+                // Check if any of the adults are on the other decision
+                this.headOfFamilyId == other.headOfFamilyId ||
+                    (
+                        this.partnerId != null &&
+                            other.partnerId != null &&
+                            (
+                                this.headOfFamilyId == other.partnerId ||
+                                    this.partnerId == other.headOfFamilyId ||
+                                    this.partnerId == other.partnerId
+                            )
+                    )
+            )
 
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
 
@@ -88,7 +91,10 @@ data class FeeDecisionChild(
     @Json val childIncome: DecisionIncome?
 )
 
-data class FeeDecisionPlacement(val unitId: DaycareId, val type: PlacementType)
+data class FeeDecisionPlacement(
+    val unitId: DaycareId,
+    val type: PlacementType
+)
 
 data class FeeDecisionServiceNeed(
     val optionId: ServiceNeedOptionId?,
@@ -135,8 +141,9 @@ enum class FeeDecisionType : DatabaseEnum {
 }
 
 @ConstList("feeDecisionDifferences")
-enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDecision) -> Boolean) :
-    DatabaseEnum {
+enum class FeeDecisionDifference(
+    val contentEquals: (d1: FeeDecision, d2: FeeDecision) -> Boolean
+) : DatabaseEnum {
     GUARDIANS({ d1, d2 ->
         setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId)
     }),
@@ -151,7 +158,8 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
             setOf(
                 d2.headOfFamilyIncome?.effectiveComparable(),
                 d2.partnerIncome?.effectiveComparable()
-            ) && decisionChildrenEquals(d1, d2) { it.childIncome?.effectiveComparable() }
+            ) &&
+            decisionChildrenEquals(d1, d2) { it.childIncome?.effectiveComparable() }
     }),
     PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement } }),
     SERVICE_NEED({ d1, d2 ->
@@ -165,7 +173,10 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
     override val sqlType: String = "fee_decision_difference"
 
     companion object {
-        fun getDifference(d1: FeeDecision, d2: FeeDecision): Set<FeeDecisionDifference> {
+        fun getDifference(
+            d1: FeeDecision,
+            d2: FeeDecision
+        ): Set<FeeDecisionDifference> {
             if (d1.isEmpty() && d2.isEmpty()) {
                 return if (GUARDIANS.contentEquals(d1, d2)) emptySet() else setOf(GUARDIANS)
             }
@@ -252,7 +263,10 @@ data class FeeDecisionDetailed(
             )
 }
 
-fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {
+fun isRetroactive(
+    decisionValidFrom: LocalDate,
+    sentAt: LocalDate
+): Boolean {
     val retroThreshold = sentAt.withDayOfMonth(1)
     return decisionValidFrom.isBefore(retroThreshold)
 }
@@ -373,7 +387,10 @@ fun calculateFeeBeforeFeeAlterations(
     }
 }
 
-fun calculateMaxFee(baseFee: Int, siblingDiscount: Int): Int {
+fun calculateMaxFee(
+    baseFee: Int,
+    siblingDiscount: Int
+): Int {
     val siblingDiscountMultiplier =
         BigDecimal(100 - siblingDiscount).divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
     return roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier).toInt()
@@ -407,7 +424,12 @@ fun toFeeAlterationsWithEffects(
     return alterations
 }
 
-fun feeAlterationEffect(fee: Int, type: FeeAlterationType, amount: Int, absolute: Boolean): Int {
+fun feeAlterationEffect(
+    fee: Int,
+    type: FeeAlterationType,
+    amount: Int,
+    absolute: Boolean
+): Int {
     val multiplier =
         when (type) {
             FeeAlterationType.RELIEF,
@@ -434,13 +456,15 @@ fun feeAlterationEffect(fee: Int, type: FeeAlterationType, amount: Int, absolute
 // Current flat increase for children with a parent working at ECHA
 const val ECHAIncrease = 93
 
-fun getECHAIncrease(childId: ChildId, period: DateRange) =
-    FeeAlteration(
-        personId = childId,
-        type = FeeAlterationType.INCREASE,
-        amount = ECHAIncrease,
-        isAbsolute = true,
-        notes = "ECHA",
-        validFrom = period.start,
-        validTo = period.end
-    )
+fun getECHAIncrease(
+    childId: ChildId,
+    period: DateRange
+) = FeeAlteration(
+    personId = childId,
+    type = FeeAlterationType.INCREASE,
+    amount = ECHAIncrease,
+    isAbsolute = true,
+    notes = "ECHA",
+    validFrom = period.start,
+    validTo = period.end
+)

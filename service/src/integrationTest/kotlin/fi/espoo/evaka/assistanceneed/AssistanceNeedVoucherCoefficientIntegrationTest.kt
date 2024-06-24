@@ -35,8 +35,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class AssistanceNeedVoucherCoefficientIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class AssistanceNeedVoucherCoefficientIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var assistanceNeedVoucherCoefficientController:
         AssistanceNeedVoucherCoefficientController
@@ -125,47 +124,42 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         assertEquals(listOf(BigDecimal("1.00")), readVoucherValueDecisionAssistanceCoefficients())
     }
 
-    private fun createAssistanceNeedVoucherCoefficient(
-        body: AssistanceNeedVoucherCoefficientRequest
-    ): AssistanceNeedVoucherCoefficient {
-        return assistanceNeedVoucherCoefficientController.createAssistanceNeedVoucherCoefficient(
+    private fun createAssistanceNeedVoucherCoefficient(body: AssistanceNeedVoucherCoefficientRequest): AssistanceNeedVoucherCoefficient =
+        assistanceNeedVoucherCoefficientController.createAssistanceNeedVoucherCoefficient(
             dbInstance(),
             user,
             clock,
             testChild_1.id,
-            body,
+            body
         )
-    }
 
     private fun updateAssistanceNeedVoucherCoefficient(
         id: AssistanceNeedVoucherCoefficientId,
         body: AssistanceNeedVoucherCoefficientRequest
-    ): AssistanceNeedVoucherCoefficient {
-        return assistanceNeedVoucherCoefficientController.updateAssistanceNeedVoucherCoefficient(
+    ): AssistanceNeedVoucherCoefficient =
+        assistanceNeedVoucherCoefficientController.updateAssistanceNeedVoucherCoefficient(
             dbInstance(),
             user,
             clock,
             id,
-            body,
+            body
         )
-    }
 
     private fun deleteAssistanceNeedVoucherCoefficient(id: AssistanceNeedVoucherCoefficientId) {
         assistanceNeedVoucherCoefficientController.deleteAssistanceNeedVoucherCoefficient(
             dbInstance(),
             user,
             clock,
-            id,
+            id
         )
     }
 
-    private fun readVoucherValueDecisionAssistanceCoefficients(): List<BigDecimal> {
-        return db.read { tx ->
+    private fun readVoucherValueDecisionAssistanceCoefficients(): List<BigDecimal> =
+        db.read { tx ->
             @Suppress("DEPRECATION")
-            tx.createQuery(
+            tx
+                .createQuery(
                     "SELECT assistance_need_coefficient FROM voucher_value_decision ORDER BY valid_from"
-                )
-                .toList<BigDecimal>()
+                ).toList<BigDecimal>()
         }
-    }
 }

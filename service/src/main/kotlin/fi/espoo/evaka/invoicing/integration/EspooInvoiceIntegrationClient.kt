@@ -38,17 +38,22 @@ class EspooInvoiceIntegrationClient(
                     if (agreementType != null) {
                         sendBatch(invoices, agreementType)
                     } else {
-                        val areaIds = invoices.asSequence().map { it.areaId }.distinct().sorted()
+                        val areaIds =
+                            invoices
+                                .asSequence()
+                                .map { it.areaId }
+                                .distinct()
+                                .sorted()
                         logger.error(
                             "Failed to send ${invoices.size} invoices due to missing areaCode in the following areas: ${areaIds.joinToString()}"
                         )
                         false
                     }
                 success to invoices
-            }
-            .fold(InvoiceIntegrationClient.SendResult(manuallySent = withoutSSN)) {
-                result,
-                (success, invoices) ->
+            }.fold(InvoiceIntegrationClient.SendResult(manuallySent = withoutSSN)) {
+                    result,
+                    (success, invoices)
+                ->
                 if (success) {
                     result.copy(succeeded = result.succeeded + invoices)
                 } else {
@@ -57,7 +62,10 @@ class EspooInvoiceIntegrationClient(
             }
     }
 
-    private fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
+    private fun sendBatch(
+        invoices: List<InvoiceDetailed>,
+        agreementType: Int
+    ): Boolean {
         val batch = createBatchExports(invoices, agreementType, sendCodebtor = env.sendCodebtor)
         val payload = jsonMapper.writeValueAsString(batch)
         logger.info(
@@ -188,7 +196,10 @@ class EspooInvoiceIntegrationClient(
         const val fallbackPostalCode = "02070"
         const val fallbackPostOffice = "ESPOON KAUPUNKI"
 
-        private fun asClient(headOfFamily: PersonDetailed, lang: EspooLang): EspooClient {
+        private fun asClient(
+            headOfFamily: PersonDetailed,
+            lang: EspooLang
+        ): EspooClient {
             val (streetAddress, postalCode, postOffice) =
                 Triple(
                     headOfFamily.streetAddress.trim(),
@@ -304,8 +315,7 @@ class EspooInvoiceIntegrationClient(
                                 EspooLang.FI -> espooProduct.nameOnInvoiceFi
                                 EspooLang.SV -> espooProduct.nameOnInvoiceSv
                             }
-                        }
-                        .take(invoicingDescriptionMaxLength),
+                        }.take(invoicingDescriptionMaxLength),
                 account = acc,
                 costCenter = costC,
                 subCostCenter1 =
@@ -443,7 +453,9 @@ class EspooInvoiceIntegrationClient(
             val product = ""
         }
 
-        enum class EspooLang(val value: String) {
+        enum class EspooLang(
+            val value: String
+        ) {
             FI("fi"),
             SV("sv")
         }

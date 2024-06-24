@@ -11,19 +11,28 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 
-fun createPerson(tx: Database.Transaction, person: CreatePersonBody): PersonId {
+fun createPerson(
+    tx: Database.Transaction,
+    person: CreatePersonBody
+): PersonId {
     val personId = tx.createPerson(person)
     tx.createPersonMessageAccount(personId)
     return personId
 }
 
-fun createEmptyPerson(tx: Database.Transaction, evakaClock: EvakaClock): PersonDTO {
+fun createEmptyPerson(
+    tx: Database.Transaction,
+    evakaClock: EvakaClock
+): PersonDTO {
     val result = tx.createEmptyPerson(evakaClock)
     tx.createPersonMessageAccount(result.id)
     return result
 }
 
-fun createPersonFromVtj(tx: Database.Transaction, person: PersonDTO): PersonDTO {
+fun createPersonFromVtj(
+    tx: Database.Transaction,
+    person: PersonDTO
+): PersonDTO {
     val result = tx.createPersonFromVtj(person)
     tx.createPersonMessageAccount(result.id)
     return result

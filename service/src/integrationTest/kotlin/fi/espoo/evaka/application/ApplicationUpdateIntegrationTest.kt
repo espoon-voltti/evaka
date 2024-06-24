@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var applicationControllerV2: ApplicationControllerV2
+
     @Autowired lateinit var applicationControllerCitizen: ApplicationControllerCitizen
 
     private val clock = RealEvakaClock()
@@ -143,10 +144,10 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(applicationId = application.id, serviceWorker)
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     "UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId"
-                )
-                .bind("receivedAt", sentDate)
+                ).bind("receivedAt", sentDate)
                 .bind("applicationId", application.id)
                 .execute()
         }
@@ -189,12 +190,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val beforeSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(manuallySetDueDate, beforeSendingAttachment!!.dueDate)
         assertTrue(
-            HelsinkiDateTime.now()
+            HelsinkiDateTime
+                .now()
                 .durationSince(
                     beforeSendingAttachment.dueDateSetManuallyAt
                         ?: throw Error("dueDateSetManuallyAt should have been set")
-                )
-                .seconds <= 5,
+                ).seconds <= 5,
             "dueDateSetManuallyAt should have been about now"
         )
 
@@ -354,7 +355,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
-        assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
+        assertEquals(
+            false,
+            afterClearingShiftCare!!
+                .form.preferences.serviceNeed!!
+                .shiftCare
+        )
         assertEquals(
             1,
             afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size
@@ -386,7 +392,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
-        assertEquals(true, beforeClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
+        assertEquals(
+            true,
+            beforeClearingShiftCare!!
+                .form.preferences.serviceNeed!!
+                .shiftCare
+        )
         assertEquals(2, beforeClearingShiftCare.attachments.size)
 
         // when
@@ -413,7 +424,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
-        assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
+        assertEquals(
+            false,
+            afterClearingShiftCare!!
+                .form.preferences.serviceNeed!!
+                .shiftCare
+        )
         assertEquals(
             1,
             afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size
@@ -443,10 +459,10 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     guardianId = testAdult_1.id,
                     type = ApplicationType.DAYCARE,
                     document =
-                        DaycareFormV0.fromApplication2(
+                        DaycareFormV0
+                            .fromApplication2(
                                 getValidDaycareApplication(shiftCare = shiftCare)
-                            )
-                            .copy(urgent = urgent)
+                            ).copy(urgent = urgent)
                 )
             tx.fetchApplicationDetails(applicationId)!!
         }

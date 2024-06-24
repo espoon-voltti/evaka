@@ -6,16 +6,14 @@ package fi.espoo.evaka.setting
 
 import fi.espoo.evaka.shared.db.Database
 
-fun Database.Read.getSettings(): Map<SettingType, String> {
-    return createQuery { sql("SELECT key, value FROM setting") }
+fun Database.Read.getSettings(): Map<SettingType, String> =
+    createQuery { sql("SELECT key, value FROM setting") }
         .toMap { columnPair("key", "value") }
-}
 
 fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
     createUpdate {
-            sql("DELETE FROM setting WHERE key != ALL(${bind(settings.keys)}::setting_type[])")
-        }
-        .execute()
+        sql("DELETE FROM setting WHERE key != ALL(${bind(settings.keys)}::setting_type[])")
+    }.execute()
 
     executeBatch(settings.entries) {
         sql(

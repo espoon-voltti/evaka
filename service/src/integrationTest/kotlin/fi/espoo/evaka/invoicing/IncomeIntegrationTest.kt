@@ -36,11 +36,15 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var mapper: JsonMapper
 
     @Autowired lateinit var incomeController: IncomeController
+
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     val mockClock = MockEvakaClock(2023, 5, 1, 10, 0)
 
-    private fun assertEqualEnough(expected: List<IncomeRequest>, actual: List<Income>) {
+    private fun assertEqualEnough(
+        expected: List<IncomeRequest>,
+        actual: List<Income>
+    ) {
         val nullId = IncomeId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         val nullTime = mockClock.now()
         assertEquals(
@@ -64,8 +68,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             calculateTotalExpense(it.data, coefficientMultiplierProvider),
                         total = calculateIncomeTotal(it.data, coefficientMultiplierProvider)
                     )
-                }
-                .toSet(),
+                }.toSet(),
             actual.map { it.copy(id = nullId, updatedAt = nullTime, updatedBy = "") }.toSet()
         )
     }
@@ -352,9 +355,10 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun createIncome(incomeRequest: IncomeRequest) =
         incomeController.createIncome(dbInstance(), financeUser, mockClock, incomeRequest)
 
-    private fun updateIncome(id: IncomeId, incomeRequest: IncomeRequest) =
-        incomeController.updateIncome(dbInstance(), financeUser, mockClock, id, incomeRequest)
+    private fun updateIncome(
+        id: IncomeId,
+        incomeRequest: IncomeRequest
+    ) = incomeController.updateIncome(dbInstance(), financeUser, mockClock, id, incomeRequest)
 
-    private fun deleteIncome(id: IncomeId) =
-        incomeController.deleteIncome(dbInstance(), financeUser, mockClock, id)
+    private fun deleteIncome(id: IncomeId) = incomeController.deleteIncome(dbInstance(), financeUser, mockClock, id)
 }

@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class FamilyContactReportController(private val accessControl: AccessControl) {
+class FamilyContactReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/family-contacts", // deprecated
         "/employee/reports/family-contacts"
@@ -31,8 +33,9 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
-    ): List<FamilyContactReportRow> {
-        return db.connect { dbc ->
+    ): List<FamilyContactReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -44,22 +47,22 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFamilyContacts(clock.today(), unitId)
                 }
-            }
-            .also { Audit.FamilyContactReportRead.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.FamilyContactReportRead.log(meta = mapOf("count" to it.size)) }
 }
 
 private fun Database.Read.getFamilyContacts(
     today: LocalDate,
     unitId: DaycareId
-): List<FamilyContactReportRow> {
-    return createQuery {
-            sql(
-                """
+): List<FamilyContactReportRow> =
+    createQuery {
+        sql(
+            """
 WITH all_placements AS (
     SELECT pl.child_id, dgp.daycare_group_id AS group_id
     FROM placement pl
-    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(today)}
+    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(
+                today
+            )}
     WHERE pl.unit_id = ${bind(unitId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
     
     UNION DISTINCT 
@@ -106,10 +109,8 @@ LEFT JOIN person gu1 ON gu1.id = g1.guardian_id
 LEFT JOIN person gu2 ON gu2.id = g2.guardian_id
 ORDER BY dg.name, ch.last_name, ch.first_name
 """
-            )
-        }
-        .toList<FamilyContactReportRow>()
-}
+        )
+    }.toList<FamilyContactReportRow>()
 
 data class FamilyContactReportRow(
     val id: ChildId,

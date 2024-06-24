@@ -84,10 +84,11 @@ class DateTimeMapTest {
             listOf(
                 testEntry(1 to 3, "A"),
                 testEntry(3 to 5, "B"),
-                testEntry(6 to 7, "C"),
+                testEntry(6 to 7, "C")
             )
         val set =
-            DateTimeMap.of(testEntry(1 to 4, "A"))
+            DateTimeMap
+                .of(testEntry(1 to 4, "A"))
                 .set(testEntry(3 to 5, "B"))
                 .set(testEntry(6 to 7, "C"))
         assertEquals(result, set.entries().toList())
@@ -102,14 +103,13 @@ class DateTimeMapTest {
         // =  AAAAAA_
         val entries =
             listOf(
-                    testEntry(1 to 3, "A"),
-                    testEntry(3 to 5, "A"),
-                    testEntry(5 to 7, "A"),
-                )
-                .shuffled()
+                testEntry(1 to 3, "A"),
+                testEntry(3 to 5, "A"),
+                testEntry(5 to 7, "A")
+            ).shuffled()
         val result =
             listOf(
-                testEntry(1 to 7, "A"),
+                testEntry(1 to 7, "A")
             )
         val set = DateTimeMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
@@ -125,16 +125,15 @@ class DateTimeMapTest {
         // =  AABBCC_
         val entries =
             listOf(
-                    testEntry(1 to 3, "A"),
-                    testEntry(3 to 5, "B"),
-                    testEntry(5 to 7, "C"),
-                )
-                .shuffled()
+                testEntry(1 to 3, "A"),
+                testEntry(3 to 5, "B"),
+                testEntry(5 to 7, "C")
+            ).shuffled()
         val result =
             listOf(
                 testEntry(1 to 3, "A"),
                 testEntry(3 to 5, "B"),
-                testEntry(5 to 7, "C"),
+                testEntry(5 to 7, "C")
             )
         val set = DateTimeMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
@@ -154,14 +153,13 @@ class DateTimeMapTest {
         val resolve = { _: HelsinkiDateTimeRange, old: Int, new: Int -> old + new }
         val entries =
             listOf(
-                    testEntry(1 to 3, 1),
-                    testEntry(2 to 5, 1),
-                    testEntry(4 to 7, 1),
-                    testEntry(2 to 6, 1),
-                    testEntry(5 to 7, 1),
-                    testEntry(1 to 4, 1)
-                )
-                .shuffled()
+                testEntry(1 to 3, 1),
+                testEntry(2 to 5, 1),
+                testEntry(4 to 7, 1),
+                testEntry(2 to 6, 1),
+                testEntry(5 to 7, 1),
+                testEntry(1 to 4, 1)
+            ).shuffled()
         val set = DateTimeMap.empty<Int>().update(entries, resolve)
         assertTrue(entries.all { set.contains(it.first) })
         assertEquals(
@@ -169,7 +167,7 @@ class DateTimeMapTest {
                 testEntry(1 to 2, 2),
                 testEntry(2 to 3, 4),
                 testEntry(3 to 6, 3),
-                testEntry(6 to 7, 2),
+                testEntry(6 to 7, 2)
             ),
             set.entries().toList()
         )
@@ -177,8 +175,10 @@ class DateTimeMapTest {
 
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
 
-    private fun testRange(range: Pair<Int, Int>) =
-        HelsinkiDateTimeRange(testDateTime(range.first), testDateTime(range.second))
+    private fun testRange(range: Pair<Int, Int>) = HelsinkiDateTimeRange(testDateTime(range.first), testDateTime(range.second))
 
-    private fun <T> testEntry(range: Pair<Int, Int>, value: T) = testRange(range) to value
+    private fun <T> testEntry(
+        range: Pair<Int, Int>,
+        value: T
+    ) = testRange(range) to value
 }

@@ -18,22 +18,27 @@ class SealedSubclassSimpleNameTest {
     @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
     @JsonTypeIdResolver(SealedSubclassSimpleName::class)
     sealed interface Super {
-        data class Sub1(val a: String) : Super
+        data class Sub1(
+            val a: String
+        ) : Super
 
-        @JsonTypeName("OTHER") data class Sub2(val b: String) : Super
+        @JsonTypeName("OTHER")
+        data class Sub2(
+            val b: String
+        ) : Super
 
         data object Sub3 : Super {
             val c: String = "value-c"
         }
     }
 
-    private fun serialize(value: Any): JsonNode =
-        jsonMapper.readTree(jsonMapper.writeValueAsString(value))
+    private fun serialize(value: Any): JsonNode = jsonMapper.readTree(jsonMapper.writeValueAsString(value))
 
-    private inline fun <reified T : Any> deserialize(tree: JsonNode): T =
-        jsonMapper.treeToValue(tree, T::class.java)
+    private inline fun <reified T : Any> deserialize(tree: JsonNode): T = jsonMapper.treeToValue(tree, T::class.java)
 
-    private fun parse(@Language("json") json: String): JsonNode = jsonMapper.readTree(json)
+    private fun parse(
+        @Language("json") json: String
+    ): JsonNode = jsonMapper.readTree(json)
 
     @Test
     fun `data class with no extra configuration is serialized and deserialized correctly`() {

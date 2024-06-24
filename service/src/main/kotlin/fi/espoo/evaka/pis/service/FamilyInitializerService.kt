@@ -64,16 +64,16 @@ class FamilyInitializerService(
                     familyFromApplication.headOfFamily.id,
                     evakaClock.today()
                 ) &&
-                    familyFromApplication.fridgePartner != null &&
-                    tx.personIsHeadOfFamily(
-                        familyFromApplication.fridgePartner.id,
-                        evakaClock.today()
-                    ) &&
-                    personService.personsLiveInTheSameAddress(
-                        tx,
-                        familyFromApplication.fridgePartner.id,
-                        familyFromApplication.headOfFamily.id
-                    )
+                familyFromApplication.fridgePartner != null &&
+                tx.personIsHeadOfFamily(
+                    familyFromApplication.fridgePartner.id,
+                    evakaClock.today()
+                ) &&
+                personService.personsLiveInTheSameAddress(
+                    tx,
+                    familyFromApplication.fridgePartner.id,
+                    familyFromApplication.headOfFamily.id
+                )
             ) {
                 familyFromApplication.fridgePartner
             } else {
@@ -92,7 +92,7 @@ class FamilyInitializerService(
 
         if (
             familyFromApplication.fridgePartner != null &&
-                familyFromApplication.fridgePartner.id != familyFromApplication.headOfFamily.id
+            familyFromApplication.fridgePartner.id != familyFromApplication.headOfFamily.id
         ) {
             tx.subTransaction {
                 createPartnership(
@@ -154,7 +154,8 @@ class FamilyInitializerService(
             if (otherGuardian != null || fridgePartnerSSN != null) {
                 null
             } else {
-                tx.getPartnershipsForPerson(application.guardianId, false)
+                tx
+                    .getPartnershipsForPerson(application.guardianId, false)
                     .filter {
                         DateRange(it.startDate, it.endDate).includes(clock.today()) &&
                             it.partners.any { partner ->
@@ -165,8 +166,7 @@ class FamilyInitializerService(
                                         application.guardianId
                                     )
                             }
-                    }
-                    .map {
+                    }.map {
                         it.partners
                             .first { partner ->
                                 partner.id != application.guardianId &&
@@ -175,10 +175,8 @@ class FamilyInitializerService(
                                         partner.id,
                                         application.guardianId
                                     )
-                            }
-                            .socialSecurityNumber
-                    }
-                    .firstOrNull()
+                            }.socialSecurityNumber
+                    }.firstOrNull()
             }
 
         val fridgePartner =
@@ -213,13 +211,12 @@ class FamilyInitializerService(
         return FridgeFamilyMembers(headOfFamily, fridgePartner, child, fridgeSiblings)
     }
 
-    private fun stringToSSN(ssn: String): SSN? {
-        return try {
+    private fun stringToSSN(ssn: String): SSN? =
+        try {
             SSN.getInstance(ssn)
         } catch (e: IllegalArgumentException) {
             null
         }
-    }
 
     private fun createParentship(
         tx: Database.Transaction,
@@ -230,12 +227,12 @@ class FamilyInitializerService(
     ) {
         val startDate = evakaClock.today()
         val alreadyExists =
-            tx.getParentships(
+            tx
+                .getParentships(
                     headOfChildId = headOfChildId,
                     childId = child.id,
                     includeConflicts = true
-                )
-                .any {
+                ).any {
                     (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
                         (it.endDate.isAfter(startDate))
                 }
@@ -290,11 +287,12 @@ class FamilyInitializerService(
     ) {
         val startDate = evakaClock.today()
         val alreadyExists =
-            tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true).any {
-                partnership ->
+            tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true).any { partnership ->
                 partnership.partners.any { partner -> partner.id == personId2 } &&
-                    (partnership.startDate.isBefore(startDate) ||
-                        partnership.startDate.isEqual(startDate)) &&
+                    (
+                        partnership.startDate.isBefore(startDate) ||
+                            partnership.startDate.isEqual(startDate)
+                    ) &&
                     (partnership.endDate == null || partnership.endDate.isAfter(startDate))
             }
         if (alreadyExists) {

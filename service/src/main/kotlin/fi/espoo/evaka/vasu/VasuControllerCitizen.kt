@@ -34,8 +34,9 @@ class VasuControllerCitizen(
         clock: EvakaClock,
         user: AuthenticatedUser.Citizen,
         @PathVariable childId: ChildId
-    ): CitizenGetVasuDocumentSummariesResponse {
-        return db.connect { dbc ->
+    ): CitizenGetVasuDocumentSummariesResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -51,14 +52,12 @@ class VasuControllerCitizen(
                             featureConfig.curriculumDocumentPermissionToShareRequired
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildVasuDocumentsReadByGuardian.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.data.size)
                 )
             }
-    }
 
     data class CitizenGetVasuDocumentSummariesResponse(
         val data: List<VasuDocumentSummary>,
@@ -71,7 +70,8 @@ class VasuControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Map<ChildId, Int> {
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -85,16 +85,15 @@ class VasuControllerCitizen(
                         return@read children.associateWith { 0 }
                     }
                     children.associateWith { childId ->
-                        tx.getVasuDocumentSummaries(childId)
+                        tx
+                            .getVasuDocumentSummaries(childId)
                             .filter { it.publishedAt != null }
                             .filterNot { doc ->
                                 doc.guardiansThatHaveGivenPermissionToShare.contains(user.id)
-                            }
-                            .size
+                            }.size
                     }
                 }
-            }
-            .also { Audit.ChildVasuDocumentsReadByGuardian.log(targetId = AuditId(user.id)) }
+            }.also { Audit.ChildVasuDocumentsReadByGuardian.log(targetId = AuditId(user.id)) }
     }
 
     data class CitizenGetVasuDocumentResponse(
@@ -109,8 +108,9 @@ class VasuControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
-    ): CitizenGetVasuDocumentResponse {
-        return db.connect { dbc ->
+    ): CitizenGetVasuDocumentResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -132,9 +132,7 @@ class VasuControllerCitizen(
                                 ?.hasGivenPermissionToShare ?: false
                     )
                 }
-            }
-            .also { Audit.VasuDocumentReadByGuardian.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.VasuDocumentReadByGuardian.log(targetId = AuditId(id)) }
 
     @PostMapping("/{id}/give-permission-to-share")
     fun givePermissionToShare(
@@ -142,19 +140,17 @@ class VasuControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Citizen.VasuDocument.GIVE_PERMISSION_TO_SHARE,
-                        id
-                    )
-                    it.setVasuGuardianHasGivenPermissionToShare(id, user.id)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Citizen.VasuDocument.GIVE_PERMISSION_TO_SHARE,
+                    id
+                )
+                it.setVasuGuardianHasGivenPermissionToShare(id, user.id)
             }
-            .also { Audit.VasuDocumentGivePermissionToShareByGuardian.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.VasuDocumentGivePermissionToShareByGuardian.log(targetId = AuditId(id)) }
 }

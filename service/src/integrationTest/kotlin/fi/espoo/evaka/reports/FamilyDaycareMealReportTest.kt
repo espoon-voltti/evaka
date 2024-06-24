@@ -87,7 +87,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Aarnio",
                                                         breakfastCount = 1,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     )
                                             )
                                     )
@@ -116,7 +116,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Becker",
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     )
                                             )
                                     )
@@ -172,7 +172,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Becker",
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     )
                                             )
                                     )
@@ -267,7 +267,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Becker",
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     ),
                                                 FamilyDaycareMealReport
                                                     .FamilyDaycareMealChildResult(
@@ -276,7 +276,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Multiple",
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
-                                                        snackCount = 0,
+                                                        snackCount = 0
                                                     )
                                             )
                                     )
@@ -375,7 +375,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Becker",
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     ),
                                                 FamilyDaycareMealReport
                                                     .FamilyDaycareMealChildResult(
@@ -384,7 +384,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Placer",
                                                         breakfastCount = 2,
                                                         lunchCount = 2,
-                                                        snackCount = 2,
+                                                        snackCount = 2
                                                     )
                                             )
                                     )
@@ -494,7 +494,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Aarnio",
                                                         breakfastCount = 1,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     )
                                             )
                                     )
@@ -523,7 +523,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Becker",
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     ),
                                                 FamilyDaycareMealReport
                                                     .FamilyDaycareMealChildResult(
@@ -532,7 +532,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lastName = "Placer",
                                                         breakfastCount = 1,
                                                         lunchCount = 1,
-                                                        snackCount = 1,
+                                                        snackCount = 1
                                                     )
                                             )
                                     )
@@ -544,8 +544,8 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(expectedResult, reportAll)
     }
 
-    private fun initTestData(keyDate: LocalDate): FamilyDaycareReportTestData {
-        return db.transaction { tx ->
+    private fun initTestData(keyDate: LocalDate): FamilyDaycareReportTestData =
+        db.transaction { tx ->
             tx.insert(admin)
             val unitSupervisorId = tx.insert(unitSupervisor)
 
@@ -633,7 +633,6 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 areaBId
             )
         }
-    }
 
     data class FamilyDaycareReportTestData(
         val childAId: PersonId,

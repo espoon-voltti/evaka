@@ -20,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     private val mockVtjClientService: IVtjClientService = MockVtjClientService()
     private lateinit var personService: PersonService
 

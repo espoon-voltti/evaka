@@ -33,7 +33,9 @@ class ScheduledJobConfig {
     fun scheduledJobRunnerStart(runner: ScheduledJobRunner) =
         object {
             @EventListener
-            fun onApplicationReady(@Suppress("UNUSED_PARAMETER") event: ApplicationReadyEvent) {
+            fun onApplicationReady(
+                @Suppress("UNUSED_PARAMETER") event: ApplicationReadyEvent
+            ) {
                 runner.scheduler.start()
             }
         }

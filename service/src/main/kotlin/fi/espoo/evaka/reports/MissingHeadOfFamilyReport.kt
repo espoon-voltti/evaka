@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class MissingHeadOfFamilyReportController(private val accessControl: AccessControl) {
+class MissingHeadOfFamilyReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/missing-head-of-family", // deprecated
         "/employee/reports/missing-head-of-family"
@@ -34,8 +36,9 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
         @RequestParam showIntentionalDuplicates: Boolean = false
-    ): List<MissingHeadOfFamilyReportRow> {
-        return db.connect { dbc ->
+    ): List<MissingHeadOfFamilyReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -47,30 +50,31 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
                     it.getMissingHeadOfFamilyRows(
                         from = from,
                         to = to,
-                        includeIntentionalDuplicates = showIntentionalDuplicates,
+                        includeIntentionalDuplicates = showIntentionalDuplicates
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.MissingHeadOfFamilyReportRead.log(
                     meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
             }
-    }
 }
 
 private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
-    includeIntentionalDuplicates: Boolean,
+    includeIntentionalDuplicates: Boolean
 ): List<MissingHeadOfFamilyReportRow> =
     createQuery {
-            val dateRange = DateRange(from, to)
-            val duplicateFilter: Predicate =
-                if (includeIntentionalDuplicates) Predicate.alwaysTrue()
-                else Predicate { where("$it.duplicate_of IS NULL") }
-            sql(
-                """
+        val dateRange = DateRange(from, to)
+        val duplicateFilter: Predicate =
+            if (includeIntentionalDuplicates) {
+                Predicate.alwaysTrue()
+            } else {
+                Predicate { where("$it.duplicate_of IS NULL") }
+            }
+        sql(
+            """
 SELECT child_id, first_name, last_name, without_head
 FROM (
     SELECT
@@ -115,16 +119,15 @@ FROM (
 WHERE NOT isempty(without_head)
 ORDER BY last_name, first_name
         """
-            )
-        }
-        .toList {
-            MissingHeadOfFamilyReportRow(
-                childId = column("child_id"),
-                firstName = column("first_name"),
-                lastName = column("last_name"),
-                rangesWithoutHead = column<DateSet>("without_head").ranges().toList(),
-            )
-        }
+        )
+    }.toList {
+        MissingHeadOfFamilyReportRow(
+            childId = column("child_id"),
+            firstName = column("first_name"),
+            lastName = column("last_name"),
+            rangesWithoutHead = column<DateSet>("without_head").ranges().toList()
+        )
+    }
 
 data class MissingHeadOfFamilyReportRow(
     val childId: ChildId,

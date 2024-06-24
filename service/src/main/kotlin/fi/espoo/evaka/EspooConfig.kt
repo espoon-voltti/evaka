@@ -86,13 +86,11 @@ class EspooConfig {
         }
 
     @Bean
-    fun patuReportingService(client: PatuIntegrationClient): PatuReportingService =
-        PatuReportingService(client)
+    fun patuReportingService(client: PatuIntegrationClient): PatuReportingService = PatuReportingService(client)
 
     @Bean
     @Lazy
-    fun espooInvoiceIntegrationEnv(env: Environment) =
-        EspooInvoiceIntegrationEnv.fromEnvironment(env)
+    fun espooInvoiceIntegrationEnv(env: Environment) = EspooInvoiceIntegrationEnv.fromEnvironment(env)
 
     @Bean fun espooInvoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
@@ -108,13 +106,11 @@ class EspooConfig {
 
     @Bean
     @Profile("local")
-    fun paymentIntegrationMockClient(jsonMapper: JsonMapper): PaymentIntegrationClient =
-        PaymentIntegrationClient.MockClient(jsonMapper)
+    fun paymentIntegrationMockClient(jsonMapper: JsonMapper): PaymentIntegrationClient = PaymentIntegrationClient.MockClient(jsonMapper)
 
     @Bean
     @Profile("production")
-    fun paymentIntegrationClient(): PaymentIntegrationClient =
-        PaymentIntegrationClient.FailingClient()
+    fun paymentIntegrationClient(): PaymentIntegrationClient = PaymentIntegrationClient.FailingClient()
 
     @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 
@@ -133,13 +129,15 @@ class EspooConfig {
 
     @Bean
     @Profile("local")
-    fun devDataInitializer(jdbi: Jdbi, tracer: Tracer) = DevDataInitializer(jdbi, tracer)
+    fun devDataInitializer(
+        jdbi: Jdbi,
+        tracer: Tracer
+    ) = DevDataInitializer(jdbi, tracer)
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
     @Bean
-    fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
-        EspooIncomeCoefficientMultiplierProvider()
+    fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
 
     @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
@@ -154,19 +152,21 @@ class EspooConfig {
         jdbi: Jdbi,
         tracer: Tracer,
         env: Environment
-    ): AsyncJobRunner<EspooAsyncJob> =
-        AsyncJobRunner(EspooAsyncJob::class, listOf(EspooAsyncJob.pool), jdbi, tracer)
+    ): AsyncJobRunner<EspooAsyncJob> = AsyncJobRunner(EspooAsyncJob::class, listOf(EspooAsyncJob.pool), jdbi, tracer)
 
-    @Bean @Lazy fun espooBiEnv(env: Environment) = EspooBiEnv.fromEnvironment(env)
+    @Bean @Lazy
+    fun espooBiEnv(env: Environment) = EspooBiEnv.fromEnvironment(env)
 
     @Bean fun espooBiJob(client: EspooBiClient) = EspooBiJob(client)
 
     @Bean
-    fun espooBiClient(env: EspooEnv, biEnv: ObjectProvider<EspooBiEnv>) =
-        when (env.biIntegrationEnabled) {
-            true -> EspooBiHttpClient(biEnv.getObject())
-            false -> MockEspooBiClient()
-        }
+    fun espooBiClient(
+        env: EspooEnv,
+        biEnv: ObjectProvider<EspooBiEnv>
+    ) = when (env.biIntegrationEnabled) {
+        true -> EspooBiHttpClient(biEnv.getObject())
+        false -> MockEspooBiClient()
+    }
 
     @Bean
     fun featureConfig(): FeatureConfig =
@@ -289,7 +289,7 @@ data class EspooInvoiceIntegrationEnv(
 data class EspooBiEnv(
     val url: String,
     val username: String,
-    val password: Sensitive<String>,
+    val password: Sensitive<String>
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =

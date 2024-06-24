@@ -27,8 +27,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class DvvModificationsServiceIntegrationTest :
-    DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
+class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.storeDvvModificationToken("100", "101", 0, 0) }
@@ -40,7 +39,7 @@ class DvvModificationsServiceIntegrationTest :
             testPerson.copy(
                 firstName = "Harri",
                 lastName = "Huoltaja",
-                ssn = "010579-9999",
+                ssn = "010579-9999"
             )
         MockPersonDetailsService.addPersons(caretaker)
 
@@ -175,7 +174,8 @@ class DvvModificationsServiceIntegrationTest :
         assertEquals("Huollettava", dvvCustodian.lastName)
         assertTrue(
             db.read { tx ->
-                tx.getChildGuardians(dvvCustodian.id)
+                tx
+                    .getChildGuardians(dvvCustodian.id)
                     .map { tx.getPersonById(it) }
                     .filterNotNull()
                     .any { guardian -> guardian.identity.toString() == caretaker.ssn }
@@ -190,7 +190,7 @@ class DvvModificationsServiceIntegrationTest :
             testPerson.copy(
                 firstName = "Harri",
                 lastName = "Huoltaja",
-                ssn = "060180-999J",
+                ssn = "060180-999J"
             )
 
         createTestPerson(custodian)
@@ -204,7 +204,8 @@ class DvvModificationsServiceIntegrationTest :
 
         assertTrue(
             db.read { tx ->
-                tx.getGuardianChildIds(dvvCaretaker.id)
+                tx
+                    .getGuardianChildIds(dvvCaretaker.id)
                     .map { tx.getPersonById(it) }
                     .filterNotNull()
                     .any { child -> child.identity.toString() == custodian.ssn }
@@ -229,7 +230,8 @@ class DvvModificationsServiceIntegrationTest :
 
         assertTrue(
             db.read { tx ->
-                tx.getGuardianChildIds(dvvCaretaker.id)
+                tx
+                    .getGuardianChildIds(dvvCaretaker.id)
                     .map { tx.getPersonById(it) }
                     .filterNotNull()
                     .any { child -> child.identity.toString() == custodian.ssn }
@@ -440,6 +442,5 @@ class DvvModificationsServiceIntegrationTest :
             restrictedDetailsEnabled = false
         )
 
-    private fun createTestPerson(devPerson: DevPerson): PersonId =
-        db.transaction { tx -> tx.insert(devPerson, DevPersonType.RAW_ROW) }
+    private fun createTestPerson(devPerson: DevPerson): PersonId = db.transaction { tx -> tx.insert(devPerson, DevPersonType.RAW_ROW) }
 }

@@ -43,8 +43,9 @@ class AbsenceController(
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
-    ): GroupMonthCalendar {
-        return db.connect { dbc ->
+    ): GroupMonthCalendar =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -55,14 +56,12 @@ class AbsenceController(
                     )
                     getGroupMonthCalendar(it, clock.today(), groupId, year, month)
                 }
-            }
-            .also {
+            }.also {
                 Audit.AbsenceRead.log(
                     targetId = AuditId(groupId),
                     meta = mapOf("year" to year, "month" to month)
                 )
             }
-    }
 
     @PostMapping("/{groupId}")
     fun upsertAbsences(
@@ -136,10 +135,11 @@ class AbsenceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable groupId: GroupId,
-        @RequestBody deletions: List<Presence>,
+        @RequestBody deletions: List<Presence>
     ) {
         val children = deletions.map { it.childId }.distinct()
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -163,15 +163,14 @@ class AbsenceController(
                         )
                     Pair(deletedAbsences, addedReservations)
                 }
-            }
-            .also { (deleted, reservations) ->
+            }.also { (deleted, reservations) ->
                 Audit.AbsenceDelete.log(
                     targetId = AuditId(groupId),
                     objectId = AuditId(deleted),
                     meta =
                         mapOf(
                             "children" to children,
-                            "createdHolidayReservations" to reservations,
+                            "createdHolidayReservations" to reservations
                         )
                 )
             }
@@ -179,7 +178,7 @@ class AbsenceController(
 
     data class HolidayReservationsDelete(
         val childId: ChildId,
-        val date: LocalDate,
+        val date: LocalDate
     )
 
     @PostMapping("/{groupId}/delete-holiday-reservations")
@@ -193,22 +192,22 @@ class AbsenceController(
         if (body.isEmpty()) return
 
         val children = body.map { it.childId }.distinct()
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
                         Action.Child.DELETE_HOLIDAY_RESERVATIONS,
-                        children,
+                        children
                     )
                     val pairs = body.map { Pair(it.childId, it.date) }
                     val deletedReservations = tx.deleteReservationsFromHolidayPeriodDates(pairs)
                     val deletedAbsences = tx.deleteAbsencesFromHolidayPeriodDates(pairs)
                     Pair(deletedReservations, deletedAbsences)
                 }
-            }
-            .also { (deletedReservations, deletedAbsences) ->
+            }.also { (deletedReservations, deletedAbsences) ->
                 Audit.AttendanceReservationDelete.log(
                     targetId = AuditId(groupId),
                     meta =
@@ -221,7 +220,9 @@ class AbsenceController(
             }
     }
 
-    data class DeleteChildAbsenceBody(val date: LocalDate)
+    data class DeleteChildAbsenceBody(
+        val date: LocalDate
+    )
 
     @PostMapping("/by-child/{childId}/delete")
     fun deleteAbsence(
@@ -259,8 +260,9 @@ class AbsenceController(
         @PathVariable childId: ChildId,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): List<Absence> {
-        return db.connect { dbc ->
+    ): List<Absence> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -271,12 +273,10 @@ class AbsenceController(
                     )
                     getAbsencesOfChildByMonth(it, childId, year, month)
                 }
-            }
-            .also {
+            }.also {
                 Audit.AbsenceRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("year" to year, "month" to month)
                 )
             }
-    }
 }

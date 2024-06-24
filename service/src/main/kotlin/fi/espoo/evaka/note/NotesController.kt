@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class NotesController(private val ac: AccessControl) {
+class NotesController(
+    private val ac: AccessControl
+) {
     data class NotesByGroupResponse(
         val childDailyNotes: List<ChildDailyNote>,
         val childStickyNotes: List<ChildStickyNote>,
@@ -36,8 +38,9 @@ class NotesController(private val ac: AccessControl) {
         db: Database,
         clock: EvakaClock,
         @PathVariable groupId: GroupId
-    ): NotesByGroupResponse {
-        return db.connect { dbc ->
+    ): NotesByGroupResponse =
+        db
+            .connect { dbc ->
                 dbc.read {
                     ac.requirePermissionFor(it, user, clock, Action.Group.READ_NOTES, groupId)
                     NotesByGroupResponse(
@@ -46,8 +49,7 @@ class NotesController(private val ac: AccessControl) {
                         groupNotes = it.getGroupNotesForGroup(groupId)
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.NotesByGroupRead.log(
                     targetId = AuditId(groupId),
                     meta =
@@ -58,5 +60,4 @@ class NotesController(private val ac: AccessControl) {
                         )
                 )
             }
-    }
 }

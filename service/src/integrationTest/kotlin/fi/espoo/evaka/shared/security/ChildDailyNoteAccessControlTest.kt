@@ -28,7 +28,7 @@ class ChildDailyNoteAccessControlTest : AccessControlTest() {
             sleepingNote = null,
             sleepingMinutes = null,
             reminders = emptyList(),
-            reminderNote = "",
+            reminderNote = ""
         )
 
     @Test

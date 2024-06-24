@@ -39,7 +39,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CalendarEventController(private val accessControl: AccessControl) {
+class CalendarEventController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/units/{unitId}/calendar-events", // deprecated
         "/employee/units/{unitId}/calendar-events"
@@ -62,7 +64,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
             throw BadRequest("Only 6 weeks of calendar events may be fetched at once")
         }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -73,8 +76,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     )
                     tx.getCalendarEventsByUnit(unitId, range)
                 }
-            }
-            .also {
+            }.also {
                 Audit.UnitCalendarEventsRead.log(
                     targetId = AuditId(unitId),
                     meta = mapOf("start" to start, "end" to end, "count" to it.size)
@@ -92,8 +94,9 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable groupId: GroupId
-    ): List<CalendarEvent> {
-        return db.connect { dbc ->
+    ): List<CalendarEvent> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -107,14 +110,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         listOf(CalendarEventType.DISCUSSION_SURVEY)
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.GroupCalendarEventsRead.log(
                     targetId = AuditId(groupId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @GetMapping(
         "/units/{unitId}/groups/{groupId}/discussion-reservation-days", // deprecated
@@ -135,7 +136,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
 
         val range = FiniteDateRange(start, end)
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -166,16 +168,13 @@ class CalendarEventController(private val accessControl: AccessControl) {
                                         .filter { event ->
                                             event.times.isEmpty() ||
                                                 event.times.any { time -> time.date.isEqual(day) }
-                                        }
-                                        .toSet(),
+                                        }.toSet(),
                                 isHoliday = holidays.contains(day),
                                 isOperationalDay = unitOperationDays.contains(day.dayOfWeek.value)
                             )
-                        }
-                        .toSet()
+                        }.toSet()
                 }
-            }
-            .also {
+            }.also {
                 Audit.GroupDiscussionReservationCalendarDaysRead.log(
                     targetId = AuditId(groupId),
                     meta = mapOf("start" to start, "end" to end, "count" to it.size)
@@ -263,8 +262,9 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: CalendarEventId
-    ): CalendarEvent {
-        return db.connect { dbc ->
+    ): CalendarEvent =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -275,9 +275,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     )
                     tx.getCalendarEventById(id) ?: throw NotFound()
                 }
-            }
-            .also { Audit.CalendarEventRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.CalendarEventRead.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/calendar-event/{id}", // deprecated
@@ -288,21 +286,19 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: CalendarEventId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.CalendarEvent.DELETE,
-                        id
-                    )
-                    tx.deleteCalendarEvent(id)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.CalendarEvent.DELETE,
+                    id
+                )
+                tx.deleteCalendarEvent(id)
             }
-            .also { Audit.CalendarEventDelete.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.CalendarEventDelete.log(targetId = AuditId(id)) }
 
     @PatchMapping(
         "/calendar-event/{id}", // deprecated
@@ -314,21 +310,19 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: CalendarEventId,
         @RequestBody body: CalendarEventUpdateForm
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.CalendarEvent.UPDATE,
-                        id
-                    )
-                    tx.updateCalendarEvent(id, clock.now(), body)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.CalendarEvent.UPDATE,
+                    id
+                )
+                tx.updateCalendarEvent(id, clock.now(), body)
             }
-            .also { Audit.CalendarEventUpdate.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.CalendarEventUpdate.log(targetId = AuditId(id)) }
 
     @PutMapping(
         "/calendar-event/{id}", // deprecated
@@ -340,33 +334,31 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: CalendarEventId,
         @RequestBody body: CalendarEventUpdateForm
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.CalendarEvent.UPDATE,
-                        id
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.CalendarEvent.UPDATE,
+                    id
+                )
+                val event = tx.getCalendarEventById(id) ?: throw NotFound()
+                val current = tx.getCalendarEventChildIds(event.id)
+                val updated = resolveAttendeeChildIds(tx, event.unitId, body.tree, event.period)
+                val removed = current.minus(updated.toSet())
+                removed.forEach { childId ->
+                    tx.deleteCalendarEventTimeReservations(
+                        calendarEventId = event.id,
+                        childId = childId
                     )
-                    val event = tx.getCalendarEventById(id) ?: throw NotFound()
-                    val current = tx.getCalendarEventChildIds(event.id)
-                    val updated = resolveAttendeeChildIds(tx, event.unitId, body.tree, event.period)
-                    val removed = current.minus(updated.toSet())
-                    removed.forEach { childId ->
-                        tx.deleteCalendarEventTimeReservations(
-                            calendarEventId = event.id,
-                            childId = childId
-                        )
-                    }
-                    tx.updateCalendarEvent(id, clock.now(), body)
-                    tx.deleteCalendarEventAttendees(id)
-                    tx.createCalendarEventAttendees(id, event.unitId, body.tree)
                 }
+                tx.updateCalendarEvent(id, clock.now(), body)
+                tx.deleteCalendarEventAttendees(id)
+                tx.createCalendarEventAttendees(id, event.unitId, body.tree)
             }
-            .also { Audit.CalendarEventUpdate.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.CalendarEventUpdate.log(targetId = AuditId(id)) }
 
     @PostMapping(
         "/calendar-event/{id}/time", // deprecated
@@ -378,8 +370,9 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: CalendarEventId,
         @RequestBody body: CalendarEventTimeForm
-    ): CalendarEventTimeId {
-        return db.connect { dbc ->
+    ): CalendarEventTimeId =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -391,7 +384,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     val associatedEvent = tx.getCalendarEventById(id)
                     if (
                         associatedEvent == null ||
-                            associatedEvent.eventType != CalendarEventType.DISCUSSION_SURVEY
+                        associatedEvent.eventType != CalendarEventType.DISCUSSION_SURVEY
                     ) {
                         throw NotFound("No corresponding discussion survey found")
                     }
@@ -407,9 +400,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     )
                     cetId
                 }
-            }
-            .also { Audit.CalendarEventTimeCreate.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.CalendarEventTimeCreate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/calendar-event-time/{id}", // deprecated
@@ -420,35 +411,33 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: CalendarEventTimeId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.CalendarEventTime.DELETE,
-                        id
-                    )
-                    val calendarEventId =
-                        tx.getCalendarEventIdByTimeId(id)
-                            ?: throw NotFound("No corresponding discussion survey found")
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.CalendarEventTime.DELETE,
+                    id
+                )
+                val calendarEventId =
+                    tx.getCalendarEventIdByTimeId(id)
+                        ?: throw NotFound("No corresponding discussion survey found")
 
-                    tx.deleteCalendarEventTime(id)
+                tx.deleteCalendarEventTime(id)
 
-                    val associatedEvent =
-                        tx.getCalendarEventById(calendarEventId)
-                            ?: throw NotFound("No corresponding calendar event found")
+                val associatedEvent =
+                    tx.getCalendarEventById(calendarEventId)
+                        ?: throw NotFound("No corresponding calendar event found")
 
-                    tx.updateCalendarEventPeriod(
-                        eventId = calendarEventId,
-                        modifiedAt = clock.now(),
-                        period = getPeriodOfTimes(associatedEvent.times, clock.today())
-                    )
-                }
+                tx.updateCalendarEventPeriod(
+                    eventId = calendarEventId,
+                    modifiedAt = clock.now(),
+                    period = getPeriodOfTimes(associatedEvent.times, clock.today())
+                )
             }
-            .also { Audit.CalendarEventTimeDelete.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.CalendarEventTimeDelete.log(targetId = AuditId(id)) }
 
     @PostMapping(
         "/calendar-event/reservation", // deprecated
@@ -459,38 +448,36 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: CalendarEventTimeEmployeeReservationForm
-    ) {
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.CalendarEventTime.UPDATE_RESERVATION,
-                        body.calendarEventTimeId
-                    )
-                    validate(
-                        tx = tx,
+    ) = db.connect { dbc ->
+        dbc
+            .transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.CalendarEventTime.UPDATE_RESERVATION,
+                    body.calendarEventTimeId
+                )
+                validate(
+                    tx = tx,
+                    eventTimeId = body.calendarEventTimeId,
+                    childId = body.childId
+                )
+                tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
+                if (body.childId != null) {
+                    tx.insertCalendarEventTimeReservation(
                         eventTimeId = body.calendarEventTimeId,
-                        childId = body.childId
-                    )
-                    tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
-                    if (body.childId != null) {
-                        tx.insertCalendarEventTimeReservation(
-                            eventTimeId = body.calendarEventTimeId,
-                            childId = body.childId,
-                            modifiedAt = clock.now(),
-                            modifiedBy = user.evakaUserId
-                        )
-                    }
-                }
-                .also {
-                    Audit.CalendarEventTimeReservationUpdate.log(
-                        targetId = AuditId(body.calendarEventTimeId),
-                        objectId = body.childId?.let(AuditId::invoke)
+                        childId = body.childId,
+                        modifiedAt = clock.now(),
+                        modifiedBy = user.evakaUserId
                     )
                 }
-        }
+            }.also {
+                Audit.CalendarEventTimeReservationUpdate.log(
+                    targetId = AuditId(body.calendarEventTimeId),
+                    objectId = body.childId?.let(AuditId::invoke)
+                )
+            }
     }
 
     @GetMapping("/citizen/calendar-events")
@@ -511,7 +498,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
             throw BadRequest("Only 450 days of calendar events may be fetched at once")
         }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -520,7 +508,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_CALENDAR_EVENTS,
                         user.id
                     )
-                    tx.getCalendarEventsForGuardian(user.id, range)
+                    tx
+                        .getCalendarEventsForGuardian(user.id, range)
                         .groupBy { it.id }
                         .map { (eventId, attendees) ->
                             CitizenCalendarEvent(
@@ -545,8 +534,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                             )
                         }
                 }
-            }
-            .also {
+            }.also {
                 Audit.UnitCalendarEventsRead.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("start" to start, "end" to end, "count" to it.size)
@@ -561,8 +549,9 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable eventId: CalendarEventId,
         @RequestParam childId: ChildId
-    ): List<CalendarEventTime> {
-        return db.connect { dbc ->
+    ): List<CalendarEventTime> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -573,14 +562,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     )
                     tx.getReservableCalendarEventTimes(eventId, childId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.CalendarEventTimeRead.log(
                     targetId = AuditId(eventId),
                     objectId = AuditId(childId)
                 )
             }
-    }
 
     @PostMapping("/citizen/calendar-event/reservation")
     fun addCalendarEventTimeReservation(
@@ -588,40 +575,38 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestBody body: CalendarEventTimeCitizenReservationForm
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.Child.CREATE_CALENDAR_EVENT_TIME_RESERVATION,
-                        body.childId
-                    )
-                    validate(
-                        tx = tx,
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Child.CREATE_CALENDAR_EVENT_TIME_RESERVATION,
+                    body.childId
+                )
+                validate(
+                    tx = tx,
+                    eventTimeId = body.calendarEventTimeId,
+                    childId = body.childId
+                )
+                val count =
+                    tx.insertCalendarEventTimeReservation(
                         eventTimeId = body.calendarEventTimeId,
-                        childId = body.childId
+                        childId = body.childId,
+                        modifiedAt = clock.now(),
+                        modifiedBy = user.evakaUserId
                     )
-                    val count =
-                        tx.insertCalendarEventTimeReservation(
-                            eventTimeId = body.calendarEventTimeId,
-                            childId = body.childId,
-                            modifiedAt = clock.now(),
-                            modifiedBy = user.evakaUserId
-                        )
-                    if (count != 1) {
-                        throw Conflict("Calendar event time already reserved")
-                    }
+                if (count != 1) {
+                    throw Conflict("Calendar event time already reserved")
                 }
             }
-            .also {
-                Audit.CalendarEventTimeReservationCreate.log(
-                    targetId = AuditId(body.calendarEventTimeId),
-                    objectId = AuditId(body.childId)
-                )
-            }
-    }
+        }.also {
+            Audit.CalendarEventTimeReservationCreate.log(
+                targetId = AuditId(body.calendarEventTimeId),
+                objectId = AuditId(body.childId)
+            )
+        }
 
     @DeleteMapping("/citizen/calendar-event/reservation")
     fun deleteCalendarEventTimeReservation(
@@ -632,7 +617,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
         @RequestParam childId: ChildId
     ) {
         val body = CalendarEventTimeCitizenReservationForm(calendarEventTimeId, childId)
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -643,8 +629,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
                     )
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.CalendarEventTimeReservationDelete.log(
                     targetId = AuditId(body.calendarEventTimeId),
                     objectId = AuditId(body.childId)
@@ -653,7 +638,11 @@ class CalendarEventController(private val accessControl: AccessControl) {
     }
 }
 
-private fun validate(tx: Database.Read, eventTimeId: CalendarEventTimeId, childId: ChildId?) {
+private fun validate(
+    tx: Database.Read,
+    eventTimeId: CalendarEventTimeId,
+    childId: ChildId?
+) {
     val calendarEventId =
         tx.getCalendarEventIdByTimeId(eventTimeId)
             ?: throw BadRequest("Calendar event time not found")
@@ -668,18 +657,17 @@ private fun resolveAttendeeChildIds(
     unitId: DaycareId,
     tree: Map<GroupId, Set<ChildId>?>?,
     range: FiniteDateRange
-): List<ChildId> {
-    return tree?.flatMap {
+): List<ChildId> =
+    tree?.flatMap {
         if (it.value != null) it.value!!.toList() else tx.getGroupPlacementChildren(it.key, range)
     }
-        ?: tx.getDaycarePlacements(
+        ?: tx
+            .getDaycarePlacements(
                 daycareId = unitId,
                 childId = null,
                 startDate = range.start,
                 endDate = range.end
-            )
-            .map { placement -> placement.child.id }
-}
+            ).map { placement -> placement.child.id }
 
 private fun getPeriodOfTimes(
     dateList: Set<CalendarEventTime>,
@@ -687,6 +675,9 @@ private fun getPeriodOfTimes(
 ): FiniteDateRange {
     val minDate = dateList.minOfOrNull { it.date }
     val maxDate = dateList.maxOfOrNull { it.date }
-    return if (minDate != null && maxDate != null) FiniteDateRange(minDate, maxDate)
-    else FiniteDateRange(default, default)
+    return if (minDate != null && maxDate != null) {
+        FiniteDateRange(minDate, maxDate)
+    } else {
+        FiniteDateRange(default, default)
+    }
 }

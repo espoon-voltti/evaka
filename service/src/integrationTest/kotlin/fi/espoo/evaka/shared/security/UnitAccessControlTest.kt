@@ -146,20 +146,20 @@ class UnitAccessControlTest : AccessControlTest() {
     @Test
     fun `unit-level action and getAuthorizationFilter`() {
         val action = Action.Unit.READ
-        fun getFilter(user: AuthenticatedUser) =
-            db.read { accessControl.getAuthorizationFilter(it, user, clock, action) }
+
+        fun getFilter(user: AuthenticatedUser) = db.read { accessControl.getAuthorizationFilter(it, user, clock, action) }
+
         fun execute(filter: AccessControlFilter.Some<DaycareId>) =
             db.read {
-                it.createQuery {
+                it
+                    .createQuery {
                         sql(
                             """
-                    SELECT id FROM daycare
-                    WHERE ${predicate(filter.forTable("daycare"))}
-                    """
-                                .trimIndent()
+                            SELECT id FROM daycare
+                            WHERE ${predicate(filter.forTable("daycare"))}
+                            """.trimIndent()
                         )
-                    }
-                    .toSet<DaycareId>()
+                    }.toSet<DaycareId>()
             }
 
         rules.add(action, HasGlobalRole(UserRole.SERVICE_WORKER))

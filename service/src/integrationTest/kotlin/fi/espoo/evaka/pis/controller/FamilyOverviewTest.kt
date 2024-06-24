@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var familyController: FamilyController
+
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     private val clock = RealEvakaClock()
@@ -166,9 +167,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun initializeUnitSupervisorUserAndRights(
-        childId: ChildId
-    ): AuthenticatedUser.Employee {
+    private fun initializeUnitSupervisorUserAndRights(childId: ChildId): AuthenticatedUser.Employee {
         val externalId = ExternalId.of("test", "id")
         val unitSupervisor = DevEmployee(externalId = externalId)
         db.transaction {

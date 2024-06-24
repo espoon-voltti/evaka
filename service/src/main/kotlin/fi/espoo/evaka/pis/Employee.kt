@@ -29,5 +29,5 @@ data class TemporaryEmployee(
     val lastName: String,
     val groupIds: Set<GroupId>,
     val hasStaffOccupancyEffect: Boolean,
-    val pinCode: PinCode?,
+    val pinCode: PinCode?
 )

@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     val childId = testChild_1.id
     val unitId = testDaycare.id
     final val year = LocalDate.now().year + 1
@@ -105,7 +104,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `inserting placement without overlap`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -118,8 +118,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -160,7 +159,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts earlier`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -173,8 +173,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -192,7 +191,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `updating placement calls clearOldPlacements`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -205,8 +205,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val originalPlacements = db.read { it.getPlacementsForChild(childId) }
 
@@ -242,7 +241,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts earlier, ends earlier`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -255,8 +255,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -279,7 +278,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts earlier, ends later`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -292,8 +292,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -324,7 +323,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement ends earlier`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -337,8 +337,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -354,7 +353,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement ends later`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -367,8 +367,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -391,7 +390,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts later`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -404,8 +404,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -421,7 +420,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts later, ends earlier`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -434,8 +434,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -451,7 +450,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts later, ends later`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -464,8 +464,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -488,7 +487,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `placement overlaps with two earlier placements`() {
         val old2 =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -501,10 +501,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -517,8 +517,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -548,7 +547,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts earlier, ends later and new placement type is CLUB`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacements(
                         tx = it,
                         childId = childId,
@@ -563,8 +563,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -595,7 +594,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement ends later and new placement type is CLUB`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacements(
                         tx = it,
                         childId = childId,
@@ -610,8 +610,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -628,7 +627,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `old placement starts later, ends later and new placement type is CLUB`() {
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacements(
                         tx = it,
                         childId = childId,
@@ -643,8 +643,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -668,7 +667,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
 
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacements(
                         tx = it,
                         childId = childId,
@@ -683,8 +683,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -728,7 +727,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
 
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacements(
                         tx = it,
                         childId = childId,
@@ -743,8 +743,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -790,7 +789,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
 
         val newPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacements(
                         tx = it,
                         childId = childId,
@@ -805,8 +805,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -821,7 +820,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `updating placement endDate to be earlier`() {
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -834,8 +834,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         db.transaction {
             it.updatePlacement(
@@ -854,7 +853,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `updating placement endDate to be earlier cuts group placements and service needs`() {
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -867,8 +867,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
         val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             it.insert(
@@ -904,10 +903,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val groupPlacementEndDates =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
-                    )
-                    .bind("id", groupId)
+                    ).bind("id", groupId)
                     .toList<LocalDate>()
             }
         assertEquals(1, groupPlacementEndDates.size)
@@ -916,7 +915,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val serviceNeedEndDates =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT end_date FROM service_need WHERE placement_id = :id")
+                it
+                    .createQuery("SELECT end_date FROM service_need WHERE placement_id = :id")
                     .bind("id", oldPlacement.id)
                     .toList<LocalDate>()
             }
@@ -927,7 +927,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `changing placement type by creating new placement ends the group placements and service needs also`() {
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -940,8 +941,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
         val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             it.insert(
@@ -977,15 +977,18 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        data class QueryResult(val startDate: LocalDate, val endDate: LocalDate)
+        data class QueryResult(
+            val startDate: LocalDate,
+            val endDate: LocalDate
+        )
 
         val groupPlacements =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
-                    )
-                    .bind("id", groupId)
+                    ).bind("id", groupId)
                     .toList<QueryResult>()
             }
 
@@ -996,10 +999,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val serviceNeeds =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT start_date, end_date FROM service_need WHERE placement_id = :id"
-                    )
-                    .bind("id", oldPlacement.id)
+                    ).bind("id", oldPlacement.id)
                     .toList<QueryResult>()
             }
 
@@ -1011,7 +1014,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `updating placement endDate to be later`() {
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -1024,8 +1028,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         db.transaction {
             it.updatePlacement(
@@ -1044,7 +1047,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `updating placement endDate to be earlier than startDate is not allowed`() {
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -1057,8 +1061,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
         db.transaction {
             assertThrows<BadRequest> {
                 it.updatePlacement(
@@ -1077,15 +1080,15 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
 
         val groupPlacements =
-            db.read {
+            db
+                .read {
                     it.getDetailedDaycarePlacements(
                         daycareId = unitId,
                         childId = childId,
                         startDate = null,
                         endDate = null
                     )
-                }
-                .also { assertEquals(1, it.size) }
+                }.also { assertEquals(1, it.size) }
                 .first()
                 .groupPlacements
                 .also { assertEquals(2, it.size) }
@@ -1104,15 +1107,15 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
 
         val groupPlacements =
-            db.read {
+            db
+                .read {
                     it.getDetailedDaycarePlacements(
                         daycareId = unitId,
                         childId = childId,
                         startDate = null,
                         endDate = null
                     )
-                }
-                .also { assertEquals(1, it.size) }
+                }.also { assertEquals(1, it.size) }
                 .first()
                 .groupPlacements
                 .also { assertEquals(1, it.size) }

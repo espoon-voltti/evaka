@@ -16,12 +16,19 @@ fun FuelManager.Companion.trustAllCerts(): FuelManager {
         object : X509TrustManager {
             override fun getAcceptedIssuers(): Array<X509Certificate>? = null
 
-            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+            override fun checkClientTrusted(
+                chain: Array<X509Certificate>,
+                authType: String
+            ) = Unit
 
-            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+            override fun checkServerTrusted(
+                chain: Array<X509Certificate>,
+                authType: String
+            ) = Unit
         }
     fuel.socketFactory =
-        SSLContext.getInstance("SSL")
+        SSLContext
+            .getInstance("SSL")
             .apply { init(null, arrayOf(trustAllCerts), java.security.SecureRandom()) }
             .socketFactory
     fuel.hostnameVerifier = HostnameVerifier { _, _ -> true }

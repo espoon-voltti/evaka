@@ -95,7 +95,10 @@ class SoapStackIntegrationTest {
         )
     private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)
 
-    private fun dummyGetDocument(bucketName: String, key: String): Document {
+    private fun dummyGetDocument(
+        bucketName: String,
+        key: String
+    ): Document {
         assertEquals(message.documentBucket, bucketName)
         assertEquals(message.documentKey, key)
         return Document("name", dummyContent, "text/plain")
@@ -252,8 +255,14 @@ class SoapStackIntegrationTest {
     }
 }
 
-data class CryptoKeys(val privateKey: PrivateKey, val publicCertificate: Certificate) {
-    fun toKeyStore(alias: String, keyPassword: String = ""): KeyStore =
+data class CryptoKeys(
+    val privateKey: PrivateKey,
+    val publicCertificate: Certificate
+) {
+    fun toKeyStore(
+        alias: String,
+        keyPassword: String = ""
+    ): KeyStore =
         KeyStore.getInstance("pkcs12").apply {
             load(null, null)
             setKeyEntry(alias, privateKey, keyPassword.toCharArray(), arrayOf(publicCertificate))
@@ -265,14 +274,18 @@ data class CryptoKeys(val privateKey: PrivateKey, val publicCertificate: Certifi
          *
          * The store password and key password are assumed to be the same.
          */
-        fun load(inputStream: InputStream, password: String, alias: String) =
-            KeyStore.getInstance("pkcs12")
-                .apply { load(inputStream, password.toCharArray()) }
-                .let { keyStore ->
-                    val publicCertificate = keyStore.getCertificate(alias)
-                    val privateKey = keyStore.getKey(alias, password.toCharArray()) as PrivateKey
-                    CryptoKeys(privateKey, publicCertificate)
-                }
+        fun load(
+            inputStream: InputStream,
+            password: String,
+            alias: String
+        ) = KeyStore
+            .getInstance("pkcs12")
+            .apply { load(inputStream, password.toCharArray()) }
+            .let { keyStore ->
+                val publicCertificate = keyStore.getCertificate(alias)
+                val privateKey = keyStore.getKey(alias, password.toCharArray()) as PrivateKey
+                CryptoKeys(privateKey, publicCertificate)
+            }
     }
 }
 
@@ -284,7 +297,11 @@ private fun findFreePort(): Int =
 
 private const val MOCK_SERVER_CRYPTO: String = "evaka.wss4j.crypto"
 
-class MockServer<T>(val service: T, val port: Int, private val server: Server) : AutoCloseable {
+class MockServer<T>(
+    val service: T,
+    val port: Int,
+    private val server: Server
+) : AutoCloseable {
     companion object {
         fun <Service : Any, Impl : Service> start(
             clazz: KClass<Service>,
@@ -301,21 +318,19 @@ class MockServer<T>(val service: T, val port: Int, private val server: Server) :
                         serviceClass = clazz.java
                         address = "https://localhost:$port"
                         serviceBean = service
-                    }
-                    .also {
+                    }.also {
                         val tlsParams =
                             TLSServerParameters().apply {
                                 keyManagers =
-                                    KeyManagerFactory.getInstance(
+                                    KeyManagerFactory
+                                        .getInstance(
                                             KeyManagerFactory.getDefaultAlgorithm()
-                                        )
-                                        .apply { init(keyStore, keyPassword.toCharArray()) }
+                                        ).apply { init(keyStore, keyPassword.toCharArray()) }
                                         .keyManagers
                             }
                         JettyHTTPServerEngineFactory()
                             .setTLSServerParametersForPort(port, tlsParams)
-                    }
-                    .create()
+                    }.create()
 
             val wss4j =
                 WSS4JInInterceptor(
@@ -353,15 +368,23 @@ class MockViranomaisPalvelut : Viranomaispalvelut {
     val implementation: AtomicReference<(Viranomainen, KyselyWS2A) -> VastausWS2A> =
         AtomicReference()
 
-    override fun lahetaViesti(viranomainen: Viranomainen, kysely: KyselyWS2A): VastausWS2A =
-        (implementation.get() ?: throw NotImplementedError()).invoke(viranomainen, kysely)
+    override fun lahetaViesti(
+        viranomainen: Viranomainen,
+        kysely: KyselyWS2A
+    ): VastausWS2A = (implementation.get() ?: throw NotImplementedError()).invoke(viranomainen, kysely)
 
-    override fun haeTilaTieto(viranomainen: Viranomainen, kysely: KyselyWS10): VastausWS10 =
-        throw NotImplementedError()
+    override fun haeTilaTieto(
+        viranomainen: Viranomainen,
+        kysely: KyselyWS10
+    ): VastausWS10 = throw NotImplementedError()
 
-    override fun haeAsiakkaita(viranomainen: Viranomainen, kysely: KyselyWS1): VastausWS1 =
-        throw NotImplementedError()
+    override fun haeAsiakkaita(
+        viranomainen: Viranomainen,
+        kysely: KyselyWS1
+    ): VastausWS1 = throw NotImplementedError()
 
-    override fun lisaaKohteita(viranomainen: Viranomainen, kysely: KyselyWS2): VastausWS2 =
-        throw NotImplementedError()
+    override fun lisaaKohteita(
+        viranomainen: Viranomainen,
+        kysely: KyselyWS2
+    ): VastausWS2 = throw NotImplementedError()
 }

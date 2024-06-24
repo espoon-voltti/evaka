@@ -214,7 +214,9 @@ class DraftInvoiceGenerator(
                             decisionPartMaxFee,
                             if (capMaxFeeAtDefault) {
                                 getDefaultMaxFee(decisionPart.placement.type, decisionPartMaxFee)
-                            } else Int.MAX_VALUE
+                            } else {
+                                Int.MAX_VALUE
+                            }
                         )
                 }
 
@@ -229,8 +231,7 @@ class DraftInvoiceGenerator(
                             2,
                             RoundingMode.HALF_UP
                         )
-                    }
-                    .fold(BigDecimal.ZERO) { sum, maxFee -> sum + maxFee }
+                    }.fold(BigDecimal.ZERO) { sum, maxFee -> sum + maxFee }
                     .toInt()
             }
         }
@@ -280,8 +281,7 @@ class DraftInvoiceGenerator(
                                                 DateRange(decision.validFrom, decision.validTo) to
                                                     it
                                             }
-                                    }
-                                    .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
+                                    }.filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                                     .map { (decisionPeriod, part) ->
                                         FiniteDateRange(
                                             maxOf(relevantPeriod.start, decisionPeriod.start),
@@ -314,8 +314,9 @@ class DraftInvoiceGenerator(
                                                     isHalfFeeMonth(part) -> {
                                                         val fee = calculateHalfFee(part.fee)
                                                         part.feeAlterations.fold(fee) {
-                                                            currentFee,
-                                                            feeAlteration ->
+                                                                currentFee,
+                                                                feeAlteration
+                                                            ->
                                                             currentFee +
                                                                 feeAlterationEffect(
                                                                     currentFee,
@@ -340,18 +341,19 @@ class DraftInvoiceGenerator(
                 .flatMap { (child, childStubs) ->
                     val separatePeriods =
                         mergePeriods(
-                                childStubs.map { it.first.asDateRange() to it.second },
-                                { olderValue, newerValue ->
-                                    if (isPreschoolClub(olderValue) && isPreschoolClub(newerValue))
-                                        true
-                                    else olderValue == newerValue
-                                },
-                                ::isPreschoolClub
-                            )
-                            .map {
-                                it.first.asFiniteDateRange(defaultEnd = invoicePeriod.end) to
-                                    it.second
-                            }
+                            childStubs.map { it.first.asDateRange() to it.second },
+                            { olderValue, newerValue ->
+                                if (isPreschoolClub(olderValue) && isPreschoolClub(newerValue)) {
+                                    true
+                                } else {
+                                    olderValue == newerValue
+                                }
+                            },
+                            ::isPreschoolClub
+                        ).map {
+                            it.first.asFiniteDateRange(defaultEnd = invoicePeriod.end) to
+                                it.second
+                        }
 
                     val logic =
                         invoiceGenerationLogicChooser.logicForMonth(
@@ -417,8 +419,7 @@ class DraftInvoiceGenerator(
                                     getInvoiceMaxFee
                                 )
                         }
-                }
-                .let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
+                }.let { rows -> applyRoundingRows(rows, decisions, invoicePeriod) }
                 .filter { row -> row.price != 0 }
 
         if (rows.isEmpty()) return null
@@ -451,8 +452,7 @@ class DraftInvoiceGenerator(
         return children
             .filter { childId ->
                 businessDays.any { date -> !childHasFeeDecision(decisions, childId, date) }
-            }
-            .toSet()
+            }.toSet()
     }
 
     private fun getFullMonthAbsences(
@@ -461,25 +461,28 @@ class DraftInvoiceGenerator(
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>
     ): Map<ChildId, FullMonthAbsenceType> {
-        fun hasPlannedAbsence(childId: ChildId, date: LocalDate): Boolean {
-            return plannedAbsences[childId]?.contains(date) ?: false
-        }
+        fun hasPlannedAbsence(
+            childId: ChildId,
+            date: LocalDate
+        ): Boolean = plannedAbsences[childId]?.contains(date) ?: false
 
-        fun hasAbsence(childId: ChildId, date: LocalDate): Boolean {
-            return absences[childId]?.any { absence -> absence.date == date } ?: false
-        }
+        fun hasAbsence(
+            childId: ChildId,
+            date: LocalDate
+        ): Boolean = absences[childId]?.any { absence -> absence.date == date } ?: false
 
-        fun hasSickleave(childId: ChildId, date: LocalDate): Boolean {
-            return absences[childId]?.any { absence ->
+        fun hasSickleave(
+            childId: ChildId,
+            date: LocalDate
+        ): Boolean =
+            absences[childId]?.any { absence ->
                 absence.date == date && absence.absenceType == AbsenceType.SICKLEAVE
             } ?: false
-        }
 
         return operationalDaysByChild
             .mapValues { (childId, allOperationalDays) ->
                 allOperationalDays.filter { date -> childHasFeeDecision(decisions, childId, date) }
-            }
-            .mapValues { (childId, childOperationalDays) ->
+            }.mapValues { (childId, childOperationalDays) ->
                 val allSickLeaves = childOperationalDays.all { date -> hasSickleave(childId, date) }
                 val atLeastOneSickLeave =
                     childOperationalDays.any { date -> hasSickleave(childId, date) }
@@ -495,8 +498,8 @@ class DraftInvoiceGenerator(
                     FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH
                 } else if (
                     featureConfig.freeSickLeaveOnContractDays &&
-                        atLeastOneSickLeave &&
-                        allSickLeavesOrPlannedAbsences
+                    atLeastOneSickLeave &&
+                    allSickLeavesOrPlannedAbsences
                 ) {
                     // freeSickLeaveOnContractDays: The month becomes free if it has at least one
                     // sick leave, and a sick leave or planned absence on all days
@@ -515,15 +518,13 @@ class DraftInvoiceGenerator(
         decisions: List<FeeDecision>,
         childId: ChildId,
         date: LocalDate
-    ): Boolean {
-        return decisions.any { decision ->
+    ): Boolean =
+        decisions.any { decision ->
             decision.validDuring.includes(date) &&
                 decision.children.any { part -> part.child.id == childId }
         }
-    }
 
-    private fun isPreschoolClub(row: InvoiceRowStub): Boolean =
-        row.placement.type == PlacementType.PRESCHOOL_CLUB
+    private fun isPreschoolClub(row: InvoiceRowStub): Boolean = row.placement.type == PlacementType.PRESCHOOL_CLUB
 
     private fun getAttendanceDates(
         child: ChildWithDateOfBirth,
@@ -550,8 +551,8 @@ class DraftInvoiceGenerator(
         // planned absences than  they should
         return if (
             contractDaysPerMonth != null &&
-                !partialMonthChildren.contains(child.id) &&
-                attendanceDates.size < contractDaysPerMonth
+            !partialMonthChildren.contains(child.id) &&
+            attendanceDates.size < contractDaysPerMonth
         ) {
             val extraDatesToAdd = contractDaysPerMonth - attendanceDates.size
             val operationalDaysWithoutAttendance =
@@ -566,8 +567,8 @@ class DraftInvoiceGenerator(
     private fun operationalDatesByWeek(
         period: FiniteDateRange,
         operationalDays: Set<LocalDate>
-    ): List<List<LocalDate>> {
-        return period
+    ): List<List<LocalDate>> =
+        period
             .dates()
             .fold<LocalDate, List<List<LocalDate>>>(listOf()) { weeks, date ->
                 if (weeks.isEmpty() || date.dayOfWeek == DayOfWeek.MONDAY) {
@@ -575,9 +576,7 @@ class DraftInvoiceGenerator(
                 } else {
                     weeks.dropLast(1).plusElement(weeks.last() + date)
                 }
-            }
-            .map { week -> week.filter { date -> operationalDays.contains(date) } }
-    }
+            }.map { week -> week.filter { date -> operationalDays.contains(date) } }
 
     private fun toInvoiceRows(
         accumulatedRows: List<InvoiceRow>,
@@ -590,8 +589,8 @@ class DraftInvoiceGenerator(
         absences: List<AbsenceStub>,
         fullMonthAbsenceType: FullMonthAbsenceType,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int
-    ): List<InvoiceRow> {
-        return when (invoiceRowStub.placement.type) {
+    ): List<InvoiceRow> =
+        when (invoiceRowStub.placement.type) {
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
                 toTemporaryPlacementInvoiceRows(
@@ -604,10 +603,12 @@ class DraftInvoiceGenerator(
                     attendanceDates,
                     if (
                         invoiceRowStub.placement.type != PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
-                            featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
-                    )
+                        featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
+                    ) {
                         absences
-                    else emptyList()
+                    } else {
+                        emptyList()
+                    }
                 )
             else ->
                 toPermanentPlacementInvoiceRows(
@@ -628,10 +629,11 @@ class DraftInvoiceGenerator(
                     getInvoiceMaxFee
                 )
         }
-    }
 
-    private fun calculateDailyPriceForInvoiceRow(price: Int, dailyFeeDivisor: Int): Int =
-        BigDecimal(price).divide(BigDecimal(dailyFeeDivisor), 0, RoundingMode.HALF_UP).toInt()
+    private fun calculateDailyPriceForInvoiceRow(
+        price: Int,
+        dailyFeeDivisor: Int
+    ): Int = BigDecimal(price).divide(BigDecimal(dailyFeeDivisor), 0, RoundingMode.HALF_UP).toInt()
 
     private fun toTemporaryPlacementInvoiceRows(
         period: FiniteDateRange,
@@ -700,7 +702,7 @@ class DraftInvoiceGenerator(
         val isFullMonth =
             periodAttendanceDates.size == numRelevantOperationalDays ||
                 placement.type ==
-                    PlacementType.PRESCHOOL_CLUB // always full month regardless attendance
+                PlacementType.PRESCHOOL_CLUB // always full month regardless attendance
 
         val product = productProvider.mapToProduct(placement.type)
         val (amount, unitPrice) =
@@ -785,8 +787,9 @@ class DraftInvoiceGenerator(
                 }
         return withDailyModifiers +
             monthlyAbsenceDiscount(withDailyModifiers, fullMonthAbsenceType) {
-                absenceProduct,
-                absenceDiscount ->
+                    absenceProduct,
+                    absenceDiscount
+                ->
                 InvoiceRow(
                     id = InvoiceRowId(UUID.randomUUID()),
                     child = child.id,
@@ -934,10 +937,11 @@ class DraftInvoiceGenerator(
             absences
                 .filter {
                     it.absenceType == AbsenceType.FORCE_MAJEURE ||
-                        (featureConfig.freeAbsenceGivesADailyRefund &&
-                            it.absenceType == AbsenceType.FREE_ABSENCE)
-                }
-                .map { it.date }
+                        (
+                            featureConfig.freeAbsenceGivesADailyRefund &&
+                                it.absenceType == AbsenceType.FREE_ABSENCE
+                        )
+                }.map { it.date }
         val forceMajeureDays = forceMajeureAndFreeAbsences.filter { period.includes(it) }
 
         val parentLeaveAbsences =
@@ -987,13 +991,13 @@ class DraftInvoiceGenerator(
     is inevitable.
 
     A difference of 0.2€ is chosen because it's a bit over the maximum rounding error, which is 0.005€ * 31 (max amount of days in a month)
-    */
+     */
     private fun applyRoundingRows(
         invoiceRows: List<InvoiceRow>,
         feeDecisions: List<FeeDecision>,
         invoicePeriod: FiniteDateRange
-    ): List<InvoiceRow> {
-        return invoiceRows
+    ): List<InvoiceRow> =
+        invoiceRows
             .groupBy { it.child }
             .flatMap { (child, rows) ->
                 val uniqueChildFees =
@@ -1028,5 +1032,4 @@ class DraftInvoiceGenerator(
 
                 if (roundingRow != null) rows + roundingRow else rows
             }
-    }
 }

@@ -36,8 +36,13 @@ class VardaController(
     private val vardaEnv: VardaEnv
 ) {
     @PostMapping("/start-update")
-    fun runFullVardaUpdate(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
-        db.connect { dbc ->
+    fun runFullVardaUpdate(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ) {
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -48,13 +53,17 @@ class VardaController(
                 }
                 vardaService.updateUnits(dbc, clock)
                 vardaService.planVardaChildrenUpdate(dbc, clock)
-            }
-            .also { Audit.VardaReportOperations.log() }
+            }.also { Audit.VardaReportOperations.log() }
     }
 
     @PostMapping("/start-reset")
-    fun runFullVardaReset(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
-        db.connect { dbc ->
+    fun runFullVardaReset(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ) {
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -68,8 +77,7 @@ class VardaController(
                     clock,
                     addNewChildren = !vardaEnv.newIntegrationEnabled
                 )
-            }
-            .also { Audit.VardaReportOperations.log() }
+            }.also { Audit.VardaReportOperations.log() }
     }
 
     @PostMapping("/child/reset/{childId}")
@@ -79,7 +87,8 @@ class VardaController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
                         it,
@@ -106,7 +115,6 @@ class VardaController(
                         )
                     }
                 }
-            }
-            .also { Audit.VardaReportOperations.log(targetId = AuditId(childId)) }
+            }.also { Audit.VardaReportOperations.log(targetId = AuditId(childId)) }
     }
 }

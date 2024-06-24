@@ -119,13 +119,13 @@ enum class VoucherApplicationFilter {
 @RestController
 @RequestMapping(
     "/v2/applications", // deprecated
-    "/employee/applications",
+    "/employee/applications"
 )
 class ApplicationControllerV2(
     private val accessControl: AccessControl,
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
-    private val placementPlanService: PlacementPlanService,
+    private val placementPlanService: PlacementPlanService
 ) {
     @PostMapping
     fun createPaperApplication(
@@ -156,8 +156,7 @@ class ApplicationControllerV2(
                                         tx,
                                         user,
                                         ExternalIdentifier.SSN.getInstance(body.guardianSsn)
-                                    )
-                                    ?.id
+                                    )?.id
                                     ?: throw BadRequest(
                                         "Could not find the guardian with ssn ${body.guardianSsn}"
                                     )
@@ -216,10 +215,12 @@ class ApplicationControllerV2(
             )
         }
         val maxPageSize = 5000
-        if (body.pageSize != null && body.pageSize > maxPageSize)
+        if (body.pageSize != null && body.pageSize > maxPageSize) {
             throw BadRequest("Maximum page size is $maxPageSize")
+        }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val canReadServiceWorkerNotes =
                         accessControl.hasPermissionFor(
@@ -256,8 +257,7 @@ class ApplicationControllerV2(
                         canReadServiceWorkerNotes = canReadServiceWorkerNotes
                     )
                 }
-            }
-            .also { Audit.ApplicationSearch.log(meta = mapOf("total" to it.total)) }
+            }.also { Audit.ApplicationSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     @GetMapping("/by-guardian/{guardianId}")
@@ -266,8 +266,9 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable guardianId: PersonId
-    ): List<PersonApplicationSummary> {
-        return db.connect { dbc ->
+    ): List<PersonApplicationSummary> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -278,9 +279,7 @@ class ApplicationControllerV2(
                     )
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }
-            }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(guardianId)) }
-    }
+            }.also { Audit.ApplicationRead.log(targetId = AuditId(guardianId)) }
 
     @GetMapping("/by-child/{childId}")
     fun getChildApplicationSummaries(
@@ -288,8 +287,9 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<PersonApplicationSummary> {
-        return db.connect { dbc ->
+    ): List<PersonApplicationSummary> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -307,9 +307,7 @@ class ApplicationControllerV2(
                         )
                     it.fetchApplicationSummariesForChild(childId, filter)
                 }
-            }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.ApplicationRead.log(targetId = AuditId(childId)) }
 
     @GetMapping("/{applicationId}")
     fun getApplicationDetails(
@@ -317,8 +315,9 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
-    ): ApplicationResponse {
-        return db.connect { dbc ->
+    ): ApplicationResponse =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     val application =
                         tx.fetchApplicationDetails(applicationId)
@@ -377,15 +376,13 @@ class ApplicationControllerV2(
                         permittedActions = permittedActions
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ApplicationRead.log(targetId = AuditId(applicationId))
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
                     meta = mapOf("count" to it.decisions.size)
                 )
             }
-    }
 
     @PutMapping("/{applicationId}")
     fun updateApplication(
@@ -437,8 +434,9 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
-    ): PlacementPlanDraft {
-        return db.connect { dbc ->
+    ): PlacementPlanDraft =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -453,9 +451,7 @@ class ApplicationControllerV2(
                         minStartDate = clock.today()
                     )
                 }
-            }
-            .also { Audit.PlacementPlanDraftRead.log(targetId = AuditId(applicationId)) }
-    }
+            }.also { Audit.PlacementPlanDraftRead.log(targetId = AuditId(applicationId)) }
 
     @GetMapping("/{applicationId}/decision-drafts")
     fun getDecisionDrafts(
@@ -463,8 +459,9 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
-    ): DecisionDraftGroup {
-        return db.connect { dbc ->
+    ): DecisionDraftGroup =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -535,14 +532,12 @@ class ApplicationControllerV2(
                             }
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.DecisionDraftRead.log(
                     targetId = AuditId(applicationId),
                     meta = mapOf("count" to it.decisions.size)
                 )
             }
-    }
 
     @PutMapping("/{applicationId}/decision-drafts")
     fun updateDecisionDrafts(
@@ -746,8 +741,9 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): UnitApplications {
-        return db.connect { dbc ->
+    ): UnitApplications =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.hasPermissionFor(
                         tx,
@@ -783,9 +779,7 @@ class ApplicationControllerV2(
                         applications = applications
                     )
                 }
-            }
-            .also { Audit.UnitApplicationsRead.log(targetId = AuditId(unitId)) }
-    }
+            }.also { Audit.UnitApplicationsRead.log(targetId = AuditId(unitId)) }
 }
 
 data class PaperApplicationCreateRequest(
@@ -827,7 +821,9 @@ data class ApplicationResponse(
     val permittedActions: Set<Action.Application>
 )
 
-data class SimpleBatchRequest(val applicationIds: Set<ApplicationId>)
+data class SimpleBatchRequest(
+    val applicationIds: Set<ApplicationId>
+)
 
 data class PlacementProposalConfirmationUpdate(
     val status: PlacementPlanConfirmationStatus,
@@ -841,9 +837,14 @@ data class DaycarePlacementPlan(
     val preschoolDaycarePeriod: FiniteDateRange? = null
 )
 
-data class AcceptDecisionRequest(val decisionId: DecisionId, val requestedStartDate: LocalDate)
+data class AcceptDecisionRequest(
+    val decisionId: DecisionId,
+    val requestedStartDate: LocalDate
+)
 
-data class RejectDecisionRequest(val decisionId: DecisionId)
+data class RejectDecisionRequest(
+    val decisionId: DecisionId
+)
 
 data class DecisionDraftGroup(
     val decisions: List<DecisionDraft>,
@@ -854,7 +855,11 @@ data class DecisionDraftGroup(
     val child: ChildInfo
 )
 
-data class ChildInfo(val ssn: String?, val firstName: String, val lastName: String)
+data class ChildInfo(
+    val ssn: String?,
+    val firstName: String,
+    val lastName: String
+)
 
 data class GuardianInfo(
     val id: PersonId? = null,

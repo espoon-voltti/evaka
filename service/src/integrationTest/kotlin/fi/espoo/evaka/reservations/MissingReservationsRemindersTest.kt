@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val guardianEmail = "guardian@example.com"
@@ -155,7 +156,8 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
 
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE placement SET type = :type")
+            tx
+                .createUpdate("UPDATE placement SET type = :type")
                 .bind("type", placementType)
                 .execute()
         }
@@ -166,16 +168,15 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
         date: LocalDate,
         startTime: LocalTime? = LocalTime.of(8, 0),
         endTime: LocalTime? = LocalTime.of(16, 0)
-    ) =
-        insert(
-            DevReservation(
-                childId = child,
-                date = date,
-                startTime = startTime,
-                endTime = endTime,
-                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
-            )
+    ) = insert(
+        DevReservation(
+            childId = child,
+            date = date,
+            startTime = startTime,
+            endTime = endTime,
+            createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
         )
+    )
 
     private fun getReminderRecipients(): List<String> {
         scheduledJobs.sendMissingReservationReminders(db, clock)

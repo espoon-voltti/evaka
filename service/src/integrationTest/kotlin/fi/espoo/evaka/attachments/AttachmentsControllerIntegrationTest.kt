@@ -94,18 +94,14 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private fun uploadApplicationAttachment(
         applicationId: ApplicationId,
         type: AttachmentType = AttachmentType.URGENCY
-    ): Boolean {
-        return uploadAttachment(
+    ): Boolean =
+        uploadAttachment(
             "/attachments/citizen/applications/$applicationId",
             listOf("type" to type)
         )
-    }
 
-    private fun uploadIncomeStatementAttachment(incomeStatementId: IncomeStatementId): Boolean {
-        return uploadAttachment("/attachments/citizen/income-statements/$incomeStatementId")
-    }
+    private fun uploadIncomeStatementAttachment(incomeStatementId: IncomeStatementId): Boolean =
+        uploadAttachment("/attachments/citizen/income-statements/$incomeStatementId")
 
-    private fun uploadUnparentedAttachment(): Boolean {
-        return uploadAttachment("/attachments/citizen/income-statements")
-    }
+    private fun uploadUnparentedAttachment(): Boolean = uploadAttachment("/attachments/citizen/income-statements")
 }

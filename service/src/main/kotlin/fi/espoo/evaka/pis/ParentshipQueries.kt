@@ -19,10 +19,10 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getParentship(id: ParentshipId): Parentship? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getParentship(id: ParentshipId): Parentship? =
+    createQuery {
+        sql(
+            """
                 SELECT
                     fc.*,
                     ${aliasedPersonColumns("child")},
@@ -32,10 +32,8 @@ fun Database.Read.getParentship(id: ParentshipId): Parentship? {
                 JOIN person head ON fc.head_of_child = head.id
                 WHERE fc.id = ${bind(id)}
                 """
-            )
-        }
-        .exactlyOneOrNull(toParentship("child", "head"))
-}
+        )
+    }.exactlyOneOrNull(toParentship("child", "head"))
 
 fun Database.Read.getParentships(
     headOfChildId: PersonId?,
@@ -43,12 +41,13 @@ fun Database.Read.getParentships(
     includeConflicts: Boolean = false,
     period: DateRange? = null
 ): List<ParentshipDetailed> {
-    if (headOfChildId == null && childId == null)
+    if (headOfChildId == null && childId == null) {
         throw BadRequest("Must give either headOfChildId or childId")
+    }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     fc.*,
     ${aliasedPersonColumns("child")},
@@ -68,9 +67,8 @@ AND (${bind(childId)}::uuid IS NULL OR fc.child_id = ${bind(childId)})
 AND daterange(fc.start_date, fc.end_date, '[]') && daterange(${bind(period?.start)}, ${bind(period?.end)}, '[]')
 AND (${bind(includeConflicts)} OR conflict = false)
 """
-            )
-        }
-        .toList(toParentshipDetailed("child", "head"))
+        )
+    }.toList(toParentshipDetailed("child", "head"))
 }
 
 fun Database.Transaction.createParentship(
@@ -88,11 +86,17 @@ fun Database.Transaction.createParentship(
             is Creator.DVV -> Pair(null, null)
         }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH new_fridge_child AS (
     INSERT INTO fridge_child (child_id, head_of_child, start_date, end_date, create_source, created_by_user, created_by_application, modify_source, modified_by_user, modified_at, conflict)
-    VALUES (${bind(childId)}, ${bind(headOfChildId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(creator.source)}, ${bind(userId)}, ${bind(applicationId)}, NULL, NULL, NULL, ${bind(conflict)})
+    VALUES (${bind(
+                childId
+            )}, ${bind(
+                headOfChildId
+            )}, ${bind(
+                startDate
+            )}, ${bind(endDate)}, ${bind(creator.source)}, ${bind(userId)}, ${bind(applicationId)}, NULL, NULL, NULL, ${bind(conflict)})
     RETURNING *
 )
 SELECT
@@ -103,9 +107,8 @@ FROM new_fridge_child fc
 JOIN person child ON fc.child_id = child.id
 JOIN person head ON fc.head_of_child = head.id
 """
-            )
-        }
-        .exactlyOne(toParentship("child", "head"))
+        )
+    }.exactlyOne(toParentship("child", "head"))
 }
 
 fun Database.Transaction.updateParentshipDuration(
@@ -122,8 +125,8 @@ fun Database.Transaction.updateParentshipDuration(
         }
 
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE fridge_child 
                 SET 
                     start_date = ${bind(startDate)}, 
@@ -133,9 +136,8 @@ fun Database.Transaction.updateParentshipDuration(
                     modified_at = ${bind(now)}
                 WHERE id = ${bind(id)}
             """
-            )
-        }
-        .execute() > 0
+        )
+    }.execute() > 0
 }
 
 fun Database.Transaction.retryParentship(
@@ -144,35 +146,35 @@ fun Database.Transaction.retryParentship(
     userId: EvakaUserId
 ) {
     createUpdate {
-            sql(
-                """
-        UPDATE fridge_child 
-        SET conflict = false, modify_source = 'USER', modified_by_user = ${bind(userId)}, modified_at = ${bind(now)} 
-        WHERE id = ${bind(id)}
-    """
-                    .trimIndent()
-            )
-        }
-        .execute()
+        sql(
+            """
+            UPDATE fridge_child 
+            SET conflict = false, modify_source = 'USER', modified_by_user = ${bind(userId)}, modified_at = ${bind(now)} 
+            WHERE id = ${bind(id)}
+            """.trimIndent()
+        )
+    }.execute()
 }
 
-fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
-    return createQuery { sql("DELETE FROM fridge_child WHERE id = ${bind(id)} RETURNING id") }
+fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean =
+    createQuery { sql("DELETE FROM fridge_child WHERE id = ${bind(id)} RETURNING id") }
         .exactlyOneOrNull<ParentshipId>() != null
-}
 
-fun Database.Read.personIsHeadOfFamily(personId: PersonId, date: LocalDate): Boolean {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.personIsHeadOfFamily(
+    personId: PersonId,
+    date: LocalDate
+): Boolean =
+    createQuery {
+        sql(
+            """
 SELECT EXISTS(
-    SELECT * FROM fridge_child WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]') @> ${bind(date)} AND NOT conflict
+    SELECT * FROM fridge_child WHERE head_of_child = ${bind(
+                personId
+            )} AND daterange(start_date, end_date, '[]') @> ${bind(date)} AND NOT conflict
 )
 """
-            )
-        }
-        .exactlyOne<Boolean>()
-}
+        )
+    }.exactlyOne<Boolean>()
 
 internal val aliasedPersonColumns: (String) -> String = { table ->
     personColumns.joinToString(", ") { column -> "$table.$column AS ${table}_$column" }

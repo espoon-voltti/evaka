@@ -41,12 +41,14 @@ class ChildController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): ChildResponse {
-        return db.connect { dbc ->
+    ): ChildResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.Child.READ, childId)
                     val child =
-                        tx.getPersonById(childId)
+                        tx
+                            .getPersonById(childId)
                             ?.hideNonPermittedPersonData(
                                 includeInvoiceAddress =
                                     accessControl.hasPermissionFor(
@@ -75,9 +77,7 @@ class ChildController(
                             !featureConfig.valueDecisionCapacityFactorEnabled
                     )
                 }
-            }
-            .also { Audit.PersonDetailsRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.PersonDetailsRead.log(targetId = AuditId(childId)) }
 
     @GetMapping("/children/{childId}/additional-information")
     fun getAdditionalInfo(
@@ -85,8 +85,9 @@ class ChildController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): AdditionalInformation {
-        return db.connect { dbc ->
+    ): AdditionalInformation =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -97,9 +98,7 @@ class ChildController(
                     )
                     it.getAdditionalInformation(childId)
                 }
-            }
-            .also { Audit.ChildAdditionalInformationRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.ChildAdditionalInformationRead.log(targetId = AuditId(childId)) }
 
     @PutMapping("/children/{childId}/additional-information")
     fun updateAdditionalInfo(
@@ -150,7 +149,10 @@ fun Database.Transaction.upsertAdditionalInformation(
     }
 }
 
-data class Child(val id: ChildId, @Nested val additionalInformation: AdditionalInformation)
+data class Child(
+    val id: ChildId,
+    @Nested val additionalInformation: AdditionalInformation
+)
 
 data class AdditionalInformation(
     val allergies: String = "",

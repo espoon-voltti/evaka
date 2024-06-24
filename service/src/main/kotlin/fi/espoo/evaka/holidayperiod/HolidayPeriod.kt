@@ -14,4 +14,7 @@ data class HolidayPeriod(
     val reservationDeadline: LocalDate
 )
 
-data class HolidayPeriodBody(val period: FiniteDateRange, val reservationDeadline: LocalDate)
+data class HolidayPeriodBody(
+    val period: FiniteDateRange,
+    val reservationDeadline: LocalDate
+)

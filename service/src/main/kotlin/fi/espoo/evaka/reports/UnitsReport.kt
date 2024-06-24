@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class UnitsReportController(private val accessControl: AccessControl) {
+class UnitsReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/units", // deprecated
         "/employee/reports/units"
@@ -25,8 +27,9 @@ class UnitsReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<UnitsReportRow> {
-        return db.connect { dbc ->
+    ): List<UnitsReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -37,15 +40,13 @@ class UnitsReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getUnitRows()
                 }
-            }
-            .also { Audit.UnitsReportRead.log() }
-    }
+            }.also { Audit.UnitsReportRead.log() }
 }
 
-private fun Database.Read.getUnitRows(): List<UnitsReportRow> {
-    return createQuery {
-            sql(
-                """
+private fun Database.Read.getUnitRows(): List<UnitsReportRow> =
+    createQuery {
+        sql(
+            """
             SELECT 
                 u.id,
                 u.name,
@@ -71,10 +72,8 @@ private fun Database.Read.getUnitRows(): List<UnitsReportRow> {
             FROM daycare u
             JOIN care_area ca ON ca.id = u.care_area_id
         """
-            )
-        }
-        .toList<UnitsReportRow>()
-}
+        )
+    }.toList<UnitsReportRow>()
 
 data class UnitsReportRow(
     val id: DaycareId,

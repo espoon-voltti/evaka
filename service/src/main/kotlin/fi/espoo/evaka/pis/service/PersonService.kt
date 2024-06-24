@@ -47,7 +47,9 @@ import org.thymeleaf.context.Context
 private val logger = KotlinLogging.logger {}
 
 @Service
-class PersonService(private val personDetailsService: IPersonDetailsService) {
+class PersonService(
+    private val personDetailsService: IPersonDetailsService
+) {
     // Does a request to VTJ if the person has a SSN and updates person data
     fun getUpToDatePersonFromVtj(
         tx: Database.Transaction,
@@ -77,23 +79,30 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         return personsLiveInTheSameAddress(person1, person2)
     }
 
-    fun personsLiveInTheSameAddress(person1: PersonDTO?, person2: PersonDTO?): Boolean {
-        return personsHaveSameResidenceCode(person1, person2) ||
+    fun personsLiveInTheSameAddress(
+        person1: PersonDTO?,
+        person2: PersonDTO?
+    ): Boolean =
+        personsHaveSameResidenceCode(person1, person2) ||
             personsHaveSameAddress(person1, person2)
-    }
 
-    private fun personsHaveSameResidenceCode(person1: PersonDTO?, person2: PersonDTO?): Boolean {
-        return person1 != null &&
+    private fun personsHaveSameResidenceCode(
+        person1: PersonDTO?,
+        person2: PersonDTO?
+    ): Boolean =
+        person1 != null &&
             person2 != null &&
             !person1.restrictedDetailsEnabled &&
             !person2.restrictedDetailsEnabled &&
             person1.residenceCode.isNotBlank() &&
             person2.residenceCode.isNotBlank() &&
             person1.residenceCode == person2.residenceCode
-    }
 
-    private fun personsHaveSameAddress(person1: PersonDTO?, person2: PersonDTO?): Boolean {
-        return person1 != null &&
+    private fun personsHaveSameAddress(
+        person1: PersonDTO?,
+        person2: PersonDTO?
+    ): Boolean =
+        person1 != null &&
             person2 != null &&
             !person1.restrictedDetailsEnabled &&
             !person2.restrictedDetailsEnabled &&
@@ -103,7 +112,6 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             person2.postalCode.isNotBlank() &&
             person1.streetAddress.lowercase() == person2.streetAddress.lowercase() &&
             person1.postalCode == person2.postalCode
-    }
 
     // Does a request to VTJ if SSN is present and the person hasn't had their dependants
     // initialized
@@ -170,8 +178,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         user: AuthenticatedUser,
         otherGuardianId: PersonId,
         childId: ChildId
-    ): PersonDTO? =
-        getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
+    ): PersonDTO? = getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
 
     // Does a request to VTJ if person is not found in database or person data has not been
     // initialized from VTJ
@@ -196,7 +203,11 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         }
     }
 
-    fun patchUserDetails(tx: Database.Transaction, id: PersonId, data: PersonPatch): PersonDTO {
+    fun patchUserDetails(
+        tx: Database.Transaction,
+        id: PersonId,
+        data: PersonPatch
+    ): PersonDTO {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         // People with SSN get basic details from VTJ which should not be modified
@@ -241,7 +252,11 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         }.exhaust()
     }
 
-    fun disableSsn(tx: Database.Transaction, personId: PersonId, disabled: Boolean) {
+    fun disableSsn(
+        tx: Database.Transaction,
+        personId: PersonId,
+        disabled: Boolean
+    ) {
         val person = tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
 
         if (person.identity is ExternalIdentifier.SSN) {
@@ -255,21 +270,19 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     private fun getPersonWithDependants(
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN
-    ): VtjPersonDTO {
-        return personDetailsService
+    ): VtjPersonDTO =
+        personDetailsService
             .getPersonWithDependants(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
             .mapToDto()
-    }
 
     // Does a request to VTJ
     private fun getPersonWithGuardians(
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN
-    ): VtjPersonDTO {
-        return personDetailsService
+    ): VtjPersonDTO =
+        personDetailsService
             .getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
             .mapToDto()
-    }
 
     private fun toPersonDTO(person: VtjPersonDTO): PersonDTO =
         PersonDTO(
@@ -405,7 +418,7 @@ data class PersonDTO(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
-    val ophPersonOid: String? = "",
+    val ophPersonOid: String? = ""
 ) {
     fun toVtjPersonDTO() =
         VtjPersonDTO(
@@ -427,27 +440,29 @@ data class PersonDTO(
         )
 }
 
-fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, includeOphOid: Boolean) =
-    this.let {
-            if (includeInvoiceAddress) {
-                it
-            } else {
-                it.copy(
-                    invoiceRecipientName = "",
-                    invoicingStreetAddress = "",
-                    invoicingPostalCode = "",
-                    invoicingPostOffice = "",
-                    forceManualFeeDecisions = false
-                )
-            }
+fun PersonDTO.hideNonPermittedPersonData(
+    includeInvoiceAddress: Boolean,
+    includeOphOid: Boolean
+) = this
+    .let {
+        if (includeInvoiceAddress) {
+            it
+        } else {
+            it.copy(
+                invoiceRecipientName = "",
+                invoicingStreetAddress = "",
+                invoicingPostalCode = "",
+                invoicingPostOffice = "",
+                forceManualFeeDecisions = false
+            )
         }
-        .let {
-            if (includeOphOid) {
-                it
-            } else {
-                it.copy(ophPersonOid = "")
-            }
+    }.let {
+        if (includeOphOid) {
+            it
+        } else {
+            it.copy(ophPersonOid = "")
         }
+    }
 
 data class PersonJSON(
     val id: PersonId,
@@ -473,7 +488,7 @@ data class PersonJSON(
     val invoicingPostOffice: String = "",
     val forceManualFeeDecisions: Boolean = false,
     val ophPersonOid: String? = null,
-    val updatedFromVtj: HelsinkiDateTime? = null,
+    val updatedFromVtj: HelsinkiDateTime? = null
 ) {
     companion object {
         fun from(p: PersonDTO): PersonJSON =
@@ -585,9 +600,15 @@ data class PersonAddressDTO(
     }
 }
 
-data class RestrictedDetails(val enabled: Boolean, val endDate: LocalDate? = null)
+data class RestrictedDetails(
+    val enabled: Boolean,
+    val endDate: LocalDate? = null
+)
 
-private fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+private fun upsertVtjGuardians(
+    tx: Database.Transaction,
+    vtjPersonDTO: VtjPersonDTO
+): VtjPersonDTO {
     val child = upsertVtjPerson(tx, vtjPersonDTO)
     initChildIfNotExists(tx, child.id)
     val guardians =
@@ -599,7 +620,10 @@ private fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPerson
     return child.toVtjPersonDTO().copy(guardians = guardians.map { it.toVtjPersonDTO() })
 }
 
-private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+private fun upsertVtjChildren(
+    tx: Database.Transaction,
+    vtjPersonDTO: VtjPersonDTO
+): VtjPersonDTO {
     val guardian = upsertVtjPerson(tx, vtjPersonDTO)
     val children =
         vtjPersonDTO.children
@@ -615,7 +639,10 @@ private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonD
     return guardian.toVtjPersonDTO().copy(children = children.map { it.toVtjPersonDTO() })
 }
 
-private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): PersonDTO {
+private fun upsertVtjPerson(
+    tx: Database.Transaction,
+    inputPerson: VtjPersonDTO
+): PersonDTO {
     val existingPerson = tx.lockPersonBySSN(inputPerson.socialSecurityNumber)
 
     return if (existingPerson == null) {
@@ -627,7 +654,10 @@ private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO)
     }
 }
 
-private fun initChildIfNotExists(tx: Database.Transaction, childId: ChildId) {
+private fun initChildIfNotExists(
+    tx: Database.Transaction,
+    childId: ChildId
+) {
     if (tx.getChild(childId) == null) {
         tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()))
     }
@@ -720,19 +750,17 @@ private fun getPostOfficeByLanguage(vtjPerson: VtjPersonDTO): String {
 
 private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: PersonId) =
     createUpdate {
-            sql(
-                "UPDATE person SET vtj_dependants_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
-            )
-        }
-        .execute()
+        sql(
+            "UPDATE person SET vtj_dependants_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
+        )
+    }.execute()
 
 private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: ChildId) =
     createUpdate {
-            sql(
-                "UPDATE person SET vtj_guardians_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
-            )
-        }
-        .execute()
+        sql(
+            "UPDATE person SET vtj_guardians_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
+        )
+    }.execute()
 
 fun createAddressPagePdf(
     pdfGenerator: PdfGenerator,

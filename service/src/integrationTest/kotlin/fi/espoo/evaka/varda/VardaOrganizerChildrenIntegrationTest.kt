@@ -104,7 +104,8 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         db.transaction {
             val rows =
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT * FROM varda_organizer_child")
+                it
+                    .createQuery("SELECT * FROM varda_organizer_child")
                     .toList<VardaChildOrganizerRow>()
 
             assertEquals(1, rows.size)
@@ -125,14 +126,13 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val childId = testChild_1.id
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     """
-                UPDATE person SET social_security_number = null, oph_person_oid = null
-                WHERE id = :id
-                """
-                        .trimIndent()
-                )
-                .bind("id", childId)
+                    UPDATE person SET social_security_number = null, oph_person_oid = null
+                    WHERE id = :id
+                    """.trimIndent()
+                ).bind("id", childId)
                 .execute()
         }
         assertThrows<IllegalStateException> {
@@ -155,14 +155,13 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val childId = testChild_1.id
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     """
-                UPDATE person SET social_security_number = null, oph_person_oid = '1.2.3.4.5'
-                WHERE id = :id
-                """
-                        .trimIndent()
-                )
-                .bind("id", childId)
+                    UPDATE person SET social_security_number = null, oph_person_oid = '1.2.3.4.5'
+                    WHERE id = :id
+                    """.trimIndent()
+                ).bind("id", childId)
                 .execute()
         }
 
@@ -184,14 +183,13 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val childId = testChild_1.id
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     """
-                UPDATE person SET social_security_number = '111121-1234', oph_person_oid = null
-                WHERE id = :id
-                """
-                        .trimIndent()
-                )
-                .bind("id", childId)
+                    UPDATE person SET social_security_number = '111121-1234', oph_person_oid = null
+                    WHERE id = :id
+                    """.trimIndent()
+                ).bind("id", childId)
                 .execute()
         }
 

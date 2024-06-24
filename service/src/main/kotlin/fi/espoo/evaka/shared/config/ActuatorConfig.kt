@@ -17,16 +17,18 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class ActuatorConfig {
-
     @Bean
     @Autowired
-    fun databaseHealthEndpoint(jdbi: Jdbi, tracer: Tracer): HealthIndicator {
-        return DatabaseHealthIndicator(jdbi, tracer)
-    }
+    fun databaseHealthEndpoint(
+        jdbi: Jdbi,
+        tracer: Tracer
+    ): HealthIndicator = DatabaseHealthIndicator(jdbi, tracer)
 }
 
-class DatabaseHealthIndicator(private val jdbi: Jdbi, private val tracer: Tracer) :
-    AbstractHealthIndicator() {
+class DatabaseHealthIndicator(
+    private val jdbi: Jdbi,
+    private val tracer: Tracer
+) : AbstractHealthIndicator() {
     override fun doHealthCheck(builder: Health.Builder) {
         try {
             Database(jdbi, tracer).connect { db ->

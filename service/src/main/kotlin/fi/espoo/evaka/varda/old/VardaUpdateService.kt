@@ -77,7 +77,10 @@ class VardaUpdateService(
 
     val client = VardaClient(tokenProvider, mapper, vardaEnv)
 
-    fun updateUnits(db: Database.Connection, clock: EvakaClock) {
+    fun updateUnits(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         logger.info("VardaUpdate: starting unit update")
         updateUnits(
             db,
@@ -94,8 +97,11 @@ class VardaUpdateService(
            - For each deleted service need, delete all related data from varda
            - For each new service need, IF related fee data exists, add all related data to varda
            - For each modified service need, delete old related data from varda and add new
-    */
-    fun planVardaChildrenUpdate(db: Database.Connection, clock: EvakaClock) {
+     */
+    fun planVardaChildrenUpdate(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         val serviceNeedDiffsByChild = getChildrenToUpdate(db, clock, feeDecisionMinDate)
 
         logger.info("VardaUpdate: will update ${serviceNeedDiffsByChild.entries.size} children")
@@ -349,7 +355,7 @@ private fun addServiceNeedDataToVarda(
                 sendPlacementToVarda(vardaClient, vardaDecisionId, evakaServiceNeed)
             vardaServiceNeed.vardaPlacementId = vardaPlacementId
 
-            if (hasFeeData)
+            if (hasFeeData) {
                 vardaServiceNeed.vardaFeeDataIds =
                     sendFeeDataToVarda(
                         vardaClient,
@@ -358,6 +364,7 @@ private fun addServiceNeedDataToVarda(
                         evakaServiceNeed,
                         serviceNeedFeeData.first()
                     )
+            }
             db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
             logger.info(
                 "VardaUpdate: successfully created new service need from ${evakaServiceNeed.id}"
@@ -380,7 +387,9 @@ private fun addServiceNeedDataToVarda(
             logger.info(
                 "VardaUpdate: service need ${evakaServiceNeed.id} error response contained non critical error so continuing"
             )
-        } else error(errors) // Fatal error
+        } else {
+            error(errors) // Fatal error
+        }
     }
 }
 
@@ -423,10 +432,12 @@ private fun guardiansLiveInSameAddress(guardians: List<VardaGuardianWithId>): Bo
 private fun guardiansResponsibleForFeeData(
     decisionHeadOfFamilyId: PersonId,
     allGuardians: List<VardaGuardianWithId>
-): List<VardaGuardianWithId> {
-    return if (guardiansLiveInSameAddress(allGuardians)) allGuardians
-    else allGuardians.filter { guardian -> guardian.id == decisionHeadOfFamilyId }
-}
+): List<VardaGuardianWithId> =
+    if (guardiansLiveInSameAddress(allGuardians)) {
+        allGuardians
+    } else {
+        allGuardians.filter { guardian -> guardian.id == decisionHeadOfFamilyId }
+    }
 
 private fun sendFeeDataToVarda(
     vardaClient: VardaClient,
@@ -508,9 +519,10 @@ private fun sendFeeDataToVarda(
 private fun getChildVardaGuardians(
     db: Database.Connection,
     childId: ChildId
-): List<VardaGuardianWithId> {
-    return db.read {
-        it.createQuery {
+): List<VardaGuardianWithId> =
+    db.read {
+        it
+            .createQuery {
                 sql(
                     """
 SELECT
@@ -524,10 +536,8 @@ FROM person
 WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = ${bind(childId)})
             """
                 )
-            }
-            .toList<VardaGuardianWithId>()
+            }.toList<VardaGuardianWithId>()
     }
-}
 
 private fun sendFeeDecisionToVarda(
     client: VardaClient,
@@ -590,23 +600,20 @@ private fun sendVoucherDecisionToVarda(
     return client.createFeeData(requestPayload).id
 }
 
-private fun vardaFeeBasisByPlacementType(type: PlacementType): String {
-    return if (
+private fun vardaFeeBasisByPlacementType(type: PlacementType): String =
+    if (
         type == PlacementType.DAYCARE_FIVE_YEAR_OLDS ||
-            type == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+        type == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
     ) {
         FeeBasisCode.FIVE_YEAR_OLDS_DAYCARE.code
     } else {
         FeeBasisCode.DAYCARE.code
     }
-}
 
 private fun calculateVardaFeeDataStartDate(
     fdStartDate: LocalDate,
     serviceNeedDates: DateRange
-): LocalDate {
-    return if (serviceNeedDates.includes(fdStartDate)) fdStartDate else serviceNeedDates.start
-}
+): LocalDate = if (serviceNeedDates.includes(fdStartDate)) fdStartDate else serviceNeedDates.start
 
 fun calculateEvakaVsVardaServiceNeedChangesByChild(
     db: Database.Connection,
@@ -616,7 +623,8 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(
     val evakaServiceNeedDeletionsByChild = db.read { it.calculateDeletedChildServiceNeeds(clock) }
 
     val evakaServiceNeedChangesByChild =
-        db.read { it.getEvakaServiceNeedChanges(clock, feeDecisionMinDate) }
+        db
+            .read { it.getEvakaServiceNeedChanges(clock, feeDecisionMinDate) }
             .groupBy { it.evakaChildId }
 
     val additionsAndChangesToVardaByChild =
@@ -668,26 +676,23 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(
 private fun calculateNewChildServiceNeeds(
     evakaServiceNeedChangesForChild: List<ChangedChildServiceNeed>,
     vardaChildServiceNeeds: List<VardaServiceNeed>
-): List<ServiceNeedId> {
-    return evakaServiceNeedChangesForChild
+): List<ServiceNeedId> =
+    evakaServiceNeedChangesForChild
         .filter { newServiceNeedChange ->
             vardaChildServiceNeeds.none { vardaChildServiceNeedChange ->
                 vardaChildServiceNeedChange.evakaServiceNeedId ==
                     newServiceNeedChange.evakaServiceNeedId
             }
-        }
-        .map { it.evakaServiceNeedId }
-}
+        }.map { it.evakaServiceNeedId }
 
 // Find out changed varhaiskasvatuspaatos for a child: any new service need with a different update
 // timestamp in history
 private fun calculateUpdatedChildServiceNeeds(
     evakaServiceNeedChangesForChild: List<ChangedChildServiceNeed>,
     vardaServiceNeedsForChild: List<VardaServiceNeed>
-): List<ServiceNeedId> {
-    return evakaServiceNeedChangesForChild.mapNotNull { newServiceNeedChange ->
+): List<ServiceNeedId> =
+    evakaServiceNeedChangesForChild.mapNotNull { newServiceNeedChange ->
         vardaServiceNeedsForChild
             .find { it.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId }
             ?.evakaServiceNeedId
     }
-}

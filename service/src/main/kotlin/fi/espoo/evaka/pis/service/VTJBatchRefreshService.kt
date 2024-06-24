@@ -15,12 +15,15 @@ class VTJBatchRefreshService(
     private val fridgeFamilyService: FridgeFamilyService,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
-
     init {
         asyncJobRunner.registerHandler(::doVTJRefresh)
     }
 
-    fun doVTJRefresh(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.VTJRefresh) {
+    fun doVTJRefresh(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.VTJRefresh
+    ) {
         fridgeFamilyService.doVTJRefresh(db, msg, clock)
     }
 }

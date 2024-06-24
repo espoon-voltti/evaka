@@ -133,15 +133,16 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         vasuTemplateController.postTemplate(dbInstance(), adminUser, RealEvakaClock(), request)
     }
 
-    private fun getVasuTemplates(): List<VasuTemplateSummary> {
-        return vasuTemplateController.getTemplates(dbInstance(), adminUser, RealEvakaClock())
-    }
+    private fun getVasuTemplates(): List<VasuTemplateSummary> =
+        vasuTemplateController.getTemplates(dbInstance(), adminUser, RealEvakaClock())
 
-    private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
-        return vasuTemplateController.getTemplate(dbInstance(), adminUser, RealEvakaClock(), id)
-    }
+    private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate =
+        vasuTemplateController.getTemplate(dbInstance(), adminUser, RealEvakaClock(), id)
 
-    private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
+    private fun putVasuTemplateContent(
+        id: VasuTemplateId,
+        request: VasuContent
+    ) {
         vasuTemplateController.putTemplateContent(
             dbInstance(),
             adminUser,

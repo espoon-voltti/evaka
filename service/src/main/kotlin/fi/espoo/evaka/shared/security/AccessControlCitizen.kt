@@ -11,7 +11,9 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import org.springframework.stereotype.Service
 
 @Service
-class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
+class AccessControlCitizen(
+    val citizenCalendarEnv: CitizenCalendarEnv
+) {
     fun getPermittedFeatures(
         tx: Database.Read,
         clock: EvakaClock,
@@ -37,8 +39,8 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -67,9 +69,8 @@ SELECT EXISTS (
     WHERE app.status = 'SENT' AND p.id = ${bind(userId)} AND mr.id IS NOT NULL AND m.sent_at IS NOT NULL
 )
 """
-                )
-            }
-            .exactlyOne<Boolean>()
+            )
+        }.exactlyOne<Boolean>()
     }
 
     private fun Database.Read.citizenHasChildWithActivePlacement(
@@ -78,8 +79,8 @@ SELECT EXISTS (
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -92,9 +93,8 @@ SELECT EXISTS (
     WHERE daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
 )
 """
-                )
-            }
-            .exactlyOne<Boolean>()
+            )
+        }.exactlyOne<Boolean>()
     }
 
     private fun Database.Read.citizenHasAccessToReservations(
@@ -104,8 +104,8 @@ SELECT EXISTS (
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -114,14 +114,15 @@ WITH children AS (
 SELECT EXISTS (
     SELECT 1
     FROM children c
-    JOIN placement pl ON c.child_id = pl.child_id AND daterange((pl.start_date - ${bind(calendarOpenBeforePlacementDays)}), pl.end_date, '[]') @> ${bind(today)}
+    JOIN placement pl ON c.child_id = pl.child_id AND daterange((pl.start_date - ${bind(
+                    calendarOpenBeforePlacementDays
+                )}), pl.end_date, '[]') @> ${bind(today)}
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
 """
-                )
-            }
-            .exactlyOne<Boolean>()
+            )
+        }.exactlyOne<Boolean>()
     }
 
     private fun Database.Read.citizenHasAccessToChildDocumentation(
@@ -130,8 +131,8 @@ SELECT EXISTS (
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -145,8 +146,7 @@ SELECT EXISTS (
     WHERE 'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
 )
 """
-                )
-            }
-            .exactlyOne<Boolean>()
+            )
+        }.exactlyOne<Boolean>()
     }
 }

@@ -12,9 +12,13 @@ import mu.KotlinLogging
 sealed interface AuditId {
     val value: Any
 
-    @JvmInline value class One(override val value: Any) : AuditId
+    @JvmInline value class One(
+        override val value: Any
+    ) : AuditId
 
-    @JvmInline value class Many(override val value: List<Any>) : AuditId
+    @JvmInline value class Many(
+        override val value: List<Any>
+    ) : AuditId
 
     companion object {
         operator fun invoke(value: Id<*>): AuditId = One(value)
@@ -556,7 +560,7 @@ enum class Audit(
                 "targetId" to targetId?.value,
                 "objectId" to objectId?.value,
                 "securityLevel" to securityLevel,
-                "securityEvent" to securityEvent,
+                "securityEvent" to securityEvent
             ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
         ) {
             eventCode

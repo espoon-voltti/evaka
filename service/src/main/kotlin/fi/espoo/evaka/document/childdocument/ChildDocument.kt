@@ -20,33 +20,38 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
-data class CheckboxGroupAnswerContent(val optionId: String, val extra: String = "")
+data class CheckboxGroupAnswerContent(
+    val optionId: String,
+    val extra: String = ""
+)
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type"
 )
-sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
+sealed class AnsweredQuestion<Answer>(
+    val type: QuestionType
+) {
     abstract val questionId: String
     abstract val answer: Answer
 
     abstract fun isStructurallyValid(question: Question): Boolean
 
     @JsonTypeName("TEXT")
-    data class TextAnswer(override val questionId: String, override val answer: String) :
-        AnsweredQuestion<String>(QuestionType.TEXT) {
-        override fun isStructurallyValid(question: Question): Boolean {
-            return question is Question.TextQuestion
-        }
+    data class TextAnswer(
+        override val questionId: String,
+        override val answer: String
+    ) : AnsweredQuestion<String>(QuestionType.TEXT) {
+        override fun isStructurallyValid(question: Question): Boolean = question is Question.TextQuestion
     }
 
     @JsonTypeName("CHECKBOX")
-    data class CheckboxAnswer(override val questionId: String, override val answer: Boolean) :
-        AnsweredQuestion<Boolean>(QuestionType.CHECKBOX) {
-        override fun isStructurallyValid(question: Question): Boolean {
-            return question is Question.CheckboxQuestion
-        }
+    data class CheckboxAnswer(
+        override val questionId: String,
+        override val answer: Boolean
+    ) : AnsweredQuestion<Boolean>(QuestionType.CHECKBOX) {
+        override fun isStructurallyValid(question: Question): Boolean = question is Question.CheckboxQuestion
     }
 
     @JsonTypeName("CHECKBOX_GROUP")
@@ -78,17 +83,15 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
         override val questionId: String,
         override val answer: Nothing?
     ) : AnsweredQuestion<Nothing?>(QuestionType.STATIC_TEXT_DISPLAY) {
-        override fun isStructurallyValid(question: Question): Boolean {
-            return question is Question.StaticTextDisplayQuestion
-        }
+        override fun isStructurallyValid(question: Question): Boolean = question is Question.StaticTextDisplayQuestion
     }
 
     @JsonTypeName("DATE")
-    data class DateAnswer(override val questionId: String, override val answer: LocalDate?) :
-        AnsweredQuestion<LocalDate?>(QuestionType.DATE) {
-        override fun isStructurallyValid(question: Question): Boolean {
-            return question is Question.DateQuestion
-        }
+    data class DateAnswer(
+        override val questionId: String,
+        override val answer: LocalDate?
+    ) : AnsweredQuestion<LocalDate?>(QuestionType.DATE) {
+        override fun isStructurallyValid(question: Question): Boolean = question is Question.DateQuestion
     }
 
     @JsonTypeName("GROUPED_TEXT_FIELDS")
@@ -106,7 +109,9 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
 }
 
 @Json
-data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
+data class DocumentContent(
+    val answers: List<AnsweredQuestion<*>>
+) {
     init {
         // input sanity check since list element nullability is not fully guaranteed in jackson
         @Suppress("SENSELESS_COMPARISON")
@@ -114,7 +119,9 @@ data class DocumentContent(val answers: List<AnsweredQuestion<*>>) {
     }
 }
 
-enum class DocumentStatus(val editable: Boolean) : DatabaseEnum {
+enum class DocumentStatus(
+    val editable: Boolean
+) : DatabaseEnum {
     DRAFT(editable = true),
     PREPARED(editable = true),
     COMPLETED(editable = false);
@@ -154,4 +161,7 @@ data class ChildDocumentWithPermittedActions(
     val permittedActions: Set<Action.ChildDocument>
 )
 
-data class ChildDocumentCreateRequest(val childId: PersonId, val templateId: DocumentTemplateId)
+data class ChildDocumentCreateRequest(
+    val childId: PersonId,
+    val templateId: DocumentTemplateId
+)

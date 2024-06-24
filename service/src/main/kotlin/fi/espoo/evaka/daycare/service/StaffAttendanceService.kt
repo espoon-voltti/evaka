@@ -20,9 +20,7 @@ class StaffAttendanceService {
         db: Database.Connection,
         unitId: DaycareId,
         date: LocalDate
-    ): UnitStaffAttendance {
-        return db.read { tx -> tx.getUnitStaffAttendanceForDate(unitId, date) }
-    }
+    ): UnitStaffAttendance = db.read { tx -> tx.getUnitStaffAttendanceForDate(unitId, date) }
 
     fun getGroupAttendancesByMonth(
         db: Database.Connection,
@@ -50,7 +48,10 @@ class StaffAttendanceService {
         }
     }
 
-    fun upsertStaffAttendance(db: Database.Connection, staffAttendance: StaffAttendanceUpdate) {
+    fun upsertStaffAttendance(
+        db: Database.Connection,
+        staffAttendance: StaffAttendanceUpdate
+    ) {
         db.transaction { tx ->
             if (!tx.isValidStaffAttendanceDate(staffAttendance)) {
                 throw BadRequest(
@@ -102,20 +103,19 @@ data class StaffAttendanceUpdate(
 
 fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT dg.id AS group_id, dg.name AS group_name, dg.start_date, dg.end_date
 FROM daycare_group AS dg
 WHERE id = ${bind(groupId)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpdate): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS (
     SELECT 1
     FROM daycare_group
@@ -123,9 +123,8 @@ SELECT EXISTS (
     AND daterange(start_date, end_date, '[]') @> ${bind(staffAttendance.date)}
 )
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {
     execute {
@@ -133,7 +132,9 @@ fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceU
             sql(
                 """
 INSERT INTO staff_attendance (group_id, date, count, count_other)
-VALUES (${bind(staffAttendance.groupId)}, ${bind(staffAttendance.date)}, ${bind(staffAttendance.count)}, ${bind(staffAttendance.countOther)})
+VALUES (${bind(
+                    staffAttendance.groupId
+                )}, ${bind(staffAttendance.date)}, ${bind(staffAttendance.count)}, ${bind(staffAttendance.countOther)})
 ON CONFLICT (group_id, date) DO UPDATE SET
     count = ${bind(staffAttendance.count)},
     count_other = ${bind(staffAttendance.countOther)}
@@ -157,16 +158,15 @@ fun Database.Read.getStaffAttendanceByRange(
     groupId: GroupId
 ): List<GroupStaffAttendance> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT group_id, date, count, count_other, updated
 FROM staff_attendance
 WHERE group_id = ${bind(groupId)}
 AND between_start_and_end(${bind(range)}, date)
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Read.getUnitStaffAttendanceForDate(
     unitId: DaycareId,
@@ -174,17 +174,16 @@ fun Database.Read.getUnitStaffAttendanceForDate(
 ): UnitStaffAttendance {
     val groupAttendances =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT group_id, date, count, count_other, updated
 FROM staff_attendance sa
 JOIN daycare_group dg on sa.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)}
   AND sa.date = ${bind(date)}
 """
-                )
-            }
-            .toList<GroupStaffAttendance>()
+            )
+        }.toList<GroupStaffAttendance>()
 
     val count = groupAttendances.sumOf { it.count }
     val countOther = groupAttendances.sumOf { it.countOther }

@@ -10,15 +10,14 @@ import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getChild(id: ChildId): Child? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.abbreviation as special_diet_abbreviation, meal_texture.name AS meal_texture_name
 FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id LEFT JOIN meal_texture on child.meal_texture_id = meal_texture.id
 WHERE child.id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull<Child>()
+        )
+    }.exactlyOneOrNull<Child>()
 
 fun Database.Transaction.createChild(child: Child) {
     execute {
@@ -44,7 +43,9 @@ fun Database.Transaction.upsertChild(child: Child) {
     execute {
         sql(
             """
-INSERT INTO child (id, allergies, diet) VALUES (${bind(child.id)}, ${bind(child.additionalInformation.allergies)}, ${bind(child.additionalInformation.diet)}) 
+INSERT INTO child (id, allergies, diet) VALUES (${bind(
+                child.id
+            )}, ${bind(child.additionalInformation.allergies)}, ${bind(child.additionalInformation.diet)}) 
 ON CONFLICT (id) DO UPDATE SET allergies = ${bind(child.additionalInformation.allergies)}, diet = ${bind(child.additionalInformation.diet)}
 """
         )

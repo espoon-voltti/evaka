@@ -36,7 +36,9 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
-data class AssistanceNeedDecisionRequest(val decision: AssistanceNeedDecisionForm)
+data class AssistanceNeedDecisionRequest(
+    val decision: AssistanceNeedDecisionForm
+)
 
 @RestController
 class AssistanceNeedDecisionController(
@@ -52,8 +54,9 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedDecisionRequest
-    ): AssistanceNeedDecision {
-        return db.connect { dbc ->
+    ): AssistanceNeedDecision =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -81,32 +84,31 @@ class AssistanceNeedDecisionController(
                                                 isHeard = false,
                                                 details = null
                                             )
-                                        }
-                                        .toSet()
+                                        }.toSet()
                             )
                     }
 
                     val now = clock.now()
                     val processId =
                         featureConfig.archiveMetadataConfigs[
-                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE]
-                            ?.let { config ->
-                                tx.insertProcess(
-                                        processDefinitionNumber = config.processDefinitionNumber,
-                                        year = now.year,
-                                        organization = featureConfig.archiveMetadataOrganization,
-                                        archiveDurationMonths = config.archiveDurationMonths
+                            ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE
+                        ]?.let { config ->
+                            tx
+                                .insertProcess(
+                                    processDefinitionNumber = config.processDefinitionNumber,
+                                    year = now.year,
+                                    organization = featureConfig.archiveMetadataOrganization,
+                                    archiveDurationMonths = config.archiveDurationMonths
+                                ).id
+                                .also { processId ->
+                                    tx.insertProcessHistoryRow(
+                                        processId = processId,
+                                        state = ArchivedProcessState.INITIAL,
+                                        now = now,
+                                        userId = user.evakaUserId
                                     )
-                                    .id
-                                    .also { processId ->
-                                        tx.insertProcessHistoryRow(
-                                            processId = processId,
-                                            state = ArchivedProcessState.INITIAL,
-                                            now = now,
-                                            userId = user.evakaUserId
-                                        )
-                                    }
-                            }
+                                }
+                        }
 
                     tx.insertAssistanceNeedDecision(
                         childId = childId,
@@ -115,26 +117,25 @@ class AssistanceNeedDecisionController(
                         user = user
                     )
                 }
-            }
-            .also { assistanceNeedDecision ->
+            }.also { assistanceNeedDecision ->
                 Audit.ChildAssistanceNeedDecisionCreate.log(
                     targetId = AuditId(childId),
                     objectId = AuditId(assistanceNeedDecision.id)
                 )
             }
-    }
 
     @GetMapping(
         "/assistance-need-decision/{id}", // deprecated
-        "/employee/assistance-need-decision/{id}",
+        "/employee/assistance-need-decision/{id}"
     )
     fun getAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ): AssistanceNeedDecisionResponse {
-        return db.connect { dbc ->
+    ): AssistanceNeedDecisionResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -151,9 +152,7 @@ class AssistanceNeedDecisionController(
                         hasMissingFields = hasMissingFields(decision)
                     )
                 }
-            }
-            .also { Audit.ChildAssistanceNeedDecisionRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ChildAssistanceNeedDecisionRead.log(targetId = AuditId(id)) }
 
     @GetMapping("/employee/assistance-need-decision/{id}/pdf")
     fun getAssistanceNeedDecisionPdf(
@@ -161,8 +160,9 @@ class AssistanceNeedDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -173,13 +173,11 @@ class AssistanceNeedDecisionController(
                     )
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
-            }
-            .also { Audit.ChildAssistanceNeedDecisionDownloadEmployee.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ChildAssistanceNeedDecisionDownloadEmployee.log(targetId = AuditId(id)) }
 
     @PutMapping(
         "/assistance-need-decision/{id}", // deprecated
-        "/employee/assistance-need-decision/{id}",
+        "/employee/assistance-need-decision/{id}"
     )
     fun updateAssistanceNeedDecision(
         db: Database,
@@ -187,157 +185,156 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedDecision.UPDATE,
-                        id
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedDecision.UPDATE,
+                    id
+                )
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
+                if (
+                    decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
+                    (
+                        decision.status != AssistanceNeedDecisionStatus.DRAFT ||
+                            decision.sentForDecision != null
                     )
-                    val decision = tx.getAssistanceNeedDecisionById(id)
-
-                    if (
-                        decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
-                            (decision.status != AssistanceNeedDecisionStatus.DRAFT ||
-                                decision.sentForDecision != null)
-                    ) {
-                        throw Forbidden(
-                            "Only non-sent draft or workable decisions can be edited",
-                            "UNEDITABLE_DECISION"
-                        )
-                    }
-
-                    tx.updateAssistanceNeedDecision(
-                        id,
-                        body.decision.copy(
-                            sentForDecision = decision.sentForDecision,
-                            status = decision.status,
-                            validityPeriod =
-                                if (
-                                    body.decision.assistanceLevels.contains(
-                                        AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME
-                                    )
-                                ) {
-                                    body.decision.validityPeriod
-                                } else {
-                                    body.decision.validityPeriod.copy(end = null)
-                                }
-                        )
+                ) {
+                    throw Forbidden(
+                        "Only non-sent draft or workable decisions can be edited",
+                        "UNEDITABLE_DECISION"
                     )
                 }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    body.decision.copy(
+                        sentForDecision = decision.sentForDecision,
+                        status = decision.status,
+                        validityPeriod =
+                            if (
+                                body.decision.assistanceLevels.contains(
+                                    AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME
+                                )
+                            ) {
+                                body.decision.validityPeriod
+                            } else {
+                                body.decision.validityPeriod.copy(end = null)
+                            }
+                    )
+                )
             }
-            .also { Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = AuditId(id)) }
 
     @PostMapping(
         "/assistance-need-decision/{id}/send", // deprecated
-        "/employee/assistance-need-decision/{id}/send",
+        "/employee/assistance-need-decision/{id}/send"
     )
     fun sendAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedDecision.SEND,
-                        id
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedDecision.SEND,
+                    id
+                )
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
+                if (
+                    decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
+                    (
+                        decision.status != AssistanceNeedDecisionStatus.DRAFT ||
+                            decision.sentForDecision != null
                     )
-                    val decision = tx.getAssistanceNeedDecisionById(id)
-
-                    if (
-                        decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
-                            (decision.status != AssistanceNeedDecisionStatus.DRAFT ||
-                                decision.sentForDecision != null)
-                    ) {
-                        throw Forbidden(
-                            "Only non-sent draft or workable decisions can be sent",
-                            "UNSENDABLE_DECISION"
-                        )
-                    }
-
-                    if (hasMissingFields(decision)) {
-                        throw BadRequest("Decision has missing fields", "MISSING_FIELDS")
-                    }
-
-                    if (decision.child?.id == null) {
-                        throw BadRequest("The decision must have a child")
-                    }
-
-                    tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also { process ->
-                        if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
-                            tx.insertProcessHistoryRow(
-                                processId = process.id,
-                                state = ArchivedProcessState.PREPARATION,
-                                now = clock.now(),
-                                userId = user.evakaUserId
-                            )
-                        }
-                    }
-
-                    tx.updateAssistanceNeedDecision(
-                        id,
-                        decision
-                            .copy(
-                                sentForDecision = clock.today(),
-                                status = AssistanceNeedDecisionStatus.DRAFT
-                            )
-                            .toForm(),
-                        false
+                ) {
+                    throw Forbidden(
+                        "Only non-sent draft or workable decisions can be sent",
+                        "UNSENDABLE_DECISION"
                     )
                 }
+
+                if (hasMissingFields(decision)) {
+                    throw BadRequest("Decision has missing fields", "MISSING_FIELDS")
+                }
+
+                if (decision.child?.id == null) {
+                    throw BadRequest("The decision must have a child")
+                }
+
+                tx.getArchiveProcessByAssistanceNeedDecisionId(id)?.also { process ->
+                    if (process.history.none { it.state == ArchivedProcessState.PREPARATION }) {
+                        tx.insertProcessHistoryRow(
+                            processId = process.id,
+                            state = ArchivedProcessState.PREPARATION,
+                            now = clock.now(),
+                            userId = user.evakaUserId
+                        )
+                    }
+                }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    decision
+                        .copy(
+                            sentForDecision = clock.today(),
+                            status = AssistanceNeedDecisionStatus.DRAFT
+                        ).toForm(),
+                    false
+                )
             }
-            .also { Audit.ChildAssistanceNeedDecisionSend.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedDecisionSend.log(targetId = AuditId(id)) }
 
     @PostMapping(
         "/assistance-need-decision/{id}/revert-to-unsent", // deprecated
-        "/employee/assistance-need-decision/{id}/revert-to-unsent",
+        "/employee/assistance-need-decision/{id}/revert-to-unsent"
     )
     fun revertToUnsentAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedDecision.REVERT_TO_UNSENT,
-                        id
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedDecision.REVERT_TO_UNSENT,
+                    id
+                )
+                val decision = tx.getAssistanceNeedDecisionById(id)
+
+                if (
+                    !(
+                        decision.status == AssistanceNeedDecisionStatus.DRAFT &&
+                            decision.sentForDecision != null
                     )
-                    val decision = tx.getAssistanceNeedDecisionById(id)
-
-                    if (
-                        !(decision.status == AssistanceNeedDecisionStatus.DRAFT &&
-                            decision.sentForDecision != null)
-                    ) {
-                        throw Forbidden(
-                            "Only sent draft decisions can be reverted",
-                            "UNREVERTABLE_DECISION"
-                        )
-                    }
-
-                    tx.updateAssistanceNeedDecision(
-                        id,
-                        decision.copy(sentForDecision = null).toForm(),
-                        false
+                ) {
+                    throw Forbidden(
+                        "Only sent draft decisions can be reverted",
+                        "UNREVERTABLE_DECISION"
                     )
                 }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    decision.copy(sentForDecision = null).toForm(),
+                    false
+                )
             }
-            .also { Audit.ChildAssistanceNeedDecisionRevertToUnsent.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedDecisionRevertToUnsent.log(targetId = AuditId(id)) }
 
     @GetMapping("/children/{childId}/assistance-needs/decisions")
     fun getAssistanceNeedDecisions(
@@ -345,8 +342,9 @@ class AssistanceNeedDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<AssistanceNeedDecisionBasicsResponse> {
-        return db.connect { dbc ->
+    ): List<AssistanceNeedDecisionBasicsResponse> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -373,49 +371,45 @@ class AssistanceNeedDecisionController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedDecisionsList.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @DeleteMapping(
         "/assistance-need-decision/{id}", // deprecated
-        "/employee/assistance-need-decision/{id}",
+        "/employee/assistance-need-decision/{id}"
     )
     fun deleteAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedDecision.DELETE,
-                        id
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedDecision.DELETE,
+                    id
+                )
+                deleteProcessByAssistanceNeedDecisionId(tx, id)
+                if (!tx.deleteAssistanceNeedDecision(id)) {
+                    throw NotFound(
+                        "Assistance need decision $id cannot found or cannot be deleted",
+                        "DECISION_NOT_FOUND"
                     )
-                    deleteProcessByAssistanceNeedDecisionId(tx, id)
-                    if (!tx.deleteAssistanceNeedDecision(id)) {
-                        throw NotFound(
-                            "Assistance need decision $id cannot found or cannot be deleted",
-                            "DECISION_NOT_FOUND"
-                        )
-                    }
                 }
             }
-            .also { Audit.ChildAssistanceNeedDecisionDelete.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedDecisionDelete.log(targetId = AuditId(id)) }
 
     @PostMapping(
         "/assistance-need-decision/{id}/decide", // deprecated
-        "/employee/assistance-need-decision/{id}/decide",
+        "/employee/assistance-need-decision/{id}/decide"
     )
     fun decideAssistanceNeedDecision(
         db: Database,
@@ -426,14 +420,15 @@ class AssistanceNeedDecisionController(
     ) {
         if (
             body.status == AssistanceNeedDecisionStatus.DRAFT ||
-                body.status == AssistanceNeedDecisionStatus.ANNULLED
+            body.status == AssistanceNeedDecisionStatus.ANNULLED
         ) {
             throw BadRequest(
                 "Assistance need decisions cannot be decided to be a draft or annulled"
             )
         }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -447,8 +442,8 @@ class AssistanceNeedDecisionController(
 
                     if (
                         decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
-                            decision.status == AssistanceNeedDecisionStatus.ANNULLED
+                        decision.status == AssistanceNeedDecisionStatus.REJECTED ||
+                        decision.status == AssistanceNeedDecisionStatus.ANNULLED
                     ) {
                         throw BadRequest("Already-decided decisions cannot be decided again")
                     }
@@ -466,19 +461,24 @@ class AssistanceNeedDecisionController(
                                 decision.validityPeriod.start.minusDays(1),
                                 decision.child.id
                             )
-                            tx.getNextAssistanceNeedDecisionValidFrom(
+                            tx
+                                .getNextAssistanceNeedDecisionValidFrom(
                                     decision.child.id,
                                     decision.validityPeriod.start
-                                )
-                                ?.minusDays(1)
-                        } else null
+                                )?.minusDays(1)
+                        } else {
+                            null
+                        }
 
                     tx.decideAssistanceNeedDecision(
                         id = id,
                         status = body.status,
                         decisionMade =
-                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
-                            else clock.today(),
+                            if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                                null
+                            } else {
+                                clock.today()
+                            },
                         unreadGuardianIds =
                             if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
                                 null
@@ -501,14 +501,13 @@ class AssistanceNeedDecisionController(
                         asyncJobRunner.plan(
                             tx,
                             listOf(
-                                AsyncJob.CreateAssistanceNeedDecisionPdf(id),
+                                AsyncJob.CreateAssistanceNeedDecisionPdf(id)
                             ),
                             runAt = clock.now()
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedDecisionDecide.log(
                     targetId = AuditId(id),
                     meta = mapOf("status" to body.status)
@@ -518,28 +517,26 @@ class AssistanceNeedDecisionController(
 
     @PostMapping(
         "/assistance-need-decision/{id}/mark-as-opened", // deprecated
-        "/employee/assistance-need-decision/{id}/mark-as-opened",
+        "/employee/assistance-need-decision/{id}/mark-as-opened"
     )
     fun markAssistanceNeedDecisionAsOpened(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedDecision.MARK_AS_OPENED,
-                        id
-                    )
-                    tx.markAssistanceNeedDecisionAsOpened(id)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedDecision.MARK_AS_OPENED,
+                    id
+                )
+                tx.markAssistanceNeedDecisionAsOpened(id)
             }
-            .also { Audit.ChildAssistanceNeedDecisionOpened.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedDecisionOpened.log(targetId = AuditId(id)) }
 
     @PostMapping(
         "/assistance-need-decision/{id}/update-decision-maker", // deprecated
@@ -551,48 +548,45 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER,
-                        id
-                    )
-                    val decision = tx.getAssistanceNeedDecisionById(id)
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER,
+                    id
+                )
+                val decision = tx.getAssistanceNeedDecisionById(id)
 
-                    if (
-                        decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
-                            decision.status == AssistanceNeedDecisionStatus.ANNULLED ||
-                            decision.sentForDecision == null
-                    ) {
-                        throw BadRequest(
-                            "Decision maker cannot be changed for already-decided or unsent decisions"
-                        )
-                    }
-
-                    tx.updateAssistanceNeedDecision(
-                        id,
-                        decision
-                            .copy(
-                                decisionMaker =
-                                    AssistanceNeedDecisionMaker(
-                                        employeeId = EmployeeId(user.rawId()),
-                                        title = body.title
-                                    )
-                            )
-                            .toForm(),
-                        true
+                if (
+                    decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
+                    decision.status == AssistanceNeedDecisionStatus.REJECTED ||
+                    decision.status == AssistanceNeedDecisionStatus.ANNULLED ||
+                    decision.sentForDecision == null
+                ) {
+                    throw BadRequest(
+                        "Decision maker cannot be changed for already-decided or unsent decisions"
                     )
                 }
+
+                tx.updateAssistanceNeedDecision(
+                    id,
+                    decision
+                        .copy(
+                            decisionMaker =
+                                AssistanceNeedDecisionMaker(
+                                    employeeId = EmployeeId(user.rawId()),
+                                    title = body.title
+                                )
+                        ).toForm(),
+                    true
+                )
             }
-            .also {
-                Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = AuditId(id))
-            }
-    }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = AuditId(id))
+        }
 
     @GetMapping(
         "/assistance-need-decision/{id}/decision-maker-option", // deprecated
@@ -602,9 +596,10 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId,
-    ): List<Employee> {
-        return db.connect { dbc ->
+        @PathVariable id: AssistanceNeedDecisionId
+    ): List<Employee> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -619,14 +614,12 @@ class AssistanceNeedDecisionController(
                         featureConfig.assistanceDecisionMakerRoles
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(
                     targetId = AuditId(id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PostMapping(
         "/assistance-need-decision/{id}/annul", // deprecated
@@ -642,7 +635,8 @@ class AssistanceNeedDecisionController(
         if (body.reason.isEmpty()) {
             throw BadRequest("Reason must not be empty")
         }
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -657,26 +651,34 @@ class AssistanceNeedDecisionController(
                     }
                     tx.annulAssistanceNeedDecision(id, body.reason)
                 }
-            }
-            .also { Audit.ChildAssistanceNeedDecisionAnnul.log(targetId = AuditId(id)) }
+            }.also { Audit.ChildAssistanceNeedDecisionAnnul.log(targetId = AuditId(id)) }
     }
 
-    private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {
-        return decision.selectedUnit == null ||
-            (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) &&
-                decision.validityPeriod.end == null) ||
+    private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean =
+        decision.selectedUnit == null ||
+            (
+                decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) &&
+                    decision.validityPeriod.end == null
+            ) ||
             decision.pedagogicalMotivation.isNullOrEmpty() ||
             decision.guardiansHeardOn == null ||
-            ((decision.preparedBy1?.employeeId == null ||
-                decision.preparedBy1.title.isNullOrEmpty()) &&
-                (decision.preparedBy2?.employeeId == null ||
-                    decision.preparedBy2.title.isNullOrEmpty())) ||
+            (
+                (
+                    decision.preparedBy1?.employeeId == null ||
+                        decision.preparedBy1.title.isNullOrEmpty()
+                ) &&
+                    (
+                        decision.preparedBy2?.employeeId == null ||
+                            decision.preparedBy2.title.isNullOrEmpty()
+                    )
+            ) ||
             decision.decisionMaker?.employeeId == null ||
             decision.guardianInfo.any { !it.isHeard || it.details.isNullOrEmpty() } ||
             decision.assistanceLevels.isEmpty() ||
-            (decision.otherRepresentativeHeard &&
-                decision.otherRepresentativeDetails.isNullOrEmpty())
-    }
+            (
+                decision.otherRepresentativeHeard &&
+                    decision.otherRepresentativeDetails.isNullOrEmpty()
+            )
 
     data class AssistanceNeedDecisionBasicsResponse(
         val decision: AssistanceNeedDecisionBasics,
@@ -689,9 +691,15 @@ class AssistanceNeedDecisionController(
         val hasMissingFields: Boolean
     )
 
-    data class DecideAssistanceNeedDecisionRequest(val status: AssistanceNeedDecisionStatus)
+    data class DecideAssistanceNeedDecisionRequest(
+        val status: AssistanceNeedDecisionStatus
+    )
 
-    data class UpdateDecisionMakerForAssistanceNeedDecisionRequest(val title: String)
+    data class UpdateDecisionMakerForAssistanceNeedDecisionRequest(
+        val title: String
+    )
 
-    data class AnnulAssistanceNeedDecisionRequest(val reason: String)
+    data class AnnulAssistanceNeedDecisionRequest(
+        val reason: String
+    )
 }

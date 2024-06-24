@@ -70,16 +70,18 @@ sealed interface CitizenMessageThread {
         val hasUnreadMessages: Boolean
     ) : CitizenMessageThread {
         companion object {
-            fun fromMessageThread(accountId: MessageAccountId, messageThread: MessageThread) =
-                Redacted(
-                    messageThread.id,
-                    messageThread.urgent,
-                    messageThread.messages.firstOrNull()?.sender,
-                    messageThread.messages.lastOrNull()?.sentAt,
-                    messageThread.messages
-                        .findLast { message -> message.sender.id != accountId }
-                        ?.readAt == null
-                )
+            fun fromMessageThread(
+                accountId: MessageAccountId,
+                messageThread: MessageThread
+            ) = Redacted(
+                messageThread.id,
+                messageThread.urgent,
+                messageThread.messages.firstOrNull()?.sender,
+                messageThread.messages.lastOrNull()?.sentAt,
+                messageThread.messages
+                    .findLast { message -> message.sender.id != accountId }
+                    ?.readAt == null
+            )
         }
     }
 
@@ -134,7 +136,9 @@ data class MessageReceiversResponse(
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class MessageReceiver(val type: MessageRecipientType) {
+sealed class MessageReceiver(
+    val type: MessageRecipientType
+) {
     abstract val id: Id<*>
     abstract val name: String
 
@@ -144,8 +148,10 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
         val receivers: List<UnitInArea>
     ) : MessageReceiver(MessageRecipientType.AREA)
 
-    data class UnitInArea(override val id: DaycareId, override val name: String) :
-        MessageReceiver(MessageRecipientType.UNIT)
+    data class UnitInArea(
+        override val id: DaycareId,
+        override val name: String
+    ) : MessageReceiver(MessageRecipientType.UNIT)
 
     data class Unit(
         override val id: DaycareId,
@@ -156,14 +162,18 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
     data class Group(
         override val id: GroupId,
         override val name: String,
-        val receivers: List<Child>,
+        val receivers: List<Child>
     ) : MessageReceiver(MessageRecipientType.GROUP)
 
-    data class Child(override val id: ChildId, override val name: String) :
-        MessageReceiver(MessageRecipientType.CHILD)
+    data class Child(
+        override val id: ChildId,
+        override val name: String
+    ) : MessageReceiver(MessageRecipientType.CHILD)
 
-    data class Citizen(override val id: PersonId, override val name: String) :
-        MessageReceiver(MessageRecipientType.CITIZEN)
+    data class Citizen(
+        override val id: PersonId,
+        override val name: String
+    ) : MessageReceiver(MessageRecipientType.CITIZEN)
 }
 
 enum class AccountType : DatabaseEnum {
@@ -185,7 +195,11 @@ enum class AccountType : DatabaseEnum {
     override val sqlType: String = "message_account_type"
 }
 
-data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
+data class MessageAccount(
+    val id: MessageAccountId,
+    val name: String,
+    val type: AccountType
+)
 
 data class Group(
     @PropagateNull val id: GroupId,
@@ -207,7 +221,10 @@ enum class MessageRecipientType {
     CITIZEN
 }
 
-data class MessageRecipient(val type: MessageRecipientType, val id: Id<*>) {
+data class MessageRecipient(
+    val type: MessageRecipientType,
+    val id: Id<*>
+) {
     fun toAreaId(): AreaId? = if (type == MessageRecipientType.AREA) AreaId(id.raw) else null
 
     fun toUnitId(): DaycareId? = if (type == MessageRecipientType.UNIT) DaycareId(id.raw) else null

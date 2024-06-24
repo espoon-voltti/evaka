@@ -109,10 +109,15 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
+
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
+
     @Autowired private lateinit var parentshipController: ParentshipController
+
     @Autowired private lateinit var partnershipsController: PartnershipsController
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired
     private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
@@ -1184,7 +1189,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             generator.generateNewDecisionsForChild(
                 tx,
-                testChild_1.id,
+                testChild_1.id
             )
         }
 
@@ -1324,8 +1329,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 { it.validDuring },
                 { it.difference },
                 { it.children.map { child -> child.placement.unitId } }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(testDaycare.id)),
                 Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id))
             )
@@ -1347,8 +1351,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 { it.validDuring },
                 { it.difference },
                 { it.children.map { child -> child.placement.type } }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(DAYCARE)),
                 Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(DAYCARE_PART_TIME))
             )
@@ -1372,8 +1375,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 { it.validDuring },
                 { it.difference },
                 { it.children.map { child -> child.serviceNeed } }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1.asDateRange(),
                     emptySet<FeeDecisionDifference>(),
@@ -1408,8 +1410,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         .map { child -> Pair(child.child.dateOfBirth, child.siblingDiscount) }
                         .sortedBy { pair -> pair.first }
                 }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
                     emptySet<FeeDecisionDifference>(),
@@ -1451,10 +1452,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')"
-                )
-                .bind("endDate", subPeriod1.end)
+                ).bind("endDate", subPeriod1.end)
                 .updateExactlyOne()
             tx.insert(
                 FeeThresholds(
@@ -1571,7 +1572,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
             @Suppress("DEPRECATION")
             tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
-            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM placement").execute()
+            @Suppress("DEPRECATION")
+            tx.createUpdate("DELETE FROM placement").execute()
         }
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE_PART_TIME, testDaycare2.id)
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
@@ -2741,39 +2743,38 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertIncome(adultId = testAdult_1.id, amount = 0, period = period)
         createFeeDecisionFixture(
-                status = FeeDecisionStatus.SENT,
-                decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
-                period = period,
-                feeThresholds = oldTestFeeThresholds.getFeeDecisionThresholds(2),
-                headOfFamilyIncome =
-                    DecisionIncome(
-                        effect = IncomeEffect.INCOME,
-                        data = mapOf("MAIN_INCOME" to 0),
-                        totalIncome = 0,
-                        totalExpenses = 0,
-                        total = 0,
-                        worksAtECHA = false
-                    ),
-                children =
-                    listOf(
-                        createFeeDecisionChildFixture(
-                            childId = testChild_1.id,
-                            dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
-                            placementType = DAYCARE,
-                            serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                            baseFee = 0,
-                            fee = 0
-                        )
+            status = FeeDecisionStatus.SENT,
+            decisionType = FeeDecisionType.NORMAL,
+            headOfFamilyId = testAdult_1.id,
+            period = period,
+            feeThresholds = oldTestFeeThresholds.getFeeDecisionThresholds(2),
+            headOfFamilyIncome =
+                DecisionIncome(
+                    effect = IncomeEffect.INCOME,
+                    data = mapOf("MAIN_INCOME" to 0),
+                    totalIncome = 0,
+                    totalExpenses = 0,
+                    total = 0,
+                    worksAtECHA = false
+                ),
+            children =
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = DAYCARE,
+                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                        baseFee = 0,
+                        fee = 0
                     )
-            )
-            .let { fixture ->
-                db.transaction { tx ->
-                    tx.upsertFeeDecisions(listOf(fixture))
-                    generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-                }
+                )
+        ).let { fixture ->
+            db.transaction { tx ->
+                tx.upsertFeeDecisions(listOf(fixture))
+                generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
             }
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(2, decisions.size)
@@ -3189,7 +3190,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, getAllFeeDecisions().size)
     }
 
-    private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
+    private fun assertEqualEnoughDecisions(
+        expected: FeeDecision,
+        actual: FeeDecision
+    ) {
         val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(
@@ -3199,7 +3203,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun assertEqualEnoughDecisions(expected: List<FeeDecision>, actual: List<FeeDecision>) {
+    private fun assertEqualEnoughDecisions(
+        expected: List<FeeDecision>,
+        actual: List<FeeDecision>
+    ) {
         val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(
@@ -3214,8 +3221,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         period: DateRange,
         type: fi.espoo.evaka.placement.PlacementType,
         daycareId: DaycareId
-    ): PlacementId {
-        return db.transaction { tx ->
+    ): PlacementId =
+        db.transaction { tx ->
             tx.insert(
                 DevPlacement(
                     type = type,
@@ -3226,7 +3233,6 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
         }
-    }
 
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
@@ -3247,7 +3253,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertGuardianship(guardian: PersonId, childIds: List<ChildId>) {
+    private fun insertGuardianship(
+        guardian: PersonId,
+        childIds: List<ChildId>
+    ) {
         db.transaction { tx ->
             childIds.forEach { childId -> tx.insertGuardian(guardian, childId) }
         }
@@ -3325,7 +3334,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertEchaIncome(adultId: PersonId, period: DateRange) {
+    private fun insertEchaIncome(
+        adultId: PersonId,
+        period: DateRange
+    ) {
         db.transaction { tx ->
             tx.insert(
                 DevIncome(
@@ -3343,11 +3355,16 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun deleteIncomes() {
         db.transaction { tx ->
-            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM income").execute()
+            @Suppress("DEPRECATION")
+            tx.createUpdate("DELETE FROM income").execute()
         }
     }
 
-    private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
+    private fun insertFeeAlteration(
+        personId: PersonId,
+        amount: Double,
+        period: DateRange
+    ) {
         db.transaction { tx ->
             tx.insert(
                 DevFeeAlteration(
@@ -3365,15 +3382,16 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx -> tx.createQuery(feeDecisionQuery()).toList<FeeDecision>() }
+        return db
+            .read { tx -> tx.createQuery(feeDecisionQuery()).toList<FeeDecision>() }
             .shuffled() // randomize order to expose assumptions
     }
 
     private fun getFeeDecisions(headOfFamilyId: PersonId): List<FeeDecision> {
         val headPredicate = Predicate { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
-        return db.read { tx ->
+        return db
+            .read { tx ->
                 tx.createQuery(feeDecisionQuery(headPredicate)).toList<FeeDecision>()
-            }
-            .shuffled() // randomize order to expose assumptions
+            }.shuffled() // randomize order to expose assumptions
     }
 }

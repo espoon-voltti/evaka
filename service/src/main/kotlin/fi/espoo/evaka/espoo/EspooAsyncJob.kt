@@ -12,7 +12,9 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 
 sealed interface EspooAsyncJob : AsyncJobPayload {
-    data class SendBiTable(val table: EspooBiTable) : EspooAsyncJob {
+    data class SendBiTable(
+        val table: EspooBiTable
+    ) : EspooAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -26,7 +28,10 @@ sealed interface EspooAsyncJob : AsyncJobPayload {
     }
 }
 
-class EspooAsyncJobRegistration(runner: AsyncJobRunner<EspooAsyncJob>, espooBiJob: EspooBiJob) {
+class EspooAsyncJobRegistration(
+    runner: AsyncJobRunner<EspooAsyncJob>,
+    espooBiJob: EspooBiJob
+) {
     init {
         espooBiJob.let { runner.registerHandler(it::sendBiTable) }
     }

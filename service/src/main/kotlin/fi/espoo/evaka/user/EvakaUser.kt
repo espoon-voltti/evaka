@@ -18,4 +18,8 @@ enum class EvakaUserType : DatabaseEnum {
     override val sqlType: String = "evaka_user_type"
 }
 
-data class EvakaUser(@PropagateNull val id: EvakaUserId, val name: String, val type: EvakaUserType)
+data class EvakaUser(
+    @PropagateNull val id: EvakaUserId,
+    val name: String,
+    val type: EvakaUserType
+)

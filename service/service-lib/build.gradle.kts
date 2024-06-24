@@ -38,5 +38,9 @@ dependencies {
 }
 
 ktlint {
-    version.set(libs.versions.ktlint.asProvider().get())
+    version.set(
+        libs.versions.ktlint
+            .asProvider()
+            .get()
+    )
 }

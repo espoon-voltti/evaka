@@ -28,18 +28,28 @@ object Tracing {
 @Suppress("NOTHING_TO_INLINE")
 inline infix fun <T> Tag<T>.withValue(value: T) = TagValue(this, value)
 
-class ToStringTag<T>(key: String) : AbstractTag<T>(key) {
-    override fun set(span: Span, tagValue: T) {
+class ToStringTag<T>(
+    key: String
+) : AbstractTag<T>(key) {
+    override fun set(
+        span: Span,
+        tagValue: T
+    ) {
         span.setTag(key, tagValue.toString())
     }
 }
 
-data class TagValue<T>(val tag: Tag<T>, val value: T)
+data class TagValue<T>(
+    val tag: Tag<T>,
+    val value: T
+)
 
-fun <T> SpanBuilder.withTag(tagValue: TagValue<T>): SpanBuilder =
-    withTag(tagValue.tag, tagValue.value)
+fun <T> SpanBuilder.withTag(tagValue: TagValue<T>): SpanBuilder = withTag(tagValue.tag, tagValue.value)
 
-inline fun <T> Tracer.withSpan(span: Span, crossinline f: () -> T): T =
+inline fun <T> Tracer.withSpan(
+    span: Span,
+    crossinline f: () -> T
+): T =
     try {
         activateSpan(span).use { f() }
     } catch (e: Exception) {

@@ -36,8 +36,7 @@ data class HasGroupRole(
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    fun withUnitProviderTypes(vararg allOf: ProviderType) =
-        copy(unitProviderTypes = allOf.toEnumSet())
+    fun withUnitProviderTypes(vararg allOf: ProviderType) = copy(unitProviderTypes = allOf.toEnumSet())
 
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
         when (ctx.user) {
@@ -59,22 +58,22 @@ SELECT EXISTS (
     AND daycare.enabled_pilot_features @> ${bind(unitFeatures.toSet())}
     ${if (unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(unitProviderTypes.toSet())})" else ""}
 )
-                """
-                                .trimIndent()
+                            """.trimIndent()
                         )
-                    }
-                    .exactlyOne<Boolean>()
+                    }.exactlyOne<Boolean>()
             else -> false
         }
 
-    private fun <T : Id<*>> rule(
-        getGroupRoles: GetGroupRoles
-    ): DatabaseActionRule.Scoped<T, HasGroupRole> =
+    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles): DatabaseActionRule.Scoped<T, HasGroupRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getGroupRoles))
 
-    private class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) :
-        DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
-        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+    private class Query<T : Id<*>>(
+        private val getGroupRoles: GetGroupRoles
+    ) : DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
+        override fun cacheKey(
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime
+        ): Any =
             when (user) {
                 is AuthenticatedUser.Employee -> QuerySql { getGroupRoles(user, now) }
                 else -> Pair(user, now)
@@ -91,14 +90,12 @@ SELECT EXISTS (
                         .createQuery {
                             sql(
                                 """
-                    SELECT id, role, unit_features, unit_provider_type
-                    FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
-                    WHERE ${predicate(targetCheck.forTable("fragment"))}
-                    """
-                                    .trimIndent()
+                                SELECT id, role, unit_features, unit_provider_type
+                                FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
+                                WHERE ${predicate(targetCheck.forTable("fragment"))}
+                                """.trimIndent()
                             )
-                        }
-                        .mapTo<IdRoleFeatures>()
+                        }.mapTo<IdRoleFeatures>()
                         .useIterable { rows ->
                             rows.fold(
                                 targets.associateTo(linkedMapOf()) {
@@ -108,8 +105,7 @@ SELECT EXISTS (
                                 acc[target]?.plusAssign(result)
                                 acc
                             }
-                        }
-                        .mapValues { (_, queryResult) -> Deferred(queryResult) }
+                        }.mapValues { (_, queryResult) -> Deferred(queryResult) }
                 }
                 else -> emptyMap()
             }
@@ -123,28 +119,36 @@ SELECT EXISTS (
                     QuerySql {
                         sql(
                             """
-                    SELECT id
-                    FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
-                    WHERE role = ANY(${bind(params.oneOf.toSet())})
-                    AND unit_features @> ${bind(params.unitFeatures.toSet())}
-                    ${if (params.unitProviderTypes != null) "AND unit_provider_type = ANY(${bind(params.unitProviderTypes.toSet())})" else ""}
-                        """
-                                .trimIndent()
+                            SELECT id
+                            FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
+                            WHERE role = ANY(${bind(params.oneOf.toSet())})
+                            AND unit_features @> ${bind(params.unitFeatures.toSet())}
+                            ${if (params.unitProviderTypes != null) {
+                                "AND unit_provider_type = ANY(${bind(
+                                    params.unitProviderTypes.toSet()
+                                )})"
+                            } else {
+                                ""
+                            }}
+                            """.trimIndent()
                         )
                     }
                 else -> null
             }
     }
 
-    private data class Deferred(private val queryResult: Set<RoleAndFeatures>) :
-        DatabaseActionRule.Deferred<HasGroupRole> {
+    private data class Deferred(
+        private val queryResult: Set<RoleAndFeatures>
+    ) : DatabaseActionRule.Deferred<HasGroupRole> {
         override fun evaluate(params: HasGroupRole): AccessControlDecision =
             if (
                 queryResult.any {
                     params.oneOf.contains(it.role) &&
                         it.unitFeatures.containsAll(params.unitFeatures) &&
-                        (params.unitProviderTypes == null ||
-                            params.unitProviderTypes.contains(it.unitProviderType))
+                        (
+                            params.unitProviderTypes == null ||
+                                params.unitProviderTypes.contains(it.unitProviderType)
+                        )
                 }
             ) {
                 AccessControlDecision.Permitted(params)
@@ -161,8 +165,7 @@ SELECT child_id AS id, role, enabled_pilot_features AS unit_features, provider_t
 FROM employee_child_group_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -170,10 +173,9 @@ WHERE employee_id = ${bind(user.id)}
         editable: Boolean = false,
         deletable: Boolean = false,
         publishable: Boolean = false
-    ) =
-        rule<ChildDocumentId> { user, now ->
-            sql(
-                """
+    ) = rule<ChildDocumentId> { user, now ->
+        sql(
+            """
 SELECT child_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM child_document
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
@@ -182,10 +184,9 @@ WHERE employee_id = ${bind(user.id)}
 ${if (editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.editable })}::child_document_status[])" else ""}
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
-            """
-                    .trimIndent()
-            )
-        }
+            """.trimIndent()
+        )
+    }
 
     fun inPlacementGroupOfDuplicateChildOfHojksChildDocument() =
         rule<ChildDocumentId> { user, now ->
@@ -198,8 +199,7 @@ JOIN person ON person.id = child_document.child_id
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -212,8 +212,7 @@ FROM curriculum_document
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -233,8 +232,7 @@ WHERE employee_id = ${bind(user.id)} AND ct.type = 'DAYCARE' AND cd.created = (
     JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
     WHERE child_id = cd.child_id AND curriculum_template.type = ct.type
 )
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -249,8 +247,7 @@ JOIN person ON person.id = curriculum_document.child_id
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)} AND curriculum_template.type = 'PRESCHOOL'
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 }

@@ -23,32 +23,31 @@ private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/integration/titania")
-class TitaniaController(private val titaniaService: TitaniaService) {
-
+class TitaniaController(
+    private val titaniaService: TitaniaService
+) {
     @PutMapping("/working-time-events")
     fun updateWorkingTimeEvents(
         @RequestBody request: UpdateWorkingTimeEventsRequest,
         user: AuthenticatedUser.Integration,
         db: Database
-    ): UpdateWorkingTimeEventsResponse {
-        return db.connect { dbc ->
+    ): UpdateWorkingTimeEventsResponse =
+        db.connect { dbc ->
             lateinit var result: UpdateWorkingTimeEventsServiceResponse
             dbc.transaction { tx -> result = titaniaService.updateWorkingTimeEvents(tx, request) }
             result.createdEmployees.forEach { Audit.EmployeeCreate.log(targetId = AuditId(it)) }
             result.updateWorkingTimeEventsResponse
         }
-    }
 
     @PostMapping("/stamped-working-time-events")
     fun getStampedWorkingTimeEvents(
         @RequestBody request: GetStampedWorkingTimeEventsRequest,
         user: AuthenticatedUser.Integration,
         db: Database
-    ): GetStampedWorkingTimeEventsResponse {
-        return db.connect { dbc ->
+    ): GetStampedWorkingTimeEventsResponse =
+        db.connect { dbc ->
             dbc.read { tx -> titaniaService.getStampedWorkingTimeEvents(tx, request) }
         }
-    }
 
     @ExceptionHandler(value = [TitaniaException::class])
     fun titaniaExceptionHandler(
@@ -61,7 +60,8 @@ class TitaniaController(private val titaniaService: TitaniaService) {
             HttpStatus.Series.SERVER_ERROR -> logger.error { message }
             else -> logger.info { message }
         }
-        return ResponseEntity.status(ex.status)
+        return ResponseEntity
+            .status(ex.status)
             .body(TitaniaErrorResponse(faultactor = req.requestURI, detail = ex.detail))
     }
 }

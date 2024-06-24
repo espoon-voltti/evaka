@@ -66,12 +66,19 @@ class JamixService(
         asyncJobRunner.registerHandler(::syncDiets)
     }
 
-    fun planOrders(dbc: Database.Connection, clock: EvakaClock) {
+    fun planOrders(
+        dbc: Database.Connection,
+        clock: EvakaClock
+    ) {
         if (client == null) error("Cannot plan Jamix order: JamixEnv is not configured")
         planJamixOrderJobs(dbc, asyncJobRunner, client, clock.now())
     }
 
-    fun sendOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendJamixOrder) {
+    fun sendOrder(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendJamixOrder
+    ) {
         if (client == null) error("Cannot send Jamix order: JamixEnv is not configured")
         try {
             createAndSendJamixOrder(
@@ -90,7 +97,10 @@ class JamixService(
         }
     }
 
-    fun planDietSync(db: Database.Connection, clock: EvakaClock) {
+    fun planDietSync(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncJamixDiets::class)))
             asyncJobRunner.plan(
@@ -102,7 +112,11 @@ class JamixService(
         }
     }
 
-    fun syncDiets(db: Database.Connection, clock: EvakaClock, job: AsyncJob.SyncJamixDiets) {
+    fun syncDiets(
+        db: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SyncJamixDiets
+    ) {
         if (client == null) error("Cannot sync diet list: JamixEnv is not configured")
         val warningEmails =
             fetchAndUpdateJamixDiets(client, db, clock, emailEnv.sender(Language.fi))
@@ -140,22 +154,21 @@ fun fetchAndUpdateJamixDiets(
     return db.transaction { tx ->
         val nulledChildren = tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
         if (nulledChildren.isNotEmpty()) {
-                warner(
-                    "Jamix diet list update caused ${nulledChildren.size} child special diets to be set to null"
-                )
-                generateSpecialDietNullificationWarningEmails(
-                    tx,
-                    clock,
-                    nulledChildren,
-                    fromAddress
-                )
-            } else {
-                emptyList()
-            }
-            .also {
-                val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
-                logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
-            }
+            warner(
+                "Jamix diet list update caused ${nulledChildren.size} child special diets to be set to null"
+            )
+            generateSpecialDietNullificationWarningEmails(
+                tx,
+                clock,
+                nulledChildren,
+                fromAddress
+            )
+        } else {
+            emptyList()
+        }.also {
+            val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
+            logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
+        }
     }
 }
 
@@ -214,14 +227,16 @@ fun fetchAndUpdateJamixTextures(
     val texturesFromJamix =
         client.getTextures().map { it -> MealTexture(it.modelId, it.fields.textureName) }
 
-    if (texturesFromJamix.isEmpty())
+    if (texturesFromJamix.isEmpty()) {
         error("Refusing to sync empty meal textures list into database")
+    }
     db.transaction { tx ->
         val nulledChildrenCount = tx.resetMealTexturesNotContainedWithin(texturesFromJamix)
-        if (nulledChildrenCount != 0)
+        if (nulledChildrenCount != 0) {
             warner(
                 "Jamix meal texture list update caused $nulledChildrenCount child meal texture to be set to null"
             )
+        }
         val deletedMealTexturesCount = tx.setMealTextures(texturesFromJamix)
         logger.info(
             "Deleted: $deletedMealTexturesCount meal textures, inserted ${texturesFromJamix.size}"
@@ -338,8 +353,9 @@ private fun getChildInfos(
                 date = date,
                 childHasShiftCare = child.hasShiftCare
             )
-        )
+        ) {
             return@mapNotNull null
+        }
 
         MealReportChildInfo(
             placementType = child.placementType,
@@ -357,7 +373,10 @@ private fun getChildInfos(
 }
 
 interface JamixClient {
-    data class Customer(val customerId: Int, val customerNumber: Int)
+    data class Customer(
+        val customerId: Int,
+        val customerNumber: Int
+    )
 
     fun getCustomers(): List<Customer>
 
@@ -383,21 +402,25 @@ interface JamixClient {
     fun getTextures(): List<JamixTexture>
 }
 
-class JamixHttpClient(private val env: JamixEnv, private val jsonMapper: JsonMapper) : JamixClient {
+class JamixHttpClient(
+    private val env: JamixEnv,
+    private val jsonMapper: JsonMapper
+) : JamixClient {
     private val fuel = FuelManager()
 
-    override fun getCustomers(): List<JamixClient.Customer> =
-        request(Method.GET, env.url.resolve("customers"))
+    override fun getCustomers(): List<JamixClient.Customer> = request(Method.GET, env.url.resolve("customers"))
 
-    override fun createMealOrder(order: JamixClient.MealOrder): Unit =
-        request(Method.POST, env.url.resolve("v2/mealorders"), order)
+    override fun createMealOrder(order: JamixClient.MealOrder): Unit = request(Method.POST, env.url.resolve("v2/mealorders"), order)
 
     override fun getDiets(): List<JamixSpecialDiet> = request(Method.GET, env.url.resolve("diets"))
 
-    override fun getTextures(): List<JamixTexture> =
-        request(Method.GET, env.url.resolve("textures"))
+    override fun getTextures(): List<JamixTexture> = request(Method.GET, env.url.resolve("textures"))
 
-    private inline fun <reified R> request(method: Method, url: URI, body: Any? = null): R {
+    private inline fun <reified R> request(
+        method: Method,
+        url: URI,
+        body: Any? = null
+    ): R {
         val (request, response, result) =
             fuel
                 .request(method, url.toString())
@@ -435,20 +458,28 @@ private fun LocalDate.weekSpan(): FiniteDateRange {
     return FiniteDateRange(start, end)
 }
 
-fun cleanupJamixDietList(specialDietList: List<JamixSpecialDiet>): List<SpecialDiet> {
-    return specialDietList.map {
+fun cleanupJamixDietList(specialDietList: List<JamixSpecialDiet>): List<SpecialDiet> =
+    specialDietList.map {
         SpecialDiet(it.modelId, cleanupJamixString(it.fields.dietAbbreviation))
     }
-}
 
-fun cleanupJamixString(s: String): String {
-    return s.replace(Regex("\\s+"), " ").trim()
-}
+fun cleanupJamixString(s: String): String = s.replace(Regex("\\s+"), " ").trim()
 
-data class JamixSpecialDiet(val modelId: Int, val fields: JamixSpecialDietFields)
+data class JamixSpecialDiet(
+    val modelId: Int,
+    val fields: JamixSpecialDietFields
+)
 
-data class JamixSpecialDietFields(val dietName: String, val dietAbbreviation: String)
+data class JamixSpecialDietFields(
+    val dietName: String,
+    val dietAbbreviation: String
+)
 
-data class JamixTexture(val modelId: Int, val fields: JamixTextureFields)
+data class JamixTexture(
+    val modelId: Int,
+    val fields: JamixTextureFields
+)
 
-data class JamixTextureFields(val textureName: String)
+data class JamixTextureFields(
+    val textureName: String
+)

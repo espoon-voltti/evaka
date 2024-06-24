@@ -38,19 +38,33 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private val tracer: Tracer,
     private val registration: Registration<T>
 ) : AutoCloseable {
-    data class Id<T : Any>(val jobType: KClass<T>, val pool: String) {
+    data class Id<T : Any>(
+        val jobType: KClass<T>,
+        val pool: String
+    ) {
         override fun toString(): String = "${jobType.simpleName}.$pool"
     }
 
-    private data class Metrics(val executedJobs: Counter, val failedJobs: Counter)
+    private data class Metrics(
+        val executedJobs: Counter,
+        val failedJobs: Counter
+    )
 
-    data class Config(val concurrency: Int = 1, val throttleInterval: Duration? = null)
+    data class Config(
+        val concurrency: Int = 1,
+        val throttleInterval: Duration? = null
+    )
 
     data class Handler<T : AsyncJobPayload>(
         val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
     ) {
-        fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
-            @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T)
+        fun run(
+            db: Database,
+            clock: EvakaClock,
+            msg: AsyncJobPayload
+        ) =
+            @Suppress("UNCHECKED_CAST")
+            handler(db, clock, msg as T)
     }
 
     interface Registration<T : AsyncJobPayload> {
@@ -100,17 +114,20 @@ class AsyncJobPool<T : AsyncJobPayload>(
         get() = executor.activeCount
 
     fun registerMeters(meterRegistry: MeterRegistry) {
-        Gauge.builder("asyncJobWorkersActive") { activeWorkerCount }
+        Gauge
+            .builder("asyncJobWorkersActive") { activeWorkerCount }
             .tag("jobType", id.jobType.simpleName!!)
             .tag("pool", id.pool)
             .register(meterRegistry)
         metrics.set(
             Metrics(
-                Counter.builder("asyncJobsExecuted")
+                Counter
+                    .builder("asyncJobsExecuted")
                     .tag("jobType", id.jobType.simpleName!!)
                     .tag("pool", id.pool)
                     .register(meterRegistry),
-                Counter.builder("asyncJobsFailed")
+                Counter
+                    .builder("asyncJobsFailed")
                     .tag("jobType", id.jobType.simpleName!!)
                     .tag("pool", id.pool)
                     .register(meterRegistry)
@@ -118,10 +135,15 @@ class AsyncJobPool<T : AsyncJobPayload>(
         )
     }
 
-    fun runPendingJobs(clock: EvakaClock, maxCount: Int) =
-        executor.execute { runWorker(clock, maxCount) }
+    fun runPendingJobs(
+        clock: EvakaClock,
+        maxCount: Int
+    ) = executor.execute { runWorker(clock, maxCount) }
 
-    fun runPendingJobsSync(clock: EvakaClock, maxCount: Int): Int {
+    fun runPendingJobsSync(
+        clock: EvakaClock,
+        maxCount: Int
+    ): Int {
         val task = FutureTask { runWorker(clock, maxCount) }
         while (!executor.queue.offer(task)) {
             // no available workers
@@ -133,51 +155,53 @@ class AsyncJobPool<T : AsyncJobPayload>(
         return task.get()
     }
 
-    private fun runWorker(clock: EvakaClock, maxCount: Int) =
-        tracer.withDetachedSpan("asyncjob.worker $fullName") {
-            Database(jdbi, tracer).connect { dbc ->
-                dbc.transaction { it.upsertPermit(this.id) }
-                var executed = 0
-                while (maxCount - executed > 0 && !executor.isTerminating) {
-                    val job =
-                        dbc.transaction { tx ->
-                            tx.setStatementTimeout(Duration.ofSeconds(120))
-                            // In the worst case we need to wait for the duration of (N service
-                            // instances) * (M workers per pool) * (throttle interval) if every
-                            // worker in the cluster is queuing and every one sleeps.
-                            //
-                            // The value here is just a guess that should be long enough in all
-                            // valid cases, and we get a loud exception if this assumption is broken
-                            tx.setLockTimeout(Duration.ofSeconds(60))
-                            val permit = tx.claimPermit(this.id)
-                            Thread.sleep(
-                                Duration.between(
-                                    clock.now().toInstant(),
-                                    permit.availableAt.toInstant()
-                                )
+    private fun runWorker(
+        clock: EvakaClock,
+        maxCount: Int
+    ) = tracer.withDetachedSpan("asyncjob.worker $fullName") {
+        Database(jdbi, tracer).connect { dbc ->
+            dbc.transaction { it.upsertPermit(this.id) }
+            var executed = 0
+            while (maxCount - executed > 0 && !executor.isTerminating) {
+                val job =
+                    dbc.transaction { tx ->
+                        tx.setStatementTimeout(Duration.ofSeconds(120))
+                        // In the worst case we need to wait for the duration of (N service
+                        // instances) * (M workers per pool) * (throttle interval) if every
+                        // worker in the cluster is queuing and every one sleeps.
+                        //
+                        // The value here is just a guess that should be long enough in all
+                        // valid cases, and we get a loud exception if this assumption is broken
+                        tx.setLockTimeout(Duration.ofSeconds(60))
+                        val permit = tx.claimPermit(this.id)
+                        Thread.sleep(
+                            Duration.between(
+                                clock.now().toInstant(),
+                                permit.availableAt.toInstant()
                             )
-                            tx.claimJob(clock.now(), registration.jobTypes())?.also {
-                                tx.updatePermit(this.id, clock.now().plus(throttleInterval))
-                            }
-                        } ?: break
-                    tracer.withDetachedSpan(
-                        "asyncjob.run ${job.jobType.name}",
-                        Tracing.asyncJobId withValue job.jobId,
-                        Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts,
-                    ) {
-                        runPendingJob(dbc, clock, job)
-                    }
-                    metrics.get()?.executedJobs?.increment()
-                    executed += 1
+                        )
+                        tx.claimJob(clock.now(), registration.jobTypes())?.also {
+                            tx.updatePermit(this.id, clock.now().plus(throttleInterval))
+                        }
+                    } ?: break
+                tracer.withDetachedSpan(
+                    "asyncjob.run ${job.jobType.name}",
+                    Tracing.asyncJobId withValue job.jobId,
+                    Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts
+                ) {
+                    runPendingJob(dbc, clock, job)
                 }
-                executed
+                metrics.get()?.executedJobs?.increment()
+                executed += 1
             }
+            executed
         }
+    }
 
     private fun runPendingJob(
         db: Database.Connection,
         clock: EvakaClock,
-        job: ClaimedJobRef<out T>,
+        job: ClaimedJobRef<out T>
     ) {
         val logMeta =
             mapOf(

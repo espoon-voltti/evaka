@@ -6,7 +6,11 @@ package fi.espoo.evaka.varda.new
 
 import java.net.URI
 
-fun URI.copy(host: String? = null, port: Int? = null, path: String? = null): URI =
+fun URI.copy(
+    host: String? = null,
+    port: Int? = null,
+    path: String? = null
+): URI =
     URI(
         this.scheme,
         this.userInfo,
@@ -17,5 +21,4 @@ fun URI.copy(host: String? = null, port: Int? = null, path: String? = null): URI
         this.fragment
     )
 
-fun URI.ensureTrailingSlash(): URI =
-    if (this.path.endsWith("/")) this else this.copy(path = this.path + "/")
+fun URI.ensureTrailingSlash(): URI = if (this.path.endsWith("/")) this else this.copy(path = this.path + "/")

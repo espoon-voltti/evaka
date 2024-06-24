@@ -41,10 +41,16 @@ class PairingsController(
      * Pairing status is WAITING_CHALLENGE.
      */
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
-    sealed class PostPairingReq(val id: Id<*>) {
-        data class Unit(val unitId: DaycareId) : PostPairingReq(unitId)
+    sealed class PostPairingReq(
+        val id: Id<*>
+    ) {
+        data class Unit(
+            val unitId: DaycareId
+        ) : PostPairingReq(unitId)
 
-        data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId)
+        data class Employee(
+            val employeeId: EmployeeId
+        ) : PostPairingReq(employeeId)
     }
 
     @PostMapping(
@@ -56,8 +62,9 @@ class PairingsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: PostPairingReq
-    ): Pairing {
-        return db.connect { dbc ->
+    ): Pairing =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     when (body) {
                         is PostPairingReq.Unit -> {
@@ -88,9 +95,7 @@ class PairingsController(
                         )
                     }
                 }
-            }
-            .also { Audit.PairingInit.log(targetId = AuditId(body.id), objectId = AuditId(it.id)) }
-    }
+            }.also { Audit.PairingInit.log(targetId = AuditId(body.id), objectId = AuditId(it.id)) }
 
     /**
      * Unit supervisor calls this endpoint as an unauthenticated mobile user to start a pairing
@@ -101,7 +106,9 @@ class PairingsController(
      *
      * Pairing status changes from WAITING_CHALLENGE to WAITING_RESPONSE.
      */
-    data class PostPairingChallengeReq(val challengeKey: String)
+    data class PostPairingChallengeReq(
+        val challengeKey: String
+    )
 
     @PostMapping(
         path =
@@ -114,17 +121,16 @@ class PairingsController(
         db: Database,
         clock: EvakaClock,
         @RequestBody body: PostPairingChallengeReq
-    ): Pairing {
-        return db.connect { dbc ->
+    ): Pairing =
+        db
+            .connect { dbc ->
                 dbc.transaction { it.challengePairing(clock, body.challengeKey) }
-            }
-            .also {
+            }.also {
                 Audit.PairingChallenge.log(
                     targetId = AuditId(it.id),
                     meta = mapOf("challengeKey" to body.challengeKey)
                 )
             }
-    }
 
     /**
      * Unit supervisor calls this endpoint as an authorized desktop user to respond to challenge.
@@ -134,7 +140,10 @@ class PairingsController(
      *
      * Pairing status changes from WAITING_RESPONSE to READY.
      */
-    data class PostPairingResponseReq(val challengeKey: String, val responseKey: String)
+    data class PostPairingResponseReq(
+        val challengeKey: String,
+        val responseKey: String
+    )
 
     @PostMapping(
         "/pairings/{id}/response", // deprecated
@@ -146,8 +155,9 @@ class PairingsController(
         clock: EvakaClock,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
-    ): Pairing {
-        return db.connect { dbc ->
+    ): Pairing =
+        db
+            .connect { dbc ->
                 dbc.read {
                     val (unitId, employeeId) = it.fetchPairingReferenceIds(id)
                     try {
@@ -177,8 +187,7 @@ class PairingsController(
                         body.responseKey
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.PairingResponse.log(
                     targetId = AuditId(id),
                     meta =
@@ -188,7 +197,6 @@ class PairingsController(
                         )
                 )
             }
-    }
 
     /**
      * API Gateway calls this endpoint to authorize a session creation for a mobile device.
@@ -197,7 +205,10 @@ class PairingsController(
      *
      * Pairing status changes from READY to PAIRED.
      */
-    data class PostPairingValidationReq(val challengeKey: String, val responseKey: String)
+    data class PostPairingValidationReq(
+        val challengeKey: String,
+        val responseKey: String
+    )
 
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
@@ -206,16 +217,16 @@ class PairingsController(
         clock: EvakaClock,
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingValidationReq
-    ): MobileDeviceIdentity {
-        return db.connect { dbc ->
+    ): MobileDeviceIdentity =
+        db
+            .connect { dbc ->
                 dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
                 dbc.transaction { tx ->
                     tx.validatePairing(clock, id, body.challengeKey, body.responseKey).also {
                         tx.upsertMobileDeviceUser(it.id)
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PairingValidation.log(
                     targetId = AuditId(id),
                     meta =
@@ -225,7 +236,6 @@ class PairingsController(
                         )
                 )
             }
-    }
 
     /**
      * Unit supervisor calls this endpoint in a polling fashion either as an authorized desktop user
@@ -234,7 +244,9 @@ class PairingsController(
      *
      * Endpoint takes in the previously received pairing id and returns the pairing status.
      */
-    data class PairingStatusRes(val status: PairingStatus)
+    data class PairingStatusRes(
+        val status: PairingStatus
+    )
 
     @GetMapping(
         path =
@@ -248,9 +260,10 @@ class PairingsController(
         db: Database,
         clock: EvakaClock,
         @PathVariable id: PairingId
-    ): PairingStatusRes {
-        return PairingStatusRes(
-            db.connect { dbc -> dbc.read { it.fetchPairingStatus(clock, id) } }
+    ): PairingStatusRes =
+        PairingStatusRes(
+            db
+                .connect { dbc -> dbc.read { it.fetchPairingStatus(clock, id) } }
                 .also {
                     Audit.PairingStatusRead.log(
                         targetId = AuditId(id),
@@ -258,5 +271,4 @@ class PairingsController(
                     )
                 }
         )
-    }
 }

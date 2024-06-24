@@ -12,7 +12,9 @@ import org.jdbi.v3.json.Json
 import org.junit.jupiter.api.Test
 
 class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
-    private data class Foo(val value: String)
+    private data class Foo(
+        val value: String
+    )
 
     private fun Database.Read.fooJsonQuery() =
         @Suppress("DEPRECATION")
@@ -41,7 +43,10 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `bind can be used to bind Json-annotated types as json data`() {
-        @Json data class JsonThing(val a: String, val b: String)
+        @Json data class JsonThing(
+            val a: String,
+            val b: String
+        )
         val notNullable = JsonThing("a", "b")
         db.read { tx ->
             assertEquals(
@@ -59,7 +64,8 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
         db.read { tx ->
             assertEquals(
                 notNullable,
-                tx.createQuery { sql("SELECT ${bindJson(notNullable)}") }
+                tx
+                    .createQuery { sql("SELECT ${bindJson(notNullable)}") }
                     .exactlyOne<Foo>(Json::class)
             )
             val nullable: Foo? = null

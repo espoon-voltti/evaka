@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class NonSsnChildrenReportController(private val accessControl: AccessControl) {
+class NonSsnChildrenReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/non-ssn-children", // deprecated
         "/employee/reports/non-ssn-children"
@@ -25,8 +27,9 @@ class NonSsnChildrenReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<NonSsnChildrenReportRow> {
-        return db.connect { dbc ->
+    ): List<NonSsnChildrenReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     accessControl.checkPermissionFor(
@@ -38,9 +41,7 @@ class NonSsnChildrenReportController(private val accessControl: AccessControl) {
 
                     it.getNonSsnChildren(clock.today())
                 }
-            }
-            .also { Audit.NonSsnChildrenReport.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.NonSsnChildrenReport.log(meta = mapOf("count" to it.size)) }
 }
 
 data class NonSsnChildrenReportRow(
@@ -49,15 +50,13 @@ data class NonSsnChildrenReportRow(
     val lastName: String,
     val dateOfBirth: LocalDate,
     val existingPersonOid: String?,
-    val vardaOid: String?,
+    val vardaOid: String?
 )
 
-private fun Database.Read.getNonSsnChildren(
-    examinationDate: LocalDate
-): List<NonSsnChildrenReportRow> =
+private fun Database.Read.getNonSsnChildren(examinationDate: LocalDate): List<NonSsnChildrenReportRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child.first_name,
        child.last_name,
        child.id             AS child_id,
@@ -69,8 +68,6 @@ FROM placement pl
          LEFT JOIN varda_organizer_child vac ON child.id = vac.evaka_person_id
          WHERE child.social_security_number IS NULL
          AND pl.end_date >= ${bind(examinationDate)}
-        """
-                    .trimIndent()
-            )
-        }
-        .toList<NonSsnChildrenReportRow>()
+            """.trimIndent()
+        )
+    }.toList<NonSsnChildrenReportRow>()

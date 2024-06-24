@@ -79,9 +79,15 @@ internal val IGNORED_EVENT_CODES =
 // from updateWorkingTimeEvents.wsdl, version 1.2 25.8.2020 & getStampedWorkingTimeEvents.wsdl,
 // version 1.1 14.8.2020
 
-data class TitaniaCode(val code: String, val name: String? = null)
+data class TitaniaCode(
+    val code: String,
+    val name: String? = null
+)
 
-data class TitaniaCodeName(val code: String, val name: String)
+data class TitaniaCodeName(
+    val code: String,
+    val name: String
+)
 
 data class TitaniaPeriod(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = TITANIA_DATE_FORMAT)
@@ -135,7 +141,11 @@ data class TitaniaSchedulingUnit(
     val occupation: List<TitaniaOccupation>
 )
 
-data class TitaniaOccupation(val code: String, val name: String, val person: List<TitaniaPerson>)
+data class TitaniaOccupation(
+    val code: String,
+    val name: String,
+    val person: List<TitaniaPerson>
+)
 
 // also includes ssn, but we cannot use it so just drop it
 data class TitaniaPerson(
@@ -149,7 +159,9 @@ data class TitaniaPerson(
     fun lastName() = name.indexOf(' ').let { if (it == -1) name else name.substring(0, it) }
 }
 
-data class TitaniaWorkingTimeEvents(val event: List<TitaniaWorkingTimeEvent>)
+data class TitaniaWorkingTimeEvents(
+    val event: List<TitaniaWorkingTimeEvent>
+)
 
 data class TitaniaWorkingTimeEvent(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = TITANIA_DATE_FORMAT) val date: LocalDate,
@@ -165,7 +177,9 @@ data class TitaniaWorkingTimeEvent(
     val eventKind: TitaniaCodeName? = null
 )
 
-data class TitaniaPayrollItems(val item: List<TitaniaPayrollItem>)
+data class TitaniaPayrollItems(
+    val item: List<TitaniaPayrollItem>
+)
 
 data class TitaniaPayrollItem(
     val code: String,
@@ -175,7 +189,9 @@ data class TitaniaPayrollItem(
     val unit: TitaniaPayrollItemUnit
 )
 
-data class UpdateWorkingTimeEventsResponse(val message: String) {
+data class UpdateWorkingTimeEventsResponse(
+    val message: String
+) {
     companion object {
         fun ok() = UpdateWorkingTimeEventsResponse("OK")
     }
@@ -221,7 +237,9 @@ data class TitaniaStampedPersonResponse(
     val stampedWorkingTimeEvents: TitaniaStampedWorkingTimeEvents
 )
 
-data class TitaniaStampedWorkingTimeEvents(val event: List<TitaniaStampedWorkingTimeEvent>)
+data class TitaniaStampedWorkingTimeEvents(
+    val event: List<TitaniaStampedWorkingTimeEvent>
+)
 
 data class TitaniaStampedWorkingTimeEvent(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = TITANIA_DATE_FORMAT) val date: LocalDate,
@@ -231,16 +249,20 @@ data class TitaniaStampedWorkingTimeEvent(
     val endReasonCode: String? = null
 )
 
-data class TitaniaException(val status: HttpStatus, val detail: List<TitaniaErrorDetail>) :
-    RuntimeException() {
-
+data class TitaniaException(
+    val status: HttpStatus,
+    val detail: List<TitaniaErrorDetail>
+) : RuntimeException() {
     constructor(detail: TitaniaErrorDetail) : this(detail.errorcode.status, listOf(detail))
 
     override val message: String?
         get() = detail.joinToString { it.message }
 }
 
-data class TitaniaErrorDetail(val errorcode: TitaniaError, val message: String)
+data class TitaniaErrorDetail(
+    val errorcode: TitaniaError,
+    val message: String
+)
 
 data class TitaniaErrorResponse(
     val faultcode: String = "Server",
@@ -249,6 +271,9 @@ data class TitaniaErrorResponse(
     val detail: List<TitaniaErrorDetail>
 )
 
-enum class TitaniaError(val status: HttpStatus) {
-    @JsonProperty("102") EVENT_DATE_OUT_OF_PERIOD(HttpStatus.BAD_REQUEST)
+enum class TitaniaError(
+    val status: HttpStatus
+) {
+    @JsonProperty("102")
+    EVENT_DATE_OUT_OF_PERIOD(HttpStatus.BAD_REQUEST)
 }

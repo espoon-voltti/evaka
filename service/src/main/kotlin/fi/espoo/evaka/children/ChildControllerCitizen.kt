@@ -32,14 +32,17 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/children")
-class ChildControllerCitizen(private val accessControl: AccessControl) {
+class ChildControllerCitizen(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getChildren(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<ChildAndPermittedActions> {
-        return db.connect { dbc ->
+    ): List<ChildAndPermittedActions> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -61,14 +64,12 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         ChildAndPermittedActions.fromChild(c, permittedActions[c.id]!!)
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.CitizenChildrenRead.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @GetMapping("/{childId}/service-needs")
     fun getChildServiceNeeds(
@@ -76,8 +77,9 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<ServiceNeedSummary> {
-        return db.connect { dbc ->
+    ): List<ServiceNeedSummary> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -90,9 +92,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     val missingServiceNeeds = getMissingServiceNeeds(tx, childId, serviceNeeds)
                     serviceNeeds + missingServiceNeeds
                 }
-            }
-            .also { Audit.CitizenChildServiceNeedRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.CitizenChildServiceNeedRead.log(targetId = AuditId(childId)) }
 
     private fun getMissingServiceNeeds(
         tx: Database.Read,
@@ -100,7 +100,8 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         serviceNeeds: List<ServiceNeedSummary>
     ): List<ServiceNeedSummary> {
         val defaultServiceNeedOptions =
-            tx.getServiceNeedOptions()
+            tx
+                .getServiceNeedOptions()
                 .filter { it.defaultOption }
                 .associateBy { it.validPlacementType }
         val serviceNeedDateRanges = serviceNeeds.map { FiniteDateRange(it.startDate, it.endDate) }
@@ -126,8 +127,9 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @PathVariable yearMonth: YearMonth
-    ): AttendanceSummary {
-        return db.connect { dbc ->
+    ): AttendanceSummary =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -140,25 +142,21 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     val range = FiniteDateRange(yearMonth.atDay(1), yearMonth.atEndOfMonth())
                     val operationalDates = tx.getOperationalDatesForChild(range, childId)
                     val plannedAbsences =
-                        tx.getAbsencesOfChildByRange(childId, range.asDateRange()).filter { absence
-                            ->
+                        tx.getAbsencesOfChildByRange(childId, range.asDateRange()).filter { absence ->
                             operationalDates.contains(absence.date) &&
                                 absence.category == AbsenceCategory.BILLABLE &&
                                 setOf(
-                                        AbsenceType.PLANNED_ABSENCE,
-                                        AbsenceType.FREE_ABSENCE,
-                                        AbsenceType.PARENTLEAVE
-                                    )
-                                    .contains(absence.absenceType)
+                                    AbsenceType.PLANNED_ABSENCE,
+                                    AbsenceType.FREE_ABSENCE,
+                                    AbsenceType.PARENTLEAVE
+                                ).contains(absence.absenceType)
                         }
 
                     AttendanceSummary(
                         attendanceDays = operationalDates.count() - plannedAbsences.count()
                     )
                 }
-            }
-            .also { Audit.CitizenChildAttendanceSummaryRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.CitizenChildAttendanceSummaryRead.log(targetId = AuditId(childId)) }
 
     @GetMapping("/{childId}/daily-service-times")
     fun getChildDailyServiceTimes(
@@ -166,8 +164,9 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<DailyServiceTimes> {
-        return db.connect { dbc ->
+    ): List<DailyServiceTimes> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -178,9 +177,9 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     )
                     tx.getChildDailyServiceTimes(childId)
                 }
-            }
-            .also { Audit.CitizenChildDailyServiceTimeRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.CitizenChildDailyServiceTimeRead.log(targetId = AuditId(childId)) }
 }
 
-data class AttendanceSummary(val attendanceDays: Int)
+data class AttendanceSummary(
+    val attendanceDays: Int
+)

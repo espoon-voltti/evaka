@@ -4,7 +4,10 @@
 
 package fi.espoo.evaka.espoo.bi
 
-enum class EspooBiTable(val fileName: String, val query: CsvQuery) {
+enum class EspooBiTable(
+    val fileName: String,
+    val query: CsvQuery
+) {
     Absence("absences", EspooBi.getAbsences),
     Application("applications", EspooBi.getApplications),
     Area("areas", EspooBi.getAreas),

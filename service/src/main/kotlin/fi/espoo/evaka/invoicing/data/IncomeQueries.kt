@@ -31,9 +31,10 @@ fun Database.Transaction.insertIncome(
     income: IncomeRequest,
     updatedBy: EvakaUserId
 ): IncomeId {
-    val update = createQuery {
-        sql(
-            """
+    val update =
+        createQuery {
+            sql(
+                """
         INSERT INTO income (
             person_id,
             effect,
@@ -61,8 +62,8 @@ fun Database.Transaction.insertIncome(
         )
         RETURNING id
     """
-        )
-    }
+            )
+        }
 
     return handlingExceptions { update.exactlyOne() }
 }
@@ -74,9 +75,10 @@ fun Database.Transaction.updateIncome(
     income: IncomeRequest,
     updatedBy: EvakaUserId
 ) {
-    val update = createUpdate {
-        sql(
-            """
+    val update =
+        createUpdate {
+            sql(
+                """
         UPDATE income
         SET
             effect = ${bind(income.effect)},
@@ -91,8 +93,8 @@ fun Database.Transaction.updateIncome(
             application_id = NULL
         WHERE id = ${bind(id)}
     """
-        )
-    }
+            )
+        }
 
     handlingExceptions { update.updateExactlyOne() }
 }
@@ -102,10 +104,10 @@ fun Database.Read.getIncome(
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     id: IncomeId
-): Income? {
-    return createQuery {
-            sql(
-                """
+): Income? =
+    createQuery {
+        sql(
+            """
 SELECT income.*, evaka_user.name AS updated_by_name,
 (SELECT coalesce(jsonb_agg(json_build_object(
     'id', id,
@@ -121,12 +123,10 @@ FROM income
 JOIN evaka_user ON income.updated_by = evaka_user.id
 WHERE income.id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull {
-            toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
-        }
-}
+        )
+    }.exactlyOneOrNull {
+        toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider)
+    }
 
 fun Database.Read.getIncomesForPerson(
     mapper: JsonMapper,
@@ -134,10 +134,10 @@ fun Database.Read.getIncomesForPerson(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personId: PersonId,
     validAt: LocalDate? = null
-): List<Income> {
-    return createQuery {
-            sql(
-                """
+): List<Income> =
+    createQuery {
+        sql(
+            """
 SELECT income.*, evaka_user.name AS updated_by_name,
 (SELECT coalesce(jsonb_agg(json_build_object(
     'id', id,
@@ -155,10 +155,8 @@ WHERE person_id = ${bind(personId)}
 AND (${bind(validAt)}::timestamp IS NULL OR tsrange(valid_from, valid_to) @> ${bind(validAt)}::timestamp)
 ORDER BY valid_from DESC
         """
-            )
-        }
-        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
-}
+        )
+    }.toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
 
 fun Database.Read.getIncomesFrom(
     mapper: JsonMapper,
@@ -170,8 +168,8 @@ fun Database.Read.getIncomesFrom(
     if (personIds.isEmpty()) return emptyList()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT income.*, evaka_user.name AS updated_by_name, '[]' as attachments
 FROM income
 JOIN evaka_user ON income.updated_by = evaka_user.id
@@ -179,9 +177,8 @@ WHERE
     person_id = ANY(${bind(personIds)})
     AND (valid_to IS NULL OR valid_to >= ${bind(from)})
 """
-            )
-        }
-        .toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
+        )
+    }.toList { toIncome(mapper, incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
 fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
@@ -190,10 +187,14 @@ fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
     handlingExceptions { update.execute() }
 }
 
-fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRange) {
-    val update = createUpdate {
-        sql(
-            """
+fun Database.Transaction.splitEarlierIncome(
+    personId: PersonId,
+    period: DateRange
+) {
+    val update =
+        createUpdate {
+            sql(
+                """
             UPDATE income
             SET valid_to = ${bind(period.start.minusDays(1))}
             WHERE
@@ -201,8 +202,8 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
                 AND valid_from < ${bind(period.start)}
                 AND valid_to IS NULL
             """
-        )
-    }
+            )
+        }
 
     handlingExceptions { update.execute() }
 }
@@ -239,8 +240,8 @@ fun parseIncomeDataJson(
     jsonMapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
-): Map<String, IncomeValue> {
-    return jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
+): Map<String, IncomeValue> =
+    jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
         value.copy(
             multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"),
             monthlyAmount =
@@ -250,4 +251,3 @@ fun parseIncomeDataJson(
                 )
         )
     }
-}

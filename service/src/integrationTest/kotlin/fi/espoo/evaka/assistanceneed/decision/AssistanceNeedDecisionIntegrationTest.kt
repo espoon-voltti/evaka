@@ -61,8 +61,11 @@ private val logger = KotlinLogging.logger {}
 class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var assistanceNeedDecisionController: AssistanceNeedDecisionController
+
     @Autowired private lateinit var assistanceNeedDecisionService: AssistanceNeedDecisionService
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired private lateinit var processMetadataController: ProcessMetadataController
 
     private val assistanceWorker =
@@ -220,8 +223,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         isHeard = g.isHeard,
                         details = g.details
                     )
-                }
-                .toSet()
+                }.toSet()
         assertEquals(testDecision.guardianInfo, storedGuardiansWithoutId)
 
         assertEquals(testDecision.viewOfGuardians, assistanceNeedDecision.viewOfGuardians)
@@ -275,10 +277,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                                     isHeard = true,
                                     details = "Updated details"
                                 )
-                            }
-                            .toSet()
-                )
-                .toForm()
+                            }.toSet()
+                ).toForm()
 
         updateAssistanceNeedDecision(
             AssistanceNeedDecisionRequest(decision = updatedDecision),
@@ -339,8 +339,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         .copy(
                             sentForDecision = LocalDate.of(2019, 1, 4),
                             status = AssistanceNeedDecisionStatus.ACCEPTED
-                        )
-                        .toForm()
+                        ).toForm()
             ),
             assistanceNeedDecision.id
         )
@@ -394,7 +393,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                     status = AssistanceNeedDecisionStatus.ACCEPTED
                 ),
-                decisionMaker,
+                decisionMaker
             )
         }
         sendAssistanceNeedDecision(assistanceNeedDecision.id)
@@ -405,7 +404,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                     status = AssistanceNeedDecisionStatus.ACCEPTED
                 ),
-                assistanceWorker,
+                assistanceWorker
             )
         }
         // the decision cannot be DRAFT
@@ -415,7 +414,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                     status = AssistanceNeedDecisionStatus.DRAFT
                 ),
-                decisionMaker,
+                decisionMaker
             )
         }
         decideAssistanceNeedDecision(
@@ -423,7 +422,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker,
+            decisionMaker
         )
         val decision = getAssistanceNeedDecision(assistanceNeedDecision.id)
         assertEquals(clock.today(), decision.decisionMade)
@@ -434,7 +433,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                     status = AssistanceNeedDecisionStatus.REJECTED
                 ),
-                decisionMaker,
+                decisionMaker
             )
         }
 
@@ -460,7 +459,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker,
+            decisionMaker
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -471,23 +470,35 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     testAdmin.user,
                     clock,
                     assistanceNeedDecision.id
-                )
-                .data
+                ).data
         assertNotNull(metadata)
         assertEquals("1/123.456.a/2024", metadata.process.processNumber)
         assertEquals(1440, metadata.process.archiveDurationMonths)
         assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", metadata.process.organization)
         assertEquals(4, metadata.process.history.size)
         assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
-        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[0].enteredBy.id)
+        assertEquals(
+            assistanceWorker.evakaUserId,
+            metadata.process.history[0]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
-        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
+        assertEquals(
+            assistanceWorker.evakaUserId,
+            metadata.process.history[1]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
-        assertEquals(decisionMaker.evakaUserId, metadata.process.history[2].enteredBy.id)
+        assertEquals(
+            decisionMaker.evakaUserId,
+            metadata.process.history[2]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
         assertEquals(
             AuthenticatedUser.SystemInternalUser.evakaUserId,
-            metadata.process.history[3].enteredBy.id
+            metadata.process.history[3]
+                .enteredBy.id
         )
         assertEquals("Päätös tuesta varhaiskasvatuksessa", metadata.primaryDocument.name)
         assertEquals(assistanceWorker.evakaUserId, metadata.primaryDocument.createdBy?.id)
@@ -512,14 +523,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             updateDecisionMakerForAssistanceNeedDecision(
                 assistanceNeedDecision.id,
                 request,
-                admin,
+                admin
             )
         }
         sendAssistanceNeedDecision(assistanceNeedDecision.id)
         updateDecisionMakerForAssistanceNeedDecision(
             assistanceNeedDecision.id,
             request,
-            admin,
+            admin
         )
 
         val updatedDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
@@ -567,7 +578,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertThrows<NotFound> {
             getDecisionMakerOptions(
                 AssistanceNeedDecisionId(UUID.randomUUID()),
-                assistanceWorker,
+                assistanceWorker
             )
         }
     }
@@ -577,7 +588,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertThrows<Forbidden> {
             getDecisionMakerOptions(
                 AssistanceNeedDecisionId(UUID.randomUUID()),
-                decisionMaker,
+                decisionMaker
             )
         }
     }
@@ -641,8 +652,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                             validityPeriod =
                                 testDecision.validityPeriod.copy(end = LocalDate.of(2024, 1, 2)),
                             assistanceLevels = setOf(AssistanceLevel.SPECIAL_ASSISTANCE)
-                        )
-                        .toForm()
+                        ).toForm()
             ),
             assistanceNeedDecision.id
         )
@@ -660,8 +670,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         .copy(
                             validityPeriod = testDecision.validityPeriod.copy(end = end),
                             assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME)
-                        )
-                        .toForm()
+                        ).toForm()
             ),
             assistanceNeedDecision.id
         )
@@ -677,8 +686,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         .copy(
                             validityPeriod = testDecision.validityPeriod.copy(end = null),
                             assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME)
-                        )
-                        .toForm()
+                        ).toForm()
             ),
             assistanceNeedDecision.id
         )
@@ -699,7 +707,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker,
+            decisionMaker
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -822,7 +830,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker,
+            decisionMaker
         )
         annulAssistanceNeedDecision(decision.id, "Kaikki oli ihan väärin", decisionMaker)
 
@@ -842,7 +850,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate1,
-                    endDate = startDate3.plusYears(1),
+                    endDate = startDate3.plusYears(1)
                 )
             )
         }
@@ -896,7 +904,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
@@ -951,7 +959,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
             tx.insert(
@@ -960,7 +968,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
                     startDate = LocalDate.of(2023, 1, 1),
-                    endDate = LocalDate.of(2023, 12, 31),
+                    endDate = LocalDate.of(2023, 12, 31)
                 )
             )
         }
@@ -1002,7 +1010,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
@@ -1044,7 +1052,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
@@ -1086,7 +1094,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = LocalDate.of(2022, 6, 30),
+                    endDate = LocalDate.of(2022, 6, 30)
                 )
             )
             tx.insert(
@@ -1095,7 +1103,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2022, 7, 1),
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
@@ -1137,7 +1145,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
             tx.insert(
@@ -1146,7 +1154,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2023, 1, 1),
-                    endDate = LocalDate.of(2023, 12, 31),
+                    endDate = LocalDate.of(2023, 12, 31)
                 )
             )
         }
@@ -1188,7 +1196,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
@@ -1223,23 +1231,19 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
-    private fun createAssistanceNeedDecision(
-        request: AssistanceNeedDecisionRequest
-    ): AssistanceNeedDecision {
-        return assistanceNeedDecisionController.createAssistanceNeedDecision(
+    private fun createAssistanceNeedDecision(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision =
+        assistanceNeedDecisionController.createAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
             clock,
             testChild_1.id,
             request
         )
-    }
 
-    private fun getAssistanceNeedDecision(id: AssistanceNeedDecisionId): AssistanceNeedDecision {
-        return assistanceNeedDecisionController
+    private fun getAssistanceNeedDecision(id: AssistanceNeedDecisionId): AssistanceNeedDecision =
+        assistanceNeedDecisionController
             .getAssistanceNeedDecision(dbInstance(), assistanceWorker, clock, id)
             .decision
-    }
 
     private fun deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId) {
         assistanceNeedDecisionController.deleteAssistanceNeedDecision(
@@ -1250,9 +1254,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
-    private fun sendAssistanceNeedDecision(
-        id: AssistanceNeedDecisionId,
-    ) {
+    private fun sendAssistanceNeedDecision(id: AssistanceNeedDecisionId) {
         assistanceNeedDecisionController.sendAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
@@ -1289,7 +1291,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun decideAssistanceNeedDecision(
         id: AssistanceNeedDecisionId,
         request: AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest,
-        user: AuthenticatedUser.Employee,
+        user: AuthenticatedUser.Employee
     ) {
         assistanceNeedDecisionController.decideAssistanceNeedDecision(
             dbInstance(),
@@ -1302,9 +1304,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     private fun updateDecisionMakerForAssistanceNeedDecision(
         id: AssistanceNeedDecisionId,
-        request:
-            AssistanceNeedDecisionController.UpdateDecisionMakerForAssistanceNeedDecisionRequest,
-        user: AuthenticatedUser.Employee,
+        request: AssistanceNeedDecisionController.UpdateDecisionMakerForAssistanceNeedDecisionRequest,
+        user: AuthenticatedUser.Employee
     ) {
         assistanceNeedDecisionController.updateAssistanceNeedDecisionDecisionMaker(
             dbInstance(),
@@ -1317,15 +1318,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     private fun getDecisionMakerOptions(
         id: AssistanceNeedDecisionId,
-        user: AuthenticatedUser.Employee = assistanceWorker,
-    ): List<Employee> {
-        return assistanceNeedDecisionController.getAssistanceDecisionMakerOptions(
+        user: AuthenticatedUser.Employee = assistanceWorker
+    ): List<Employee> =
+        assistanceNeedDecisionController.getAssistanceDecisionMakerOptions(
             dbInstance(),
             user,
             clock,
             id
         )
-    }
 
     private fun annulAssistanceNeedDecision(
         id: AssistanceNeedDecisionId,

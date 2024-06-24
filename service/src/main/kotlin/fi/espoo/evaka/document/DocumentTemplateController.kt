@@ -47,8 +47,9 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: DocumentTemplateBasicsRequest
-    ): DocumentTemplate {
-        return db.connect { dbc ->
+    ): DocumentTemplate =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -58,9 +59,7 @@ class DocumentTemplateController(
                     )
                     tx.insertTemplate(body)
                 }
-            }
-            .also { Audit.DocumentTemplateCreate.log(targetId = AuditId(it.id)) }
-    }
+            }.also { Audit.DocumentTemplateCreate.log(targetId = AuditId(it.id)) }
 
     @PostMapping("/import")
     fun importTemplate(
@@ -68,8 +67,9 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ExportedDocumentTemplate
-    ): DocumentTemplate {
-        return db.connect { dbc ->
+    ): DocumentTemplate =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -79,17 +79,16 @@ class DocumentTemplateController(
                     )
                     tx.importTemplate(body)
                 }
-            }
-            .also { Audit.DocumentTemplateCreate.log(targetId = AuditId(it.id)) }
-    }
+            }.also { Audit.DocumentTemplateCreate.log(targetId = AuditId(it.id)) }
 
     @GetMapping
     fun getTemplates(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<DocumentTemplateSummary> {
-        return db.connect { dbc ->
+    ): List<DocumentTemplateSummary> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -99,9 +98,7 @@ class DocumentTemplateController(
                     )
                     tx.getTemplateSummaries()
                 }
-            }
-            .also { Audit.DocumentTemplateRead.log() }
-    }
+            }.also { Audit.DocumentTemplateRead.log() }
 
     @GetMapping("/active")
     fun getActiveTemplates(
@@ -109,8 +106,9 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam childId: ChildId
-    ): List<DocumentTemplateSummary> {
-        return db.connect { dbc ->
+    ): List<DocumentTemplateSummary> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -122,13 +120,13 @@ class DocumentTemplateController(
                     tx.getTemplateSummaries().filter {
                         it.published &&
                             it.validity.includes(clock.today()) &&
-                            (placementLanguage == null ||
-                                it.language.name.uppercase() == placementLanguage.name.uppercase())
+                            (
+                                placementLanguage == null ||
+                                    it.language.name.uppercase() == placementLanguage.name.uppercase()
+                            )
                     }
                 }
-            }
-            .also { Audit.DocumentTemplateRead.log() }
-    }
+            }.also { Audit.DocumentTemplateRead.log() }
 
     @GetMapping("/{templateId}")
     fun getTemplate(
@@ -136,8 +134,9 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId
-    ): DocumentTemplate {
-        return db.connect { dbc ->
+    ): DocumentTemplate =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -148,19 +147,18 @@ class DocumentTemplateController(
                     )
                     tx.getTemplate(templateId)
                 }
-            }
-            ?.also { Audit.DocumentTemplateRead.log(targetId = AuditId(templateId)) }
+            }?.also { Audit.DocumentTemplateRead.log(targetId = AuditId(templateId)) }
             ?: throw NotFound("Document template $templateId not found")
-    }
 
     @GetMapping("/{templateId}/export")
     fun exportTemplate(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable templateId: DocumentTemplateId,
+        @PathVariable templateId: DocumentTemplateId
     ): ResponseEntity<ExportedDocumentTemplate> =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -171,25 +169,23 @@ class DocumentTemplateController(
                     )
                     tx.exportTemplate(templateId)
                 }
-            }
-            ?.let { template ->
+            }?.let { template ->
                 val sanitizedName = template.name.replace(Regex("[^\\p{L}0-9]+"), "_").take(60)
                 val timestamp = clock.now().toInstant().epochSecond
-                ResponseEntity.ok()
+                ResponseEntity
+                    .ok()
                     .headers(
                         HttpHeaders().apply {
                             contentDisposition =
-                                ContentDisposition.attachment()
+                                ContentDisposition
+                                    .attachment()
                                     .filename(
                                         "$sanitizedName.$timestamp.template.json",
                                         Charsets.UTF_8
-                                    )
-                                    .build()
+                                    ).build()
                         }
-                    )
-                    .body(template)
-            }
-            ?.also { Audit.DocumentTemplateRead.log(targetId = AuditId(templateId)) }
+                    ).body(template)
+            }?.also { Audit.DocumentTemplateRead.log(targetId = AuditId(templateId)) }
             ?: throw NotFound("Document template $templateId not found")
 
     @PostMapping("/{templateId}/duplicate")
@@ -199,8 +195,9 @@ class DocumentTemplateController(
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DocumentTemplateBasicsRequest
-    ): DocumentTemplate {
-        return db.connect { dbc ->
+    ): DocumentTemplate =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -212,9 +209,7 @@ class DocumentTemplateController(
 
                     tx.duplicateTemplate(templateId, body)
                 }
-            }
-            .also { Audit.DocumentTemplateCopy.log(targetId = AuditId(templateId)) }
-    }
+            }.also { Audit.DocumentTemplateCopy.log(targetId = AuditId(templateId)) }
 
     @PutMapping("/{templateId}")
     fun updateDraftTemplateBasics(
@@ -225,7 +220,8 @@ class DocumentTemplateController(
         @RequestBody body: DocumentTemplateBasicsRequest
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
+            dbc
+                .transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -238,8 +234,7 @@ class DocumentTemplateController(
                     } ?: throw NotFound("Template $templateId not found")
 
                     tx.updateDraftTemplateBasics(templateId, body)
-                }
-                .also { Audit.DocumentTemplateUpdateBasics.log(targetId = AuditId(templateId)) }
+                }.also { Audit.DocumentTemplateUpdateBasics.log(targetId = AuditId(templateId)) }
         }
     }
 
@@ -252,7 +247,8 @@ class DocumentTemplateController(
         @RequestBody body: DocumentTemplateContent
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
+            dbc
+                .transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -261,14 +257,14 @@ class DocumentTemplateController(
                         templateId
                     )
                     tx.getTemplate(templateId)?.also {
-                        if (it.published)
+                        if (it.published) {
                             throw BadRequest("Cannot update contents of published template")
+                        }
                     } ?: throw NotFound("Template $templateId not found")
                     assertUniqueIds(body)
 
                     tx.updateDraftTemplateContent(templateId, body)
-                }
-                .also { Audit.DocumentTemplateUpdateContent.log(targetId = AuditId(templateId)) }
+                }.also { Audit.DocumentTemplateUpdateContent.log(targetId = AuditId(templateId)) }
         }
     }
 
@@ -280,7 +276,8 @@ class DocumentTemplateController(
         @PathVariable templateId: DocumentTemplateId,
         @RequestBody body: DateRange
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -291,8 +288,7 @@ class DocumentTemplateController(
                     )
                     tx.updateTemplateValidity(templateId, body)
                 }
-            }
-            .also { Audit.DocumentTemplateUpdateValidity.log(targetId = AuditId(templateId)) }
+            }.also { Audit.DocumentTemplateUpdateValidity.log(targetId = AuditId(templateId)) }
     }
 
     @PutMapping("/{templateId}/publish")
@@ -302,7 +298,8 @@ class DocumentTemplateController(
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -313,8 +310,7 @@ class DocumentTemplateController(
                     )
                     tx.publishTemplate(templateId)
                 }
-            }
-            .also { Audit.DocumentTemplatePublish.log(targetId = AuditId(templateId)) }
+            }.also { Audit.DocumentTemplatePublish.log(targetId = AuditId(templateId)) }
     }
 
     /**
@@ -331,7 +327,8 @@ class DocumentTemplateController(
         if (!evakaEnv.forceUnpublishDocumentTemplateEnabled) {
             throw Forbidden("endpoint not enabled in this environment")
         }
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -342,8 +339,7 @@ class DocumentTemplateController(
                     )
                     tx.forceUnpublishTemplate(templateId)
                 }
-            }
-            .also { Audit.DocumentTemplateForceUnpublish.log(targetId = AuditId(templateId)) }
+            }.also { Audit.DocumentTemplateForceUnpublish.log(targetId = AuditId(templateId)) }
     }
 
     @DeleteMapping("/{templateId}")
@@ -352,33 +348,33 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.DocumentTemplate.DELETE,
-                        templateId
-                    )
-                    tx.getTemplate(templateId)?.also {
-                        if (it.published) throw BadRequest("Cannot delete published template")
-                    } ?: throw NotFound("Template $templateId not found")
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.DocumentTemplate.DELETE,
+                    templateId
+                )
+                tx.getTemplate(templateId)?.also {
+                    if (it.published) throw BadRequest("Cannot delete published template")
+                } ?: throw NotFound("Template $templateId not found")
 
-                    tx.deleteDraftTemplate(templateId)
-                }
+                tx.deleteDraftTemplate(templateId)
             }
-            .also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
-    }
+        }.also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
 }
 
 private fun assertUniqueIds(content: DocumentTemplateContent) {
     val sectionIds = content.sections.map { it.id }
-    if (sectionIds.size > sectionIds.distinct().size)
+    if (sectionIds.size > sectionIds.distinct().size) {
         throw BadRequest("Found non unique section ids")
+    }
 
     val questionIds = content.sections.flatMap { it.questions.map { q -> q.id } }
-    if (questionIds.size > questionIds.distinct().size)
+    if (questionIds.size > questionIds.distinct().size) {
         throw BadRequest("Found non unique question ids")
+    }
 }

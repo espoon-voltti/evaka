@@ -4,6 +4,4 @@
 
 package fi.espoo.evaka.shared.utils
 
-fun String.decodeHex(): ByteArray {
-    return filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
-}
+fun String.decodeHex(): ByteArray = filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()

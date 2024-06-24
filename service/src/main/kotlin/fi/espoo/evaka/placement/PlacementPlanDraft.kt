@@ -26,4 +26,7 @@ data class PlacementDraftChild(
     val dob: LocalDate
 )
 
-data class PlacementDraftUnit(val id: DaycareId, val name: String)
+data class PlacementDraftUnit(
+    val id: DaycareId,
+    val name: String
+)

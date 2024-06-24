@@ -79,7 +79,7 @@ class FeeDecisionService(
     private val bucketEnv: BucketEnv,
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailClient: EmailClient,
+    private val emailClient: EmailClient
 ) {
     val bucket = bucketEnv.feeDecisions
 
@@ -135,8 +135,7 @@ class FeeDecisionService(
                             )
                         } ?: listOf()
                     ownDecisions + partnerDecisions
-                }
-                .distinctBy { it.id }
+                }.distinctBy { it.id }
                 .filter { !ids.contains(it.id) }
                 .partition {
                     it.status != WAITING_FOR_SENDING && it.status != WAITING_FOR_MANUAL_SENDING
@@ -145,7 +144,7 @@ class FeeDecisionService(
         if (waitingForSending.isNotEmpty()) {
             val logMeta =
                 mapOf(
-                    "feeDecisionIds" to waitingForSending.map { it.id },
+                    "feeDecisionIds" to waitingForSending.map { it.id }
                 )
             logger.info(logMeta) {
                 "Warning: when creating fee decisions, skipped ${waitingForSending.size} fee decisions because head of family had overlapping fee decisions waiting for sending"
@@ -193,8 +192,13 @@ class FeeDecisionService(
         return validDecisions.map { it.id }
     }
 
-    fun ignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>, today: LocalDate) {
-        tx.getFeeDecisionsByIds(ids)
+    fun ignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<FeeDecisionId>,
+        today: LocalDate
+    ) {
+        tx
+            .getFeeDecisionsByIds(ids)
             .map { decision ->
                 if (decision.status != DRAFT) {
                     throw BadRequest(
@@ -207,36 +211,42 @@ class FeeDecisionService(
                     )
                 }
                 decision
-            }
-            .forEach { tx.setFeeDecisionToIgnored(it.id) }
+            }.forEach { tx.setFeeDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>): Set<PersonId> {
-        return tx.getFeeDecisionsByIds(ids)
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<FeeDecisionId>
+    ): Set<PersonId> =
+        tx
+            .getFeeDecisionsByIds(ids)
             .map { decision ->
                 if (decision.status != IGNORED) {
                     throw BadRequest("Error with decision ${decision.id}: not ignored")
                 }
                 decision
-            }
-            .map {
+            }.map {
                 tx.removeFeeDecisionIgnore(it.id)
                 it.headOfFamilyId
-            }
-            .toSet()
-    }
+            }.toSet()
 
     private fun getDecisionLanguage(decision: FeeDecisionDetailed): OfficialLanguage {
         val defaultLanguage =
             if (decision.headOfFamily.language == "sv") OfficialLanguage.SV else OfficialLanguage.FI
 
         val youngestChildUnitLanguage =
-            decision.children.maxByOrNull { it.child.dateOfBirth }?.placementUnit?.language
+            decision.children
+                .maxByOrNull { it.child.dateOfBirth }
+                ?.placementUnit
+                ?.language
 
         return if (youngestChildUnitLanguage == "sv") OfficialLanguage.SV else defaultLanguage
     }
 
-    fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
+    fun createFeeDecisionPdf(
+        tx: Database.Transaction,
+        id: FeeDecisionId
+    ) {
         val decision =
             tx.getFeeDecision(id)?.let {
                 val partnerIsCodebtor =
@@ -267,12 +277,15 @@ class FeeDecisionService(
                         pdfByteArray,
                         "application/pdf"
                     )
-                )
-                .key
+                ).key
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
     }
 
-    fun sendDecision(tx: Database.Transaction, clock: EvakaClock, id: FeeDecisionId): Boolean {
+    fun sendDecision(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        id: FeeDecisionId
+    ): Boolean {
         val decision =
             tx.getFeeDecision(id) ?: throw NotFound("No fee decision found with given ID ($id)")
 
@@ -299,8 +312,11 @@ class FeeDecisionService(
                 ?: messageProvider.getDefaultFinancialDecisionAddress(lang)
 
         val feeDecisionDisplayName =
-            if (lang == OfficialLanguage.SV) "Beslut_om_avgift_för_småbarnspedagogik.pdf"
-            else "Varhaiskasvatuksen_maksupäätös.pdf"
+            if (lang == OfficialLanguage.SV) {
+                "Beslut_om_avgift_för_småbarnspedagogik.pdf"
+            } else {
+                "Varhaiskasvatuksen_maksupäätös.pdf"
+            }
 
         val message =
             SfiMessage(
@@ -332,7 +348,11 @@ class FeeDecisionService(
         return true
     }
 
-    fun setSent(tx: Database.Transaction, clock: EvakaClock, ids: List<FeeDecisionId>) {
+    fun setSent(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        ids: List<FeeDecisionId>
+    ) {
         val decisions = tx.getDetailedFeeDecisionsByIds(ids)
         if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
@@ -350,7 +370,11 @@ class FeeDecisionService(
         return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
-    fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {
+    fun setType(
+        tx: Database.Transaction,
+        decisionId: FeeDecisionId,
+        type: FeeDecisionType
+    ) {
         val decision =
             tx.getFeeDecision(decisionId)
                 ?: throw BadRequest("Decision not found with id $decisionId")
@@ -380,15 +404,15 @@ class FeeDecisionService(
             val fromAddress = emailEnv.sender(Language.fi)
             val content =
                 emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
-            Email.create(
+            Email
+                .create(
                     db,
                     recipient.id,
                     EmailMessageType.DECISION_NOTIFICATION,
                     fromAddress,
                     content,
-                    "$feeDecisionId - ${recipient.id}",
-                )
-                ?.also { emailClient.send(it) }
+                    "$feeDecisionId - ${recipient.id}"
+                )?.also { emailClient.send(it) }
         }
 
         logger.info {

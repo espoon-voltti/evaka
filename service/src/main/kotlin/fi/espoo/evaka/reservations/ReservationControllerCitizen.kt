@@ -75,7 +75,8 @@ class ReservationControllerCitizen(
             }
 
         val today = clock.today()
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -105,13 +106,15 @@ class ReservationControllerCitizen(
                             it.childId to it.date
                         }
                     val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationResponse>> =
-                        tx.getReservationsCitizen(today, user.id, requestedRange)
+                        tx
+                            .getReservationsCitizen(today, user.id, requestedRange)
                             .groupBy { it.childId to it.date }
                             .mapValues { (_, reservations) ->
                                 reservations.map { ReservationResponse.from(it) }
                             }
                     val attendances: Map<Pair<ChildId, LocalDate>, List<TimeInterval>> =
-                        tx.getChildAttendancesCitizen(today, user.id, requestedRange)
+                        tx
+                            .getChildAttendancesCitizen(today, user.id, requestedRange)
                             .groupBy { it.childId to it.date }
                             .mapValues { (_, attendances) ->
                                 attendances.map { TimeInterval(it.startTime, it.endTime) }
@@ -119,7 +122,7 @@ class ReservationControllerCitizen(
                     val reservableRange =
                         getReservableRange(
                             clock.now(),
-                            featureConfig.citizenReservationThresholdHours,
+                            featureConfig.citizenReservationThresholdHours
                         )
                     val days =
                         requestedRange
@@ -150,8 +153,7 @@ class ReservationControllerCitizen(
                                                             clubTerms,
                                                             preschoolTerms
                                                         )
-                                                    }
-                                                    ?.let { placementDay ->
+                                                    }?.let { placementDay ->
                                                         val key = Pair(child.id, date)
                                                         val childAbsences =
                                                             absences[key] ?: listOf()
@@ -209,11 +211,9 @@ class ReservationControllerCitizen(
                                                                 )
                                                         )
                                                     }
-                                            }
-                                            .sortedBy { it.childId }
+                                            }.sortedBy { it.childId }
                                 )
-                            }
-                            .toList()
+                            }.toList()
 
                     ReservationsResponse(
                         children =
@@ -227,8 +227,7 @@ class ReservationControllerCitizen(
                         reservableRange = reservableRange
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.AttendanceReservationCitizenRead.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("from" to from, "to" to to)
@@ -363,7 +362,7 @@ class ReservationControllerCitizen(
                                         date,
                                         if (
                                             reservableRange.includes(date) &&
-                                                body.absenceType == OTHER_ABSENCE
+                                            body.absenceType == OTHER_ABSENCE
                                         ) {
                                             val plannedAbsenceEnabled =
                                                 childPlannedAbsenceEnabled[childId]?.includes(date)
@@ -476,8 +475,7 @@ private fun selectSingleAbsence(absences: List<Absence>): AbsenceInfo? =
             } else {
                 it.firstOrNull()
             }
-        }
-        ?.let { AbsenceInfo(it.absenceType, it.editableByCitizen()) }
+        }?.let { AbsenceInfo(it.absenceType, it.editableByCitizen()) }
 
 data class ReservationsResponse(
     val children: List<ReservationChild>,
@@ -509,12 +507,10 @@ data class ReservationChild(
                     days
                         .mapNotNull { day ->
                             day.children.find { it.childId == child.id }?.let { day.date to it }
-                        }
-                        .groupBy(
+                        }.groupBy(
                             { (date, _) -> date.year to date.monthValue },
                             { (_, childDay) -> childDay }
-                        )
-                        .mapNotNull { (yearMonth, childDays) ->
+                        ).mapNotNull { (yearMonth, childDays) ->
                             val (year, month) = yearMonth
                             val monthRange = FiniteDateRange.ofMonth(LocalDate.of(year, month, 1))
 
@@ -528,8 +524,7 @@ data class ReservationChild(
                                     ?.find {
                                         it.range.overlaps(monthRange) &&
                                             it.daycareHoursPerMonth != null
-                                    }
-                                    ?.daycareHoursPerMonth
+                                    }?.daycareHoursPerMonth
 
                             if (daycareHoursPerMonth == null) {
                                 // Not an hour-based service need, don't generate a summary at all
@@ -595,21 +590,31 @@ data class ReservationResponseDayChild(
 sealed class ReservableTimeRange {
     // Child is in normal daycare: The child can make reservations on days according to the
     // placement unit's operation times
-    @JsonTypeName("NORMAL") data class Normal(val range: TimeRange) : ReservableTimeRange()
+    @JsonTypeName("NORMAL")
+    data class Normal(
+        val range: TimeRange
+    ) : ReservableTimeRange()
 
     // Child is in shift daycare: The child can make reservations on days according to the
     // placement unit's shift care operation times
-    @JsonTypeName("SHIFT_CARE") data class ShiftCare(val range: TimeRange) : ReservableTimeRange()
+    @JsonTypeName("SHIFT_CARE")
+    data class ShiftCare(
+        val range: TimeRange
+    ) : ReservableTimeRange()
 
     // Child is in intermittent shift care: The child can make any reservations on any days, and we
     // return the placement unit's operational times just for showing it as information in the UI.
     // `null` means that the placement unit is closed on this day.
     @JsonTypeName("INTERMITTENT_SHIFT_CARE")
-    data class IntermittentShiftCare(val placementUnitOperationTime: TimeRange?) :
-        ReservableTimeRange()
+    data class IntermittentShiftCare(
+        val placementUnitOperationTime: TimeRange?
+    ) : ReservableTimeRange()
 }
 
-data class AbsenceInfo(val type: AbsenceType, val editable: Boolean)
+data class AbsenceInfo(
+    val type: AbsenceType,
+    val editable: Boolean
+)
 
 data class AbsenceRequest(
     val childIds: Set<ChildId>,

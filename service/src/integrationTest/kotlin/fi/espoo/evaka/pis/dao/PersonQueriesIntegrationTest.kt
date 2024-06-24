@@ -297,8 +297,8 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         return tx.createPersonFromVtj(inputPerson)
     }
 
-    private fun testPerson(validSSN: String): PersonDTO {
-        return PersonDTO(
+    private fun testPerson(validSSN: String): PersonDTO =
+        PersonDTO(
             id = PersonId(UUID.randomUUID()),
             duplicateOf = null,
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
@@ -319,5 +319,4 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             restrictedDetailsEnabled = true,
             restrictedDetailsEndDate = LocalDate.now().plusYears(1)
         )
-    }
 }

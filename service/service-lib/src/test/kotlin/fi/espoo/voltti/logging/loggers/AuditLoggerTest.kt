@@ -10,11 +10,11 @@ import fi.espoo.voltti.logging.utils.clearTestMessages
 import fi.espoo.voltti.logging.utils.getTestAppender
 import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
+import kotlin.test.assertEquals
 import mu.KLogger
 import mu.KotlinLogging
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 private val logger = KotlinLogging.logger {}.also(KLogger::setupTestAppender)
 private const val message = "audit message"
@@ -73,12 +73,20 @@ class AuditLoggerTest {
         val t = Throwable(throwableMessage)
         logger.audit(t) { message }
 
-        val proxied = logger.getTestAppender().getEvents().first().throwableProxy
+        val proxied =
+            logger
+                .getTestAppender()
+                .getEvents()
+                .first()
+                .throwableProxy
 
         assertEquals(throwableMessage, proxied.message)
     }
 
-    private fun compareArgs(expectedArgs: Map<String, String>, event: ILoggingEvent) {
+    private fun compareArgs(
+        expectedArgs: Map<String, String>,
+        event: ILoggingEvent
+    ) {
         assertEquals(expectedArgs.toString(), event.argumentArray.first().toString())
     }
 }

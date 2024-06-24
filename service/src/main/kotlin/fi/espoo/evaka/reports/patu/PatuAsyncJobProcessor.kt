@@ -13,7 +13,7 @@ private val logger = KotlinLogging.logger {}
 
 class PatuAsyncJobProcessor(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val patuReportingService: PatuReportingService,
+    private val patuReportingService: PatuReportingService
 ) {
     init {
         asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendPatuReport ->
@@ -21,7 +21,10 @@ class PatuAsyncJobProcessor(
         }
     }
 
-    fun runSendPatuReport(dbc: Database.Connection, msg: AsyncJob.SendPatuReport) {
+    fun runSendPatuReport(
+        dbc: Database.Connection,
+        msg: AsyncJob.SendPatuReport
+    ) {
         logger.info("Running patu report job ${msg.dateRange}")
         patuReportingService.sendPatuReport(dbc, msg.dateRange)
     }

@@ -20,14 +20,17 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/income")
-class IncomeControllerCitizen(private val accessControl: AccessControl) {
+class IncomeControllerCitizen(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/expiring")
     fun getExpiringIncome(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<LocalDate> {
-        return db.connect { dbc ->
+    ): List<LocalDate> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -36,20 +39,18 @@ class IncomeControllerCitizen(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_EXPIRED_INCOME_DATES,
                         user.id
                     )
-                    it.expiringIncomes(
+                    it
+                        .expiringIncomes(
                             clock.today(),
                             FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
                             null,
                             user.id
-                        )
-                        .map { it.expirationDate }
+                        ).map { it.expirationDate }
                 }
-            }
-            .also {
+            }.also {
                 Audit.IncomeExpirationDatesRead.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 }

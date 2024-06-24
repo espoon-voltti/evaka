@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service
 class AttachmentService(
     private val documentClient: DocumentService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    bucketEnv: BucketEnv,
+    bucketEnv: BucketEnv
 ) {
     private val filesBucket = bucketEnv.attachments
     private val logger = KotlinLogging.logger {}
@@ -39,7 +39,7 @@ class AttachmentService(
         fileName: String,
         bytes: ByteArray,
         contentType: String,
-        type: AttachmentType? = null,
+        type: AttachmentType? = null
     ): AttachmentId {
         val id =
             dbc.transaction { tx ->
@@ -66,7 +66,10 @@ class AttachmentService(
      * This operation is idempotent and is safe to call even if the attachment doesn't exist in S3
      * and/or the database.
      */
-    fun deleteAttachment(dbc: Database.Connection, id: AttachmentId) {
+    fun deleteAttachment(
+        dbc: Database.Connection,
+        id: AttachmentId
+    ) {
         logger.info("Deleting attachment $id")
         dbc.close() // avoid hogging the connection while we access S3
         // AWS S3 client seems to be idempotent, so deleting a non-existing file doesn't throw an
@@ -75,16 +78,21 @@ class AttachmentService(
         // We must remove the bookkeeping information *after* we are sure the S3 file has been
         // removed, or we could end up losing all bookkeeping info but have a leftover file.
         dbc.transaction {
-            it.createUpdate { sql("""
+            it
+                .createUpdate {
+                    sql(
+                        """
 DELETE FROM attachment
 WHERE id = ${bind(id)}
-""") }.execute()
+"""
+                    )
+                }.execute()
         }
     }
 
     fun scheduleOrphanAttachmentDeletion(
         tx: Database.Transaction,
-        clock: EvakaClock,
+        clock: EvakaClock
     ) {
         val ids = tx.getOrphanAttachments(olderThan = clock.now().minusDays(1))
         logger.info("Scheduling deletion for ${ids.size} orphan attachments")

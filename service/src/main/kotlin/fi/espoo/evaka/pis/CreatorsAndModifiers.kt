@@ -21,12 +21,16 @@ enum class CreateSource : DatabaseEnum {
 sealed class Creator {
     abstract val source: CreateSource
 
-    data class User(val id: EvakaUserId) : Creator() {
+    data class User(
+        val id: EvakaUserId
+    ) : Creator() {
         override val source: CreateSource
             get() = CreateSource.USER
     }
 
-    data class Application(val id: ApplicationId) : Creator() {
+    data class Application(
+        val id: ApplicationId
+    ) : Creator() {
         override val source: CreateSource
             get() = CreateSource.APPLICATION
     }
@@ -47,7 +51,9 @@ enum class ModifySource : DatabaseEnum {
 sealed class Modifier {
     abstract val source: ModifySource
 
-    data class User(val id: EvakaUserId) : Modifier() {
+    data class User(
+        val id: EvakaUserId
+    ) : Modifier() {
         override val source: ModifySource
             get() = ModifySource.USER
     }

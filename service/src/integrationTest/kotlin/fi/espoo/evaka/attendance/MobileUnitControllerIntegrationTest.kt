@@ -67,8 +67,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2))
-            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child
-                ->
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child ->
                 val daycarePlacementId = PlacementId(UUID.randomUUID())
                 tx.insert(
                     DevPlacement(
@@ -246,8 +245,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 .get(
                     "/mobile/units/stats",
                     listOf(Pair("unitIds", unitIds.joinToString { it.toString() }))
-                )
-                .asUser(mobileUser)
+                ).asUser(mobileUser)
                 .withMockedTime(now)
                 .responseObject<List<UnitStats>>(jsonMapper)
 

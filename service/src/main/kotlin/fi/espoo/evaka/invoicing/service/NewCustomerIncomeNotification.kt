@@ -26,13 +26,16 @@ class NewCustomerIncomeNotification(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv,
+    private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::sendEmail)
     }
 
-    fun scheduleNotifications(tx: Database.Transaction, clock: EvakaClock): Int {
+    fun scheduleNotifications(
+        tx: Database.Transaction,
+        clock: EvakaClock
+    ): Int {
         tx.removeUnclaimedJobs(
             setOf(AsyncJobType(AsyncJob.SendNewCustomerIncomeNotificationEmail::class))
         )
@@ -62,7 +65,8 @@ class NewCustomerIncomeNotification(
     ) {
         val language =
             db.read { tx ->
-                tx.createQuery {
+                tx
+                    .createQuery {
                         sql(
                             """
                             SELECT language
@@ -71,22 +75,23 @@ class NewCustomerIncomeNotification(
                             AND email IS NOT NULL
                             """
                         )
-                    }
-                    .exactlyOneOrNull {
+                    }.exactlyOneOrNull {
                         column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
                             ?: Language.fi
                     }
             } ?: return
 
         if (
-            db.read { tx -> tx.newCustomerIdsForIncomeNotifications(clock.today(), msg.guardianId) }
+            db
+                .read { tx -> tx.newCustomerIdsForIncomeNotifications(clock.today(), msg.guardianId) }
                 .contains(msg.guardianId)
         ) {
             logger.info(
                 "NewCustomerIncomeNotification: sending notification email to ${msg.guardianId}"
             )
 
-            Email.create(
+            Email
+                .create(
                     dbc = db,
                     emailType = EmailMessageType.NEW_CUSTOMER_INCOME_NOTIFICATION,
                     personId = msg.guardianId,
@@ -97,8 +102,7 @@ class NewCustomerIncomeNotification(
                             language
                         ),
                     traceId = msg.guardianId.toString()
-                )
-                ?.also { emailClient.send(it) }
+                )?.also { emailClient.send(it) }
 
             db.transaction {
                 it.createIncomeNotification(msg.guardianId, IncomeNotificationType.NEW_CUSTOMER)

@@ -39,7 +39,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 decision = true,
                 document = true,
                 informalDocument = true,
-                missingAttendanceReservation = true,
+                missingAttendanceReservation = true
             ),
             settings
         )
@@ -61,7 +61,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 decision = true,
                 document = false,
                 informalDocument = true,
-                missingAttendanceReservation = false,
+                missingAttendanceReservation = false
             )
         )
 
@@ -80,7 +80,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 decision = true,
                 document = false,
                 informalDocument = true,
-                missingAttendanceReservation = false,
+                missingAttendanceReservation = false
             ),
             settings
         )

@@ -11,12 +11,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
 
-fun Database.Read.getPedagogicalDocumentAttachments(
-    pedagogicalDocumentId: PedagogicalDocumentId
-): List<Attachment> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getPedagogicalDocumentAttachments(pedagogicalDocumentId: PedagogicalDocumentId): List<Attachment> =
+    createQuery {
+        sql(
+            """
                 SELECT 
                     a.id,
                     a.name,
@@ -25,10 +23,8 @@ fun Database.Read.getPedagogicalDocumentAttachments(
                 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
                 WHERE pd.id = ${bind(pedagogicalDocumentId)}
                 """
-            )
-        }
-        .toList<Attachment>()
-}
+        )
+    }.toList<Attachment>()
 
 data class PedagogicalDocumentCitizen(
     val id: PedagogicalDocumentId,
@@ -42,10 +38,10 @@ data class PedagogicalDocumentCitizen(
 fun Database.Read.getChildPedagogicalDocuments(
     childId: ChildId,
     userId: PersonId
-): List<PedagogicalDocumentCitizen> {
-    return createQuery {
-            sql(
-                """
+): List<PedagogicalDocumentCitizen> =
+    createQuery {
+        sql(
+            """
 SELECT 
     pd.id,
     pd.child_id,
@@ -68,19 +64,13 @@ LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id A
 WHERE pd.child_id = ${bind(childId)}
 ORDER BY pd.created DESC
 """
-            )
-        }
-        .toList<PedagogicalDocumentCitizen>()
+        )
+    }.toList<PedagogicalDocumentCitizen>()
         .map { if (it.attachments.isEmpty()) it.copy(isRead = true) else it }
-}
 
-fun Database.Read.getPedagogicalDocumentChild(
-    pedagogicalDocumentId: PedagogicalDocumentId
-): ChildId {
-    return createQuery {
-            sql(
-                "SELECT child_id FROM pedagogical_document WHERE id = ${bind(pedagogicalDocumentId)}"
-            )
-        }
-        .exactlyOne<ChildId>()
-}
+fun Database.Read.getPedagogicalDocumentChild(pedagogicalDocumentId: PedagogicalDocumentId): ChildId =
+    createQuery {
+        sql(
+            "SELECT child_id FROM pedagogical_document WHERE id = ${bind(pedagogicalDocumentId)}"
+        )
+    }.exactlyOne<ChildId>()

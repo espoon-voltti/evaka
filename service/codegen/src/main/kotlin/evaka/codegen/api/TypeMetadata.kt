@@ -15,7 +15,9 @@ import kotlin.reflect.full.starProjectedType
 
 /** Immutable metadata about Kotlin classes and their TS representations */
 @JvmInline
-value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentation<*>>) {
+value class TypeMetadata(
+    val tsRepresentationMap: Map<KClass<*>, TsRepresentation<*>>
+) {
     constructor(vararg classes: Pair<KClass<*>, TsRepresentation<*>>) : this(classes.toMap())
 
     operator fun contains(clazz: KClass<*>) = tsRepresentationMap.contains(clazz)
@@ -24,8 +26,7 @@ value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentatio
 
     operator fun get(type: KType) = type.classifier?.let { tsRepresentationMap[it] }
 
-    operator fun plus(other: TypeMetadata) =
-        TypeMetadata(this.tsRepresentationMap + other.tsRepresentationMap)
+    operator fun plus(other: TypeMetadata) = TypeMetadata(this.tsRepresentationMap + other.tsRepresentationMap)
 
     operator fun minus(classes: Set<KClass<*>>) = TypeMetadata(this.tsRepresentationMap - classes)
 }
@@ -34,14 +35,17 @@ value class TypeMetadata(val tsRepresentationMap: Map<KClass<*>, TsRepresentatio
  * Discovers metadata starting from the given root types and recursively discovering all related
  * types.
  */
-fun discoverMetadata(initial: TypeMetadata, rootTypes: Sequence<KType>): TypeMetadata {
+fun discoverMetadata(
+    initial: TypeMetadata,
+    rootTypes: Sequence<KType>
+): TypeMetadata {
     val tsReprMap = initial.tsRepresentationMap.toMutableMap()
     val analyzedTypes: MutableSet<KType> = mutableSetOf()
 
     fun createTsRepr(clazz: KClass<*>): TsRepresentation<*> {
         if (
             clazz.qualifiedName?.startsWith("fi.espoo.") != true &&
-                clazz.qualifiedName?.startsWith("evaka.") != true
+            clazz.qualifiedName?.startsWith("evaka.") != true
         ) {
             error("Unsupported $clazz")
         }
@@ -110,5 +114,4 @@ private fun typeSerializerFor(clazz: KClass<*>): TypeSerializer? =
         jsonMapper.typeFactory.constructType(clazz.java)
     )
 
-fun TypeSerializer.discriminantValue(clazz: KClass<*>): String =
-    typeIdResolver.idFromValueAndType(null, clazz.java)
+fun TypeSerializer.discriminantValue(clazz: KClass<*>): String = typeIdResolver.idFromValueAndType(null, clazz.java)

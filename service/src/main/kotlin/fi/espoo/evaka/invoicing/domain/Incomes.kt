@@ -58,13 +58,12 @@ data class DecisionIncome(
     val total: Int,
     val worksAtECHA: Boolean
 ) {
-    fun effectiveComparable(): DecisionIncome? {
-        return when (this.effect) {
+    fun effectiveComparable(): DecisionIncome? =
+        when (this.effect) {
             IncomeEffect.NOT_AVAILABLE,
             IncomeEffect.INCOMPLETE -> null
             else -> this
         }
-    }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

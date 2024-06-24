@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class SecurityConfig {
     @Bean
-    fun accessControl(actionRuleMapping: ActionRuleMapping, tracer: Tracer): AccessControl =
-        AccessControl(actionRuleMapping, tracer)
+    fun accessControl(
+        actionRuleMapping: ActionRuleMapping,
+        tracer: Tracer
+    ): AccessControl = AccessControl(actionRuleMapping, tracer)
 }

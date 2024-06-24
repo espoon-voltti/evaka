@@ -28,7 +28,9 @@ interface InvoiceProductProvider {
 
 @JsonSerialize(converter = ProductKey.ToJson::class)
 @JsonDeserialize(converter = ProductKey.FromJson::class)
-data class ProductKey(val value: String) {
+data class ProductKey(
+    val value: String
+) {
     class FromJson : StdConverter<String, ProductKey>() {
         override fun convert(value: String): ProductKey = ProductKey(value)
     }
@@ -38,4 +40,7 @@ data class ProductKey(val value: String) {
     }
 }
 
-data class ProductWithName(val key: ProductKey, val nameFi: String)
+data class ProductWithName(
+    val key: ProductKey,
+    val nameFi: String
+)

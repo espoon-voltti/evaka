@@ -9,7 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 class TitaniaPersonTest {
-
     @ParameterizedTest
     @CsvSource(
         value =
@@ -22,7 +21,11 @@ class TitaniaPersonTest {
                 "'','',''"
             ]
     )
-    fun firstNameAndLastName(name: String, expectedFirstName: String, expectedLastName: String) {
+    fun firstNameAndLastName(
+        name: String,
+        expectedFirstName: String,
+        expectedLastName: String
+    ) {
         val person =
             TitaniaPerson(
                 employeeId = "123456",

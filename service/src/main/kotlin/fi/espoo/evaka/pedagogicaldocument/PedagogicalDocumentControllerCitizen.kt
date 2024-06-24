@@ -23,15 +23,18 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen")
-class PedagogicalDocumentControllerCitizen(private val accessControl: AccessControl) {
+class PedagogicalDocumentControllerCitizen(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/children/{childId}/pedagogical-documents")
     fun getPedagogicalDocumentsForChild(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<PedagogicalDocumentCitizen> {
-        return db.connect { dbc ->
+    ): List<PedagogicalDocumentCitizen> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -44,14 +47,12 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                         pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PedagogicalDocumentReadByGuardian.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PostMapping("/pedagogical-documents/{documentId}/mark-read")
     fun markPedagogicalDocumentRead(
@@ -80,8 +81,9 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): Map<ChildId, Int> {
-        return db.connect { dbc ->
+    ): Map<ChildId, Int> =
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
                         it,
@@ -92,34 +94,30 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                     )
                     it.countUnreadDocumentsByUser(clock.today(), user.id)
                 }
-            }
-            .also { Audit.PedagogicalDocumentCountUnread.log(targetId = AuditId(user.id)) }
-    }
+            }.also { Audit.PedagogicalDocumentCountUnread.log(targetId = AuditId(user.id)) }
 }
 
 private fun Database.Transaction.markDocumentReadByGuardian(
     clock: EvakaClock,
     documentId: PedagogicalDocumentId,
     guardianId: PersonId
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
 VALUES (${bind(documentId)}, ${bind(guardianId)}, ${bind(clock.now())})
 ON CONFLICT (pedagogical_document_id, person_id) DO NOTHING
 """
-            )
-        }
-        .execute()
+    )
+}.execute()
 
 private fun Database.Read.countUnreadDocumentsByUser(
     today: LocalDate,
     userId: PersonId
 ): Map<ChildId, Int> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
@@ -138,6 +136,5 @@ WHERE NOT EXISTS (
 )
 GROUP BY d.child_id
 """
-            )
-        }
-        .toMap { columnPair("child_id", "unread_count") }
+        )
+    }.toMap { columnPair("child_id", "unread_count") }

@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class FamilyDaycareMealReport(private val accessControl: AccessControl) {
+class FamilyDaycareMealReport(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/family-daycare-meal-count", // deprecated
         "/employee/reports/family-daycare-meal-count"
@@ -44,7 +46,8 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
                 lunchTime = TimeRange(LocalTime.of(10, 30, 0, 0), LocalTime.of(12, 30, 0, 0)),
                 snackTime = TimeRange(LocalTime.of(13, 45, 0, 0), LocalTime.of(15, 0, 0, 0))
             )
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read {
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -56,8 +59,7 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFamilyDaycareMealReportRows(filter, startDate, endDate, defaultMealTimes)
                 }
-            }
-            .also { Audit.FamilyDaycareMealReport.log() }
+            }.also { Audit.FamilyDaycareMealReport.log() }
     }
 
     private fun Database.Read.getFamilyDaycareMealReportRows(
@@ -68,8 +70,8 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
     ): FamilyDaycareMealReportResult {
         val resultRows =
             createQuery {
-                    sql(
-                        """
+                sql(
+                    """
 select a.id                                                          as area_id,
        a.name                                                        as area_name,
        d.id                                                          as daycare_id,
@@ -88,7 +90,9 @@ from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') 
            d.care_area_id,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
-                                  tsrange(ca.date + ${bind(mealTimes.breakfastTime.start)}, ca.date + ${bind(mealTimes.breakfastTime.end)})),
+                                  tsrange(ca.date + ${bind(
+                        mealTimes.breakfastTime.start
+                    )}, ca.date + ${bind(mealTimes.breakfastTime.end)})),
                     0) as breakfastCount,
            coalesce(count(ca.child_id)
                     FILTER (WHERE tsrange(ca.date + ca.start_time, ca.date + ca.end_time) &&
@@ -115,11 +119,9 @@ from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') 
 GROUP BY ROLLUP ((a.id, a.name), (d.id, d.name), (p.id, p.first_name, p.last_name))
 ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
 
-            """
-                            .trimIndent()
-                    )
-                }
-                .toList<FamilyDaycareMealReportRow>()
+                    """.trimIndent()
+                )
+            }.toList<FamilyDaycareMealReportRow>()
 
         val childrenByDaycare = mutableMapOf<String, MutableList<FamilyDaycareMealChildResult>>()
         val daycaresByArea = mutableMapOf<String, MutableList<FamilyDaycareMealDaycareResult>>()
@@ -227,7 +229,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
         val lastName: String,
         val breakfastCount: Int,
         val lunchCount: Int,
-        val snackCount: Int,
+        val snackCount: Int
     )
 
     data class MealReportConfig(

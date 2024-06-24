@@ -39,7 +39,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now,
-                departed = null,
+                departed = null
             )
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
@@ -49,7 +49,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(
                         AttendanceTimes(
                             arrived = now,
-                            departed = null,
+                            departed = null
                         )
                     )
             ),
@@ -64,7 +64,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.minusHours(1),
-                departed = now,
+                departed = now
             )
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
@@ -74,7 +74,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(1),
-                            departed = now,
+                            departed = now
                         )
                     )
             ),
@@ -89,13 +89,13 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.minusHours(1),
-                departed = now,
+                departed = now
             )
             tx.insertTestChildAttendance(
                 unitId = testDaycare.id,
                 childId = testChild_2.id,
                 arrived = now.minusHours(2),
-                departed = null,
+                departed = null
             )
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
@@ -105,14 +105,14 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(1),
-                            departed = now,
+                            departed = now
                         )
                     ),
                 testChild_2.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(2),
-                            departed = null,
+                            departed = null
                         )
                     )
             ),
@@ -127,25 +127,25 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.minusHours(3),
-                departed = now.minusHours(2),
+                departed = now.minusHours(2)
             )
             tx.insertTestChildAttendance(
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.minusHours(1),
-                departed = now,
+                departed = now
             )
             tx.insertTestChildAttendance(
                 unitId = testDaycare.id,
                 childId = testChild_2.id,
                 arrived = now.minusHours(4),
-                departed = now.minusHours(3),
+                departed = now.minusHours(3)
             )
             tx.insertTestChildAttendance(
                 unitId = testDaycare.id,
                 childId = testChild_2.id,
                 arrived = now.minusHours(2),
-                departed = null,
+                departed = null
             )
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
@@ -156,23 +156,23 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(1),
-                            departed = now,
+                            departed = now
                         ),
                         AttendanceTimes(
                             arrived = now.minusHours(3),
-                            departed = now.minusHours(2),
-                        ),
+                            departed = now.minusHours(2)
+                        )
                     ),
                 testChild_2.id to
                     listOf(
                         AttendanceTimes(
                             arrived = now.minusHours(2),
-                            departed = null,
+                            departed = null
                         ),
                         AttendanceTimes(
                             arrived = now.minusHours(4),
-                            departed = now.minusHours(3),
-                        ),
+                            departed = now.minusHours(3)
+                        )
                     )
             ),
             attendances
@@ -186,13 +186,13 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.minusDays(1),
-                departed = now.minusDays(1).atEndOfDay(),
+                departed = now.minusDays(1).atEndOfDay()
             )
             tx.insertTestChildAttendance(
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.atStartOfDay(),
-                departed = null,
+                departed = null
             )
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
@@ -212,13 +212,13 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.minusDays(1),
-                departed = now.minusDays(1).atEndOfDay(),
+                departed = now.minusDays(1).atEndOfDay()
             )
             tx.insertTestChildAttendance(
                 unitId = testDaycare.id,
                 childId = testChild_1.id,
                 arrived = now.atStartOfDay(),
-                departed = now.minusMinutes(45),
+                departed = now.minusMinutes(45)
             )
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }

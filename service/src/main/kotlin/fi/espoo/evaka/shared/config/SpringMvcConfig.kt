@@ -71,8 +71,7 @@ class SpringMvcConfig(
         registry.addConverter(convertFrom<String, Id<*>> { Id<DatabaseTable>(UUID.fromString(it)) })
     }
 
-    private fun WebRequest.getDatabaseInstance(): Database =
-        getDatabase() ?: Database(jdbi, tracer).also(::setDatabase)
+    private fun WebRequest.getDatabaseInstance(): Database = getDatabase() ?: Database(jdbi, tracer).also(::setDatabase)
 
     private inline fun <reified T : AuthenticatedUser> resolveAuthenticatedUser(
         parameter: MethodParameter,

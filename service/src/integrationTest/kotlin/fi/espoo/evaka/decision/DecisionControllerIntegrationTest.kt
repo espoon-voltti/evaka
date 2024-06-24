@@ -162,8 +162,10 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         downloadPdf(admin.user, decisionId)
     }
 
-    private fun downloadPdf(user: AuthenticatedUser.Employee, decisionId: DecisionId) =
-        decisionController.downloadDecisionPdf(dbInstance(), user, clock, decisionId)
+    private fun downloadPdf(
+        user: AuthenticatedUser.Employee,
+        decisionId: DecisionId
+    ) = decisionController.downloadDecisionPdf(dbInstance(), user, clock, decisionId)
 
     private fun createDecisionWithPeople(
         tx: Database.Transaction,

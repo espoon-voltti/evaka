@@ -29,10 +29,15 @@ class FamilyOverviewService(
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 ) {
-    fun getFamilyByAdult(tx: Database.Read, clock: EvakaClock, adultId: PersonId): FamilyOverview? {
+    fun getFamilyByAdult(
+        tx: Database.Read,
+        clock: EvakaClock,
+        adultId: PersonId
+    ): FamilyOverview? {
         val today = clock.today()
         val (adults, children) =
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
                         """
 WITH adult_ids AS
@@ -88,15 +93,13 @@ AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
                     )
-                }
-                .map {
+                }.map {
                     toFamilyOverviewPerson(
                         jsonMapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider
                     )
-                }
-                .useIterable { rows -> rows.partition { it.headOfChild == null } }
+                }.useIterable { rows -> rows.partition { it.headOfChild == null } }
 
         if (adults.isEmpty()) {
             throw NotFound("No adult found")
@@ -167,8 +170,8 @@ fun Row.toFamilyOverviewPerson(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
-): FamilyOverviewPerson {
-    return FamilyOverviewPerson(
+): FamilyOverviewPerson =
+    FamilyOverviewPerson(
         personId = column("id"),
         firstName = column("first_name"),
         lastName = column("last_name"),
@@ -195,4 +198,3 @@ fun Row.toFamilyOverviewPerson(
                     }
             )
     )
-}

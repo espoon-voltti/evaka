@@ -41,9 +41,10 @@ class MessagePushNotifications(
 
     private val logger = KotlinLogging.logger {}
 
-    private fun getPendingPushNotifications() = QuerySql {
-        sql(
-            """
+    private fun getPendingPushNotifications() =
+        QuerySql {
+            sql(
+                """
 SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
@@ -76,14 +77,15 @@ AND CASE
     )
 END
 """
-        )
-    }
+            )
+        }
 
     fun getAsyncJobs(
         tx: Database.Read,
         messages: Collection<MessageId>
     ): List<AsyncJob.SendMessagePushNotification> =
-        tx.createQuery {
+        tx
+            .createQuery {
                 sql(
                     """
 SELECT recipient, device
@@ -91,8 +93,7 @@ FROM (${subquery(getPendingPushNotifications())}) notification
 WHERE notification.message = ANY(${bind(messages)})
 """
                 )
-            }
-            .toList<AsyncJob.SendMessagePushNotification>()
+            }.toList<AsyncJob.SendMessagePushNotification>()
 
     data class GroupNotification(
         val groupId: GroupId,
@@ -105,28 +106,27 @@ WHERE notification.message = ANY(${bind(messages)})
         device: MobileDeviceId
     ): GroupNotification? =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT group_id, group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM (${subquery(getPendingPushNotifications())}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
 WHERE notification.recipient = ${bind(messageRecipient)}
 AND notification.device = ${bind(device)}
 """
+            )
+        }.exactlyOneOrNull {
+            GroupNotification(
+                groupId = column("group_id"),
+                groupName = column("group_name"),
+                WebPushEndpoint(
+                    uri = column("endpoint"),
+                    ecdhPublicKey =
+                        WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
+                    authSecret = column("auth_secret")
                 )
-            }
-            .exactlyOneOrNull {
-                GroupNotification(
-                    groupId = column("group_id"),
-                    groupName = column("group_name"),
-                    WebPushEndpoint(
-                        uri = column("endpoint"),
-                        ecdhPublicKey =
-                            WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
-                        authSecret = column("auth_secret")
-                    )
-                )
-            }
+            )
+        }
 
     fun send(
         dbc: Database.Connection,
@@ -138,7 +138,8 @@ AND notification.device = ${bind(device)}
 
         val (vapidJwt, notification) =
             dbc.transaction { tx ->
-                tx.getNotification(recipient, device)
+                tx
+                    .getNotification(recipient, device)
                     ?.takeIf {
                         accessControl.hasPermissionFor(
                             tx,
@@ -147,8 +148,7 @@ AND notification.device = ${bind(device)}
                             Action.Group.RECEIVE_PUSH_NOTIFICATIONS,
                             it.groupId
                         )
-                    }
-                    ?.let { Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it) }
+                    }?.let { Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it) }
             } ?: return
         dbc.close()
 

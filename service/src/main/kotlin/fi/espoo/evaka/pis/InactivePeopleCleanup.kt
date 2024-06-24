@@ -13,11 +13,15 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<PersonId> {
+fun cleanUpInactivePeople(
+    tx: Database.Transaction,
+    queryDate: LocalDate
+): Set<PersonId> {
     val twoMonthsAgo = queryDate.minusMonths(2)
     tx.setStatementTimeout(Duration.ofMinutes(20))
     val deletedPeople =
-        tx.createUpdate {
+        tx
+            .createUpdate {
                 sql(
                     """
 WITH people_with_no_archive_data AS (
@@ -129,8 +133,7 @@ AND NOT EXISTS (
 RETURNING id
 """
                 )
-            }
-            .executeAndReturnGeneratedKeys()
+            }.executeAndReturnGeneratedKeys()
             .toSet<PersonId>()
 
     logger.info(mapOf("deletedPeople" to deletedPeople)) {

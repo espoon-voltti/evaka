@@ -144,15 +144,15 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         shiftCare: ShiftCareType
     ): ChildId =
         tx.insert(DevPerson(), DevPersonType.CHILD).also { childId ->
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,

@@ -22,7 +22,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class VtjHenkiloMapperTest {
-
     @Test
     fun `valid person should be mapped to person details`() {
         val value =

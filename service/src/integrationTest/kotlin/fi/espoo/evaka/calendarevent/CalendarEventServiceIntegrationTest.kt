@@ -66,9 +66,13 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var calendarEventController: CalendarEventController
+
     @Autowired lateinit var placementController: PlacementController
+
     @Autowired lateinit var backupCareController: BackupCareController
+
     @Autowired lateinit var placementControllerCitizen: PlacementControllerCitizen
+
     @Autowired lateinit var calendarEventNotificationService: CalendarEventNotificationService
 
     private final val adminId = EmployeeId(UUID.randomUUID())
@@ -696,8 +700,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(4)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
     }
 
@@ -861,8 +864,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     today.minusDays(10),
                     today.plusDays(10)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
     }
 
@@ -887,8 +889,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     today.minusDays(10),
                     today.plusDays(10)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
     }
 
@@ -913,8 +914,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     today.minusDays(10),
                     today.plusDays(10)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
     }
 
@@ -951,8 +951,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     placementStart.minusDays(50),
                     placementStart.plusDays(50)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
     }
 
@@ -1086,8 +1085,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1123,8 +1121,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1160,8 +1157,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1191,8 +1187,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1228,8 +1223,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1265,8 +1259,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isNotEmpty()
+                ).isNotEmpty()
         )
     }
 
@@ -1302,8 +1295,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1343,8 +1335,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isNotEmpty()
+                ).isNotEmpty()
         )
     }
 
@@ -1387,8 +1378,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1435,8 +1425,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1483,8 +1472,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare2.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1531,8 +1519,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare2.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1578,8 +1565,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare2.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1620,8 +1606,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testDaycare.id,
                     today,
                     today.plusDays(5)
-                )
-                .isEmpty()
+                ).isEmpty()
         )
         assertEquals(
             0,
@@ -1684,7 +1669,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     preferredName = "",
                     phone = "",
                     backupPhone = "",
-                    email = "example@example.com",
+                    email = "example@example.com"
                 )
             )
         }
@@ -1896,7 +1881,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `group discussion survey reservation days contain correct events and day information`() {
-
         val daycareEventForm =
             CalendarEventForm(
                 unitId = testDaycare.id,
@@ -2004,14 +1988,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         clock: EvakaClock = this.clock,
         unitId: DaycareId,
         groupId: GroupId
-    ) =
-        calendarEventController.getGroupDiscussionSurveys(
-            dbInstance(),
-            user,
-            clock,
-            unitId,
-            groupId
-        )
+    ) = calendarEventController.getGroupDiscussionSurveys(
+        dbInstance(),
+        user,
+        clock,
+        unitId,
+        groupId
+    )
 
     private fun createCalendarEvent(
         form: CalendarEventForm,
@@ -2065,22 +2048,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         childId: ChildId,
         user: AuthenticatedUser.Citizen = guardian,
         clock: EvakaClock = this.clock
-    ) =
-        calendarEventController.getReservableCalendarEventTimes(
-            dbInstance(),
-            user,
-            clock,
-            calendarEventId,
-            childId
-        )
+    ) = calendarEventController.getReservableCalendarEventTimes(
+        dbInstance(),
+        user,
+        clock,
+        calendarEventId,
+        childId
+    )
 
     private fun addEventTimeAsEmployee(
         form: CalendarEventTimeForm,
         eventId: CalendarEventId,
         user: AuthenticatedUser.Employee = admin,
         clock: EvakaClock = this.clock
-    ): CalendarEventTimeId =
-        calendarEventController.addCalendarEventTime(dbInstance(), user, clock, eventId, form)
+    ): CalendarEventTimeId = calendarEventController.addCalendarEventTime(dbInstance(), user, clock, eventId, form)
 
     private fun deleteEventTimeAsEmployee(
         user: AuthenticatedUser.Employee = admin,
@@ -2099,14 +2080,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         clock: EvakaClock = this.clock,
         eventTimeId: CalendarEventTimeId,
         childId: ChildId
-    ) =
-        calendarEventController.deleteCalendarEventTimeReservation(
-            dbInstance(),
-            user,
-            clock,
-            eventTimeId,
-            childId
-        )
+    ) = calendarEventController.deleteCalendarEventTimeReservation(
+        dbInstance(),
+        user,
+        clock,
+        eventTimeId,
+        childId
+    )
 
     private fun setCalendarEventTimeReservationAsEmployee(
         user: AuthenticatedUser.Employee = admin,

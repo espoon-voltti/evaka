@@ -263,7 +263,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         test(
             headPeriods = listOf(0 to 0),
             fosterPeriods = listOf(9 to 9),
-            expected = listOf(1 to 3, 6 to 8),
+            expected = listOf(1 to 3, 6 to 8)
         )
 
         //  pppp  pppp
@@ -272,7 +272,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         test(
             headPeriods = listOf(9 to 9),
             fosterPeriods = listOf(0 to 0),
-            expected = listOf(1 to 3, 6 to 8),
+            expected = listOf(1 to 3, 6 to 8)
         )
 
         //  pppp  pppp
@@ -281,7 +281,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         test(
             headPeriods = listOf(0 to 4),
             fosterPeriods = listOf(5 to 7),
-            expected = listOf(8 to 9),
+            expected = listOf(8 to 9)
         )
 
         //  pppp  pppp
@@ -290,7 +290,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         test(
             headPeriods = listOf(7 to 9),
             fosterPeriods = listOf(2 to 6),
-            expected = listOf(0 to 1),
+            expected = listOf(0 to 1)
         )
 
         //  pppp  pppp
@@ -299,7 +299,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         test(
             headPeriods = listOf(4 to 4),
             fosterPeriods = listOf(3 to 5),
-            expected = listOf(0 to 2, 6 to 9),
+            expected = listOf(0 to 2, 6 to 9)
         )
 
         //  pppp  pppp
@@ -308,14 +308,14 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         test(
             headPeriods = listOf(0 to 0, 2 to 2, 4 to 4, 6 to 6, 8 to 8),
             fosterPeriods = listOf(1 to 1, 3 to 3, 5 to 5, 7 to 7, 9 to 9),
-            expected = listOf(),
+            expected = listOf()
         )
     }
 
     private fun test(
         headPeriods: List<Pair<Int, Int>> = listOf(),
         fosterPeriods: List<Pair<Int, Int>> = listOf(),
-        expected: List<Pair<Int, Int>>,
+        expected: List<Pair<Int, Int>>
     ) {
         val headIds =
             db.transaction { tx ->
@@ -325,7 +325,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                             childId = testChild_1.id,
                             headOfChild = testAdult_1.id,
                             startDate = startDate.plusDays(start.toLong()),
-                            endDate = startDate.plusDays(end.toLong()),
+                            endDate = startDate.plusDays(end.toLong())
                         )
                     )
                 }
@@ -347,8 +347,9 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                 }
             }
         assertEquals(
-            if (expected.isEmpty()) listOf()
-            else
+            if (expected.isEmpty()) {
+                listOf()
+            } else {
                 listOf(
                     toReportRow(
                         testChild_1,
@@ -359,7 +360,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                             )
                         }
                     )
-                ),
+                )
+            },
             getReport(startDate.minusDays(10), startDate.plusDays(10))
         )
         db.transaction { tx ->
@@ -399,7 +401,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                 )
             )
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE person set date_of_death = :dod")
+            it
+                .createUpdate("UPDATE person set date_of_death = :dod")
                 .bind("dod", startDate.minusDays(1))
                 .execute()
         }
@@ -434,7 +437,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `duplicate child is shown depending on query param`() {
         db.transaction {
-            it.createUpdate {
+            it
+                .createUpdate {
                     sql(
                         """
                         UPDATE person
@@ -442,8 +446,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                         WHERE id = ${bind(testChild_1.id)}
                         """
                     )
-                }
-                .execute()
+                }.execute()
             it.insert(
                 DevPlacement(
                     childId = testChild_1.id,
@@ -484,10 +487,9 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
 
         assertEquals(
             listOf(
-                    toReportRow(testChild_1, listOf(FiniteDateRange(startDate, startDate))),
-                    toReportRow(testChild_2, listOf(FiniteDateRange(startDate, startDate))),
-                )
-                .sortedWith(compareBy({ it.lastName }, { it.firstName })),
+                toReportRow(testChild_1, listOf(FiniteDateRange(startDate, startDate))),
+                toReportRow(testChild_2, listOf(FiniteDateRange(startDate, startDate)))
+            ).sortedWith(compareBy({ it.lastName }, { it.firstName })),
             getReport(startDate, startDate)
         )
     }
@@ -506,11 +508,13 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             showIntentionalDuplicates = showIntentionalDuplicates
         )
 
-    private fun toReportRow(child: DevPerson, rangesWithoutHead: List<FiniteDateRange>) =
-        MissingHeadOfFamilyReportRow(
-            childId = child.id,
-            firstName = child.firstName,
-            lastName = child.lastName,
-            rangesWithoutHead = rangesWithoutHead
-        )
+    private fun toReportRow(
+        child: DevPerson,
+        rangesWithoutHead: List<FiniteDateRange>
+    ) = MissingHeadOfFamilyReportRow(
+        childId = child.id,
+        firstName = child.firstName,
+        lastName = child.lastName,
+        rangesWithoutHead = rangesWithoutHead
+    )
 }

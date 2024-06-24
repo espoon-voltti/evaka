@@ -12,7 +12,10 @@ import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.PropagateNull
 
-data class ChildWithDateOfBirth(@PropagateNull val id: ChildId, val dateOfBirth: LocalDate)
+data class ChildWithDateOfBirth(
+    @PropagateNull val id: ChildId,
+    val dateOfBirth: LocalDate
+)
 
 data class EmployeeWithName(
     @PropagateNull val id: EmployeeId,
@@ -50,8 +53,11 @@ data class PersonDetailed(
     val forceManualFeeDecisions: Boolean = false
 )
 
-fun addressUsable(streetAddress: String?, postalCode: String?, city: String?): Boolean =
-    listOf(streetAddress, postalCode, city).none { it.isNullOrBlank() }
+fun addressUsable(
+    streetAddress: String?,
+    postalCode: String?,
+    city: String?
+): Boolean = listOf(streetAddress, postalCode, city).none { it.isNullOrBlank() }
 
 data class FridgeFamily(
     val headOfFamily: PersonId,
@@ -59,7 +65,5 @@ data class FridgeFamily(
     val children: List<PersonBasic>,
     val period: DateRange
 ) {
-    fun getSize(): Int {
-        return 1 + (if (partner != null) 1 else 0) + children.size
-    }
+    fun getSize(): Int = 1 + (if (partner != null) 1 else 0) + children.size
 }

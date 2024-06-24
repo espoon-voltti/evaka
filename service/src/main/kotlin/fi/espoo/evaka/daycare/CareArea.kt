@@ -120,7 +120,11 @@ data class FinanceDecisionHandler(
     val lastName: String
 )
 
-data class UnitManager(val name: String, val email: String, val phone: String)
+data class UnitManager(
+    val name: String,
+    val email: String,
+    val phone: String
+)
 
 data class DaycareDecisionCustomization(
     val daycareName: String,
@@ -129,7 +133,11 @@ data class DaycareDecisionCustomization(
     val handlerAddress: String
 )
 
-data class DaycareCareArea(val id: AreaId, val name: String, val shortName: String)
+data class DaycareCareArea(
+    val id: AreaId,
+    val name: String,
+    val shortName: String
+)
 
 @ConstList("careTypes")
 enum class CareType : DatabaseEnum {
@@ -143,7 +151,11 @@ enum class CareType : DatabaseEnum {
     override val sqlType: String = "care_types"
 }
 
-data class UnitStub(val id: DaycareId, val name: String, val careTypes: List<CareType>)
+data class UnitStub(
+    val id: DaycareId,
+    val name: String,
+    val careTypes: List<CareType>
+)
 
 data class UnitFeatures(
     val id: DaycareId,

@@ -59,6 +59,5 @@ fun resolveFiveYearOldPlacementPeriods(
                     null
                 }
             )
-        }
-        .flatten()
+        }.flatten()
 }

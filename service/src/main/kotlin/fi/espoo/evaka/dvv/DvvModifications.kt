@@ -55,8 +55,10 @@ interface DvvInfoGroup {
     val tietoryhma: String
 }
 
-data class DefaultDvvInfoGroup(override val tietoryhma: String, val muutosattribuutti: String?) :
-    DvvInfoGroup
+data class DefaultDvvInfoGroup(
+    override val tietoryhma: String,
+    val muutosattribuutti: String?
+) : DvvInfoGroup
 
 data class RestrictedInfoDvvInfoGroup(
     override val tietoryhma: String,
@@ -75,7 +77,9 @@ data class CaretakerLimitedDvvInfoGroup(
     val huoltosuhteenLoppupv: DvvDate?
 ) : DvvInfoGroup
 
-data class DvvSsn(val henkilotunnus: String?)
+data class DvvSsn(
+    val henkilotunnus: String?
+)
 
 data class DeathDvvInfoGroup(
     override val tietoryhma: String,
@@ -93,8 +97,9 @@ data class SsnDvvInfoGroup(
     val edellisetHenkilotunnukset: List<String>
 ) : DvvInfoGroup
 
-data class DvvDate(val arvo: String, val tarkkuus: String) {
-    fun asLocalDate(): LocalDate {
-        return LocalDate.parse(arvo)
-    }
+data class DvvDate(
+    val arvo: String,
+    val tarkkuus: String
+) {
+    fun asLocalDate(): LocalDate = LocalDate.parse(arvo)
 }

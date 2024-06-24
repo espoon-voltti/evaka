@@ -28,12 +28,17 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId): DaycareUnitData {
+fun unitDataFromDatabase(
+    tx: Database.Read,
+    date: LocalDate,
+    unitId: DaycareId
+): DaycareUnitData {
     val daycare = tx.getDaycare(unitId)
     val holidays = tx.getHolidays(FiniteDateRange(date, date))
     val childPlacements = tx.childPlacementsForDay(unitId, date)
     val childrenWithShiftCare =
-        tx.getChildServiceNeedInfos(unitId, childPlacements.keys, FiniteDateRange(date, date))
+        tx
+            .getChildServiceNeedInfos(unitId, childPlacements.keys, FiniteDateRange(date, date))
             .filter { it.shiftCare != ShiftCareType.NONE }
             .map { it.childId }
             .toSet()
@@ -60,7 +65,6 @@ class MealReportController(
     private val accessControl: AccessControl,
     private val mealTypeMapper: MealTypeMapper
 ) {
-
     @GetMapping(
         "/reports/meal/{unitId}", // deprecated
         "/employee/reports/meal/{unitId}"
@@ -71,9 +75,10 @@ class MealReportController(
         user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): MealReportData {
-        return db.connect { dbc ->
-            dbc.read {
+    ): MealReportData =
+        db.connect { dbc ->
+            dbc
+                .read {
                     accessControl.requirePermissionFor(
                         it,
                         user,
@@ -87,8 +92,7 @@ class MealReportController(
                         date,
                         mealTypeMapper
                     ) ?: throw BadRequest("Daycare not found for $unitId")
-                }
-                .also {
+                }.also {
                     Audit.MealReportRead.log(
                         meta =
                             mapOf(
@@ -100,5 +104,4 @@ class MealReportController(
                     )
                 }
         }
-    }
 }

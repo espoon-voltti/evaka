@@ -9,7 +9,6 @@ import fi.espoo.evaka.invoicing.service.IncomeCoefficientMultiplierProvider
 import java.math.BigDecimal
 
 class EspooIncomeCoefficientMultiplierProvider : IncomeCoefficientMultiplierProvider {
-
     override fun multiplier(coefficient: IncomeCoefficient): BigDecimal =
         when (coefficient) {
             IncomeCoefficient.MONTHLY_WITH_HOLIDAY_BONUS -> BigDecimal("1.0417")

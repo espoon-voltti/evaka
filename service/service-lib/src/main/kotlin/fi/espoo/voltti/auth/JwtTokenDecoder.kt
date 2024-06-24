@@ -16,20 +16,27 @@ import mu.KotlinLogging
 // RFC6750 - The OAuth 2.0 Authorization Framework: Bearer Token Usage
 // Authorization Request Header Field
 // https://tools.ietf.org/html/rfc6750#section-2.1
-private fun HttpServletRequest.getBearerToken(): String? =
-    getHeader("Authorization")?.substringAfter("Bearer ", missingDelimiterValue = "")
+private fun HttpServletRequest.getBearerToken(): String? = getHeader("Authorization")?.substringAfter("Bearer ", missingDelimiterValue = "")
 
 private const val ATTR_JWT = "evaka.jwt"
 
 fun HttpServletRequest.getDecodedJwt(): DecodedJWT? = getAttribute(ATTR_JWT) as DecodedJWT?
+
 fun HttpServletRequest.setDecodedJwt(jwt: DecodedJWT) = setAttribute(ATTR_JWT, jwt)
 
-class JwtTokenDecoder(private val jwtVerifier: JWTVerifier) : HttpFilter() {
+class JwtTokenDecoder(
+    private val jwtVerifier: JWTVerifier
+) : HttpFilter() {
     private val logger = KotlinLogging.logger {}
 
-    override fun doFilter(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
+    override fun doFilter(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        chain: FilterChain
+    ) {
         try {
-            request.getBearerToken()
+            request
+                .getBearerToken()
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { request.setDecodedJwt(jwtVerifier.verify(it)) }
         } catch (e: JWTVerificationException) {

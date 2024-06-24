@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     private val christmasRange =
         FiniteDateRange(LocalDate.of(2021, 12, 18), LocalDate.of(2022, 1, 6))
     private val christmasDeadline = christmasRange.start.minusWeeks(4)

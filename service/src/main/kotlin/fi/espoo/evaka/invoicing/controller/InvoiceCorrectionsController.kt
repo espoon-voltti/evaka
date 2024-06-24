@@ -33,15 +33,18 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/invoice-corrections", "/employee/invoice-corrections")
-class InvoiceCorrectionsController(private val accessControl: AccessControl) {
+class InvoiceCorrectionsController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/{personId}")
     fun getPersonInvoiceCorrections(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId
-    ): List<InvoiceCorrectionWithPermittedActions> {
-        return db.connect { dbc ->
+    ): List<InvoiceCorrectionWithPermittedActions> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -51,7 +54,8 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         personId
                     )
                     val invoiceCorrections =
-                        tx.createQuery {
+                        tx
+                            .createQuery {
                                 sql(
                                     """
 SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
@@ -69,8 +73,7 @@ LEFT JOIN LATERAL (
 WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
 """
                                 )
-                            }
-                            .toList<InvoiceCorrection>()
+                            }.toList<InvoiceCorrection>()
                     val permittedActions =
                         accessControl.getPermittedActions<
                             InvoiceCorrectionId,
@@ -88,14 +91,12 @@ WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.InvoiceCorrectionsRead.log(
                     targetId = AuditId(personId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     data class InvoiceCorrectionWithPermittedActions(
         val data: InvoiceCorrection,
@@ -119,16 +120,26 @@ WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
                         Action.Person.CREATE_INVOICE_CORRECTION,
                         body.headOfFamilyId
                     )
-                    tx.createUpdate {
+                    tx
+                        .createUpdate {
                             sql(
                                 """
 INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
-VALUES (${bind(body.headOfFamilyId)}, ${bind(body.childId)}, ${bind(body.unitId)}, ${bind(body.product)}, ${bind(body.period)}, ${bind(body.amount)}, ${bind(body.unitPrice)}, ${bind(body.description)}, ${bind(body.note)})
+VALUES (${bind(
+                                    body.headOfFamilyId
+                                )}, ${bind(
+                                    body.childId
+                                )}, ${bind(
+                                    body.unitId
+                                )}, ${bind(
+                                    body.product
+                                )}, ${bind(
+                                    body.period
+                                )}, ${bind(body.amount)}, ${bind(body.unitPrice)}, ${bind(body.description)}, ${bind(body.note)})
 RETURNING id
 """
                             )
-                        }
-                        .executeAndReturnGeneratedKeys()
+                        }.executeAndReturnGeneratedKeys()
                         .exactlyOne<InvoiceCorrectionId>()
                 }
             }
@@ -155,7 +166,8 @@ RETURNING id
                     id
                 )
                 try {
-                    tx.createUpdate {
+                    tx
+                        .createUpdate {
                             sql(
                                 """
 WITH deleted_invoice_row AS (
@@ -164,8 +176,7 @@ WITH deleted_invoice_row AS (
 DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
 """
                             )
-                        }
-                        .execute()
+                        }.execute()
                 } catch (e: JdbiException) {
                     when (e.psqlCause()?.sqlState) {
                         PSQLState.FOREIGN_KEY_VIOLATION.state ->
@@ -181,7 +192,9 @@ DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
         Audit.InvoiceCorrectionsDelete.log(targetId = AuditId(id))
     }
 
-    data class NoteUpdateBody(val note: String)
+    data class NoteUpdateBody(
+        val note: String
+    )
 
     @PostMapping("/{id}/note")
     fun updateInvoiceCorrectionNote(
@@ -200,12 +213,12 @@ DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
                     Action.InvoiceCorrection.UPDATE_NOTE,
                     id
                 )
-                tx.createUpdate {
+                tx
+                    .createUpdate {
                         sql(
                             "UPDATE invoice_correction SET note = ${bind(body.note)} WHERE id = ${bind(id)}"
                         )
-                    }
-                    .execute()
+                    }.execute()
             }
         }
         Audit.InvoiceCorrectionsNoteUpdate.log(targetId = AuditId(id))

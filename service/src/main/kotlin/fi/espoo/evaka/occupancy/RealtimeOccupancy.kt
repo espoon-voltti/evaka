@@ -27,9 +27,8 @@ data class RealtimeOccupancy(
         val attns: List<ChildOccupancyAttendance> =
             childAttendances
                 .sortedWith(
-                    compareBy({ it.childId }, { it.arrived }),
-                )
-                .fold(listOf()) { list, child ->
+                    compareBy({ it.childId }, { it.arrived })
+                ).fold(listOf()) { list, child ->
                     if (list.isNotEmpty() && departedOneMinuteEarlier(child, list.last())) {
                         list.dropLast(1) + list.last().copy(departed = child.departed)
                     } else {
@@ -98,7 +97,10 @@ data class ChildOccupancyAttendance(
     val capacity: Double
 )
 
-data class ChildCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
+data class ChildCapacityPoint(
+    val time: HelsinkiDateTime,
+    val capacity: Double
+)
 
 data class StaffOccupancyAttendance(
     val arrived: HelsinkiDateTime,
@@ -106,7 +108,10 @@ data class StaffOccupancyAttendance(
     val capacity: Double
 )
 
-data class StaffCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
+data class StaffCapacityPoint(
+    val time: HelsinkiDateTime,
+    val capacity: Double
+)
 
 data class OccupancyPoint(
     val time: HelsinkiDateTime,
@@ -127,8 +132,8 @@ fun Database.Read.getChildOccupancyAttendances(
     timeRange: HelsinkiDateTimeRange
 ): List<ChildOccupancyAttendance> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     ca.child_id,
     (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
@@ -148,11 +153,12 @@ LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placeme
 LEFT JOIN assistance_factor an on an.child_id = ch.id AND an.valid_during @> ca.date
 WHERE
     ca.unit_id = ${bind(unitId)} AND
-    tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && ${bind(timeRange)}
+    tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && ${bind(
+                timeRange
+            )}
 """
-            )
-        }
-        .toList<ChildOccupancyAttendance>()
+        )
+    }.toList<ChildOccupancyAttendance>()
 
 val presentStaffAttendanceTypes =
     "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
@@ -162,8 +168,8 @@ fun Database.Read.getStaffOccupancyAttendances(
     timeRange: HelsinkiDateTimeRange
 ): List<StaffOccupancyAttendance> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg ON dg.id = sa.group_id
@@ -177,6 +183,5 @@ FROM staff_attendance_external sae
 JOIN daycare_group dg ON dg.id = sae.group_id
 WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && ${bind(timeRange)}
 """
-            )
-        }
-        .toList<StaffOccupancyAttendance>()
+        )
+    }.toList<StaffOccupancyAttendance>()

@@ -13,7 +13,6 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class IncomesTest {
-
     private val coefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
 
     @Test

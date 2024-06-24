@@ -32,7 +32,6 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired private lateinit var financeBasicsController: FinanceBasicsController
 
     val mockClock = MockEvakaClock(2024, 4, 1, 10, 0)
@@ -105,7 +104,12 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val voucherValuesAfter =
             getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
-        assertEquals(voucherValuesAfter.last().voucherValues.range.end, null)
+        assertEquals(
+            voucherValuesAfter
+                .last()
+                .voucherValues.range.end,
+            null
+        )
     }
 
     @Test
@@ -196,7 +200,9 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 .copy(
                     range =
                         DateRange(
-                            voucherValuesBefore[1].voucherValues.range.start.plusWeeks(2),
+                            voucherValuesBefore[1]
+                                .voucherValues.range.start
+                                .plusWeeks(2),
                             voucherValuesBefore[1].voucherValues.range.end
                         )
                 )
@@ -223,7 +229,9 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 .copy(
                     range =
                         DateRange(
-                            voucherValuesBefore[1].voucherValues.range.start.minusWeeks(2),
+                            voucherValuesBefore[1]
+                                .voucherValues.range.start
+                                .minusWeeks(2),
                             voucherValuesBefore[1].voucherValues.range.end
                         )
                 )
@@ -273,8 +281,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         )
     }
 
-    fun getVoucherValues():
-        Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> =
+    fun getVoucherValues(): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> =
         dbInstance().connect { dbc -> dbc.read { tx -> tx.getVoucherValuesByServiceNeedOption() } }
 
     fun Database.Transaction.deleteTestVoucherValues() {
@@ -283,8 +290,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 """
                 DELETE FROM service_need_option_voucher_value
                 WHERE service_need_option_id = ${bind(snDefaultDaycare.id)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
     }

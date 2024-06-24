@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class EndedPlacementsReportController(private val accessControl: AccessControl) {
+class EndedPlacementsReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/ended-placements", // deprecated
         "/employee/reports/ended-placements"
@@ -32,7 +34,8 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -43,8 +46,7 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getEndedPlacementsRows(from, to)
                 }
-            }
-            .also {
+            }.also {
                 Audit.EndedPlacementsReportRead.log(
                     meta = mapOf("year" to year, "month" to month, "count" to it.size)
                 )
@@ -55,10 +57,10 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
 private fun Database.Read.getEndedPlacementsRows(
     from: LocalDate,
     to: LocalDate
-): List<EndedPlacementsReportRow> {
-    return createQuery {
-            sql(
-                """
+): List<EndedPlacementsReportRow> =
+    createQuery {
+        sql(
+            """
 WITH ended_placements AS (
     SELECT 
         p.id AS child_id, p.first_name, p.last_name, p.social_security_number, 
@@ -84,10 +86,8 @@ GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.social_security_number, ep
 HAVING min(next.start_date) IS NULL OR min(next.start_date) > ${bind(to)}
 ORDER BY last_name, first_name, social_security_number
 """
-            )
-        }
-        .toList<EndedPlacementsReportRow>()
-}
+        )
+    }.toList<EndedPlacementsReportRow>()
 
 data class EndedPlacementsReportRow(
     val childId: ChildId,

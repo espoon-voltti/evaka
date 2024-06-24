@@ -17,12 +17,13 @@ import jakarta.servlet.http.HttpServletResponse
 
 private const val ATTR_USER = "evaka.user"
 
-fun HttpServletRequest.getAuthenticatedUser(): AuthenticatedUser? =
-    getAttribute(ATTR_USER) as AuthenticatedUser?
+fun HttpServletRequest.getAuthenticatedUser(): AuthenticatedUser? = getAttribute(ATTR_USER) as AuthenticatedUser?
 
 fun HttpServletRequest.setAuthenticatedUser(user: AuthenticatedUser) = setAttribute(ATTR_USER, user)
 
-class RequestToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
+class RequestToAuthenticatedUser(
+    private val tracer: Tracer
+) : HttpFilter() {
     override fun doFilter(
         request: HttpServletRequest,
         response: HttpServletResponse,

@@ -37,7 +37,10 @@ class MissingReservationsReminders(
         }
     }
 
-    fun scheduleReminders(tx: Database.Transaction, clock: EvakaClock): Int {
+    fun scheduleReminders(
+        tx: Database.Transaction,
+        clock: EvakaClock
+    ): Int {
         tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SendMissingReservationsReminder::class)))
 
         val monday =
@@ -45,18 +48,17 @@ class MissingReservationsReminders(
         val range = FiniteDateRange(monday, monday.plusDays(6))
 
         val guardians =
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
                         """
 SELECT DISTINCT missing.guardian_id
 FROM (${subquery(missingReservationsQuery(range, guardian = null))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE p.email IS NOT NULL
-    """
-                            .trimIndent()
+                        """.trimIndent()
                     )
-                }
-                .toList<PersonId>()
+                }.toList<PersonId>()
 
         asyncJobRunner.plan(
             tx,
@@ -66,10 +68,14 @@ WHERE p.email IS NOT NULL
         return guardians.size
     }
 
-    fun sendReminder(db: Database.Connection, msg: AsyncJob.SendMissingReservationsReminder) {
+    fun sendReminder(
+        db: Database.Connection,
+        msg: AsyncJob.SendMissingReservationsReminder
+    ) {
         val language =
             db.read { tx ->
-                tx.createQuery {
+                tx
+                    .createQuery {
                         sql(
                             """
 SELECT language
@@ -78,29 +84,30 @@ JOIN person p ON missing.guardian_id = p.id
 WHERE missing.guardian_id = ${bind(msg.guardian)}
 AND email IS NOT NULL
 LIMIT 1
-        """
-                                .trimIndent()
+                            """.trimIndent()
                         )
-                    }
-                    .exactlyOneOrNull {
+                    }.exactlyOneOrNull {
                         column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
                             ?: Language.fi
                     }
             } ?: return
 
-        Email.create(
+        Email
+            .create(
                 dbc = db,
                 personId = msg.guardian,
                 emailType = EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.missingReservationsNotification(language, msg.range),
-                traceId = msg.guardian.toString(),
-            )
-            ?.also { emailClient.send(it) }
+                traceId = msg.guardian.toString()
+            )?.also { emailClient.send(it) }
     }
 }
 
-private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?) = QuerySql {
+private fun missingReservationsQuery(
+    range: FiniteDateRange,
+    guardian: PersonId?
+) = QuerySql {
     sql(
         """
 SELECT guardian_id

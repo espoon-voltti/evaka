@@ -9,35 +9,33 @@ import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 
-fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
-    return getGroupNotesForGroups(listOf(groupId))
-}
+fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> = getGroupNotesForGroups(listOf(groupId))
 
 private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
 FROM group_note gn
 WHERE group_id = ANY(${bind(groupIds)})
 """
-            )
-        }
-        .toList<GroupNote>()
+        )
+    }.toList<GroupNote>()
 
-fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
-    return createUpdate {
-            sql(
-                """
+fun Database.Transaction.createGroupNote(
+    groupId: GroupId,
+    note: GroupNoteBody
+): GroupNoteId =
+    createUpdate {
+        sql(
+            """
 INSERT INTO group_note (group_id, note, expires)
 VALUES (${bind(groupId)}, ${bind(note.note)}, ${bind(note.expires)})
 RETURNING id
         """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<GroupNoteId>()
-}
 
 fun Database.Transaction.updateGroupNote(
     clock: EvakaClock,
@@ -46,8 +44,8 @@ fun Database.Transaction.updateGroupNote(
 ): GroupNote {
     val now = clock.now()
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE group_note SET
     note = ${bind(note.note)},
     expires = ${bind(note.expires)},
@@ -55,9 +53,8 @@ UPDATE group_note SET
 WHERE id = ${bind(id)}
 RETURNING *
         """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<GroupNote>()
 }
 

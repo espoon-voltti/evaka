@@ -26,9 +26,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class PreschoolAbsenceReport(
-    private val accessControl: AccessControl,
+    private val accessControl: AccessControl
 ) {
-
     @GetMapping("/employee/reports/preschool-absence")
     fun getPreschoolAbsenceReport(
         db: Database,
@@ -38,9 +37,10 @@ class PreschoolAbsenceReport(
         @RequestParam groupId: GroupId?,
         @RequestParam termStart: LocalDate,
         @RequestParam termEnd: LocalDate
-    ): List<ChildPreschoolAbsenceRow> {
-        return db.connect { dbc ->
-            dbc.read { tx ->
+    ): List<ChildPreschoolAbsenceRow> =
+        db.connect { dbc ->
+            dbc
+                .read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -65,7 +65,7 @@ class PreschoolAbsenceReport(
                         daycare.dailyPreschoolTime
                             ?: TimeRange(LocalTime.of(9, 0, 0, 0), LocalTime.of(13, 0, 0, 0))
 
-                    if (groupId == null)
+                    if (groupId == null) {
                         calculateHourlyResults(
                             getPreschoolAbsenceReportRowsForUnit(
                                 tx,
@@ -81,7 +81,7 @@ class PreschoolAbsenceReport(
                             ),
                             dailyPreschoolTime
                         )
-                    else
+                    } else {
                         calculateHourlyResults(
                             getPreschoolAbsenceReportRowsForGroup(
                                 tx,
@@ -99,8 +99,8 @@ class PreschoolAbsenceReport(
                             ),
                             dailyPreschoolTime
                         )
-                }
-                .also {
+                    }
+                }.also {
                     Audit.PreschoolAbsenceReport.log(
                         meta =
                             mapOf(
@@ -112,7 +112,6 @@ class PreschoolAbsenceReport(
                     )
                 }
         }
-    }
 
     private fun calculateHourlyResults(
         absenceRows: List<PreschoolAbsenceRow>,
@@ -125,15 +124,18 @@ class PreschoolAbsenceReport(
                     if (r.absenceType == AbsenceType.OTHER_ABSENCE) {
                         val childDeviations = deviationsByChild[r.childId] ?: emptyList()
                         childDeviations.sumOf { it.missingMinutes }
-                    } else 0
+                    } else {
+                        0
+                    }
                 PreschoolAbsenceReportRow(
                     r.childId,
                     r.firstName,
                     r.lastName,
                     r.absenceType,
-                    (r.absenceCount * dailyPreschoolTime.duration.toMinutes() +
-                            childAttendanceDeviationMinutes)
-                        .floorDiv(60)
+                    (
+                        r.absenceCount * dailyPreschoolTime.duration.toMinutes() +
+                            childAttendanceDeviationMinutes
+                    ).floorDiv(60)
                         .toInt()
                 )
             }
@@ -186,42 +188,40 @@ fun getPreschoolAbsenceReportRowsForUnit(
     daycareId: DaycareId,
     preschoolTerm: FiniteDateRange,
     absenceTypes: List<AbsenceType>
-): List<PreschoolAbsenceRow> {
-    return tx.createQuery {
+): List<PreschoolAbsenceRow> =
+    tx
+        .createQuery {
             sql(
                 """
-            WITH preschool_placement_children as
-                     (select child.id,
-                             child.first_name,
-                             child.last_name,
-                             daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
-                      from placement p
-                               join person child on p.child_id = child.id
-                               join daycare d
-                                    on p.unit_id = d.id
-                                        AND 'PRESCHOOL'::care_types = ANY (d.type)
-                      where daterange(p.start_date, p.end_date, '[]') &&
-                            ${bind(preschoolTerm)}
-                        and p.type = ANY
-                            ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
-                        and p.unit_id = ${bind(daycareId)})
-            select ppc.id            as child_id,
-                   ppc.first_name,
-                   ppc.last_name,
-                   types.absence_type as absence_type,
-                   count(ab.id)       as absence_count
-            from preschool_placement_children ppc
-                     left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
-                     left join absence ab on ppc.examination_range @> ab.date and
-                                             ppc.id = ab.child_id and
-                                             ab.absence_type = types.absence_type
-            group by ppc.id, ppc.first_name, ppc.last_name, types.absence_type;
-        """
-                    .trimIndent()
+                WITH preschool_placement_children as
+                         (select child.id,
+                                 child.first_name,
+                                 child.last_name,
+                                 daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
+                          from placement p
+                                   join person child on p.child_id = child.id
+                                   join daycare d
+                                        on p.unit_id = d.id
+                                            AND 'PRESCHOOL'::care_types = ANY (d.type)
+                          where daterange(p.start_date, p.end_date, '[]') &&
+                                ${bind(preschoolTerm)}
+                            and p.type = ANY
+                                ('{PRESCHOOL, PRESCHOOL_DAYCARE}'::placement_type[])
+                            and p.unit_id = ${bind(daycareId)})
+                select ppc.id            as child_id,
+                       ppc.first_name,
+                       ppc.last_name,
+                       types.absence_type as absence_type,
+                       count(ab.id)       as absence_count
+                from preschool_placement_children ppc
+                         left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
+                         left join absence ab on ppc.examination_range @> ab.date and
+                                                 ppc.id = ab.child_id and
+                                                 ab.absence_type = types.absence_type
+                group by ppc.id, ppc.first_name, ppc.last_name, types.absence_type;
+                """.trimIndent()
             )
-        }
-        .toList<PreschoolAbsenceRow>()
-}
+        }.toList<PreschoolAbsenceRow>()
 
 fun getPreschoolAbsenceReportRowsForGroup(
     tx: Database.Read,
@@ -229,8 +229,9 @@ fun getPreschoolAbsenceReportRowsForGroup(
     groupId: GroupId,
     preschoolTerm: FiniteDateRange,
     absenceTypes: List<AbsenceType>
-): List<PreschoolAbsenceRow> {
-    return tx.createQuery {
+): List<PreschoolAbsenceRow> =
+    tx
+        .createQuery {
             sql(
                 """
             WITH preschool_group_placement_children as
@@ -264,22 +265,20 @@ from preschool_group_placement_children pgpc
                                  pgpc.id = ab.child_id and
                                  ab.absence_type = types.absence_type
 group by pgpc.id, pgpc.first_name, pgpc.last_name, types.absence_type;
-        """
-                    .trimIndent()
+                """.trimIndent()
             )
-        }
-        .toList<PreschoolAbsenceRow>()
-}
+        }.toList<PreschoolAbsenceRow>()
 
 fun calculateDailyPreschoolAttendanceDeviationForUnit(
     tx: Database.Read,
     daycareId: DaycareId,
     preschoolTerm: FiniteDateRange,
-    preschoolDailyServiceTime: TimeRange,
+    preschoolDailyServiceTime: TimeRange
 ): Map<ChildId, List<ChildDailyAttendanceDeviation>> {
     val endTime = preschoolDailyServiceTime.end.inner
     val startTime = preschoolDailyServiceTime.start.inner
-    return tx.createQuery {
+    return tx
+        .createQuery {
             sql(
                 """
 -- calculate child attendance deviation from standard daily preschool service time in minutes
@@ -312,11 +311,9 @@ group by intersection.date, intersection.child_id
 having floor(extract(EPOCH FROM (${bind(endTime)} - ${bind(startTime)}) -
                                 sum((upper(intersection.range) - lower(intersection.range)))) /
              60) >= 20;
-    """
-                    .trimIndent()
+                """.trimIndent()
             )
-        }
-        .toList<ChildDailyAttendanceDeviation>()
+        }.toList<ChildDailyAttendanceDeviation>()
         .groupBy { it.childId }
 }
 
@@ -325,11 +322,12 @@ fun calculateDailyPreschoolAttendanceDeviationForGroup(
     daycareId: DaycareId,
     groupId: GroupId,
     preschoolTerm: FiniteDateRange,
-    preschoolDailyServiceTime: TimeRange,
+    preschoolDailyServiceTime: TimeRange
 ): Map<ChildId, List<ChildDailyAttendanceDeviation>> {
     val endTime = preschoolDailyServiceTime.end.inner
     val startTime = preschoolDailyServiceTime.start.inner
-    return tx.createQuery {
+    return tx
+        .createQuery {
             sql(
                 """
 -- calculate child attendance deviation from standard daily preschool service time in minutes
@@ -366,10 +364,8 @@ group by intersection.date, intersection.child_id
 having floor(extract(EPOCH FROM (${bind(endTime)} - ${bind(startTime)}) -
                                 sum((upper(intersection.range) - lower(intersection.range)))) /
              60) >= 20;
-    """
-                    .trimIndent()
+                """.trimIndent()
             )
-        }
-        .toList<ChildDailyAttendanceDeviation>()
+        }.toList<ChildDailyAttendanceDeviation>()
         .groupBy { it.childId }
 }

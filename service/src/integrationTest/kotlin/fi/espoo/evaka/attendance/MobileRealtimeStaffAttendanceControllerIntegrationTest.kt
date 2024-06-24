@@ -46,8 +46,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 
-class MobileRealtimeStaffAttendanceControllerIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class MobileRealtimeStaffAttendanceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var mobileRealtimeStaffAttendanceController:
         MobileRealtimeStaffAttendanceController
@@ -131,7 +130,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
             assertEquals(
                 occupancyCoefficientZero,
-                it.attendances.first().occupancyCoefficient.stripTrailingZeros()
+                it.attendances
+                    .first()
+                    .occupancyCoefficient
+                    .stripTrailingZeros()
             )
         }
     }
@@ -161,7 +163,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         attendances.staff.first().let {
             assertEquals(
                 occupancyCoefficientSeven.stripTrailingZeros(),
-                it.attendances.first().occupancyCoefficient.stripTrailingZeros()
+                it.attendances
+                    .first()
+                    .occupancyCoefficient
+                    .stripTrailingZeros()
             )
         }
     }
@@ -632,7 +637,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd,
+                    endTime = plannedEnd
                 )
             )
         }
@@ -1015,8 +1020,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
     }
 
-    private fun addEmployee(): EmployeeId {
-        return db.transaction { tx ->
+    private fun addEmployee(): EmployeeId =
+        db.transaction { tx ->
             val employeeId = tx.insert(DevEmployee())
             tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
@@ -1027,7 +1032,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
             employeeId
         }
-    }
 
     @Test
     fun `set attendances crud works`() {
@@ -1465,14 +1469,13 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     private fun fetchRealtimeStaffAttendances(
         unitId: DaycareId,
         user: AuthenticatedUser.MobileDevice
-    ): CurrentDayStaffAttendanceResponse {
-        return mobileRealtimeStaffAttendanceController.getAttendancesByUnit(
+    ): CurrentDayStaffAttendanceResponse =
+        mobileRealtimeStaffAttendanceController.getAttendancesByUnit(
             dbInstance(),
             user,
             MockEvakaClock(now),
             unitId
         )
-    }
 
     private fun markArrival(
         now: HelsinkiDateTime,

@@ -44,15 +44,14 @@ fun Database.Transaction.insertAbsences(
     absences: List<AbsenceUpsert>
 ): List<AbsenceId> =
     prepareBatch(absences) {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
 VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(userId)}, ${bind(now)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
 /** Updates the details if an absence already exists */
@@ -62,17 +61,16 @@ fun Database.Transaction.upsertAbsences(
     absences: List<AbsenceUpsert>
 ): List<AbsenceId> =
     prepareBatch(absences) {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
 VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(userId)}, ${bind(now)})
 ON CONFLICT (child_id, date, category)
 DO UPDATE SET absence_type = ${bind { it.absenceType }}, modified_by = ${bind(userId)}, modified_at = ${bind(now)}
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
 /** If the absence already exists, updates only if was generated */
@@ -81,17 +79,20 @@ fun Database.Transaction.upsertGeneratedAbsences(
     absences: List<AbsenceUpsert>
 ): List<AbsenceId> =
     prepareBatch(absences) {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO absence AS a (child_id, date, category, absence_type, modified_by, modified_at)
-VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}, ${bind(now)})
+VALUES (${bind { it.childId }}, ${bind { it.date }}, ${bind { it.category }}, ${bind { it.absenceType }}, ${bind(
+                AuthenticatedUser.SystemInternalUser.evakaUserId
+            )}, ${bind(now)})
 ON CONFLICT (child_id, date, category)
-DO UPDATE SET absence_type = ${bind { it.absenceType }}, modified_at = ${bind(now)} WHERE a.modified_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
+DO UPDATE SET absence_type = ${bind { it.absenceType }}, modified_at = ${bind(
+                now
+            )} WHERE a.modified_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
 data class FullDayAbsenseUpsert(
@@ -111,8 +112,8 @@ fun Database.Transaction.upsertFullDayAbsences(
     absenceInserts: List<FullDayAbsenseUpsert>
 ): List<AbsenceId> =
     prepareBatch(absenceInserts) {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO absence (child_id, date, category, absence_type, modified_at, modified_by, questionnaire_id)
 SELECT
     ${bind { it.childId }},
@@ -130,46 +131,45 @@ FROM (
 ON CONFLICT DO NOTHING
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
-data class Presence(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)
+data class Presence(
+    val childId: ChildId,
+    val date: LocalDate,
+    val category: AbsenceCategory
+)
 
 fun Database.Transaction.batchDeleteAbsences(deletions: List<Presence>): List<AbsenceId> =
     prepareBatch(deletions) {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence
 WHERE category = ${bind { it.category }} AND date = ${bind { it.date }} AND child_id = ${bind { it.childId }}
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
-fun Database.Transaction.deleteAbsencesFromHolidayPeriodDates(
-    deletions: List<Pair<ChildId, LocalDate>>
-): List<AbsenceId> =
+fun Database.Transaction.deleteAbsencesFromHolidayPeriodDates(deletions: List<Pair<ChildId, LocalDate>>): List<AbsenceId> =
     prepareBatch(deletions) {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence
 WHERE child_id = ${bind { (childId, _) -> childId }}
 AND date = ${bind { (_, date) -> date }}
 AND EXISTS (SELECT 1 FROM holiday_period WHERE period @> date)
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
 data class HolidayReservationCreate(
     val childId: ChildId,
-    val date: LocalDate,
+    val date: LocalDate
 )
 
 fun Database.Transaction.addMissingHolidayReservations(
@@ -195,15 +195,14 @@ fun Database.Transaction.deleteChildAbsences(
     categories: Set<AbsenceCategory> = AbsenceCategory.entries.toSet()
 ): List<AbsenceId> =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence
 WHERE child_id = ${bind(childId)} AND date = ${bind(date)} AND category = ANY(${bind(categories)})
 RETURNING id
     """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .toList()
 
 fun Database.Transaction.deleteNonSystemGeneratedAbsencesByCategoryInRange(
@@ -212,8 +211,8 @@ fun Database.Transaction.deleteNonSystemGeneratedAbsencesByCategoryInRange(
     categories: Set<AbsenceCategory>
 ): List<AbsenceId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence
 WHERE
     child_id = ${bind(childId)} AND
@@ -222,9 +221,8 @@ WHERE
     modified_by != ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
 RETURNING id
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Transaction.deleteOldGeneratedAbsencesInRange(
     now: HelsinkiDateTime,
@@ -232,8 +230,8 @@ fun Database.Transaction.deleteOldGeneratedAbsencesInRange(
     range: DateRange
 ): List<AbsenceId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence
 WHERE
     child_id = ${bind(childId)} AND
@@ -242,9 +240,8 @@ WHERE
     modified_at < ${bind(now)}
 RETURNING id
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 /**
  * A citizen is allowed to edit:
@@ -256,8 +253,8 @@ fun Database.Transaction.clearOldCitizenEditableAbsences(
     reservableRange: FiniteDateRange
 ): List<AbsenceId> =
     prepareBatch(childDatePairs) {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence a
 WHERE child_id = ${bind { (childId, _) -> childId }}
 AND date = ${bind { (_, date) -> date }}
@@ -273,39 +270,34 @@ AND (${bind(reservableRange)} @> date OR absence_type <> 'PLANNED_ABSENCE'::abse
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
-fun Database.Transaction.clearOldAbsences(
-    childDatePairs: List<Pair<ChildId, LocalDate>>
-): List<AbsenceId> =
+fun Database.Transaction.clearOldAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>): List<AbsenceId> =
     prepareBatch(childDatePairs) {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence a
 WHERE child_id = ${bind { (childId, _) -> childId }}
 AND date = ${bind { (_, date) -> date }}
 RETURNING id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList()
 
 fun Database.Transaction.deleteAllCitizenEditableAbsencesInRange(range: FiniteDateRange) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM absence
 WHERE between_start_and_end(${bind(range)}, date)
 AND absence_type <> 'FREE_ABSENCE'::absence_type
 AND modified_by IN (SELECT id FROM evaka_user where type = 'CITIZEN')
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Read.absenceExists(
@@ -315,8 +307,8 @@ fun Database.Read.absenceExists(
     type: AbsenceType
 ): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT exists(
     SELECT 1 FROM absence
     WHERE child_id = ${bind(childId)}
@@ -324,34 +316,36 @@ SELECT exists(
         AND category = ${bind(category)}
         AND absence_type = ${bind(type)}
 )"""
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
 fun Database.Read.getGroupName(groupId: GroupId): String? =
     createQuery {
-            sql("""
+        sql(
+            """
 SELECT daycare_group.name
 FROM daycare_group
 WHERE id = ${bind(groupId)}
-""")
-        }
-        .exactlyOneOrNull()
+"""
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT daycare.id
 FROM daycare_group
 LEFT JOIN daycare ON daycare_group.daycare_id = daycare.id
 WHERE daycare_group.id = ${bind(groupId)}
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
-private fun placementsQuery(range: FiniteDateRange, groupId: GroupId) = QuerySql {
+private fun placementsQuery(
+    range: FiniteDateRange,
+    groupId: GroupId
+) = QuerySql {
     sql(
         """
 SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') AS date_range
@@ -387,11 +381,11 @@ fun Database.Read.getPlacementsByRange(
         val range: FiniteDateRange,
         val placementType: PlacementType,
         val dailyPreschoolTime: TimeRange?,
-        val dailyPreparatoryTime: TimeRange?,
+        val dailyPreparatoryTime: TimeRange?
     )
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH all_placements AS (
   ${subquery(placementsQuery(range, groupId))}
 )
@@ -409,9 +403,8 @@ JOIN person ON person.id = all_placements.child_id
 JOIN placement ON placement.child_id = all_placements.child_id AND daterange(placement.start_date, placement.end_date, '[]') && all_placements.date_range
 JOIN daycare ON daycare.id = placement.unit_id
 """
-            )
-        }
-        .toList<QueryResult>()
+        )
+    }.toList<QueryResult>()
         .groupBy { it.child }
         .map { (child, queryResults) ->
             child to
@@ -423,14 +416,13 @@ JOIN daycare ON daycare.id = placement.unit_id
                         it.dailyPreparatoryTime
                     )
                 }
-        }
-        .toMap()
+        }.toMap()
 }
 
 fun Database.Read.getAbsences(where: Predicate): List<Absence> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     a.child_id,
     a.date,
@@ -441,28 +433,29 @@ SELECT
 FROM absence a
 JOIN evaka_user eu ON eu.id = a.modified_by
 WHERE ${predicate(where.forTable("a"))}
-""",
-            )
-        }
-        .toList()
+"""
+        )
+    }.toList()
 
 fun Database.Read.getAbsencesInGroupByRange(
     groupId: GroupId,
     range: FiniteDateRange
 ): Map<Pair<ChildId, LocalDate>, List<Absence>> =
     getAbsences(
-            Predicate {
-                where(
-                    """
+        Predicate {
+            where(
+                """
 $it.child_id IN (SELECT child_id FROM (${subquery(placementsQuery(range, groupId))}) p) AND
 between_start_and_end(${bind(range)}, $it.date)
 """
-                )
-            }
-        )
-        .groupBy { it.childId to it.date }
+            )
+        }
+    ).groupBy { it.childId to it.date }
 
-fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange): List<Absence> =
+fun Database.Read.getAbsencesOfChildByRange(
+    childId: ChildId,
+    range: DateRange
+): List<Absence> =
     getAbsences(
         Predicate {
             where(
@@ -471,8 +464,10 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
         }
     )
 
-fun Database.Read.getAbsencesOfChildByDate(childId: ChildId, date: LocalDate): List<Absence> =
-    getAbsences(Predicate { where("$it.date = ${bind(date)} AND $it.child_id = ${bind(childId)}") })
+fun Database.Read.getAbsencesOfChildByDate(
+    childId: ChildId,
+    date: LocalDate
+): List<Absence> = getAbsences(Predicate { where("$it.date = ${bind(date)} AND $it.child_id = ${bind(childId)}") })
 
 fun Database.Read.getAbsencesCitizen(
     today: LocalDate,
@@ -498,16 +493,15 @@ fun Database.Read.getAbsenceDatesForChildrenInRange(
     range: FiniteDateRange
 ): Map<ChildId, Set<LocalDate>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT a.child_id, a.date
 FROM absence a
 WHERE between_start_and_end(${bind(range)}, date)
 AND a.child_id = ANY(${bind(childIds)})
 """
-            )
-        }
-        .toList { column<ChildId>("child_id") to column<LocalDate>("date") }
+        )
+    }.toList { column<ChildId>("child_id") to column<LocalDate>("date") }
         .groupBy({ it.first }, { it.second })
         .mapValues { (_, dates) -> dates.toSet() }
 
@@ -516,8 +510,8 @@ fun Database.Read.getBackupCaresAffectingGroup(
     period: FiniteDateRange
 ): Map<ChildId, List<FiniteDateRange>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT bc.child_id, daterange(bc.start_date, bc.end_date, '[]') AS period
 FROM daycare_group_placement AS gp
 JOIN placement ON daycare_placement_id = placement.id
@@ -527,9 +521,8 @@ AND (bc.group_id IS NULL OR bc.group_id != gp.daycare_group_id)
 AND daterange(gp.start_date, gp.end_date, '[]') && ${bind(period)}
 AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)}
 """
-            )
-        }
-        .toList { column<ChildId>("child_id") to column<FiniteDateRange>("period") }
+        )
+    }.toList { column<ChildId>("child_id") to column<FiniteDateRange>("period") }
         .groupBy({ it.first }, { it.second })
 
 data class ChildReservation(
@@ -541,10 +534,10 @@ data class ChildReservation(
 fun Database.Read.getGroupReservations(
     groupId: GroupId,
     dateRange: FiniteDateRange
-): Map<Pair<ChildId, LocalDate>, List<ChildReservation>> {
-    return createQuery {
-            sql(
-                """
+): Map<Pair<ChildId, LocalDate>, List<ChildReservation>> =
+    createQuery {
+        sql(
+            """
 WITH all_placements AS (
   ${subquery(placementsQuery(dateRange, groupId))}
 )
@@ -558,21 +551,18 @@ AND EXISTS (
     AND between_start_and_end(p.date_range, r.date)
 )
 """
+        )
+    }.toList {
+        val childId: ChildId = column("child_id")
+        val date: LocalDate = column("date")
+        val reservation =
+            ChildReservation(
+                Reservation.of(column("start_time"), column("end_time")),
+                column("created_by_evaka_user_type"),
+                column("created_date")
             )
-        }
-        .toList {
-            val childId: ChildId = column("child_id")
-            val date: LocalDate = column("date")
-            val reservation =
-                ChildReservation(
-                    Reservation.of(column("start_time"), column("end_time")),
-                    column("created_by_evaka_user_type"),
-                    column("created_date")
-                )
-            Pair(childId, date) to reservation
-        }
-        .groupBy({ it.first }, { it.second })
-}
+        Pair(childId, date) to reservation
+    }.groupBy({ it.first }, { it.second })
 
 fun Database.Read.getGroupAttendances(
     groupId: GroupId,
@@ -597,8 +587,8 @@ fun Database.Read.getGroupDailyServiceTimes(
     dateRange: FiniteDateRange
 ): Map<ChildId, List<DailyServiceTimes>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH all_placements AS (
   ${subquery(placementsQuery(dateRange, groupId))}
 )
@@ -618,7 +608,6 @@ SELECT
 FROM daily_service_time dst
 WHERE EXISTS (SELECT 1 FROM all_placements p WHERE dst.child_id = p.child_id)
 """
-            )
-        }
-        .mapTo<DailyServiceTimeRow>()
+        )
+    }.mapTo<DailyServiceTimeRow>()
         .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.groupBy { it.childId } }

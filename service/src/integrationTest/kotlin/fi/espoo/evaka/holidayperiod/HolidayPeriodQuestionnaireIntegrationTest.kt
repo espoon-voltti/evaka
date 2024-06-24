@@ -13,7 +13,6 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     @Test
     fun `fixed period questionnaires can be saved`() {
         val options =

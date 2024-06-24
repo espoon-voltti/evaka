@@ -65,8 +65,9 @@ class IncomeController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
-    ): List<IncomeWithPermittedActions> {
-        return db.connect { dbc ->
+    ): List<IncomeWithPermittedActions> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -94,14 +95,12 @@ class IncomeController(
                         IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
                     }
                 }
-            }
-            .also { incomes ->
+            }.also { incomes ->
                 Audit.PersonIncomeRead.log(
                     targetId = AuditId(personId),
                     meta = mapOf("count" to incomes.size)
                 )
             }
-    }
 
     data class IncomeWithPermittedActions(
         val data: Income,
@@ -122,7 +121,8 @@ class IncomeController(
                 with(income) { throw BadRequest("Invalid period from $validFrom to $validTo") }
             }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -157,8 +157,7 @@ class IncomeController(
                     )
                     id
                 }
-            }
-            .also { incomeId ->
+            }.also { incomeId ->
                 Audit.PersonIncomeCreate.log(
                     targetId = AuditId(income.personId),
                     objectId = AuditId(incomeId)
@@ -268,7 +267,7 @@ class IncomeController(
 
     data class IncomeTypeOptions(
         val incomeTypes: List<IncomeOption>,
-        val expenseTypes: List<IncomeOption>,
+        val expenseTypes: List<IncomeOption>
     )
 
     @GetMapping("/types")
@@ -292,8 +291,7 @@ class IncomeController(
                     withCoefficient = type.withCoefficient,
                     isSubType = type.isSubType
                 )
-            }
-            .partition { it.multiplier > 0 }
+            }.partition { it.multiplier > 0 }
             .let { IncomeTypeOptions(incomeTypes = it.first, expenseTypes = it.second) }
     }
 
@@ -324,8 +322,9 @@ class IncomeController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
-    ): List<IncomeNotification> {
-        return db.connect { dbc ->
+    ): List<IncomeNotification> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -336,18 +335,19 @@ class IncomeController(
                     )
                     tx.getIncomeNotifications(personId)
                 }
-            }
-            .also { incomeNotifications ->
+            }.also { incomeNotifications ->
                 Audit.PersonIncomeNotificationRead.log(
                     targetId = AuditId(personId),
                     meta = mapOf("count" to incomeNotifications.size)
                 )
             }
-    }
 }
 
-fun validateIncome(income: IncomeRequest, incomeTypes: Map<String, IncomeType>): IncomeRequest {
-    return if (income.effect == IncomeEffect.INCOME) {
+fun validateIncome(
+    income: IncomeRequest,
+    incomeTypes: Map<String, IncomeType>
+): IncomeRequest =
+    if (income.effect == IncomeEffect.INCOME) {
         income.copy(
             data =
                 income.data.mapValues { (type, value) ->
@@ -366,4 +366,3 @@ fun validateIncome(income: IncomeRequest, incomeTypes: Map<String, IncomeType>):
     } else {
         income.copy(data = mapOf())
     }
-}

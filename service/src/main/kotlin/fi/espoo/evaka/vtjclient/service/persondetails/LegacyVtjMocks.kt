@@ -22,7 +22,7 @@ fun legacyMockVtjDataset() =
                     PersonAddress("Kamreerintie 3", "01640", "Espoo"),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie3",
+                    residenceCode = "hogfors_kamreerintie3"
                 ),
                 MockVtjPerson(
                     "Tapio Eeli Veeti Veikko",
@@ -30,7 +30,7 @@ fun legacyMockVtjDataset() =
                     "070413A915L",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 7", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Annikki Isla Mila Matilda",
@@ -38,7 +38,7 @@ fun legacyMockVtjDataset() =
                     "080116A918P",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 6", "00340", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Ilmari Emil Eemil Joona",
@@ -46,7 +46,7 @@ fun legacyMockVtjDataset() =
                     "140714A9542",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 10", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Maria Ellen Aava Seela",
@@ -54,7 +54,7 @@ fun legacyMockVtjDataset() =
                     "280916A9259",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 4", "02230", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Maria Lumi Matilda",
@@ -63,7 +63,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 5", "02110", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie5",
+                    residenceCode = "hogfors_kamreerintie5"
                 ),
                 MockVtjPerson(
                     "Liisa Maria Anneli",
@@ -71,7 +71,7 @@ fun legacyMockVtjDataset() =
                     "231090-912J",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 9", "02100", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tero Petteri Mikael",
@@ -79,7 +79,7 @@ fun legacyMockVtjDataset() =
                     "010170-999R",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 12", "01640", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Olavi Kasper Veikko",
@@ -87,7 +87,7 @@ fun legacyMockVtjDataset() =
                     "090514A974V",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 12", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Johanna Vilja Minttu",
@@ -96,7 +96,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 3", "01640", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie3",
+                    residenceCode = "hogfors_kamreerintie3"
                 ),
                 MockVtjPerson(
                     "Helena Marjatta Sofia",
@@ -104,7 +104,7 @@ fun legacyMockVtjDataset() =
                     "091171-9975",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 4", "02170", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kaarina Elli Enni Iisa",
@@ -112,7 +112,7 @@ fun legacyMockVtjDataset() =
                     "070115A9583",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 7", "02210", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Mikael Jooa Aapo",
@@ -120,7 +120,7 @@ fun legacyMockVtjDataset() =
                     "060118A9908",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 9", "02240", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Parkkonen",
@@ -128,7 +128,7 @@ fun legacyMockVtjDataset() =
                     "050391-999B",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 17", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Antero Aaron Alvar",
@@ -136,7 +136,7 @@ fun legacyMockVtjDataset() =
                     "150817A939T",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 4", "02170", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapio Antero Kalevi",
@@ -144,7 +144,7 @@ fun legacyMockVtjDataset() =
                     "090693-990K",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 8", "01640", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Liisa Pihla Emilia Sara",
@@ -152,7 +152,7 @@ fun legacyMockVtjDataset() =
                     "030816A910V",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 7", "00370", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Juhani Rasmus Akseli",
@@ -160,7 +160,7 @@ fun legacyMockVtjDataset() =
                     "070817A9876",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 7", "02210", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Helena Elsa Kerttu Iina",
@@ -168,7 +168,7 @@ fun legacyMockVtjDataset() =
                     "021113A929F",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 14", "02110", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Juhani Rasmus Akseli",
@@ -176,7 +176,7 @@ fun legacyMockVtjDataset() =
                     "180613A920F",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 10", "02110", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Ville",
@@ -192,7 +192,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_toistie33",
+                    residenceCode = "hogfors_toistie33"
                 ),
                 MockVtjPerson(
                     "Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa",
@@ -202,7 +202,7 @@ fun legacyMockVtjDataset() =
                     PersonAddress("Kamreerintie 2", "00370", "Espoo"),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie2",
+                    residenceCode = "hogfors_kamreerintie2"
                 ),
                 MockVtjPerson(
                     "Sofia Minea Hilla Lumi",
@@ -210,7 +210,7 @@ fun legacyMockVtjDataset() =
                     "090316A948X",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 5", "02240", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Micky",
@@ -226,7 +226,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie2",
+                    residenceCode = "hogfors_kamreerintie2"
                 ),
                 MockVtjPerson(
                     "Kaarina Helena Annikki Anneli",
@@ -235,7 +235,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 6", "02120", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie6",
+                    residenceCode = "hogfors_kamreerintie6"
                 ),
                 MockVtjPerson(
                     "Hannele Johanna Kaarina Anneli",
@@ -243,7 +243,7 @@ fun legacyMockVtjDataset() =
                     "150794-9463",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 1", "02180", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Helena Emma Sofia Ronja",
@@ -251,7 +251,7 @@ fun legacyMockVtjDataset() =
                     "220317A982N",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 1", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anna Maria Helena Sofia",
@@ -259,7 +259,7 @@ fun legacyMockVtjDataset() =
                     "290385-9900",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 2", "02200", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Matti Mikael Joel Kasper",
@@ -267,7 +267,7 @@ fun legacyMockVtjDataset() =
                     "231015A953H",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 8", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kaarina Marjatta Anna Liisa",
@@ -276,7 +276,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 4", "02110", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie4",
+                    residenceCode = "hogfors_kamreerintie4"
                 ),
                 MockVtjPerson(
                     "Helena Elsa Kerttu Iina",
@@ -284,7 +284,7 @@ fun legacyMockVtjDataset() =
                     "241016A927K",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 3", "02210", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "John",
@@ -300,7 +300,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie2",
+                    residenceCode = "hogfors_kamreerintie2"
                 ),
                 MockVtjPerson(
                     "Kalevi Matias Aatos",
@@ -308,7 +308,7 @@ fun legacyMockVtjDataset() =
                     "290615A9203",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 5", "02240", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Joan",
@@ -324,7 +324,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie2",
+                    residenceCode = "hogfors_kamreerintie2"
                 ),
                 MockVtjPerson(
                     "Kaarina Elli Enni Iisa",
@@ -332,7 +332,7 @@ fun legacyMockVtjDataset() =
                     "171017A946X",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 10", "02110", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Johanna Linnea Vilma",
@@ -340,7 +340,7 @@ fun legacyMockVtjDataset() =
                     "240816A910D",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 2", "02200", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Johanna Aada Ella Nelli",
@@ -348,7 +348,7 @@ fun legacyMockVtjDataset() =
                     "210317A994D",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 12", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Ilmari Oiva Samuel",
@@ -356,7 +356,7 @@ fun legacyMockVtjDataset() =
                     "150818A995V",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 8", "02230", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kaarina Liisa Annikki Sofia",
@@ -365,7 +365,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 3", "01640", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie3",
+                    residenceCode = "hogfors_kamreerintie3"
                 ),
                 MockVtjPerson(
                     "Terttu Sylvi Sofia",
@@ -373,7 +373,7 @@ fun legacyMockVtjDataset() =
                     "020474-9187",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 15", "02120", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kaarina Veera Nelli",
@@ -389,7 +389,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie1",
+                    residenceCode = "hogfors_kamreerintie1"
                 ),
                 MockVtjPerson(
                     "Marjatta Viola Anni",
@@ -397,7 +397,7 @@ fun legacyMockVtjDataset() =
                     "271016A9209",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 10", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anneli Alisa Siiri",
@@ -405,7 +405,7 @@ fun legacyMockVtjDataset() =
                     "270816A974D",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 1", "02180", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kaarina Iida Amanda",
@@ -413,7 +413,7 @@ fun legacyMockVtjDataset() =
                     "110414A9962",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 17", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anna Viivi Alma",
@@ -421,7 +421,7 @@ fun legacyMockVtjDataset() =
                     "190513A9454",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 19", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapani Niklas Luka",
@@ -429,7 +429,7 @@ fun legacyMockVtjDataset() =
                     "040918A972U",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 13", "02100", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Annikki Nella Alina",
@@ -437,7 +437,7 @@ fun legacyMockVtjDataset() =
                     "100716A998D",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 7", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Antero Toivo Peetu Oiva",
@@ -445,7 +445,7 @@ fun legacyMockVtjDataset() =
                     "020415A9833",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 3", "02210", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Niilo",
@@ -461,7 +461,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "nimeton_kankkulankaivo1",
+                    residenceCode = "nimeton_kankkulankaivo1"
                 ),
                 MockVtjPerson(
                     "Porri Hatter",
@@ -471,7 +471,7 @@ fun legacyMockVtjDataset() =
                     PersonAddress("", "", "", streetAddressSe = "", postOfficeSe = ""),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "",
+                    residenceCode = ""
                 ),
                 MockVtjPerson(
                     "Johanna Linnea Vilma",
@@ -479,7 +479,7 @@ fun legacyMockVtjDataset() =
                     "160914A969E",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 15", "02120", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Ilmari Oiva Samuel",
@@ -487,7 +487,7 @@ fun legacyMockVtjDataset() =
                     "161015A9862",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 9", "02100", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Marjatta Viola Anni",
@@ -495,7 +495,7 @@ fun legacyMockVtjDataset() =
                     "140514A966U",
                     RestrictedDetails(enabled = true),
                     PersonAddress("", "", ""),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Liisa Oona Ilona",
@@ -503,7 +503,7 @@ fun legacyMockVtjDataset() =
                     "100916A979D",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 8", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Liisa Pihla Emilia Sara",
@@ -511,7 +511,7 @@ fun legacyMockVtjDataset() =
                     "280714A905H",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 10", "00340", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kaarina Iida Amanda",
@@ -519,7 +519,7 @@ fun legacyMockVtjDataset() =
                     "071116A9516",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 11", "02170", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "",
@@ -535,7 +535,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "nimeton_kankkulankaivo1",
+                    residenceCode = "nimeton_kankkulankaivo1"
                 ),
                 MockVtjPerson(
                     "Olavi Aleksi Nooa Samuel",
@@ -543,7 +543,7 @@ fun legacyMockVtjDataset() =
                     "240413A9634",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 2", "02200", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Johannes Joona Benjamin",
@@ -551,7 +551,7 @@ fun legacyMockVtjDataset() =
                     "280315A994D",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 11", "02120", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Antero Onni Leevi Aatu",
@@ -560,7 +560,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 4", "02100", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie4",
+                    residenceCode = "hogfors_kamreerintie4"
                 ),
                 MockVtjPerson(
                     "Matti Lauri Otso",
@@ -568,7 +568,7 @@ fun legacyMockVtjDataset() =
                     "200418A9990",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 10", "00340", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Liisa Oona Ilona",
@@ -576,7 +576,7 @@ fun legacyMockVtjDataset() =
                     "061014A908U",
                     RestrictedDetails(enabled = true),
                     PersonAddress("", "", ""),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapani Niilo Oliver Alvar",
@@ -585,7 +585,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 5", "02110", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie5",
+                    residenceCode = "hogfors_kamreerintie5"
                 ),
                 MockVtjPerson(
                     "Eemeli Mikael Tapio",
@@ -593,7 +593,7 @@ fun legacyMockVtjDataset() =
                     "020898-945H",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 14", "02110", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Helena Kaarina Anna Johanna",
@@ -601,7 +601,7 @@ fun legacyMockVtjDataset() =
                     "130894-917N",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 5", "02240", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Marja-Leena Minna-Mari Sirkka-Liisa Anna-Kaisa",
@@ -609,7 +609,7 @@ fun legacyMockVtjDataset() =
                     "180213A909W",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 3", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anna Marjatta Helena Anneli",
@@ -617,7 +617,7 @@ fun legacyMockVtjDataset() =
                     "231182-9661",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 8", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Marja-Leena Minna-Mari Sirkka-Liisa Anna-Kaisa",
@@ -625,7 +625,7 @@ fun legacyMockVtjDataset() =
                     "170417A942Y",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 2", "02150", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Ilmari Emil Eemil Joona",
@@ -633,7 +633,7 @@ fun legacyMockVtjDataset() =
                     "260213A9125",
                     RestrictedDetails(enabled = true),
                     PersonAddress("", "", ""),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Helena Sara Hilda",
@@ -642,7 +642,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 4", "02100", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie4",
+                    residenceCode = "hogfors_kamreerintie4"
                 ),
                 MockVtjPerson(
                     "Maria Helena Marjatta",
@@ -650,7 +650,7 @@ fun legacyMockVtjDataset() =
                     "210593-9430",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 2", "02150", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Heikki Tapio Eemeli",
@@ -658,7 +658,7 @@ fun legacyMockVtjDataset() =
                     "300190-9257",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 18", "02150", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Johannes Leo Elias Eemi",
@@ -668,7 +668,7 @@ fun legacyMockVtjDataset() =
                     PersonAddress("Kamreerintie 2", "00370", "Espoo"),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie2",
+                    residenceCode = "hogfors_kamreerintie2"
                 ),
                 MockVtjPerson(
                     "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
@@ -684,7 +684,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie1",
+                    residenceCode = "hogfors_kamreerintie1"
                 ),
                 MockVtjPerson(
                     "Hannele Johanna Anneli Hannele",
@@ -692,7 +692,7 @@ fun legacyMockVtjDataset() =
                     "130973-9825",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 3", "02210", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Mikael Daniel Lenni Benjamin",
@@ -700,7 +700,7 @@ fun legacyMockVtjDataset() =
                     "100915A900L",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 19", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Teemu Taneli Tapio",
@@ -708,7 +708,7 @@ fun legacyMockVtjDataset() =
                     "010101-123N",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 11", "00370", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Unelma",
@@ -725,7 +725,7 @@ fun legacyMockVtjDataset() =
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
                     dateOfDeath = LocalDate.of(2020, 6, 1),
-                    residenceCode = "aapinen_1",
+                    residenceCode = "aapinen_1"
                 ),
                 MockVtjPerson(
                     "Johannes Viljami Valtteri Benjamin",
@@ -733,7 +733,7 @@ fun legacyMockVtjDataset() =
                     "160515A975N",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 1", "02180", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Marjatta Selma Minttu Vilja",
@@ -741,7 +741,7 @@ fun legacyMockVtjDataset() =
                     "190316A916B",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 9", "02100", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anna Viivi Alma",
@@ -749,7 +749,7 @@ fun legacyMockVtjDataset() =
                     "281116A9003",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 9", "02150", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Matti Tapani Antero Mikael",
@@ -757,7 +757,7 @@ fun legacyMockVtjDataset() =
                     "010882-983Y",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 6", "00340", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anneli Alisa Siiri",
@@ -765,7 +765,7 @@ fun legacyMockVtjDataset() =
                     "291013A950S",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 16", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapani Aatu Valtteri",
@@ -773,7 +773,7 @@ fun legacyMockVtjDataset() =
                     "031114A9203",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 2", "02150", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapani Aatu Valtteri",
@@ -781,7 +781,7 @@ fun legacyMockVtjDataset() =
                     "040317A946W",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 3", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anna Venla Olivia Hilda",
@@ -789,7 +789,7 @@ fun legacyMockVtjDataset() =
                     "090116A9690",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 8", "01640", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Helena Emma Sofia Ronja",
@@ -797,7 +797,7 @@ fun legacyMockVtjDataset() =
                     "051115A950L",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 4", "02170", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Hillary",
@@ -813,7 +813,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie1",
+                    residenceCode = "hogfors_kamreerintie1"
                 ),
                 MockVtjPerson(
                     "Johanna Aada Ella Nelli",
@@ -821,7 +821,7 @@ fun legacyMockVtjDataset() =
                     "050314A946S",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 5", "02180", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Mikael Ilmari Juhani Johannes",
@@ -830,7 +830,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 4", "02100", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie4",
+                    residenceCode = "hogfors_kamreerintie4"
                 ),
                 MockVtjPerson(
                     "Antero Aaron Alvar",
@@ -838,7 +838,7 @@ fun legacyMockVtjDataset() =
                     "121114A921X",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 1", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Annikki Isla Mila Matilda",
@@ -846,7 +846,7 @@ fun legacyMockVtjDataset() =
                     "210314A9784",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 11", "00370", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Sirpa Maria Annikki",
@@ -854,7 +854,7 @@ fun legacyMockVtjDataset() =
                     "150978-9025",
                     RestrictedDetails(enabled = true),
                     PersonAddress("", "", ""),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapio Tapani Kalevi Matti",
@@ -862,7 +862,7 @@ fun legacyMockVtjDataset() =
                     "071082-9435",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 7", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kalevi Matias Aatos",
@@ -870,7 +870,7 @@ fun legacyMockVtjDataset() =
                     "271018A911H",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 12", "01640", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapani Matti Kalevi Olavi",
@@ -878,7 +878,7 @@ fun legacyMockVtjDataset() =
                     "221071-9131",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 9", "02150", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anna Kaarina Marjatta",
@@ -886,7 +886,7 @@ fun legacyMockVtjDataset() =
                     "010170-960F",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 9", "02240", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Sofia Minea Hilla Lumi",
@@ -894,7 +894,7 @@ fun legacyMockVtjDataset() =
                     "290913A962B",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 12", "01640", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Johannes Viljami Valtteri Benjamin",
@@ -902,7 +902,7 @@ fun legacyMockVtjDataset() =
                     "280618A9750",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 16", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tauno Tapani Kalevi",
@@ -910,7 +910,7 @@ fun legacyMockVtjDataset() =
                     "120482-955X",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 8", "02230", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Maria Ellen Aava Seela",
@@ -918,7 +918,7 @@ fun legacyMockVtjDataset() =
                     "170714A911L",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 13", "02100", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapio Eemeli Anton",
@@ -926,7 +926,7 @@ fun legacyMockVtjDataset() =
                     "110913A9434",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 6", "00340", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Mikael Jooa Aapo",
@@ -934,7 +934,7 @@ fun legacyMockVtjDataset() =
                     "290413A902C",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 8", "01640", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Helena Sofia Johanna",
@@ -942,7 +942,7 @@ fun legacyMockVtjDataset() =
                     "090275-9724",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 12", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Juhani Julius Viljami Akseli",
@@ -950,7 +950,7 @@ fun legacyMockVtjDataset() =
                     "051015A981T",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 11", "02170", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Matti Lauri Otso",
@@ -958,7 +958,7 @@ fun legacyMockVtjDataset() =
                     "120313A995L",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 7", "00370", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Hannele Kaarina Marjatta",
@@ -966,7 +966,7 @@ fun legacyMockVtjDataset() =
                     "060195-966B",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 3", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anneli Lilja Helmi Veera",
@@ -974,7 +974,7 @@ fun legacyMockVtjDataset() =
                     "020717A997F",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 11", "02120", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapani Kalevi Tapio Antero",
@@ -982,7 +982,7 @@ fun legacyMockVtjDataset() =
                     "050482-9741",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 4", "02230", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Johannes Olavi Antero Tapio",
@@ -998,7 +998,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie1",
+                    residenceCode = "hogfors_kamreerintie1"
                 ),
                 MockVtjPerson(
                     "Nordea Nalle Arne",
@@ -1006,7 +1006,7 @@ fun legacyMockVtjDataset() =
                     "210281-9988",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 10", "00340", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Tapani Niklas Luka",
@@ -1014,7 +1014,7 @@ fun legacyMockVtjDataset() =
                     "180214A928S",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 4", "02230", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Olavi Aleksi Nooa Samuel",
@@ -1022,7 +1022,7 @@ fun legacyMockVtjDataset() =
                     "181118A9979",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 15", "02120", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Ricky",
@@ -1038,7 +1038,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "hogfors_kamreerintie2",
+                    residenceCode = "hogfors_kamreerintie2"
                 ),
                 MockVtjPerson(
                     "Sofia Iina Seela",
@@ -1047,7 +1047,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 6", "02120", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie6",
+                    residenceCode = "hogfors_kamreerintie6"
                 ),
                 MockVtjPerson(
                     "Johannes Joona Benjamin",
@@ -1055,7 +1055,7 @@ fun legacyMockVtjDataset() =
                     "130217A995F",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 6", "02200", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Antero Toivo Peetu Oiva",
@@ -1063,7 +1063,7 @@ fun legacyMockVtjDataset() =
                     "260918A9787",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 14", "02110", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Matti Mikael Joel Kasper",
@@ -1071,7 +1071,7 @@ fun legacyMockVtjDataset() =
                     "010713A933R",
                     RestrictedDetails(enabled = true),
                     PersonAddress("", "", ""),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kaarina Helena Marjatta",
@@ -1079,7 +1079,7 @@ fun legacyMockVtjDataset() =
                     "150288-971A",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 7", "02210", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Matti Olavi Antero",
@@ -1087,7 +1087,7 @@ fun legacyMockVtjDataset() =
                     "290393-9913",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 6", "02200", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Helena Anna Maria",
@@ -1095,7 +1095,7 @@ fun legacyMockVtjDataset() =
                     "100774-9306",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 5", "02180", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Olavi Tapio Johannes",
@@ -1103,7 +1103,7 @@ fun legacyMockVtjDataset() =
                     "100373-9733",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 7", "00370", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Marjatta Selma Minttu Vilja",
@@ -1111,7 +1111,7 @@ fun legacyMockVtjDataset() =
                     "080515A969A",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 8", "02230", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anna Venla Olivia Hilda",
@@ -1119,7 +1119,7 @@ fun legacyMockVtjDataset() =
                     "100513A918E",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 9", "02240", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Annikki Maria Anna",
@@ -1127,7 +1127,7 @@ fun legacyMockVtjDataset() =
                     "290377-9377",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 11", "02120", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Seija Anna Kaarina",
@@ -1135,7 +1135,7 @@ fun legacyMockVtjDataset() =
                     "031083-910S",
                     RestrictedDetails(enabled = true),
                     PersonAddress("", "", ""),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Liisa Anna Kaarina Marjatta",
@@ -1143,7 +1143,7 @@ fun legacyMockVtjDataset() =
                     "260888-990V",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 10", "02160", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Kalevi Eetu Noel Aaron",
@@ -1152,7 +1152,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 6", "02120", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie6",
+                    residenceCode = "hogfors_kamreerintie6"
                 ),
                 MockVtjPerson(
                     "Tapio Eemeli Anton",
@@ -1160,7 +1160,7 @@ fun legacyMockVtjDataset() =
                     "190618A918B",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 11", "00370", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anneli Lilja Helmi Veera",
@@ -1168,7 +1168,7 @@ fun legacyMockVtjDataset() =
                     "120315A951P",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 6", "02200", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Juhani Julius Viljami Akseli",
@@ -1176,7 +1176,7 @@ fun legacyMockVtjDataset() =
                     "020818A959A",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 17", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Mikael Daniel Lenni Benjamin",
@@ -1184,7 +1184,7 @@ fun legacyMockVtjDataset() =
                     "050813A914H",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 9", "02150", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Olavi Kasper Veikko",
@@ -1192,7 +1192,7 @@ fun legacyMockVtjDataset() =
                     "120217A923H",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 5", "02180", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Ahto Olavi Antero",
@@ -1200,7 +1200,7 @@ fun legacyMockVtjDataset() =
                     "170595-9151",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 16", "02130", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anneli Selma Iisa",
@@ -1209,7 +1209,7 @@ fun legacyMockVtjDataset() =
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 2", "00370", "Espoo"),
                     NativeLanguage.FI,
-                    residenceCode = "hogfors_kamreerintie2",
+                    residenceCode = "hogfors_kamreerintie2"
                 ),
                 MockVtjPerson(
                     "Marjatta Liisa Annikki",
@@ -1217,7 +1217,7 @@ fun legacyMockVtjDataset() =
                     "010495-965H",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kaivomestarinkatu 10", "02110", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anelma",
@@ -1233,7 +1233,7 @@ fun legacyMockVtjDataset() =
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
-                    residenceCode = "aapinen_1",
+                    residenceCode = "aapinen_1"
                 ),
                 MockVtjPerson(
                     "Mikael Matti Ilmari",
@@ -1241,7 +1241,7 @@ fun legacyMockVtjDataset() =
                     "020394-958V",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 1", "02140", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Anneli Helena Johanna Kaarina",
@@ -1249,7 +1249,7 @@ fun legacyMockVtjDataset() =
                     "210586-987L",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Kamreerintie 11", "02170", "Espoo"),
-                    NativeLanguage.FI,
+                    NativeLanguage.FI
                 ),
                 MockVtjPerson(
                     "Sylvi Liisa Sofia",
@@ -1257,8 +1257,8 @@ fun legacyMockVtjDataset() =
                     "081181-9984",
                     RestrictedDetails(enabled = false),
                     PersonAddress("Raivaajantie 13", "02100", "Espoo"),
-                    NativeLanguage.FI,
-                ),
+                    NativeLanguage.FI
+                )
             ),
         guardianDependants =
             mapOf(
@@ -1309,6 +1309,6 @@ fun legacyMockVtjDataset() =
                 "010279-123L" to listOf("010617A123U"),
                 "311299-999E" to listOf("070714A9126"),
                 "311288A999L" to listOf("311218A999J"),
-                "150580-999K" to listOf("150515-999T"),
+                "150580-999K" to listOf("150515-999T")
             )
     )

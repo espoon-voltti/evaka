@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private lateinit var clock: MockEvakaClock
@@ -307,6 +308,5 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         return emails
     }
 
-    private fun getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
-        db.read { it.getIncomeNotifications(receiverId) }
+    private fun getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> = db.read { it.getIncomeNotifications(receiverId) }
 }

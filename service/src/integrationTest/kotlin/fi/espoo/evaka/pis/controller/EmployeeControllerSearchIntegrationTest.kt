@@ -24,7 +24,6 @@ import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 
 class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired lateinit var controller: EmployeeController
 
     @BeforeEach

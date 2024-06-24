@@ -48,7 +48,9 @@ import org.springframework.web.bind.annotation.RestController
     "/timeline", // deprecated
     "/employee/timeline"
 )
-class TimelineController(private val accessControl: AccessControl) {
+class TimelineController(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getTimeline(
         db: Database,
@@ -59,7 +61,8 @@ class TimelineController(private val accessControl: AccessControl) {
         @RequestParam to: LocalDate
     ): Timeline {
         val range = FiniteDateRange(from, to)
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -85,7 +88,7 @@ class TimelineController(private val accessControl: AccessControl) {
                                     if (
                                         partner.creationModificationMetadata
                                             .createdFromApplication != null
-                                    )
+                                    ) {
                                         accessControl
                                             .getPermittedActions<ApplicationId, Action.Application>(
                                                 tx,
@@ -93,9 +96,10 @@ class TimelineController(private val accessControl: AccessControl) {
                                                 clock,
                                                 partner.creationModificationMetadata
                                                     .createdFromApplication
-                                            )
-                                            .contains(Action.Application.READ)
-                                    else false
+                                            ).contains(Action.Application.READ)
+                                    } else {
+                                        false
+                                    }
                                 TimelinePartnerDetailed(
                                     id = partner.id,
                                     range = partner.range,
@@ -108,8 +112,7 @@ class TimelineController(private val accessControl: AccessControl) {
                                         tx.getValueDecisions(partner.partnerId, partnerRange),
                                     incomes = tx.getIncomes(partner.partnerId, partnerRange),
                                     children =
-                                        tx.getChildren(partner.partnerId, partnerRange).map { child
-                                            ->
+                                        tx.getChildren(partner.partnerId, partnerRange).map { child ->
                                             val childRange =
                                                 partnerRange.intersection(child.range)!!
                                             addDetailsToChild(tx, user, clock, child, childRange)
@@ -126,8 +129,7 @@ class TimelineController(private val accessControl: AccessControl) {
                             }
                     )
                 }
-            }
-            .also { Audit.TimelineRead.log(targetId = AuditId(personId)) }
+            }.also { Audit.TimelineRead.log(targetId = AuditId(personId)) }
     }
 
     private fun addDetailsToChild(
@@ -136,31 +138,31 @@ class TimelineController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         child: TimelineChild,
         childRange: FiniteDateRange
-    ) =
-        TimelineChildDetailed(
-            id = child.id,
-            range = child.range,
-            childId = child.childId,
-            firstName = child.firstName,
-            lastName = child.lastName,
-            dateOfBirth = child.dateOfBirth,
-            incomes = tx.getIncomes(child.childId, childRange),
-            placements = tx.getPlacements(child.childId, childRange),
-            serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
-            feeAlterations = tx.getFeeAlterations(child.childId, childRange),
-            creationModificationMetadata = child.creationModificationMetadata,
-            originApplicationAccessible =
-                if (child.creationModificationMetadata.createdFromApplication != null)
-                    accessControl
-                        .getPermittedActions<ApplicationId, Action.Application>(
-                            tx,
-                            user,
-                            clock,
-                            child.creationModificationMetadata.createdFromApplication
-                        )
-                        .contains(Action.Application.READ)
-                else false
-        )
+    ) = TimelineChildDetailed(
+        id = child.id,
+        range = child.range,
+        childId = child.childId,
+        firstName = child.firstName,
+        lastName = child.lastName,
+        dateOfBirth = child.dateOfBirth,
+        incomes = tx.getIncomes(child.childId, childRange),
+        placements = tx.getPlacements(child.childId, childRange),
+        serviceNeeds = tx.getServiceNeeds(child.childId, childRange),
+        feeAlterations = tx.getFeeAlterations(child.childId, childRange),
+        creationModificationMetadata = child.creationModificationMetadata,
+        originApplicationAccessible =
+            if (child.creationModificationMetadata.createdFromApplication != null) {
+                accessControl
+                    .getPermittedActions<ApplicationId, Action.Application>(
+                        tx,
+                        user,
+                        clock,
+                        child.creationModificationMetadata.createdFromApplication
+                    ).contains(Action.Application.READ)
+            } else {
+                false
+            }
+    )
 }
 
 data class Timeline(
@@ -181,21 +183,21 @@ data class TimelineFeeDecision(
     val totalFee: Int
 ) : WithRange
 
-private fun Database.Read.getFeeDecisions(personId: PersonId, range: FiniteDateRange) =
-    findFeeDecisionsForHeadOfFamily(
-            headOfFamilyId = personId,
-            period = range.asDateRange(),
-            status = null
-        )
-        .map {
-            TimelineFeeDecision(
-                id = it.id,
-                range = it.validDuring,
-                status = it.status,
-                totalFee = it.totalFee
-            )
-        }
-        .sortedBy { it.range.start }
+private fun Database.Read.getFeeDecisions(
+    personId: PersonId,
+    range: FiniteDateRange
+) = findFeeDecisionsForHeadOfFamily(
+    headOfFamilyId = personId,
+    period = range.asDateRange(),
+    status = null
+).map {
+    TimelineFeeDecision(
+        id = it.id,
+        range = it.validDuring,
+        status = it.status,
+        totalFee = it.totalFee
+    )
+}.sortedBy { it.range.start }
 
 data class TimelineValueDecision(
     val id: VoucherValueDecisionId,
@@ -203,18 +205,19 @@ data class TimelineValueDecision(
     val status: VoucherValueDecisionStatus
 ) : WithRange
 
-private fun Database.Read.getValueDecisions(personId: PersonId, range: FiniteDateRange) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getValueDecisions(
+    personId: PersonId,
+    range: FiniteDateRange
+) = createQuery {
+    sql(
+        """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, status
 FROM voucher_value_decision
 WHERE head_of_family_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
 """
-            )
-        }
-        .toList<TimelineValueDecision>()
+    )
+}.toList<TimelineValueDecision>()
 
 data class TimelineIncome(
     val id: IncomeId,
@@ -222,18 +225,19 @@ data class TimelineIncome(
     val effect: IncomeEffect
 ) : WithRange
 
-private fun Database.Read.getIncomes(personId: PersonId, range: FiniteDateRange) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getIncomes(
+    personId: PersonId,
+    range: FiniteDateRange
+) = createQuery {
+    sql(
+        """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, effect
 FROM income
 WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
 """
-            )
-        }
-        .toList<TimelineIncome>()
+    )
+}.toList<TimelineIncome>()
 
 data class TimelinePartner(
     val id: PartnershipId,
@@ -258,23 +262,24 @@ data class TimelinePartnerDetailed(
     val originApplicationAccessible: Boolean
 ) : WithRange
 
-private fun Database.Read.getPartners(personId: PersonId, range: FiniteDateRange) =
-    this.getPartnersForPerson(
-            personId = personId,
-            includeConflicts = false,
-            period = range.asDateRange()
+private fun Database.Read.getPartners(
+    personId: PersonId,
+    range: FiniteDateRange
+) = this
+    .getPartnersForPerson(
+        personId = personId,
+        includeConflicts = false,
+        period = range.asDateRange()
+    ).map {
+        TimelinePartner(
+            id = it.partnershipId,
+            range = DateRange(it.startDate, it.endDate),
+            partnerId = it.person.id,
+            firstName = it.person.firstName,
+            lastName = it.person.lastName,
+            creationModificationMetadata = it.creationModificationMetadata
         )
-        .map {
-            TimelinePartner(
-                id = it.partnershipId,
-                range = DateRange(it.startDate, it.endDate),
-                partnerId = it.person.id,
-                firstName = it.person.firstName,
-                lastName = it.person.lastName,
-                creationModificationMetadata = it.creationModificationMetadata
-            )
-        }
-        .sortedBy { it.range.start }
+    }.sortedBy { it.range.start }
 
 data class TimelineChild(
     val id: ParentshipId,
@@ -301,25 +306,25 @@ data class TimelineChildDetailed(
     val originApplicationAccessible: Boolean
 ) : WithRange
 
-private fun Database.Read.getChildren(personId: PersonId, range: FiniteDateRange) =
-    getParentships(
-            headOfChildId = personId,
-            childId = null,
-            includeConflicts = false,
-            period = range.asDateRange()
-        )
-        .map {
-            TimelineChild(
-                id = it.id,
-                range = DateRange(it.startDate, it.endDate),
-                childId = it.child.id,
-                firstName = it.child.firstName,
-                lastName = it.child.lastName,
-                dateOfBirth = it.child.dateOfBirth,
-                creationModificationMetadata = it.creationModificationMetadata
-            )
-        }
-        .sortedBy { it.range.start }
+private fun Database.Read.getChildren(
+    personId: PersonId,
+    range: FiniteDateRange
+) = getParentships(
+    headOfChildId = personId,
+    childId = null,
+    includeConflicts = false,
+    period = range.asDateRange()
+).map {
+    TimelineChild(
+        id = it.id,
+        range = DateRange(it.startDate, it.endDate),
+        childId = it.child.id,
+        firstName = it.child.firstName,
+        lastName = it.child.lastName,
+        dateOfBirth = it.child.dateOfBirth,
+        creationModificationMetadata = it.creationModificationMetadata
+    )
+}.sortedBy { it.range.start }
 
 data class TimelinePlacement(
     val id: PlacementId,
@@ -328,12 +333,17 @@ data class TimelinePlacement(
     @Nested("unit") val unit: TimelinePlacementUnit
 ) : WithRange
 
-data class TimelinePlacementUnit(val id: DaycareId, val name: String)
+data class TimelinePlacementUnit(
+    val id: DaycareId,
+    val name: String
+)
 
-private fun Database.Read.getPlacements(personId: PersonId, range: FiniteDateRange) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getPlacements(
+    personId: PersonId,
+    range: FiniteDateRange
+) = createQuery {
+    sql(
+        """
 SELECT
     pl.id,
     daterange(pl.start_date, pl.end_date, '[]') as range, 
@@ -345,9 +355,8 @@ JOIN daycare d on d.id = pl.unit_id
 WHERE pl.child_id = ${bind(personId)} AND daterange(start_date, end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
 """
-            )
-        }
-        .toList<TimelinePlacement>()
+    )
+}.toList<TimelinePlacement>()
 
 data class TimelineServiceNeed(
     val id: ServiceNeedId,
@@ -355,10 +364,12 @@ data class TimelineServiceNeed(
     val name: String
 ) : WithRange
 
-private fun Database.Read.getServiceNeeds(personId: PersonId, range: FiniteDateRange) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getServiceNeeds(
+    personId: PersonId,
+    range: FiniteDateRange
+) = createQuery {
+    sql(
+        """
 SELECT
     sn.id,
     daterange(sn.start_date, sn.end_date, '[]') as range, 
@@ -369,9 +380,8 @@ JOIN service_need_option sno on sn.option_id = sno.id
 WHERE pl.child_id = ${bind(personId)} AND daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
 """
-            )
-        }
-        .toList<TimelineServiceNeed>()
+    )
+}.toList<TimelineServiceNeed>()
 
 data class TimelineFeeAlteration(
     val id: FeeAlterationId,
@@ -382,15 +392,16 @@ data class TimelineFeeAlteration(
     val notes: String
 ) : WithRange
 
-private fun Database.Read.getFeeAlterations(personId: PersonId, range: FiniteDateRange) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getFeeAlterations(
+    personId: PersonId,
+    range: FiniteDateRange
+) = createQuery {
+    sql(
+        """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, type, amount, is_absolute as absolute, notes
 FROM fee_alteration
 WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
 """
-            )
-        }
-        .toList<TimelineFeeAlteration>()
+    )
+}.toList<TimelineFeeAlteration>()

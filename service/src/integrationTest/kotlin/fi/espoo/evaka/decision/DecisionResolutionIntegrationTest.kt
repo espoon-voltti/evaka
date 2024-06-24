@@ -53,7 +53,10 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept: Boolean)
+data class DecisionResolutionTestCase(
+    val isServiceWorker: Boolean,
+    val isAccept: Boolean
+)
 
 class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker =
@@ -69,12 +72,11 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Suppress("unused")
     fun testCases(): Stream<Arguments> =
         listOf(
-                Arguments.of(DecisionResolutionTestCase(isServiceWorker = true, isAccept = true)),
-                Arguments.of(DecisionResolutionTestCase(isServiceWorker = true, isAccept = false)),
-                Arguments.of(DecisionResolutionTestCase(isServiceWorker = false, isAccept = true)),
-                Arguments.of(DecisionResolutionTestCase(isServiceWorker = false, isAccept = false))
-            )
-            .stream()
+            Arguments.of(DecisionResolutionTestCase(isServiceWorker = true, isAccept = true)),
+            Arguments.of(DecisionResolutionTestCase(isServiceWorker = true, isAccept = false)),
+            Arguments.of(DecisionResolutionTestCase(isServiceWorker = false, isAccept = true)),
+            Arguments.of(DecisionResolutionTestCase(isServiceWorker = false, isAccept = false))
+        ).stream()
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
@@ -358,8 +360,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     jsonMapper.writeValueAsString(
                         AcceptDecisionRequest(decisionId, requestedStartDate)
                     )
-                )
-                .asUser(user)
+                ).asUser(user)
                 .response()
         assertTrue(res.isSuccessful)
 

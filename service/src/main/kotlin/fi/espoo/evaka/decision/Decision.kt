@@ -31,7 +31,7 @@ data class Decision(
     val resolved: LocalDate?,
     val resolvedByName: String?,
     // True if the document is a legacy document that may contain guardian name and address.
-    val documentContainsContactInfo: Boolean,
+    val documentContainsContactInfo: Boolean
 ) {
     fun validRequestedStartDatePeriod(featureConfig: FeatureConfig) =
         FiniteDateRange(

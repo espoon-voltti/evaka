@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) {
+class AbsenceControllerEmployeeMobile(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/absences/by-child/{childId}/future", // deprecated
         "/employee-mobile/absences/by-child/{childId}/future"
@@ -27,8 +29,9 @@ class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) 
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<Absence> {
-        return db.connect { dbc ->
+    ): List<Absence> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -39,7 +42,5 @@ class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) 
                     )
                     getFutureAbsencesOfChild(it, clock, childId)
                 }
-            }
-            .also { Audit.AbsenceRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.AbsenceRead.log(targetId = AuditId(childId)) }
 }

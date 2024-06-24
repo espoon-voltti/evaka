@@ -34,7 +34,6 @@ class ServiceNeedController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
-
     data class ServiceNeedCreateRequest(
         val placementId: PlacementId,
         val startDate: LocalDate,
@@ -66,20 +65,19 @@ class ServiceNeedController(
                     )
 
                     createServiceNeed(
-                            tx = tx,
-                            user = user,
-                            placementId = body.placementId,
-                            startDate = body.startDate,
-                            endDate = body.endDate,
-                            optionId = body.optionId,
-                            shiftCare = body.shiftCare,
-                            partWeek = body.partWeek,
-                            confirmedAt = HelsinkiDateTime.now()
-                        )
-                        .also { id ->
-                            val range = tx.getServiceNeedChildRange(id)
-                            notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
-                        }
+                        tx = tx,
+                        user = user,
+                        placementId = body.placementId,
+                        startDate = body.startDate,
+                        endDate = body.endDate,
+                        optionId = body.optionId,
+                        shiftCare = body.shiftCare,
+                        partWeek = body.partWeek,
+                        confirmedAt = HelsinkiDateTime.now()
+                    ).also { id ->
+                        val range = tx.getServiceNeedChildRange(id)
+                        notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
+                    }
                 }
             }
         Audit.PlacementServiceNeedCreate.log(
@@ -168,8 +166,9 @@ class ServiceNeedController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<ServiceNeedOption> {
-        return db.connect { dbc ->
+    ): List<ServiceNeedOption> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -179,9 +178,7 @@ class ServiceNeedController(
                     )
                     it.getServiceNeedOptions()
                 }
-            }
-            .also { Audit.ServiceNeedOptionsRead.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.ServiceNeedOptionsRead.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping(
         path =
@@ -194,7 +191,5 @@ class ServiceNeedController(
     fun getServiceNeedOptionPublicInfos(
         db: Database,
         @RequestParam placementTypes: List<PlacementType> = emptyList()
-    ): List<ServiceNeedOptionPublicInfo> {
-        return db.connect { dbc -> dbc.read { it.getServiceNeedOptionPublicInfos(placementTypes) } }
-    }
+    ): List<ServiceNeedOptionPublicInfo> = db.connect { dbc -> dbc.read { it.getServiceNeedOptionPublicInfos(placementTypes) } }
 }

@@ -15,7 +15,9 @@ interface EvakaClock {
     fun now(): HelsinkiDateTime
 }
 
-class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
+class MockEvakaClock(
+    private var now: HelsinkiDateTime
+) : EvakaClock {
     constructor(
         year: Int,
         month: Int,
@@ -36,7 +38,9 @@ class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
     }
 }
 
-class RealEvakaClock(private val clock: Clock = Clock.systemUTC()) : EvakaClock {
+class RealEvakaClock(
+    private val clock: Clock = Clock.systemUTC()
+) : EvakaClock {
     override fun today(): LocalDate = LocalDate.now(europeHelsinki)
 
     override fun now(): HelsinkiDateTime = HelsinkiDateTime.now(clock)

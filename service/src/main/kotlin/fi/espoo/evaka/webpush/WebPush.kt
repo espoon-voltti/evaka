@@ -32,27 +32,33 @@ enum class Urgency {
     VeryLow,
     Low,
     Normal,
-    High,
+    High
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @JsonTypeIdResolver(SealedSubclassSimpleName::class)
 sealed interface WebPushPayload {
-    data class NotificationV1(val title: String) : WebPushPayload
+    data class NotificationV1(
+        val title: String
+    ) : WebPushPayload
 }
 
-class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)
+class WebPushEndpoint(
+    val uri: URI,
+    val ecdhPublicKey: ECPublicKey,
+    val authSecret: ByteArray
+)
 
 class WebPushRequest(
     val uri: URI,
     val headers: WebPushRequestHeaders,
-    val body: ByteArray,
+    val body: ByteArray
 ) {
     fun withVapid(vapidJwt: VapidJwt) =
         WebPushRequest(
             uri,
             headers.copy(authorization = vapidJwt.toAuthorizationHeader()),
-            body,
+            body
         )
 
     companion object {
@@ -64,13 +70,13 @@ class WebPushRequest(
             endpoint: WebPushEndpoint,
             messageKeyPair: WebPushKeyPair,
             salt: ByteArray,
-            data: ByteArray,
+            data: ByteArray
         ): WebPushRequest {
             val ikm =
                 WebPushCrypto.generateInputKeyingMaterial(
                     userAgentPublicKey = endpoint.ecdhPublicKey,
                     authSecret = endpoint.authSecret,
-                    applicationServerKeyPair = messageKeyPair,
+                    applicationServerKeyPair = messageKeyPair
                 )
             return WebPushRequest(
                 uri = endpoint.uri,
@@ -92,7 +98,7 @@ class WebPushRequest(
                         ikm = ikm,
                         keyId = WebPushCrypto.encode(messageKeyPair.publicKey),
                         salt = salt,
-                        data = data,
+                        data = data
                     )
             )
         }
@@ -103,16 +109,15 @@ data class WebPushRequestHeaders(
     val ttl: String,
     val contentEncoding: String,
     val authorization: String? = null,
-    val urgency: String? = null,
+    val urgency: String? = null
 ) {
     fun toTypedArray(): Array<Pair<String, String>> =
         listOfNotNull(
-                "TTL" to ttl,
-                "Content-Encoding" to contentEncoding,
-                authorization?.let { "Authorization" to it },
-                urgency?.let { "Urgency" to it },
-            )
-            .toTypedArray()
+            "TTL" to ttl,
+            "Content-Encoding" to contentEncoding,
+            authorization?.let { "Authorization" to it },
+            urgency?.let { "Urgency" to it }
+        ).toTypedArray()
 }
 
 // RFC8292 says JWT tokens must expire within 24 hours of the request we're going to make
@@ -127,7 +132,9 @@ data class WebPushRequestHeaders(
 private val VAPID_JWT_NEW_VALID_DURATION = Duration.ofHours(12)
 private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 
-class WebPush(env: WebPushEnv) {
+class WebPush(
+    env: WebPushEnv
+) {
     private val fuel = FuelManager()
     private val secureRandom = SecureRandom()
     private val jsonWriter = defaultJsonMapperBuilder().build().writerFor<List<WebPushPayload>>()
@@ -138,10 +145,16 @@ class WebPush(env: WebPushEnv) {
 
     private val logger = KotlinLogging.logger {}
 
-    class SubscriptionExpired(val status: HttpStatus, cause: Throwable) :
-        RuntimeException("Subscription expired (HTTP $status)", cause)
+    class SubscriptionExpired(
+        val status: HttpStatus,
+        cause: Throwable
+    ) : RuntimeException("Subscription expired (HTTP $status)", cause)
 
-    fun getValidToken(tx: Database.Transaction, clock: EvakaClock, endpoint: URI): VapidJwt =
+    fun getValidToken(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        endpoint: URI
+    ): VapidJwt =
         tx.getOrRefreshToken(
             // Pessimistically create a fresh JWT token every time, but it only gets saved and used
             // if we don't find a valid existing one from the database cache
@@ -155,17 +168,20 @@ class WebPush(env: WebPushEnv) {
             minValidThreshold = clock.now().plus(VAPID_JWT_MIN_VALID_DURATION)
         )
 
-    fun send(vapidJwt: VapidJwt, notification: WebPushNotification) {
+    fun send(
+        vapidJwt: VapidJwt,
+        notification: WebPushNotification
+    ) {
         val webPushRequest =
-            WebPushRequest.createEncryptedPushMessage(
+            WebPushRequest
+                .createEncryptedPushMessage(
                     ttl = notification.ttl,
                     endpoint = notification.endpoint,
                     messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
                     salt = secureRandom.generateSeed(16),
                     data = jsonWriter.writeValueAsBytes(notification.payloads),
                     urgency = Urgency.Normal
-                )
-                .withVapid(vapidJwt)
+                ).withVapid(vapidJwt)
         val (request, _, result) =
             fuel
                 .post(webPushRequest.uri.toString())
@@ -182,7 +198,7 @@ class WebPush(env: WebPushEnv) {
                 mapOf(
                     "method" to request.method,
                     "url" to request.url,
-                    "body" to request.body.asString(contentType = null),
+                    "body" to request.body.asString(contentType = null)
                 )
             if (e.response.statusCode == 404 || e.response.statusCode == 410) {
                 throw SubscriptionExpired(HttpStatus.valueOf(e.response.statusCode), e)

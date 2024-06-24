@@ -55,8 +55,10 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         DailyServiceTimesController(
             AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
         )
+
     @Autowired
     private lateinit var dailyServiceTimesCitizenController: DailyServiceTimesCitizenController
+
     @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
 
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
@@ -114,7 +116,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DailyServiceTimesValue.RegularTimes(
                     DateRange(now.toLocalDate(), null),
                     tenToNoonRange
-                ),
+                )
             )
         }
 
@@ -135,7 +137,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DailyServiceTimesValue.RegularTimes(
                     validityPeriod = DateRange(now.toLocalDate().minusDays(1), null),
                     regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
-                ),
+                )
             )
         }
 
@@ -205,7 +207,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     validityPeriod =
                         DateRange(now.toLocalDate().plusDays(30), now.toLocalDate().plusDays(50)),
                     regularTimes = tenToNoonRange
-                ),
+                )
             )
         }
 
@@ -294,14 +296,14 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     validityPeriod =
                         DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(11)),
                     regularTimes = tenToNoonRange
-                ),
+                )
             )
         }
 
         assertThrows<BadRequest> {
             setDailyServiceTimesEndDate(
                 id,
-                now.toLocalDate().plusDays(11),
+                now.toLocalDate().plusDays(11)
             )
         }
     }
@@ -349,9 +351,9 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertHolidayPeriod(
                 FiniteDateRange(
                     dailyServiceTimesValidity.start.plusDays(7),
-                    dailyServiceTimesValidity.start.plusDays(13),
+                    dailyServiceTimesValidity.start.plusDays(13)
                 ),
-                reservationDeadline = now.toLocalDate(),
+                reservationDeadline = now.toLocalDate()
             )
         }
         this.postReservations(
@@ -360,18 +362,18 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
                     dailyServiceTimesValidity.start.minusDays(1),
-                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
                 ),
                 // Inside the validity period
                 DailyReservationRequest.Reservations(
                     testChild_1.id,
                     dailyServiceTimesValidity.start,
-                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
                 ),
                 // Inside the validity period AND inside a holiday period
                 DailyReservationRequest.Present(
                     testChild_1.id,
-                    dailyServiceTimesValidity.start.plusDays(7),
+                    dailyServiceTimesValidity.start.plusDays(7)
                 )
             )
         )
@@ -394,7 +396,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 dailyServiceTimesValidity.start.minusDays(1),
                 dailyServiceTimesValidity.start.plusDays(7)
             ),
-            getReservationDates(),
+            getReservationDates()
         )
     }
 
@@ -475,7 +477,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun createDailyServiceTimes(
         childId: ChildId,
-        dailyServiceTime: DailyServiceTimesValue,
+        dailyServiceTime: DailyServiceTimesValue
     ) {
         dailyServiceTimesController.postDailyServiceTimes(
             dbInstance(),
@@ -488,7 +490,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun updateDailyServiceTimes(
         id: DailyServiceTimesId,
-        dailyServiceTime: DailyServiceTimesValue,
+        dailyServiceTime: DailyServiceTimesValue
     ) {
         dailyServiceTimesController.putDailyServiceTimes(
             dbInstance(),
@@ -501,7 +503,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun setDailyServiceTimesEndDate(
         id: DailyServiceTimesId,
-        endDate: LocalDate,
+        endDate: LocalDate
     ) {
         dailyServiceTimesController.putDailyServiceTimesEnd(
             dbInstance(),
@@ -521,26 +523,20 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun getDailyServiceTimes(
-        childId: ChildId
-    ): List<DailyServiceTimesController.DailyServiceTimesResponse> {
-        return dailyServiceTimesController.getDailyServiceTimes(
+    private fun getDailyServiceTimes(childId: ChildId): List<DailyServiceTimesController.DailyServiceTimesResponse> =
+        dailyServiceTimesController.getDailyServiceTimes(
             dbInstance(),
             admin,
             MockEvakaClock(now),
             childId
         )
-    }
 
-    private fun getDailyServiceTimeNotifications(
-        user: AuthenticatedUser.Citizen
-    ): List<DailyServiceTimeNotification> {
-        return dailyServiceTimesCitizenController.getDailyServiceTimeNotifications(
+    private fun getDailyServiceTimeNotifications(user: AuthenticatedUser.Citizen): List<DailyServiceTimeNotification> =
+        dailyServiceTimesCitizenController.getDailyServiceTimeNotifications(
             dbInstance(),
             user,
             MockEvakaClock(now)
         )
-    }
 
     private fun dismissDailyServiceTimeNotification(
         user: AuthenticatedUser.Citizen,
@@ -566,7 +562,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private fun getReservationDates(): List<LocalDate> =
         db.read {
             @Suppress("DEPRECATION")
-            it.createQuery("SELECT date FROM attendance_reservation ORDER BY date")
+            it
+                .createQuery("SELECT date FROM attendance_reservation ORDER BY date")
                 .toList<LocalDate>()
         }
 }

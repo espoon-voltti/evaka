@@ -27,24 +27,27 @@ import software.amazon.awssdk.utils.AttributeMap
 class AwsConfig {
     @Bean
     @Profile("local")
-    fun credentialsProviderLocal(): AwsCredentialsProvider =
-        StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+    fun credentialsProviderLocal(): AwsCredentialsProvider = StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
 
     @Bean
     @Profile("local")
-    fun amazonS3Local(env: BucketEnv, credentialsProvider: AwsCredentialsProvider): S3Client {
+    fun amazonS3Local(
+        env: BucketEnv,
+        credentialsProvider: AwsCredentialsProvider
+    ): S3Client {
         val attrs =
-            AttributeMap.builder()
+            AttributeMap
+                .builder()
                 .put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true)
                 .build()
         val client =
-            S3Client.builder()
+            S3Client
+                .builder()
                 .httpClient(DefaultSdkHttpClientBuilder().buildWithDefaults(attrs))
                 .region(Region.US_EAST_1)
                 .serviceConfiguration(
                     S3Configuration.builder().pathStyleAccessEnabled(true).build()
-                )
-                .endpointOverride(env.s3MockUrl)
+                ).endpointOverride(env.s3MockUrl)
                 .credentialsProvider(credentialsProvider)
                 .build()
 
@@ -62,7 +65,8 @@ class AwsConfig {
         env: BucketEnv,
         credentialsProvider: AwsCredentialsProvider
     ): S3Presigner =
-        S3Presigner.builder()
+        S3Presigner
+            .builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
             .endpointOverride(env.s3MockUrl)
@@ -75,8 +79,15 @@ class AwsConfig {
 
     @Bean
     @Profile("production")
-    fun amazonS3Prod(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Client =
-        S3Client.builder().region(env.awsRegion).credentialsProvider(credentialsProvider).build()
+    fun amazonS3Prod(
+        env: EvakaEnv,
+        credentialsProvider: AwsCredentialsProvider
+    ): S3Client =
+        S3Client
+            .builder()
+            .region(env.awsRegion)
+            .credentialsProvider(credentialsProvider)
+            .build()
 
     @Bean
     @Profile("production")
@@ -84,11 +95,19 @@ class AwsConfig {
         env: EvakaEnv,
         credentialsProvider: AwsCredentialsProvider
     ): S3Presigner =
-        S3Presigner.builder().region(env.awsRegion).credentialsProvider(credentialsProvider).build()
+        S3Presigner
+            .builder()
+            .region(env.awsRegion)
+            .credentialsProvider(credentialsProvider)
+            .build()
 
     @Bean
-    fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient =
-        SesClient.builder()
+    fun amazonSES(
+        env: EvakaEnv,
+        awsCredentialsProvider: AwsCredentialsProvider?
+    ): SesClient =
+        SesClient
+            .builder()
             .credentialsProvider(awsCredentialsProvider)
             .region(env.awsRegion)
             .build()

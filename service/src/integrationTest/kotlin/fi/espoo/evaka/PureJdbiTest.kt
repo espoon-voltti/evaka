@@ -19,7 +19,9 @@ import org.junit.jupiter.api.TestInstance
 import org.slf4j.LoggerFactory
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class PureJdbiTest(private val resetDbBeforeEach: Boolean) {
+abstract class PureJdbiTest(
+    private val resetDbBeforeEach: Boolean
+) {
     protected lateinit var dataSource: DataSource
     protected lateinit var jdbi: Jdbi
     protected lateinit var db: Database.Connection

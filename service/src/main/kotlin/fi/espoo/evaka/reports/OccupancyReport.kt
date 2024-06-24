@@ -28,7 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class OccupancyReportController(private val accessControl: AccessControl) {
+class OccupancyReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/occupancy-by-unit", // deprecated
         "/employee/reports/occupancy-by-unit"
@@ -47,7 +49,8 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -67,8 +70,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                         filter
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.OccupancyReportRead.log(
                     meta =
                         mapOf(
@@ -101,7 +103,8 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -120,8 +123,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                         filter
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.OccupancyGroupReportRead.log(
                     meta =
                         mapOf(
@@ -163,27 +165,24 @@ private fun Database.Read.calculateUnitOccupancyReport(
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
     unitFilter: AccessControlFilter<DaycareId>
-): List<OccupancyUnitReportResultRow> {
-    return calculateDailyUnitOccupancyValues(
-            today,
-            queryPeriod,
-            type,
-            unitFilter,
-            areaId = areaId,
-            providerType = providerType,
-            unitTypes = unitTypes
+): List<OccupancyUnitReportResultRow> =
+    calculateDailyUnitOccupancyValues(
+        today,
+        queryPeriod,
+        type,
+        unitFilter,
+        areaId = areaId,
+        providerType = providerType,
+        unitTypes = unitTypes
+    ).map { (key, occupancies) ->
+        OccupancyUnitReportResultRow(
+            areaId = key.areaId,
+            areaName = key.areaName,
+            unitId = key.unitId,
+            unitName = key.unitName,
+            occupancies = occupancies
         )
-        .map { (key, occupancies) ->
-            OccupancyUnitReportResultRow(
-                areaId = key.areaId,
-                areaName = key.areaName,
-                unitId = key.unitId,
-                unitName = key.unitName,
-                occupancies = occupancies
-            )
-        }
-        .sortedWith(compareBy({ it.areaName }, { it.unitName }))
-}
+    }.sortedWith(compareBy({ it.areaName }, { it.unitName }))
 
 private fun Database.Read.calculateGroupOccupancyReport(
     today: LocalDate,
@@ -194,28 +193,27 @@ private fun Database.Read.calculateGroupOccupancyReport(
     type: OccupancyType,
     unitFilter: AccessControlFilter<DaycareId>
 ): List<OccupancyGroupReportResultRow> {
-    if (type == OccupancyType.PLANNED)
+    if (type == OccupancyType.PLANNED) {
         throw BadRequest("Unable to calculate planned occupancy at group level")
+    }
 
     return calculateDailyGroupOccupancyValues(
-            today,
-            queryPeriod,
-            type,
-            unitFilter,
-            areaId = areaId,
-            providerType = providerType,
-            unitTypes = unitTypes
+        today,
+        queryPeriod,
+        type,
+        unitFilter,
+        areaId = areaId,
+        providerType = providerType,
+        unitTypes = unitTypes
+    ).map { (key, occupancies) ->
+        OccupancyGroupReportResultRow(
+            areaId = key.areaId,
+            areaName = key.areaName,
+            unitId = key.unitId,
+            unitName = key.unitName,
+            groupId = key.groupId,
+            groupName = key.groupName,
+            occupancies = occupancies
         )
-        .map { (key, occupancies) ->
-            OccupancyGroupReportResultRow(
-                areaId = key.areaId,
-                areaName = key.areaName,
-                unitId = key.unitId,
-                unitName = key.unitName,
-                groupId = key.groupId,
-                groupName = key.groupName,
-                occupancies = occupancies
-            )
-        }
-        .sortedWith(compareBy({ it.areaName }, { it.unitName }))
+    }.sortedWith(compareBy({ it.areaName }, { it.unitName }))
 }

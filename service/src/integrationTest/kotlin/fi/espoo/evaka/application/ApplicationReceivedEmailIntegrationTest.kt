@@ -412,12 +412,15 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         )
     }
 
-    private fun setPersonEmail(personId: PersonId, email: String) {
+    private fun setPersonEmail(
+        personId: PersonId,
+        email: String
+    ) {
         db.transaction { tx ->
-            tx.createUpdate {
+            tx
+                .createUpdate {
                     sql("UPDATE person SET email = ${bind(email)} where id = ${bind(personId)}")
-                }
-                .execute()
+                }.execute()
         }
     }
 

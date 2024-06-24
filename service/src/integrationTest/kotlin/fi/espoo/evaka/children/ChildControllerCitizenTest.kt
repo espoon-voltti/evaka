@@ -37,7 +37,6 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired private lateinit var childControllerCitizen: ChildControllerCitizen
 
     @Test
@@ -61,41 +60,38 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
             }
 
         assertThat(
-                childControllerCitizen.getChildAttendanceSummary(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    ),
-                    childId,
-                    YearMonth.of(2023, 8)
-                )
+            childControllerCitizen.getChildAttendanceSummary(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                ),
+                childId,
+                YearMonth.of(2023, 8)
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 23))
+        ).isEqualTo(AttendanceSummary(attendanceDays = 23))
         assertThat(
-                childControllerCitizen.getChildAttendanceSummary(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    ),
-                    childId,
-                    YearMonth.of(2023, 9)
-                )
+            childControllerCitizen.getChildAttendanceSummary(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                ),
+                childId,
+                YearMonth.of(2023, 9)
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 11))
+        ).isEqualTo(AttendanceSummary(attendanceDays = 11))
         assertThat(
-                childControllerCitizen.getChildAttendanceSummary(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    ),
-                    childId,
-                    YearMonth.of(2023, 10)
-                )
+            childControllerCitizen.getChildAttendanceSummary(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                ),
+                childId,
+                YearMonth.of(2023, 10)
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 0))
+        ).isEqualTo(AttendanceSummary(attendanceDays = 0))
     }
 
     @Test
@@ -127,17 +123,16 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
             }
 
         assertThat(
-                childControllerCitizen.getChildAttendanceSummary(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    ),
-                    childId,
-                    YearMonth.of(2023, 9)
-                )
+            childControllerCitizen.getChildAttendanceSummary(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                ),
+                childId,
+                YearMonth.of(2023, 9)
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 20))
+        ).isEqualTo(AttendanceSummary(attendanceDays = 20))
     }
 
     @Test
@@ -169,17 +164,16 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
             }
 
         assertThat(
-                childControllerCitizen.getChildAttendanceSummary(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    ),
-                    childId,
-                    YearMonth.of(2023, 9)
-                )
+            childControllerCitizen.getChildAttendanceSummary(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                ),
+                childId,
+                YearMonth.of(2023, 9)
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 10))
+        ).isEqualTo(AttendanceSummary(attendanceDays = 10))
     }
 
     @Test
@@ -211,17 +205,16 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
             }
 
         assertThat(
-                childControllerCitizen.getChildAttendanceSummary(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    ),
-                    childId,
-                    YearMonth.of(2023, 9)
-                )
+            childControllerCitizen.getChildAttendanceSummary(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                ),
+                childId,
+                YearMonth.of(2023, 9)
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 21))
+        ).isEqualTo(AttendanceSummary(attendanceDays = 21))
     }
 
     @Test
@@ -246,17 +239,16 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
             }
 
         assertThat(
-                childControllerCitizen.getChildAttendanceSummary(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    ),
-                    childId,
-                    YearMonth.of(2023, 9)
-                )
+            childControllerCitizen.getChildAttendanceSummary(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
+                ),
+                childId,
+                YearMonth.of(2023, 9)
             )
-            .isEqualTo(AttendanceSummary(attendanceDays = 20))
+        ).isEqualTo(AttendanceSummary(attendanceDays = 20))
     }
 
     @Test
@@ -334,15 +326,14 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                     )
             )
         assertThat(
-                childControllerCitizen.getChildren(
-                    dbInstance(),
-                    AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
-                    MockEvakaClock(
-                        HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
-                    )
+            childControllerCitizen.getChildren(
+                dbInstance(),
+                AuthenticatedUser.Citizen(guardianId, CitizenAuthLevel.WEAK),
+                MockEvakaClock(
+                    HelsinkiDateTime.of(LocalDate.of(2023, 9, 11), LocalTime.of(8, 23))
                 )
             )
-            .isEqualTo(listOf(childAndPermittedActions))
+        ).isEqualTo(listOf(childAndPermittedActions))
     }
 
     @Test

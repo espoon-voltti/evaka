@@ -51,8 +51,9 @@ class AssistanceNeedPreschoolDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): AssistanceNeedPreschoolDecision {
-        return db.connect { dbc ->
+    ): AssistanceNeedPreschoolDecision =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -65,35 +66,33 @@ class AssistanceNeedPreschoolDecisionController(
                     val now = clock.now()
                     val processId =
                         featureConfig.archiveMetadataConfigs[
-                                ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL]
-                            ?.let { config ->
-                                tx.insertProcess(
-                                        processDefinitionNumber = config.processDefinitionNumber,
-                                        year = now.year,
-                                        organization = featureConfig.archiveMetadataOrganization,
-                                        archiveDurationMonths = config.archiveDurationMonths
+                            ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL
+                        ]?.let { config ->
+                            tx
+                                .insertProcess(
+                                    processDefinitionNumber = config.processDefinitionNumber,
+                                    year = now.year,
+                                    organization = featureConfig.archiveMetadataOrganization,
+                                    archiveDurationMonths = config.archiveDurationMonths
+                                ).id
+                                .also { processId ->
+                                    tx.insertProcessHistoryRow(
+                                        processId = processId,
+                                        state = ArchivedProcessState.INITIAL,
+                                        now = now,
+                                        userId = user.evakaUserId
                                     )
-                                    .id
-                                    .also { processId ->
-                                        tx.insertProcessHistoryRow(
-                                            processId = processId,
-                                            state = ArchivedProcessState.INITIAL,
-                                            now = now,
-                                            userId = user.evakaUserId
-                                        )
-                                    }
-                            }
+                                }
+                        }
 
                     tx.insertEmptyAssistanceNeedPreschoolDecisionDraft(childId, processId, user)
                 }
-            }
-            .also { assistanceNeedDecision ->
+            }.also { assistanceNeedDecision ->
                 Audit.ChildAssistanceNeedPreschoolDecisionCreate.log(
                     targetId = AuditId(childId),
                     objectId = AuditId(assistanceNeedDecision.id)
                 )
             }
-    }
 
     @GetMapping(
         "/assistance-need-preschool-decisions/{id}", // deprecated
@@ -104,8 +103,9 @@ class AssistanceNeedPreschoolDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
-    ): AssistanceNeedPreschoolDecisionResponse {
-        return db.connect { dbc ->
+    ): AssistanceNeedPreschoolDecisionResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -121,9 +121,7 @@ class AssistanceNeedPreschoolDecisionController(
                         permittedActions = accessControl.getPermittedActions(tx, user, clock, id)
                     )
                 }
-            }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ChildAssistanceNeedPreschoolDecisionRead.log(targetId = AuditId(id)) }
 
     @GetMapping("/employee/assistance-need-preschool-decisions/{id}/pdf")
     fun getAssistanceNeedPreschoolDecisionPdf(
@@ -131,8 +129,9 @@ class AssistanceNeedPreschoolDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -143,13 +142,11 @@ class AssistanceNeedPreschoolDecisionController(
                     )
                 }
                 assistanceNeedPreschoolDecisionService.getDecisionPdfResponse(dbc, id)
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionDownloadEmployee.log(
                     targetId = AuditId(id)
                 )
             }
-    }
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}", // deprecated
@@ -161,22 +158,20 @@ class AssistanceNeedPreschoolDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
         @RequestBody body: AssistanceNeedPreschoolDecisionForm
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedPreschoolDecision.UPDATE,
-                        id
-                    )
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedPreschoolDecision.UPDATE,
+                    id
+                )
 
-                    tx.updateAssistanceNeedPreschoolDecision(id, body)
-                }
+                tx.updateAssistanceNeedPreschoolDecision(id, body)
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionUpdate.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedPreschoolDecisionUpdate.log(targetId = AuditId(id)) }
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}/send", // deprecated
@@ -188,7 +183,8 @@ class AssistanceNeedPreschoolDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -214,8 +210,7 @@ class AssistanceNeedPreschoolDecisionController(
 
                     tx.updateAssistanceNeedPreschoolDecisionToSent(id, clock.today())
                 }
-            }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionSend.log(targetId = AuditId(id)) }
+            }.also { Audit.ChildAssistanceNeedPreschoolDecisionSend.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -228,7 +223,8 @@ class AssistanceNeedPreschoolDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -240,8 +236,7 @@ class AssistanceNeedPreschoolDecisionController(
 
                     tx.updateAssistanceNeedPreschoolDecisionToNotSent(id)
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionRevertToUnsent.log(targetId = AuditId(id))
             }
     }
@@ -256,7 +251,8 @@ class AssistanceNeedPreschoolDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -268,8 +264,7 @@ class AssistanceNeedPreschoolDecisionController(
 
                     tx.markAssistanceNeedPreschoolDecisionAsOpened(id)
                 }
-            }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionOpened.log(targetId = AuditId(id)) }
+            }.also { Audit.ChildAssistanceNeedPreschoolDecisionOpened.log(targetId = AuditId(id)) }
     }
 
     @PutMapping(
@@ -294,7 +289,8 @@ class AssistanceNeedPreschoolDecisionController(
                     throw BadRequest("Assistance need decisions cannot be decided to be annulled")
             }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -320,12 +316,14 @@ class AssistanceNeedPreschoolDecisionController(
                                 decision.form.validFrom.minusDays(1),
                                 decision.child.id
                             )
-                            tx.getNextAssistanceNeedPreschoolDecisionValidFrom(
+                            tx
+                                .getNextAssistanceNeedPreschoolDecisionValidFrom(
                                     decision.child.id,
                                     decision.form.validFrom
-                                )
-                                ?.minusDays(1)
-                        } else null
+                                )?.minusDays(1)
+                        } else {
+                            null
+                        }
 
                     tx.decideAssistanceNeedPreschoolDecision(
                         id = id,
@@ -357,8 +355,7 @@ class AssistanceNeedPreschoolDecisionController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionDecide.log(
                     targetId = AuditId(id),
                     meta = mapOf("status" to body.status)
@@ -376,32 +373,30 @@ class AssistanceNeedPreschoolDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
         @RequestBody body: AnnulAssistanceNeedPreschoolDecisionRequest
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedPreschoolDecision.ANNUL,
-                        id
-                    )
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedPreschoolDecision.ANNUL,
+                    id
+                )
 
-                    val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
+                val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
-                    if (!decision.status.isDecided()) {
-                        throw BadRequest("Cannot annul undecided decision")
-                    }
-
-                    if (decision.status == AssistanceNeedDecisionStatus.ANNULLED) {
-                        throw BadRequest("Already annulled")
-                    }
-
-                    tx.annulAssistanceNeedPreschoolDecision(id, body.reason)
+                if (!decision.status.isDecided()) {
+                    throw BadRequest("Cannot annul undecided decision")
                 }
+
+                if (decision.status == AssistanceNeedDecisionStatus.ANNULLED) {
+                    throw BadRequest("Already annulled")
+                }
+
+                tx.annulAssistanceNeedPreschoolDecision(id, body.reason)
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionAnnul.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedPreschoolDecisionAnnul.log(targetId = AuditId(id)) }
 
     @GetMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun getAssistanceNeedPreschoolDecisions(
@@ -409,8 +404,9 @@ class AssistanceNeedPreschoolDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<AssistanceNeedPreschoolDecisionBasicsResponse> {
-        return db.connect { dbc ->
+    ): List<AssistanceNeedPreschoolDecisionBasicsResponse> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -438,14 +434,12 @@ class AssistanceNeedPreschoolDecisionController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionsList.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @DeleteMapping(
         "/assistance-need-preschool-decisions/{id}", // deprecated
@@ -456,27 +450,25 @@ class AssistanceNeedPreschoolDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedPreschoolDecision.DELETE,
-                        id
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedPreschoolDecision.DELETE,
+                    id
+                )
+                deleteProcessByAssistanceNeedPreschoolDecisionId(tx, id)
+                if (!tx.deleteAssistanceNeedPreschoolDecision(id)) {
+                    throw NotFound(
+                        "Assistance need preschool decision $id cannot found or cannot be deleted",
+                        "DECISION_NOT_FOUND"
                     )
-                    deleteProcessByAssistanceNeedPreschoolDecisionId(tx, id)
-                    if (!tx.deleteAssistanceNeedPreschoolDecision(id)) {
-                        throw NotFound(
-                            "Assistance need preschool decision $id cannot found or cannot be deleted",
-                            "DECISION_NOT_FOUND"
-                        )
-                    }
                 }
             }
-            .also { Audit.ChildAssistanceNeedPreschoolDecisionDelete.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedPreschoolDecisionDelete.log(targetId = AuditId(id)) }
 
     // TODO: Unused endpoint?
     @PutMapping(
@@ -489,38 +481,36 @@ class AssistanceNeedPreschoolDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
         @RequestBody body: UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceNeedPreschoolDecision.UPDATE_DECISION_MAKER,
-                        id
-                    )
-                    val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedPreschoolDecision.UPDATE_DECISION_MAKER,
+                    id
+                )
+                val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
-                    if (decision.status.isDecided() || decision.sentForDecision == null) {
-                        throw BadRequest(
-                            "Decision maker cannot be changed for already-decided or unsent decisions"
-                        )
-                    }
-
-                    tx.updateAssistanceNeedPreschoolDecision(
-                        id,
-                        decision.form.copy(
-                            decisionMakerEmployeeId = EmployeeId(user.rawId()),
-                            decisionMakerTitle = body.title
-                        ),
-                        decisionMakerHasOpened = true
+                if (decision.status.isDecided() || decision.sentForDecision == null) {
+                    throw BadRequest(
+                        "Decision maker cannot be changed for already-decided or unsent decisions"
                     )
                 }
+
+                tx.updateAssistanceNeedPreschoolDecision(
+                    id,
+                    decision.form.copy(
+                        decisionMakerEmployeeId = EmployeeId(user.rawId()),
+                        decisionMakerTitle = body.title
+                    ),
+                    decisionMakerHasOpened = true
+                )
             }
-            .also {
-                Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = AuditId(id))
-            }
-    }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = AuditId(id))
+        }
 
     @GetMapping(
         "/assistance-need-preschool-decisions/{id}/decision-maker-options", // deprecated
@@ -530,9 +520,10 @@ class AssistanceNeedPreschoolDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId,
-    ): List<Employee> {
-        return db.connect { dbc ->
+        @PathVariable id: AssistanceNeedPreschoolDecisionId
+    ): List<Employee> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -546,14 +537,12 @@ class AssistanceNeedPreschoolDecisionController(
                         tx.getEmployeesByRoles(roles, assistanceDecision.form.selectedUnit)
                     } ?: tx.getEmployees().sortedBy { it.email }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionReadDecisionMakerOptions.log(
                     targetId = AuditId(id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     data class AssistanceNeedPreschoolDecisionBasicsResponse(
         val decision: AssistanceNeedPreschoolDecisionBasics,
@@ -569,7 +558,11 @@ class AssistanceNeedPreschoolDecisionController(
         val status: AssistanceNeedDecisionStatus
     )
 
-    data class AnnulAssistanceNeedPreschoolDecisionRequest(val reason: String)
+    data class AnnulAssistanceNeedPreschoolDecisionRequest(
+        val reason: String
+    )
 
-    data class UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest(val title: String)
+    data class UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest(
+        val title: String
+    )
 }

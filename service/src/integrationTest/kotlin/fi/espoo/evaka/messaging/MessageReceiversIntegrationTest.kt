@@ -268,8 +268,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     dbInstance(),
                     AuthenticatedUser.Employee(employee.id, setOf(UserRole.MESSAGING)),
                     MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0)))
-                )
-                .single()
+                ).single()
         assertEquals(municipalAccountId, response.accountId)
 
         assertEquals(expectations.size, response.receivers.size)

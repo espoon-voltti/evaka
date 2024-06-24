@@ -31,8 +31,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
-class RealtimeStaffAttendanceControllerIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class RealtimeStaffAttendanceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var realtimeStaffAttendanceController: RealtimeStaffAttendanceController
 
@@ -233,11 +232,17 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 entries = emptyList()
             )
         )
-        assertEquals(0, getAttendances(testDaycare.id).staff.get(0).attendances.size)
+        assertEquals(
+            0,
+            getAttendances(testDaycare.id)
+                .staff
+                .get(0)
+                .attendances.size
+        )
     }
 
-    private fun getAttendances(unitId: DaycareId): StaffAttendanceResponse {
-        return realtimeStaffAttendanceController.getRealtimeStaffAttendances(
+    private fun getAttendances(unitId: DaycareId): StaffAttendanceResponse =
+        realtimeStaffAttendanceController.getRealtimeStaffAttendances(
             dbInstance(),
             unitSupervisor,
             MockEvakaClock(now),
@@ -245,7 +250,6 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             now.toLocalDate(),
             now.toLocalDate()
         )
-    }
 
     private fun upsertDailyStaffAttendances(
         unitId: DaycareId,

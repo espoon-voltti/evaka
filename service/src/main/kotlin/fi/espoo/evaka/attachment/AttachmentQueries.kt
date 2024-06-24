@@ -28,7 +28,7 @@ data class AttachmentForeignKeys(
     val incomeStatementId: IncomeStatementId?,
     val messageContentId: MessageContentId?,
     val messageDraftId: MessageDraftId?,
-    val pedagogicalDocumentId: PedagogicalDocumentId?,
+    val pedagogicalDocumentId: PedagogicalDocumentId?
 ) {
     constructor(
         parent: AttachmentParent
@@ -40,7 +40,7 @@ data class AttachmentForeignKeys(
         messageContentId = (parent as? AttachmentParent.MessageContent)?.messageContentId,
         messageDraftId = (parent as? AttachmentParent.MessageDraft)?.draftId,
         pedagogicalDocumentId =
-            (parent as? AttachmentParent.PedagogicalDocument)?.pedagogicalDocumentId,
+            (parent as? AttachmentParent.PedagogicalDocument)?.pedagogicalDocumentId
     )
 
     init {
@@ -97,26 +97,42 @@ fun Database.Transaction.insertAttachment(
     require(attachTo !is AttachmentParent.MessageContent) { "attachments are saved via draft" }
 
     val fk = AttachmentForeignKeys(attachTo)
-    return this.createUpdate {
+    return this
+        .createUpdate {
             sql(
                 """
 INSERT INTO attachment (created, name, content_type, application_id, income_statement_id, income_id, message_draft_id, pedagogical_document_id, fee_alteration_id, uploaded_by, type)
-VALUES (${bind(now)}, ${bind(name)}, ${bind(contentType)}, ${bind(fk.applicationId)}, ${bind(fk.incomeStatementId)}, ${bind(fk.incomeId)}, ${bind(fk.messageDraftId)}, ${bind(fk.pedagogicalDocumentId)}, ${bind(fk.feeAlterationId)}, ${bind(user.evakaUserId)}, ${bind(type ?: "")})
+VALUES (${bind(
+                    now
+                )}, ${bind(
+                    name
+                )}, ${bind(
+                    contentType
+                )}, ${bind(
+                    fk.applicationId
+                )}, ${bind(
+                    fk.incomeStatementId
+                )}, ${bind(
+                    fk.incomeId
+                )}, ${bind(
+                    fk.messageDraftId
+                )}, ${bind(fk.pedagogicalDocumentId)}, ${bind(fk.feeAlterationId)}, ${bind(user.evakaUserId)}, ${bind(
+                    type ?: ""
+                )})
 RETURNING id
 """
             )
-        }
-        .executeAndReturnGeneratedKeys()
+        }.executeAndReturnGeneratedKeys()
         .exactlyOne<AttachmentId>()
 }
 
 fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
     createQuery {
-            check(AttachmentForeignKeys.idFieldCount == 7) {
-                "Unexpected AttachmentForeignKeys field count"
-            }
-            sql(
-                """
+        check(AttachmentForeignKeys.idFieldCount == 7) {
+            "Unexpected AttachmentForeignKeys field count"
+        }
+        sql(
+            """
         SELECT
             id, name, content_type, uploaded_by,
             application_id,
@@ -129,16 +145,15 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
         FROM attachment
         WHERE id = ${bind(id)}
         """
-            )
-        }
-        .exactlyOneOrNull {
-            Attachment(
-                id = column("id"),
-                name = column("name"),
-                contentType = column("content_type"),
-                attachedTo = row<AttachmentForeignKeys>().parent()
-            )
-        }
+        )
+    }.exactlyOneOrNull {
+        Attachment(
+            id = column("id"),
+            name = column("name"),
+            contentType = column("content_type"),
+            attachedTo = row<AttachmentForeignKeys>().parent()
+        )
+    }
 
 fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
@@ -146,8 +161,8 @@ fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     userId: EvakaUserId
 ): List<AttachmentId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 UPDATE attachment
 SET application_id = NULL
 WHERE application_id = ${bind(applicationId)} 
@@ -155,9 +170,8 @@ AND type = ${bind(type)}
 AND uploaded_by = ${bind(userId)}
 RETURNING id
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 /** Changes the parent of *all attachments* that match the given predicate */
 private fun Database.Transaction.changeParent(
@@ -165,12 +179,12 @@ private fun Database.Transaction.changeParent(
     predicate: Predicate
 ): Int =
     createUpdate {
-            val fks = AttachmentForeignKeys(newParent)
-            check(AttachmentForeignKeys.idFieldCount == 7) {
-                "Unexpected AttachmentForeignKeys field count"
-            }
-            sql(
-                """
+        val fks = AttachmentForeignKeys(newParent)
+        check(AttachmentForeignKeys.idFieldCount == 7) {
+            "Unexpected AttachmentForeignKeys field count"
+        }
+        sql(
+            """
 UPDATE attachment
 SET
     application_id = ${bind(fks.applicationId)},
@@ -182,9 +196,8 @@ SET
     pedagogical_document_id = ${bind(fks.pedagogicalDocumentId)}
 WHERE ${predicate(predicate.forTable("attachment"))}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 
 /**
  * Associates *orphan* attachments with a new parent.
@@ -202,11 +215,10 @@ fun Database.Transaction.associateOrphanAttachments(
         changeParent(
             newParent = newParent,
             Predicate {
-                    where(
-                        "$it.uploaded_by = ${bind(uploadedBy)} AND $it.id = ANY(${bind(attachments)})"
-                    )
-                }
-                .and(isOrphan)
+                where(
+                    "$it.uploaded_by = ${bind(uploadedBy)} AND $it.id = ANY(${bind(attachments)})"
+                )
+            }.and(isOrphan)
         )
     if (numRows != attachments.size) {
         throw BadRequest("Cannot associate all requested attachments")
@@ -223,25 +235,26 @@ fun Database.Transaction.dissociateAttachmentsOfParent(
         Predicate { where("$it.uploaded_by = ${bind(uploadedBy)}") }.and(parent.toPredicate())
     )
 
-private fun AttachmentParent.toPredicate() = Predicate {
-    check(AttachmentForeignKeys.idFieldCount == 7) {
-        "Unexpected AttachmentForeignKeys field count"
-    }
-    when (this@toPredicate) {
-        is AttachmentParent.Application -> where("$it.application_id = ${bind(applicationId)}")
-        is AttachmentParent.FeeAlteration ->
-            where("$it.fee_alteration_id = ${bind(feeAlterationId)}")
-        is AttachmentParent.Income -> where("$it.income_id = ${bind(incomeId)}")
-        is AttachmentParent.IncomeStatement ->
-            where("$it.income_statement_id = ${bind(incomeStatementId)}")
-        is AttachmentParent.MessageContent ->
-            where("$it.message_content_id = ${bind(messageContentId)}")
-        is AttachmentParent.MessageDraft -> where("$it.message_draft_id = ${bind(draftId)}")
-        is AttachmentParent.PedagogicalDocument ->
-            where("$it.pedagogical_document_id = ${bind(pedagogicalDocumentId)}")
-        is AttachmentParent.None ->
-            where(
-                """
+private fun AttachmentParent.toPredicate() =
+    Predicate {
+        check(AttachmentForeignKeys.idFieldCount == 7) {
+            "Unexpected AttachmentForeignKeys field count"
+        }
+        when (this@toPredicate) {
+            is AttachmentParent.Application -> where("$it.application_id = ${bind(applicationId)}")
+            is AttachmentParent.FeeAlteration ->
+                where("$it.fee_alteration_id = ${bind(feeAlterationId)}")
+            is AttachmentParent.Income -> where("$it.income_id = ${bind(incomeId)}")
+            is AttachmentParent.IncomeStatement ->
+                where("$it.income_statement_id = ${bind(incomeStatementId)}")
+            is AttachmentParent.MessageContent ->
+                where("$it.message_content_id = ${bind(messageContentId)}")
+            is AttachmentParent.MessageDraft -> where("$it.message_draft_id = ${bind(draftId)}")
+            is AttachmentParent.PedagogicalDocument ->
+                where("$it.pedagogical_document_id = ${bind(pedagogicalDocumentId)}")
+            is AttachmentParent.None ->
+                where(
+                    """
 $it.application_id IS NULL
 AND $it.fee_alteration_id IS NULL
 AND $it.income_id IS NULL
@@ -250,32 +263,33 @@ AND $it.message_content_id IS NULL
 AND $it.message_draft_id IS NULL
 AND $it.pedagogical_document_id IS NULL
             """
-            )
+                )
+        }
     }
-}
 
-fun Database.Read.userAttachmentCount(userId: EvakaUserId, parent: AttachmentParent): Int =
+fun Database.Read.userAttachmentCount(
+    userId: EvakaUserId,
+    parent: AttachmentParent
+): Int =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT count(*)
 FROM attachment
 WHERE uploaded_by = ${bind(userId)}
 AND ${predicate(parent.toPredicate().forTable("attachment"))}
 """
-            )
-        }
-        .exactlyOne<Int>()
+        )
+    }.exactlyOne<Int>()
 
 fun Database.Read.getOrphanAttachments(olderThan: HelsinkiDateTime): List<AttachmentId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id
 FROM attachment
 WHERE created < ${bind(olderThan)}
 AND ${predicate(AttachmentParent.None.toPredicate().forTable("attachment"))}
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()

@@ -4,4 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
-data class Coordinate(val lat: Double, val lon: Double)
+data class Coordinate(
+    val lat: Double,
+    val lon: Double
+)

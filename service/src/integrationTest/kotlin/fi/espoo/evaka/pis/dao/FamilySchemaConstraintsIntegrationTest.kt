@@ -376,9 +376,13 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         endDate: LocalDate
     ) = db.transaction { it.createParentship(childId, parentId, startDate, endDate, Creator.DVV) }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return db.transaction { tx ->
-            tx.insert(
+    private fun createPerson(
+        ssn: String,
+        firstName: String
+    ): PersonDTO =
+        db.transaction { tx ->
+            tx
+                .insert(
                     DevPerson(
                         ssn = ssn,
                         dateOfBirth = getDobFromSsn(ssn),
@@ -388,10 +392,8 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         language = "fi"
                     ),
                     DevPersonType.RAW_ROW
-                )
-                .let { tx.getPersonById(it)!! }
+                ).let { tx.getPersonById(it)!! }
         }
-    }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
 

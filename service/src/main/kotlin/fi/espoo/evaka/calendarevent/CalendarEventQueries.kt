@@ -20,8 +20,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 fun Database.Read.getCalendarEventsByUnit(
     unitId: DaycareId,
     range: FiniteDateRange
-): List<CalendarEvent> =
-    getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
+): List<CalendarEvent> = getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
 
 private fun Database.Read.getCalendarEventsQuery(
     calendarEventId: CalendarEventId? = null,
@@ -29,10 +28,9 @@ private fun Database.Read.getCalendarEventsQuery(
     range: FiniteDateRange? = null,
     groupId: GroupId? = null,
     eventTypes: List<CalendarEventType>? = null
-) =
-    createQuery {
-            sql(
-                """
+) = createQuery {
+    sql(
+        """
 SELECT
     ce.id, cea.unit_id, ce.title, ce.description, ce.period, ce.content_modified_at, ce.event_type,
     (
@@ -79,13 +77,12 @@ AND (cea.child_id IS NULL OR EXISTS(
 ))
 GROUP BY ce.id, cea.unit_id
         """
-            )
-        }
-        .bind("calendarEventId", calendarEventId)
-        .bind("unitId", unitId)
-        .bind("groupId", groupId)
-        .bind("range", range)
-        .bind("eventTypes", eventTypes.takeIf { !it.isNullOrEmpty() })
+    )
+}.bind("calendarEventId", calendarEventId)
+    .bind("unitId", unitId)
+    .bind("groupId", groupId)
+    .bind("range", range)
+    .bind("eventTypes", eventTypes.takeIf { !it.isNullOrEmpty() })
 
 fun Database.Transaction.createCalendarEvent(
     event: CalendarEventForm,
@@ -94,15 +91,18 @@ fun Database.Transaction.createCalendarEvent(
 ): CalendarEventId {
     val eventId =
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO calendar_event (created_at, title, description, period, modified_at, content_modified_at, event_type)
-VALUES (${bind(createdAt)}, ${bind(event.title)}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdAt)}, ${bind(event.eventType)})
+VALUES (${bind(
+                    createdAt
+                )}, ${bind(
+                    event.title
+                )}, ${bind(event.description)}, ${bind(event.period)}, ${bind(createdAt)}, ${bind(createdAt)}, ${bind(event.eventType)})
 RETURNING id
 """
-                )
-            }
-            .executeAndReturnGeneratedKeys()
+            )
+        }.executeAndReturnGeneratedKeys()
             .exactlyOne<CalendarEventId>()
 
     createCalendarEventAttendees(eventId, event.unitId, event.tree)
@@ -138,62 +138,71 @@ VALUES (${bind(eventId)}, ${bind(unitId)}, ${bind { (groupId, _) -> groupId }}, 
     }
 }
 
-fun Database.Transaction.deleteCalendarEventAttendees(eventId: CalendarEventId) = execute {
-    sql("DELETE FROM calendar_event_attendee WHERE calendar_event_id = ${bind(eventId)}")
-}
+fun Database.Transaction.deleteCalendarEventAttendees(eventId: CalendarEventId) =
+    execute {
+        sql("DELETE FROM calendar_event_attendee WHERE calendar_event_id = ${bind(eventId)}")
+    }
 
 fun Database.Read.getReservableCalendarEventTimes(
     calendarEventId: CalendarEventId,
     childId: ChildId
-) =
-    createQuery {
-            sql(
-                """
+) = createQuery {
+    sql(
+        """
 SELECT id, date, start_time, end_time
 FROM calendar_event_time
 WHERE calendar_event_id = ${bind(calendarEventId)}
 AND (child_id IS NULL OR child_id = ${bind(childId)})
 """
-            )
-        }
-        .toList<CalendarEventTime>()
+    )
+}.toList<CalendarEventTime>()
 
 fun Database.Transaction.createCalendarEventTime(
     calendarEventId: CalendarEventId,
     time: CalendarEventTimeForm,
     createdAt: HelsinkiDateTime,
     createdBy: EvakaUserId
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 INSERT INTO calendar_event_time (created_at, created_by, updated_at, modified_at, modified_by, calendar_event_id, date, start_time, end_time)
-VALUES (${bind(createdAt)}, ${bind(createdBy)}, ${bind(createdAt)}, ${bind(createdAt)}, ${bind(createdBy)}, ${bind(calendarEventId)}, ${bind(time.date)}, ${bind(time.timeRange.start)}, ${bind(time.timeRange.end)})
+VALUES (${bind(
+            createdAt
+        )}, ${bind(
+            createdBy
+        )}, ${bind(
+            createdAt
+        )}, ${bind(
+            createdAt
+        )}, ${bind(
+            createdBy
+        )}, ${bind(calendarEventId)}, ${bind(time.date)}, ${bind(time.timeRange.start)}, ${bind(time.timeRange.end)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .mapTo<CalendarEventTimeId>()
-        .exactlyOne()
+    )
+}.executeAndReturnGeneratedKeys()
+    .mapTo<CalendarEventTimeId>()
+    .exactlyOne()
 
 fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
     createUpdate { sql("DELETE FROM calendar_event_time WHERE id = ${bind(id)}") }
         .updateExactlyOne()
 
-fun Database.Read.getCalendarEventById(id: CalendarEventId) =
-    getCalendarEventsQuery(calendarEventId = id).exactlyOneOrNull<CalendarEvent>()
+fun Database.Read.getCalendarEventById(id: CalendarEventId) = getCalendarEventsQuery(calendarEventId = id).exactlyOneOrNull<CalendarEvent>()
 
 fun Database.Read.getCalendarEventsByGroupAndType(
     groupId: GroupId,
     eventTypes: List<CalendarEventType>
 ) = getCalendarEventsQuery(groupId = groupId, eventTypes = eventTypes).toList<CalendarEvent>()
 
-fun Database.Read.getCalendarEventsByUnitWithRange(unitId: DaycareId, range: FiniteDateRange) =
-    getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
+fun Database.Read.getCalendarEventsByUnitWithRange(
+    unitId: DaycareId,
+    range: FiniteDateRange
+) = getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
 
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
-    this.createUpdate { sql("DELETE FROM calendar_event WHERE id = ${bind(eventId)}") }
+    this
+        .createUpdate { sql("DELETE FROM calendar_event WHERE id = ${bind(eventId)}") }
         .updateExactlyOne()
 
 fun Database.Transaction.createCalendarEventAttendee(
@@ -201,16 +210,15 @@ fun Database.Transaction.createCalendarEventAttendee(
     unitId: DaycareId,
     groupId: GroupId?,
     childId: ChildId?
-) =
-    this.createUpdate {
-            sql(
-                """
+) = this
+    .createUpdate {
+        sql(
+            """
 INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
 VALUES (${bind(eventId)}, ${bind(unitId)}, ${bind(groupId)}, ${bind(childId)})
 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 
 fun Database.Read.getCalendarEventIdByTimeId(id: CalendarEventTimeId) =
     createQuery { sql("SELECT calendar_event_id FROM calendar_event_time WHERE id = ${bind(id)}") }
@@ -218,48 +226,47 @@ fun Database.Read.getCalendarEventIdByTimeId(id: CalendarEventTimeId) =
 
 fun Database.Read.getCalendarEventChildIds(calendarEventId: CalendarEventId) =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child_id
 FROM calendar_event_attendee_child_view
 WHERE calendar_event_id = ${bind(calendarEventId)}
 """
-            )
-        }
-        .toList<ChildId>()
+        )
+    }.toList<ChildId>()
 
 fun Database.Transaction.updateCalendarEvent(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
     updateForm: CalendarEventUpdateForm
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE calendar_event
-SET title = ${bind(updateForm.title)}, description = ${bind(updateForm.description)}, modified_at = ${bind(modifiedAt)}, content_modified_at = ${bind(modifiedAt)}
+SET title = ${bind(
+            updateForm.title
+        )}, description = ${bind(
+            updateForm.description
+        )}, modified_at = ${bind(modifiedAt)}, content_modified_at = ${bind(modifiedAt)}
 WHERE id = ${bind(eventId)}
         """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
 fun Database.Transaction.insertCalendarEventTimeReservation(
     eventTimeId: CalendarEventTimeId,
     childId: ChildId?,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE calendar_event_time
 SET child_id = ${bind(childId)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
 WHERE id = ${bind(eventTimeId)} AND (child_id IS NULL OR child_id = ${bind(childId)})
 """
-            )
-        }
-        .updateNoneOrOne()
+    )
+}.updateNoneOrOne()
 
 fun Database.Transaction.deleteCalendarEventTimeReservations(
     calendarEventId: CalendarEventId,
@@ -275,17 +282,16 @@ AND child_id = ${bind(childId)}
     )
 }
 
-fun Database.Transaction.deleteCalendarEventTimeReservation(
-    calendarEventTimeId: CalendarEventTimeId
-) = execute {
-    sql(
-        """
+fun Database.Transaction.deleteCalendarEventTimeReservation(calendarEventTimeId: CalendarEventTimeId) =
+    execute {
+        sql(
+            """
 UPDATE calendar_event_time
 SET child_id = NULL::uuid
 WHERE id = ${bind(calendarEventTimeId)}
 """
-    )
-}
+        )
+    }
 
 data class CitizenCalendarEventRow(
     val id: CalendarEventId,
@@ -305,8 +311,8 @@ fun Database.Read.getCalendarEventsForGuardian(
     range: FiniteDateRange
 ): List<CitizenCalendarEventRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH child AS NOT MATERIALIZED (
     SELECT g.child_id id FROM guardian g WHERE g.guardian_id = ${bind(guardianId)}
     UNION
@@ -361,15 +367,14 @@ WHERE cp.period && ce.period
   -- FIXME: discussion surveys hidden from guardians until guardian UI is implemented
   AND ce.event_type = 'DAYCARE_EVENT'
 """
-            )
-        }
-        .toList<CitizenCalendarEventRow>()
+        )
+    }.toList<CitizenCalendarEventRow>()
 
 fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
-    this.createQuery {
+    this
+        .createQuery {
             sql("SELECT COUNT(*) FROM calendar_event_attendee WHERE unit_id = ${bind(unitId)}")
-        }
-        .exactlyOne()
+        }.exactlyOne()
 
 data class ParentWithEvents(
     val parentId: PersonId,
@@ -377,10 +382,10 @@ data class ParentWithEvents(
     val events: List<CalendarEventNotificationData>
 )
 
-fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<ParentWithEvents> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<ParentWithEvents> =
+    createQuery {
+        sql(
+            """
 WITH matching_events AS (
     SELECT id, period FROM calendar_event WHERE created_at >= ${bind(cutoff)}
 ), matching_children AS (
@@ -461,29 +466,26 @@ JOIN person p ON p.id = mp.parent_id
 JOIN calendar_event ce ON ce.id = mp.event_id
 GROUP BY mp.parent_id, p.language
 """
-            )
-        }
-        .toList {
-            ParentWithEvents(
-                parentId = column("parent_id"),
-                language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
-                events = jsonColumn<List<CalendarEventNotificationData>>("events")
-            )
-        }
-}
+        )
+    }.toList {
+        ParentWithEvents(
+            parentId = column("parent_id"),
+            language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
+            events = jsonColumn<List<CalendarEventNotificationData>>("events")
+        )
+    }
 
 fun Database.Transaction.updateCalendarEventPeriod(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
     period: FiniteDateRange
-) =
-    this.createUpdate {
-            sql(
-                """
+) = this
+    .createUpdate {
+        sql(
+            """
 UPDATE calendar_event
 SET period = ${bind(period)}, modified_at = ${bind(modifiedAt)}, content_modified_at = ${bind(modifiedAt)}
 WHERE id = ${bind(eventId)}
         """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()

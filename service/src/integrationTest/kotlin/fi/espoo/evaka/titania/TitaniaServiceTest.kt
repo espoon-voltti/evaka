@@ -25,7 +25,6 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
 
 internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired private lateinit var titaniaService: TitaniaService
 
     @Test
@@ -309,7 +308,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                         12
                                                                                     ),
                                                                                 code =
-                                                                                    givenEventCode,
+                                                                                givenEventCode,
                                                                                 beginTime = "0942",
                                                                                 endTime = "0944"
                                                                             )
@@ -469,9 +468,10 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     )
             )
 
-        val response = catchThrowable {
-            db.transaction { tx -> titaniaService.updateWorkingTimeEvents(tx, request) }
-        }
+        val response =
+            catchThrowable {
+                db.transaction { tx -> titaniaService.updateWorkingTimeEvents(tx, request) }
+            }
 
         assertThat(response)
             .isExactlyInstanceOf(TitaniaException::class.java)
@@ -555,14 +555,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.upsertStaffAttendance(
                         attendanceId = null,
                         employeeId = employeeId,
@@ -586,14 +586,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         type = StaffAttendanceType.OVERTIME
                     )
                 }
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "HESSU",
                         lastName = "HOPO",
                         employeeNumber = "255145"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.upsertStaffAttendance(
                         attendanceId = null,
                         employeeId = employeeId,
@@ -641,14 +641,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
     @Test
     fun `getStampedWorkingTimeEvents without group`() {
         db.transaction { tx ->
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.upsertStaffAttendance(
                         attendanceId = null,
                         employeeId = employeeId,
@@ -724,14 +724,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,
@@ -839,14 +839,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,
@@ -953,14 +953,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,
@@ -1086,14 +1086,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,
@@ -1219,14 +1219,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,
@@ -1315,14 +1315,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,
@@ -1412,14 +1412,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,
@@ -1536,14 +1536,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             val areaId = tx.insert(DevCareArea())
             val unitId = tx.insert(DevDaycare(areaId = areaId))
             val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
-            tx.createEmployee(
+            tx
+                .createEmployee(
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
                         employeeNumber = "177111"
                     )
-                )
-                .let { (employeeId) ->
+                ).let { (employeeId) ->
                     tx.insert(
                         DevStaffAttendancePlan(
                             employeeId = employeeId,

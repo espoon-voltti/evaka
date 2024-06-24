@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class InvoiceReportController(private val accessControl: AccessControl) {
+class InvoiceReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/invoices", // deprecated
         "/employee/reports/invoices"
@@ -32,8 +34,9 @@ class InvoiceReportController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): InvoiceReport {
-        return db.connect { dbc ->
+    ): InvoiceReport =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -44,13 +47,11 @@ class InvoiceReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getInvoiceReportWithRows(FiniteDateRange.ofMonth(date))
                 }
-            }
-            .also {
+            }.also {
                 Audit.InvoicesReportRead.log(
                     meta = mapOf("date" to date, "count" to it.reportRows.size)
                 )
             }
-    }
 }
 
 private fun Database.Read.getInvoiceReportWithRows(period: FiniteDateRange): InvoiceReport {
@@ -68,8 +69,7 @@ private fun Database.Read.getInvoiceReportWithRows(period: FiniteDateRange): Inv
                     amountWithoutAddress = invoices.count { withoutAddress(it) },
                     amountWithZeroPrice = invoices.count { it.totalPrice == 0 }
                 )
-            }
-            .sortedBy { it.areaCode }
+            }.sortedBy { it.areaCode }
 
     return InvoiceReport(reportRows = rows)
 }
@@ -95,7 +95,9 @@ data class InvoiceReportRow(
     val amountWithZeroPrice: Int
 )
 
-data class InvoiceReport(val reportRows: List<InvoiceReportRow>) {
+data class InvoiceReport(
+    val reportRows: List<InvoiceReportRow>
+) {
     val totalAmountOfInvoices: Int = reportRows.sumOf { it.amountOfInvoices }
     val totalSumCents: Int = reportRows.sumOf { it.totalSumCents }
     val totalAmountWithoutSSN: Int = reportRows.sumOf { it.amountWithoutSSN }

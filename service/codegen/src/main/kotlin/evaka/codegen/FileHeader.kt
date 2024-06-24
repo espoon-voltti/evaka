@@ -13,8 +13,6 @@ val fileHeader =
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 // GENERATED FILE: no manual modifications
-"""
-        .trimStart()
+""".trimStart()
 
-fun String.skipFileHeader() =
-    lineSequence().drop(fileHeader.lineSequence().count()).joinToString("\n")
+fun String.skipFileHeader() = lineSequence().drop(fileHeader.lineSequence().count()).joinToString("\n")

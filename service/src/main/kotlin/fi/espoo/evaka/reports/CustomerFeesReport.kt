@@ -21,8 +21,13 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CustomerFeesReport(private val accessControl: AccessControl) {
-    data class CustomerFeesReportRow(val feeAmount: Int, val count: Int)
+class CustomerFeesReport(
+    private val accessControl: AccessControl
+) {
+    data class CustomerFeesReportRow(
+        val feeAmount: Int,
+        val count: Int
+    )
 
     @GetMapping("/employee/reports/customer-fees")
     fun getCustomerFeesReport(
@@ -33,8 +38,9 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         @RequestParam areaId: AreaId?,
         @RequestParam unitId: DaycareId?,
         @RequestParam decisionType: FinanceDecisionType
-    ): List<CustomerFeesReportRow> {
-        return db.connect { dbc ->
+    ): List<CustomerFeesReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -49,9 +55,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                             tx.getVoucherValueDecisionRows(date, areaId, unitId)
                     }
                 }
-            }
-            .also { Audit.CustomerFeesReportRead.log() }
-    }
+            }.also { Audit.CustomerFeesReportRead.log() }
 
     private fun Database.Read.getFeeDecisionRows(
         date: LocalDate,
@@ -63,14 +67,13 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                 .and(
                     areaId?.let { PredicateSql { where("d.care_area_id = ${bind(it)}") } }
                         ?: PredicateSql.alwaysTrue()
-                )
-                .and(
+                ).and(
                     unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } }
                         ?: PredicateSql.alwaysTrue()
                 )
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
                     SELECT fdc.final_fee AS fee_amount, count(*) AS count
                     FROM fee_decision_child fdc
                     JOIN fee_decision fd ON fd.id = fdc.fee_decision_id
@@ -79,9 +82,8 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                     GROUP BY fdc.final_fee
                     ORDER BY fdc.final_fee
                 """
-                )
-            }
-            .toList()
+            )
+        }.toList()
     }
 
     private fun Database.Read.getVoucherValueDecisionRows(
@@ -94,22 +96,20 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                 .and(
                     areaId?.let { PredicateSql { where("d.care_area_id = ${bind(it)}") } }
                         ?: PredicateSql.alwaysTrue()
-                )
-                .and(
+                ).and(
                     unitId?.let { PredicateSql { where("d.id = ${bind(it)}") } }
                         ?: PredicateSql.alwaysTrue()
                 )
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
                     SELECT vvd.final_co_payment AS fee_amount, count(*) AS count
                     FROM voucher_value_decision vvd
                     JOIN daycare d ON d.id = vvd.placement_unit_id
                     WHERE vvd.status = 'SENT' AND ${predicate(predicates)}
                     GROUP BY vvd.final_co_payment
                 """
-                )
-            }
-            .toList()
+            )
+        }.toList()
     }
 }

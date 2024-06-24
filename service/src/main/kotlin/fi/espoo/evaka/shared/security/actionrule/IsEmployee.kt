@@ -28,14 +28,16 @@ data object IsEmployee : DatabaseActionRule.Params {
             else -> false
         }
 
-    private fun <T : Id<*>> rule(
-        filter: FilterByEmployee
-    ): DatabaseActionRule.Scoped<T, IsEmployee> =
+    private fun <T : Id<*>> rule(filter: FilterByEmployee): DatabaseActionRule.Scoped<T, IsEmployee> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
-    private data class Query<T : Id<*>>(private val filter: FilterByEmployee) :
-        DatabaseActionRule.Scoped.Query<T, IsEmployee> {
-        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+    private data class Query<T : Id<*>>(
+        private val filter: FilterByEmployee
+    ) : DatabaseActionRule.Scoped.Query<T, IsEmployee> {
+        override fun cacheKey(
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime
+        ): Any =
             when (user) {
                 is AuthenticatedUser.Employee -> QuerySql { filter(user, now) }
                 else -> Pair(user, now)
@@ -52,14 +54,12 @@ data object IsEmployee : DatabaseActionRule.Params {
                         .createQuery {
                             sql(
                                 """
-                    SELECT id
-                    FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
-                    WHERE ${predicate(targetCheck.forTable("fragment"))}
-                    """
-                                    .trimIndent()
+                                SELECT id
+                                FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
+                                WHERE ${predicate(targetCheck.forTable("fragment"))}
+                                """.trimIndent()
                             )
-                        }
-                        .toSet<Id<DatabaseTable>>()
+                        }.toSet<Id<DatabaseTable>>()
                         .let { matched ->
                             targets
                                 .filter { matched.contains(it) }
@@ -93,8 +93,10 @@ data object IsEmployee : DatabaseActionRule.Params {
             override val params = IsEmployee
             override val query =
                 object : DatabaseActionRule.Scoped.Query<EmployeeId, IsEmployee> {
-                    override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
-                        Pair(user, now)
+                    override fun cacheKey(
+                        user: AuthenticatedUser,
+                        now: HelsinkiDateTime
+                    ): Any = Pair(user, now)
 
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
@@ -124,12 +126,12 @@ data object IsEmployee : DatabaseActionRule.Params {
         DatabaseActionRule.Unscoped(
             this,
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
-                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
-                    Pair(user, now)
+                override fun cacheKey(
+                    user: AuthenticatedUser,
+                    now: HelsinkiDateTime
+                ): Any = Pair(user, now)
 
-                override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<IsEmployee> =
+                override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
@@ -141,14 +143,15 @@ SELECT EXISTS (
     FROM mobile_device
     WHERE employee_id = ${bind(ctx.user.id)}
 )
-                                """
-                                            .trimIndent()
+                                        """.trimIndent()
                                     )
-                                }
-                                .exactlyOne<Boolean>()
+                                }.exactlyOne<Boolean>()
                                 .let { isPermitted ->
-                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
-                                    else DatabaseActionRule.Deferred.None
+                                    if (isPermitted) {
+                                        DatabaseActionRule.Deferred.Permitted
+                                    } else {
+                                        DatabaseActionRule.Deferred.None
+                                    }
                                 }
                         else -> DatabaseActionRule.Deferred.None
                     }
@@ -162,8 +165,7 @@ SELECT EXISTS (
 SELECT id
 FROM mobile_device
 WHERE employee_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -174,8 +176,7 @@ WHERE employee_id = ${bind(user.id)}
 SELECT id
 FROM pairing
 WHERE employee_id = ${bind(user.id)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -186,8 +187,7 @@ WHERE employee_id = ${bind(user.id)}
 SELECT id
 FROM application_note
 WHERE created_by = ${bind(user.id)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -199,8 +199,7 @@ SELECT acc.id
 FROM message_account acc
 JOIN employee ON acc.employee_id = employee.id
 WHERE employee.id = ${bind(user.id)} AND acc.active = TRUE
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -212,8 +211,7 @@ SELECT acc.id
 FROM message_account acc
 JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
 WHERE gacl.employee_id = ${bind(user.id)} AND acc.active = TRUE
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -225,8 +223,7 @@ SELECT acc.id
 FROM employee e
 JOIN message_account acc ON acc.type = 'MUNICIPAL'
 WHERE e.id = ${bind(user.id)} AND e.roles && '{ADMIN, MESSAGING}'::user_role[]
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -238,8 +235,7 @@ SELECT acc.id
 FROM employee e
 JOIN message_account acc ON acc.type = 'SERVICE_WORKER'
 WHERE e.id = ${bind(user.id)} AND e.roles && '{SERVICE_WORKER}'::user_role[]
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -251,8 +247,7 @@ SELECT id
 FROM assistance_need_decision
 WHERE decision_maker_employee_id = ${bind(employee.id)}
 AND sent_for_decision IS NOT NULL
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -264,8 +259,7 @@ SELECT id
 FROM assistance_need_preschool_decision
 WHERE decision_maker_employee_id = ${bind(employee.id)}
 AND sent_for_decision IS NOT NULL
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -273,12 +267,12 @@ AND sent_for_decision IS NOT NULL
         DatabaseActionRule.Unscoped(
             this,
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
-                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
-                    Pair(user, now)
+                override fun cacheKey(
+                    user: AuthenticatedUser,
+                    now: HelsinkiDateTime
+                ): Any = Pair(user, now)
 
-                override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<IsEmployee> =
+                override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<IsEmployee> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             ctx.tx
@@ -291,14 +285,15 @@ SELECT EXISTS (
     WHERE decision_maker_employee_id = ${bind(ctx.user.id)}
     AND sent_for_decision IS NOT NULL
 )
-                                """
-                                            .trimIndent()
+                                        """.trimIndent()
                                     )
-                                }
-                                .exactlyOne<Boolean>()
+                                }.exactlyOne<Boolean>()
                                 .let { isPermitted ->
-                                    if (isPermitted) DatabaseActionRule.Deferred.Permitted
-                                    else DatabaseActionRule.Deferred.None
+                                    if (isPermitted) {
+                                        DatabaseActionRule.Deferred.Permitted
+                                    } else {
+                                        DatabaseActionRule.Deferred.None
+                                    }
                                 }
                         else -> DatabaseActionRule.Deferred.None
                     }

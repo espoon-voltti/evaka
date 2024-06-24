@@ -34,14 +34,14 @@ class UpdateFromVtjAsyncJobProcessor(
         evakaClock: EvakaClock,
         msg: AsyncJob.UpdateFromVtj
     ) {
-        db.transaction { tx ->
+        db
+            .transaction { tx ->
                 personService.getOrCreatePerson(
                     tx,
                     AuthenticatedUser.SystemInternalUser,
                     ExternalIdentifier.SSN.getInstance(msg.ssn)
                 )
-            }
-            ?.let {
+            }?.let {
                 logger.info("Refreshing all VTJ information for person ${it.id}")
                 fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id), evakaClock)
             }

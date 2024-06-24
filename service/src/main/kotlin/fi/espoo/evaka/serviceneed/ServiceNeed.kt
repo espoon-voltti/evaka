@@ -37,12 +37,11 @@ enum class ShiftCareType : DatabaseEnum {
     override val sqlType: String = "shift_care_type"
 
     companion object {
-        fun fromBoolean(value: Boolean): ShiftCareType {
-            return when (value) {
+        fun fromBoolean(value: Boolean): ShiftCareType =
+            when (value) {
                 true -> FULL
                 false -> NONE
             }
-        }
     }
 }
 
@@ -68,7 +67,10 @@ data class ServiceNeedSummary(
     val unitName: String
 )
 
-data class ServiceNeedChildRange(val childId: ChildId, val dateRange: FiniteDateRange)
+data class ServiceNeedChildRange(
+    val childId: ChildId,
+    val dateRange: FiniteDateRange
+)
 
 data class ServiceNeedOptionSummary(
     val id: ServiceNeedOptionId,
@@ -174,7 +176,8 @@ fun validateServiceNeed(
         throw BadRequest("Start date cannot be before end date.")
     }
 
-    db.createQuery {
+    db
+        .createQuery {
             sql(
                 """
                 SELECT 1
@@ -185,11 +188,11 @@ fun validateServiceNeed(
                     AND (sno.part_week IS NULL OR sno.part_week = ${bind(partWeek)})
                 """
             )
-        }
-        .toList<Int>()
+        }.toList<Int>()
         .let { if (it.isEmpty()) throw BadRequest("Invalid service need type") }
 
-    db.createQuery {
+    db
+        .createQuery {
             sql(
                 """
                 SELECT 1
@@ -199,8 +202,7 @@ fun validateServiceNeed(
                     daterange(pl.start_date, pl.end_date, '[]') @> daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
                 """
             )
-        }
-        .toList<Int>()
+        }.toList<Int>()
         .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
 }
 
@@ -277,7 +279,8 @@ fun clearServiceNeedsFromPeriod(
     periodToClear: FiniteDateRange,
     excluding: ServiceNeedId? = null
 ) {
-    tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding)
+    tx
+        .getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding)
         .forEach { old ->
             val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
             when {

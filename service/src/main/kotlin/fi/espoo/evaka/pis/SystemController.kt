@@ -50,7 +50,7 @@ class SystemController(
     private val personService: PersonService,
     private val accessControl: AccessControl,
     private val accessControlCitizen: AccessControlCitizen,
-    private val webPush: WebPush?,
+    private val webPush: WebPush?
 ) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
@@ -58,8 +58,9 @@ class SystemController(
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @RequestBody request: CitizenLoginRequest
-    ): CitizenUserIdentity {
-        return db.connect { dbc ->
+    ): CitizenUserIdentity =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     val citizen =
                         tx.getCitizenUserBySsn(request.socialSecurityNumber)
@@ -68,8 +69,7 @@ class SystemController(
                                     tx,
                                     user,
                                     ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
-                                )
-                                ?.let { CitizenUserIdentity(it.id) }
+                                )?.let { CitizenUserIdentity(it.id) }
                             ?: error("No person found with ssn")
                     tx.updateCitizenOnLogin(
                         clock,
@@ -80,18 +80,16 @@ class SystemController(
                     personService.getPersonWithChildren(tx, user, citizen.id)
                     citizen
                 }
-            }
-            .also {
+            }.also {
                 Audit.CitizenLogin.log(
                     targetId =
                         AuditId(
-                            request.socialSecurityNumber,
+                            request.socialSecurityNumber
                         ),
                     objectId = AuditId(it.id),
                     meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName)
                 )
             }
-    }
 
     @GetMapping("/system/citizen/{id}")
     fun citizenUser(
@@ -101,15 +99,15 @@ class SystemController(
         @PathVariable id: PersonId
     ): CitizenUserResponse =
         db.connect { dbc ->
-            dbc.read { tx ->
+            dbc
+                .read { tx ->
                     val details = tx.getCitizenUserDetails(id) ?: throw NotFound()
                     val accessibleFeatures =
                         accessControlCitizen.getPermittedFeatures(tx, clock, id)
                     // TODO: remove this extra field, which is only for backwards compatibility
                     val authLevel = CitizenAuthLevel.WEAK // dummy value, which isn't really used
                     CitizenUserResponse(details, accessibleFeatures, authLevel)
-                }
-                .also { Audit.CitizenUserDetailsRead.log(targetId = AuditId(id)) }
+                }.also { Audit.CitizenUserDetailsRead.log(targetId = AuditId(id)) }
         }
 
     @PostMapping("/system/employee-login")
@@ -118,8 +116,9 @@ class SystemController(
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @RequestBody request: EmployeeLoginRequest
-    ): EmployeeUser {
-        return db.connect { dbc ->
+    ): EmployeeUser =
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     if (request.employeeNumber != null) {
                         it.updateExternalIdByEmployeeNumber(
@@ -141,12 +140,11 @@ class SystemController(
                     it.upsertEmployeeUser(employee.id)
                     employee
                 }
-            }
-            .also {
+            }.also {
                 Audit.EmployeeLogin.log(
                     targetId =
                         AuditId(
-                            request.externalId.toString(),
+                            request.externalId.toString()
                         ),
                     objectId = AuditId(it.id),
                     meta =
@@ -158,7 +156,6 @@ class SystemController(
                         )
                 )
             }
-    }
 
     @GetMapping("/system/employee/{id}")
     fun employeeUser(
@@ -166,8 +163,9 @@ class SystemController(
         systemUser: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable id: EmployeeId
-    ): EmployeeUserResponse? {
-        return db.connect { dbc ->
+    ): EmployeeUserResponse? =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     tx.getEmployeeUser(id)?.let { employeeUser ->
                         val user = AuthenticatedUser.Employee(employeeUser)
@@ -247,7 +245,7 @@ class SystemController(
                                 submitPatuReport =
                                     permittedGlobalActions.contains(
                                         Action.Global.SUBMIT_PATU_REPORT
-                                    ),
+                                    )
                             )
 
                         EmployeeUserResponse(
@@ -261,11 +259,11 @@ class SystemController(
                         )
                     }
                 }
-            }
-            .also { Audit.EmployeeUserDetailsRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.EmployeeUserDetailsRead.log(targetId = AuditId(id)) }
 
-    data class MobileDeviceTracking(val userAgent: String)
+    data class MobileDeviceTracking(
+        val userAgent: String
+    )
 
     @PostMapping("/system/mobile-devices/{id}")
     fun authenticateMobileDevice(
@@ -275,7 +273,8 @@ class SystemController(
         @PathVariable id: MobileDeviceId,
         @RequestBody tracking: MobileDeviceTracking
     ): MobileDeviceDetails =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     val device = tx.getDevice(id)
                     tx.updateDeviceTracking(id, lastSeen = clock.now(), tracking)
@@ -289,26 +288,24 @@ class SystemController(
                             }
                     )
                 }
-            }
-            .also { Audit.MobileDevicesRead.log(targetId = AuditId(id)) }
+            }.also { Audit.MobileDevicesRead.log(targetId = AuditId(id)) }
 
     @GetMapping("/system/mobile-identity/{token}")
     fun mobileIdentity(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable token: UUID
-    ): MobileDeviceIdentity {
-        return db.connect { dbc ->
+    ): MobileDeviceIdentity =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     val device = tx.getDeviceByToken(token)
                     tx.upsertMobileDeviceUser(device.id)
                     device
                 }
-            }
-            .also {
+            }.also {
                 Audit.MobileDevicesRead.log(targetId = AuditId(token), objectId = AuditId(it.id))
             }
-    }
 
     data class EmployeeLoginRequest(
         val externalId: ExternalId,
@@ -351,6 +348,6 @@ class SystemController(
         val details: CitizenUserDetails,
         val accessibleFeatures: CitizenFeatures,
         // TODO: remove this extra field, which is only for backwards compatibility
-        val authLevel: CitizenAuthLevel,
+        val authLevel: CitizenAuthLevel
     )
 }

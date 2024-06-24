@@ -21,7 +21,6 @@ data class VtjPerson(
     var dateOfDeath: LocalDate? = null,
     var residenceCode: String? = null
 ) {
-
     fun mapToDto(): VtjPersonDTO =
         VtjPersonDTO(
             firstName = firstNames,

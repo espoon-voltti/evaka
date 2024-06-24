@@ -77,7 +77,10 @@ private fun childMeals(
     // otherwise check unit meal times against the present time ranges
     val meals = mutableSetOf<MealType>()
 
-    fun addMealIfPresent(mealTime: TimeRange?, mealType: MealType) {
+    fun addMealIfPresent(
+        mealTime: TimeRange?,
+        mealType: MealType
+    ) {
         if (mealTime != null && presentTimeRanges.any { it.overlaps(mealTime) }) {
             meals.add(mealType)
         }
@@ -130,29 +133,29 @@ fun mealReportData(
                     preschoolPlacementTypes.contains(childInfo.placementType)
 
                 childMeals(
-                        fixedScheduleRange,
-                        childInfo.reservations ?: emptyList(),
-                        absent,
-                        childInfo.mealTimes,
-                        usePreschoolMealTypes,
+                    fixedScheduleRange,
+                    childInfo.reservations ?: emptyList(),
+                    absent,
+                    childInfo.mealTimes,
+                    usePreschoolMealTypes
+                ).map {
+                    MealInfo(
+                        it,
+                        additionalInfo =
+                            if (
+                                childInfo.dietInfo != null || childInfo.mealTextureInfo != null
+                            ) {
+                                childInfo.lastName + " " + childInfo.firstName
+                            } else {
+                                null
+                            },
+                        dietId = childInfo.dietInfo?.id,
+                        dietAbbreviation = childInfo.dietInfo?.abbreviation,
+                        mealTextureId = childInfo.mealTextureInfo?.id,
+                        mealTextureName = childInfo.mealTextureInfo?.name
                     )
-                    .map {
-                        MealInfo(
-                            it,
-                            additionalInfo =
-                                if (
-                                    childInfo.dietInfo != null || childInfo.mealTextureInfo != null
-                                ) {
-                                    childInfo.lastName + " " + childInfo.firstName
-                                } else null,
-                            dietId = childInfo.dietInfo?.id,
-                            dietAbbreviation = childInfo.dietInfo?.abbreviation,
-                            mealTextureId = childInfo.mealTextureInfo?.id,
-                            mealTextureName = childInfo.mealTextureInfo?.name,
-                        )
-                    }
-            }
-            .groupBy { it }
+                }
+            }.groupBy { it }
             .mapValues { it.value.size }
 
     return mealInfoMap.map {
@@ -215,9 +218,11 @@ fun getMealReportForUnit(
                     mealTextureInfo = unitData.mealTextures[childId],
                     dailyPreschoolTime = daycare.dailyPreschoolTime,
                     dailyPreparatoryTime = daycare.dailyPreparatoryTime,
-                    mealTimes = daycare.mealTimes,
+                    mealTimes = daycare.mealTimes
                 )
-            } else null
+            } else {
+                null
+            }
         }
 
     val preschoolTerms = unitData.preschoolTerms

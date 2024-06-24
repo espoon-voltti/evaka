@@ -65,8 +65,11 @@ import org.springframework.mock.web.MockMultipartFile
 
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var attachmentsController: AttachmentsController
+
     @Autowired lateinit var messageController: MessageController
+
     @Autowired lateinit var messageControllerCitizen: MessageControllerCitizen
+
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private var asyncJobRunningEnabled = true
 
@@ -532,7 +535,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // when person 1 replies to thread
         replyToMessage(
             person1,
-            person1Threads.first().messages.first().id,
+            person1Threads
+                .first()
+                .messages
+                .first()
+                .id,
             setOf(employee1Account, person2Account),
             "Hello"
         )
@@ -593,7 +600,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             replyToMessage(
                 user = person1,
                 messageId = thread.messages.first().id,
-                recipientAccountIds = setOf(thread.messages.first().sender.id),
+                recipientAccountIds =
+                    setOf(
+                        thread.messages
+                            .first()
+                            .sender.id
+                    ),
                 content = "Kiitos tiedosta"
             )
         }
@@ -725,10 +737,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             2,
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL"
-                    )
-                    .exactlyOne<Int>()
+                    ).exactlyOne<Int>()
             }
         )
 
@@ -786,7 +798,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = group1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
-            user = employee1,
+            user = employee1
         )
         assertEquals(0, getRegularMessageThreads(person4).size)
 
@@ -796,7 +808,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = group2Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
-            user = employee1,
+            user = employee1
         )
         assertEquals(1, getRegularMessageThreads(person4).size)
     }
@@ -809,7 +821,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = group1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
-            user = employee1,
+            user = employee1
         )
         assertEquals(0, getRegularMessageThreads(person4).size)
 
@@ -819,7 +831,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = group2Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
-            user = employee1,
+            user = employee1
         )
         assertEquals(1, getRegularMessageThreads(person4).size)
     }
@@ -847,7 +859,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // thread is replied
         replyToMessage(
             user = person1,
-            messageId = getRegularMessageThreads(person1).first().messages.last().id,
+            messageId =
+                getRegularMessageThreads(person1)
+                    .first()
+                    .messages
+                    .last()
+                    .id,
             recipientAccountIds = setOf(person2Account, employee1Account),
             content = "Juhannus on jo ohi"
         )
@@ -866,7 +883,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = employee1Account,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
                 user = employee1,
-                now = sendTime,
+                now = sendTime
             )
         }
 
@@ -892,7 +909,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             content = "Ihanko totta?",
             recipientAccountIds = setOf(employee1Account),
             user = person1,
-            now = readTime,
+            now = readTime
         )
 
         // Employee replies
@@ -907,7 +924,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 recipientAccountIds = setOf(person1Account),
                 sender = employee1Account,
                 user = employee1,
-                now = sendReplyTime,
+                now = sendReplyTime
             )
         }
 
@@ -971,7 +988,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // and the threadId points to the correct thread
             val messageThreadId =
                 @Suppress("DEPRECATION")
-                tx.createQuery("""SELECT thread_id FROM message WHERE content_id = :contentId""")
+                tx
+                    .createQuery("""SELECT thread_id FROM message WHERE content_id = :contentId""")
                     .bind("contentId", messageContentId)
                     .exactlyOne<MessageThreadId>()
             assertEquals(messageThreadId, note.messageThreadId)
@@ -1232,7 +1250,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                     MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
                     MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id)
                 ),
             filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2017)),
             user = messager,
@@ -1260,7 +1278,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                     MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
                     MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id)
                 ),
             filters =
                 MessageController.PostMessageFilters(
@@ -1292,7 +1310,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                     MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
                     MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
-                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id),
+                    MessageRecipient(MessageRecipientType.CHILD, testChild_8.id)
                 ),
             filters = MessageController.PostMessageFilters(familyDaycare = true),
             user = messager,
@@ -1316,7 +1334,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 recipients =
                     listOf(
                         MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id)
                     ),
                 filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2018))
             )
@@ -1326,20 +1344,18 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Citizen,
-        now: HelsinkiDateTime = readTime,
-    ) =
-        getRegularMessageThreads(user, now).flatMap {
-            it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
-        }
+        now: HelsinkiDateTime = readTime
+    ) = getRegularMessageThreads(user, now).flatMap {
+        it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
+    }
 
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Employee,
-        now: HelsinkiDateTime = readTime,
-    ) =
-        getEmployeeMessageThreads(accountId, user, now).flatMap {
-            it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
-        }
+        now: HelsinkiDateTime = readTime
+    ) = getEmployeeMessageThreads(accountId, user, now).flatMap {
+        it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
+    }
 
     private fun uploadMessageAttachment(
         user: AuthenticatedUser.Employee,
@@ -1359,8 +1375,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         filters: MessageController.PostMessageFilters? = null,
         user: AuthenticatedUser.Employee,
         now: HelsinkiDateTime = sendTime
-    ): PostMessagePreflightResponse {
-        return messageController.createMessagePreflightCheck(
+    ): PostMessagePreflightResponse =
+        messageController.createMessagePreflightCheck(
             dbInstance(),
             user,
             MockEvakaClock(now),
@@ -1370,7 +1386,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 filters = filters
             )
         )
-    }
 
     private fun postNewThread(
         title: String,
@@ -1385,7 +1400,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         now: HelsinkiDateTime = sendTime,
         relatedApplicationId: ApplicationId? = null,
         sensitive: Boolean = false,
-        filters: MessageController.PostMessageFilters? = null,
+        filters: MessageController.PostMessageFilters? = null
     ): MessageContentId? {
         val messageContentId =
             messageController.createMessage(
@@ -1419,7 +1434,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         message: String,
         recipients: List<MessageAccountId>,
         children: List<ChildId>,
-        now: HelsinkiDateTime = sendTime,
+        now: HelsinkiDateTime = sendTime
     ): MessageThreadId {
         val messageThreadId =
             messageControllerCitizen.newMessage(
@@ -1430,7 +1445,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     recipients = recipients.toSet(),
                     children = children.toSet(),
                     title = title,
-                    content = message,
+                    content = message
                 )
             )
         if (asyncJobRunningEnabled) {
@@ -1444,7 +1459,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
-        now: HelsinkiDateTime = sendTime,
+        now: HelsinkiDateTime = sendTime
     ) {
         messageControllerCitizen.replyToThread(
             dbInstance(),
@@ -1464,7 +1479,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
-        now: HelsinkiDateTime = sendTime,
+        now: HelsinkiDateTime = sendTime
     ) {
         messageController.replyToThread(
             dbInstance(),
@@ -1479,7 +1494,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun markThreadRead(user: AuthenticatedUser.Citizen, threadId: MessageThreadId) {
+    private fun markThreadRead(
+        user: AuthenticatedUser.Citizen,
+        threadId: MessageThreadId
+    ) {
         messageControllerCitizen.markThreadRead(
             dbInstance(),
             user,
@@ -1490,20 +1508,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun getRegularMessageThreads(
         user: AuthenticatedUser.Citizen,
-        now: HelsinkiDateTime = readTime,
-    ): List<CitizenMessageThread.Regular> {
-        return messageControllerCitizen
+        now: HelsinkiDateTime = readTime
+    ): List<CitizenMessageThread.Regular> =
+        messageControllerCitizen
             .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), page = 1, pageSize = 100)
             .data
             .filterIsInstance<CitizenMessageThread.Regular>()
-    }
 
     private fun getEmployeeMessageThreads(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Employee,
-        now: HelsinkiDateTime = readTime,
-    ): List<MessageThread> {
-        return messageController
+        now: HelsinkiDateTime = readTime
+    ): List<MessageThread> =
+        messageController
             .getReceivedMessages(
                 dbInstance(),
                 user,
@@ -1511,15 +1528,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 accountId,
                 page = 1,
                 pageSize = 100
-            )
-            .data
-    }
+            ).data
 
     private fun getSentMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Employee
-    ): List<SentMessage> {
-        return messageController
+    ): List<SentMessage> =
+        messageController
             .getSentMessages(
                 dbInstance(),
                 user,
@@ -1527,33 +1542,25 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 accountId,
                 page = 1,
                 pageSize = 100
-            )
-            .data
-    }
+            ).data
 
-    private fun getCitizenReceivers(
-        user: AuthenticatedUser.Citizen
-    ): MessageControllerCitizen.GetReceiversResponse {
-        return messageControllerCitizen.getReceivers(dbInstance(), user, MockEvakaClock(readTime))
-    }
+    private fun getCitizenReceivers(user: AuthenticatedUser.Citizen): MessageControllerCitizen.GetReceiversResponse =
+        messageControllerCitizen.getReceivers(dbInstance(), user, MockEvakaClock(readTime))
 
     private fun unreadMessagesCount(
         user: AuthenticatedUser.Citizen,
         now: HelsinkiDateTime = readTime
-    ): Int {
-        return messageControllerCitizen.getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
-    }
+    ): Int = messageControllerCitizen.getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
 
     private fun unreadMessagesCount(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Employee,
-        now: HelsinkiDateTime = readTime,
-    ): Int {
-        return messageController
+        now: HelsinkiDateTime = readTime
+    ): Int =
+        messageController
             .getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
             .find { it.accountId == accountId }
             ?.unreadCount ?: throw Exception("No unread count for account $accountId")
-    }
 
     private fun disableAsyncJobRunning(f: () -> Unit) {
         asyncJobRunningEnabled = false
@@ -1568,5 +1575,4 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 fun CitizenMessageThread.Regular.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
     this.messages.map { Pair(it.sender.id, it.content) }
 
-fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
-    this.messages.map { Pair(it.sender.id, it.content) }
+fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> = this.messages.map { Pair(it.sender.id, it.content) }

@@ -79,8 +79,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
-class AttendanceReservationsControllerIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var attendanceReservationController: AttendanceReservationController
 
     private val employeeId = EmployeeId(UUID.randomUUID())
@@ -378,7 +377,7 @@ class AttendanceReservationsControllerIntegrationTest :
         assertEquals(
             listOf(
                 UnitAttendanceReservations.ReservationGroup(testGroup1.id, testGroup1.name),
-                UnitAttendanceReservations.ReservationGroup(testGroup2.id, testGroup2.name),
+                UnitAttendanceReservations.ReservationGroup(testGroup2.id, testGroup2.name)
             ),
             response.groups
         )
@@ -646,56 +645,54 @@ class AttendanceReservationsControllerIntegrationTest :
                 )
             )
             listOf(
-                    DevReservation(
-                        childId = testChild_1.id,
-                        date = mon,
-                        startTime = LocalTime.of(19, 0),
-                        endTime = LocalTime.of(23, 59),
-                        createdBy = EvakaUserId(employeeId.raw)
-                    ),
-                    DevReservation(
-                        childId = testChild_1.id,
-                        date = tue,
-                        startTime = LocalTime.of(0, 0),
-                        endTime = LocalTime.of(8, 0),
-                        createdBy = EvakaUserId(employeeId.raw)
-                    ),
-                    DevReservation(
-                        childId = testChild_1.id,
-                        date = tue,
-                        startTime = LocalTime.of(17, 30),
-                        endTime = LocalTime.of(23, 59),
-                        createdBy = EvakaUserId(employeeId.raw)
-                    ),
-                    DevReservation(
-                        childId = testChild_1.id,
-                        date = wed,
-                        startTime = LocalTime.of(0, 0),
-                        endTime = LocalTime.of(9, 30),
-                        createdBy = EvakaUserId(employeeId.raw)
-                    )
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = mon,
+                    startTime = LocalTime.of(19, 0),
+                    endTime = LocalTime.of(23, 59),
+                    createdBy = EvakaUserId(employeeId.raw)
+                ),
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = tue,
+                    startTime = LocalTime.of(0, 0),
+                    endTime = LocalTime.of(8, 0),
+                    createdBy = EvakaUserId(employeeId.raw)
+                ),
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = tue,
+                    startTime = LocalTime.of(17, 30),
+                    endTime = LocalTime.of(23, 59),
+                    createdBy = EvakaUserId(employeeId.raw)
+                ),
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = wed,
+                    startTime = LocalTime.of(0, 0),
+                    endTime = LocalTime.of(9, 30),
+                    createdBy = EvakaUserId(employeeId.raw)
                 )
-                .forEach { tx.insert(it) }
+            ).forEach { tx.insert(it) }
 
             listOf(
-                    Pair(
-                        HelsinkiDateTime.of(mon, LocalTime.of(19, 10)),
-                        HelsinkiDateTime.of(mon, LocalTime.of(23, 59))
-                    ),
-                    Pair(
-                        HelsinkiDateTime.of(tue, LocalTime.of(0, 0)),
-                        HelsinkiDateTime.of(tue, LocalTime.of(10, 30))
-                    ),
-                    Pair(HelsinkiDateTime.of(tue, LocalTime.of(17, 0)), null)
+                Pair(
+                    HelsinkiDateTime.of(mon, LocalTime.of(19, 10)),
+                    HelsinkiDateTime.of(mon, LocalTime.of(23, 59))
+                ),
+                Pair(
+                    HelsinkiDateTime.of(tue, LocalTime.of(0, 0)),
+                    HelsinkiDateTime.of(tue, LocalTime.of(10, 30))
+                ),
+                Pair(HelsinkiDateTime.of(tue, LocalTime.of(17, 0)), null)
+            ).forEach {
+                tx.insertTestChildAttendance(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    arrived = it.first,
+                    departed = it.second
                 )
-                .forEach {
-                    tx.insertTestChildAttendance(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
-                        arrived = it.first,
-                        departed = it.second
-                    )
-                }
+            }
         }
 
         val response = getAttendanceReservations()
@@ -738,12 +735,12 @@ class AttendanceReservationsControllerIntegrationTest :
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(17, 30), LocalTime.of(23, 59)),
                                 true
-                            ),
+                            )
                         ),
                     attendances =
                         listOf(
                             TimeInterval(LocalTime.of(0, 0), LocalTime.of(10, 30)),
-                            TimeInterval(LocalTime.of(17, 0), null),
+                            TimeInterval(LocalTime.of(17, 0), null)
                         ),
                     absenceBillable = null,
                     absenceNonbillable = null,
@@ -894,7 +891,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     reservations = emptyList(),
                     absenceType = null,
                     dailyServiceTimes = null
-                ),
+                )
             ),
             reservations
         )
@@ -1123,7 +1120,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 ConfirmedRangeDateUpdate(
                     clock.today().plusDays(1),
                     reservations = emptyList(),
-                    absenceType = null,
+                    absenceType = null
                 )
             )
         )
@@ -1243,7 +1240,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 groupId = testGroup2.id
                             )
                         )
-                ),
+                )
             )
 
         val testClock = MockEvakaClock(HelsinkiDateTime.of(tue.minusWeeks(1), LocalTime.of(10, 0)))
@@ -1453,15 +1450,14 @@ class AttendanceReservationsControllerIntegrationTest :
         }
     }
 
-    private fun insertMobileDevice(unitId: DaycareId): MobileDeviceId {
-        return db.transaction { tx -> tx.insert(DevMobileDevice(unitId = unitId)) }
-    }
+    private fun insertMobileDevice(unitId: DaycareId): MobileDeviceId = db.transaction { tx -> tx.insert(DevMobileDevice(unitId = unitId)) }
 
     private fun insertConfirmedReservationTestData() {
         db.transaction {
             // clear existing term that has no term breaks
             @Suppress("DEPRECATION")
-            it.createUpdate("DELETE FROM preschool_term where extended_term @> :day")
+            it
+                .createUpdate("DELETE FROM preschool_term where extended_term @> :day")
                 .bind("day", mon)
                 .execute()
 
@@ -1653,13 +1649,13 @@ class AttendanceReservationsControllerIntegrationTest :
     private fun getConfirmedDailyReservationStats(
         daycareId: DaycareId,
         mobileDeviceId: MobileDeviceId,
-        clock: EvakaClock = this.clock,
+        clock: EvakaClock = this.clock
     ): List<AttendanceReservationController.DayReservationStatisticsResult> =
         attendanceReservationController.getReservationStatisticsForConfirmedDays(
             dbInstance(),
             AuthenticatedUser.MobileDevice(id = mobileDeviceId),
             clock,
-            daycareId,
+            daycareId
         )
 
     private fun getConfirmedChildReservationsForDay(
@@ -1673,7 +1669,7 @@ class AttendanceReservationsControllerIntegrationTest :
             AuthenticatedUser.MobileDevice(id = mobileDeviceId),
             clock,
             daycareId,
-            date,
+            date
         )
 
     private fun insertChildData(
@@ -1684,15 +1680,15 @@ class AttendanceReservationsControllerIntegrationTest :
         shiftCareType: ShiftCareType
     ): ChildId {
         val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
-        tx.insert(
+        tx
+            .insert(
                 DevPlacement(
                     childId = childId,
                     unitId = daycareId,
                     startDate = range.start,
                     endDate = range.end
                 )
-            )
-            .also { placementId ->
+            ).also { placementId ->
                 tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = placementId,

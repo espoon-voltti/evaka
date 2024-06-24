@@ -19,7 +19,8 @@ class JwtConfig {
     @Profile("production")
     @Bean
     fun rsaJwtAlgorithm(env: JwtEnv): Algorithm {
-        @Suppress("deprecation") val publicKeys = loadPublicKeys(env.publicKeysUrl)
+        @Suppress("deprecation")
+        val publicKeys = loadPublicKeys(env.publicKeysUrl)
         return Algorithm.RSA256(JwtKeys(publicKeys))
     }
 
@@ -34,6 +35,5 @@ class JwtConfig {
     }
 
     @Bean
-    fun jwtVerifier(algorithm: Algorithm): JWTVerifier =
-        JWT.require(algorithm).acceptLeeway(1).build()
+    fun jwtVerifier(algorithm: Algorithm): JWTVerifier = JWT.require(algorithm).acceptLeeway(1).build()
 }

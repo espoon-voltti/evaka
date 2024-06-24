@@ -30,10 +30,14 @@ class DvvModificationsService(
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
-
-    fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
+    fun updatePersonsFromDvv(
+        db: Database.Connection,
+        clock: EvakaClock,
+        ssns: List<String>
+    ): Int {
         val result =
-            db.transaction { getDvvModifications(it, ssns) }
+            db
+                .transaction { getDvvModifications(it, ssns) }
                 .let { modificationsForPersons ->
                     val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
 
@@ -75,7 +79,11 @@ class DvvModificationsService(
                                         ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                                     else -> {
                                         logger.error(
-                                            "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})"
+                                            "Refreshing person from VTJ for an unknown DVV modification type: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map {
+                                                it.tietoryhma
+                                            }.joinToString(
+                                                ", "
+                                            )})"
                                         )
                                         ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                                     }
@@ -83,11 +91,11 @@ class DvvModificationsService(
                             } catch (e: Throwable) {
                                 logger.error(e) {
                                     "Could not process dvv modification for ${
-                            personModifications.henkilotunnus.substring(
-                                0,
-                                6
-                            )
-                            }: ${e.message}"
+                                        personModifications.henkilotunnus.substring(
+                                            0,
+                                            6
+                                        )
+                                    }: ${e.message}"
                                 }
                                 throw e
                             }
@@ -168,12 +176,12 @@ class DvvModificationsService(
         dateOfDeath: LocalDate,
         clock: EvakaClock
     ) {
-        tx.getPartnersForPerson(
+        tx
+            .getPartnersForPerson(
                 personId,
                 includeConflicts = true,
                 period = DateRange(dateOfDeath, dateOfDeath)
-            )
-            .forEach {
+            ).forEach {
                 tx.updatePartnershipDuration(
                     it.partnershipId,
                     it.startDate,
@@ -213,42 +221,49 @@ class DvvModificationsService(
         db: Database.Connection,
         ssn: String,
         restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup
-    ) =
-        db.transaction { tx ->
-            tx.getPersonBySSN(ssn)?.let {
-                logger.info(
-                    "Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}"
+    ) = db.transaction { tx ->
+        tx.getPersonBySSN(ssn)?.let {
+            logger.info(
+                "Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}"
+            )
+            tx.updatePersonFromVtj(
+                it.copy(
+                    restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.turvakieltoAktiivinen,
+                    restrictedDetailsEndDate =
+                        restrictedInfoDvvInfoGroup.turvaLoppuPv?.asLocalDate(),
+                    streetAddress =
+                        if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) {
+                            ""
+                        } else {
+                            it.streetAddress
+                        },
+                    postalCode =
+                        if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) {
+                            ""
+                        } else {
+                            it.postalCode
+                        },
+                    postOffice =
+                        if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) {
+                            ""
+                        } else {
+                            it.postOffice
+                        }
                 )
-                tx.updatePersonFromVtj(
-                    it.copy(
-                        restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.turvakieltoAktiivinen,
-                        restrictedDetailsEndDate =
-                            restrictedInfoDvvInfoGroup.turvaLoppuPv?.asLocalDate(),
-                        streetAddress =
-                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
-                            else it.streetAddress,
-                        postalCode =
-                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
-                            else it.postalCode,
-                        postOffice =
-                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
-                            else it.postOffice
-                    )
-                )
-            }
+            )
         }
+    }
 
     private fun handleSsnDvvInfoGroup(
         db: Database.Connection,
         ssn: String,
         ssnDvvInfoGroup: SsnDvvInfoGroup
-    ) =
-        db.transaction { tx ->
-            tx.getPersonBySSN(ssn)?.let {
-                logger.info("Dvv modification for ${it.id}: ssn change")
-                tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
-            }
+    ) = db.transaction { tx ->
+        tx.getPersonBySSN(ssn)?.let {
+            logger.info("Dvv modification for ${it.id}: ssn change")
+            tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
         }
+    }
 
     data class DvvModificationsWithToken(
         val dvvModifications: List<DvvModification>,
@@ -256,7 +271,10 @@ class DvvModificationsService(
         val nextToken: String
     )
 
-    fun getDvvModifications(tx: Database.Read, ssns: List<String>): DvvModificationsWithToken {
+    fun getDvvModifications(
+        tx: Database.Read,
+        ssns: List<String>
+    ): DvvModificationsWithToken {
         val token = tx.getNextDvvModificationToken()
         return getAllPagesOfDvvModifications(ssns, token, emptyList())
     }
@@ -269,8 +287,7 @@ class DvvModificationsService(
         logger.debug(
             "Fetching dvv modifications with $token, found modifications so far: ${alreadyFoundDvvModifications.size}"
         )
-        return dvvModificationsServiceClient.getModifications(token, ssns).let {
-            dvvModificationsResponse ->
+        return dvvModificationsServiceClient.getModifications(token, ssns).let { dvvModificationsResponse ->
             val combinedModifications =
                 alreadyFoundDvvModifications + dvvModificationsResponse.muutokset
             if (dvvModificationsResponse.ajanTasalla) {

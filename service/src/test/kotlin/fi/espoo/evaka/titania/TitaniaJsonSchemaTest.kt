@@ -17,7 +17,6 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 
 class TitaniaJsonSchemaTest {
-
     val jsonMapper: JsonMapper =
         defaultJsonMapperBuilder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -59,14 +58,11 @@ class TitaniaJsonSchemaTest {
             .isEmpty()
     }
 
-    private fun updateRequestJsonSchema() =
-        getJsonSchema(ClassPathResource("titania/schema/titania-update-request-input.schema.json"))
+    private fun updateRequestJsonSchema() = getJsonSchema(ClassPathResource("titania/schema/titania-update-request-input.schema.json"))
 
-    private fun getRequestJsonSchema() =
-        getJsonSchema(ClassPathResource("titania/schema/titania-get-request-input.schema.json"))
+    private fun getRequestJsonSchema() = getJsonSchema(ClassPathResource("titania/schema/titania-get-request-input.schema.json"))
 
-    private fun getResponseJsonSchema() =
-        getJsonSchema(ClassPathResource("titania/schema/titania-get-request-output.schema.json"))
+    private fun getResponseJsonSchema() = getJsonSchema(ClassPathResource("titania/schema/titania-get-request-output.schema.json"))
 
     private fun getJsonSchema(resource: Resource): JsonSchema {
         val jsonNode = resource.inputStream.use { jsonMapper.readTree(it) }

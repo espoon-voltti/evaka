@@ -28,20 +28,25 @@ internal fun Database.Read.getStoredResults() =
     @Suppress("DEPRECATION")
     createQuery("select * from koski_study_right").toList<KoskiStudyRightRaw>()
 
-internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) =
-    createUpdate {
-            sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
-        }
-        .execute()
+internal fun Database.Transaction.setUnitOid(
+    unit: DaycareId,
+    oid: String
+) = createUpdate {
+    sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
+}.execute()
 
 internal fun Database.Transaction.setUnitOids() {
     setUnitOid(testDaycare.id, "1.2.246.562.10.1111111111")
     setUnitOid(testDaycare2.id, "1.2.246.562.10.2222222222")
 }
 
-internal class KoskiTester(private val db: Database.Connection, private val client: KoskiClient) {
+internal class KoskiTester(
+    private val db: Database.Connection,
+    private val client: KoskiClient
+) {
     fun triggerUploads(today: LocalDate) {
-        db.read { it.getPendingStudyRights(today) }
+        db
+            .read { it.getPendingStudyRights(today) }
             .forEach { request -> client.uploadToKoski(db, AsyncJob.UploadToKoski(request), today) }
     }
 }

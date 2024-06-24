@@ -75,12 +75,10 @@ fun generateApiFiles(): Map<TsFile, String> {
                     null -> true
                     else -> false
                 }
-            }
-            .groupBy {
+            }.groupBy {
                 TsProject.CitizenFrontend /
                     "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
-            }
-            .mapValues { (file, citizenEndpoints) ->
+            }.mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
                     generator,
                     file,
@@ -93,20 +91,17 @@ fun generateApiFiles(): Map<TsFile, String> {
         endpoints
             .filterNot {
                 it.path.startsWith("/citizen/") || it.path.startsWith("/employee-mobile/")
-            }
-            .filter {
+            }.filter {
                 when (it.authenticatedUserType) {
                     typeOf<AuthenticatedUser.Employee>(),
                     typeOf<AuthenticatedUser>(),
                     null -> true
                     else -> false
                 }
-            }
-            .groupBy {
+            }.groupBy {
                 TsProject.EmployeeFrontend /
                     "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
-            }
-            .mapValues { (file, citizenEndpoints) ->
+            }.mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
                     generator,
                     file,
@@ -125,12 +120,10 @@ fun generateApiFiles(): Map<TsFile, String> {
                     null -> true
                     else -> false
                 }
-            }
-            .groupBy {
+            }.groupBy {
                 TsProject.EmployeeMobileFrontend /
                     "generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
-            }
-            .mapValues { (file, citizenEndpoints) ->
+            }.mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
                     generator,
                     file,
@@ -155,8 +148,7 @@ try {
 ${inline(body).prependIndent("  ")}
 } catch (e) {
   throw new ${ref(Imports.devApiError)}(e)
-}"""
-                                .removePrefix("\n")
+}""".removePrefix("\n")
                         }
                     }
             )
@@ -191,13 +183,15 @@ fun generateApiTypes(
             deserializers.map { it.text }
     return """$fileHeader
 ${sections.filter { it.isNotBlank() }.joinToString("\n\n")}
-"""
-        .lineSequence()
+""".lineSequence()
         .map { it.trimEnd() }
         .joinToString("\n")
 }
 
-fun generateImports(currentFile: TsFile, imports: Iterable<TsImport>): String =
+fun generateImports(
+    currentFile: TsFile,
+    imports: Iterable<TsImport>
+): String =
     imports
         .filterNot { it.file == currentFile }
         .sortedWith(compareBy({ it is TsImport.Named }, { it.name }))
@@ -216,7 +210,7 @@ fun generateApiClients(
     file: TsFile,
     axiosClient: TsImport,
     endpoints: Collection<EndpointMetadata>,
-    wrapBody: (body: TsCode) -> TsCode = { it },
+    wrapBody: (body: TsCode) -> TsCode = { it }
 ): String {
     val clients =
         endpoints
@@ -227,14 +221,12 @@ fun generateApiClients(
                     "Endpoint conflict:\n${duplicates.joinToString("\n")}"
                 }
                 duplicates.single()
-            }
-            .sortedWith(
+            }.sortedWith(
                 compareBy(
                     { it.controllerClass.jvmName },
-                    { it.controllerMethod.name },
+                    { it.controllerMethod.name }
                 )
-            )
-            .map {
+            ).map {
                 try {
                     generateApiClient(generator, axiosClient, it, wrapBody)
                 } catch (e: Exception) {
@@ -255,35 +247,38 @@ fun generateApiClient(
     generator: TsCodeGenerator,
     axiosClient: TsImport,
     endpoint: EndpointMetadata,
-    wrapBody: ((functionBody: TsCode) -> TsCode),
+    wrapBody: ((functionBody: TsCode) -> TsCode)
 ): TsCode {
     val argumentType =
         TsObjectLiteral(
-                (endpoint.pathVariables + endpoint.requestParameters).associate {
-                    it.name to TsProperty(it.toOptionalType())
-                } + mapOfNotNullValues("body" to endpoint.requestBodyType?.let(::TsProperty))
-            )
-            .takeIf { it.properties.isNotEmpty() }
+            (endpoint.pathVariables + endpoint.requestParameters).associate {
+                it.name to TsProperty(it.toOptionalType())
+            } + mapOfNotNullValues("body" to endpoint.requestBodyType?.let(::TsProperty))
+        ).takeIf { it.properties.isNotEmpty() }
             ?.let { TsType(it, isNullable = false, typeArguments = emptyList()) }
     val tsArgument =
-        if (argumentType != null)
+        if (argumentType != null) {
             TsCode {
                 "\n" +
                     "request: ${inline(generator.tsType(argumentType, compact = false))}"
                         .prependIndent("  ") +
                     "\n"
             }
-        else null
+        } else {
+            null
+        }
 
     val pathVariables =
-        if (endpoint.pathVariables.isNotEmpty())
+        if (endpoint.pathVariables.isNotEmpty()) {
             endpoint.pathVariables.associate {
                 it.name to
                     generator
                         .serializePathVariable(it.toOptionalType(), TsCode("request.${it.name}"))
                         .let { TsCode { "\${${inline(it)}}" } }
             }
-        else emptyMap()
+        } else {
+            emptyMap()
+        }
 
     val createQueryParameters =
         if (endpoint.requestParameters.isNotEmpty()) {
@@ -299,14 +294,16 @@ fun generateApiClient(
                 """
 const params = ${ref(Imports.createUrlSearchParams)}(
 ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
-)"""
-                    .removePrefix("\n")
+)""".removePrefix("\n")
             }
-        } else null
+        } else {
+            null
+        }
 
     val url =
         TsCode(
-            UriComponentsBuilder.fromPath(endpoint.path)
+            UriComponentsBuilder
+                .fromPath(endpoint.path)
                 .buildAndExpand(pathVariables.mapValues { it.value.text })
                 .toUriString(),
             imports = pathVariables.flatMap { it.value.imports }.toSet()
@@ -341,10 +338,9 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
                     """
 const { data: json } = await ${ref(axiosClient)}.request<${ref(Imports.jsonOf)}<${inline(tsResponseType)}>>({
 ${join(axiosArguments, ",\n").prependIndent("  ")}
-})"""
-                        .removePrefix("\n")
+})""".removePrefix("\n")
                 },
-                TsCode { "return ${inline(responseDeserializer ?: TsCode("json"))}" },
+                TsCode { "return ${inline(responseDeserializer ?: TsCode("json"))}" }
             ),
             separator = "\n"
         )

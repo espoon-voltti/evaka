@@ -57,8 +57,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     private lateinit var admin: AuthenticatedUser
 
-    private fun getRoleBodyString(body: UnitAclController.FullAclInfo) =
-        jsonMapper.writeValueAsString(body)
+    private fun getRoleBodyString(body: UnitAclController.FullAclInfo) = jsonMapper.writeValueAsString(body)
 
     @BeforeEach
     fun beforeEach() {
@@ -538,17 +537,21 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         return body.get()
     }
 
-    private fun getTemporaryEmployees(clock: EvakaClock, unitId: DaycareId) =
-        unitAclController.getTemporaryEmployees(dbInstance(), admin, clock, unitId)
+    private fun getTemporaryEmployees(
+        clock: EvakaClock,
+        unitId: DaycareId
+    ) = unitAclController.getTemporaryEmployees(dbInstance(), admin, clock, unitId)
 
-    private fun getTemporaryEmployee(clock: EvakaClock, unitId: DaycareId, employeeId: EmployeeId) =
-        unitAclController.getTemporaryEmployee(dbInstance(), admin, clock, unitId, employeeId)
+    private fun getTemporaryEmployee(
+        clock: EvakaClock,
+        unitId: DaycareId,
+        employeeId: EmployeeId
+    ) = unitAclController.getTemporaryEmployee(dbInstance(), admin, clock, unitId, employeeId)
 
-    private fun getDaycareOccupancyCoefficients(unitId: DaycareId): Map<EmployeeId, BigDecimal> {
-        return db.read { tx ->
+    private fun getDaycareOccupancyCoefficients(unitId: DaycareId): Map<EmployeeId, BigDecimal> =
+        db.read { tx ->
             tx.getOccupancyCoefficientsByUnit(unitId).associate { it.employeeId to it.coefficient }
         }
-    }
 
     private fun deleteSupervisor(daycareId: DaycareId) {
         val (_, res, _) =
@@ -568,8 +571,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .asUser(admin)
                 .jsonBody(
                     getRoleBodyString(UnitAclController.FullAclInfo(update = update, role = role))
-                )
-                .response()
+                ).response()
         assertTrue(res.isSuccessful)
     }
 
@@ -600,19 +602,18 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun employeeMessageAccountState(): MessageAccountState =
-        db.read {
+        db
+            .read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         """
-                    SELECT active FROM message_account
-                    WHERE employee_id = :employeeId
-                """
-                            .trimIndent()
-                    )
-                    .bind("employeeId", employee.id)
+                        SELECT active FROM message_account
+                        WHERE employee_id = :employeeId
+                        """.trimIndent()
+                    ).bind("employeeId", employee.id)
                     .toList<Boolean>()
-            }
-            .let { accounts ->
+            }.let { accounts ->
                 if (accounts.size == 1) {
                     if (accounts[0]) {
                         MessageAccountState.ACTIVE_ACCOUNT

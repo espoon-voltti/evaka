@@ -39,8 +39,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         val config: AsyncJobPool.Config,
         val jobs: Set<KClass<out T>>
     ) {
-        fun withThrottleInterval(throttleInterval: Duration?) =
-            copy(config = config.copy(throttleInterval = throttleInterval))
+        fun withThrottleInterval(throttleInterval: Duration?) = copy(config = config.copy(throttleInterval = throttleInterval))
     }
 
     val name = "${AsyncJobRunner::class.simpleName}.${payloadType.simpleName}"
@@ -61,7 +60,9 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             pools.map { AsyncJobPool(it.id, it.config, jdbi, tracer, PoolRegistration(it.id)) }
     }
 
-    inner class PoolRegistration(val id: AsyncJobPool.Id<T>) : AsyncJobPool.Registration<T> {
+    inner class PoolRegistration(
+        val id: AsyncJobPool.Id<T>
+    ) : AsyncJobPool.Registration<T> {
         override fun jobTypes() = jobsPerPool[id] ?: emptySet()
 
         override fun handlerFor(jobType: AsyncJobType<out T>) =
@@ -73,9 +74,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun registerMeters(registry: MeterRegistry) = pools.forEach { it.registerMeters(registry) }
 
-    inline fun <reified P : T> registerHandler(
-        noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit
-    ) =
+    inline fun <reified P : T> registerHandler(noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit) =
         registerHandler(AsyncJobType(P::class)) { db, clock, msg ->
             db.connect { handler(it, clock, msg) }
         }
@@ -113,33 +112,36 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
         runAt: HelsinkiDateTime
-    ) =
-        plan(
-            tx,
-            payloads.map { payload ->
-                JobParams(
-                    payload = payload,
-                    retryCount = retryCount,
-                    retryInterval = retryInterval,
-                    runAt = runAt
-                )
-            }
-        )
-
-    fun plan(tx: Database.Transaction, jobs: Iterable<JobParams<out T>>) =
-        plan(tx, jobs.asSequence())
-
-    fun plan(tx: Database.Transaction, jobs: Sequence<JobParams<out T>>) =
-        stateLock.read {
-            jobs.forEach { job ->
-                val jobType = AsyncJobType.ofPayload(job.payload)
-                val id = tx.insertJob(job)
-                logger.debug {
-                    "$name planned job $jobType(id=$id, runAt=${job.runAt}, retryCount=${job.retryCount}, retryInterval=${job.retryInterval})"
-                }
-                afterCommitHooks[jobType]?.let { tx.afterCommit(it) }
-            }
+    ) = plan(
+        tx,
+        payloads.map { payload ->
+            JobParams(
+                payload = payload,
+                retryCount = retryCount,
+                retryInterval = retryInterval,
+                runAt = runAt
+            )
         }
+    )
+
+    fun plan(
+        tx: Database.Transaction,
+        jobs: Iterable<JobParams<out T>>
+    ) = plan(tx, jobs.asSequence())
+
+    fun plan(
+        tx: Database.Transaction,
+        jobs: Sequence<JobParams<out T>>
+    ) = stateLock.read {
+        jobs.forEach { job ->
+            val jobType = AsyncJobType.ofPayload(job.payload)
+            val id = tx.insertJob(job)
+            logger.debug {
+                "$name planned job $jobType(id=$id, runAt=${job.runAt}, retryCount=${job.retryCount}, retryInterval=${job.retryInterval})"
+            }
+            afterCommitHooks[jobType]?.let { tx.afterCommit(it) }
+        }
+    }
 
     fun startBackgroundPolling(
         clock: EvakaClock = RealEvakaClock(),
@@ -163,13 +165,15 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                     .flatMap { pool ->
                         val hook = { pool.runPendingJobs(clock, maxCount = 1_000) }
                         (jobsPerPool[pool.id] ?: emptySet()).map { jobType -> jobType to hook }
-                    }
-                    .toMap()
+                    }.toMap()
         }
 
     fun disableAfterCommitHooks() = stateLock.write { afterCommitHooks = emptyMap() }
 
-    fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000): Int {
+    fun runPendingJobsSync(
+        clock: EvakaClock,
+        maxCount: Int = 1_000
+    ): Int {
         var totalCount = 0
         do {
             val executed =

@@ -42,7 +42,6 @@ import org.springframework.xml.transform.StringSource
 val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
 class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
-
     @Autowired lateinit var vtjClientService: IVtjClientService
 
     @Autowired lateinit var mapper: VtjHenkiloMapper
@@ -505,8 +504,7 @@ private val perussanoma3Response =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """
-        .trimIndent()
+    """.trimIndent()
         .let(::StringSource)
 
 @Language("xml")
@@ -720,8 +718,7 @@ private val huoltajaHuollettavatResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """
-        .trimIndent()
+    """.trimIndent()
         .let(::StringSource)
 
 @Language("xml")
@@ -905,8 +902,7 @@ private val huollettavaHuoltajaResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>    
-    """
-        .trimIndent()
+    """.trimIndent()
         .let(::StringSource)
 
 @Language("xml")
@@ -984,6 +980,5 @@ private val asukasMaaraResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """
-        .trimIndent()
+    """.trimIndent()
         .let(::StringSource)

@@ -35,12 +35,13 @@ enum class ContentTypePattern(
         return parts[0] == type && (subtypePattern == "*" || parts[1] == subtypePattern)
     }
 
-    fun matchesExtension(fileExtension: String): Boolean {
-        return allowedFileExtensions.contains(fileExtension.lowercase())
-    }
+    fun matchesExtension(fileExtension: String): Boolean = allowedFileExtensions.contains(fileExtension.lowercase())
 }
 
-fun checkFileContentType(file: InputStream, allowedContentTypes: Set<ContentTypePattern>): String {
+fun checkFileContentType(
+    file: InputStream,
+    allowedContentTypes: Set<ContentTypePattern>
+): String {
     val detectedContentType = tika.detect(file)
     allowedContentTypes.find { it.matchesContentType(detectedContentType) }
         ?: throw BadRequest("Invalid content type $detectedContentType", "INVALID_CONTENT_TYPE")

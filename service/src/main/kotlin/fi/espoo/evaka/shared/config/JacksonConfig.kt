@@ -27,9 +27,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 fun defaultJsonMapperBuilder(): JsonMapper.Builder =
-    JsonMapper.builder()
+    JsonMapper
+        .builder()
         .addModules(
-            KotlinModule.Builder()
+            KotlinModule
+                .Builder()
                 // Without this, Kotlin singletons are not actually singletons when deserialized.
                 // For example, a sealed class `sealed class Foo` where one variant is `object
                 // OneVariant: Foo()`
@@ -37,7 +39,7 @@ fun defaultJsonMapperBuilder(): JsonMapper.Builder =
                 .build(),
             JavaTimeModule(),
             Jdk8Module(),
-            ParameterNamesModule(),
+            ParameterNamesModule()
         )
         // We never want to serialize timestamps as numbers but use ISO formats instead.
         // Our custom types (e.g. HelsinkiDateTime) already have custom serializers that handle
@@ -75,7 +77,9 @@ class JacksonConfig {
  * ```
  */
 class SealedSubclassSimpleName : TypeIdResolverBase() {
-    data class Mapping(val superClass: KClass<*>) {
+    data class Mapping(
+        val superClass: KClass<*>
+    ) {
         val typeIds = superClass.sealedSubclasses.map { subClass -> subClass to subClass.typeId() }
 
         operator fun get(clazz: KClass<*>): String? = typeIds.find { it.first == clazz }?.second
@@ -92,13 +96,17 @@ class SealedSubclassSimpleName : TypeIdResolverBase() {
 
     override fun idFromValue(value: Any): String? = mapping[value.javaClass.kotlin]
 
-    override fun idFromValueAndType(value: Any?, suggestedType: Class<*>): String? =
-        mapping[(value?.javaClass ?: suggestedType).kotlin]
+    override fun idFromValueAndType(
+        value: Any?,
+        suggestedType: Class<*>
+    ): String? = mapping[(value?.javaClass ?: suggestedType).kotlin]
 
     override fun getMechanism(): JsonTypeInfo.Id = JsonTypeInfo.Id.CUSTOM
 
-    override fun typeFromId(context: DatabindContext, id: String): JavaType? =
-        context.constructType(mapping[id]?.java)
+    override fun typeFromId(
+        context: DatabindContext,
+        id: String
+    ): JavaType? = context.constructType(mapping[id]?.java)
 
     companion object {
         private val cache: ConcurrentMap<KClass<*>, Mapping> = ConcurrentHashMap()
@@ -111,11 +119,9 @@ class SealedSubclassSimpleName : TypeIdResolverBase() {
                         ?: error("No valid sealed superclass found for $this")
             }
 
-        private fun KClass<*>.isRelevantSealedJsonClass() =
-            isSealed && findAnnotation<JsonTypeInfo>()?.use == JsonTypeInfo.Id.CUSTOM
+        private fun KClass<*>.isRelevantSealedJsonClass() = isSealed && findAnnotation<JsonTypeInfo>()?.use == JsonTypeInfo.Id.CUSTOM
 
-        private fun KClass<*>.typeId(): String =
-            findAnnotation<JsonTypeName>()?.value ?: simpleName ?: java.name
+        private fun KClass<*>.typeId(): String = findAnnotation<JsonTypeName>()?.value ?: simpleName ?: java.name
 
         fun mappingOf(clazz: KClass<*>): Mapping =
             cache.getOrElse(clazz) {

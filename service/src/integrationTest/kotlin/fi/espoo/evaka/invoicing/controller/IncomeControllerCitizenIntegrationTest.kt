@@ -38,7 +38,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired private lateinit var incomeControllerCitizen: IncomeControllerCitizen
 
     private val clock =

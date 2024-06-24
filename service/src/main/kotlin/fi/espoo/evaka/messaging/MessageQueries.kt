@@ -37,12 +37,10 @@ private val logger = KotlinLogging.logger {}
 
 const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
 
-fun Database.Read.getUnreadMessagesCounts(
-    idFilter: AccessControlFilter<MessageAccountId>,
-): Set<UnreadCountByAccount> =
+fun Database.Read.getUnreadMessagesCounts(idFilter: AccessControlFilter<MessageAccountId>): Set<UnreadCountByAccount> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT
             acc.id as account_id,
             count(*) FILTER (WHERE mtp.folder_id IS NULL AND NOT mt.is_copy) AS unread_count,
@@ -55,17 +53,13 @@ fun Database.Read.getUnreadMessagesCounts(
         WHERE ${predicate(idFilter.forTable("acc"))}
         GROUP BY acc.id
         """
-            )
-        }
-        .toSet()
+        )
+    }.toSet()
 
-fun Database.Read.getUnreadMessagesCountsByDaycare(
-    daycareId: DaycareId
-): Set<UnreadCountByAccountAndGroup> {
-
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getUnreadMessagesCountsByDaycare(daycareId: DaycareId): Set<UnreadCountByAccountAndGroup> =
+    createQuery {
+        sql(
+            """
 SELECT
     acc.id as account_id,
     acc.daycare_group_id as group_id,
@@ -79,10 +73,8 @@ JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = ${bind
 WHERE acc.active = true AND m.sent_at IS NOT NULL
 GROUP BY acc.id, acc.daycare_group_id
 """
-            )
-        }
-        .toSet<UnreadCountByAccountAndGroup>()
-}
+        )
+    }.toSet<UnreadCountByAccountAndGroup>()
 
 fun Database.Transaction.markThreadRead(
     clock: EvakaClock,
@@ -91,8 +83,8 @@ fun Database.Transaction.markThreadRead(
 ): Int {
     val now = clock.now()
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE message_recipients rec
 SET read_at = ${bind(now)}
 FROM message msg
@@ -101,9 +93,8 @@ WHERE rec.message_id = msg.id
   AND rec.recipient_id = ${bind(accountId)}
   AND read_at IS NULL
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.archiveThread(
@@ -114,20 +105,22 @@ fun Database.Transaction.archiveThread(
     if (archiveFolderId == null) {
         archiveFolderId =
             createUpdate {
-                    sql(
-                        "INSERT INTO message_thread_folder (owner_id, name) VALUES (${bind(accountId)}, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
-                    )
-                }
-                .executeAndReturnGeneratedKeys()
+                sql(
+                    "INSERT INTO message_thread_folder (owner_id, name) VALUES (${bind(
+                        accountId
+                    )}, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
+                )
+            }.executeAndReturnGeneratedKeys()
                 .exactlyOne<MessageThreadFolderId>()
     }
 
     return createUpdate {
-            sql(
-                "UPDATE message_thread_participant SET folder_id = ${bind(archiveFolderId)} WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}"
-            )
-        }
-        .execute()
+        sql(
+            "UPDATE message_thread_participant SET folder_id = ${bind(
+                archiveFolderId
+            )} WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(accountId)}"
+        )
+    }.execute()
 }
 
 fun Database.Transaction.insertMessage(
@@ -141,10 +134,10 @@ fun Database.Transaction.insertMessage(
     sentAt: HelsinkiDateTime? =
         null, // Only needed because some tests bypass the message service and controllers
     repliesToMessageId: MessageId? = null
-): MessageId {
-    return createQuery {
-            sql(
-                """
+): MessageId =
+    createQuery {
+        sql(
+            """
 INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
 SELECT
     ${bind(now)},
@@ -163,26 +156,20 @@ FROM message_account_view name_view
 WHERE name_view.id = ${bind(sender)}
 RETURNING id
 """
-            )
-        }
-        .exactlyOne<MessageId>()
-}
+        )
+    }.exactlyOne<MessageId>()
 
 fun Database.Transaction.insertMessageContent(
     content: String,
     sender: MessageAccountId
-): MessageContentId {
-    return createQuery {
-            sql(
-                "INSERT INTO message_content (content, author_id) VALUES (${bind(content)}, ${bind(sender)}) RETURNING id"
-            )
-        }
-        .exactlyOne<MessageContentId>()
-}
+): MessageContentId =
+    createQuery {
+        sql(
+            "INSERT INTO message_content (content, author_id) VALUES (${bind(content)}, ${bind(sender)}) RETURNING id"
+        )
+    }.exactlyOne<MessageContentId>()
 
-fun Database.Transaction.insertRecipients(
-    messageRecipientsPairs: List<Pair<MessageId, Set<MessageAccountId>>>
-) {
+fun Database.Transaction.insertRecipients(messageRecipientsPairs: List<Pair<MessageId, Set<MessageAccountId>>>) {
     val rows: Sequence<Pair<MessageId, MessageAccountId>> =
         messageRecipientsPairs.asSequence().flatMap { (messageId, recipients) ->
             recipients.map { recipient -> Pair(messageId, recipient) }
@@ -197,9 +184,7 @@ VALUES (${bind { (messageId, _) -> messageId }}, ${bind { (_, accountId) -> acco
     }
 }
 
-fun Database.Transaction.insertMessageThreadChildren(
-    childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>
-) {
+fun Database.Transaction.insertMessageThreadChildren(childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>) {
     val rows: Sequence<Pair<MessageThreadId, ChildId>> =
         childrenThreadPairs.asSequence().flatMap { (children, threadId) ->
             children.map { childId -> Pair(threadId, childId) }
@@ -235,8 +220,8 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
     now: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
 SELECT m.thread_id, mr.recipient_id, ${bind(now)}, ${bind(now)}
 FROM message m
@@ -244,14 +229,13 @@ JOIN message_recipients mr ON mr.message_id = m.id
 WHERE m.content_id = ${bind(contentId)}
 ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = ${bind(now)}, last_received_timestamp = ${bind(now)}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 
     // If the receiver has archived the thread, move it back to inbox
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE message_thread_participant mtp
 SET folder_id = NULL
 WHERE
@@ -267,9 +251,8 @@ WHERE
         AND mtf.name = 'ARCHIVE'
     )
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.markMessagesAsSent(
@@ -277,15 +260,14 @@ fun Database.Transaction.markMessagesAsSent(
     sentAt: HelsinkiDateTime
 ): List<MessageId> =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE message SET sent_at = ${bind(sentAt)}
 WHERE content_id = ${bind(contentId)}
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .toList<MessageId>()
 
 fun Database.Transaction.insertThreadsWithMessages(
@@ -303,11 +285,14 @@ fun Database.Transaction.insertThreadsWithMessages(
     municipalAccountName: String,
     serviceWorkerAccountName: String
 ): List<Pair<MessageThreadId, MessageId>> =
-    prepareBatch(1..count) { // range is *inclusive*
-            sql(
-                """
+    prepareBatch(1..count) {
+        // range is *inclusive*
+        sql(
+            """
 WITH new_thread AS (
-    INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy, application_id) VALUES (${bind(type)}, ${bind(title)}, ${bind(urgent)}, ${bind(sensitive)}, ${bind(isCopy)}, ${bind(applicationId)}) RETURNING id
+    INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy, application_id) VALUES (${bind(
+                type
+            )}, ${bind(title)}, ${bind(urgent)}, ${bind(sensitive)}, ${bind(isCopy)}, ${bind(applicationId)}) RETURNING id
 )
 INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, recipient_names)
 SELECT
@@ -326,9 +311,8 @@ FROM message_account_view name_view, new_thread
 WHERE name_view.id = ${bind(senderId)}
 RETURNING id, thread_id
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toList { columnPair("thread_id", "id") }
 
 fun Database.Transaction.insertThread(
@@ -337,22 +321,22 @@ fun Database.Transaction.insertThread(
     urgent: Boolean,
     sensitive: Boolean,
     isCopy: Boolean
-): MessageThreadId {
-    return createQuery {
-            sql(
-                "INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy) VALUES (${bind(type)}, ${bind(title)}, ${bind(urgent)}, ${bind(sensitive)}, ${bind(isCopy)}) RETURNING id"
-            )
-        }
-        .exactlyOne<MessageThreadId>()
-}
+): MessageThreadId =
+    createQuery {
+        sql(
+            "INSERT INTO message_thread (message_type, title, urgent, sensitive, is_copy) VALUES (${bind(
+                type
+            )}, ${bind(title)}, ${bind(urgent)}, ${bind(sensitive)}, ${bind(isCopy)}) RETURNING id"
+        )
+    }.exactlyOne<MessageThreadId>()
 
 fun Database.Transaction.reAssociateMessageAttachments(
     attachmentIds: Set<AttachmentId>,
     messageContentId: MessageContentId
-): Int {
-    return createUpdate {
-            sql(
-                """
+): Int =
+    createUpdate {
+        sql(
+            """
 UPDATE attachment
 SET
     message_content_id = ${bind(messageContentId)},
@@ -360,10 +344,8 @@ SET
 WHERE
     id = ANY(${bind(attachmentIds)})
 """
-            )
-        }
-        .execute()
-}
+        )
+    }.execute()
 
 private data class ReceivedThread(
     val id: MessageThreadId,
@@ -378,22 +360,24 @@ private data class ReceivedThread(
 data class PagedMessageThreads(
     val data: List<MessageThread>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 ) {
-    fun <T, R> mapTo(f: PagedFactory<T, R>, mapper: (MessageThread) -> T): R =
-        f(data.map(mapper), total, pages)
+    fun <T, R> mapTo(
+        f: PagedFactory<T, R>,
+        mapper: (MessageThread) -> T
+    ): R = f(data.map(mapper), total, pages)
 }
 
 data class PagedCitizenMessageThreads(
     val data: List<CitizenMessageThread>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 private data class PagedReceivedThreads(
     val data: List<ReceivedThread>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 /** Return all threads that are visible to the account through sent and received messages */
@@ -406,8 +390,8 @@ fun Database.Read.getThreads(
 ): PagedMessageThreads {
     val threads =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT
     COUNT(*) OVER () AS count,
     t.id,
@@ -434,9 +418,8 @@ AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = 
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
-                )
-            }
-            .mapToPaged(::PagedReceivedThreads, pageSize)
+            )
+        }.mapToPaged(::PagedReceivedThreads, pageSize)
 
     val messagesByThread =
         getThreadMessages(
@@ -459,8 +442,8 @@ fun Database.Read.getReceivedThreads(
 ): PagedMessageThreads {
     val threads =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT
     COUNT(*) OVER () AS count,
     t.id,
@@ -487,19 +470,18 @@ WHERE
     tp.last_received_timestamp IS NOT NULL AND
     NOT t.is_copy AND
     ${
-        if (folderId == null) {
-            "tp.folder_id IS NULL"
-        } else {
-            "tp.folder_id = ${bind(folderId)}"
-        }
-    } AND
+                    if (folderId == null) {
+                        "tp.folder_id IS NULL"
+                    } else {
+                        "tp.folder_id = ${bind(folderId)}"
+                    }
+                } AND
     EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL)
 ORDER BY tp.last_message_timestamp DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
         """
-                )
-            }
-            .mapToPaged(::PagedReceivedThreads, pageSize)
+            )
+        }.mapToPaged(::PagedReceivedThreads, pageSize)
 
     val messagesByThread =
         getThreadMessages(
@@ -519,8 +501,8 @@ private fun Database.Read.getThreadMessages(
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     m.id,
     m.thread_id,
@@ -574,9 +556,8 @@ WHERE
     (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL)
 ORDER BY m.sent_at
 """
-            )
-        }
-        .toList<Message>()
+        )
+    }.toList<Message>()
         .groupBy { it.threadId }
 }
 
@@ -632,18 +613,17 @@ data class MessageCopy(
 data class PagedMessageCopies(
     val data: List<MessageCopy>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 fun Database.Read.getMessageCopiesByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int
-): PagedMessageCopies {
-
-    return createQuery {
-            sql(
-                """
+): PagedMessageCopies =
+    createQuery {
+        sql(
+            """
 SELECT
     COUNT(*) OVER () AS count,
     t.id AS thread_id,
@@ -682,31 +662,33 @@ WHERE rec.recipient_id = ${bind(accountId)} AND t.is_copy AND m.sent_at IS NOT N
 ORDER BY m.sent_at DESC
 LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 """
-            )
-        }
-        .mapToPaged(::PagedMessageCopies, pageSize)
-}
+        )
+    }.mapToPaged(::PagedMessageCopies, pageSize)
 
 fun Database.Read.getSentMessage(
     senderId: MessageAccountId,
     messageId: MessageId,
     serviceWorkerAccountName: String
-): Message {
-    return createQuery {
-            sql(
-                """
+): Message =
+    createQuery {
+        sql(
+            """
 SELECT
     m.id,
     m.thread_id,
     COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
     mc.content,
     (
-        SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END, 'type', mav.type)
+        SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(
+                serviceWorkerAccountName
+            )} ELSE mav.name END, 'type', mav.type)
         FROM message_account_view mav
         WHERE mav.id = m.sender_id
     ) AS sender,
     (
-        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END, 'type', mav.type))
+        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(
+                serviceWorkerAccountName
+            )} ELSE mav.name END, 'type', mav.type))
         FROM message_recipients mr
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
@@ -720,10 +702,8 @@ FROM message m
 JOIN message_content mc ON mc.id = m.content_id
 WHERE m.id = ${bind(messageId)} AND m.sender_id = ${bind(senderId)}
 """
-            )
-        }
-        .exactlyOne<Message>()
-}
+        )
+    }.exactlyOne<Message>()
 
 fun Database.Read.getCitizenReceivers(
     today: LocalDate,
@@ -737,8 +717,8 @@ fun Database.Read.getCitizenReceivers(
     )
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH user_account AS (
     SELECT * FROM message_account WHERE id = ${bind(accountId)}
 ), children AS (
@@ -836,9 +816,8 @@ mixed_accounts AS (
 SELECT id, name, type, child_id FROM mixed_accounts
 ORDER BY type, name  -- groups first
 """
-            )
-        }
-        .toList<MessageAccountWithChildId>()
+        )
+    }.toList<MessageAccountWithChildId>()
         .groupBy({ it.childId }, { MessageAccount(it.id, it.name, it.type) })
         .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
 }
@@ -846,17 +825,17 @@ ORDER BY type, name  -- groups first
 data class PagedSentMessages(
     val data: List<SentMessage>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 fun Database.Read.getMessagesSentByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int
-): PagedSentMessages {
-    return createQuery {
-            sql(
-                """
+): PagedSentMessages =
+    createQuery {
+        sql(
+            """
 WITH pageable_messages AS (
     SELECT
         m.content_id,
@@ -896,10 +875,8 @@ JOIN message_content mc ON msg.content_id = mc.id
 GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.sensitive, msg.title
 ORDER BY msg.sent_at DESC
 """
-            )
-        }
-        .mapToPaged(::PagedSentMessages, pageSize)
-}
+        )
+    }.mapToPaged(::PagedSentMessages, pageSize)
 
 data class ThreadWithParticipants(
     val threadId: MessageThreadId,
@@ -910,10 +887,10 @@ data class ThreadWithParticipants(
     val applicationId: ApplicationId?
 )
 
-fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? =
+    createQuery {
+        sql(
+            """
 SELECT
     t.id AS threadId,
     t.message_type AS type,
@@ -928,10 +905,8 @@ SELECT
     WHERE m.id = ${bind(messageId)}
     GROUP BY t.id, t.message_type
 """
-            )
-        }
-        .exactlyOneOrNull<ThreadWithParticipants>()
-}
+        )
+    }.exactlyOneOrNull<ThreadWithParticipants>()
 
 fun Database.Read.getMessageThread(
     accountId: MessageAccountId,
@@ -941,8 +916,8 @@ fun Database.Read.getMessageThread(
 ): MessageThread {
     val thread =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT
     t.id,
     t.title,
@@ -966,9 +941,8 @@ JOIN message_thread_participant tp on t.id = tp.thread_id
 WHERE t.id = ${bind(threadId)} AND tp.participant_id = ${bind(accountId)}
   AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 """
-                )
-            }
-            .exactlyOneOrNull<ReceivedThread>() ?: throw NotFound()
+            )
+        }.exactlyOneOrNull<ReceivedThread>() ?: throw NotFound()
 
     val messagesByThread =
         getThreadMessages(
@@ -978,11 +952,10 @@ WHERE t.id = ${bind(threadId)} AND tp.participant_id = ${bind(accountId)}
             serviceWorkerAccountName
         )
     return combineThreadsAndMessages(
-            accountId,
-            PagedReceivedThreads(listOf(thread), 1, 1),
-            messagesByThread
-        )
-        .data
+        accountId,
+        PagedReceivedThreads(listOf(thread), 1, 1),
+        messagesByThread
+    ).data
         .firstOrNull() ?: throw NotFound("Thread $threadId not found")
 }
 
@@ -994,8 +967,8 @@ fun Database.Read.getMessageThreadByApplicationId(
 ): MessageThread? {
     val thread =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT
     t.id,
     t.title,
@@ -1020,9 +993,8 @@ WHERE t.application_id = ${bind(applicationId)}
 GROUP BY t.id
 LIMIT 1
         """
-                )
-            }
-            .exactlyOneOrNull<ReceivedThread>()
+            )
+        }.exactlyOneOrNull<ReceivedThread>()
 
     if (thread != null) {
         val messagesByThread =
@@ -1033,11 +1005,10 @@ LIMIT 1
                 serviceWorkerAccountName
             )
         return combineThreadsAndMessages(
-                accountId,
-                PagedReceivedThreads(listOf(thread), 1, 1),
-                messagesByThread
-            )
-            .data
+            accountId,
+            PagedReceivedThreads(listOf(thread), 1, 1),
+            messagesByThread
+        ).data
             .firstOrNull()
     }
     return null
@@ -1068,8 +1039,8 @@ fun Database.Read.getReceiversForNewMessage(
 ): List<MessageReceiversResponse> {
     val unitReceivers =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         WITH accounts AS (
             SELECT id, employee_id, daycare_group_id FROM message_account
             WHERE
@@ -1119,17 +1090,17 @@ fun Database.Read.getReceiversForNewMessage(
         )
         ORDER BY c.unit_name, c.group_name
         """
-                )
-            }
-            .toList<UnitMessageReceiversResult>()
+            )
+        }.toList<UnitMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
                 val units = receivers.groupBy { it.unitId to it.unitName }
                 val accountReceivers =
                     units.flatMap { (unit, groups) ->
                         val (unitId, unitName) = unit
-                        if (unitId == null || unitName == null) getReceiverGroups(groups)
-                        else
+                        if (unitId == null || unitName == null) {
+                            getReceiverGroups(groups)
+                        } else {
                             listOf(
                                 MessageReceiver.Unit(
                                     id = unitId,
@@ -1137,14 +1108,15 @@ fun Database.Read.getReceiversForNewMessage(
                                     receivers = getReceiverGroups(groups)
                                 )
                             )
+                        }
                     }
                 MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
             }
 
     val municipalReceivers =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         WITH accounts AS (
             SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
             WHERE ${predicate(idFilter.forTable("message_account"))} AND type = 'MUNICIPAL'::message_account_type
@@ -1157,9 +1129,8 @@ fun Database.Read.getReceiversForNewMessage(
             'MESSAGING' = ANY(d.enabled_pilot_features)
         ORDER BY area_name
         """
-                )
-            }
-            .toList<MunicipalMessageReceiversResult>()
+            )
+        }.toList<MunicipalMessageReceiversResult>()
             .groupBy { it.accountId }
             .map { (accountId, receivers) ->
                 val areas = receivers.groupBy { it.areaId to it.areaName }
@@ -1184,9 +1155,7 @@ fun Database.Read.getReceiversForNewMessage(
     return municipalReceivers + unitReceivers
 }
 
-private fun getReceiverGroups(
-    receivers: List<UnitMessageReceiversResult>
-): List<MessageReceiver.Group> =
+private fun getReceiverGroups(receivers: List<UnitMessageReceiversResult>): List<MessageReceiver.Group> =
     receivers
         .groupBy { it.groupId to it.groupName }
         .map { (group, children) ->
@@ -1224,7 +1193,9 @@ fun Database.Read.getMessageAccountsForRecipients(
                 PredicateSql {
                     where("date_part('year', p.date_of_birth) = ANY(${bind(filters.yearsOfBirth)})")
                 }
-            } else null,
+            } else {
+                null
+            },
             if (filters?.shiftCare == true && filters.intermittentShiftCare) {
                 PredicateSql {
                     where("sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])")
@@ -1233,15 +1204,19 @@ fun Database.Read.getMessageAccountsForRecipients(
                 PredicateSql { where("sn.shift_care = 'FULL'::shift_care_type") }
             } else if (filters?.intermittentShiftCare == true) {
                 PredicateSql { where("sn.shift_care = 'INTERMITTENT'::shift_care_type") }
-            } else null,
+            } else {
+                null
+            },
             if (filters?.familyDaycare == true) {
                 PredicateSql { where("d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]") }
-            } else null
+            } else {
+                null
+            }
         )
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH sender AS (
     SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = ${bind(accountId)}
 ), children AS (
@@ -1250,7 +1225,11 @@ WITH sender AS (
     JOIN daycare d ON pl.unit_id = d.id
     LEFT JOIN person p ON p.id = pl.child_id
     LEFT JOIN service_need sn ON sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-    WHERE (d.care_area_id = ANY(${bind(areaRecipients)}) OR pl.unit_id = ANY(${bind(unitRecipients)}) OR pl.group_id = ANY(${bind(groupRecipients)}) OR pl.child_id = ANY(${bind(childRecipients)}))
+    WHERE (d.care_area_id = ANY(${bind(
+                areaRecipients
+            )}) OR pl.unit_id = ANY(${bind(
+                unitRecipients
+            )}) OR pl.group_id = ANY(${bind(groupRecipients)}) OR pl.child_id = ANY(${bind(childRecipients)}))
     AND ${predicate(filterPredicates)}
     AND EXISTS (
         SELECT 1
@@ -1309,9 +1288,8 @@ FROM person p
 JOIN message_account acc ON p.id = acc.person_id
 WHERE p.id = ANY(${bind(citizenRecipients)})
 """
-            )
-        }
-        .toList { column<MessageAccountId>("account_id") to column<ChildId?>("child_id") }
+        )
+    }.toList { column<MessageAccountId>("account_id") to column<ChildId?>("child_id") }
 }
 
 fun Database.Transaction.markEmailNotificationAsSent(
@@ -1319,15 +1297,14 @@ fun Database.Transaction.markEmailNotificationAsSent(
     timestamp: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE message_recipients
 SET email_notification_sent_at = ${bind(timestamp)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Read.getStaffCopyRecipients(
@@ -1340,8 +1317,8 @@ fun Database.Read.getStaffCopyRecipients(
     if (areaIds.isEmpty() && unitIds.isEmpty() && groupIds.isEmpty()) return emptySet()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT receiver_acc.id
 FROM message_account sender_acc
 JOIN daycare_acl_view acl ON sender_acc.employee_id = acl.employee_id OR sender_acc.type = 'MUNICIPAL'
@@ -1351,18 +1328,16 @@ JOIN message_account receiver_acc ON g.id = receiver_acc.daycare_group_id
 WHERE sender_acc.id = ${bind(senderId)}
 AND (u.care_area_id = ANY(${bind(areaIds)}) OR u.id = ANY(${bind(unitIds)}) OR g.id = ANY(${bind(groupIds)}))
 """
-            )
-        }
-        .toSet<MessageAccountId>()
+        )
+    }.toSet<MessageAccountId>()
 }
 
 fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThreadFolderId? =
     createQuery {
-            sql(
-                "SELECT id FROM message_thread_folder WHERE owner_id = ${bind(accountId)} AND name = 'ARCHIVE'"
-            )
-        }
-        .exactlyOneOrNull<MessageThreadFolderId>()
+        sql(
+            "SELECT id FROM message_thread_folder WHERE owner_id = ${bind(accountId)} AND name = 'ARCHIVE'"
+        )
+    }.exactlyOneOrNull<MessageThreadFolderId>()
 
 data class UndoReplyTarget(
     val contentId: MessageContentId,
@@ -1377,15 +1352,14 @@ fun Database.Transaction.undoMessageReply(
 ) {
     val undoTarget =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
             SELECT content_id, thread_id, created AS message_created
             FROM message 
             WHERE id = ${bind(messageId)} AND sender_id = ${bind(accountId)}
         """
-                )
-            }
-            .exactlyOneOrNull<UndoReplyTarget>()
+            )
+        }.exactlyOneOrNull<UndoReplyTarget>()
             ?: throw BadRequest("No message found with messageId $messageId for account $accountId")
 
     if (undoTarget.messageCreated.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
@@ -1406,16 +1380,15 @@ fun Database.Transaction.undoNewMessages(
     lockMessageContentForUpdate(contentId)
 
     createQuery {
-            sql(
-                """
+        sql(
+            """
             SELECT created
             FROM message m
             WHERE sender_id = ${bind(accountId)} AND content_id = ${bind(contentId)}
             LIMIT 1 -- created should be essentially same for each
         """
-            )
-        }
-        .exactlyOneOrNull<HelsinkiDateTime>()
+        )
+    }.exactlyOneOrNull<HelsinkiDateTime>()
         ?.also { created ->
             if (created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
                 throw BadRequest(
@@ -1426,8 +1399,8 @@ fun Database.Transaction.undoNewMessages(
 
     val draftContent =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT t.title, t.message_type AS type, t.urgent, t.sensitive, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
 FROM message_content c
 JOIN message m ON c.id = m.content_id
@@ -1435,9 +1408,8 @@ JOIN message_thread t ON m.thread_id = t.id
 WHERE c.id = ${bind(contentId)}
 LIMIT 1 -- all threads with same content are identical in regards to this query
 """
-                )
-            }
-            .exactlyOne<UpdatableDraftContent>()
+            )
+        }.exactlyOne<UpdatableDraftContent>()
 
     this.deleteMessages(contentId, deleteThreads = true)
 
@@ -1446,16 +1418,18 @@ LIMIT 1 -- all threads with same content are identical in regards to this query
     return draftId
 }
 
-fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThreads: Boolean) {
+fun Database.Transaction.deleteMessages(
+    contentId: MessageContentId,
+    deleteThreads: Boolean
+) {
     createUpdate {
-            sql("DELETE FROM application_note WHERE message_content_id = ${bind(contentId)}")
-        }
-        .execute()
+        sql("DELETE FROM application_note WHERE message_content_id = ${bind(contentId)}")
+    }.execute()
 
     if (deleteThreads) {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
                 DELETE FROM message_thread mt
                 USING message m
                 WHERE m.thread_id = mt.id AND m.content_id = ${bind(contentId)} AND NOT exists(
@@ -1463,9 +1437,8 @@ fun Database.Transaction.deleteMessages(contentId: MessageContentId, deleteThrea
                     WHERE m2.thread_id = mt.id AND m2.id != m.id
                 )
             """
-                )
-            }
-            .execute()
+            )
+        }.execute()
     }
 
     // cascade deletes from message and message_recipients
@@ -1477,8 +1450,8 @@ fun Database.Transaction.resetSenderThreadParticipants(
     senderId: MessageAccountId
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE message_thread_participant SET
     last_message_timestamp = (
         SELECT MAX(sent_at) FROM message m JOIN message_recipients r ON m.id = r.message_id
@@ -1487,38 +1460,34 @@ UPDATE message_thread_participant SET
     last_sent_timestamp = (SELECT MAX(sent_at) FROM message m WHERE m.thread_id = ${bind(threadId)} AND m.sender_id = ${bind(senderId)})
 WHERE thread_id = ${bind(threadId)} AND participant_id = ${bind(senderId)}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Read.unreadMessageForRecipientExists(
     messageId: MessageId,
     recipientId: MessageAccountId
-): Boolean {
-    return createQuery {
-            sql(
-                """
+): Boolean =
+    createQuery {
+        sql(
+            """
 SELECT EXISTS (
     SELECT * FROM message_recipients WHERE message_id = ${bind(messageId)} AND recipient_id = ${bind(recipientId)} AND read_at IS NULL
 )
 """
-            )
-        }
-        .exactlyOne<Boolean>()
-}
+        )
+    }.exactlyOne<Boolean>()
 
 fun Database.Read.getMessageThreadStub(id: MessageThreadId): MessageThreadStub =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, message_type AS type, title, urgent, sensitive, is_copy
 FROM message_thread
 WHERE id = ${bind(id)}
     """
-            )
-        }
-        .exactlyOne<MessageThreadStub>()
+        )
+    }.exactlyOne<MessageThreadStub>()
 
 fun Database.Read.lockMessageContentForUpdate(id: MessageContentId) {
     createQuery { sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ") }

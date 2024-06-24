@@ -20,7 +20,7 @@ class DateRangeUtilsTest {
                 LocalDate.of(2000, 7, 1),
                 LocalDate.of(2000, 4, 1),
                 LocalDate.of(2000, 4, 1),
-                LocalDate.of(2000, 9, 1),
+                LocalDate.of(2000, 9, 1)
             )
         assertEquals(
             listOf(
@@ -42,7 +42,7 @@ class DateRangeUtilsTest {
                 LocalDate.of(2000, 7, 1),
                 LocalDate.of(2000, 4, 1),
                 LocalDate.of(2000, 4, 1),
-                LocalDate.of(2000, 9, 1),
+                LocalDate.of(2000, 9, 1)
             )
         assertEquals(
             listOf(
@@ -50,7 +50,7 @@ class DateRangeUtilsTest {
                 DateRange(LocalDate.of(2000, 4, 1), LocalDate.of(2000, 4, 30)),
                 DateRange(LocalDate.of(2000, 5, 1), LocalDate.of(2000, 6, 30)),
                 DateRange(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 8, 31)),
-                DateRange(LocalDate.of(2000, 9, 1), null),
+                DateRange(LocalDate.of(2000, 9, 1), null)
             ),
             buildDateRanges(datesOfChange)
         )
@@ -82,7 +82,10 @@ class DateRangeUtilsTest {
         )
     }
 
-    private data class TestEntity(override val range: DateRange, val value: Int) : WithRange
+    private data class TestEntity(
+        override val range: DateRange,
+        val value: Int
+    ) : WithRange
 
     private data class TestEntityFinite(
         override val finiteRange: FiniteDateRange,

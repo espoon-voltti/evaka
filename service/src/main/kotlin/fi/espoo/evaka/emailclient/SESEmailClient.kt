@@ -54,23 +54,31 @@ ${content.html}
         logger.info { "Sending email (traceId: $traceId)" }
         try {
             val request =
-                SendEmailRequest.builder()
+                SendEmailRequest
+                    .builder()
                     .destination(Destination.builder().toAddresses(toAddress).build())
                     .message(
-                        Message.builder()
+                        Message
+                            .builder()
                             .body(
-                                Body.builder()
-                                    .html(Content.builder().charset(charset).data(html).build())
-                                    .text(
-                                        Content.builder()
+                                Body
+                                    .builder()
+                                    .html(
+                                        Content
+                                            .builder()
+                                            .charset(charset)
+                                            .data(html)
+                                            .build()
+                                    ).text(
+                                        Content
+                                            .builder()
                                             .charset(charset)
                                             .data(content.text)
                                             .build()
-                                    )
-                                    .build()
-                            )
-                            .subject(
-                                Content.builder()
+                                    ).build()
+                            ).subject(
+                                Content
+                                    .builder()
                                     .charset(charset)
                                     .data(
                                         when (subjectPostfix) {
@@ -78,12 +86,9 @@ ${content.html}
                                             "" -> content.subject
                                             else -> "${content.subject} [$subjectPostfix]"
                                         }
-                                    )
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .source(fromAddress)
+                                    ).build()
+                            ).build()
+                    ).source(fromAddress)
                     .build()
 
             client.sendEmail(request)

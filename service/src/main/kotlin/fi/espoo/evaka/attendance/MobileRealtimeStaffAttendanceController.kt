@@ -39,15 +39,18 @@ import org.springframework.web.bind.annotation.RestController
     "/mobile/realtime-staff-attendances", // deprecated
     "/employee-mobile/realtime-staff-attendances"
 )
-class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
+class MobileRealtimeStaffAttendanceController(
+    private val ac: AccessControl
+) {
     @GetMapping
     fun getAttendancesByUnit(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
-    ): CurrentDayStaffAttendanceResponse {
-        return db.connect { dbc ->
+    ): CurrentDayStaffAttendanceResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -61,8 +64,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         extraAttendances = tx.getExternalStaffAttendances(unitId)
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.UnitStaffAttendanceRead.log(
                     targetId = AuditId(unitId),
                     meta =
@@ -72,7 +74,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         )
                 )
             }
-    }
 
     data class StaffArrivalRequest(
         val employeeId: EmployeeId,
@@ -232,8 +233,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestBody body: StaffAttendanceUpdateRequest
-    ): StaffAttendanceUpdateResponse {
-        return db.connect { dbc ->
+    ): StaffAttendanceUpdateResponse =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -280,9 +282,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 arrivalTime = attendance.arrived,
                                 departureTime = attendance.departed,
                                 occupancyCoefficient =
-                                    if (attendance.hasStaffOccupancyEffect)
+                                    if (attendance.hasStaffOccupancyEffect) {
                                         occupancyCoefficientSeven
-                                    else occupancyCoefficientZero,
+                                    } else {
+                                        occupancyCoefficientZero
+                                    },
                                 type = attendance.type,
                                 departedAutomatically = false
                             )
@@ -290,8 +294,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
 
                     StaffAttendanceUpdateResponse(deleted = deletedIds, inserted = updatedIds)
                 }
-            }
-            .also {
+            }.also {
                 Audit.StaffAttendanceUpdate.log(
                     targetId = AuditId(body.employeeId),
                     objectId = AuditId(it.inserted + it.deleted),
@@ -303,7 +306,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         )
                 )
             }
-    }
 
     data class ExternalStaffArrivalRequest(
         val name: String,
@@ -323,7 +325,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val nowHDT = clock.now()
         val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction {
                     ac.requirePermissionFor(
                         it,
@@ -339,13 +342,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             groupId = body.groupId,
                             arrived = arrivedTimeOrDefault,
                             occupancyCoefficient =
-                                if (body.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                                else occupancyCoefficientZero
+                                if (body.hasStaffOccupancyEffect) {
+                                    occupancyCoefficientSeven
+                                } else {
+                                    occupancyCoefficientZero
+                                }
                         )
                     )
                 }
-            }
-            .also { staffAttendanceExternalId ->
+            }.also { staffAttendanceExternalId ->
                 Audit.StaffAttendanceArrivalExternalCreate.log(
                     targetId = AuditId(body.groupId),
                     objectId = AuditId(staffAttendanceExternalId)
@@ -418,16 +423,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             arrived: HelsinkiDateTime,
             departed: HelsinkiDateTime?,
             type: StaffAttendanceType
-        ) =
-            StaffAttendance(
-                id = null,
-                employeeId = arrival.employeeId,
-                groupId = if (type.presentInGroup()) arrival.groupId else null,
-                arrived = arrived,
-                departed = departed,
-                occupancyCoefficient = BigDecimal.ZERO,
-                type = type
-            )
+        ) = StaffAttendance(
+            id = null,
+            employeeId = arrival.employeeId,
+            groupId = if (type.presentInGroup()) arrival.groupId else null,
+            arrived = arrived,
+            departed = departed,
+            occupancyCoefficient = BigDecimal.ZERO,
+            type = type
+        )
 
         if (plans.isEmpty()) {
             return listOf(createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT))
@@ -468,8 +472,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
                     listOfNotNull(
                         ongoingAttendance?.copy(departed = arrivalTime)
-                            ?: if (arrival.type == null || latestDepartureToday != null) null
-                            else createNewAttendance(planStart, arrivalTime, arrival.type),
+                            ?: if (arrival.type == null || latestDepartureToday != null) {
+                                null
+                            } else {
+                                createNewAttendance(planStart, arrivalTime, arrival.type)
+                            },
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT)
                     )
                 }
@@ -507,16 +514,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             arrived: HelsinkiDateTime,
             departed: HelsinkiDateTime?,
             type: StaffAttendanceType
-        ) =
-            StaffAttendance(
-                id = null,
-                employeeId = departure.employeeId,
-                groupId = null,
-                arrived = arrived,
-                departed = departed,
-                occupancyCoefficient = BigDecimal.ZERO,
-                type = type
-            )
+        ) = StaffAttendance(
+            id = null,
+            employeeId = departure.employeeId,
+            groupId = null,
+            arrived = arrived,
+            departed = departed,
+            occupancyCoefficient = BigDecimal.ZERO,
+            type = type
+        )
 
         if (plans.isEmpty()) {
             return listOf(ongoingAttendance.copy(departed = departureTime))

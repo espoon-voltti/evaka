@@ -178,8 +178,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun createAndApproveFeeDecisionForSending(
         forceUseDaycareHandler: Boolean,
         childDaycare: DevDaycare
-    ): FeeDecisionDetailed {
-        return db.transaction { tx ->
+    ): FeeDecisionDetailed =
+        db.transaction { tx ->
             val draft =
                 createFeeDecisionFixture(
                     status = FeeDecisionStatus.DRAFT,
@@ -210,7 +210,6 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             tx.getFeeDecision(draft.id)!!
         }
-    }
 
     @Test
     fun `approveDraftsForSending with multiple decisions`() {
@@ -258,10 +257,14 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val both = setOf(testDecisions[0].id, testDecisions[1].id)
         val sent = setOf(testDecisions[1].id)
 
-        fun find(headOfFamilyId: PersonId, period: DateRange?, status: List<FeeDecisionStatus>?) =
-            db.read { tx -> tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId, period, status) }
-                .map { it.id }
-                .toSet()
+        fun find(
+            headOfFamilyId: PersonId,
+            period: DateRange?,
+            status: List<FeeDecisionStatus>?
+        ) = db
+            .read { tx -> tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId, period, status) }
+            .map { it.id }
+            .toSet()
 
         assertEquals(both, find(testAdult_1.id, null, null))
 
@@ -462,8 +465,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 { it.headOfFamily.lastName },
                 { it.headOfFamily.firstName },
                 { it.incomeEffect }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, IncomeEffect.NOT_AVAILABLE),
                 Tuple(testAdult_2.lastName, testAdult_2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
@@ -618,7 +620,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
                             headOfFamilyId = testAdult_3.id,
                             headOfFamilyIncome = null
-                        ),
+                        )
                 )
             )
         }
@@ -631,8 +633,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, searchByStatuses(listOf(FeeDecisionStatus.DRAFT)).size)
     }
 
-    private fun searchByStatuses(statuses: List<FeeDecisionStatus>): List<FeeDecisionSummary> {
-        return db.read { tx ->
+    private fun searchByStatuses(statuses: List<FeeDecisionStatus>): List<FeeDecisionSummary> =
+        db
+            .read { tx ->
                 tx.searchFeeDecisions(
                     clock =
                         MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
@@ -650,11 +653,12 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     financeDecisionHandlerId = null,
                     difference = emptySet()
                 )
-            }
-            .data
-    }
+            }.data
 
-    private fun searchAndAssert(searchTerms: String, expectedChildLastName: String) {
+    private fun searchAndAssert(
+        searchTerms: String,
+        expectedChildLastName: String
+    ) {
         val result =
             db.read { tx ->
                 tx.searchFeeDecisions(
@@ -676,6 +680,13 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
         assertEquals(1, result.data.size)
-        assertEquals(expectedChildLastName, result.data.get(0).children.get(0).lastName)
+        assertEquals(
+            expectedChildLastName,
+            result.data
+                .get(0)
+                .children
+                .get(0)
+                .lastName
+        )
     }
 }

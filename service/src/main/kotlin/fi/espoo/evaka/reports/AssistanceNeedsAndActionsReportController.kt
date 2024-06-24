@@ -43,8 +43,9 @@ class AssistanceNeedsAndActionsReportController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): AssistanceNeedsAndActionsReport {
-        return db.connect { dbc ->
+    ): AssistanceNeedsAndActionsReport =
+        db
+            .connect { dbc ->
                 dbc.read {
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -61,13 +62,11 @@ class AssistanceNeedsAndActionsReportController(
                             !featureConfig.valueDecisionCapacityFactorEnabled
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.AssistanceNeedsReportRead.log(
                     meta = mapOf("date" to date, "count" to it.rows.size)
                 )
             }
-    }
 
     data class AssistanceNeedsAndActionsReport(
         val actions: List<AssistanceActionOption>,
@@ -99,8 +98,9 @@ class AssistanceNeedsAndActionsReportController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): AssistanceNeedsAndActionsReportByChild {
-        return db.connect { dbc ->
+    ): AssistanceNeedsAndActionsReportByChild =
+        db
+            .connect { dbc ->
                 dbc.read {
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -116,13 +116,11 @@ class AssistanceNeedsAndActionsReportController(
                         !featureConfig.valueDecisionCapacityFactorEnabled
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.AssistanceNeedsReportByChildRead.log(
                     meta = mapOf("date" to date, "count" to it.rows.size)
                 )
             }
-    }
 
     fun getAssistanceNeedsAndActionsReportByChild(
         tx: Database.Read,
@@ -168,10 +166,9 @@ private typealias AssistanceActionOptionValue = String
 private fun Database.Read.getReportRows(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>
-) =
-    createQuery {
-            sql(
-                """
+) = createQuery {
+    sql(
+        """
 WITH action_counts AS (
     SELECT
         daycare_group_id,
@@ -285,19 +282,16 @@ LEFT JOIN other_assistance_measure_counts ON g.id = other_assistance_measure_cou
 LEFT JOIN assistance_need_voucher_coefficient_counts ON g.id = assistance_need_voucher_coefficient_counts.daycare_group_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
-        """
-                    .trimIndent()
-            )
-        }
-        .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
+        """.trimIndent()
+    )
+}.toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
 
 private fun Database.Read.getReportRowsByChild(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>
-) =
-    createQuery {
-            sql(
-                """
+) = createQuery {
+    sql(
+        """
 WITH actions AS (
     SELECT
         gpl.daycare_group_id,
@@ -419,10 +413,8 @@ LEFT JOIN assistance_need_voucher_coefficient ON g.id = assistance_need_voucher_
    AND child.id = assistance_need_voucher_coefficient.child_id
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
-        """
-                    .trimIndent()
-            )
-        }
-        .toList<
-            AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild
-        >()
+        """.trimIndent()
+    )
+}.toList<
+    AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild
+>()

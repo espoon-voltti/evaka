@@ -91,8 +91,7 @@ class AssistanceNeedDecisionService(
                             pdf,
                             "application/pdf"
                         )
-                    )
-                    .key
+                    ).key
             tx.updateAssistanceNeedDocumentKey(decision.id, key)
 
             asyncJobRunner.plan(
@@ -149,15 +148,15 @@ class AssistanceNeedDecisionService(
         val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
         guardians.forEach { guardianId ->
-            Email.create(
+            Email
+                .create(
                     db,
                     guardianId,
                     EmailMessageType.DECISION_NOTIFICATION,
                     fromAddress,
                     content,
-                    "$decisionId - $guardianId",
-                )
-                ?.also { emailClient.send(it) }
+                    "$decisionId - $guardianId"
+                )?.also { emailClient.send(it) }
         }
 
         logger.info { "Successfully sent assistance need decision email (id: ${msg.decisionId})." }
@@ -185,10 +184,14 @@ class AssistanceNeedDecisionService(
                     )
 
             val lang =
-                if (decision.language == OfficialLanguage.SV) OfficialLanguage.SV
-                else OfficialLanguage.FI
+                if (decision.language == OfficialLanguage.SV) {
+                    OfficialLanguage.SV
+                } else {
+                    OfficialLanguage.FI
+                }
 
-            tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
+            tx
+                .getChildGuardiansAndFosterParents(decision.child.id, clock.today())
                 .mapNotNull { tx.getPersonById(it) }
                 .forEach { guardian ->
                     if (guardian.identity !is ExternalIdentifier.SSN) {
@@ -246,8 +249,11 @@ class AssistanceNeedDecisionService(
         return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
-    fun generatePdf(sentDate: LocalDate, decision: AssistanceNeedDecision): ByteArray {
-        return pdfGenerator.render(
+    fun generatePdf(
+        sentDate: LocalDate,
+        decision: AssistanceNeedDecision
+    ): ByteArray =
+        pdfGenerator.render(
             Page(
                 Template(templateProvider.getAssistanceNeedDecisionPath()),
                 Context().apply {
@@ -263,7 +269,6 @@ class AssistanceNeedDecisionService(
                 }
             )
         )
-    }
 
     fun getDecisionMakerOptions(
         tx: Database.Read,

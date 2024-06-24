@@ -99,48 +99,59 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             assertEquals(
                 setOf(parentship),
-                tx.getParentships(headOfChildId = adult.id, childId = child.id)
+                tx
+                    .getParentships(headOfChildId = adult.id, childId = child.id)
                     .map { it.withoutDetails() }
                     .toHashSet()
             )
             assertEquals(
                 setOf(parentship),
-                tx.getParentships(headOfChildId = adult.id, childId = null)
+                tx
+                    .getParentships(headOfChildId = adult.id, childId = null)
                     .map { it.withoutDetails() }
                     .toHashSet()
             )
             assertEquals(
                 setOf(parentship),
-                tx.getParentships(headOfChildId = null, childId = child.id)
+                tx
+                    .getParentships(headOfChildId = null, childId = child.id)
                     .map { it.withoutDetails() }
                     .toHashSet()
             )
 
             assertEquals(
                 emptySet(),
-                tx.getParentships(headOfChildId = child.id, childId = adult.id)
+                tx
+                    .getParentships(headOfChildId = child.id, childId = adult.id)
                     .map { it.withoutDetails() }
                     .toHashSet()
             )
             assertEquals(
                 emptySet(),
-                tx.getParentships(headOfChildId = child.id, childId = null)
+                tx
+                    .getParentships(headOfChildId = child.id, childId = null)
                     .map { it.withoutDetails() }
                     .toHashSet()
             )
             assertEquals(
                 emptySet(),
-                tx.getParentships(headOfChildId = null, childId = adult.id)
+                tx
+                    .getParentships(headOfChildId = null, childId = adult.id)
                     .map { it.withoutDetails() }
                     .toHashSet()
             )
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonJSON =
-        db.transaction { tx ->
+    private fun createPerson(
+        ssn: String,
+        firstName: String
+    ): PersonJSON =
+        db
+            .transaction { tx ->
                 tx.getPersonBySSN(ssn)
-                    ?: tx.insert(
+                    ?: tx
+                        .insert(
                             DevPerson(
                                 ssn = ssn,
                                 dateOfBirth = getDobFromSsn(ssn),
@@ -150,10 +161,8 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 language = "fi"
                             ),
                             DevPersonType.RAW_ROW
-                        )
-                        .let { tx.getPersonById(it)!! }
-            }
-            .let { PersonJSON.from(it) }
+                        ).let { tx.getPersonById(it)!! }
+            }.let { PersonJSON.from(it) }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
 

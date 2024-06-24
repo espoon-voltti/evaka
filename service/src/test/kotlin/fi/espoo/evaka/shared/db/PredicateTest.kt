@@ -13,10 +13,9 @@ class PredicateTest {
     fun `predicate builder allows only one where call`() {
         assertThrows<IllegalStateException> {
             Predicate {
-                    where("TRUE")
-                    where("FALSE -- this fails")
-                }
-                .forTable("some_table")
+                where("TRUE")
+                where("FALSE -- this fails")
+            }.forTable("some_table")
         }
     }
 
@@ -45,7 +44,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             predicate.bindings
         )
@@ -60,7 +59,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             predicate.bindings
         )
@@ -75,7 +74,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             predicate.bindings
         )
@@ -90,7 +89,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             predicate.bindings
         )
@@ -100,8 +99,7 @@ class PredicateTest {
     fun `Predicate alwaysTrue short-circuits or-any operations in the final table predicate`() {
         val other = Predicate { where("$it.some_column = '1'") }
 
-        fun assertAlwaysTrue(predicate: Predicate) =
-            assertEquals(PredicateSql.alwaysTrue(), predicate.forTable("some_table"))
+        fun assertAlwaysTrue(predicate: Predicate) = assertEquals(PredicateSql.alwaysTrue(), predicate.forTable("some_table"))
 
         val alwaysTrue = Predicate.alwaysTrue()
         assertAlwaysTrue(other.or(alwaysTrue))
@@ -119,7 +117,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             triple.bindings
         )
@@ -129,8 +127,7 @@ class PredicateTest {
     fun `Predicate alwaysFalse short-circuits and-all operations in the final table predicate`() {
         val other = Predicate { where("$it.some_column = '1'") }
 
-        fun assertAlwaysFalse(predicate: Predicate) =
-            assertEquals(PredicateSql.alwaysFalse(), predicate.forTable("some_table"))
+        fun assertAlwaysFalse(predicate: Predicate) = assertEquals(PredicateSql.alwaysFalse(), predicate.forTable("some_table"))
 
         val alwaysFalse = Predicate.alwaysFalse()
         assertAlwaysFalse(other.and(alwaysFalse))
@@ -148,7 +145,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             triple.bindings
         )
@@ -160,7 +157,8 @@ class PredicateTest {
         val b = Predicate { where("$it.b = ${bind(2)}") }
         val c = Predicate { where("$it.c = ${bind(3)}") }
         val predicate =
-            Predicate.all(a, Predicate.alwaysTrue(), b)
+            Predicate
+                .all(a, Predicate.alwaysTrue(), b)
                 .and(Predicate.alwaysTrue().or(a)) // this should get eliminated
                 .or(Predicate.any(c, Predicate.alwaysFalse(), b))
                 .or(Predicate.alwaysFalse().and(b)) // this should get eliminated
@@ -174,7 +172,7 @@ class PredicateTest {
                 ValueBinding.of(1),
                 ValueBinding.of(2),
                 ValueBinding.of(3),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             predicate.bindings
         )
@@ -203,7 +201,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             triple.bindings
         )
@@ -232,7 +230,7 @@ class PredicateTest {
         assertEquals(
             listOf(
                 ValueBinding.of(1),
-                ValueBinding.of(2),
+                ValueBinding.of(2)
             ),
             triple.bindings
         )

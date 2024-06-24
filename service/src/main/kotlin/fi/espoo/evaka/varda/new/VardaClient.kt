@@ -22,11 +22,9 @@ import okhttp3.Response
 
 private val logger = KotlinLogging.logger {}
 
-private fun maskHenkilotunnus(henkilotunnus: String?): String? =
-    henkilotunnus?.let { "${it.slice(0..4)}******" }
+private fun maskHenkilotunnus(henkilotunnus: String?): String? = henkilotunnus?.let { "${it.slice(0..4)}******" }
 
-private fun maskName(name: String): String =
-    if (name.length > 2) name.take(2) + "*".repeat(name.length - 2) else "**"
+private fun maskName(name: String): String = if (name.length > 2) name.take(2) + "*".repeat(name.length - 2) else "**"
 
 interface VardaReadClient {
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -40,8 +38,7 @@ interface VardaReadClient {
             }
         }
 
-        override fun toString(): String =
-            "HaeHenkiloRequest(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid)"
+        override fun toString(): String = "HaeHenkiloRequest(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid)"
     }
 
     fun haeHenkilo(body: HaeHenkiloRequest): HenkiloResponse
@@ -75,7 +72,7 @@ interface VardaReadClient {
          * henkilo_oid is nullable to accommodate dry runs. Varda always returns a non-null value.
          */
         val henkilo_oid: String?,
-        val lapsi: List<URI>,
+        val lapsi: List<URI>
     )
 
     // Even though this operation may write to Varda, it has to be in VardaReadClient. We need to
@@ -91,7 +88,7 @@ interface VardaReadClient {
         val vakatoimija_oid: String?,
         val oma_organisaatio_oid: String?,
         val paos_organisaatio_oid: String?,
-        val paos_kytkin: Boolean,
+        val paos_kytkin: Boolean
     ) : VardaEntity
 
     fun getLapsi(url: URI): LapsiResponse
@@ -110,7 +107,7 @@ interface VardaReadClient {
         val tuntimaara_viikossa: Double,
         val paivittainen_vaka_kytkin: Boolean,
         val kokopaivainen_vaka_kytkin: Boolean,
-        val jarjestamismuoto_koodi: String,
+        val jarjestamismuoto_koodi: String
     ) : VardaEntityWithValidity
 
     fun getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl: URI): List<VarhaiskasvatuspaatosResponse>
@@ -124,7 +121,7 @@ interface VardaReadClient {
         val varhaiskasvatuspaatos: URI,
         val toimipaikka_oid: String,
         override val alkamis_pvm: LocalDate,
-        override val paattymis_pvm: LocalDate?,
+        override val paattymis_pvm: LocalDate?
     ) : VardaEntityWithValidity
 
     fun getVarhaiskasvatussuhteetByLapsi(lapsiUrl: URI): List<VarhaiskasvatussuhdeResponse>
@@ -142,14 +139,17 @@ interface VardaReadClient {
         val maksun_peruste_koodi: String,
         val palveluseteli_arvo: Double?,
         val asiakasmaksu: Double,
-        val perheen_koko: Int?,
+        val perheen_koko: Int?
     ) : VardaEntityWithValidity
 
     fun getMaksutiedotByLapsi(lapsiUrl: URI): List<MaksutietoResponse>
 }
 
 interface VardaWriteClient {
-    @JsonIgnoreProperties(ignoreUnknown = true) data class CreateResponse(val url: URI)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class CreateResponse(
+        val url: URI
+    )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class CreateLapsiRequest(
@@ -157,7 +157,7 @@ interface VardaWriteClient {
         val henkilo: URI,
         val vakatoimija_oid: String?,
         val oma_organisaatio_oid: String?,
-        val paos_organisaatio_oid: String?,
+        val paos_organisaatio_oid: String?
     )
 
     fun createLapsi(body: CreateLapsiRequest): CreateResponse
@@ -185,7 +185,7 @@ interface VardaWriteClient {
         val varhaiskasvatuspaatos: URI,
         val toimipaikka_oid: String,
         val alkamis_pvm: LocalDate,
-        val paattymis_pvm: LocalDate?,
+        val paattymis_pvm: LocalDate?
     )
 
     fun createVarhaiskasvatussuhde(body: CreateVarhaiskasvatussuhdeRequest): CreateResponse
@@ -200,16 +200,22 @@ interface VardaWriteClient {
         val maksun_peruste_koodi: String,
         val palveluseteli_arvo: Double?,
         val asiakasmaksu: Double,
-        val perheen_koko: Int?,
+        val perheen_koko: Int?
     )
 
     fun createMaksutieto(body: CreateMaksutietoRequest): CreateResponse
 
     fun <T : VardaEntity> delete(data: T)
 
-    data class SetPaattymisPvmRequest(val lahdejarjestelma: String, val paattymis_pvm: LocalDate)
+    data class SetPaattymisPvmRequest(
+        val lahdejarjestelma: String,
+        val paattymis_pvm: LocalDate
+    )
 
-    fun setPaattymisPvm(url: URI, body: SetPaattymisPvmRequest)
+    fun setPaattymisPvm(
+        url: URI,
+        body: SetPaattymisPvmRequest
+    )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -248,55 +254,48 @@ class VardaClient(
     private val httpClient: OkHttpClient,
     private val jsonMapper: JsonMapper,
     vardaBaseUrl: URI,
-    private val basicAuth: String,
-) : VardaReadClient, VardaWriteClient, VardaUnitClient {
+    private val basicAuth: String
+) : VardaReadClient,
+    VardaWriteClient,
+    VardaUnitClient {
     private var token: String? = null
     private val baseUrl = vardaBaseUrl.ensureTrailingSlash()
 
-    override fun haeHenkilo(
-        body: VardaReadClient.HaeHenkiloRequest
-    ): VardaReadClient.HenkiloResponse = post(baseUrl.resolve("v1/hae-henkilo/"), body)
+    override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest): VardaReadClient.HenkiloResponse =
+        post(baseUrl.resolve("v1/hae-henkilo/"), body)
 
-    override fun getOrCreateHenkilo(
-        body: VardaReadClient.GetOrCreateHenkiloRequest
-    ): VardaReadClient.HenkiloResponse = post(baseUrl.resolve("v1/henkilot/"), body)
+    override fun getOrCreateHenkilo(body: VardaReadClient.GetOrCreateHenkiloRequest): VardaReadClient.HenkiloResponse =
+        post(baseUrl.resolve("v1/henkilot/"), body)
 
-    override fun createLapsi(
-        body: VardaWriteClient.CreateLapsiRequest
-    ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/lapset/"), body)
+    override fun createLapsi(body: VardaWriteClient.CreateLapsiRequest): VardaWriteClient.CreateResponse =
+        post(baseUrl.resolve("v1/lapset/"), body)
 
     override fun getLapsi(url: URI): VardaReadClient.LapsiResponse = get(url)
 
-    override fun createVarhaiskasvatuspaatos(
-        body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest
-    ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/varhaiskasvatuspaatokset/"), body)
+    override fun createVarhaiskasvatuspaatos(body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest): VardaWriteClient.CreateResponse =
+        post(baseUrl.resolve("v1/varhaiskasvatuspaatokset/"), body)
 
-    override fun getVarhaiskasvatuspaatoksetByLapsi(
-        lapsiUrl: URI
-    ): List<VardaReadClient.VarhaiskasvatuspaatosResponse> =
+    override fun getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl: URI): List<VardaReadClient.VarhaiskasvatuspaatosResponse> =
         getAllPages(lapsiUrl.resolve("varhaiskasvatuspaatokset/"))
 
-    override fun createVarhaiskasvatussuhde(
-        body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest
-    ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/varhaiskasvatussuhteet/"), body)
+    override fun createVarhaiskasvatussuhde(body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest): VardaWriteClient.CreateResponse =
+        post(baseUrl.resolve("v1/varhaiskasvatussuhteet/"), body)
 
-    override fun getVarhaiskasvatussuhteetByLapsi(
-        lapsiUrl: URI
-    ): List<VardaReadClient.VarhaiskasvatussuhdeResponse> =
+    override fun getVarhaiskasvatussuhteetByLapsi(lapsiUrl: URI): List<VardaReadClient.VarhaiskasvatussuhdeResponse> =
         getAllPages(lapsiUrl.resolve("varhaiskasvatussuhteet/"))
 
-    override fun createMaksutieto(
-        body: VardaWriteClient.CreateMaksutietoRequest
-    ): VardaWriteClient.CreateResponse = post(baseUrl.resolve("v1/maksutiedot/"), body)
+    override fun createMaksutieto(body: VardaWriteClient.CreateMaksutietoRequest): VardaWriteClient.CreateResponse =
+        post(baseUrl.resolve("v1/maksutiedot/"), body)
 
     override fun getMaksutiedotByLapsi(lapsiUrl: URI): List<VardaReadClient.MaksutietoResponse> =
         getAllPages(lapsiUrl.resolve("maksutiedot/"))
 
-    override fun setPaattymisPvm(url: URI, body: VardaWriteClient.SetPaattymisPvmRequest): Unit =
-        patch(url, body)
+    override fun setPaattymisPvm(
+        url: URI,
+        body: VardaWriteClient.SetPaattymisPvmRequest
+    ): Unit = patch(url, body)
 
-    fun vakajarjestajaUrl(organizerId: String): String =
-        baseUrl.resolve("v1/vakajarjestajat/$organizerId/").toString()
+    fun vakajarjestajaUrl(organizerId: String): String = baseUrl.resolve("v1/vakajarjestajat/$organizerId/").toString()
 
     override fun findToimipaikkaByOid(oid: String): VardaEntity {
         class FindToimipaikkaResponse(
@@ -306,9 +305,8 @@ class VardaClient(
 
         val escapedOid = URLEncoder.encode(oid, Charsets.UTF_8)
         return getAllPages<FindToimipaikkaResponse>(
-                baseUrl.resolve("v1/toimipaikat/?organisaatio_oid=$escapedOid")
-            )
-            .singleOrNull() ?: error("Toimipaikka not found with oid $oid")
+            baseUrl.resolve("v1/toimipaikat/?organisaatio_oid=$escapedOid")
+        ).singleOrNull() ?: error("Toimipaikka not found with oid $oid")
     }
 
     override fun createToimipaikka(unit: VardaUnitRequest): VardaUnitClient.ToimipaikkaResponse =
@@ -339,19 +337,33 @@ class VardaClient(
         return acc.toList()
     }
 
-    private inline fun <T, reified R> patch(url: URI, body: T): R = request("PATCH", url, body)
+    private inline fun <T, reified R> patch(
+        url: URI,
+        body: T
+    ): R = request("PATCH", url, body)
 
-    private inline fun <T, reified R> post(url: URI, body: T): R = request("POST", url, body)
+    private inline fun <T, reified R> post(
+        url: URI,
+        body: T
+    ): R = request("POST", url, body)
 
-    private inline fun <T, reified R> put(url: URI, body: T): R = request("PUT", url, body)
+    private inline fun <T, reified R> put(
+        url: URI,
+        body: T
+    ): R = request("PUT", url, body)
 
     override fun <T : VardaEntity> delete(data: T) = request<Unit>("DELETE", data.url)
 
-    private inline fun <reified R> request(method: String, url: URI, body: Any? = null): R {
+    private inline fun <reified R> request(
+        method: String,
+        url: URI,
+        body: Any? = null
+    ): R {
         logger.info("requesting $method $url" + if (body == null) "" else " with body $body")
 
         val req =
-            Request.Builder()
+            Request
+                .Builder()
                 .method(
                     method,
                     body?.let {
@@ -359,8 +371,7 @@ class VardaClient(
                             .writeValueAsString(it)
                             .toRequestBody("application/json".toMediaType())
                     }
-                )
-                .url(validateUrl(url))
+                ).url(validateUrl(url))
                 .build()
 
         return httpClient.executeAuthenticated(req) { response ->
@@ -406,10 +417,13 @@ class VardaClient(
         }
     }
 
-    private fun OkHttpClient.executeWithToken(request: Request, token: String): Response {
-        return this.newCall(request.newBuilder().header("Authorization", "Token $token").build())
+    private fun OkHttpClient.executeWithToken(
+        request: Request,
+        token: String
+    ): Response =
+        this
+            .newCall(request.newBuilder().header("Authorization", "Token $token").build())
             .execute()
-    }
 
     private fun getToken(): String = token ?: refreshToken()
 
@@ -418,7 +432,8 @@ class VardaClient(
     // doing Varda updates in multiple threads.
     private fun refreshToken(): String {
         val req =
-            Request.Builder()
+            Request
+                .Builder()
                 .get()
                 .url(baseUrl.resolve("user/apikey/").toString())
                 .header("Authorization", "Basic $basicAuth")

@@ -59,8 +59,11 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired lateinit var controller: ChildDocumentController
+
     @Autowired lateinit var templateController: DocumentTemplateController
+
     @Autowired lateinit var metadataController: ProcessMetadataController
 
     lateinit var areaId: AreaId
@@ -91,7 +94,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                         listOf(
                                             CheckboxGroupQuestionOption("a", "eka"),
                                             CheckboxGroupQuestionOption("b", "toka"),
-                                            CheckboxGroupQuestionOption("c", "kolmas"),
+                                            CheckboxGroupQuestionOption("c", "kolmas")
                                         )
                                 ),
                                 Question.RadioButtonGroupQuestion(
@@ -101,7 +104,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                         listOf(
                                             RadioButtonGroupQuestionOption("a", "eka"),
                                             RadioButtonGroupQuestionOption("b", "toka"),
-                                            RadioButtonGroupQuestionOption("c", "kolmas"),
+                                            RadioButtonGroupQuestionOption("c", "kolmas")
                                         )
                                 ),
                                 Question.StaticTextDisplayQuestion(
@@ -121,7 +124,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                     label = "huoltajat",
                                     fieldLabels = listOf("etunimi", "sukunimi"),
                                     allowMultipleRows = true
-                                ),
+                                )
                             )
                     )
                 )
@@ -354,7 +357,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertEquals(
             0,
             db.read {
-                it.createQuery { sql("SELECT count(*) FROM archived_process_history") }
+                it
+                    .createQuery { sql("SELECT count(*) FROM archived_process_history") }
                     .exactlyOne<Int>()
             }
         )
@@ -897,34 +901,31 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertNotNull(controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId))
     }
 
-    private fun getDocument(id: ChildDocumentId) =
-        controller.getDocument(dbInstance(), employeeUser.user, clock, id).data
+    private fun getDocument(id: ChildDocumentId) = controller.getDocument(dbInstance(), employeeUser.user, clock, id).data
 
     private fun nextState(
         id: ChildDocumentId,
         status: DocumentStatus,
         clockOverride: MockEvakaClock = clock
-    ) =
-        controller.nextDocumentStatus(
-            dbInstance(),
-            employeeUser.user,
-            clockOverride,
-            id,
-            ChildDocumentController.StatusChangeRequest(status)
-        )
+    ) = controller.nextDocumentStatus(
+        dbInstance(),
+        employeeUser.user,
+        clockOverride,
+        id,
+        ChildDocumentController.StatusChangeRequest(status)
+    )
 
     private fun prevState(
         id: ChildDocumentId,
         status: DocumentStatus,
         clockOverride: MockEvakaClock = clock
-    ) =
-        controller.prevDocumentStatus(
-            dbInstance(),
-            employeeUser.user,
-            clockOverride,
-            id,
-            ChildDocumentController.StatusChangeRequest(status)
-        )
+    ) = controller.prevDocumentStatus(
+        dbInstance(),
+        employeeUser.user,
+        clockOverride,
+        id,
+        ChildDocumentController.StatusChangeRequest(status)
+    )
 
     private fun getChildDocumentMetadata(id: ChildDocumentId) =
         metadataController.getChildDocumentMetadata(dbInstance(), employeeUser.user, clock, id)

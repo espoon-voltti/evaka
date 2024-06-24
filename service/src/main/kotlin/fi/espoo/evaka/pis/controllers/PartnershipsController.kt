@@ -69,8 +69,7 @@ class PartnershipsController(
                             body.endDate,
                             user.evakaUserId,
                             clock.now()
-                        )
-                        .also {
+                        ).also {
                             asyncJobRunner.plan(
                                 tx,
                                 listOf(
@@ -96,8 +95,9 @@ class PartnershipsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
-    ): List<PartnershipWithPermittedActions> {
-        return db.connect { dbc ->
+    ): List<PartnershipWithPermittedActions> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -124,14 +124,12 @@ class PartnershipsController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PartnerShipsRead.log(
                     targetId = AuditId(personId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @GetMapping("/{partnershipId}")
     fun getPartnership(
@@ -139,8 +137,9 @@ class PartnershipsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
-    ): Partnership {
-        return db.connect { dbc ->
+    ): Partnership =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -151,9 +150,7 @@ class PartnershipsController(
                     )
                     it.getPartnership(partnershipId)
                 } ?: throw NotFound()
-            }
-            .also { Audit.PartnerShipsRead.log(targetId = AuditId(partnershipId)) }
-    }
+            }.also { Audit.PartnerShipsRead.log(targetId = AuditId(partnershipId)) }
 
     @PutMapping("/{partnershipId}")
     fun updatePartnership(
@@ -279,7 +276,10 @@ class PartnershipsController(
         val endDate: LocalDate?
     )
 
-    data class PartnershipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate?)
+    data class PartnershipUpdateRequest(
+        val startDate: LocalDate,
+        val endDate: LocalDate?
+    )
 
     data class PartnershipWithPermittedActions(
         val data: Partnership,

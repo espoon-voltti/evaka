@@ -495,7 +495,7 @@ class TimeRangeTest {
             BoundedRange.Relation.Overlap(
                 left = null,
                 overlap = a,
-                right = null,
+                right = null
             ),
             a.relationTo(a)
         )
@@ -550,5 +550,8 @@ class TimeRangeTest {
 
     private fun testTime(hour: Int) = LocalTime.of(hour, 0)
 
-    private fun testRange(from: Int, to: Int) = TimeRange(testTime(from), testTime(to))
+    private fun testRange(
+        from: Int,
+        to: Int
+    ) = TimeRange(testTime(from), testTime(to))
 }

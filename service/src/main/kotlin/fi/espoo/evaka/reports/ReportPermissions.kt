@@ -51,7 +51,9 @@ enum class Report {
 }
 
 @RestController
-class ReportPermissions(private val accessControl: AccessControl) {
+class ReportPermissions(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/reports")
     fun getPermittedReports(
         db: Database,

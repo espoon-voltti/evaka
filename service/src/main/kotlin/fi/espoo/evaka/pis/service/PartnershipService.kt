@@ -26,8 +26,8 @@ class PartnershipService {
         endDate: LocalDate?,
         createdBy: EvakaUserId,
         createdAt: HelsinkiDateTime
-    ): Partnership {
-        return try {
+    ): Partnership =
+        try {
             tx.createPartnership(
                 personId1,
                 personId2,
@@ -40,7 +40,6 @@ class PartnershipService {
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
         }
-    }
 
     fun updatePartnershipDuration(
         tx: Database.Transaction,
@@ -71,19 +70,23 @@ class PartnershipService {
         partnershipId: PartnershipId,
         modifiedById: EvakaUserId,
         modifiedAt: HelsinkiDateTime
-    ): Partnership? {
-        return try {
-            tx.getPartnership(partnershipId)
+    ): Partnership? =
+        try {
+            tx
+                .getPartnership(partnershipId)
                 ?.takeIf { it.conflict }
                 ?.also { tx.retryPartnership(partnershipId, modifiedById, modifiedAt) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
-    }
 
-    fun deletePartnership(tx: Database.Transaction, partnershipId: PartnershipId): Partnership? {
-        return tx.getPartnership(partnershipId)?.also { tx.deletePartnership(partnershipId) }
-    }
+    fun deletePartnership(
+        tx: Database.Transaction,
+        partnershipId: PartnershipId
+    ): Partnership? =
+        tx.getPartnership(partnershipId)?.also {
+            tx.deletePartnership(partnershipId)
+        }
 }
 
 data class Partnership(

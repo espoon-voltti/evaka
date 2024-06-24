@@ -61,8 +61,9 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): List<AttendanceChild> {
-        return db.connect { dbc ->
+    ): List<AttendanceChild> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -106,14 +107,12 @@ class ChildAttendanceController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAttendanceChildrenRead.log(
                     targetId = AuditId(unitId),
                     meta = mapOf("childCount" to it.size)
                 )
             }
-    }
 
     data class ChildAttendanceStatusResponse(
         val absences: List<ChildAbsence>,
@@ -126,12 +125,13 @@ class ChildAttendanceController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
+        @PathVariable unitId: DaycareId
     ): Map<ChildId, ChildAttendanceStatusResponse> {
         val now = clock.now()
         val today = now.toLocalDate()
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -169,12 +169,10 @@ class ChildAttendanceController(
                                         )
                                     )
                             }
-                        }
-                        .filterNotNull()
+                        }.filterNotNull()
                         .toMap()
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAttendanceStatusesRead.log(
                     targetId = AuditId(unitId),
                     meta = mapOf("childCount" to it.size)
@@ -266,7 +264,8 @@ class ChildAttendanceController(
         @RequestBody body: ExpectedAbsencesOnDepartureRequest
     ): Set<AbsenceCategory>? {
         val today = clock.today()
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -288,8 +287,7 @@ class ChildAttendanceController(
                         attendanceTimes = attendanceTimesToday
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAttendancesDepartureRead.log(
                     targetId = AuditId(childId),
                     objectId = AuditId(unitId)
@@ -362,8 +360,7 @@ class ChildAttendanceController(
                                     LocalTime.of(0, 0),
                                     if (date < today) LocalTime.of(23, 59) else body.departed
                                 )
-                            }
-                            .filter { (_, startTime, endTime) -> startTime != endTime }
+                            }.filter { (_, startTime, endTime) -> startTime != endTime }
                             .forEach { (date, startTime, endTime) ->
                                 tx.insertAttendance(
                                     childId,
@@ -445,7 +442,9 @@ class ChildAttendanceController(
         )
     }
 
-    data class FullDayAbsenceRequest(val absenceType: AbsenceType)
+    data class FullDayAbsenceRequest(
+        val absenceType: AbsenceType
+    )
 
     @PostMapping("/units/{unitId}/children/{childId}/full-day-absence")
     fun postFullDayAbsence(
@@ -537,7 +536,7 @@ class ChildAttendanceController(
 
     data class AbsenceRangeRequest(
         val absenceType: AbsenceType,
-        val range: FiniteDateRange,
+        val range: FiniteDateRange
     )
 
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
@@ -624,7 +623,10 @@ class ChildAttendanceController(
     }
 }
 
-data class ChildPlacementBasics(val placementType: PlacementType, val dateOfBirth: LocalDate)
+data class ChildPlacementBasics(
+    val placementType: PlacementType,
+    val dateOfBirth: LocalDate
+)
 
 private fun Database.Read.fetchChildPlacementBasics(
     childId: ChildId,
@@ -632,8 +634,8 @@ private fun Database.Read.fetchChildPlacementBasics(
     today: LocalDate
 ): ChildPlacementBasics =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT rp.placement_type, c.date_of_birth
 FROM person c 
 JOIN realized_placement_all(${bind(today)}) rp
@@ -641,12 +643,14 @@ ON c.id = rp.child_id
 WHERE c.id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
 LIMIT 1
 """
-            )
-        }
-        .exactlyOneOrNull<ChildPlacementBasics>()
+        )
+    }.exactlyOneOrNull<ChildPlacementBasics>()
         ?: throw BadRequest("Child $childId has no placement in unit $unitId on date $today")
 
-data class PlacementTypeDate(val date: LocalDate, val placementType: PlacementType)
+data class PlacementTypeDate(
+    val date: LocalDate,
+    val placementType: PlacementType
+)
 
 private fun Database.Read.fetchChildPlacementTypeDates(
     childId: ChildId,
@@ -655,16 +659,15 @@ private fun Database.Read.fetchChildPlacementTypeDates(
     endDate: LocalDate
 ): List<PlacementTypeDate> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT DISTINCT d::date AS date, placement_type
 FROM generate_series(${bind(startDate)}, ${bind(endDate)}, '1 day') d
 JOIN realized_placement_all(d::date) rp ON true
 WHERE rp.child_id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 private fun getChildAttendanceStatus(
     now: HelsinkiDateTime,
@@ -690,7 +693,10 @@ private fun getChildAttendanceStatus(
     return AttendanceStatus.COMING
 }
 
-private fun isFullyAbsent(placementType: PlacementType, absences: List<ChildAbsence>): Boolean {
+private fun isFullyAbsent(
+    placementType: PlacementType,
+    absences: List<ChildAbsence>
+): Boolean {
     val absenceCategories = absences.asSequence().map { it.category }.toSet()
     return placementType.absenceCategories() == absenceCategories
 }

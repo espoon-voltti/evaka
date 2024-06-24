@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     private val accountId: MessageAccountId = MessageAccountId(UUID.randomUUID())
 
     @BeforeEach
@@ -23,10 +22,10 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val employeeId = tx.insert(DevEmployee(firstName = "Firstname", lastName = "Employee"))
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     "INSERT INTO message_account (id, employee_id, type) VALUES (:id, :employeeId, 'PERSONAL')"
-                )
-                .bind("id", accountId)
+                ).bind("id", accountId)
                 .bind("employeeId", employeeId)
                 .execute()
         }
@@ -63,8 +62,10 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(0, db.read { it.getDrafts(accountId) }.size)
     }
 
-    private fun update(draftId: MessageDraftId, content: UpdatableDraftContent) =
-        db.transaction { it.updateDraft(accountId, draftId, content) }
+    private fun update(
+        draftId: MessageDraftId,
+        content: UpdatableDraftContent
+    ) = db.transaction { it.updateDraft(accountId, draftId, content) }
 
     private fun assertContent(expected: UpdatableDraftContent) {
         val actual = db.read { it.getDrafts(accountId)[0] }

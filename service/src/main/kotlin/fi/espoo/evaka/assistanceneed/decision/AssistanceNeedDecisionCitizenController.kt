@@ -30,8 +30,9 @@ class AssistanceNeedDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<AssistanceNeedDecisionCitizenListItem> {
-        return db.connect { dbc ->
+    ): List<AssistanceNeedDecisionCitizenListItem> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -43,9 +44,7 @@ class AssistanceNeedDecisionCitizenController(
 
                     tx.getAssistanceNeedDecisionsForCitizen(clock.today(), user.id)
                 }
-            }
-            .also { Audit.AssistanceNeedDecisionsListCitizen.log(targetId = AuditId(user.id)) }
-    }
+            }.also { Audit.AssistanceNeedDecisionsListCitizen.log(targetId = AuditId(user.id)) }
 
     @GetMapping("/children/assistance-need-decision/{id}")
     fun getAssistanceNeedDecision(
@@ -53,8 +52,9 @@ class AssistanceNeedDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ): AssistanceNeedDecision {
-        return db.connect { dbc ->
+    ): AssistanceNeedDecision =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -67,8 +67,8 @@ class AssistanceNeedDecisionCitizenController(
 
                     if (
                         decision.status != AssistanceNeedDecisionStatus.ACCEPTED &&
-                            decision.status != AssistanceNeedDecisionStatus.REJECTED &&
-                            decision.status != AssistanceNeedDecisionStatus.ANNULLED
+                        decision.status != AssistanceNeedDecisionStatus.REJECTED &&
+                        decision.status != AssistanceNeedDecisionStatus.ANNULLED
                     ) {
                         throw NotFound(
                             "Citizen can only view accepted and rejected assistance need decisions"
@@ -77,9 +77,7 @@ class AssistanceNeedDecisionCitizenController(
 
                     decision
                 }
-            }
-            .also { Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = AuditId(id)) }
 
     @GetMapping("/children/assistance-need-decision/{id}/pdf")
     fun getAssistanceNeedDecisionPdf(
@@ -87,8 +85,9 @@ class AssistanceNeedDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -99,9 +98,7 @@ class AssistanceNeedDecisionCitizenController(
                     )
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
-            }
-            .also { Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = AuditId(id)) }
 
     @PostMapping("/children/assistance-need-decision/{id}/read")
     fun markAssistanceNeedDecisionAsRead(
@@ -109,29 +106,28 @@ class AssistanceNeedDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.AssistanceNeedDecision.MARK_AS_READ,
-                        id
-                    )
-                    tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.AssistanceNeedDecision.MARK_AS_READ,
+                    id
+                )
+                tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
             }
-            .also { Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = AuditId(id)) }
-    }
+        }.also { Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = AuditId(id)) }
 
     @GetMapping("/children/assistance-need-decisions/unread-counts")
     fun getAssistanceNeedDecisionUnreadCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<UnreadAssistanceNeedDecisionItem> {
-        return db.connect { dbc ->
+    ): List<UnreadAssistanceNeedDecisionItem> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -142,11 +138,9 @@ class AssistanceNeedDecisionCitizenController(
                     )
                     tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(clock.today(), user.id)
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(
                     targetId = AuditId(user.id)
                 )
             }
-    }
 }

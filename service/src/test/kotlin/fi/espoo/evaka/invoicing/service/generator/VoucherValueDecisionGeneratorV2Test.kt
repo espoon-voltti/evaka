@@ -134,7 +134,7 @@ private fun createVoucherBasis(): VoucherBasis {
                         value = 87000,
                         baseValueUnder3y = 134850,
                         coefficientUnder3y = BigDecimal("1.00"),
-                        valueUnder3y = 134850,
+                        valueUnder3y = 134850
                     )
             ),
         assistanceNeedCoefficient = BigDecimal(2.0),

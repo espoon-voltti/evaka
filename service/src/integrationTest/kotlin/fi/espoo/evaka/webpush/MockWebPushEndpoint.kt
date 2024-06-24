@@ -21,7 +21,10 @@ class MockWebPushEndpoint {
     private val lock = ReentrantLock()
     private var capturedRequests: MutableMap<String, MutableList<CapturedRequest>> = mutableMapOf()
 
-    class CapturedRequest(val headers: Map<String, String>, val body: ByteArray)
+    class CapturedRequest(
+        val headers: Map<String, String>,
+        val body: ByteArray
+    )
 
     @PostMapping("/subscription/{id}")
     fun postNotification(
@@ -39,7 +42,7 @@ class MockWebPushEndpoint {
                                 .asSequence()
                                 .mapNotNull { name -> request.getHeader(name)?.let { name to it } }
                                 .toMap(),
-                        body = body.readAllBytes(),
+                        body = body.readAllBytes()
                     )
                 )
         }
@@ -48,6 +51,5 @@ class MockWebPushEndpoint {
 
     fun clearData() = lock.withLock { capturedRequests.clear() }
 
-    fun getCapturedRequests(id: String): List<CapturedRequest> =
-        lock.withLock { capturedRequests[id]?.toList() ?: emptyList() }
+    fun getCapturedRequests(id: String): List<CapturedRequest> = lock.withLock { capturedRequests[id]?.toList() ?: emptyList() }
 }

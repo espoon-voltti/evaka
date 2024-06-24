@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var service: ChildDocumentService
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     final val clock = MockEvakaClock(2022, 1, 1, 15, 0)

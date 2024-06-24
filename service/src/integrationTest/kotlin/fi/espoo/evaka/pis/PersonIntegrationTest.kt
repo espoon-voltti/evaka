@@ -160,8 +160,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             SELECT EXISTS(
                 SELECT * FROM message_account WHERE person_id = :personId AND active = true
             )
-        """
-                .trimIndent()
+            """.trimIndent()
         return db.read {
             @Suppress("DEPRECATION")
             it.createQuery(sql).bind("personId", personId).exactlyOne<Boolean>()

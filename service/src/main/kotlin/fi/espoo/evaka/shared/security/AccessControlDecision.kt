@@ -29,7 +29,9 @@ interface AccessControlDecision {
     }
 
     /** Action was explicitly permitted based on some rule */
-    data class Permitted(val rule: Any) : AccessControlDecision {
+    data class Permitted(
+        val rule: Any
+    ) : AccessControlDecision {
         override fun isPermitted(): Boolean = true
 
         override fun assert() {}

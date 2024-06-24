@@ -43,7 +43,9 @@ import org.springframework.core.env.Environment
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     classes = [SharedIntegrationTestConfig::class, VtjIntegrationTestConfig::class]
 )
-abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
+abstract class FullApplicationTest(
+    private val resetDbBeforeEach: Boolean
+) {
     @LocalServerPort protected var httpPort: Int = 0
 
     protected val jsonMapper: JsonMapper =
@@ -102,9 +104,11 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
         type: AttachmentType = AttachmentType.URGENCY
     ): Boolean {
         val path =
-            if (user is AuthenticatedUser.Citizen)
+            if (user is AuthenticatedUser.Citizen) {
                 "/attachments/citizen/applications/$applicationId"
-            else "/attachments/applications/$applicationId"
+            } else {
+                "/attachments/applications/$applicationId"
+            }
         val (_, res, _) =
             http
                 .upload(path, parameters = listOf("type" to type))
@@ -116,5 +120,4 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     }
 }
 
-fun Request.withMockedTime(time: HelsinkiDateTime) =
-    this.header("EvakaMockedTime", time.toZonedDateTime())
+fun Request.withMockedTime(time: HelsinkiDateTime) = this.header("EvakaMockedTime", time.toZonedDateTime())

@@ -60,19 +60,17 @@ data class VoucherValueDecision(
 
     override fun withId(id: UUID) = this.copy(id = VoucherValueDecisionId(id))
 
-    override fun withValidity(period: DateRange) =
-        this.copy(validFrom = period.start, validTo = period.end)
+    override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
 
     override fun withCreated(created: HelsinkiDateTime) = this.copy(created = created)
 
     override fun contentEquals(decision: VoucherValueDecision): Boolean =
         VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()
 
-    override fun overlapsWith(other: VoucherValueDecision): Boolean {
-        return this.child.id == other.child.id &&
+    override fun overlapsWith(other: VoucherValueDecision): Boolean =
+        this.child.id == other.child.id &&
             DateRange(this.validFrom, this.validTo)
                 .overlaps(DateRange(other.validFrom, other.validTo))
-    }
 
     override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
 
@@ -169,7 +167,8 @@ enum class VoucherValueDecisionDifference(
             setOf(
                 d2.headOfFamilyIncome?.effectiveComparable(),
                 d2.partnerIncome?.effectiveComparable()
-            ) && d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
+            ) &&
+            d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
     }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
@@ -256,7 +255,7 @@ data class VoucherValueDecisionDetailed(
         get(): Boolean {
             if (
                 decisionType != VoucherValueDecisionType.NORMAL ||
-                    headOfFamily.forceManualFeeDecisions
+                headOfFamily.forceManualFeeDecisions
             ) {
                 return true
             }
@@ -323,7 +322,11 @@ fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate =
         else -> dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
     }
 
-data class VoucherValue(val baseValue: Int, val coefficient: BigDecimal, val value: Int)
+data class VoucherValue(
+    val baseValue: Int,
+    val coefficient: BigDecimal,
+    val value: Int
+)
 
 fun getVoucherValues(
     period: DateRange,

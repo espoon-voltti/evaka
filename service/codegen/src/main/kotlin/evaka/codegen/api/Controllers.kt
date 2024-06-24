@@ -46,8 +46,7 @@ fun ApplicationContext.getEndpointMetadata(): List<EndpointMetadata> =
         .also { mapping ->
             mapping.applicationContext = this
             mapping.afterPropertiesSet()
-        }
-        .getEndpointMetadata()
+        }.getEndpointMetadata()
 
 data class EndpointMetadata(
     val controllerClass: KClass<*>,
@@ -60,7 +59,7 @@ data class EndpointMetadata(
     val requestParameters: List<NamedParameter>,
     val requestBodyType: KType?,
     val responseBodyType: KType?,
-    val authenticatedUserType: KType?,
+    val authenticatedUserType: KType?
 ) {
     fun types(): Sequence<KType> =
         pathVariables.asSequence().map { it.type } +
@@ -68,8 +67,7 @@ data class EndpointMetadata(
             listOfNotNull(requestBodyType, responseBodyType)
 
     fun validate() {
-        fun fail(reason: String): Nothing =
-            error("Invalid $httpMethod endpoint $path in $controllerClass: $reason")
+        fun fail(reason: String): Nothing = error("Invalid $httpMethod endpoint $path in $controllerClass: $reason")
 
         requestParameters.forEach {
             if (!it.isOptional && it.type.isSubtypeOf(typeOf<Collection<*>>())) {
@@ -80,7 +78,7 @@ data class EndpointMetadata(
         when (httpMethod) {
             RequestMethod.GET,
             RequestMethod.HEAD,
-            RequestMethod.DELETE, -> {
+            RequestMethod.DELETE -> {
                 if (isJsonEndpoint && httpMethod == RequestMethod.GET && responseBodyType == null) {
                     fail("It should have a response body")
                 }
@@ -130,7 +128,11 @@ data class EndpointMetadata(
     }
 }
 
-data class NamedParameter(val name: String, val type: KType, val isOptional: Boolean) {
+data class NamedParameter(
+    val name: String,
+    val type: KType,
+    val isOptional: Boolean
+) {
     /**
      * Returns a type that represents both the nullability and optionality of the parameter type.
      *
@@ -147,8 +149,8 @@ data class NamedParameter(val name: String, val type: KType, val isOptional: Boo
 }
 
 private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMetadata> {
-    fun KFunction<*>.find(param: MethodParameter): KParameter =
-        valueParameters[param.parameterIndex]
+    fun KFunction<*>.find(param: MethodParameter): KParameter = valueParameters[param.parameterIndex]
+
     fun <A : Annotation> KFunction<*>.findAnnotatedParameter(
         annotation: KClass<A>,
         getName: (A) -> String?,
@@ -205,9 +207,15 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
             val responseBodyType =
                 if (!method.isVoid && bodySupport.supportsReturnType(method.returnType)) {
                     if (kotlinMethod.returnType.classifier == ResponseEntity::class) {
-                        kotlinMethod.returnType.arguments.single().type
-                    } else kotlinMethod.returnType
-                } else null
+                        kotlinMethod.returnType.arguments
+                            .single()
+                            .type
+                    } else {
+                        kotlinMethod.returnType
+                    }
+                } else {
+                    null
+                }
             val paths = info.directPaths + info.patternValues
             val methods = info.methodsCondition.methods
             val consumesJson =
@@ -231,11 +239,10 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                         requestParameters = requestParameters,
                         requestBodyType = requestBodyType,
                         responseBodyType = responseBodyType,
-                        authenticatedUserType = authenticatedUserType,
+                        authenticatedUserType = authenticatedUserType
                     )
                 }
-        }
-        .toList()
+        }.toList()
 }
 
 // Set of legacy endpoint paths that are allowed to fail validation. *DO NOT* add any new endpoints
@@ -632,5 +639,5 @@ private val knownLegacyPaths =
         "/vasu/templates/{id}",
         "/vasu/templates/{id}/content",
         "/vasu/templates/{id}/copy",
-        "/vasu/templates/{id}/migrate",
+        "/vasu/templates/{id}/migrate"
     )

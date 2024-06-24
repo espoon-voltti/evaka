@@ -73,8 +73,7 @@ z6aN3kdhMg08/7jviOeuiccUXvmBCBGGF8qKerEFyFbyv2qXHfv/ooPqEHr5EP11
 cfztBMk40W05+0rxkIDQ0ov3MjZaB152PT4I8mJvDgLLQOf44isg4sknBlK8hQHw
 KlXzU4Q98gbl6+f5fHprIYrVln1ERtWT8JNgxh74sgCEUpkI9GJWOWHiTgkEgAzd
 JDuPQL7iuc5ASUjOrGoAjswTGWjDDw==
-    """
-        .trimIndent()
+    """.trimIndent()
 
 private val algorithm: Algorithm by lazy {
     val kf = KeyFactory.getInstance("RSA")
@@ -84,7 +83,8 @@ private val algorithm: Algorithm by lazy {
 
 private val emptyJwt: String by lazy {
     val now = ZonedDateTime.now(Clock.systemDefaultZone())
-    JWT.create()
+    JWT
+        .create()
         .withKeyId("integration-test")
         .withIssuer("integration-test")
         .withIssuedAt(now.toInstant())

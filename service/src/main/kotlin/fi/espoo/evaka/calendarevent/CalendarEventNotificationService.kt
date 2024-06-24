@@ -22,13 +22,17 @@ class CalendarEventNotificationService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider
 ) {
-    fun sendCalendarEventDigests(dbc: Database.Connection, now: HelsinkiDateTime) {
-        dbc.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+    fun sendCalendarEventDigests(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime
+    ) {
+        dbc
+            .read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
             .also { parents ->
                 logger.info { "Sending calendar event notifications to ${parents.size} parents" }
-            }
-            .forEach { parent ->
-                Email.create(
+            }.forEach { parent ->
+                Email
+                    .create(
                         dbc,
                         parent.parentId,
                         EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
@@ -37,9 +41,8 @@ class CalendarEventNotificationService(
                             parent.language,
                             parent.events
                         ),
-                        "${now.toLocalDate()}:${parent.parentId}",
-                    )
-                    ?.also { emailClient.send(it) }
+                        "${now.toLocalDate()}:${parent.parentId}"
+                    )?.also { emailClient.send(it) }
             }
     }
 }

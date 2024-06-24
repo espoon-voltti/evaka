@@ -13,9 +13,8 @@ import java.time.LocalDate
 
 fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
     createQuery {
-            sql("SELECT date FROM holiday WHERE between_start_and_end(${bind(range)}, date)")
-        }
-        .toSet<LocalDate>()
+        sql("SELECT date FROM holiday WHERE between_start_and_end(${bind(range)}, date)")
+    }.toSet<LocalDate>()
 
 fun Database.Read.getOperationalDatesForChildren(
     range: FiniteDateRange,
@@ -29,29 +28,27 @@ fun Database.Read.getOperationalDatesForChildren(
 
     val placements: Map<ChildId, DateMap<DaycareId>> =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT daterange(pl.start_date, pl.end_date, '[]') as range, pl.child_id, pl.unit_id
         FROM placement pl
         WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
     """
-                )
-            }
-            .toList<PlacementRange>()
+            )
+        }.toList<PlacementRange>()
             .groupBy { it.childId }
             .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
 
     val backupPlacements: Map<ChildId, DateMap<DaycareId>> =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT daterange(bc.start_date, bc.end_date, '[]') as range, bc.child_id, bc.unit_id
         FROM backup_care bc
         WHERE bc.child_id = ANY(${bind(children)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
     """
-                )
-            }
-            .toList<PlacementRange>()
+            )
+        }.toList<PlacementRange>()
             .groupBy { it.childId }
             .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
 
@@ -72,32 +69,33 @@ fun Database.Read.getOperationalDatesForChildren(
     )
     val operationDaysByDaycareId: Map<DaycareId, DaycareOperationDays> =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT id AS unit_id, operation_days, shift_care_operation_days, shift_care_open_on_holidays
         FROM daycare 
         WHERE id = ANY(${bind(daycareIds)})
     """
-                )
-            }
-            .toList<DaycareOperationDays>()
+            )
+        }.toList<DaycareOperationDays>()
             .associateBy { it.unitId }
 
     val holidays = getHolidays(range)
 
-    data class ShiftCareRange(val childId: ChildId, val range: FiniteDateRange)
+    data class ShiftCareRange(
+        val childId: ChildId,
+        val range: FiniteDateRange
+    )
     val shiftCareRanges: Map<ChildId, DateSet> =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT pl.child_id, daterange(sn.start_date, sn.end_date, '[]') AS range
         FROM placement pl
         JOIN service_need sn ON sn.placement_id = pl.id AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
         WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
     """
-                )
-            }
-            .toList<ShiftCareRange>()
+            )
+        }.toList<ShiftCareRange>()
             .groupBy { it.childId }
             .mapValues { entry -> DateSet.of(entry.value.map { it.range }) }
 

@@ -53,8 +53,8 @@ fun Database.Transaction.insertProcess(
     archiveDurationMonths: Int
 ): ArchivedProcess =
     createQuery {
-            sql(
-                """
+        sql(
+            """
     INSERT INTO archived_process (process_definition_number, year, number, organization, archive_duration_months)
     VALUES (
         ${bind(processDefinitionNumber)}, 
@@ -69,14 +69,13 @@ fun Database.Transaction.insertProcess(
     )
     RETURNING id, process_definition_number, year, number, organization, archive_duration_months, '[]'::jsonb AS history
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
 fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
     SELECT ap.id, ap.process_definition_number, ap.year, ap.number, ap.organization, ap.archive_duration_months,
     (
         SELECT coalesce(
@@ -97,56 +96,45 @@ fun Database.Read.getProcess(id: ArchivedProcessId): ArchivedProcess? =
     FROM archived_process ap
     WHERE ap.id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
-fun Database.Read.getArchiveProcessByChildDocumentId(
-    documentId: ChildDocumentId
-): ArchivedProcess? {
-    return createQuery {
-            sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}")
-        }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+fun Database.Read.getArchiveProcessByChildDocumentId(documentId: ChildDocumentId): ArchivedProcess? =
+    createQuery {
+        sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}")
+    }.exactlyOneOrNull<ArchivedProcessId?>()
         ?.let { processId -> getProcess(processId) }
-}
 
-fun Database.Read.getArchiveProcessByAssistanceNeedDecisionId(
-    decisionId: AssistanceNeedDecisionId
-): ArchivedProcess? {
-    return createQuery {
-            sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
-        }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+fun Database.Read.getArchiveProcessByAssistanceNeedDecisionId(decisionId: AssistanceNeedDecisionId): ArchivedProcess? =
+    createQuery {
+        sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
+    }.exactlyOneOrNull<ArchivedProcessId?>()
         ?.let { processId -> getProcess(processId) }
-}
 
-fun Database.Read.getArchiveProcessByAssistanceNeedPreschoolDecisionId(
-    decisionId: AssistanceNeedPreschoolDecisionId
-): ArchivedProcess? {
-    return createQuery {
-            sql(
-                "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
-            )
-        }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+fun Database.Read.getArchiveProcessByAssistanceNeedPreschoolDecisionId(decisionId: AssistanceNeedPreschoolDecisionId): ArchivedProcess? =
+    createQuery {
+        sql(
+            "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
+        )
+    }.exactlyOneOrNull<ArchivedProcessId?>()
         ?.let { processId -> getProcess(processId) }
-}
 
-fun Database.Read.getArchiveProcessByApplicationId(applicationId: ApplicationId): ArchivedProcess? {
-    return createQuery {
-            sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
-        }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+fun Database.Read.getArchiveProcessByApplicationId(applicationId: ApplicationId): ArchivedProcess? =
+    createQuery {
+        sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
+    }.exactlyOneOrNull<ArchivedProcessId?>()
         ?.let { processId -> getProcess(processId) }
-}
 
 fun Database.Transaction.deleteProcessById(processId: ArchivedProcessId) {
     execute { sql("DELETE FROM archived_process WHERE id = ${bind(processId)}") }
 }
 
-fun deleteProcessByDocumentId(tx: Database.Transaction, documentId: ChildDocumentId) {
-    tx.createQuery { sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}") }
+fun deleteProcessByDocumentId(
+    tx: Database.Transaction,
+    documentId: ChildDocumentId
+) {
+    tx
+        .createQuery { sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}") }
         .exactlyOneOrNull<ArchivedProcessId?>()
         ?.also { processId -> tx.deleteProcessById(processId) }
 }
@@ -155,10 +143,10 @@ fun deleteProcessByAssistanceNeedDecisionId(
     tx: Database.Transaction,
     decisionId: AssistanceNeedDecisionId
 ) {
-    tx.createQuery {
+    tx
+        .createQuery {
             sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
-        }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+        }.exactlyOneOrNull<ArchivedProcessId?>()
         ?.also { processId -> tx.deleteProcessById(processId) }
 }
 
@@ -166,12 +154,12 @@ fun deleteProcessByAssistanceNeedPreschoolDecisionId(
     tx: Database.Transaction,
     decisionId: AssistanceNeedPreschoolDecisionId
 ) {
-    tx.createQuery {
+    tx
+        .createQuery {
             sql(
                 "SELECT process_id FROM assistance_need_preschool_decision WHERE id = ${bind(decisionId)}"
             )
-        }
-        .exactlyOneOrNull<ArchivedProcessId?>()
+        }.exactlyOneOrNull<ArchivedProcessId?>()
         ?.also { processId -> tx.deleteProcessById(processId) }
 }
 
@@ -207,14 +195,22 @@ fun updateDocumentProcessHistory(
     now: HelsinkiDateTime,
     userId: EvakaUserId
 ) {
-    data class Document(val status: DocumentStatus, val processId: ArchivedProcessId?)
+    data class Document(
+        val status: DocumentStatus,
+        val processId: ArchivedProcessId?
+    )
     val document =
-        tx.createQuery {
+        tx
+            .createQuery {
                 sql("SELECT status, process_id FROM child_document WHERE id = ${bind(documentId)}")
-            }
-            .exactlyOne<Document>()
+            }.exactlyOne<Document>()
     document.processId?.let { processId ->
-        val processState = tx.getProcess(processId)?.history?.lastOrNull()?.state
+        val processState =
+            tx
+                .getProcess(processId)
+                ?.history
+                ?.lastOrNull()
+                ?.state
         val newProcessState =
             when {
                 newStatus == DocumentStatus.COMPLETED -> ArchivedProcessState.COMPLETED

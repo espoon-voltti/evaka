@@ -314,7 +314,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             val updated =
                 testIncome.copy(
-                    data = newData,
+                    data = newData
                 )
             tx.updateIncome(clock, mapper, incomeId, updated, user.evakaUserId)
 

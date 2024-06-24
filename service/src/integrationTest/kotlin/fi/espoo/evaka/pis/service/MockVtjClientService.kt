@@ -10,7 +10,6 @@ import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma
 import java.util.concurrent.ConcurrentHashMap
 
 class MockVtjClientService : IVtjClientService {
-
     companion object {
         private var queryRequestResponse:
             ConcurrentHashMap<
@@ -33,10 +32,14 @@ class MockVtjClientService : IVtjClientService {
                 devPersonToVTJHenkiloVastaussanomaHenkilo(person)
         }
 
-        fun addHUOLTAJAHUOLLETTAVARequestExpectation(person: DevPerson, children: List<DevPerson>) {
+        fun addHUOLTAJAHUOLLETTAVARequestExpectation(
+            person: DevPerson,
+            children: List<DevPerson>
+        ) {
             // HUOLTAJA_HUOLLETTAVA request
             queryRequestResponse[
-                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)] =
+                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)
+            ] =
                 devPersonToVTJHenkiloVastaussanomaHenkilo(person).also { huoltaja ->
                     huoltaja.huollettava.addAll(
                         0,
@@ -45,11 +48,13 @@ class MockVtjClientService : IVtjClientService {
                                 it.henkilotunnus = child.ssn
 
                                 it.nykyisetEtunimet =
-                                    VTJHenkiloVastaussanoma.Henkilo.Huollettava.NykyisetEtunimet()
+                                    VTJHenkiloVastaussanoma.Henkilo.Huollettava
+                                        .NykyisetEtunimet()
                                         .also { it.etunimet = child.firstName }
 
                                 it.nykyinenSukunimi =
-                                    VTJHenkiloVastaussanoma.Henkilo.Huollettava.NykyinenSukunimi()
+                                    VTJHenkiloVastaussanoma.Henkilo.Huollettava
+                                        .NykyinenSukunimi()
                                         .also { it.sukunimi = child.lastName }
                             }
                         }
@@ -57,18 +62,15 @@ class MockVtjClientService : IVtjClientService {
                 }
         }
 
-        fun getPERUSSANOMA3RequestCount(person: DevPerson): Int {
-            return queryCounts[Pair(person.ssn!!, IVtjClientService.RequestType.PERUSSANOMA3)] ?: 0
-        }
+        fun getPERUSSANOMA3RequestCount(person: DevPerson): Int =
+            queryCounts[Pair(person.ssn!!, IVtjClientService.RequestType.PERUSSANOMA3)] ?: 0
 
-        fun getHUOLTAJAHUOLLETTAVARequestCount(person: DevPerson): Int {
-            return queryCounts[
-                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)] ?: 0
-        }
+        fun getHUOLTAJAHUOLLETTAVARequestCount(person: DevPerson): Int =
+            queryCounts[
+                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)
+            ] ?: 0
 
-        private fun devPersonToVTJHenkiloVastaussanomaHenkilo(
-            person: DevPerson
-        ): VTJHenkiloVastaussanoma.Henkilo =
+        private fun devPersonToVTJHenkiloVastaussanomaHenkilo(person: DevPerson): VTJHenkiloVastaussanoma.Henkilo =
             VTJHenkiloVastaussanoma.Henkilo().also {
                 it.henkilotunnus =
                     VTJHenkiloVastaussanoma.Henkilo.Henkilotunnus().also { ht ->

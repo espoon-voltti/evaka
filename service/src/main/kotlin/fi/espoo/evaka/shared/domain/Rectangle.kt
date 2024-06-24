@@ -4,7 +4,12 @@
 
 package fi.espoo.evaka.shared.domain
 
-data class Rectangle(val x: Int, val y: Int, val width: Int, val height: Int) {
+data class Rectangle(
+    val x: Int,
+    val y: Int,
+    val width: Int,
+    val height: Int
+) {
     companion object {
         fun fromString(rectangle: String): Rectangle {
             val parts = rectangle.split(",")

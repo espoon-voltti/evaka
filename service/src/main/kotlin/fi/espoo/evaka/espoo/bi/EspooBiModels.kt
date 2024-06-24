@@ -50,13 +50,13 @@ data class BiUnit(
     val closingDate: LocalDate?,
     val language: Language,
     val unitManagerName: String?,
-    val roundTheClock: Boolean,
+    val roundTheClock: Boolean
 )
 
 enum class BiUnitDaycareType {
     DAYCARE,
     FAMILY,
-    GROUP_FAMILY,
+    GROUP_FAMILY
 }
 
 data class BiGroup(
@@ -64,7 +64,7 @@ data class BiGroup(
     val unit: UUID,
     val name: String,
     val startDate: LocalDate,
-    val endDate: LocalDate?,
+    val endDate: LocalDate?
 )
 
 data class BiChild(
@@ -78,7 +78,7 @@ data class BiChild(
     val languageAtHome: String,
     val vtjNonDisclosure: Boolean,
     val postalCode: String,
-    val postOffice: String,
+    val postOffice: String
 )
 
 data class BiPlacement(
@@ -90,7 +90,7 @@ data class BiPlacement(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val isBackup: Boolean,
-    val type: PlacementType?,
+    val type: PlacementType?
 )
 
 data class BiGroupPlacement(
@@ -100,7 +100,7 @@ data class BiGroupPlacement(
     val placement: UUID,
     val group: UUID,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiAbsence(
@@ -108,7 +108,7 @@ data class BiAbsence(
     val updated: HelsinkiDateTime,
     val child: UUID,
     val date: LocalDate,
-    val category: AbsenceCategory,
+    val category: AbsenceCategory
 )
 
 data class BiGroupCaretakerAllocation(
@@ -136,7 +136,7 @@ data class BiApplication(
     val preferredStartDate: LocalDate,
     val urgent: Boolean?,
     val assistanceNeeded: Boolean?,
-    val shiftCare: Boolean?,
+    val shiftCare: Boolean?
 )
 
 data class BiDecision(
@@ -149,7 +149,7 @@ data class BiDecision(
     val status: DecisionStatus,
     val type: DecisionType,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiServiceNeedOption(
@@ -160,7 +160,7 @@ data class BiServiceNeedOption(
     val validPlacementType: PlacementType,
     val defaultOption: Boolean,
     val occupancyCoefficient: BigDecimal,
-    val occupancyCoefficientUnder3Y: BigDecimal,
+    val occupancyCoefficientUnder3Y: BigDecimal
 )
 
 data class BiServiceNeed(
@@ -171,7 +171,7 @@ data class BiServiceNeed(
     val placement: UUID,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val shiftCare: Boolean,
+    val shiftCare: Boolean
 )
 
 data class BiFeeDecision(
@@ -183,7 +183,7 @@ data class BiFeeDecision(
     val type: FeeDecisionType,
     val familySize: Int,
     val validFrom: LocalDate,
-    val validTo: LocalDate,
+    val validTo: LocalDate
 )
 
 data class BiFeeDecisionChild(
@@ -195,7 +195,7 @@ data class BiFeeDecisionChild(
     val placementUnit: UUID,
     val serviceNeedOption: UUID?,
     val serviceNeedDescription: String,
-    val finalFee: Int,
+    val finalFee: Int
 )
 
 data class BiVoucherValueDecision(
@@ -212,7 +212,7 @@ data class BiVoucherValueDecision(
     val child: UUID,
     val serviceNeedFeeDescription: String,
     val serviceNeedVoucherValueDescription: String,
-    val finalCoPayment: Int,
+    val finalCoPayment: Int
 )
 
 data class BiCurriculumTemplate(
@@ -223,7 +223,7 @@ data class BiCurriculumTemplate(
     val validTo: LocalDate,
     val type: CurriculumType,
     val language: OfficialLanguage,
-    val name: String,
+    val name: String
 )
 
 data class BiCurriculumDocument(
@@ -231,14 +231,14 @@ data class BiCurriculumDocument(
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val child: UUID,
-    val template: UUID,
+    val template: UUID
 )
 
 data class BiPedagogicalDocument(
     val id: UUID,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
-    val child: UUID,
+    val child: UUID
 )
 
 data class BiAssistanceFactor(
@@ -248,7 +248,7 @@ data class BiAssistanceFactor(
     val child: UUID,
     val capacityFactor: BigDecimal,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiDaycareAssistanceEntry(
@@ -258,7 +258,7 @@ data class BiDaycareAssistanceEntry(
     val child: UUID,
     val level: DaycareAssistanceLevel,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiPreschoolAssistanceEntry(
@@ -268,7 +268,7 @@ data class BiPreschoolAssistanceEntry(
     val child: UUID,
     val level: PreschoolAssistanceLevel,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiOtherAssistanceMeasureEntry(
@@ -278,7 +278,7 @@ data class BiOtherAssistanceMeasureEntry(
     val child: UUID,
     val type: OtherAssistanceMeasureType,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiAssistanceNeedVoucherCoefficient(
@@ -288,7 +288,7 @@ data class BiAssistanceNeedVoucherCoefficient(
     val child: UUID,
     val coefficient: BigDecimal,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiAssistanceAction(
@@ -298,12 +298,12 @@ data class BiAssistanceAction(
     val child: UUID,
     val hasOtherAction: Boolean,
     val startDate: LocalDate,
-    val endDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class BiAssistanceActionOptionRef(
     val action: UUID,
-    val option: String,
+    val option: String
 )
 
 data class BiAssistanceNeedDaycareDecision(
@@ -318,7 +318,7 @@ data class BiAssistanceNeedDaycareDecision(
     val assistanceEnds: Boolean,
     val assistanceServicesForTime: Boolean,
     val enhancedAssistance: Boolean,
-    val specialAssistance: Boolean,
+    val specialAssistance: Boolean
 )
 
 data class BiAssistanceNeedPreschoolDecision(
@@ -329,5 +329,5 @@ data class BiAssistanceNeedPreschoolDecision(
     val unit: UUID?,
     val type: AssistanceNeedPreschoolDecisionType?,
     val validFrom: LocalDate?,
-    val status: AssistanceNeedDecisionStatus,
+    val status: AssistanceNeedDecisionStatus
 )

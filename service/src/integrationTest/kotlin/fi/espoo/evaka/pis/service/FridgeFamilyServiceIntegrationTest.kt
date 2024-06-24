@@ -40,7 +40,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
     lateinit var child1: PersonDTO
     lateinit var child2: PersonDTO
     private val partnershipCreator =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+        AuthenticatedUser
+            .Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
             .evakaUserId
 
     @BeforeEach
@@ -77,12 +78,14 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.read {
             assertEquals(
                 1,
-                it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
+                it
+                    .getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
                     .size
             )
             assertEquals(
                 1,
-                it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
+                it
+                    .getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
                     .size
             )
         }
@@ -111,7 +114,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.read {
             assertEquals(
                 1,
-                it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
+                it
+                    .getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
                     .size
             )
         }
@@ -128,12 +132,14 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.read {
             assertEquals(
                 1,
-                it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
+                it
+                    .getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
                     .size
             )
             assertEquals(
                 1,
-                it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
+                it
+                    .getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
                     .size
             )
         }
@@ -186,8 +192,11 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         Assertions.assertEquals(1, MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(parent))
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return db.transaction {
+    private fun createPerson(
+        ssn: String,
+        firstName: String
+    ): PersonDTO =
+        db.transaction {
             val id =
                 it.insert(
                     DevPerson(
@@ -202,5 +211,4 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 )
             it.getPersonById(id)!!
         }
-    }
 }

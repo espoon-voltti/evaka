@@ -68,8 +68,11 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return db.transaction {
+    private fun createPerson(
+        ssn: String,
+        firstName: String
+    ): PersonDTO =
+        db.transaction {
             val id =
                 it.insert(
                     DevPerson(
@@ -84,7 +87,6 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 )
             it.getPersonById(id)!!
         }
-    }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
 

@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/integration-test")
 class SpringMvcTestController {
-    @GetMapping("/require-auth") fun requireAuth(user: AuthenticatedUser) {}
+    @GetMapping("/require-auth")
+    fun requireAuth(user: AuthenticatedUser) {}
 
-    @GetMapping("/require-auth-employee") fun requireAuth(user: AuthenticatedUser.Employee) {}
+    @GetMapping("/require-auth-employee")
+    fun requireAuth(user: AuthenticatedUser.Employee) {}
 }

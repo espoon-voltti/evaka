@@ -10,7 +10,9 @@ import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Component
 
 @Component
-class PairingAsyncJobs(asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class PairingAsyncJobs(
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     init {
         asyncJobRunner.registerHandler { db, _, msg: AsyncJob.GarbageCollectPairing ->
             runGarbageCollectPairing(db, msg)
@@ -22,7 +24,8 @@ class PairingAsyncJobs(asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         msg: AsyncJob.GarbageCollectPairing
     ) {
         db.transaction {
-            it.createUpdate { sql("DELETE FROM pairing WHERE id = ${bind(msg.pairingId)}") }
+            it
+                .createUpdate { sql("DELETE FROM pairing WHERE id = ${bind(msg.pairingId)}") }
                 .execute()
         }
     }

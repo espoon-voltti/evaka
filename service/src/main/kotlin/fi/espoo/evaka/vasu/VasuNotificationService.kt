@@ -32,7 +32,10 @@ class VasuNotificationService(
         asyncJobRunner.registerHandler(::sendVasuNotificationEmail)
     }
 
-    fun scheduleEmailNotification(tx: Database.Transaction, id: VasuDocumentId) {
+    fun scheduleEmailNotification(
+        tx: Database.Transaction,
+        id: VasuDocumentId
+    ) {
         logger.info { "Scheduling sending of vasu/leops notification emails (id: $id)" }
         asyncJobRunner.plan(
             tx,
@@ -42,19 +45,19 @@ class VasuNotificationService(
         )
     }
 
-    private fun getLanguage(languageStr: String?): Language {
-        return when (languageStr?.lowercase()) {
+    private fun getLanguage(languageStr: String?): Language =
+        when (languageStr?.lowercase()) {
             "sv" -> Language.sv
             "en" -> Language.en
             else -> Language.fi
         }
-    }
 
     private fun getVasuNotifications(
         tx: Database.Read,
         vasuDocumentId: VasuDocumentId
-    ): List<AsyncJob.SendVasuNotificationEmail> {
-        return tx.createQuery {
+    ): List<AsyncJob.SendVasuNotificationEmail> =
+        tx
+            .createQuery {
                 sql(
                     """
 SELECT 
@@ -71,8 +74,7 @@ WHERE
     AND parent.email IS NOT NULL AND parent.email != ''
 """
                 )
-            }
-            .toList {
+            }.toList {
                 AsyncJob.SendVasuNotificationEmail(
                     vasuDocumentId = vasuDocumentId,
                     childId = column("child_id"),
@@ -80,7 +82,6 @@ WHERE
                     language = getLanguage(column("language"))
                 )
             }
-    }
 
     fun sendVasuNotificationEmail(
         db: Database.Connection,
@@ -90,14 +91,14 @@ WHERE
         logger.info(
             "Sending vasu/leops notification email for document ${msg.vasuDocumentId} to person ${msg.recipientId}"
         )
-        Email.create(
+        Email
+            .create(
                 dbc = db,
                 personId = msg.recipientId,
                 emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content = emailMessageProvider.vasuNotification(msg.language, msg.childId),
-                traceId = msg.vasuDocumentId.toString(),
-            )
-            ?.also { emailClient.send(it) }
+                traceId = msg.vasuDocumentId.toString()
+            )?.also { emailClient.send(it) }
     }
 }

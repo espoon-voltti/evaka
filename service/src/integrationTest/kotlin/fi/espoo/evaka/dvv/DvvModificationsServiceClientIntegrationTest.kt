@@ -10,9 +10,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 
-class DvvModificationsServiceClientIntegrationTest :
-    DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = false) {
-
+class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = false) {
     @Test
     fun `get modification token for today`() {
         val response = dvvModificationsServiceClient.getFirstModificationToken(LocalDate.now())

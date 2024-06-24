@@ -203,33 +203,35 @@ class PlacementPlanService(
                         else -> error("Invalid placement plan type")
                     }
                 preschoolPeriods.map { it to preschoolPlacementType } +
-                    (preschoolDaycarePeriod?.let { period ->
-                        val preschoolTerms =
-                            tx.getActivePreschoolTermAt(period.start)
-                                ?: throw Exception(
-                                    "No suitable preschool term found for start date ${period.start}"
+                    (
+                        preschoolDaycarePeriod?.let { period ->
+                            val preschoolTerms =
+                                tx.getActivePreschoolTermAt(period.start)
+                                    ?: throw Exception(
+                                        "No suitable preschool term found for start date ${period.start}"
+                                    )
+
+                            val exactTerm =
+                                if (isSvebiUnit(tx, unitId)) {
+                                    preschoolTerms.swedishPreschool
+                                } else {
+                                    preschoolTerms.finnishPreschool
+                                }
+
+                            // if the preschool daycare extends beyond the end of the preschool term, a
+                            // normal daycare
+                            // placement is used because invoices are handled differently
+                            if (period.end.isAfter(exactTerm.end)) {
+                                listOf(
+                                    FiniteDateRange(period.start, exactTerm.end) to type,
+                                    FiniteDateRange(exactTerm.end.plusDays(1), period.end) to
+                                        PlacementType.DAYCARE
                                 )
-
-                        val exactTerm =
-                            if (isSvebiUnit(tx, unitId)) {
-                                preschoolTerms.swedishPreschool
                             } else {
-                                preschoolTerms.finnishPreschool
+                                listOf(period to type)
                             }
-
-                        // if the preschool daycare extends beyond the end of the preschool term, a
-                        // normal daycare
-                        // placement is used because invoices are handled differently
-                        if (period.end.isAfter(exactTerm.end)) {
-                            listOf(
-                                FiniteDateRange(period.start, exactTerm.end) to type,
-                                FiniteDateRange(exactTerm.end.plusDays(1), period.end) to
-                                    PlacementType.DAYCARE
-                            )
-                        } else {
-                            listOf(period to type)
-                        }
-                    } ?: emptyList())
+                        } ?: emptyList()
+                    )
             }
             else -> {
                 check(extent is PlacementPlanExtent.FullSingle) {
@@ -321,7 +323,9 @@ class PlacementPlanService(
         application: ApplicationDetails
     ): ApplicationServiceNeed? {
         val serviceNeedOptionId =
-            application.form.preferences.serviceNeed?.serviceNeedOption?.id ?: return null
+            application.form.preferences.serviceNeed
+                ?.serviceNeedOption
+                ?.id ?: return null
         val serviceNeedOption = serviceNeedOptionId.let { tx.findServiceNeedOptionById(it) }
         if (serviceNeedOption == null) {
             logger.warn {
@@ -336,8 +340,12 @@ class PlacementPlanService(
         )
     }
 
-    fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {
-        return tx.createQuery {
+    fun isSvebiUnit(
+        tx: Database.Read,
+        unitId: DaycareId
+    ): Boolean =
+        tx
+            .createQuery {
                 sql(
                     """
                     SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi
@@ -345,7 +353,5 @@ class PlacementPlanService(
                     WHERE d.id = ${bind(unitId)}
                     """
                 )
-            }
-            .exactlyOne<Boolean>()
-    }
+            }.exactlyOne<Boolean>()
 }

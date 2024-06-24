@@ -22,7 +22,9 @@ import org.jdbi.v3.core.mapper.Nested
  * A rule that grants permission based on an `AuthenticatedUser`, without needing any additional
  * information
  */
-interface StaticActionRule : ScopedActionRule<Any>, UnscopedActionRule {
+interface StaticActionRule :
+    ScopedActionRule<Any>,
+    UnscopedActionRule {
     fun evaluate(user: AuthenticatedUser): AccessControlDecision
 }
 
@@ -91,8 +93,7 @@ object DatabaseActionRule {
         }
 
         data object Permitted : Deferred<Any> {
-            override fun evaluate(params: Any): AccessControlDecision =
-                AccessControlDecision.Permitted(params)
+            override fun evaluate(params: Any): AccessControlDecision = AccessControlDecision.Permitted(params)
         }
     }
 
@@ -116,19 +117,33 @@ object DatabaseActionRule {
              * If the cache keys of two queries of the same type (= same class) are equal, we can
              * skip execution of one if we already have cached results from the other one
              */
-            fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any
+            fun cacheKey(
+                user: AuthenticatedUser,
+                now: HelsinkiDateTime
+            ): Any
 
-            fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
+            fun executeWithTargets(
+                ctx: QueryContext,
+                targets: Set<T>
+            ): Map<T, Deferred<P>>
 
-            fun queryWithParams(ctx: QueryContext, params: P): QuerySql?
+            fun queryWithParams(
+                ctx: QueryContext,
+                params: P
+            ): QuerySql?
         }
 
-        data class Simple<T, P : Params>(override val params: P, override val query: Query<T, P>) :
-            Scoped<T, P>
+        data class Simple<T, P : Params>(
+            override val params: P,
+            override val query: Query<T, P>
+        ) : Scoped<T, P>
     }
 
-    data class Unscoped<P : Any>(val params: P, val query: Query<P>) :
-        ScopedActionRule<Any>, UnscopedActionRule {
+    data class Unscoped<P : Any>(
+        val params: P,
+        val query: Query<P>
+    ) : ScopedActionRule<Any>,
+        UnscopedActionRule {
         interface Query<P> {
             /**
              * Return some value that is used to decide whether two queries are considered
@@ -137,14 +152,20 @@ object DatabaseActionRule {
              * If the cache keys of two queries of the same type (= same class) are equal, we can
              * skip execution of one if we already have cached results from the other one
              */
-            fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any
+            fun cacheKey(
+                user: AuthenticatedUser,
+                now: HelsinkiDateTime
+            ): Any
 
             fun execute(ctx: QueryContext): Deferred<P>
         }
     }
 }
 
-internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
+internal data class IdRoleFeatures(
+    val id: Id<*>,
+    @Nested val roleFeatures: RoleAndFeatures
+)
 
 internal data class RoleAndFeatures(
     val role: UserRole,
@@ -155,7 +176,9 @@ internal data class RoleAndFeatures(
 sealed interface AccessControlFilter<out T> {
     data object PermitAll : AccessControlFilter<Nothing>
 
-    data class Some<T>(val filter: QuerySql) : AccessControlFilter<T>
+    data class Some<T>(
+        val filter: QuerySql
+    ) : AccessControlFilter<T>
 }
 
 fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate =
@@ -164,12 +187,15 @@ fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate =
         is AccessControlFilter.Some<Id<T>> -> Predicate { where("$it.id IN (${subquery(filter)})") }
     }
 
-fun <T : DatabaseTable> AccessControlFilter<Id<T>>.forTable(table: String): PredicateSql =
-    toPredicate().forTable(table)
+fun <T : DatabaseTable> AccessControlFilter<Id<T>>.forTable(table: String): PredicateSql = toPredicate().forTable(table)
 
 /** Converts a set of ids to an SQL predicate that checks that an id column value is in the set */
-fun <T : Id<*>> Set<T>.idTargetPredicate(): Predicate = Predicate {
-    // specialize size=1 case, because it can generate a better query plan
-    if (size == 1) where("$it.id = ${bind(single().raw)}")
-    else where("$it.id = ANY(${bind(map { target -> target.raw})})")
-}
+fun <T : Id<*>> Set<T>.idTargetPredicate(): Predicate =
+    Predicate {
+        // specialize size=1 case, because it can generate a better query plan
+        if (size == 1) {
+            where("$it.id = ${bind(single().raw)}")
+        } else {
+            where("$it.id = ANY(${bind(map { target -> target.raw})})")
+        }
+    }

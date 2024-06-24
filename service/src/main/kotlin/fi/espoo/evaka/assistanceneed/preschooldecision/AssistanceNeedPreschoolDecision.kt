@@ -45,41 +45,47 @@ data class AssistanceNeedPreschoolDecision(
             if (form.validFrom == null) return false
             if (
                 form.extendedCompulsoryEducation &&
-                    form.extendedCompulsoryEducationInfo.trim().isBlank()
-            )
+                form.extendedCompulsoryEducationInfo.trim().isBlank()
+            ) {
                 return false
+            }
             if (form.selectedUnit == null) return false
             if (form.primaryGroup.trim().isBlank()) return false
             if (form.decisionBasis.trim().isBlank()) return false
             if (
                 listOf(
-                        form.basisDocumentPedagogicalReport,
-                        form.basisDocumentPsychologistStatement,
-                        form.basisDocumentSocialReport,
-                        form.basisDocumentDoctorStatement,
-                        form.basisDocumentOtherOrMissing
-                    )
-                    .none { it }
-            )
+                    form.basisDocumentPedagogicalReport,
+                    form.basisDocumentPsychologistStatement,
+                    form.basisDocumentSocialReport,
+                    form.basisDocumentDoctorStatement,
+                    form.basisDocumentOtherOrMissing
+                ).none { it }
+            ) {
                 return false
+            }
             if (
                 form.basisDocumentOtherOrMissing &&
-                    form.basisDocumentOtherOrMissingInfo.trim().isBlank()
-            )
+                form.basisDocumentOtherOrMissingInfo.trim().isBlank()
+            ) {
                 return false
+            }
             if (form.guardiansHeardOn == null) return false
             if (form.guardianInfo.any { !it.isHeard || it.details.trim().isBlank() }) return false
             if (
                 form.guardianInfo.isEmpty() &&
-                    (!form.otherRepresentativeHeard ||
-                        form.otherRepresentativeDetails.trim().isBlank())
-            )
+                (
+                    !form.otherRepresentativeHeard ||
+                        form.otherRepresentativeDetails.trim().isBlank()
+                )
+            ) {
                 return false
+            }
             if (form.viewOfGuardians.trim().isBlank()) return false
             if (form.preparer1EmployeeId == null) return false
             if (form.preparer1Title.trim().isBlank()) return false
-            if (form.preparer2EmployeeId != null && form.preparer2Title.trim().isBlank())
+            if (form.preparer2EmployeeId != null && form.preparer2Title.trim().isBlank()) {
                 return false
+            }
             if (form.decisionMakerEmployeeId == null) return false
             if (form.decisionMakerTitle.trim().isBlank()) return false
 
@@ -132,7 +138,7 @@ data class AssistanceNeedPreschoolDecisionForm(
     val preparer2Title: String,
     val preparer2PhoneNumber: String,
     val decisionMakerEmployeeId: EmployeeId?,
-    val decisionMakerTitle: String,
+    val decisionMakerTitle: String
 )
 
 data class AssistanceNeedPreschoolDecisionChild(

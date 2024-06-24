@@ -38,8 +38,9 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
-    ): AssistanceNeedVoucherCoefficient {
-        return db.connect { dbc ->
+    ): AssistanceNeedVoucherCoefficient =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -55,21 +56,19 @@ class AssistanceNeedVoucherCoefficientController(
                             listOf(
                                 AsyncJob.GenerateFinanceDecisions.forChild(
                                     childId,
-                                    body.validityPeriod.asDateRange(),
+                                    body.validityPeriod.asDateRange()
                                 )
                             ),
                             runAt = clock.now()
                         )
                     }
                 }
-            }
-            .also { coefficient ->
+            }.also { coefficient ->
                 Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(
                     targetId = AuditId(childId),
                     objectId = AuditId(coefficient.id)
                 )
             }
-    }
 
     @GetMapping("/children/{childId}/assistance-need-voucher-coefficients")
     fun getAssistanceNeedVoucherCoefficients(
@@ -77,8 +76,9 @@ class AssistanceNeedVoucherCoefficientController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<AssistanceNeedVoucherCoefficientResponse> {
-        return db.connect { dbc ->
+    ): List<AssistanceNeedVoucherCoefficientResponse> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -95,14 +95,12 @@ class AssistanceNeedVoucherCoefficientController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedVoucherCoefficientRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PutMapping(
         "/assistance-need-voucher-coefficients/{id}", // deprecated
@@ -114,8 +112,9 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedVoucherCoefficientId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
-    ): AssistanceNeedVoucherCoefficient {
-        return db.connect { dbc ->
+    ): AssistanceNeedVoucherCoefficient =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -128,7 +127,8 @@ class AssistanceNeedVoucherCoefficientController(
                     adjustExistingCoefficients(tx, existing.childId, body.validityPeriod, id)
 
                     val combinedRange =
-                        DateSet.of(existing.validityPeriod, body.validityPeriod)
+                        DateSet
+                            .of(existing.validityPeriod, body.validityPeriod)
                             .spanningRange()!!
                             .asDateRange()
                     tx.updateAssistanceNeedVoucherCoefficient(id = id, data = body).also {
@@ -144,9 +144,7 @@ class AssistanceNeedVoucherCoefficientController(
                         )
                     }
                 }
-            }
-            .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/assistance-need-voucher-coefficients/{id}", // deprecated
@@ -178,7 +176,7 @@ class AssistanceNeedVoucherCoefficientController(
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             existing.childId,
-                            existing.validityPeriod.asDateRange(),
+                            existing.validityPeriod.asDateRange()
                         )
                     ),
                     runAt = clock.now()
@@ -195,11 +193,11 @@ class AssistanceNeedVoucherCoefficientController(
         ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?
     ) {
         val overlappingCoefficients =
-            tx.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
+            tx
+                .getOverlappingAssistanceNeedVoucherCoefficientsForChild(
                     childId = childId,
                     range = range
-                )
-                .filterNot { it.id == ignoreCoefficientId }
+                ).filterNot { it.id == ignoreCoefficientId }
 
         if (overlappingCoefficients.isNotEmpty()) {
             overlappingCoefficients.forEach {
@@ -214,12 +212,12 @@ class AssistanceNeedVoucherCoefficientController(
                                 validityPeriod =
                                     if (
                                         range.start <= it.validityPeriod.end &&
-                                            range.start >= it.validityPeriod.start
+                                        range.start >= it.validityPeriod.start
                                     ) {
                                         it.validityPeriod.copy(end = range.start.minusDays(1))
                                     } else if (
                                         range.end >= it.validityPeriod.start &&
-                                            range.end <= it.validityPeriod.end
+                                        range.end <= it.validityPeriod.end
                                     ) {
                                         it.validityPeriod.copy(start = range.end.plusDays(1))
                                     } else {

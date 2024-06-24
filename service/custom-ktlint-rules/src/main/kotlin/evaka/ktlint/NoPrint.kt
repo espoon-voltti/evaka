@@ -10,13 +10,14 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 
-class NoPrint : EvakaRule("no-println"), RuleAutocorrectApproveHandler {
+class NoPrint :
+    EvakaRule("no-println"),
+    RuleAutocorrectApproveHandler {
     private val printFunctions = setOf("print", "println")
 
     override fun afterVisitChildNodes(
         node: ASTNode,
-        emit:
-            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
+        emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
     ) {
         val expression = node.psi as? KtCallExpression ?: return
         val isPrintCall =

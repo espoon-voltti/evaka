@@ -90,11 +90,16 @@ data class DaycareFields(
     }
 }
 
-data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
+data class DaycareGroupSummary(
+    val id: GroupId,
+    val name: String,
+    val endDate: LocalDate?
+)
 
-fun daycaresQuery(predicate: Predicate) = QuerySql {
-    sql(
-        """
+fun daycaresQuery(predicate: Predicate) =
+    QuerySql {
+        sql(
+            """
 SELECT
   daycare.id,
   daycare.name,
@@ -161,8 +166,8 @@ LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = day
 JOIN care_area ca ON daycare.care_area_id = ca.id
 WHERE ${predicate(predicate.forTable("daycare"))}
         """
-    )
-}
+        )
+    }
 
 fun Database.Read.getDaycares(
     clock: EvakaClock,
@@ -170,11 +175,13 @@ fun Database.Read.getDaycares(
     includeClosed: Boolean = true
 ): List<Daycare> {
     val predicate =
-        if (includeClosed) Predicate.alwaysTrue()
-        else
+        if (includeClosed) {
+            Predicate.alwaysTrue()
+        } else {
             Predicate {
                 where("$it.closing_date IS NULL OR $it.closing_date > ${bind(clock.today())}")
             }
+        }
     return createQuery { daycaresQuery(filter.toPredicate().and(predicate)) }.toList<Daycare>()
 }
 
@@ -194,15 +201,14 @@ data class UnitApplyPeriods(
 
 fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitApplyPeriods> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
 FROM daycare
 WHERE id = ANY(${bind(ids)})
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
     createQuery { daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }) }
@@ -214,32 +220,35 @@ fun Database.Read.isValidDaycareId(id: DaycareId): Boolean =
 
 fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, name, type as care_types
 FROM daycare
 WHERE id = ${bind(daycareId)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
-fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId =
+fun Database.Transaction.createDaycare(
+    areaId: AreaId,
+    name: String
+): DaycareId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO daycare (name, care_area_id)
 SELECT ${bind(name)}, ${bind(areaId)}
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne()
 
-fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
-    execute {
-        sql(
-            """
+fun Database.Transaction.updateDaycareManager(
+    daycareId: DaycareId,
+    manager: UnitManager
+) = execute {
+    sql(
+        """
 UPDATE daycare
 SET
   unit_manager_name = ${bind(manager.name)},
@@ -247,10 +256,13 @@ SET
   unit_manager_phone = ${bind(manager.phone)}
 WHERE id = ${bind(daycareId)}
 """
-        )
-    }
+    )
+}
 
-fun Database.Transaction.updateDaycare(id: DaycareId, fields: DaycareFields) = execute {
+fun Database.Transaction.updateDaycare(
+    id: DaycareId,
+    fields: DaycareFields
+) = execute {
     sql(
         """
 UPDATE daycare
@@ -318,8 +330,8 @@ fun Database.Read.getApplicationUnits(
     onlyApplicable: Boolean
 ): List<PublicUnit> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     name,
@@ -341,16 +353,27 @@ FROM daycare
 WHERE ${bind(date)} <= COALESCE(closing_date, 'infinity'::date)
     AND (NOT ${bind(shiftCare ?: false)} OR provides_shift_care)
     AND (
-        (${bind(type == ApplicationUnitType.CLUB)} AND type && '{CLUB}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (club_apply_period @> ${bind(date)})))
-        OR (${bind(type == ApplicationUnitType.DAYCARE)} AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (daycare_apply_period @> ${bind(date)})))
-        OR (${bind(type == ApplicationUnitType.PRESCHOOL)} AND type && '{PRESCHOOL}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (preschool_apply_period @> ${bind(date)})))
-        OR (${bind(type == ApplicationUnitType.PREPARATORY)} AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (preschool_apply_period @> ${bind(date)})))
+        (${bind(
+                type == ApplicationUnitType.CLUB
+            )} AND type && '{CLUB}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (club_apply_period @> ${bind(date)})))
+        OR (${bind(
+                type == ApplicationUnitType.DAYCARE
+            )} AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT ${bind(
+                onlyApplicable
+            )} OR (daycare_apply_period @> ${bind(date)})))
+        OR (${bind(
+                type == ApplicationUnitType.PRESCHOOL
+            )} AND type && '{PRESCHOOL}'::care_types[] AND (NOT ${bind(onlyApplicable)} OR (preschool_apply_period @> ${bind(date)})))
+        OR (${bind(
+                type == ApplicationUnitType.PREPARATORY
+            )} AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT ${bind(
+                onlyApplicable
+            )} OR (preschool_apply_period @> ${bind(date)})))
     )
 ORDER BY name
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Read.getAllApplicableUnits(applicationType: ApplicationType): List<PublicUnit> {
     val applyPeriod =
@@ -362,8 +385,8 @@ fun Database.Read.getAllApplicableUnits(applicationType: ApplicationType): List<
 
     val today = HelsinkiDateTime.now().toLocalDate()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     name,
@@ -389,46 +412,42 @@ WHERE daterange(null, closing_date) @> ${bind(today)} AND
     ($applyPeriod && daterange(${bind(today)}, null, '[]') OR provider_type = 'PRIVATE')
 ORDER BY name
     """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
 fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT unit_manager_name AS name, unit_manager_phone AS phone, unit_manager_email AS email
 FROM daycare
 WHERE id = ${bind(unitId)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, name, end_date
 FROM daycare_group
 WHERE daycare_id = ${bind(daycareId)}
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
 ORDER BY name
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,
@@ -466,20 +485,22 @@ WHERE id = ANY(${bind(daycareIds)})
 
 fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
-fun Database.Read.anyUnitHasFeature(ids: Collection<DaycareId>, feature: PilotFeature): Boolean =
+fun Database.Read.anyUnitHasFeature(
+    ids: Collection<DaycareId>,
+    feature: PilotFeature
+): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS(
     SELECT 1
     FROM daycare
@@ -487,18 +508,23 @@ SELECT EXISTS(
     AND ${bind(feature)} = ANY(enabled_pilot_features)
 )
 """
-            )
-        }
-        .exactlyOne<Boolean>()
+        )
+    }.exactlyOne<Boolean>()
 
-private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
+private data class UnitOperationDays(
+    val id: DaycareId,
+    val operationDays: List<Int>
+)
 
 fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> =
-    createQuery { sql("""
+    createQuery {
+        sql(
+            """
 SELECT id, operation_days
 FROM daycare
-""") }
-        .mapTo<UnitOperationDays>()
+"""
+        )
+    }.mapTo<UnitOperationDays>()
         .useIterable { rows ->
             rows.fold(mutableMapOf()) { acc, row ->
                 acc[row.id] = row.operationDays.map { DayOfWeek.of(it) }.toSet()

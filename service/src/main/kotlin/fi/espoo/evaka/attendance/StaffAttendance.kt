@@ -44,7 +44,7 @@ data class ExternalStaffMember(
     val id: StaffAttendanceExternalId,
     val name: String,
     val groupId: GroupId,
-    val arrived: HelsinkiDateTime,
+    val arrived: HelsinkiDateTime
 )
 
 data class StaffMember(

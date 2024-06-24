@@ -52,7 +52,10 @@ class ChildDocumentService(
         asyncJobRunner.registerHandler(::sendChildDocumentNotificationEmail)
     }
 
-    fun createAndUploadPdf(db: Database.Connection, documentId: ChildDocumentId) {
+    fun createAndUploadPdf(
+        db: Database.Connection,
+        documentId: ChildDocumentId
+    ) {
         val document =
             db.transaction { tx -> tx.getChildDocument(documentId) }
                 ?: throw NotFound("document $documentId not found")
@@ -71,7 +74,10 @@ class ChildDocumentService(
         db.transaction { tx -> tx.updateChildDocumentKey(documentId, key.key) }
     }
 
-    fun getPdfResponse(tx: Database.Read, documentId: ChildDocumentId): ResponseEntity<Any> {
+    fun getPdfResponse(
+        tx: Database.Read,
+        documentId: ChildDocumentId
+    ): ResponseEntity<Any> {
         val documentKey =
             tx.getChildDocumentKey(documentId)
                 ?: throw NotFound("Document $documentId not found or pdf not ready")
@@ -83,18 +89,17 @@ class ChildDocumentService(
         now: HelsinkiDateTime
     ) {
         val documentIds =
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
                         """
-                SELECT cd.id
-                FROM child_document cd 
-                JOIN document_template dt on dt.id = cd.template_id
-                WHERE dt.validity << ${bind(FiniteDateRange(now.toLocalDate(), now.toLocalDate()))} AND cd.status <> 'COMPLETED'
-            """
-                            .trimIndent()
+                        SELECT cd.id
+                        FROM child_document cd 
+                        JOIN document_template dt on dt.id = cd.template_id
+                        WHERE dt.validity << ${bind(FiniteDateRange(now.toLocalDate(), now.toLocalDate()))} AND cd.status <> 'COMPLETED'
+                        """.trimIndent()
                     )
-                }
-                .toList<ChildDocumentId>()
+                }.toList<ChildDocumentId>()
 
         if (documentIds.isNotEmpty()) {
             documentIds
@@ -147,20 +152,20 @@ class ChildDocumentService(
         )
     }
 
-    private fun getLanguage(languageStr: String?): Language {
-        return when (languageStr?.lowercase()) {
+    private fun getLanguage(languageStr: String?): Language =
+        when (languageStr?.lowercase()) {
             "sv" -> Language.sv
             "en" -> Language.en
             else -> Language.fi
         }
-    }
 
     private fun getChildDocumentNotifications(
         tx: Database.Read,
         documentId: ChildDocumentId,
         today: LocalDate
-    ): List<AsyncJob.SendChildDocumentNotificationEmail> {
-        return tx.createQuery {
+    ): List<AsyncJob.SendChildDocumentNotificationEmail> =
+        tx
+            .createQuery {
                 sql(
                     """
 WITH children AS (
@@ -184,8 +189,7 @@ JOIN person ON person.id = parents.parent_id
 WHERE person.email IS NOT NULL AND person.email != ''
 """
                 )
-            }
-            .toList {
+            }.toList {
                 AsyncJob.SendChildDocumentNotificationEmail(
                     documentId = documentId,
                     childId = column("child_id"),
@@ -193,7 +197,6 @@ WHERE person.email IS NOT NULL AND person.email != ''
                     language = getLanguage(column("language"))
                 )
             }
-    }
 
     fun sendChildDocumentNotificationEmail(
         db: Database.Connection,
@@ -203,14 +206,14 @@ WHERE person.email IS NOT NULL AND person.email != ''
         logger.info(
             "Sending child document notification email for document ${msg.documentId} to person ${msg.recipientId}"
         )
-        Email.create(
+        Email
+            .create(
                 dbc = db,
                 personId = msg.recipientId,
                 emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content = emailMessageProvider.childDocumentNotification(msg.language, msg.childId),
-                traceId = msg.documentId.toString(),
-            )
-            ?.also { emailClient.send(it) }
+                traceId = msg.documentId.toString()
+            )?.also { emailClient.send(it) }
     }
 }

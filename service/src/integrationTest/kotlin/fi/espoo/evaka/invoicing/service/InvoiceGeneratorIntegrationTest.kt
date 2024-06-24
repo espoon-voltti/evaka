@@ -1440,14 +1440,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             datesBetween(period.start, period.end)
                 .filter {
                     listOf(
-                            DayOfWeek.TUESDAY,
-                            DayOfWeek.WEDNESDAY,
-                            DayOfWeek.THURSDAY,
-                            DayOfWeek.FRIDAY
-                        )
-                        .contains(it.dayOfWeek)
-                }
-                .map { it to AbsenceType.SICKLEAVE }
+                        DayOfWeek.TUESDAY,
+                        DayOfWeek.WEDNESDAY,
+                        DayOfWeek.THURSDAY,
+                        DayOfWeek.FRIDAY
+                    ).contains(it.dayOfWeek)
+                }.map { it to AbsenceType.SICKLEAVE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1525,14 +1523,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             datesBetween(period.start, period.end)
                 .filter {
                     listOf(
-                            DayOfWeek.TUESDAY,
-                            DayOfWeek.WEDNESDAY,
-                            DayOfWeek.THURSDAY,
-                            DayOfWeek.FRIDAY
-                        )
-                        .contains(it.dayOfWeek)
-                }
-                .map { it to AbsenceType.UNKNOWN_ABSENCE }
+                        DayOfWeek.TUESDAY,
+                        DayOfWeek.WEDNESDAY,
+                        DayOfWeek.THURSDAY,
+                        DayOfWeek.FRIDAY
+                    ).contains(it.dayOfWeek)
+                }.map { it to AbsenceType.UNKNOWN_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1762,14 +1758,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
                 .filter {
                     listOf(
-                            DayOfWeek.TUESDAY,
-                            DayOfWeek.WEDNESDAY,
-                            DayOfWeek.THURSDAY,
-                            DayOfWeek.FRIDAY
-                        )
-                        .contains(it.dayOfWeek)
-                }
-                .map { it to AbsenceType.SICKLEAVE }
+                        DayOfWeek.TUESDAY,
+                        DayOfWeek.WEDNESDAY,
+                        DayOfWeek.THURSDAY,
+                        DayOfWeek.FRIDAY
+                    ).contains(it.dayOfWeek)
+                }.map { it to AbsenceType.SICKLEAVE }
 
         initDataForAbsences(periods, absenceDays)
 
@@ -2162,37 +2156,37 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val decisions =
             listOf(
-                    FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 15000,
-                    FiniteDateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000
-                )
-                .map { (range, fee) ->
-                    createFeeDecisionFixture(
-                        FeeDecisionStatus.SENT,
-                        FeeDecisionType.NORMAL,
-                        range.asDateRange(),
-                        testAdult_1.id,
-                        listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = PlacementType.DAYCARE,
-                                serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                                baseFee = fee,
-                                fee = fee,
-                                feeAlterations = listOf()
-                            )
+                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 15000,
+                FiniteDateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000
+            ).map { (range, fee) ->
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    range.asDateRange(),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = fee,
+                            fee = fee,
+                            feeAlterations = listOf()
                         )
                     )
-                }
+                )
+            }
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 17 operational days in total, the rest are planned absences
         insertAbsences(
             testChild_1.id,
-            (datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
-                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31)))
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+            (
+                datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
+                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31))
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2352,29 +2346,28 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val decisions =
             listOf(
-                    FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to 0,
-                    FiniteDateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to 28900
-                )
-                .map { (valid, fee) ->
-                    createFeeDecisionFixture(
-                        FeeDecisionStatus.SENT,
-                        FeeDecisionType.NORMAL,
-                        valid.asDateRange(),
-                        testAdult_1.id,
-                        listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = PlacementType.DAYCARE,
-                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                                baseFee = fee,
-                                fee = fee,
-                                feeAlterations = listOf()
-                            )
+                FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to 0,
+                FiniteDateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to 28900
+            ).map { (valid, fee) ->
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    valid.asDateRange(),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = fee,
+                            fee = fee,
+                            feeAlterations = listOf()
                         )
                     )
-                }
+                )
+            }
         db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
 
         insertAbsences(
@@ -4153,40 +4146,39 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val decisions =
             listOf(
-                    DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
-                    DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000
-                )
-                .map { (range, fee) ->
-                    createFeeDecisionFixture(
-                        FeeDecisionStatus.SENT,
-                        FeeDecisionType.NORMAL,
-                        range,
-                        testAdult_1.id,
-                        listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = PlacementType.DAYCARE,
-                                serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                                baseFee = fee,
-                                fee =
-                                    roundToEuros(
-                                            BigDecimal(fee) * snDaycareContractDays15.feeCoefficient
-                                        )
-                                        .toInt()
-                            )
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
+                DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000
+            ).map { (range, fee) ->
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    range,
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = fee,
+                            fee =
+                                roundToEuros(
+                                    BigDecimal(fee) * snDaycareContractDays15.feeCoefficient
+                                ).toInt()
                         )
                     )
-                }
+                )
+            }
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
         // 17 operational days in total, the rest are planned absences
         insertAbsences(
             testChild_1.id,
-            (datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
-                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31)))
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+            (
+                datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
+                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31))
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
         )
 
         // Override useContractDaysAsDailyFeeDivisor
@@ -4529,14 +4521,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then planned absences
         val plannedAbsenceDays =
             listOf(
-                    LocalDate.of(2019, 1, 23),
-                    LocalDate.of(2019, 1, 24),
-                    LocalDate.of(2019, 1, 25),
-                    LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30)
-                )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 24),
+                LocalDate.of(2019, 1, 25),
+                LocalDate.of(2019, 1, 28),
+                LocalDate.of(2019, 1, 29),
+                LocalDate.of(2019, 1, 30)
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational days
 
         initDataForAbsences(
@@ -4589,20 +4580,19 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 12 planned absences
         val plannedAbsenceDays =
             listOf(
-                    LocalDate.of(2019, 1, 16),
-                    LocalDate.of(2019, 1, 17),
-                    LocalDate.of(2019, 1, 18),
-                    LocalDate.of(2019, 1, 21),
-                    LocalDate.of(2019, 1, 22),
-                    LocalDate.of(2019, 1, 23),
-                    LocalDate.of(2019, 1, 24),
-                    LocalDate.of(2019, 1, 25),
-                    LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
-                )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                LocalDate.of(2019, 1, 16),
+                LocalDate.of(2019, 1, 17),
+                LocalDate.of(2019, 1, 18),
+                LocalDate.of(2019, 1, 21),
+                LocalDate.of(2019, 1, 22),
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 24),
+                LocalDate.of(2019, 1, 25),
+                LocalDate.of(2019, 1, 28),
+                LocalDate.of(2019, 1, 29),
+                LocalDate.of(2019, 1, 30),
+                LocalDate.of(2019, 1, 31)
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(
             listOf(period),
@@ -4667,18 +4657,17 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 10 planned absences
         val plannedAbsenceDays =
             listOf(
-                    LocalDate.of(2019, 1, 18),
-                    LocalDate.of(2019, 1, 21),
-                    LocalDate.of(2019, 1, 22),
-                    LocalDate.of(2019, 1, 23),
-                    LocalDate.of(2019, 1, 24),
-                    LocalDate.of(2019, 1, 25),
-                    LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
-                )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                LocalDate.of(2019, 1, 18),
+                LocalDate.of(2019, 1, 21),
+                LocalDate.of(2019, 1, 22),
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 24),
+                LocalDate.of(2019, 1, 25),
+                LocalDate.of(2019, 1, 28),
+                LocalDate.of(2019, 1, 29),
+                LocalDate.of(2019, 1, 30),
+                LocalDate.of(2019, 1, 31)
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(
             listOf(period),
@@ -4753,16 +4742,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 8 planned absences
         val plannedAbsenceDays =
             listOf(
-                    LocalDate.of(2019, 1, 22),
-                    LocalDate.of(2019, 1, 23),
-                    LocalDate.of(2019, 1, 24),
-                    LocalDate.of(2019, 1, 25),
-                    LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
-                )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                LocalDate.of(2019, 1, 22),
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 24),
+                LocalDate.of(2019, 1, 25),
+                LocalDate.of(2019, 1, 28),
+                LocalDate.of(2019, 1, 29),
+                LocalDate.of(2019, 1, 30),
+                LocalDate.of(2019, 1, 31)
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(
             listOf(period),
@@ -4819,16 +4807,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 8 planned absences
         val plannedAbsenceDays =
             listOf(
-                    LocalDate.of(2019, 1, 22),
-                    LocalDate.of(2019, 1, 23),
-                    LocalDate.of(2019, 1, 24),
-                    LocalDate.of(2019, 1, 25),
-                    LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
-                )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                LocalDate.of(2019, 1, 22),
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 24),
+                LocalDate.of(2019, 1, 25),
+                LocalDate.of(2019, 1, 28),
+                LocalDate.of(2019, 1, 29),
+                LocalDate.of(2019, 1, 30),
+                LocalDate.of(2019, 1, 31)
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
 
         val decision =
             createFeeDecisionFixture(
@@ -4845,7 +4832,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snPreschoolDaycareContractDays13.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         siblingDiscount = 50,
-                        fee = 8700, // 28900 * 0.6 * 0.5
+                        fee = 8700 // 28900 * 0.6 * 0.5
                     )
                 )
             )
@@ -5018,14 +5005,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then planned absences
         val plannedAbsenceDays =
             listOf(
-                    LocalDate.of(2019, 1, 23),
-                    LocalDate.of(2019, 1, 24),
-                    LocalDate.of(2019, 1, 25),
-                    LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30)
-                )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 24),
+                LocalDate.of(2019, 1, 25),
+                LocalDate.of(2019, 1, 28),
+                LocalDate.of(2019, 1, 29),
+                LocalDate.of(2019, 1, 30)
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational day
         initDataForAbsences(
             listOf(period),
@@ -5073,13 +5059,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then planned absences
         val plannedAbsenceDays =
             listOf(
-                    LocalDate.of(2019, 1, 23),
-                    LocalDate.of(2019, 1, 24),
-                    LocalDate.of(2019, 1, 25),
-                    LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29)
-                )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                LocalDate.of(2019, 1, 23),
+                LocalDate.of(2019, 1, 24),
+                LocalDate.of(2019, 1, 25),
+                LocalDate.of(2019, 1, 28),
+                LocalDate.of(2019, 1, 29)
+            ).map { it to AbsenceType.PLANNED_ABSENCE }
         // then 2 more operational days
         initDataForAbsences(
             listOf(period),
@@ -5725,7 +5710,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(14, 1283, 17962, ProductKey("DAYCARE")),
+                Tuple(14, 1283, 17962, ProductKey("DAYCARE"))
             )
     }
 
@@ -5796,7 +5781,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 3000, 3000, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(3, 1283, 3849, ProductKey("DAYCARE")),
+                Tuple(3, 1283, 3849, ProductKey("DAYCARE"))
             )
     }
 
@@ -5913,7 +5898,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(14, 435, 6090, ProductKey("PRESCHOOL_DAYCARE")),
+                Tuple(14, 435, 6090, ProductKey("PRESCHOOL_DAYCARE"))
             )
     }
 
@@ -5973,7 +5958,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(3, 435, 1305, ProductKey("PRESCHOOL_DAYCARE")),
-                Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB")),
+                Tuple(1, 5000, 5000, ProductKey("PRESCHOOL_CLUB"))
             )
     }
 
@@ -6594,7 +6579,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun insertAbsences(childId: ChildId, absenceDays: List<Pair<LocalDate, AbsenceType>>) {
+    private fun insertAbsences(
+        childId: ChildId,
+        absenceDays: List<Pair<LocalDate, AbsenceType>>
+    ) {
         db.transaction { tx ->
             tx.insertAbsences(
                 HelsinkiDateTime.now(),
@@ -6614,37 +6602,36 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun insertDecisionsAndPlacementsAndServiceNeeds(
         feeDecisions: List<FeeDecision>,
         shiftCare: ShiftCareType = ShiftCareType.NONE
-    ) =
-        db.transaction { tx ->
-            tx.upsertFeeDecisions(feeDecisions)
-            feeDecisions.forEach { decision ->
-                decision.children.forEach { part ->
-                    tx.insert(
-                            DevPlacement(
-                                type = part.placement.type,
-                                childId = part.child.id,
-                                unitId = part.placement.unitId,
-                                startDate = decision.validFrom,
-                                endDate = decision.validTo!!
-                            )
+    ) = db.transaction { tx ->
+        tx.upsertFeeDecisions(feeDecisions)
+        feeDecisions.forEach { decision ->
+            decision.children.forEach { part ->
+                tx
+                    .insert(
+                        DevPlacement(
+                            type = part.placement.type,
+                            childId = part.child.id,
+                            unitId = part.placement.unitId,
+                            startDate = decision.validFrom,
+                            endDate = decision.validTo!!
                         )
-                        .also { placementId ->
-                            if (part.serviceNeed.optionId != null && !part.serviceNeed.missing) {
-                                tx.insert(
-                                    DevServiceNeed(
-                                        placementId = placementId,
-                                        startDate = decision.validFrom,
-                                        endDate = decision.validTo!!,
-                                        optionId = part.serviceNeed.optionId!!,
-                                        shiftCare = shiftCare,
-                                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
-                                    )
+                    ).also { placementId ->
+                        if (part.serviceNeed.optionId != null && !part.serviceNeed.missing) {
+                            tx.insert(
+                                DevServiceNeed(
+                                    placementId = placementId,
+                                    startDate = decision.validFrom,
+                                    endDate = decision.validTo!!,
+                                    optionId = part.serviceNeed.optionId!!,
+                                    shiftCare = shiftCare,
+                                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                                 )
-                            }
+                            )
                         }
-                }
+                    }
             }
         }
+    }
 
     private fun insertPlacement(
         childId: ChildId,
@@ -6679,19 +6666,22 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
         @Suppress("DEPRECATION")
-        r.createQuery(
+        r
+            .createQuery(
                 """
-            $invoiceQueryBase
-            ORDER BY invoice.id, row.idx
-            """
-                    .trimIndent()
-            )
-            .toList(Row::toInvoice)
+                $invoiceQueryBase
+                ORDER BY invoice.id, row.idx
+                """.trimIndent()
+            ).toList(Row::toInvoice)
             .let(::flatten)
             .shuffled() // randomize order to expose assumptions
     }
 
-    private fun datesBetween(start: LocalDate, endInclusive: LocalDate?): List<LocalDate> {
-        return generateSequence(start) { it.plusDays(1) }.takeWhile { it <= endInclusive }.toList()
-    }
+    private fun datesBetween(
+        start: LocalDate,
+        endInclusive: LocalDate?
+    ): List<LocalDate> =
+        generateSequence(start) {
+            it.plusDays(1)
+        }.takeWhile { it <= endInclusive }.toList()
 }

@@ -34,8 +34,7 @@ import org.postgresql.util.PGobject
  * This works fine for simple types where there are no extra shenanigans (inheritance, type
  * parameters).
  */
-private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) =
-    register(columnMapper) { type -> type == T::class.java }
+private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) = register(columnMapper) { type -> type == T::class.java }
 
 /**
  * Registers the given JDBI column mapper, using the given function to decide when the mapper will
@@ -130,7 +129,8 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     }
     jdbi.registerArrayType { elementType, _ ->
         Optional.ofNullable(
-            SqlArrayType.of<Id<*>>("uuid") { it.raw }
+            SqlArrayType
+                .of<Id<*>>("uuid") { it.raw }
                 .takeIf { Id::class.java.isAssignableFrom(GenericTypes.getErasedType(elementType)) }
         )
     }

@@ -18,13 +18,16 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 
-private fun emailThrottleInterval(maxEmailsPerSecondRate: Int) =
-    Duration.ofSeconds(1).dividedBy(maxEmailsPerSecondRate.toLong())
+private fun emailThrottleInterval(maxEmailsPerSecondRate: Int) = Duration.ofSeconds(1).dividedBy(maxEmailsPerSecondRate.toLong())
 
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer, env: Environment): AsyncJobRunner<AsyncJob> =
+    fun asyncJobRunner(
+        jdbi: Jdbi,
+        tracer: Tracer,
+        env: Environment
+    ): AsyncJobRunner<AsyncJob> =
         AsyncJobRunner(
             AsyncJob::class,
             listOf(
@@ -49,18 +52,17 @@ class AsyncJobConfig {
         asyncJobRunners: List<AsyncJobRunner<*>>,
         evakaEnv: EvakaEnv,
         meterRegistry: MeterRegistry
-    ) =
-        ApplicationListener<ApplicationReadyEvent> {
-            val logger = KotlinLogging.logger {}
-            if (evakaEnv.asyncJobRunnerDisabled) {
-                logger.info("Async job runners disabled")
-            } else {
-                asyncJobRunners.forEach {
-                    it.registerMeters(meterRegistry)
-                    it.enableAfterCommitHooks()
-                    it.startBackgroundPolling()
-                    logger.info("Async job runner ${it.name} started")
-                }
+    ) = ApplicationListener<ApplicationReadyEvent> {
+        val logger = KotlinLogging.logger {}
+        if (evakaEnv.asyncJobRunnerDisabled) {
+            logger.info("Async job runners disabled")
+        } else {
+            asyncJobRunners.forEach {
+                it.registerMeters(meterRegistry)
+                it.enableAfterCommitHooks()
+                it.startBackgroundPolling()
+                logger.info("Async job runner ${it.name} started")
             }
         }
+    }
 }

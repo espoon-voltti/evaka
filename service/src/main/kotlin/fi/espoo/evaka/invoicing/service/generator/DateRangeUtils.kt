@@ -18,19 +18,19 @@ interface WithFiniteRange : WithRange {
         get() = finiteRange.asDateRange()
 }
 
-fun getDatesOfChange(vararg ranges: WithRange): Set<LocalDate> {
-    return (ranges.map { it.range.start } + ranges.mapNotNull { it.range.end?.plusDays(1) }).toSet()
-}
+fun getDatesOfChange(vararg ranges: WithRange): Set<LocalDate> =
+    (
+        ranges.map {
+            it.range.start
+        } + ranges.mapNotNull { it.range.end?.plusDays(1) }
+    ).toSet()
 
-fun buildFiniteDateRanges(datesOfChange: Set<LocalDate>): List<FiniteDateRange> {
-    return datesOfChange.sorted().zipWithNext().map { (first, second) ->
+fun buildFiniteDateRanges(datesOfChange: Set<LocalDate>): List<FiniteDateRange> =
+    datesOfChange.sorted().zipWithNext().map { (first, second) ->
         FiniteDateRange(first, second.minusDays(1))
     }
-}
 
-fun buildFiniteDateRanges(vararg ranges: WithRange): List<FiniteDateRange> {
-    return buildFiniteDateRanges(getDatesOfChange(*ranges))
-}
+fun buildFiniteDateRanges(vararg ranges: WithRange): List<FiniteDateRange> = buildFiniteDateRanges(getDatesOfChange(*ranges))
 
 fun buildDateRanges(datesOfChange: Set<LocalDate>): List<DateRange> {
     val finiteRanges = buildFiniteDateRanges(datesOfChange)

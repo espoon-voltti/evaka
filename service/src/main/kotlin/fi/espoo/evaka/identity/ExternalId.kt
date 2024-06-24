@@ -15,13 +15,20 @@ import com.fasterxml.jackson.databind.util.StdConverter
  */
 @JsonSerialize(converter = ExternalId.ToJson::class)
 @JsonDeserialize(converter = ExternalId.FromJson::class)
-data class ExternalId private constructor(val namespace: String, val value: String) {
+data class ExternalId private constructor(
+    val namespace: String,
+    val value: String
+) {
     override fun toString(): String = "$namespace:$value"
 
     companion object {
-        fun of(namespace: String, value: String): ExternalId {
-            if (namespace.contains(':'))
+        fun of(
+            namespace: String,
+            value: String
+        ): ExternalId {
+            if (namespace.contains(':')) {
                 throw IllegalArgumentException("Invalid external id namespace $namespace")
+            }
             return ExternalId(namespace, value)
         }
 

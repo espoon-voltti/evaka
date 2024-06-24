@@ -67,8 +67,9 @@ class AttachmentsController(
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
-    ): AttachmentId {
-        return db.connect { dbc ->
+    ): AttachmentId =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -88,15 +89,13 @@ class AttachmentsController(
                 ) { tx ->
                     stateService.reCalculateDueDate(tx, clock.today(), applicationId)
                 }
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForApplication.log(
                     targetId = AuditId(applicationId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("type" to type.name, "size" to file.size)
                 )
             }
-    }
 
     @PostMapping(
         "/attachments/income-statements/{incomeStatementId}", // deprecated
@@ -109,8 +108,9 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestPart("file") file: MultipartFile
-    ): AttachmentId {
-        return db.connect { dbc ->
+    ): AttachmentId =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -127,15 +127,13 @@ class AttachmentsController(
                     AttachmentParent.IncomeStatement(incomeStatementId),
                     file
                 )
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = AuditId(incomeStatementId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
-    }
 
     @PostMapping(
         "/attachments/income/{incomeId}", // deprecated
@@ -150,8 +148,9 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId?,
         @RequestPart("file") file: MultipartFile
-    ): AttachmentId {
-        return db.connect { dbc ->
+    ): AttachmentId =
+        db
+            .connect { dbc ->
                 if (incomeId != null) {
                     dbc.read {
                         accessControl.requirePermissionFor(
@@ -164,19 +163,20 @@ class AttachmentsController(
                     }
                 }
                 val attachTo =
-                    if (incomeId != null) AttachmentParent.Income(incomeId)
-                    else AttachmentParent.None
+                    if (incomeId != null) {
+                        AttachmentParent.Income(incomeId)
+                    } else {
+                        AttachmentParent.None
+                    }
 
                 handleFileUpload(dbc, user, clock, attachTo, file)
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForIncome.log(
                     targetId = incomeId?.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
-    }
 
     @PostMapping(
         "/attachments/messages/{draftId}", // deprecated
@@ -189,8 +189,9 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable draftId: MessageDraftId,
         @RequestPart("file") file: MultipartFile
-    ): AttachmentId {
-        return db.connect { dbc ->
+    ): AttachmentId =
+        db
+            .connect { dbc ->
                 dbc.read {
                     val accountId = it.findMessageAccountIdByDraftId(draftId) ?: throw NotFound()
                     accessControl.requirePermissionFor(
@@ -202,15 +203,13 @@ class AttachmentsController(
                     )
                 }
                 handleFileUpload(dbc, user, clock, AttachmentParent.MessageDraft(draftId), file)
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForMessageDraft.log(
                     targetId = AuditId(draftId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
-    }
 
     @PostMapping(
         "/attachments/pedagogical-documents/{documentId}", // deprecated
@@ -223,8 +222,9 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestPart("file") file: MultipartFile
-    ): AttachmentId {
-        return db.connect { dbc ->
+    ): AttachmentId =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -246,15 +246,13 @@ class AttachmentsController(
                         documentId
                     )
                 }
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForPedagogicalDocument.log(
                     targetId = AuditId(documentId),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
-    }
 
     @PostMapping(
         "/attachments/citizen/applications/{applicationId}", // deprecated
@@ -270,7 +268,8 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         val attachTo = AttachmentParent.Application(applicationId)
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -284,8 +283,7 @@ class AttachmentsController(
                 handleFileUpload(dbc, user, clock, attachTo, file, type) { tx ->
                     stateService.reCalculateDueDate(tx, clock.today(), applicationId)
                 }
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForApplication.log(
                     targetId = AuditId(applicationId),
                     objectId = AuditId(attachmentId),
@@ -307,8 +305,9 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
-    ): AttachmentId {
-        return db.connect { dbc ->
+    ): AttachmentId =
+        db
+            .connect { dbc ->
                 if (incomeStatementId != null) {
                     dbc.read {
                         accessControl.requirePermissionFor(
@@ -321,20 +320,20 @@ class AttachmentsController(
                     }
                 }
                 val attachTo =
-                    if (incomeStatementId != null)
+                    if (incomeStatementId != null) {
                         AttachmentParent.IncomeStatement(incomeStatementId)
-                    else AttachmentParent.None
+                    } else {
+                        AttachmentParent.None
+                    }
 
                 handleFileUpload(dbc, user, clock, attachTo, file)
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = incomeStatementId?.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
-    }
 
     @PostMapping(
         "/attachments/fee-alteration/{feeAlterationId}", // deprecated
@@ -349,8 +348,9 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId?,
         @RequestPart("file") file: MultipartFile
-    ): AttachmentId {
-        return db.connect { dbc ->
+    ): AttachmentId =
+        db
+            .connect { dbc ->
                 if (feeAlterationId != null) {
                     dbc.read {
                         accessControl.requirePermissionFor(
@@ -363,19 +363,20 @@ class AttachmentsController(
                     }
                 }
                 val attachTo =
-                    if (feeAlterationId != null) AttachmentParent.FeeAlteration(feeAlterationId)
-                    else AttachmentParent.None
+                    if (feeAlterationId != null) {
+                        AttachmentParent.FeeAlteration(feeAlterationId)
+                    } else {
+                        AttachmentParent.None
+                    }
 
                 handleFileUpload(dbc, user, clock, attachTo, file)
-            }
-            .also { attachmentId ->
+            }.also { attachmentId ->
                 Audit.AttachmentsUploadForFeeAlteration.log(
                     targetId = feeAlterationId?.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
                     meta = mapOf("size" to file.size)
                 )
             }
-    }
 
     private fun checkAttachmentCount(
         db: Database.Connection,
@@ -389,7 +390,7 @@ class AttachmentsController(
                     is AttachmentParent.Application,
                     is AttachmentParent.IncomeStatement,
                     is AttachmentParent.Income,
-                    is AttachmentParent.PedagogicalDocument, ->
+                    is AttachmentParent.PedagogicalDocument ->
                         it.userAttachmentCount(user.evakaUserId, attachTo)
                     is AttachmentParent.MessageDraft,
                     is AttachmentParent.MessageContent -> 0
@@ -411,8 +412,7 @@ class AttachmentsController(
             .split(".")
             .also {
                 if (it.size == 1) throw BadRequest("Missing file extension", "EXTENSION_MISSING")
-            }
-            .last()
+            }.last()
 
     private fun handleFileUpload(
         dbc: Database.Connection,
@@ -488,7 +488,7 @@ class AttachmentsController(
     ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
 
     @GetMapping(
-        "/attachments/{attachmentId}/download/{requestedFilename}", // deprecated
+        "/attachments/{attachmentId}/download/{requestedFilename}" // deprecated
     )
     fun getAttachmentInternal(
         db: Database,
@@ -581,8 +581,9 @@ class AttachmentsController(
                 }
             }
 
-        if (requestedFilename != attachment.name)
+        if (requestedFilename != attachment.name) {
             throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
+        }
 
         return documentClient.responseInline(filesBucket, "$attachmentId", attachment.name).also {
             Audit.AttachmentsRead.log(targetId = AuditId(attachmentId))
@@ -615,7 +616,8 @@ class AttachmentsController(
         @PathVariable attachmentId: AttachmentId
     ) {
         db.connect { dbc ->
-            dbc.read {
+            dbc
+                .read {
                     val attachment =
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
@@ -689,8 +691,7 @@ class AttachmentsController(
                             )
                     }.exhaust()
                     attachment
-                }
-                .also { attachment -> attachmentsService.deleteAttachment(dbc, attachment.id) }
+                }.also { attachment -> attachmentsService.deleteAttachment(dbc, attachment.id) }
         }
         Audit.AttachmentsDelete.log(targetId = AuditId(attachmentId))
     }

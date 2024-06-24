@@ -161,8 +161,8 @@ private val feeDecision =
 
 private fun date(d: Int) = LocalDate.of(2000, 1, d)
 
-private fun createFeeBasis(): FeeBasis {
-    return FeeBasis(
+private fun createFeeBasis(): FeeBasis =
+    FeeBasis(
         range = DateRange(date(10), date(20)),
         headOfFamilyId = PersonId(UUID.randomUUID()),
         headOfFamilyIncome =
@@ -208,7 +208,6 @@ private fun createFeeBasis(): FeeBasis {
         familySize = 5,
         feeThresholds = feeThresholds
     )
-}
 
 private fun createChildFeeBasis(
     placementType: PlacementType,

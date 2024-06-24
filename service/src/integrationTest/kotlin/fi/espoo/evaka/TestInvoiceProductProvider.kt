@@ -18,16 +18,16 @@ class TestInvoiceProductProvider : InvoiceProductProvider {
     override val contractSurplusDay = ProductKey("SURPLUS_DAY")
 
     override val products: List<ProductWithName> =
-        PlacementType.values()
+        PlacementType
+            .values()
             .flatMap { placementType ->
                 val placementTypeProduct = mapToProduct(placementType)
-                FeeAlterationType.values()
+                FeeAlterationType
+                    .values()
                     .map { feeAlterationType ->
                         mapToFeeAlterationProduct(placementTypeProduct, feeAlterationType)
-                    }
-                    .plus(placementTypeProduct)
-            }
-            .plus(this.dailyRefund)
+                    }.plus(placementTypeProduct)
+            }.plus(this.dailyRefund)
             .plus(this.partMonthSickLeave)
             .plus(this.fullMonthSickLeave)
             .plus(this.fullMonthAbsence)

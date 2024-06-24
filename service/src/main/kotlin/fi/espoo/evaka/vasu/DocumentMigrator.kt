@@ -29,7 +29,9 @@ import java.time.format.DateTimeFormatter
 import org.springframework.stereotype.Service
 
 @Service
-class VasuMigratorService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class VasuMigratorService(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     init {
         asyncJobRunner.registerHandler<AsyncJob.MigrateVasuDocument> { db, clock, msg ->
             db.transaction { tx -> migrateVasu(tx, clock.today(), msg.documentId) }
@@ -42,15 +44,15 @@ class VasuMigratorService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) 
         vasuTemplateId: VasuTemplateId
     ) {
         val vasuDocumentIds =
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
                         """
             SELECT id FROM curriculum_document 
             WHERE template_id = ${bind(vasuTemplateId)}
         """
                     )
-                }
-                .toList<VasuDocumentId>()
+                }.toList<VasuDocumentId>()
 
         asyncJobRunner.plan(
             tx,
@@ -61,7 +63,11 @@ class VasuMigratorService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) 
     }
 }
 
-fun migrateVasu(tx: Database.Transaction, today: LocalDate, id: VasuDocumentId) {
+fun migrateVasu(
+    tx: Database.Transaction,
+    today: LocalDate,
+    id: VasuDocumentId
+) {
     val vasuDocument =
         tx.getLatestPublishedVasuDocument(today, id)?.takeIf {
             it.documentState == VasuDocumentState.CLOSED && it.publishedAt != null
@@ -96,7 +102,8 @@ private fun getOrCreateTemplate(
 ): DocumentTemplateId {
     tx.createUpdate { sql("LOCK TABLE document_template") }.execute()
     return getMatchingTemplate(tx, templateBasics, templateContent)
-        ?: tx.insertTemplate(templateBasics)
+        ?: tx
+            .insertTemplate(templateBasics)
             .id
             .also { tx.updateDraftTemplateContent(it, templateContent) }
             .also { tx.publishTemplate(it) }
@@ -107,7 +114,8 @@ private fun getMatchingTemplate(
     templateBasics: DocumentTemplateBasicsRequest,
     templateContent: DocumentTemplateContent
 ): DocumentTemplateId? =
-    tx.createQuery {
+    tx
+        .createQuery {
             sql(
                 """
     SELECT id FROM document_template
@@ -120,21 +128,19 @@ private fun getMatchingTemplate(
      AND content = ${bind(templateContent)}::jsonb
 """
             )
-        }
-        .exactlyOneOrNull()
+        }.exactlyOneOrNull()
 
 private fun Database.Transaction.deletePreviouslyMigratedChildDocument(id: ChildDocumentId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
         DELETE FROM child_document cd WHERE id = ${bind(id)} AND EXISTS(
             SELECT 1 FROM document_template dt
             WHERE cd.template_id = dt.id AND dt.type IN ('MIGRATED_VASU', 'MIGRATED_LEOPS')
         )
     """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 private fun Database.Transaction.insertMigratedChildDocument(
@@ -146,14 +152,21 @@ private fun Database.Transaction.insertMigratedChildDocument(
     publishedAt: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO child_document(id, child_id, template_id, status, content, published_content, modified_at, published_at, content_modified_at, content_modified_by, created_by)
-VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, 'COMPLETED', ${bind(content)}, ${bind(content)}, ${bind(modifiedAt)}, ${bind(publishedAt)}, ${bind(modifiedAt)}, null, null)
+VALUES (${bind(
+                id
+            )}, ${bind(
+                childId
+            )}, ${bind(
+                templateId
+            )}, 'COMPLETED', ${bind(
+                content
+            )}, ${bind(content)}, ${bind(modifiedAt)}, ${bind(publishedAt)}, ${bind(modifiedAt)}, null, null)
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
@@ -182,9 +195,7 @@ private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
     )
 }
 
-private fun migrateContents(
-    vasuDocument: VasuDocument
-): Pair<DocumentTemplateContent, DocumentContent> {
+private fun migrateContents(vasuDocument: VasuDocument): Pair<DocumentTemplateContent, DocumentContent> {
     val sections =
         if (vasuDocument.content.hasDynamicFirstSection == true) {
             vasuDocument.content.sections
@@ -278,8 +289,11 @@ private fun migrateTemplateQuestion(
                         AnsweredQuestion.TextAnswer(
                             questionId = id,
                             answer =
-                                if (vasuQuestion.value) "$checkboxTrue ${vasuQuestion.name}"
-                                else "$checkboxFalse ${vasuQuestion.name}"
+                                if (vasuQuestion.value) {
+                                    "$checkboxTrue ${vasuQuestion.name}"
+                                } else {
+                                    "$checkboxFalse ${vasuQuestion.name}"
+                                }
                         )
                 }
             listOf(questionAndAnswer)
@@ -298,14 +312,15 @@ private fun migrateTemplateQuestion(
                     ?.let { vasuQuestion.options.find { opt -> opt.key == it } }
                     ?.let { opt ->
                         listOfNotNull(
-                                opt.name,
-                                if (opt.dateRange) {
-                                    vasuQuestion.dateRange?.let {
-                                        "${it.start.format(dateFormatter)} - ${it.end.format(dateFormatter)}"
-                                    } ?: emptyField
-                                } else null
-                            )
-                            .joinToString(separator = " : ")
+                            opt.name,
+                            if (opt.dateRange) {
+                                vasuQuestion.dateRange?.let {
+                                    "${it.start.format(dateFormatter)} - ${it.end.format(dateFormatter)}"
+                                } ?: emptyField
+                            } else {
+                                null
+                            }
+                        ).joinToString(separator = " : ")
                     } ?: "-"
 
             val answer = AnsweredQuestion.TextAnswer(questionId = id, answer = answerText)
@@ -333,15 +348,21 @@ private fun migrateTemplateQuestion(
                                 vasuQuestion.dateRangeValue?.get(opt.key)?.let {
                                     "${it.start.format(dateFormatter)} - ${it.end.format(dateFormatter)}"
                                 } ?: emptyField
-                            } else null,
+                            } else {
+                                null
+                            },
                             if (selected && opt.date) {
                                 vasuQuestion.dateValue?.get(opt.key)?.format(dateFormatter)
                                     ?: emptyField
-                            } else null,
+                            } else {
+                                null
+                            },
                             if (selected && opt.textAnswer) {
                                 vasuQuestion.textValue[opt.key]?.takeIf { it.isNotBlank() }
                                     ?: emptyField
-                            } else null
+                            } else {
+                                null
+                            }
                         )
                     answerParts.joinToString(separator = " ")
                 }
@@ -433,8 +454,9 @@ private fun migrateTemplateQuestion(
                 AnsweredQuestion.TextAnswer(
                     questionId = id,
                     answer =
-                        if (vasuQuestion.value.isEmpty()) "-"
-                        else {
+                        if (vasuQuestion.value.isEmpty()) {
+                            "-"
+                        } else {
                             vasuQuestion.value.joinToString("\n\n") {
                                 "${it.date.format(dateFormatter)}: ${it.text.trim()}"
                             }
@@ -464,7 +486,9 @@ private fun migrateTemplateQuestion(
                 Question.TextQuestion(id = "$id-1", label = translations.dateOfBirth) to
                     AnsweredQuestion.TextAnswer(
                         questionId = "$id-1",
-                        answer = document.basics.child.dateOfBirth.format(dateFormatter)
+                        answer =
+                            document.basics.child.dateOfBirth
+                                .format(dateFormatter)
                     ),
                 Question.TextQuestion(
                     id = "$id-2",
@@ -491,7 +515,9 @@ private fun migrateTemplateQuestion(
                         questionId = "$id-3",
                         answer =
                             document.basics.placements?.joinToString("\n") {
-                                "${it.unitName} ${it.groupName} ${it.range.start.format(dateFormatter)} - ${it.range.end.format(dateFormatter)}"
+                                "${it.unitName} ${it.groupName} ${it.range.start.format(
+                                    dateFormatter
+                                )} - ${it.range.end.format(dateFormatter)}"
                             } ?: "-"
                     )
             )
@@ -507,7 +533,7 @@ private data class Translations(
     val placementsVasu: String,
     val placementsLeops: String,
     val lawVasu: String,
-    val lawLeops: String,
+    val lawLeops: String
 )
 
 private val translationsFi =

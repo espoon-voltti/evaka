@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/diets")
-class SpecialDietController(private val accessControl: AccessControl) {
-
+class SpecialDietController(
+    private val accessControl: AccessControl
+) {
     /**
      * There is no UI for this endpoint. The point of this endpoint is to digest a list of diets in
      * the format Jamix API returns them from its GET /diets endpoint.
@@ -29,7 +30,8 @@ class SpecialDietController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody specialDietList: List<JamixSpecialDiet>
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -41,8 +43,7 @@ class SpecialDietController(private val accessControl: AccessControl) {
                     tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
                     tx.setSpecialDiets(cleanedDietList)
                 }
-            }
-            .also { Audit.SpecialDietsUpdate.log() }
+            }.also { Audit.SpecialDietsUpdate.log() }
     }
 
     @GetMapping
@@ -50,8 +51,9 @@ class SpecialDietController(private val accessControl: AccessControl) {
         db: Database,
         authenticatedUser: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<SpecialDiet> {
-        return db.connect { dbc ->
+    ): List<SpecialDiet> =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -61,7 +63,5 @@ class SpecialDietController(private val accessControl: AccessControl) {
                     )
                     tx.getSpecialDiets()
                 }
-            }
-            .also { Audit.SpecialDietsRead.log() }
-    }
+            }.also { Audit.SpecialDietsRead.log() }
 }

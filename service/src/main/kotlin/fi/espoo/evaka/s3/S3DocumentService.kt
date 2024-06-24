@@ -29,8 +29,16 @@ class S3DocumentService(
     private val s3Presigner: S3Presigner,
     private val env: BucketEnv
 ) : DocumentService {
-    override fun get(bucketName: String, key: String): Document {
-        val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
+    override fun get(
+        bucketName: String,
+        key: String
+    ): Document {
+        val request =
+            GetObjectRequest
+                .builder()
+                .bucket(bucketName)
+                .key(key)
+                .build()
         val stream = s3Client.getObject(request) ?: throw NotFound("File not found")
         return stream.use {
             Document(
@@ -41,11 +49,20 @@ class S3DocumentService(
         }
     }
 
-    private fun presignedGetUrl(bucketName: String, key: String): URL {
-        val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
+    private fun presignedGetUrl(
+        bucketName: String,
+        key: String
+    ): URL {
+        val request =
+            GetObjectRequest
+                .builder()
+                .bucket(bucketName)
+                .key(key)
+                .build()
 
         val getObjectPresignRequest =
-            GetObjectPresignRequest.builder()
+            GetObjectPresignRequest
+                .builder()
                 .signatureDuration(Duration.ofMinutes(1))
                 .getObjectRequest(request)
                 .build()
@@ -62,23 +79,29 @@ class S3DocumentService(
 
         return if (env.proxyThroughNginx) {
             val url = "$INTERNAL_REDIRECT_PREFIX$presignedUrl"
-            ResponseEntity.ok()
+            ResponseEntity
+                .ok()
                 .header("X-Accel-Redirect", url)
                 .header("Content-Disposition", contentDisposition.toString())
                 .body(null)
         } else {
             // nginx is not available in development => redirect to the presigned S3 url
-            ResponseEntity.status(HttpStatus.FOUND)
+            ResponseEntity
+                .status(HttpStatus.FOUND)
                 .header("Location", presignedUrl.toString())
                 .header("Content-Disposition", contentDisposition.toString())
                 .body(null)
         }
     }
 
-    override fun upload(bucketName: String, document: Document): DocumentLocation {
+    override fun upload(
+        bucketName: String,
+        document: Document
+    ): DocumentLocation {
         val key = document.name
         val request =
-            PutObjectRequest.builder()
+            PutObjectRequest
+                .builder()
                 .bucket(bucketName)
                 .key(key)
                 .contentType(document.contentType)
@@ -90,16 +113,21 @@ class S3DocumentService(
         return DocumentLocation(bucket = bucketName, key = key)
     }
 
-    override fun delete(bucketName: String, key: String) {
-        val request = DeleteObjectRequest.builder().bucket(bucketName).key(key).build()
+    override fun delete(
+        bucketName: String,
+        key: String
+    ) {
+        val request =
+            DeleteObjectRequest
+                .builder()
+                .bucket(bucketName)
+                .key(key)
+                .build()
         s3Client.deleteObject(request)
     }
 }
 
-fun fuelResponseToS3URL(response: Response): String {
-    return response.headers["X-Accel-Redirect"].first().replace(INTERNAL_REDIRECT_PREFIX, "")
-}
+fun fuelResponseToS3URL(response: Response): String = response.headers["X-Accel-Redirect"].first().replace(INTERNAL_REDIRECT_PREFIX, "")
 
-fun responseEntityToS3URL(response: ResponseEntity<Any>): String {
-    return response.headers["X-Accel-Redirect"]!!.first().replace(INTERNAL_REDIRECT_PREFIX, "")
-}
+fun responseEntityToS3URL(response: ResponseEntity<Any>): String =
+    response.headers["X-Accel-Redirect"]!!.first().replace(INTERNAL_REDIRECT_PREFIX, "")

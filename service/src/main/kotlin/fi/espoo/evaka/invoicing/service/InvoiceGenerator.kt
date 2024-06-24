@@ -44,8 +44,13 @@ import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
 
 @Component
-class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
-    fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
+class InvoiceGenerator(
+    private val draftInvoiceGenerator: DraftInvoiceGenerator
+) {
+    fun createAndStoreAllDraftInvoices(
+        tx: Database.Transaction,
+        range: FiniteDateRange
+    ) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
@@ -111,7 +116,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val freeChildren =
             if (
                 range.start.month == Month.JULY &&
-                    (range.end.month == Month.JULY && range.start.year == range.end.year)
+                (range.end.month == Month.JULY && range.start.year == range.end.year)
             ) {
                 tx.getFreeJulyChildren(range.start.year)
             } else {
@@ -127,8 +132,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             unhandledDecisions.values
                 .flatMap { feeDecisions ->
                     feeDecisions.flatMap { feeDecision -> feeDecision.children.map { it.child.id } }
-                }
-                .toSet() +
+                }.toSet() +
                 permanentPlacements.keys +
                 temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
         val operationalDaysByChild = tx.getOperationalDatesForChildren(range, allChildren)
@@ -140,8 +144,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                     it.dayOfWeek != DayOfWeek.SATURDAY &&
                         it.dayOfWeek != DayOfWeek.SUNDAY &&
                         !holidays.contains(it)
-                }
-                .toSet()
+                }.toSet()
 
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
@@ -234,8 +237,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                     subtractions
                         .sortedBy { it.period.start }
                         .fold(withAdditions) { invoiceWithSubtractions, subtraction ->
-                            if (invoiceWithSubtractions.totalPrice == 0)
+                            if (invoiceWithSubtractions.totalPrice == 0) {
                                 return@fold invoiceWithSubtractions
+                            }
 
                             if ((invoiceWithSubtractions.totalPrice + subtraction.unitPrice) >= 0) {
                                 // apply partial amount (also handles cases where the whole
@@ -267,8 +271,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                                 )
                             }
                         }
-                }
-                .filter { it.rows.isNotEmpty() }
+                }.filter { it.rows.isNotEmpty() }
 
         return invoicesWithCorrections +
             invoices.filterNot { invoice ->
@@ -276,11 +279,10 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             }
     }
 
-    private fun getUninvoicedCorrections(
-        tx: Database.Read
-    ): Map<PersonId, List<InvoiceCorrection>> {
+    private fun getUninvoicedCorrections(tx: Database.Read): Map<PersonId, List<InvoiceCorrection>> {
         val uninvoicedCorrectionsWithInvoicedTotals =
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
                         """
 SELECT
@@ -297,18 +299,17 @@ GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
 """
                     )
-                }
-                .toMap {
+                }.toMap {
                     column<InvoiceCorrectionId>("id") to
                         jsonColumn<List<InvoicedTotal>>("invoiced_corrections")
                 }
 
-        return tx.createQuery {
+        return tx
+            .createQuery {
                 sql(
                     "SELECT * FROM invoice_correction WHERE id = ANY(${bind(uninvoicedCorrectionsWithInvoicedTotals.keys)})"
                 )
-            }
-            .toList<InvoiceCorrection>()
+            }.toList<InvoiceCorrection>()
             .groupBy { it.headOfFamilyId }
             .mapValues { (_, corrections) ->
                 // Remove the already invoiced parts from corrections
@@ -360,30 +361,29 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
     }
 }
 
-fun Database.Read.getInvoiceableFeeDecisions(dateRange: FiniteDateRange): List<FeeDecision> {
-    return createQuery(
-            feeDecisionQuery(
-                Predicate {
-                    where(
-                        """
+fun Database.Read.getInvoiceableFeeDecisions(dateRange: FiniteDateRange): List<FeeDecision> =
+    createQuery(
+        feeDecisionQuery(
+            Predicate {
+                where(
+                    """
                             $it.valid_during && ${bind(dateRange)} AND
                             $it.status = ANY(${bind(FeeDecisionStatus.effective)}::fee_decision_status[])
                             """
-                    )
-                }
-            )
+                )
+            }
         )
-        .toList<FeeDecision>()
-}
+    ).toList<FeeDecision>()
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): List<PersonId> {
     val sent = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
     return createQuery {
-            sql(
-                "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = ${bind(period.start)} AND period_end = ${bind(period.end)} AND status = ANY(${bind(sent)}::invoice_status[])"
-            )
-        }
-        .toList<PersonId>()
+        sql(
+            "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = ${bind(
+                period.start
+            )} AND period_end = ${bind(period.end)} AND status = ANY(${bind(sent)}::invoice_status[])"
+        )
+    }.toList<PersonId>()
 }
 
 data class AbsenceStub(
@@ -396,19 +396,17 @@ data class AbsenceStub(
 fun Database.Read.getAbsenceStubs(
     spanningRange: FiniteDateRange,
     categories: Collection<AbsenceCategory>
-): List<AbsenceStub> {
-    return createQuery {
-            sql(
-                """
+): List<AbsenceStub> =
+    createQuery {
+        sql(
+            """
 SELECT child_id, date, category, absence_type
 FROM absence
 WHERE between_start_and_end(${bind(spanningRange)}, date)
 AND category = ANY(${bind(categories)})
 """
-            )
-        }
-        .toList<AbsenceStub>()
-}
+        )
+    }.toList<AbsenceStub>()
 
 data class PlacementStub(
     @Nested("child") val child: ChildWithDateOfBirth,
@@ -419,10 +417,10 @@ data class PlacementStub(
 private fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: FiniteDateRange,
     placementTypes: List<PlacementType>
-): Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>> {
-    return createQuery {
-            sql(
-                """
+): Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>> =
+    createQuery {
+        sql(
+            """
 SELECT p.child_id, c.date_of_birth AS child_date_of_birth, u.id AS unit, daterange(p.start_date, p.end_date, '[]') AS date_range, p.unit_id, p.type
 FROM placement p
 JOIN person c ON p.child_id = c.id
@@ -430,11 +428,9 @@ JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
 WHERE daterange(start_date, end_date, '[]') && ${bind(spanningPeriod)}
 AND p.type = ANY(${bind(placementTypes)}::placement_type[])
 """
-            )
-        }
-        .toList { column<FiniteDateRange>("date_range") to row<PlacementStub>() }
+        )
+    }.toList { column<FiniteDateRange>("date_range") to row<PlacementStub>() }
         .groupBy { it.second.child.id }
-}
 
 private fun Database.Read.getInvoiceableTemporaryPlacements(
     spanningPeriod: FiniteDateRange
@@ -472,8 +468,7 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
                                     relevantPlacements
                                         .filter { it.first.contains(period) }
                                         .find { child.id == it.second.child.id }
-                                }
-                                .map { it.second }
+                                }.map { it.second }
                     }
                 }
 
@@ -481,15 +476,14 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
                 mergePeriods(familyPlacementsSeries).flatMap { (period, placements) ->
                     placements.map { period.asFiniteDateRange(spanningPeriod.end) to it }
                 }
-        }
-        .toMap()
+        }.toMap()
 }
 
 internal fun toFamilyCompositions(
     relationships: List<Triple<FiniteDateRange, PersonId, ChildWithDateOfBirth>>,
     spanningPeriod: FiniteDateRange
-): Map<PersonId, List<Pair<DateRange, List<ChildWithDateOfBirth>>>> {
-    return relationships
+): Map<PersonId, List<Pair<DateRange, List<ChildWithDateOfBirth>>>> =
+    relationships
         .groupBy { (_, headOfFamily) -> headOfFamily }
         .mapValues { (_, value) -> value.map { it.first to it.third } }
         .mapValues { (_, children) ->
@@ -500,10 +494,8 @@ internal fun toFamilyCompositions(
                             .filter { it.first.contains(period) }
                             .map { (_, child) -> child }
                             .sortedByDescending { it.dateOfBirth }
-                }
-                .let { mergePeriods(it) }
+                }.let { mergePeriods(it) }
         }
-}
 
 fun Database.Read.getChildrenWithHeadOfFamilies(
     childIds: Collection<ChildId>,
@@ -512,8 +504,8 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
     if (childIds.isEmpty()) return listOf()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     fridge_child.head_of_child,
     child.id AS child_id,
@@ -526,36 +518,33 @@ WHERE fridge_child.child_id = ANY(${bind(childIds)})
     AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && ${bind(dateRange)}
     AND conflict = false
 """
+        )
+    }.toList {
+        Triple(
+            FiniteDateRange(column("start_date"), column("end_date")),
+            column<PersonId>("head_of_child"),
+            ChildWithDateOfBirth(
+                id = column("child_id"),
+                dateOfBirth = column("child_date_of_birth")
             )
-        }
-        .toList {
-            Triple(
-                FiniteDateRange(column("start_date"), column("end_date")),
-                column<PersonId>("head_of_child"),
-                ChildWithDateOfBirth(
-                    id = column("child_id"),
-                    dateOfBirth = column("child_date_of_birth")
-                )
-            )
-        }
+        )
+    }
 }
 
-fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> =
+    createQuery {
+        sql(
+            """
 SELECT daycare.id AS unit_id, area.id AS area_id
 FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
 """
-            )
-        }
-        .toMap { columnPair("unit_id", "area_id") }
-}
+        )
+    }.toMap { columnPair("unit_id", "area_id") }
 
-fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> =
+    createQuery {
+        sql(
+            """
 WITH invoiced_placement AS (
     SELECT child_id, start_date, end_date FROM placement WHERE type = ANY(${bind(PlacementType.invoiced)}::placement_type[])
 )
@@ -570,13 +559,13 @@ FROM
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 2)}) p02,
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 3)}) p03,
 ${if (year != 2020) {
-            """
+                """
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 4)}) p04,
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 5)}) p05,
 """
-        } else {
-            ""
-        }}
+            } else {
+                ""
+            }}
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 6)}) p06
 WHERE
   p09.child_id = p10.child_id AND
@@ -586,21 +575,22 @@ WHERE
   p09.child_id = p02.child_id AND
   p09.child_id = p03.child_id AND
   ${if (year != 2020) {
-            """
+                """
   p09.child_id = p04.child_id AND
   p09.child_id = p05.child_id AND
 """
-        } else {
-            ""
-        }}
+            } else {
+                ""
+            }}
   p09.child_id = p06.child_id;
 """
-            )
-        }
-        .toList<ChildId>()
-}
+        )
+    }.toList<ChildId>()
 
-private fun placementOn(year: Int, month: Int): String {
+private fun placementOn(
+    year: Int,
+    month: Int
+): String {
     val firstOfMonth = "'$year-$month-01'"
     return "daterange(start_date, end_date, '[]') && daterange($firstOfMonth::date, ($firstOfMonth::date + INTERVAL '1 month -1 day')::date, '[]')"
 }

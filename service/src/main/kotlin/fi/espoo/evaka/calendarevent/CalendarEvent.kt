@@ -16,7 +16,10 @@ import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.json.Json
 
-data class GroupInfo(val id: GroupId, val name: String)
+data class GroupInfo(
+    val id: GroupId,
+    val name: String
+)
 
 data class IndividualChild(
     val id: ChildId,
@@ -38,7 +41,11 @@ data class CalendarEvent(
     val eventType: CalendarEventType
 )
 
-data class CalendarEventInfo(val id: CalendarEventId, val title: String, val description: String)
+data class CalendarEventInfo(
+    val id: CalendarEventId,
+    val title: String,
+    val description: String
+)
 
 data class DiscussionReservationDay(
     val date: LocalDate,
@@ -79,7 +86,10 @@ data class CalendarEventForm(
     val eventType: CalendarEventType
 )
 
-data class CalendarEventTimeForm(val date: LocalDate, val timeRange: TimeRange)
+data class CalendarEventTimeForm(
+    val date: LocalDate,
+    val timeRange: TimeRange
+)
 
 data class CalendarEventTimeEmployeeReservationForm(
     val calendarEventTimeId: CalendarEventTimeId,

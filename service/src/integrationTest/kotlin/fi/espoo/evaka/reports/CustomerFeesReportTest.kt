@@ -91,7 +91,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         val expected =
             listOf(
                 CustomerFeesReport.CustomerFeesReportRow(14400, 1),
-                CustomerFeesReport.CustomerFeesReportRow(28800, 2),
+                CustomerFeesReport.CustomerFeesReportRow(28800, 2)
             )
         assertEquals(expected, getReport(FinanceDecisionType.FEE_DECISION))
         assertEquals(expected, getReport(FinanceDecisionType.FEE_DECISION, areaId = area.id))
@@ -163,7 +163,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         val expected =
             listOf(
                 CustomerFeesReport.CustomerFeesReportRow(14400, 1),
-                CustomerFeesReport.CustomerFeesReportRow(28800, 2),
+                CustomerFeesReport.CustomerFeesReportRow(28800, 2)
             )
         assertEquals(expected, getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION))
         assertEquals(
@@ -200,14 +200,13 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         date: LocalDate = clock.today(),
         areaId: AreaId? = null,
         unitId: DaycareId? = null
-    ) =
-        controller.getCustomerFeesReport(
-            db = dbInstance(),
-            user = admin.user,
-            clock = clock,
-            date = date,
-            areaId = areaId,
-            unitId = unitId,
-            decisionType = decisionType
-        )
+    ) = controller.getCustomerFeesReport(
+        db = dbInstance(),
+        user = admin.user,
+        clock = clock,
+        date = date,
+        areaId = areaId,
+        unitId = unitId,
+        decisionType = decisionType
+    )
 }

@@ -634,7 +634,7 @@ val preschoolTerm2023 =
         DateSet.of(
             FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
             FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
-            FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
+            FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
         )
     )
 val preschoolTerm2024 =
@@ -647,7 +647,7 @@ val preschoolTerm2024 =
         DateSet.of(
             FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
             FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
-            FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
+            FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21))
         )
     )
 
@@ -687,7 +687,7 @@ val clubTerms =
             DateSet.of(
                 FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
                 FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
-                FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
+                FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
             )
         ),
         ClubTerm(
@@ -697,7 +697,7 @@ val clubTerms =
             DateSet.of(
                 FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
                 FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
-                FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
+                FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21))
             )
         )
     )
@@ -717,7 +717,45 @@ fun Database.Transaction.insertServiceNeedOptions() {
         sql(
             """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to)
-VALUES (${bind { it.id }}, ${bind { it.nameFi }}, ${bind { it.nameSv }}, ${bind { it.nameEn }}, ${bind { it.validPlacementType }}, ${bind { it.defaultOption }}, ${bind { it.feeCoefficient }}, ${bind { it.occupancyCoefficient }}, ${bind { it.occupancyCoefficientUnder3y }}, ${bind { it.realizedOccupancyCoefficient }}, ${bind { it.realizedOccupancyCoefficientUnder3y }}, ${bind { it.daycareHoursPerWeek }}, ${bind { it.contractDaysPerMonth }}, ${bind { it.daycareHoursPerMonth }}, ${bind { it.partDay }}, ${bind { it.partWeek }}, ${bind { it.feeDescriptionFi }}, ${bind { it.feeDescriptionSv }}, ${bind { it.voucherValueDescriptionFi }}, ${bind { it.voucherValueDescriptionSv }}, ${bind { it.validFrom }}, ${bind { it.validTo }})
+VALUES (${bind {
+                it.id
+            }}, ${bind {
+                it.nameFi
+            }}, ${bind {
+                it.nameSv
+            }}, ${bind {
+                it.nameEn
+            }}, ${bind {
+                it.validPlacementType
+            }}, ${bind {
+                it.defaultOption
+            }}, ${bind {
+                it.feeCoefficient
+            }}, ${bind {
+                it.occupancyCoefficient
+            }}, ${bind {
+                it.occupancyCoefficientUnder3y
+            }}, ${bind {
+                it.realizedOccupancyCoefficient
+            }}, ${bind {
+                it.realizedOccupancyCoefficientUnder3y
+            }}, ${bind {
+                it.daycareHoursPerWeek
+            }}, ${bind {
+                it.contractDaysPerMonth
+            }}, ${bind {
+                it.daycareHoursPerMonth
+            }}, ${bind {
+                it.partDay
+            }}, ${bind {
+                it.partWeek
+            }}, ${bind {
+                it.feeDescriptionFi
+            }}, ${bind {
+                it.feeDescriptionSv
+            }}, ${bind {
+                it.voucherValueDescriptionFi
+            }}, ${bind { it.voucherValueDescriptionSv }}, ${bind { it.validFrom }}, ${bind { it.validTo }})
 """
         )
     }
@@ -728,7 +766,15 @@ fun Database.Transaction.insertServiceNeedOptionFees() {
         sql(
             """
 INSERT INTO service_need_option_fee (service_need_option_id, validity, base_fee, sibling_discount_2, sibling_fee_2, sibling_discount_2_plus, sibling_fee_2_plus)
-VALUES (${bind { it.serviceNeedOptionId }}, ${bind { it.validity }}, ${bind { it.baseFee }}, ${bind { it.siblingDiscount2 }}, ${bind { it.siblingFee2 }}, ${bind { it.siblingDiscount2Plus }}, ${bind { it.siblingFee2Plus }})
+VALUES (${bind {
+                it.serviceNeedOptionId
+            }}, ${bind {
+                it.validity
+            }}, ${bind {
+                it.baseFee
+            }}, ${bind {
+                it.siblingDiscount2
+            }}, ${bind { it.siblingFee2 }}, ${bind { it.siblingDiscount2Plus }}, ${bind { it.siblingFee2Plus }})
 """
         )
     }
@@ -739,7 +785,15 @@ fun Database.Transaction.insertServiceNeedOptionVoucherValues() {
         sql(
             """
 INSERT INTO service_need_option_voucher_value (service_need_option_id, validity, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y)
-VALUES (${bind { it.serviceNeedOptionId }}, ${bind { it.validity }}, ${bind { it.baseValue }}, ${bind { it.coefficient }}, ${bind { it.value }}, ${bind { it.baseValueUnder3y }}, ${bind { it.coefficientUnder3y }}, ${bind { it.valueUnder3y }})
+VALUES (${bind {
+                it.serviceNeedOptionId
+            }}, ${bind {
+                it.validity
+            }}, ${bind {
+                it.baseValue
+            }}, ${bind {
+                it.coefficient
+            }}, ${bind { it.value }}, ${bind { it.baseValueUnder3y }}, ${bind { it.coefficientUnder3y }}, ${bind { it.valueUnder3y }})
 """
         )
     }
@@ -761,7 +815,8 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80);
 """
 
-    @Suppress("DEPRECATION") createUpdate(sql).execute()
+    @Suppress("DEPRECATION")
+    createUpdate(sql).execute()
 }
 
 fun Database.Transaction.insertApplication(
@@ -777,7 +832,7 @@ fun Database.Transaction.insertApplication(
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi",
     serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
-    transferApplication: Boolean = false,
+    transferApplication: Boolean = false
 ): ApplicationDetails {
     val application =
         ApplicationDetails(
@@ -825,7 +880,7 @@ fun Database.Transaction.insertApplication(
                             serviceNeed =
                                 if (
                                     appliedType in
-                                        listOf(PlacementType.PRESCHOOL, PlacementType.PREPARATORY)
+                                    listOf(PlacementType.PRESCHOOL, PlacementType.PREPARATORY)
                                 ) {
                                     null
                                 } else {
@@ -872,7 +927,7 @@ fun Database.Transaction.insertApplication(
             hideFromGuardian = false,
             allowOtherGuardianAccess = true,
             attachments = listOf(),
-            hasOtherGuardian = false,
+            hasOtherGuardian = false
         )
     insertTestApplication(
         id = applicationId,
@@ -927,8 +982,7 @@ fun DevPerson.toPersonDetailed() =
         forceManualFeeDecisions = this.forceManualFeeDecisions
     )
 
-fun DevEmployee.toEmployeeWithName() =
-    EmployeeWithName(id = this.id, firstName = this.firstName, lastName = this.lastName)
+fun DevEmployee.toEmployeeWithName() = EmployeeWithName(id = this.id, firstName = this.firstName, lastName = this.lastName)
 
 fun DevDaycare.toUnitData() =
     UnitData(

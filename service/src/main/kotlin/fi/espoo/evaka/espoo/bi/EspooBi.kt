@@ -10,10 +10,14 @@ import kotlin.reflect.KClass
 
 object EspooBi {
     val getAreas =
-        csvQuery<BiArea> { sql("""
+        csvQuery<BiArea> {
+            sql(
+                """
 SELECT id, created, updated, name
 FROM care_area
-""") }
+"""
+            )
+        }
 
     val getUnits =
         csvQuery<BiUnit> {
@@ -352,7 +356,10 @@ private fun printEspooBiCsvField(value: Any?): String =
     printCsvField(value).replace("\"", "")
 
 interface CsvQuery {
-    operator fun <R> invoke(tx: Database.Read, useResults: (records: Sequence<String>) -> R): R
+    operator fun <R> invoke(
+        tx: Database.Read,
+        useResults: (records: Sequence<String>) -> R
+    ): R
 }
 
 class StreamingCsvQuery<T : Any>(
@@ -370,9 +377,7 @@ class StreamingCsvQuery<T : Any>(
 
 private const val QUERY_STREAM_CHUNK_SIZE = 10_000
 
-private inline fun <reified T : Any> csvQuery(
-    crossinline f: QuerySql.Builder.() -> QuerySql
-): CsvQuery =
+private inline fun <reified T : Any> csvQuery(crossinline f: QuerySql.Builder.() -> QuerySql): CsvQuery =
     StreamingCsvQuery(T::class) { tx ->
         tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()
     }

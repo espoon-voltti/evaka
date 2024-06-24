@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class SextetReportController(private val accessControl: AccessControl) {
+class SextetReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/sextet", // deprecated
         "/employee/reports/sextet"
@@ -29,8 +31,9 @@ class SextetReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam placementType: PlacementType
-    ): List<SextetReportRow> {
-        return db.connect { dbc ->
+    ): List<SextetReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -46,24 +49,22 @@ class SextetReportController(private val accessControl: AccessControl) {
                         placementType
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.SextetReportRead.log(
                     meta =
                         mapOf("year" to year, "placementType" to placementType, "count" to it.size)
                 )
             }
-    }
 }
 
 fun Database.Read.sextetReport(
     from: LocalDate,
     to: LocalDate,
     placementType: PlacementType
-): List<SextetReportRow> {
-    return createQuery {
-            sql(
-                """
+): List<SextetReportRow> =
+    createQuery {
+        sql(
+            """
 WITH operational_days AS (
     SELECT daycare.id AS unit_id, date
     FROM generate_series(${bind(from)}, ${bind(to)}, '1 day'::interval) date
@@ -118,10 +119,8 @@ AND ep.placement_type = ${bind(placementType)}
 GROUP BY ep.unit_id, d.name, ep.placement_type
 ORDER BY d.name
     """
-            )
-        }
-        .toList<SextetReportRow>()
-}
+        )
+    }.toList<SextetReportRow>()
 
 data class SextetReportRow(
     val unitId: DaycareId,

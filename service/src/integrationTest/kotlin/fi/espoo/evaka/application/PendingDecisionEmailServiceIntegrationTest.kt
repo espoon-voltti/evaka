@@ -147,7 +147,11 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             LocalDate.now().minusDays(8),
             null,
             HelsinkiDateTime.from(
-                LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC)
+                LocalDate
+                    .now()
+                    .minusDays(8)
+                    .atStartOfDay()
+                    .toInstant(ZoneOffset.UTC)
             ),
             2
         )

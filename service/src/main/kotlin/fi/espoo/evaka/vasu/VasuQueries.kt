@@ -22,16 +22,15 @@ fun Database.Transaction.insertVasuDocument(
 ): VasuDocumentId {
     val child =
         createQuery {
-                sql(
-                    "SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = ${bind(childId)}"
-                )
-            }
-            .exactlyOne<VasuChild>(qualifiers = emptyArray())
+            sql(
+                "SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = ${bind(childId)}"
+            )
+        }.exactlyOne<VasuChild>(qualifiers = emptyArray())
 
     val guardiansAndFosterParents =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
                     SELECT p.id, p.first_name, p.last_name
                     FROM guardian g
                     JOIN person p on p.id = g.guardian_id
@@ -44,9 +43,8 @@ fun Database.Transaction.insertVasuDocument(
                     JOIN person p on p.id = fp.parent_id
                     WHERE fp.child_id = ${bind(childId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
                     """
-                )
-            }
-            .toList<VasuGuardian>(qualifiers = emptyArray())
+            )
+        }.toList<VasuGuardian>(qualifiers = emptyArray())
 
     val basics =
         VasuBasics(
@@ -62,34 +60,35 @@ fun Database.Transaction.insertVasuDocument(
 
     val documentId =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO curriculum_document (created, updated, child_id, basics, template_id, modified_at)
 VALUES (${bind(now)}, ${bind(now)}, ${bind(childId)}, ${bind(basics)}, ${bind(template.id)}, ${bind(now)})
 RETURNING id
 """
-                )
-            }
-            .exactlyOne<VasuDocumentId>()
+            )
+        }.exactlyOne<VasuDocumentId>()
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 INSERT INTO curriculum_content (created, updated, document_id, content)
                 SELECT ${bind(now)}, ${bind(now)}, ${bind(documentId)}, ct.content
                 FROM curriculum_template ct WHERE ct.id = ${bind(template.id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 
     return documentId
 }
 
-fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): VasuDocument? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getVasuDocumentMaster(
+    today: LocalDate,
+    id: VasuDocumentId
+): VasuDocument? =
+    createQuery {
+        sql(
+            """
                 SELECT
                     cd.id,
                     cd.child_id,
@@ -116,9 +115,8 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
                 JOIN curriculum_template ct ON cd.template_id = ct.id
                 WHERE cd.id = ${bind(id)}
                 """
-            )
-        }
-        .exactlyOneOrNull<VasuDocument>()
+        )
+    }.exactlyOneOrNull<VasuDocument>()
         ?.let { document ->
             if (document.basics.placements == null) {
                 document.copy(
@@ -128,15 +126,14 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
                 document
             }
         }
-}
 
 fun Database.Read.getLatestPublishedVasuDocument(
     today: LocalDate,
     id: VasuDocumentId
-): VasuDocument? {
-    return createQuery {
-            sql(
-                """
+): VasuDocument? =
+    createQuery {
+        sql(
+            """
                 SELECT
                     cd.id,
                     cd.child_id,
@@ -169,9 +166,8 @@ fun Database.Read.getLatestPublishedVasuDocument(
                 JOIN curriculum_template ct ON cd.template_id = ct.id
                 WHERE cd.id = ${bind(id)}
                 """
-            )
-        }
-        .exactlyOneOrNull<VasuDocument>()
+        )
+    }.exactlyOneOrNull<VasuDocument>()
         ?.let { document ->
             if (document.basics.placements == null) {
                 document.copy(
@@ -181,7 +177,6 @@ fun Database.Read.getLatestPublishedVasuDocument(
                 document
             }
         }
-}
 
 fun Database.Transaction.updateVasuDocumentMaster(
     now: HelsinkiDateTime,
@@ -190,44 +185,43 @@ fun Database.Transaction.updateVasuDocumentMaster(
     childLanguage: ChildLanguage?
 ) {
     createUpdate {
-            sql(
-                "UPDATE curriculum_content SET content = ${bind(content)} WHERE document_id = ${bind(id)} AND master"
-            )
-        }
-        .updateExactlyOne()
+        sql(
+            "UPDATE curriculum_content SET content = ${bind(content)} WHERE document_id = ${bind(id)} AND master"
+        )
+    }.updateExactlyOne()
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE curriculum_document SET
                     modified_at = ${bind(now)},
                     basics = basics || jsonb_build_object('childLanguage', ${bind(childLanguage)}::jsonb)
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
-fun Database.Transaction.publishVasuDocument(now: HelsinkiDateTime, id: VasuDocumentId) {
+fun Database.Transaction.publishVasuDocument(
+    now: HelsinkiDateTime,
+    id: VasuDocumentId
+) {
     // language=sql
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 INSERT INTO curriculum_content (document_id, published_at, content)
                 SELECT vc.document_id, ${bind(now)}, vc.content
                 FROM curriculum_content vc
                 WHERE vc.document_id = ${bind(id)} AND master
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 
     createUpdate {
-            sql("UPDATE curriculum_document SET modified_at = ${bind(now)} WHERE id = ${bind(id)}")
-        }
-        .updateExactlyOne()
+        sql("UPDATE curriculum_document SET modified_at = ${bind(now)} WHERE id = ${bind(id)}")
+    }.updateExactlyOne()
 }
 
 data class SummaryResultRow(
@@ -243,10 +237,10 @@ data class SummaryResultRow(
     val type: CurriculumType
 )
 
-fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentSummary> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentSummary> =
+    createQuery {
+        sql(
+            """
                 SELECT 
                     cd.id,
                     ct.name,
@@ -272,9 +266,8 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                 WHERE c.id = ${bind(childId)}
                 ORDER BY cd.modified_at DESC
                 """
-            )
-        }
-        .toList<SummaryResultRow>()
+        )
+    }.toList<SummaryResultRow>()
         .groupBy { it.id }
         .map { (documentId, documents) ->
             VasuDocumentSummary(
@@ -293,64 +286,62 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                         .mapNotNull {
                             if (
                                 it.eventId != null &&
-                                    it.eventCreated != null &&
-                                    it.eventType != null &&
-                                    it.eventCreatedBy != null
+                                it.eventCreated != null &&
+                                it.eventType != null &&
+                                it.eventCreatedBy != null
                             ) {
                                 VasuDocumentEvent(
                                     id = it.eventId,
                                     created = it.eventCreated,
                                     eventType = it.eventType,
-                                    createdBy = it.eventCreatedBy,
+                                    createdBy = it.eventCreatedBy
                                 )
                             } else {
                                 null
                             }
-                        }
-                        .sortedBy { it.created },
+                        }.sortedBy { it.created },
                 type = documents[0].type
             )
         }
-}
 
 fun Database.Transaction.insertVasuDocumentEvent(
     documentId: VasuDocumentId,
     eventType: VasuDocumentEventType,
     createdBy: EvakaUserId
-): VasuDocumentEvent {
-    return createQuery {
-            sql(
-                """
+): VasuDocumentEvent =
+    createQuery {
+        sql(
+            """
                 INSERT INTO curriculum_document_event (curriculum_document_id, created_by, event_type)
                 VALUES (${bind(documentId)}, ${bind(createdBy)}, ${bind(eventType)})
                 RETURNING id, created, event_type, created_by
                 """
-            )
-        }
-        .exactlyOne<VasuDocumentEvent>()
-}
+        )
+    }.exactlyOne<VasuDocumentEvent>()
 
-fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocumentId) {
+fun Database.Transaction.freezeVasuPlacements(
+    today: LocalDate,
+    id: VasuDocumentId
+) {
     createQuery { sql("SELECT basics FROM curriculum_document WHERE id = ${bind(id)}") }
         .exactlyOneOrNull { jsonColumn<VasuBasics>("basics") }
         ?.let { basics ->
             val basicsParam = basics.copy(placements = getVasuPlacements(today, id))
             createUpdate {
-                    sql(
-                        "UPDATE curriculum_document SET basics = ${bind(basicsParam)} WHERE id = ${bind(id)}"
-                    )
-                }
-                .updateExactlyOne()
+                sql(
+                    "UPDATE curriculum_document SET basics = ${bind(basicsParam)} WHERE id = ${bind(id)}"
+                )
+            }.updateExactlyOne()
         }
 }
 
 private fun Database.Read.getVasuPlacements(
     today: LocalDate,
     id: VasuDocumentId
-): List<VasuPlacement> {
-    return createQuery {
-            sql(
-                """
+): List<VasuPlacement> =
+    createQuery {
+        sql(
+            """
                 SELECT 
                     d.id AS unit_id,
                     d.name AS unit_name,
@@ -366,10 +357,8 @@ private fun Database.Read.getVasuPlacements(
                 WHERE cd.id = ${bind(id)} AND dgp.start_date <= ${bind(today)}
                 ORDER BY dgp.start_date
                 """
-            )
-        }
-        .toList<VasuPlacement>(qualifiers = emptyArray())
-}
+        )
+    }.toList<VasuPlacement>(qualifiers = emptyArray())
 
 private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =
     createQuery { sql("SELECT basics FROM curriculum_document WHERE id = ${bind(id)}") }
@@ -390,15 +379,14 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
             guardianFromDocument[0]
         } else {
             createQuery {
-                    sql(
-                        """
+                sql(
+                    """
                         SELECT p.id, p.first_name, p.last_name
                         FROM person p
                         WHERE p.id = ${bind(guardianId)}
                         """
-                    )
-                }
-                .exactlyOne<VasuGuardian>(qualifiers = emptyArray())
+                )
+            }.exactlyOne<VasuGuardian>(qualifiers = emptyArray())
         }
 
     val basics =
@@ -406,15 +394,14 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
             guardians = otherGuardiansFromDocument + guardian.copy(hasGivenPermissionToShare = true)
         )
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE curriculum_document
                 SET basics = ${bind(basics)}
                 WHERE id = ${bind(docId)}
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.revokeVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId) {
@@ -427,30 +414,28 @@ fun Database.Transaction.revokeVasuGuardianHasGivenPermissionToShare(docId: Vasu
                 }
         )
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE curriculum_document
                 SET basics = ${bind(basics)}
                 WHERE id = ${bind(docId)}
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.deleteVasuDocument(id: VasuDocumentId) {
     createUpdate { sql("DELETE FROM curriculum_content WHERE document_id = ${bind(id)}") }.execute()
     createUpdate {
-            sql("DELETE FROM curriculum_document_event WHERE curriculum_document_id = ${bind(id)}")
-        }
-        .execute()
+        sql("DELETE FROM curriculum_document_event WHERE curriculum_document_id = ${bind(id)}")
+    }.execute()
     createUpdate { sql("DELETE FROM curriculum_document WHERE id = ${bind(id)}") }.execute()
 }
 
 fun Database.Read.getOpenVasusWithExpiredTemplate(today: LocalDate): List<VasuDocumentId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id FROM (
     SELECT
         d.id,
@@ -465,6 +450,5 @@ SELECT id FROM (
 ) AS d
 WHERE cardinality(events) = 0 OR events[cardinality(events)] <> 'MOVED_TO_CLOSED';
 """
-            )
-        }
-        .toList<VasuDocumentId>()
+        )
+    }.toList<VasuDocumentId>()

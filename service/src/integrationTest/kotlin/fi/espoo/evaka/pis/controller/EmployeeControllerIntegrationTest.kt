@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired lateinit var employeeController: EmployeeController
 
     private val clock = RealEvakaClock()
@@ -118,7 +117,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             setOf(
                 DaycareRole(daycare1.id, daycare1.name, UserRole.STAFF),
                 DaycareRole(daycare2.id, daycare2.name, UserRole.SPECIAL_EDUCATION_TEACHER),
-                DaycareRole(daycare3.id, daycare3.name, UserRole.SPECIAL_EDUCATION_TEACHER),
+                DaycareRole(daycare3.id, daycare3.name, UserRole.SPECIAL_EDUCATION_TEACHER)
             ),
             getEmployeeDetails(employee.id).daycareRoles.toSet()
         )
@@ -205,32 +204,35 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     fun getEmployees() = employeeController.getEmployees(dbInstance(), adminUser, clock)
 
-    fun getEmployee(id: EmployeeId) =
-        employeeController.getEmployee(dbInstance(), adminUser, clock, id)
+    fun getEmployee(id: EmployeeId) = employeeController.getEmployee(dbInstance(), adminUser, clock, id)
 
-    fun createEmployee(employee: NewEmployee) =
-        employeeController.createEmployee(dbInstance(), adminUser, clock, employee)
+    fun createEmployee(employee: NewEmployee) = employeeController.createEmployee(dbInstance(), adminUser, clock, employee)
 
-    fun upsertEmployeeDaycareRoles(id: EmployeeId, daycareIds: List<DaycareId>, role: UserRole) =
-        employeeController.upsertEmployeeDaycareRoles(
-            dbInstance(),
-            adminUser,
-            clock,
-            id,
-            EmployeeController.UpsertEmployeeDaycareRolesRequest(daycareIds, role)
-        )
+    fun upsertEmployeeDaycareRoles(
+        id: EmployeeId,
+        daycareIds: List<DaycareId>,
+        role: UserRole
+    ) = employeeController.upsertEmployeeDaycareRoles(
+        dbInstance(),
+        adminUser,
+        clock,
+        id,
+        EmployeeController.UpsertEmployeeDaycareRolesRequest(daycareIds, role)
+    )
 
-    fun updateEmployeeGlobalRoles(id: EmployeeId, roles: List<UserRole>) =
-        employeeController.updateEmployeeGlobalRoles(dbInstance(), adminUser, clock, id, roles)
+    fun updateEmployeeGlobalRoles(
+        id: EmployeeId,
+        roles: List<UserRole>
+    ) = employeeController.updateEmployeeGlobalRoles(dbInstance(), adminUser, clock, id, roles)
 
-    fun deleteEmployee(id: EmployeeId) =
-        employeeController.deleteEmployee(dbInstance(), adminUser, clock, id)
+    fun deleteEmployee(id: EmployeeId) = employeeController.deleteEmployee(dbInstance(), adminUser, clock, id)
 
-    fun deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?) =
-        employeeController.deleteEmployeeDaycareRoles(dbInstance(), adminUser, clock, id, daycareId)
+    fun deleteEmployeeDaycareRoles(
+        id: EmployeeId,
+        daycareId: DaycareId?
+    ) = employeeController.deleteEmployeeDaycareRoles(dbInstance(), adminUser, clock, id, daycareId)
 
-    fun getEmployeeDetails(id: EmployeeId) =
-        employeeController.getEmployeeDetails(dbInstance(), adminUser, clock, id)
+    fun getEmployeeDetails(id: EmployeeId) = employeeController.getEmployeeDetails(dbInstance(), adminUser, clock, id)
 
     fun requestFromEmployee(employee: Employee) =
         NewEmployee(
@@ -275,11 +277,10 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT EXISTS (SELECT 1 FROM message_account WHERE employee_id = ${bind(employeeId)} AND active)
     """
-                )
-            }
-            .exactlyOne<Boolean>()
+            )
+        }.exactlyOne<Boolean>()
 }

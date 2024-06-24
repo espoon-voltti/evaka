@@ -21,37 +21,39 @@ fun Database.Transaction.insertChildDocument(
     now: HelsinkiDateTime,
     userId: EmployeeId,
     processId: ArchivedProcessId?
-): ChildDocumentId {
-    return createQuery {
-            sql(
-                """
+): ChildDocumentId =
+    createQuery {
+        sql(
+            """
 INSERT INTO child_document(child_id, template_id, status, content, modified_at, content_modified_at, content_modified_by, created_by, process_id)
-VALUES (${bind(document.childId)}, ${bind(document.templateId)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)})
+VALUES (${bind(
+                document.childId
+            )}, ${bind(
+                document.templateId
+            )}, 'DRAFT', ${bind(
+                DocumentContent(answers = emptyList())
+            )}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)})
 RETURNING id
 """
-            )
-        }
-        .exactlyOne<ChildDocumentId>()
-}
+        )
+    }.exactlyOne<ChildDocumentId>()
 
-fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getChildDocuments(childId: PersonId): List<ChildDocumentSummary> =
+    createQuery {
+        sql(
+            """
 SELECT cd.id, cd.status, dt.type, cd.modified_at, cd.published_at, dt.id as template_id, dt.name as template_name
 FROM child_document cd
 JOIN document_template dt on cd.template_id = dt.id
 WHERE cd.child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList<ChildDocumentSummary>()
-}
+        )
+    }.toList<ChildDocumentSummary>()
 
-fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? =
+    createQuery {
+        sql(
+            """
 SELECT 
     cd.id,
     cd.status,
@@ -76,23 +78,19 @@ JOIN document_template dt on cd.template_id = dt.id
 JOIN person p on cd.child_id = p.id
 WHERE cd.id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull<ChildDocumentDetails>()
-}
+        )
+    }.exactlyOneOrNull<ChildDocumentDetails>()
 
-fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? =
+    createQuery {
+        sql(
+            """
                 SELECT cd.document_key
                 FROM child_document cd
                 WHERE cd.id = ${bind(id)} AND published_at IS NOT NULL
                 """
-            )
-        }
-        .exactlyOneOrNull<String>()
-}
+        )
+    }.exactlyOneOrNull<String>()
 
 data class DocumentWriteLock(
     val modifiedBy: EmployeeId,
@@ -105,8 +103,8 @@ fun Database.Read.getCurrentWriteLock(
     now: HelsinkiDateTime
 ): DocumentWriteLock? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
     SELECT 
         content_modified_by AS modified_by,
         (
@@ -119,9 +117,8 @@ fun Database.Read.getCurrentWriteLock(
         content_modified_by IS NOT NULL AND 
         content_modified_at >= ${bind(now.minusMinutes(lockMinutes.toLong()))}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Transaction.tryTakeWriteLock(
     id: ChildDocumentId,
@@ -129,8 +126,8 @@ fun Database.Transaction.tryTakeWriteLock(
     userId: EmployeeId
 ): Boolean =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
         UPDATE child_document SET content_modified_at = ${bind(now)}, content_modified_by = ${bind(userId)}
         WHERE id = ${bind(id)} AND (
             content_modified_by IS NULL OR
@@ -138,9 +135,8 @@ fun Database.Transaction.tryTakeWriteLock(
             content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
         )
     """
-            )
-        }
-        .execute()
+        )
+    }.execute()
         .let { it > 0 }
 
 fun Database.Transaction.updateChildDocumentContent(
@@ -151,8 +147,8 @@ fun Database.Transaction.updateChildDocumentContent(
     userId: EmployeeId
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE child_document
                 SET 
                     content = ${bind(content)}, 
@@ -165,48 +161,49 @@ fun Database.Transaction.updateChildDocumentContent(
                     content_modified_at < ${bind(now.minusMinutes(lockMinutes.toLong()))}
                 )
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
-fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boolean {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.isDocumentPublishedContentUpToDate(id: ChildDocumentId): Boolean =
+    createQuery {
+        sql(
+            """
                 SELECT (published_content IS NOT NULL AND content = published_content) AS up_to_date 
                 FROM child_document 
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .exactlyOneOrNull<Boolean>() ?: throw NotFound("Document $id not found")
-}
+        )
+    }.exactlyOneOrNull<Boolean>() ?: throw NotFound("Document $id not found")
 
-fun Database.Transaction.publishChildDocument(id: ChildDocumentId, now: HelsinkiDateTime) {
+fun Database.Transaction.publishChildDocument(
+    id: ChildDocumentId,
+    now: HelsinkiDateTime
+) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE child_document
                 SET published_at = ${bind(now)}, published_content = content
                 WHERE id = ${bind(id)} AND status <> 'COMPLETED'
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM child_document_read
                 WHERE document_id = ${bind(id)}
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
-data class StatusTransition(val currentStatus: DocumentStatus, val newStatus: DocumentStatus)
+data class StatusTransition(
+    val currentStatus: DocumentStatus,
+    val newStatus: DocumentStatus
+)
 
 fun validateStatusTransition(
     tx: Database.Read,
@@ -236,15 +233,14 @@ fun Database.Transaction.changeStatus(
     now: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE child_document
                 SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.changeStatusAndPublish(
@@ -253,16 +249,15 @@ fun Database.Transaction.changeStatusAndPublish(
     now: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE child_document
                 SET status = ${bind(statusTransition.newStatus)}, modified_at = ${bind(now)}, 
                     published_at = ${bind(now)}, published_content = content
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.markCompletedAndPublish(
@@ -270,58 +265,59 @@ fun Database.Transaction.markCompletedAndPublish(
     now: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE child_document
                 SET status = 'COMPLETED', modified_at = ${bind(now)}, published_at = ${bind(now)}, published_content = content
                 WHERE id = ANY(${bind(ids)})
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.deleteChildDocumentDraft(id: ChildDocumentId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM child_document_read
                 WHERE document_id = ${bind(id)}
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM child_document
                 WHERE id = ${bind(id)} AND status = 'DRAFT'
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
-fun Database.Transaction.updateChildDocumentKey(id: ChildDocumentId, documentKey: String) {
+fun Database.Transaction.updateChildDocumentKey(
+    id: ChildDocumentId,
+    documentKey: String
+) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
         UPDATE child_document
         SET document_key = ${bind(documentKey)}
         WHERE id = ${bind(id)}
     """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.resetChildDocumentKey(ids: List<ChildDocumentId>) {
     executeBatch(ids) {
-        sql("""
+        sql(
+            """
 UPDATE child_document
 SET document_key = NULL
 WHERE id = ${bind { it }}
-""")
+"""
+        )
     }
 }

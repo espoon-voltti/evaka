@@ -33,7 +33,6 @@ class PatuReportingController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl
 ) {
-
     @PostMapping
     fun sendPatuReport(
         db: Database,

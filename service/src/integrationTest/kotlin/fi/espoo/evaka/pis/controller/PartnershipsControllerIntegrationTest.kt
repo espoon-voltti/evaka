@@ -139,7 +139,8 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun canDeletePartnership(user: AuthenticatedUser.Employee) {
         val partnership1 =
             db.transaction { tx ->
-                tx.createPartnership(
+                tx
+                    .createPartnership(
                         person.id,
                         partner.id,
                         LocalDate.now(),
@@ -147,8 +148,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         false,
                         Creator.User(partnershipCreator),
                         clock.now()
-                    )
-                    .also {
+                    ).also {
                         tx.createPartnership(
                             person.id,
                             partner.id,
@@ -190,7 +190,8 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     private fun canUpdatePartnershipDuration(user: AuthenticatedUser.Employee) {
         val partnership1 =
             db.transaction { tx ->
-                tx.createPartnership(
+                tx
+                    .createPartnership(
                         person.id,
                         partner.id,
                         LocalDate.now(),
@@ -198,8 +199,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         false,
                         Creator.User(partnershipCreator),
                         clock.now()
-                    )
-                    .also {
+                    ).also {
                         tx.createPartnership(
                             person.id,
                             partner.id,
@@ -232,7 +232,8 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         val partnership1 =
             db.transaction { tx ->
-                tx.createPartnership(
+                tx
+                    .createPartnership(
                         person.id,
                         partner.id,
                         LocalDate.now(),
@@ -240,8 +241,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         false,
                         Creator.User(partnershipCreator),
                         clock.now()
-                    )
-                    .also {
+                    ).also {
                         tx.createPartnership(
                             person.id,
                             partner.id,

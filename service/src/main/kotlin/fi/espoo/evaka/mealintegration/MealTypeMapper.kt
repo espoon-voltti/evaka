@@ -4,12 +4,18 @@
 package fi.espoo.evaka.mealintegration
 
 interface MealTypeMapper {
-    fun toMealId(mealType: MealType, specialDiet: Boolean): Int
+    fun toMealId(
+        mealType: MealType,
+        specialDiet: Boolean
+    ): Int
 }
 
 /** Kangasala mappings */
 object DefaultMealTypeMapper : MealTypeMapper {
-    override fun toMealId(mealType: MealType, specialDiet: Boolean): Int =
+    override fun toMealId(
+        mealType: MealType,
+        specialDiet: Boolean
+    ): Int =
         if (specialDiet) {
             when (mealType) {
                 MealType.BREAKFAST -> 143
@@ -19,7 +25,7 @@ object DefaultMealTypeMapper : MealTypeMapper {
                 MealType.SUPPER -> 28
                 MealType.EVENING_SNACK -> 31
             }
-        } else
+        } else {
             when (mealType) {
                 MealType.BREAKFAST -> 162
                 MealType.LUNCH -> 175
@@ -28,4 +34,5 @@ object DefaultMealTypeMapper : MealTypeMapper {
                 MealType.SUPPER -> 27
                 MealType.EVENING_SNACK -> 30
             }
+        }
 }

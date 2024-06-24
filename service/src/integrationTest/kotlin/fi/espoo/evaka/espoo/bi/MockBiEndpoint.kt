@@ -23,20 +23,23 @@ import org.springframework.web.context.request.WebRequest
 @Configuration
 class MockBiConfiguration {
     @Bean
-    fun espooBiEnv(): EspooBiEnv =
-        EspooBiEnv(url = "", username = "user", password = Sensitive("password"))
+    fun espooBiEnv(): EspooBiEnv = EspooBiEnv(url = "", username = "user", password = Sensitive("password"))
 }
 
 @RestController
 @RequestMapping("/public/mock-espoo-bi")
-class MockBiEndpoint(env: EspooBiEnv) {
+class MockBiEndpoint(
+    env: EspooBiEnv
+) {
     private val lock = ReentrantLock()
     private var capturedRequests: MutableMap<String, CapturedRequest> = mutableMapOf()
 
     private val authorizationHeader =
         "Basic ${HttpHeaders.encodeBasicAuth(env.username, env.password.value, Charsets.UTF_8)}"
 
-    class CapturedRequest(val body: ByteArray)
+    class CapturedRequest(
+        val body: ByteArray
+    )
 
     @PutMapping("/report")
     fun putReport(
@@ -44,16 +47,16 @@ class MockBiEndpoint(env: EspooBiEnv) {
         request: WebRequest,
         body: InputStream
     ): ResponseEntity<Nothing> =
-        if (request.getHeader("authorization") != authorizationHeader)
+        if (request.getHeader("authorization") != authorizationHeader) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).build()
-        else
+        } else {
             lock.withLock {
                 capturedRequests[filename] = CapturedRequest(body = body.readAllBytes())
                 ResponseEntity.ok().build()
             }
+        }
 
     fun clearData() = lock.withLock { capturedRequests.clear() }
 
-    fun getCapturedRequests(): Map<String, CapturedRequest> =
-        lock.withLock { capturedRequests.toMap() }
+    fun getCapturedRequests(): Map<String, CapturedRequest> = lock.withLock { capturedRequests.toMap() }
 }

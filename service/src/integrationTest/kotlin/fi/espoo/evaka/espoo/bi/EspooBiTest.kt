@@ -135,7 +135,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = it.insertTestPlacement(daycare),
-                            daycareGroupId = it.insertTestGroup(daycare),
+                            daycareGroupId = it.insertTestGroup(daycare)
                         )
                     )
                 }
@@ -151,7 +151,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevAbsence(
                         childId = it.insertTestChild(),
                         date = LocalDate.of(2020, 1, 1),
-                        absenceCategory = AbsenceCategory.BILLABLE,
+                        absenceCategory = AbsenceCategory.BILLABLE
                     )
                 )
             }
@@ -164,7 +164,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction {
                 it.insert(
                     DevDaycareCaretaker(
-                        groupId = it.insertTestGroup(),
+                        groupId = it.insertTestGroup()
                     )
                 )
             }
@@ -190,7 +190,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = LocalDate.of(2019, 4, 1),
                         type = DecisionType.DAYCARE,
                         unitId = daycare,
-                        status = DecisionStatus.ACCEPTED,
+                        status = DecisionStatus.ACCEPTED
                     )
                 )
             }
@@ -256,7 +256,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it.insertVasuDocument(
                         HelsinkiDateTime.of(
                             LocalDate.of(2022, 1, 1),
-                            LocalTime.of(12, 0),
+                            LocalTime.of(12, 0)
                         ),
                         childId = it.insertTestChild(),
                         template = template
@@ -318,14 +318,14 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getAssistanceNeedVoucherCoefficients() {
         val id =
             db.transaction {
-                it.insertAssistanceNeedVoucherCoefficient(
+                it
+                    .insertAssistanceNeedVoucherCoefficient(
                         childId = it.insertTestChild(),
                         AssistanceNeedVoucherCoefficientRequest(
                             coefficient = 2.0,
                             validityPeriod = FiniteDateRange.ofMonth(2019, Month.JANUARY)
                         )
-                    )
-                    .id
+                    ).id
             }
         assertSingleRowContainingId(EspooBi.getAssistanceNeedVoucherCoefficients, id)
     }
@@ -365,7 +365,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         assistanceLevels = emptySet(),
                         motivationForDecision = null,
                         unreadGuardianIds = null,
-                        annulmentReason = "",
+                        annulmentReason = ""
                     )
                 )
             }
@@ -419,20 +419,23 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 preparer2Title = "",
                                 preparer2PhoneNumber = "",
                                 decisionMakerEmployeeId = it.insert(DevEmployee()),
-                                decisionMakerTitle = "",
+                                decisionMakerTitle = ""
                             ),
                         status = AssistanceNeedDecisionStatus.ACCEPTED,
                         annulmentReason = "",
                         sentForDecision = null,
                         decisionMade = LocalDate.of(2019, 5, 1),
-                        unreadGuardianIds = emptySet(),
+                        unreadGuardianIds = emptySet()
                     )
                 )
             }
         assertSingleRowContainingId(EspooBi.getAssistanceNeedPreschoolDecisions, id)
     }
 
-    private fun assertSingleRowContainingId(query: CsvQuery, id: Id<*>) {
+    private fun assertSingleRowContainingId(
+        query: CsvQuery,
+        id: Id<*>
+    ) {
         val lines =
             db.read { tx ->
                 query(tx) { records ->
@@ -448,21 +451,17 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun Database.Transaction.insertTestArea(): AreaId = insert(DevCareArea())
 
-    private fun Database.Transaction.insertTestDaycare(): DaycareId =
-        insert(DevDaycare(areaId = insertTestArea()))
+    private fun Database.Transaction.insertTestDaycare(): DaycareId = insert(DevDaycare(areaId = insertTestArea()))
 
     private fun Database.Transaction.insertTestGroup(daycare: DaycareId? = null): GroupId =
         insert(DevDaycareGroup(daycareId = daycare ?: insertTestDaycare()))
 
-    private fun Database.Transaction.insertTestChild(): ChildId =
-        insert(DevPerson(), DevPersonType.CHILD)
+    private fun Database.Transaction.insertTestChild(): ChildId = insert(DevPerson(), DevPersonType.CHILD)
 
     private fun Database.Transaction.insertTestPlacement(daycare: DaycareId? = null): PlacementId =
         insert(DevPlacement(childId = insertTestChild(), unitId = daycare ?: insertTestDaycare()))
 
-    private fun Database.Transaction.insertTestApplicationWithForm(
-        daycare: DaycareId? = null
-    ): ApplicationId =
+    private fun Database.Transaction.insertTestApplicationWithForm(daycare: DaycareId? = null): ApplicationId =
         insertTestApplication(
             type = ApplicationType.DAYCARE,
             childId = insertTestChild(),
@@ -474,7 +473,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     urgent = true,
                     careDetails =
                         CareDetails(
-                            assistanceNeeded = true,
+                            assistanceNeeded = true
                         ),
                     extendedCare = true,
                     child = Child(dateOfBirth = null),
@@ -527,12 +526,12 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     child =
                                         ChildWithDateOfBirth(
                                             id = insertTestChild(),
-                                            dateOfBirth = LocalDate.of(2020, 1, 1),
+                                            dateOfBirth = LocalDate.of(2020, 1, 1)
                                         ),
                                     placement =
                                         FeeDecisionPlacement(
                                             unitId = insertTestDaycare(),
-                                            type = PlacementType.DAYCARE,
+                                            type = PlacementType.DAYCARE
                                         ),
                                     serviceNeed =
                                         FeeDecisionServiceNeed(
@@ -541,14 +540,14 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                             contractDaysPerMonth = null,
                                             descriptionFi = "",
                                             descriptionSv = "",
-                                            missing = false,
+                                            missing = false
                                         ),
                                     baseFee = 10_000,
                                     siblingDiscount = 0,
                                     fee = 10_000,
                                     finalFee = 10_000,
                                     feeAlterations = emptyList(),
-                                    childIncome = null,
+                                    childIncome = null
                                 )
                             ),
                         headOfFamilyId = insert(DevPerson(), DevPersonType.RAW_ROW),
@@ -561,7 +560,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         partnerIncome = null,
                         familySize = 1,
                         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(1),
-                        difference = setOf(FeeDecisionDifference.PLACEMENT),
+                        difference = setOf(FeeDecisionDifference.PLACEMENT)
                     )
                 )
             )
@@ -588,12 +587,12 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         child =
                             ChildWithDateOfBirth(
                                 id = insertTestChild(),
-                                dateOfBirth = LocalDate.of(2020, 1, 1),
+                                dateOfBirth = LocalDate.of(2020, 1, 1)
                             ),
                         placement =
                             VoucherValueDecisionPlacement(
                                 unitId = insertTestDaycare(),
-                                type = PlacementType.DAYCARE,
+                                type = PlacementType.DAYCARE
                             ),
                         serviceNeed =
                             VoucherValueDecisionServiceNeed(
@@ -603,7 +602,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 feeDescriptionSv = "",
                                 voucherValueDescriptionFi = "",
                                 voucherValueDescriptionSv = "",
-                                missing = false,
+                                missing = false
                             ),
                         baseCoPayment = 1,
                         siblingDiscount = 0,

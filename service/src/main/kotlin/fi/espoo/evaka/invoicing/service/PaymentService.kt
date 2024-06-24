@@ -53,12 +53,11 @@ class PaymentService(
                 // Skip payments whose unit has missing payment details
                 val missingDetails =
                     listOf(
-                            payment.unit.name,
-                            payment.unit.businessId,
-                            payment.unit.iban,
-                            payment.unit.providerId
-                        )
-                        .any { it.isNullOrBlank() }
+                        payment.unit.name,
+                        payment.unit.businessId,
+                        payment.unit.iban,
+                        payment.unit.providerId
+                    ).any { it.isNullOrBlank() }
                 if (missingDetails) {
                     logger.warn {
                         "Skipping payment ${payment.id} because unit ${payment.unit.id} has missing payment details"
@@ -80,12 +79,12 @@ class PaymentService(
         val sendResult = integrationClient.send(updatedPayments, tx)
         logger.info {
             "Successfully sent ${sendResult.succeeded.size} payments: ${
-            sendResult.succeeded.map { it.id }.joinToString(", ")
+                sendResult.succeeded.map { it.id }.joinToString(", ")
             }"
         }
         logger.info {
             "Failed to send ${sendResult.failed.size} payments: ${
-            sendResult.failed.map { it.id }.joinToString(", ")
+                sendResult.failed.map { it.id }.joinToString(", ")
             }"
         }
         tx.updateConfirmedPaymentsAsSent(sendResult.succeeded, now)
@@ -93,7 +92,7 @@ class PaymentService(
 
     fun confirmPayments(
         tx: Database.Transaction,
-        paymentIds: List<PaymentId>,
+        paymentIds: List<PaymentId>
     ) {
         val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
 
@@ -107,7 +106,7 @@ class PaymentService(
 
     fun revertPaymentsToDrafts(
         tx: Database.Transaction,
-        paymentIds: List<PaymentId>,
+        paymentIds: List<PaymentId>
     ) {
         val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
 

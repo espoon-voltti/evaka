@@ -13,9 +13,8 @@ import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.qualifier.Qualifier
 
-inline fun <reified T> createQualifiedType(
-    vararg annotations: KClass<out Annotation>
-): QualifiedType<T> = createQualifiedType(typeOf<T>(), *annotations)
+inline fun <reified T> createQualifiedType(vararg annotations: KClass<out Annotation>): QualifiedType<T> =
+    createQualifiedType(typeOf<T>(), *annotations)
 
 fun <T> createQualifiedType(
     type: KType,
@@ -26,8 +25,8 @@ fun <T> createQualifiedType(
         annotations.map { it.java }
     )
 
-fun KType.asJdbiJavaType(): Type {
-    return when (val classifier = this.classifier) {
+fun KType.asJdbiJavaType(): Type =
+    when (val classifier = this.classifier) {
         // Arrays need special handling, because Array<Byte>, ByteArray, and Array<Byte?> all behave
         // a bit
         // differently due to underlying JVM implementation details
@@ -46,30 +45,33 @@ fun KType.asJdbiJavaType(): Type {
         DoubleArray::class ->
             if (this.arguments.isNotEmpty()) Array<Double>::class.java else DoubleArray::class.java
         BooleanArray::class ->
-            if (this.arguments.isNotEmpty()) Array<Boolean>::class.java
-            else BooleanArray::class.java
+            if (this.arguments.isNotEmpty()) {
+                Array<Boolean>::class.java
+            } else {
+                BooleanArray::class.java
+            }
         is KClass<*> -> {
             val javaClass = classifier.javaObjectType
             if (
                 classifier.typeParameters.isEmpty() ||
-                    javaClass.isArray ||
-                    this.arguments.all { it.type == null }
+                javaClass.isArray ||
+                this.arguments.all { it.type == null }
             ) {
                 javaClass
             } else {
                 GenericTypes.parameterizeClass(
                     javaClass,
-                    *(this.arguments
-                        .map {
-                            it.type?.asJdbiJavaType() ?: error("Star projections are not supported")
-                        }
-                        .toTypedArray())
+                    *(
+                        this.arguments
+                            .map {
+                                it.type?.asJdbiJavaType() ?: error("Star projections are not supported")
+                            }.toTypedArray()
+                    )
                 )
             }
         }
         else -> error("Unsupported type $this")
     }
-}
 
 inline fun <reified T> defaultQualifiers() =
     T::class

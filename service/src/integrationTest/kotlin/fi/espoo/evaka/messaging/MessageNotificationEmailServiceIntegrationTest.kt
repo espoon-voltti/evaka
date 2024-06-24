@@ -40,11 +40,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class MessageNotificationEmailServiceIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired lateinit var accessControl: AccessControl
+
     @Autowired lateinit var messageController: MessageController
+
     @Autowired lateinit var scheduledJobs: ScheduledJobs
 
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
@@ -114,15 +116,15 @@ class MessageNotificationEmailServiceIntegrationTest :
     fun `notifications are sent to citizens`() {
         val employeeAccount =
             db.read {
-                it.getEmployeeMessageAccountIds(
+                it
+                    .getEmployeeMessageAccountIds(
                         accessControl.requireAuthorizationFilter(
                             it,
                             employee,
                             clock,
                             Action.MessageAccount.ACCESS
                         )
-                    )
-                    .first()
+                    ).first()
             }
 
         postNewThread(
@@ -154,15 +156,15 @@ class MessageNotificationEmailServiceIntegrationTest :
     fun `a notification is not sent when the message has been undone`() {
         val employeeAccount =
             db.read {
-                it.getEmployeeMessageAccountIds(
+                it
+                    .getEmployeeMessageAccountIds(
                         accessControl.requireAuthorizationFilter(
                             it,
                             employee,
                             clock,
                             Action.MessageAccount.ACCESS
                         )
-                    )
-                    .first()
+                    ).first()
             }
 
         val contentId =
@@ -195,15 +197,15 @@ class MessageNotificationEmailServiceIntegrationTest :
     fun `a notification is not sent when the message has been already read`() {
         val employeeAccount =
             db.read {
-                it.getEmployeeMessageAccountIds(
+                it
+                    .getEmployeeMessageAccountIds(
                         accessControl.requireAuthorizationFilter(
                             it,
                             employee,
                             clock,
                             Action.MessageAccount.ACCESS
                         )
-                    )
-                    .first()
+                    ).first()
             }
 
         val contentId =
@@ -231,22 +233,21 @@ class MessageNotificationEmailServiceIntegrationTest :
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         type: MessageType = MessageType.MESSAGE
-    ) =
-        messageController.createMessage(
-            dbInstance(),
-            user,
-            clock,
-            sender,
-            MessageController.PostMessageBody(
-                title = "Juhannus",
-                content = "Juhannus tulee pian",
-                type = type,
-                recipients = recipients.toSet(),
-                recipientNames = listOf(),
-                urgent = false,
-                sensitive = false
-            )
+    ) = messageController.createMessage(
+        dbInstance(),
+        user,
+        clock,
+        sender,
+        MessageController.PostMessageBody(
+            title = "Juhannus",
+            content = "Juhannus tulee pian",
+            type = type,
+            recipients = recipients.toSet(),
+            recipientNames = listOf(),
+            urgent = false,
+            sensitive = false
         )
+    )
 
     private fun undoMessage(
         sender: MessageAccountId,
@@ -260,21 +261,23 @@ class MessageNotificationEmailServiceIntegrationTest :
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
-    private fun markAllRecipientMessagesRead(person: DevPerson, clock: EvakaClock) {
+    private fun markAllRecipientMessagesRead(
+        person: DevPerson,
+        clock: EvakaClock
+    ) {
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     """
-                UPDATE message_recipients mr SET read_at = :now
-                WHERE mr.id IN (
-                    SELECT mr.id 
-                    FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id 
-                    WHERE ma.person_id = :recipientId
-                )
-            """
-                        .trimIndent()
-                )
-                .bind("now", clock.now())
+                    UPDATE message_recipients mr SET read_at = :now
+                    WHERE mr.id IN (
+                        SELECT mr.id 
+                        FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id 
+                        WHERE ma.person_id = :recipientId
+                    )
+                    """.trimIndent()
+                ).bind("now", clock.now())
                 .bind("recipientId", person.id)
                 .execute()
         }

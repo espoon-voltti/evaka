@@ -11,7 +11,10 @@ import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 
-class DevDataInitializer(jdbi: Jdbi, tracer: Tracer) {
+class DevDataInitializer(
+    jdbi: Jdbi,
+    tracer: Tracer
+) {
     init {
         Database(jdbi, tracer).connect { db ->
             db.transaction { tx ->

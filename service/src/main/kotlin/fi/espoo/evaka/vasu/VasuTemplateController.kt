@@ -48,8 +48,9 @@ class VasuTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: CreateTemplateRequest
-    ): VasuTemplateId {
-        return db.connect { dbc ->
+    ): VasuTemplateId =
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
                         it,
@@ -66,11 +67,9 @@ class VasuTemplateController(
                         content = getDefaultTemplateContent(body.type, body.language)
                     )
                 }
-            }
-            .also { vasuTemplateId ->
+            }.also { vasuTemplateId ->
                 Audit.VasuTemplateCreate.log(targetId = AuditId(vasuTemplateId))
             }
-    }
 
     @PutMapping("/{id}")
     fun editTemplate(
@@ -93,7 +92,10 @@ class VasuTemplateController(
         Audit.VasuTemplateEdit.log(targetId = AuditId(id))
     }
 
-    data class CopyTemplateRequest(val name: String, val valid: FiniteDateRange)
+    data class CopyTemplateRequest(
+        val name: String,
+        val valid: FiniteDateRange
+    )
 
     @PostMapping("/{id}/copy")
     fun copyTemplate(
@@ -102,8 +104,9 @@ class VasuTemplateController(
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
         @RequestBody body: CopyTemplateRequest
-    ): VasuTemplateId {
-        return db.connect { dbc ->
+    ): VasuTemplateId =
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
                         it,
@@ -122,9 +125,7 @@ class VasuTemplateController(
                         content = copyTemplateContentWithCurrentlyValidOphSections(template)
                     )
                 }
-            }
-            .also { Audit.VasuTemplateCopy.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.VasuTemplateCopy.log(targetId = AuditId(id)) }
 
     @GetMapping
     fun getTemplates(
@@ -132,8 +133,9 @@ class VasuTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam validOnly: Boolean = false
-    ): List<VasuTemplateSummary> {
-        return db.connect { dbc ->
+    ): List<VasuTemplateSummary> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -143,9 +145,7 @@ class VasuTemplateController(
                     )
                     tx.getVasuTemplates(clock, validOnly)
                 }
-            }
-            .also { Audit.VasuTemplateRead.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.VasuTemplateRead.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping("/{id}")
     fun getTemplate(
@@ -153,8 +153,9 @@ class VasuTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId
-    ): VasuTemplate {
-        return db.connect { dbc ->
+    ): VasuTemplate =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -165,9 +166,7 @@ class VasuTemplateController(
                     )
                     tx.getVasuTemplate(id)
                 } ?: throw NotFound("template $id not found")
-            }
-            .also { Audit.VasuTemplateRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.VasuTemplateRead.log(targetId = AuditId(id)) }
 
     @DeleteMapping("/{id}")
     fun deleteTemplate(
@@ -198,8 +197,9 @@ class VasuTemplateController(
                 accessControl.requirePermissionFor(tx, user, clock, Action.VasuTemplate.UPDATE, id)
                 val template =
                     tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
-                if (template.documentCount > 0)
+                if (template.documentCount > 0) {
                     throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
+                }
                 tx.updateVasuTemplateContent(id, content)
             }
         }

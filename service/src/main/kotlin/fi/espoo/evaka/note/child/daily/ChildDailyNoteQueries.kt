@@ -29,9 +29,7 @@ WHERE ${predicate(predicate.forTable("cdn"))}
 fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
     getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).exactlyOneOrNull()
 
-fun Database.Read.getChildDailyNotesForChildren(
-    children: Collection<ChildId>,
-): List<ChildDailyNote> =
+fun Database.Read.getChildDailyNotesForChildren(children: Collection<ChildId>): List<ChildDailyNote> =
     getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
 fun Database.Read.getChildDailyNotesForGroup(
@@ -39,36 +37,41 @@ fun Database.Read.getChildDailyNotesForGroup(
     today: LocalDate
 ): List<ChildDailyNote> =
     getChildDailyNotes(
-            Predicate {
-                where(
-                    """
+        Predicate {
+            where(
+                """
 $it.child_id IN (
     SELECT child_id
     FROM realized_placement_all(${bind(today)})
     WHERE group_id = ${bind(groupId)}
 )
 """
-                )
-            }
-        )
-        .toList()
+            )
+        }
+    ).toList()
 
 fun Database.Transaction.createChildDailyNote(
     childId: ChildId,
     note: ChildDailyNoteBody
-): ChildDailyNoteId {
-    return createUpdate {
-            sql(
-                """
+): ChildDailyNoteId =
+    createUpdate {
+        sql(
+            """
 INSERT INTO child_daily_note (child_id, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note)
-VALUES (${bind(childId)}, ${bind(note.note)}, ${bind(note.feedingNote)}, ${bind(note.sleepingNote)}, ${bind(note.sleepingMinutes)}, ${bind(note.reminders)}::child_daily_note_reminder[], ${bind(note.reminderNote)})
+VALUES (${bind(
+                childId
+            )}, ${bind(
+                note.note
+            )}, ${bind(
+                note.feedingNote
+            )}, ${bind(
+                note.sleepingNote
+            )}, ${bind(note.sleepingMinutes)}, ${bind(note.reminders)}::child_daily_note_reminder[], ${bind(note.reminderNote)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<ChildDailyNoteId>()
-}
 
 fun Database.Transaction.updateChildDailyNote(
     clock: EvakaClock,
@@ -77,8 +80,8 @@ fun Database.Transaction.updateChildDailyNote(
 ): ChildDailyNote {
     val now = clock.now()
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE child_daily_note SET
     note = ${bind(note.note)}, 
     feeding_note = ${bind(note.feedingNote)}, 
@@ -90,9 +93,8 @@ UPDATE child_daily_note SET
 WHERE id = ${bind(id)}
 RETURNING *
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<ChildDailyNote>()
 }
 
@@ -102,11 +104,10 @@ fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {
 
 fun Database.Transaction.deleteExpiredNotes(now: HelsinkiDateTime) {
     createUpdate {
-            sql(
-                "DELETE FROM child_daily_note WHERE modified_at < ${bind(now)} - INTERVAL '14 hours'"
-            )
-        }
-        .execute()
+        sql(
+            "DELETE FROM child_daily_note WHERE modified_at < ${bind(now)} - INTERVAL '14 hours'"
+        )
+    }.execute()
 
     createUpdate { sql("DELETE FROM child_sticky_note WHERE expires < ${bind(now.toLocalDate())}") }
         .execute()

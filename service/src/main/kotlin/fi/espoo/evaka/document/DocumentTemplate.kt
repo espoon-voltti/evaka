@@ -18,7 +18,10 @@ import fi.espoo.evaka.shared.domain.OfficialLanguage
 import java.time.format.DateTimeFormatter
 import org.jdbi.v3.json.Json
 
-private data class Translations(val yes: String, val no: String)
+private data class Translations(
+    val yes: String,
+    val no: String
+)
 
 private val translationsFi = Translations(yes = "Kyllä", no = "Ei")
 
@@ -46,7 +49,9 @@ enum class QuestionType {
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type"
 )
-sealed class Question(val type: QuestionType) {
+sealed class Question(
+    val type: QuestionType
+) {
     abstract val id: String
 
     abstract fun generateHtml(
@@ -67,14 +72,15 @@ sealed class Question(val type: QuestionType) {
             answeredQuestion: AnsweredQuestion<*>?,
             language: OfficialLanguage
         ): HtmlElement {
-            if (answeredQuestion == null)
+            if (answeredQuestion == null) {
                 return HtmlBuilder.div(className = htmlClassName()) {
                     listOf(label(label), span("-"))
                 }
+            }
 
             if (
                 answeredQuestion !is AnsweredQuestion.TextAnswer ||
-                    !answeredQuestion.isStructurallyValid(this)
+                !answeredQuestion.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
@@ -102,14 +108,15 @@ sealed class Question(val type: QuestionType) {
             answeredQuestion: AnsweredQuestion<*>?,
             language: OfficialLanguage
         ): HtmlElement {
-            if (answeredQuestion == null)
+            if (answeredQuestion == null) {
                 return HtmlBuilder.div(className = htmlClassName()) {
                     listOf(label(label), span("-"))
                 }
+            }
 
             if (
                 answeredQuestion !is AnsweredQuestion.CheckboxAnswer ||
-                    !answeredQuestion.isStructurallyValid(this)
+                !answeredQuestion.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
@@ -134,14 +141,15 @@ sealed class Question(val type: QuestionType) {
             answeredQuestion: AnsweredQuestion<*>?,
             language: OfficialLanguage
         ): HtmlElement {
-            if (answeredQuestion == null)
+            if (answeredQuestion == null) {
                 return HtmlBuilder.div(className = htmlClassName()) {
                     listOf(label(label), span("-"))
                 }
+            }
 
             if (
                 answeredQuestion !is AnsweredQuestion.CheckboxGroupAnswer ||
-                    !answeredQuestion.isStructurallyValid(this)
+                !answeredQuestion.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
@@ -177,14 +185,15 @@ sealed class Question(val type: QuestionType) {
             answeredQuestion: AnsweredQuestion<*>?,
             language: OfficialLanguage
         ): HtmlElement {
-            if (answeredQuestion == null)
+            if (answeredQuestion == null) {
                 return HtmlBuilder.div(className = htmlClassName()) {
                     listOf(label(label), span("-"))
                 }
+            }
 
             if (
                 answeredQuestion !is AnsweredQuestion.RadioButtonGroupAnswer ||
-                    !answeredQuestion.isStructurallyValid(this)
+                !answeredQuestion.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
@@ -212,31 +221,34 @@ sealed class Question(val type: QuestionType) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
             language: OfficialLanguage
-        ): HtmlElement {
-            return HtmlBuilder.div(className = htmlClassName()) {
+        ): HtmlElement =
+            HtmlBuilder.div(className = htmlClassName()) {
                 listOfNotNull(
                     if (label.isNotBlank()) label(label) else null,
                     if (text.isNotBlank()) div { multilineText(text) } else null
                 )
             }
-        }
     }
 
     @JsonTypeName("DATE")
-    data class DateQuestion(override val id: String, val label: String, val infoText: String = "") :
-        Question(QuestionType.DATE) {
+    data class DateQuestion(
+        override val id: String,
+        val label: String,
+        val infoText: String = ""
+    ) : Question(QuestionType.DATE) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
             language: OfficialLanguage
         ): HtmlElement {
-            if (answeredQuestion == null)
+            if (answeredQuestion == null) {
                 return HtmlBuilder.div(className = htmlClassName()) {
                     listOf(label(label), span("-"))
                 }
+            }
 
             if (
                 answeredQuestion !is AnsweredQuestion.DateAnswer ||
-                    !answeredQuestion.isStructurallyValid(this)
+                !answeredQuestion.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
@@ -276,7 +288,7 @@ sealed class Question(val type: QuestionType) {
 
             if (
                 answeredQuestion !is AnsweredQuestion.GroupedTextFieldsAnswer ||
-                    !answeredQuestion.isStructurallyValid(this)
+                !answeredQuestion.isStructurallyValid(this)
             ) {
                 throw IllegalArgumentException("Invalid answer to question $id")
             }
@@ -310,7 +322,10 @@ data class CheckboxGroupQuestionOption(
     val withText: Boolean = false
 )
 
-data class RadioButtonGroupQuestionOption(val id: String, val label: String)
+data class RadioButtonGroupQuestionOption(
+    val id: String,
+    val label: String
+)
 
 data class Section(
     val id: String,
@@ -319,11 +334,15 @@ data class Section(
     val infoText: String = ""
 )
 
-@Json data class DocumentTemplateContent(val sections: List<Section>)
+@Json data class DocumentTemplateContent(
+    val sections: List<Section>
+)
 
 /** statuses is an ordered list which defines a linear state machine */
 @ConstList("documentTypes")
-enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
+enum class DocumentType(
+    val statuses: List<DocumentStatus>
+) : DatabaseEnum {
     PEDAGOGICAL_REPORT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     PEDAGOGICAL_ASSESSMENT(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED)),
     HOJKS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),

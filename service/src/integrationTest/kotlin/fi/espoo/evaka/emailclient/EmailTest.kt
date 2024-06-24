@@ -30,7 +30,8 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `receiver's enabled email notification types are respected`() {
         // Not set -> all messages are sent
-        EmailMessageType.values()
+        EmailMessageType
+            .values()
             .mapNotNull { type -> createEmail(emailType = type) }
             .also { emails -> assertEquals(EmailMessageType.values().size, emails.size) }
 
@@ -45,7 +46,8 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             )
         }
-        EmailMessageType.values()
+        EmailMessageType
+            .values()
             .mapNotNull { type -> createEmail(emailType = type, toAddress = "$type@example.com") }
             .also { emails ->
                 assertEquals(
@@ -64,12 +66,12 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
         toAddress: String = "test@example.com"
     ): Email? {
         db.transaction { tx ->
-            tx.createUpdate {
+            tx
+                .createUpdate {
                     sql(
                         "UPDATE person SET email = ${bind(toAddress)} WHERE id = ${bind(testAdult_1.id)}"
                     )
-                }
-                .execute()
+                }.execute()
         }
         return Email.create(db, testAdult_1.id, emailType, toAddress, testContent, "traceid")
     }

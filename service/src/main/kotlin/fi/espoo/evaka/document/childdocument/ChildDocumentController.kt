@@ -52,8 +52,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ChildDocumentCreateRequest
-    ): ChildDocumentId {
-        return db.connect { dbc ->
+    ): ChildDocumentId =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -84,13 +85,13 @@ class ChildDocumentController(
                             // guaranteed to be not null when processDefinitionNumber is not null by
                             // db constraint
                             val archiveDurationMonths = template.archiveDurationMonths!!
-                            tx.insertProcess(
+                            tx
+                                .insertProcess(
                                     processDefinitionNumber = processDefinitionNumber,
                                     year = now.year,
                                     organization = featureConfig.archiveMetadataOrganization,
                                     archiveDurationMonths = archiveDurationMonths
-                                )
-                                .id
+                                ).id
                                 .also { processId ->
                                     tx.insertProcessHistoryRow(
                                         processId = processId,
@@ -108,9 +109,7 @@ class ChildDocumentController(
                         processId = processId
                     )
                 }
-            }
-            .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
-    }
+            }.also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
 
     @GetMapping
     fun getDocuments(
@@ -118,8 +117,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam childId: PersonId
-    ): List<ChildDocumentSummaryWithPermittedActions> {
-        return db.connect { dbc ->
+    ): List<ChildDocumentSummaryWithPermittedActions> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -145,12 +145,9 @@ class ChildDocumentController(
                             permittedActions[document.id]
                                 ?.takeIf { it.contains(Action.ChildDocument.READ) }
                                 ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
-                        }
-                        .filter { user.isAdmin || !it.data.type.isMigrated() }
+                        }.filter { user.isAdmin || !it.data.type.isMigrated() }
                 }
-            }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
 
     data class ChildDocumentSummaryWithPermittedActions(
         val data: ChildDocumentSummary,
@@ -163,8 +160,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ChildDocumentWithPermittedActions {
-        return db.connect { dbc ->
+    ): ChildDocumentWithPermittedActions =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -192,9 +190,7 @@ class ChildDocumentController(
                         permittedActions = permittedActions
                     )
                 }
-            }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
-    }
+            }.also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
 
     @PutMapping("/{documentId}/content")
     fun updateDocumentContent(
@@ -205,7 +201,8 @@ class ChildDocumentController(
         @RequestBody body: DocumentContent
     ) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
+            dbc
+                .transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -217,8 +214,9 @@ class ChildDocumentController(
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
 
-                    if (!document.status.editable)
+                    if (!document.status.editable) {
                         throw BadRequest("Cannot update contents of document in this status")
+                    }
 
                     validateContentAgainstTemplate(body, document.template.content)
 
@@ -238,8 +236,7 @@ class ChildDocumentController(
                         clock.now(),
                         user.id
                     )
-                }
-                .also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
+                }.also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
         }
     }
 
@@ -254,8 +251,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): DocumentLockResponse {
-        return db.connect { dbc ->
+    ): DocumentLockResponse =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -273,9 +271,7 @@ class ChildDocumentController(
                         currentLock = currentLock
                     )
                 }
-            }
-            .also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = AuditId(documentId)) }
-    }
+            }.also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = AuditId(documentId)) }
 
     private fun validateContentAgainstTemplate(
         documentContent: DocumentContent,
@@ -302,7 +298,8 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -326,8 +323,7 @@ class ChildDocumentController(
                         )
                     }
                 }
-            }
-            .also { Audit.ChildDocumentPublish.log(targetId = AuditId(documentId)) }
+            }.also { Audit.ChildDocumentPublish.log(targetId = AuditId(documentId)) }
     }
 
     data class StatusChangeRequest(
@@ -343,7 +339,8 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -382,8 +379,7 @@ class ChildDocumentController(
                         userId = user.evakaUserId
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildDocumentNextStatus.log(
                     targetId = AuditId(documentId),
                     meta = mapOf("newStatus" to body.newStatus)
@@ -400,7 +396,8 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -425,8 +422,7 @@ class ChildDocumentController(
                         userId = user.evakaUserId
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildDocumentPrevStatus.log(
                     targetId = AuditId(documentId),
                     meta = mapOf("newStatus" to body.newStatus)
@@ -441,7 +437,8 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -453,8 +450,7 @@ class ChildDocumentController(
                     deleteProcessByDocumentId(tx, documentId)
                     tx.deleteChildDocumentDraft(documentId)
                 }
-            }
-            .also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
+            }.also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
     }
 
     @GetMapping("/{documentId}/pdf")
@@ -463,8 +459,9 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -475,7 +472,5 @@ class ChildDocumentController(
                     )
                     childDocumentService.getPdfResponse(tx, documentId)
                 }
-            }
-            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
-    }
+            }.also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
 }

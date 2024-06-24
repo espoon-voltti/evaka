@@ -174,8 +174,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     testDaycare.id,
                     startDate = period.start.plusDays(1),
                     endDate = period.end.minusDays(1)
-                )
-                .backupCares
+                ).backupCares
 
         assertEquals(
             listOf(

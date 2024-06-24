@@ -16,18 +16,28 @@ import org.junit.jupiter.api.Test
 private val dummyFile = TsProject.LibCommon / "file.ts"
 
 class TsCodeGeneratorTest {
-    data class PlainObject(val str: String, val list: List<String>, val bool: Boolean) {
+    data class PlainObject(
+        val str: String,
+        val list: List<String>,
+        val bool: Boolean
+    ) {
         companion object {
             val import = TsImport.Named(dummyFile, "PlainObject")
         }
     }
 
-    data class ObjectLiteral(val str: String, val list: List<String>?, val bool: Boolean)
+    data class ObjectLiteral(
+        val str: String,
+        val list: List<String>?,
+        val bool: Boolean
+    )
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
     @JsonTypeIdResolver(SealedSubclassSimpleName::class)
     sealed interface SealedInterface {
-        data class Variant1(val data: String) : SealedInterface
+        data class Variant1(
+            val data: String
+        ) : SealedInterface
 
         data object Variant2 : SealedInterface
 
@@ -36,8 +46,7 @@ class TsCodeGeneratorTest {
         }
     }
 
-    private fun metadata(vararg rootTypes: KType): TypeMetadata =
-        discoverMetadata(defaultMetadata, rootTypes.asSequence())
+    private fun metadata(vararg rootTypes: KType): TypeMetadata = discoverMetadata(defaultMetadata, rootTypes.asSequence())
 
     private fun singleFileGenerator(metadata: TypeMetadata): TsCodeGenerator =
         object : TsCodeGenerator(metadata) {
@@ -51,6 +60,7 @@ class TsCodeGeneratorTest {
                 metadata(typeOf<PlainObject>(), typeOf<SealedInterface>()) +
                     TypeMetadata(ObjectLiteral::class to TsObjectLiteral(ObjectLiteral::class))
             )
+
         fun assertTsCode(
             text: String,
             vararg imports: TsImport,
@@ -72,12 +82,14 @@ class TsCodeGeneratorTest {
             compact = true
         )
         assertTsCode(
-            """{
+            """
+            {
   bool: boolean,
   list: string[] | null,
   str: string
-}"""
-                .trimIndent(),
+}
+            
+            """.trimIndent(),
             type = typeOf<ObjectLiteral>()
         )
 
@@ -92,12 +104,14 @@ class TsCodeGeneratorTest {
         assertTsCode("LocalDate[]", Imports.localDate, type = typeOf<List<LocalDate>>())
         assertTsCode("PlainObject[]", PlainObject.import, type = typeOf<List<PlainObject>>())
         assertTsCode(
-            """({
+            """
+            ({
   bool: boolean,
   list: string[] | null,
   str: string
-} | null)[]"""
-                .trimIndent(),
+} | null)[]
+            
+            """.trimIndent(),
             type = typeOf<List<ObjectLiteral?>>()
         )
 
@@ -122,12 +136,14 @@ class TsCodeGeneratorTest {
             type = typeOf<Map<String, PlainObject>>()
         )
         assertTsCode(
-            """Record<string, {
+            """
+            Record<string, {
   bool: boolean,
   list: string[] | null,
   str: string
-} | null>"""
-                .trimIndent(),
+} | null>
+            
+            """.trimIndent(),
             type = typeOf<Map<String, ObjectLiteral?>>()
         )
     }
@@ -136,7 +152,12 @@ class TsCodeGeneratorTest {
     fun `declarations for named types are generated correctly`() {
         val generator =
             singleFileGenerator(metadata(typeOf<PlainObject>(), typeOf<SealedInterface>()))
-        fun assertTsCode(text: String, vararg imports: TsImport, type: KType) {
+
+        fun assertTsCode(
+            text: String,
+            vararg imports: TsImport,
+            type: KType
+        ) {
             assertEquals(
                 TsCode(text.trimIndent(), *imports),
                 generator.namedType(generator.metadata[type] as TsNamedType<*>).let {

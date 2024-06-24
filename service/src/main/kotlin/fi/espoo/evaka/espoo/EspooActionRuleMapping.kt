@@ -32,10 +32,10 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         UserRole.DIRECTOR,
                         UserRole.REPORT_VIEWER
                     )
-                        as ScopedActionRule<in T>,
+                        as ScopedActionRule<in T>
                 ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inAnyUnit() as ScopedActionRule<in T>,
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inAnyUnit() as ScopedActionRule<in T>
                     )
             }
             Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT -> {
@@ -53,12 +53,11 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 ) +
                     sequenceOf(
                         HasUnitRole(
-                                UserRole.UNIT_SUPERVISOR,
-                                UserRole.SPECIAL_EDUCATION_TEACHER,
-                                UserRole.STAFF,
-                                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                            )
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            UserRole.UNIT_SUPERVISOR,
+                            UserRole.SPECIAL_EDUCATION_TEACHER,
+                            UserRole.STAFF,
+                            UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                        ).inPlacementUnitOfChild() as ScopedActionRule<in T>
                     )
             }
             Action.Child.CREATE_DAILY_SERVICE_TIME -> {
@@ -69,11 +68,10 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 ) +
                     sequenceOf(
                         HasUnitRole(
-                                UserRole.UNIT_SUPERVISOR,
-                                UserRole.SPECIAL_EDUCATION_TEACHER,
-                                UserRole.STAFF
-                            )
-                            .inPlacementUnitOfChild() as ScopedActionRule<in T>
+                            UserRole.UNIT_SUPERVISOR,
+                            UserRole.SPECIAL_EDUCATION_TEACHER,
+                            UserRole.STAFF
+                        ).inPlacementUnitOfChild() as ScopedActionRule<in T>
                     )
             }
             Action.Citizen.Child.READ_DAILY_SERVICE_TIMES -> {

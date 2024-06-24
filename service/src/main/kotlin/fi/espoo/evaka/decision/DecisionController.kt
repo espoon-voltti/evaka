@@ -134,8 +134,9 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<DecisionUnit> {
-        return db.connect { dbc ->
+    ): List<DecisionUnit> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -145,9 +146,7 @@ class DecisionController(
                     )
                     getDecisionUnits(it)
                 }
-            }
-            .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
@@ -155,8 +154,9 @@ class DecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 val decision =
                     dbc.transaction { tx ->
                         accessControl.requirePermissionFor(
@@ -186,8 +186,8 @@ class DecisionController(
 
                         if (
                             (child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) &&
-                                decision.documentContainsContactInfo &&
-                                !user.isAdmin
+                            decision.documentContainsContactInfo &&
+                            !user.isAdmin
                         ) {
                             throw Forbidden(
                                 "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
@@ -197,9 +197,9 @@ class DecisionController(
                         decision
                     }
                 decisionService.getDecisionPdf(dbc, decision)
-            }
-            .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
 }
 
-data class DecisionListResponse(val decisions: List<Decision>)
+data class DecisionListResponse(
+    val decisions: List<Decision>
+)

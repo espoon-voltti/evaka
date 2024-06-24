@@ -18,7 +18,6 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 
 class TitaniaHelpersTest {
-
     @Test
     fun `splitOvernight should return attendance is as when departed is null`() {
         val attendance = testAttendance.copy(departed = null)
@@ -43,7 +42,8 @@ class TitaniaHelpersTest {
                 departed = HelsinkiDateTime.of(LocalDate.of(2022, 6, 8), LocalTime.of(10, 15))
             )
 
-        Assertions.assertThat(splitOvernight(attendance))
+        Assertions
+            .assertThat(splitOvernight(attendance))
             .containsExactly(
                 attendance.copy(departed = attendance.arrived.atEndOfDay()),
                 attendance.copy(

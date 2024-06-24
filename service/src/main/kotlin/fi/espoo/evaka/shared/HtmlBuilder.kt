@@ -20,19 +20,18 @@ sealed class HtmlElement {
                 "<$tag$maybeClass/>"
             } else {
                 """
-                    <$tag$maybeClass>
-                        ${children.joinToString("\n") { it.toHtml() }}
-                    </$tag>
-                """
-                    .trimIndent()
+                <$tag$maybeClass>
+                    ${children.joinToString("\n") { it.toHtml() }}
+                </$tag>
+                """.trimIndent()
             }
         }
     }
 
-    data class Text(val text: String) : HtmlElement() {
-        override fun toHtml(): String {
-            return HtmlEscape.escapeHtml5Xml(text)
-        }
+    data class Text(
+        val text: String
+    ) : HtmlElement() {
+        override fun toHtml(): String = HtmlEscape.escapeHtml5Xml(text)
     }
 }
 
@@ -41,8 +40,7 @@ data object HtmlBuilder {
 
     fun multilineText(text: String) = text.split("\n").flatMap { listOf(text(it), br()) }
 
-    fun body(children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }) =
-        HtmlElement.Tag("body", HtmlBuilder.children())
+    fun body(children: HtmlBuilder.() -> List<HtmlElement> = { emptyList() }) = HtmlElement.Tag("body", HtmlBuilder.children())
 
     fun br(
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,

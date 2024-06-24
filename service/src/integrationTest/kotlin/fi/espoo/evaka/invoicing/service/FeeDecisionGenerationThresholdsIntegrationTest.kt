@@ -36,10 +36,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class FeeDecisionGenerationThresholdsIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class FeeDecisionGenerationThresholdsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
+
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     val originalRange = dateRange(10, 20)
@@ -114,12 +115,15 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
 
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
 
-    private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
+    private fun dateRange(
+        f: Int,
+        t: Int
+    ) = DateRange(day(f), day(t))
 
-    private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx -> tx.createQuery(feeDecisionQuery()).toList<FeeDecision>() }
+    private fun getAllFeeDecisions(): List<FeeDecision> =
+        db
+            .read { tx -> tx.createQuery(feeDecisionQuery()).toList<FeeDecision>() }
             .sortedBy { it.validFrom }
-    }
 
     private fun generate() {
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }

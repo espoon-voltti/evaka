@@ -19,15 +19,17 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/finance-decisions")
-class FinanceDecisionController(private val accessControl: AccessControl) {
-
+class FinanceDecisionController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/selectable-handlers")
     fun getSelectableFinanceDecisionHandlers(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock
-    ): List<Employee> {
-        return db.connect { dbc ->
+    ): List<Employee> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -37,7 +39,5 @@ class FinanceDecisionController(private val accessControl: AccessControl) {
                     )
                     tx.getEmployeesByRoles(roles = FINANCE_DECISION_HANDLER_ROLES, unitId = null)
                 }
-            }
-            .also { Audit.FinanceDecisionHandlersRead.log() }
-    }
+            }.also { Audit.FinanceDecisionHandlersRead.log() }
 }

@@ -16,39 +16,35 @@ fun Database.Transaction.insertVasuTemplate(
     type: CurriculumType,
     language: OfficialLanguage,
     content: VasuContent
-): VasuTemplateId {
-    return createQuery {
-            sql(
-                """
+): VasuTemplateId =
+    createQuery {
+        sql(
+            """
                 INSERT INTO curriculum_template (valid, type, language, name, content)
                 VALUES (${bind(valid)}, ${bind(type)}, ${bind(language)}, ${bind(name)}, ${bind(content)})
                 RETURNING id
                 """
-            )
-        }
-        .exactlyOne<VasuTemplateId>()
-}
+        )
+    }.exactlyOne<VasuTemplateId>()
 
-fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? =
+    createQuery {
+        sql(
+            """
                 SELECT ct.*, (SELECT count(*) FROM curriculum_document cd WHERE ct.id = cd.template_id) AS document_count
                 FROM curriculum_template ct
                 WHERE ct.id = ${bind(id)}
             """
-            )
-        }
-        .exactlyOneOrNull<VasuTemplate>()
-}
+        )
+    }.exactlyOneOrNull<VasuTemplate>()
 
 fun Database.Read.getVasuTemplates(
     clock: EvakaClock,
     validOnly: Boolean
-): List<VasuTemplateSummary> {
-    return createQuery {
-            sql(
-                """
+): List<VasuTemplateSummary> =
+    createQuery {
+        sql(
+            """
                 SELECT 
                     id,
                     name,
@@ -59,28 +55,28 @@ fun Database.Read.getVasuTemplates(
                 FROM curriculum_template ct
                 ${if (validOnly) "WHERE valid @> ${bind(clock.today())}" else ""}
                 """
-            )
-        }
-        .toList<VasuTemplateSummary>()
-}
+        )
+    }.toList<VasuTemplateSummary>()
 
-fun Database.Transaction.updateVasuTemplateContent(id: VasuTemplateId, content: VasuContent) {
+fun Database.Transaction.updateVasuTemplateContent(
+    id: VasuTemplateId,
+    content: VasuContent
+) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE curriculum_template
                 SET content = ${bind(content)}
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
-fun Database.Read.getVasuTemplateForUpdate(id: VasuTemplateId): VasuTemplateSummary? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getVasuTemplateForUpdate(id: VasuTemplateId): VasuTemplateSummary? =
+    createQuery {
+        sql(
+            """
                 SELECT
                     id,
                     name,
@@ -92,32 +88,31 @@ fun Database.Read.getVasuTemplateForUpdate(id: VasuTemplateId): VasuTemplateSumm
                 WHERE id = ${bind(id)}
                 FOR UPDATE
                 """
-            )
-        }
-        .exactlyOneOrNull<VasuTemplateSummary>()
-}
+        )
+    }.exactlyOneOrNull<VasuTemplateSummary>()
 
-fun Database.Transaction.updateVasuTemplate(id: VasuTemplateId, params: VasuTemplateUpdate) {
+fun Database.Transaction.updateVasuTemplate(
+    id: VasuTemplateId,
+    params: VasuTemplateUpdate
+) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE curriculum_template
                 SET name = ${bind(params.name)}, valid = ${bind(params.valid)}
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.deleteUnusedVasuTemplate(id: VasuTemplateId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM curriculum_template ct
                 WHERE ct.id = ${bind(id)} AND NOT EXISTS(SELECT 1 FROM curriculum_document cd WHERE cd.template_id = ct.id)
                 """
-            )
-        }
-        .updateExactlyOne(notFoundMsg = "template $id not found or is in use")
+        )
+    }.updateExactlyOne(notFoundMsg = "template $id not found or is in use")
 }

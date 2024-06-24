@@ -14,8 +14,9 @@ import java.net.URI
 import org.junit.jupiter.api.BeforeAll
 import org.springframework.beans.factory.annotation.Autowired
 
-abstract class VardaIntegrationTest(resetDbBeforeEach: Boolean) :
-    FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
+abstract class VardaIntegrationTest(
+    resetDbBeforeEach: Boolean
+) : FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
     protected lateinit var vardaTokenProvider: VardaTokenProvider
     protected lateinit var vardaClient: VardaClient
 

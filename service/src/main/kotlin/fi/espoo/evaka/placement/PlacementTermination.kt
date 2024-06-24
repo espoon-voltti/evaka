@@ -70,13 +70,12 @@ fun mapToTerminatablePlacements(
             val maybePreschoolOrPreparatoryPlacement =
                 sorted.find {
                     listOf(
-                            PRESCHOOL_DAYCARE,
-                            PRESCHOOL,
-                            PRESCHOOL_CLUB,
-                            PREPARATORY,
-                            PREPARATORY_DAYCARE
-                        )
-                        .contains(it.type)
+                        PRESCHOOL_DAYCARE,
+                        PRESCHOOL,
+                        PRESCHOOL_CLUB,
+                        PREPARATORY,
+                        PREPARATORY_DAYCARE
+                    ).contains(it.type)
                 }
             val placementsByType =
                 sorted.groupBy {
@@ -127,8 +126,7 @@ fun mapToTerminatablePlacements(
                                 startDate.isBefore(today.plusDays(1))
                     )
                 }
-        }
-        .sortedBy { it.startDate }
+        }.sortedBy { it.startDate }
 
 private fun ChildPlacement.startsAfter(date: LocalDate): Boolean = this.startDate.isAfter(date)
 
@@ -196,8 +194,7 @@ fun terminateBilledDaycare(
             terminatablePlacementGroup.placements
                 .find {
                     it.type == newPlacementType && it.startDate == placement.endDate.plusDays(1)
-                }
-                ?.also { placementsToSkip.add(it) }
+                }?.also { placementsToSkip.add(it) }
 
         // If placement is in the future
         //  - has an adjacent placement => cancel placement & adjust adjacent start

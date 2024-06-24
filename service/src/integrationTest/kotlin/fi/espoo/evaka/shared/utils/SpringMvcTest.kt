@@ -33,8 +33,7 @@ class SpringMvcTest : FullApplicationTest(resetDbBeforeEach = false) {
         http.get("/integration-test/require-auth").asUser(employee).response().let { (_, res, _) ->
             assertTrue(res.isSuccessful)
         }
-        http.get("/integration-test/require-auth-employee").asUser(employee).response().let {
-            (_, res, _) ->
+        http.get("/integration-test/require-auth-employee").asUser(employee).response().let { (_, res, _) ->
             assertTrue(res.isSuccessful)
         }
     }

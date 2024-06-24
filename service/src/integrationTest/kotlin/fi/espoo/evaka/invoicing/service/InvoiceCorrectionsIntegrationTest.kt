@@ -214,10 +214,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val firstMonth = Month.JANUARY
         val firstInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, firstMonth)), firstMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, firstInvoice.rows.size)
         assertEquals(20_00, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows.first().amount)
@@ -229,10 +229,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val secondMonth = Month.FEBRUARY
         val secondInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, secondMonth)), secondMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(20_00, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -246,10 +246,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val thirdMonth = Month.MARCH
         val thirdInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, thirdMonth)), thirdMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, thirdInvoice.rows.size)
         assertEquals(60_00, thirdInvoice.totalPrice)
         assertEquals(1, thirdInvoice.rows.first().amount)
@@ -266,10 +266,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val firstMonth = Month.JANUARY
         val firstInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, firstMonth)), firstMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, firstInvoice.rows.size)
         assertEquals(0, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows.first().amount)
@@ -281,10 +281,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val secondMonth = Month.FEBRUARY
         val secondInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, secondMonth)), secondMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(0, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -298,10 +298,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val thirdMonth = Month.MARCH
         val thirdInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, thirdMonth)), thirdMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, thirdInvoice.rows.size)
         assertEquals(50_00, thirdInvoice.totalPrice)
         assertEquals(1, thirdInvoice.rows.first().amount)
@@ -335,10 +335,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val firstMonth = Month.JANUARY
         val firstInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, firstMonth)), firstMonth)
-                }
-                .first()
+                }.first()
         assertEquals(3, firstInvoice.rows.size)
         assertEquals(0, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows[0].amount)
@@ -353,10 +353,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val secondMonth = Month.FEBRUARY
         val secondInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, secondMonth)), secondMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(50_00, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -399,10 +399,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val firstMonth = Month.JANUARY
         val firstInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, firstMonth)), firstMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, firstInvoice.rows.size)
         assertEquals(0, firstInvoice.totalPrice)
         assertEquals(1, firstInvoice.rows.first().amount)
@@ -414,10 +414,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val secondMonth = Month.FEBRUARY
         val secondInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(30_00, secondMonth)), secondMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, secondInvoice.rows.size)
         assertEquals(0, secondInvoice.totalPrice)
         assertEquals(1, secondInvoice.rows.first().amount)
@@ -431,10 +431,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val thirdMonth = Month.MARCH
         val thirdInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, thirdMonth)), thirdMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, thirdInvoice.rows.size)
         assertEquals(20_00, thirdInvoice.totalPrice)
         assertEquals(1, thirdInvoice.rows.first().amount)
@@ -446,10 +446,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
         val fourthMonth = Month.APRIL
         val fourthInvoice =
-            db.read {
+            db
+                .read {
                     it.applyCorrections(listOf(createTestInvoice(100_00, fourthMonth)), fourthMonth)
-                }
-                .first()
+                }.first()
         assertEquals(2, fourthInvoice.rows.size)
         assertEquals(60_00, fourthInvoice.totalPrice)
         assertEquals(1, fourthInvoice.rows.first().amount)
@@ -556,7 +556,10 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
             .shuffled() // randomize order to expose assumptions
     }
 
-    private fun createTestInvoice(total: Int, month: Month): Invoice {
+    private fun createTestInvoice(
+        total: Int,
+        month: Month
+    ): Invoice {
         val period = FiniteDateRange.ofMonth(2020, month)
         return createInvoiceFixture(
             status = InvoiceStatus.DRAFT,

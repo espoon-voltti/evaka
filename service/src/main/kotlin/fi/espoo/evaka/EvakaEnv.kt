@@ -39,11 +39,11 @@ data class EvakaEnv(
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
     val nrOfDaysVoucherValueDecisionCanBeSentInAdvance: Long,
     val plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean,
-    val personAddressEnvelopeWindowPosition: Rectangle,
+    val personAddressEnvelopeWindowPosition: Rectangle
 ) {
     companion object {
-        fun fromEnvironment(env: Environment): EvakaEnv {
-            return EvakaEnv(
+        fun fromEnvironment(env: Environment): EvakaEnv =
+            EvakaEnv(
                 koskiEnabled =
                     env.lookup(
                         "evaka.integration.koski.enabled",
@@ -89,11 +89,12 @@ data class EvakaEnv(
                         Rectangle.fromString(it)
                     } ?: Rectangle.iPostWindowPosition
             )
-        }
     }
 }
 
-data class JwtEnv(val publicKeysUrl: URI) {
+data class JwtEnv(
+    val publicKeysUrl: URI
+) {
     companion object {
         fun fromEnvironment(env: Environment) =
             JwtEnv(
@@ -103,10 +104,11 @@ data class JwtEnv(val publicKeysUrl: URI) {
     }
 }
 
-data class WebPushEnv(val vapidPrivateKey: Sensitive<String>) {
+data class WebPushEnv(
+    val vapidPrivateKey: Sensitive<String>
+) {
     companion object {
-        fun fromEnvironment(env: Environment) =
-            WebPushEnv(vapidPrivateKey = Sensitive(env.lookup("evaka.web_push.vapid_private_key")))
+        fun fromEnvironment(env: Environment) = WebPushEnv(vapidPrivateKey = Sensitive(env.lookup("evaka.web_push.vapid_private_key")))
     }
 }
 
@@ -191,11 +193,11 @@ data class EmailEnv(
             EmailEnv(
                 enabled = env.lookup("evaka.email.enabled", "application.email.enabled") ?: false,
                 whitelist =
-                    env.lookup<List<String>?>(
+                    env
+                        .lookup<List<String>?>(
                             "evaka.email.whitelist",
                             "application.email.whitelist"
-                        )
-                        ?.map(::Regex),
+                        )?.map(::Regex),
                 senderAddress =
                     env.lookup(
                         "evaka.email.sender_address",
@@ -309,12 +311,11 @@ data class VardaEnv(
     val startDate: LocalDate?,
     val endDate: LocalDate?,
     val localDevPort: Int?,
-
     // These two fields can be removed once the new Varda integration is in use and
     // all children have been migrated
     val newIntegrationEnabled: Boolean,
     /** How many children to move from the old integration to new per Varda run */
-    val newIntegrationMigrationSpeed: Int,
+    val newIntegrationMigrationSpeed: Int
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -338,7 +339,6 @@ data class VardaEnv(
                     env.lookup("evaka.integration.varda.new_integration.enabled") ?: false,
                 newIntegrationMigrationSpeed =
                     env.lookup("evaka.integration.varda.new_integration.migration_speed") ?: 0,
-
                 // Port that's forwarded to Varda for local development
                 localDevPort = env.lookup("evaka.integration.varda.local_dev_port")
             )
@@ -349,7 +349,7 @@ data class DvvModificationsEnv(
     val url: String,
     val userId: String,
     val password: Sensitive<String>,
-    val xroadClientId: String,
+    val xroadClientId: String
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -373,12 +373,15 @@ data class DvvModificationsEnv(
                     env.lookup(
                         "evaka.integration.dvv_modifications.xroad_client_id",
                         "fi.espoo.integration.dvv-modifications-service.xRoadClientId"
-                    ),
+                    )
             )
     }
 }
 
-data class VtjEnv(val username: String, val password: Sensitive<String>?) {
+data class VtjEnv(
+    val username: String,
+    val password: Sensitive<String>?
+) {
     companion object {
         fun fromEnvironment(env: Environment) =
             VtjEnv(
@@ -388,11 +391,11 @@ data class VtjEnv(val username: String, val password: Sensitive<String>?) {
                         "fi.espoo.voltti.vtj.client.username"
                     ),
                 password =
-                    env.lookup<String?>(
+                    env
+                        .lookup<String?>(
                             "evaka.integration.vtj.password",
                             "fi.espoo.voltti.vtj.client.password"
-                        )
-                        ?.let(::Sensitive)
+                        )?.let(::Sensitive)
             )
     }
 }
@@ -410,11 +413,11 @@ data class VtjXroadEnv(
         fun fromEnvironment(env: Environment) =
             VtjXroadEnv(
                 trustStore =
-                    env.lookup<URI?>(
+                    env
+                        .lookup<URI?>(
                             "evaka.integration.vtj.xroad.trust_store.location",
                             "fi.espoo.voltti.vtj.xroad.trustStore.location"
-                        )
-                        ?.let { location ->
+                        )?.let { location ->
                             KeystoreEnv(
                                 location = location,
                                 type =
@@ -432,11 +435,11 @@ data class VtjXroadEnv(
                             )
                         },
                 keyStore =
-                    env.lookup<URI?>(
+                    env
+                        .lookup<URI?>(
                             "evaka.integration.vtj.xroad.key_store.location",
                             "fi.espoo.voltti.vtj.xroad.keyStore.location"
-                        )
-                        ?.let { location ->
+                        )?.let { location ->
                             KeystoreEnv(
                                 location = location,
                                 type =
@@ -604,7 +607,6 @@ data class SfiEnv(
      * Not mandatory, but used e.g. to communicate about errors
      */
     val contactPerson: SfiContactPersonEnv,
-
     /**
      * Contact details for the organization making API requests.
      *
@@ -633,18 +635,18 @@ data class SfiEnv(
                                 "fi.espoo.evaka.msg.sfi.ws.trustStore.type"
                             ) ?: "pkcs12",
                         password =
-                            env.lookup<String?>(
+                            env
+                                .lookup<String?>(
                                     "evaka.integration.sfi.trust_store.password",
                                     "fi.espoo.evaka.msg.sfi.ws.trustStore.password"
-                                )
-                                ?.let(::Sensitive)
+                                )?.let(::Sensitive)
                     ),
                 keyStore =
-                    env.lookup<URI?>(
+                    env
+                        .lookup<URI?>(
                             "evaka.integration.sfi.key_store.location",
                             "fi.espoo.evaka.msg.sfi.ws.keyStore.location"
-                        )
-                        ?.let { location ->
+                        )?.let { location ->
                             KeystoreEnv(
                                 location = location,
                                 type =
@@ -653,11 +655,11 @@ data class SfiEnv(
                                         "fi.espoo.evaka.msg.sfi.ws.keyStore.type"
                                     ) ?: "pkcs12",
                                 password =
-                                    env.lookup<String?>(
+                                    env
+                                        .lookup<String?>(
                                             "evaka.integration.sfi.key_store.password",
                                             "fi.espoo.evaka.msg.sfi.ws.keyStore.password"
-                                        )
-                                        ?.let(::Sensitive)
+                                        )?.let(::Sensitive)
                             )
                         },
                 signingKeyAlias =
@@ -736,16 +738,20 @@ data class SfiPrintingEnv(
                         "fi.espoo.evaka.msg.sfi.printing.billingId"
                     ),
                 billingPassword =
-                    env.lookup<String?>(
+                    env
+                        .lookup<String?>(
                             "evaka.integration.sfi.printing.billing.password",
                             "fi.espoo.evaka.msg.sfi.printing.billingPassword"
-                        )
-                        ?.let(::Sensitive)
+                        )?.let(::Sensitive)
             )
     }
 }
 
-data class SfiContactPersonEnv(val name: String?, val email: String?, val phone: String?) {
+data class SfiContactPersonEnv(
+    val name: String?,
+    val email: String?,
+    val phone: String?
+) {
     companion object {
         fun fromEnvironment(env: Environment) =
             SfiContactPersonEnv(
@@ -797,69 +803,82 @@ data class KeystoreEnv(
         }
 }
 
-data class ScheduledJobsEnv<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>) {
+data class ScheduledJobsEnv<T : Enum<T>>(
+    val jobs: Map<T, ScheduledJobSettings>
+) {
     companion object {
         fun <T : Enum<T>> fromEnvironment(
             defaults: Map<T, ScheduledJobSettings>,
             prefix: String,
             env: Environment
-        ) =
-            ScheduledJobsEnv(
-                defaults.mapValues { (job, default) ->
-                    val envPrefix = "$prefix.${snakeCaseName(job)}"
-                    ScheduledJobSettings(
-                        enabled = env.lookup("$envPrefix.enabled") ?: default.enabled,
-                        schedule =
-                            env.lookup<String?>("$envPrefix.cron")?.let(JobSchedule::cron)
-                                ?: default.schedule,
-                        retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount
-                    )
-                }
-            )
+        ) = ScheduledJobsEnv(
+            defaults.mapValues { (job, default) ->
+                val envPrefix = "$prefix.${snakeCaseName(job)}"
+                ScheduledJobSettings(
+                    enabled = env.lookup("$envPrefix.enabled") ?: default.enabled,
+                    schedule =
+                        env.lookup<String?>("$envPrefix.cron")?.let(JobSchedule::cron)
+                            ?: default.schedule,
+                    retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount
+                )
+            }
+        )
     }
 }
 
-data class OphEnv(val organizerOid: String, val organizerId: String, val municipalityCode: String) {
+data class OphEnv(
+    val organizerOid: String,
+    val organizerId: String,
+    val municipalityCode: String
+) {
     companion object {
-        fun fromEnvironment(env: Environment): OphEnv {
-            return OphEnv(
+        fun fromEnvironment(env: Environment): OphEnv =
+            OphEnv(
                 organizerOid = env.lookup("evaka.oph.organizer_oid"),
                 municipalityCode = env.lookup("evaka.oph.municipality_code"),
                 organizerId = env.lookup("evaka.oph.organizer_id")
             )
-        }
     }
 }
 
-data class CitizenCalendarEnv(val calendarOpenBeforePlacementDays: Int) {
+data class CitizenCalendarEnv(
+    val calendarOpenBeforePlacementDays: Int
+) {
     companion object {
-        fun fromEnvironment(env: Environment): CitizenCalendarEnv {
-            return CitizenCalendarEnv(
+        fun fromEnvironment(env: Environment): CitizenCalendarEnv =
+            CitizenCalendarEnv(
                 calendarOpenBeforePlacementDays =
                     env.lookup("evaka.citizen.calendar.calendar_open_before_placement_days") ?: 14
             )
-        }
     }
 }
 
-data class JamixEnv(val url: URI, val user: String, val password: Sensitive<String>) {
+data class JamixEnv(
+    val url: URI,
+    val user: String,
+    val password: Sensitive<String>
+) {
     companion object {
-        fun fromEnvironment(env: Environment): JamixEnv {
-            return JamixEnv(
+        fun fromEnvironment(env: Environment): JamixEnv =
+            JamixEnv(
                 // URL up to the operation name, e.g. https://fi.jamix.cloud/japi/pirnet/
                 url = URI.create(env.lookup("evaka.integration.jamix.url")),
                 user = env.lookup("evaka.integration.jamix.user"),
                 password = Sensitive(env.lookup("evaka.integration.jamix.password"))
             )
-        }
     }
 }
 
-data class Sensitive<T>(val value: T) {
+data class Sensitive<T>(
+    val value: T
+) {
     override fun toString(): String = "**REDACTED**"
 }
 
-inline fun <reified T> Environment.lookup(key: String, vararg deprecatedKeys: String): T {
+inline fun <reified T> Environment.lookup(
+    key: String,
+    vararg deprecatedKeys: String
+): T {
     val value = lookup(key, deprecatedKeys, T::class.java)
     if (value == null && null !is T) {
         error("Missing required configuration: $key (environment variable ${key.toSystemEnvKey()})")
@@ -870,7 +889,11 @@ inline fun <reified T> Environment.lookup(key: String, vararg deprecatedKeys: St
 
 private val logger = KotlinLogging.logger {}
 
-fun <T> Environment.lookup(key: String, deprecatedKeys: Array<out String>, clazz: Class<T>): T? =
+fun <T> Environment.lookup(
+    key: String,
+    deprecatedKeys: Array<out String>,
+    clazz: Class<T>
+): T? =
     deprecatedKeys
         .asSequence()
         .mapNotNull { legacyKey ->
@@ -883,16 +906,17 @@ fun <T> Environment.lookup(key: String, deprecatedKeys: Array<out String>, clazz
             } catch (e: Exception) {
                 throw EnvLookupException(legacyKey, e)
             }
-        }
-        .firstOrNull()
+        }.firstOrNull()
         ?: try {
             getProperty(key, clazz)
         } catch (e: Exception) {
             throw EnvLookupException(key, e)
         }
 
-class EnvLookupException(key: String, cause: Throwable) :
-    RuntimeException(
+class EnvLookupException(
+    key: String,
+    cause: Throwable
+) : RuntimeException(
         "Failed to lookup configuration key $key (environment variable ${key.toSystemEnvKey()})",
         cause
     )
@@ -908,5 +932,4 @@ private fun snakeCaseName(job: Enum<*>): String =
                 ch.isUpperCase() -> listOf('_', ch.lowercaseChar())
                 else -> listOf(ch)
             }
-        }
-        .joinToString(separator = "")
+        }.joinToString(separator = "")

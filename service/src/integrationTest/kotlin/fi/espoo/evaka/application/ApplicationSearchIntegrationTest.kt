@@ -138,7 +138,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
                 additionalDaycareApplication = true,
-                serviceNeedOption = null,
+                serviceNeedOption = null
             )
         val preparatoryAdditionalDaycare =
             createApplication(
@@ -148,21 +148,20 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 connectedDaycare = true,
                 preparatory = true,
                 additionalDaycareApplication = true,
-                serviceNeedOption = null,
+                serviceNeedOption = null
             )
 
         fun getPreschoolApplications(vararg preschoolTypes: ApplicationPreschoolTypeToggle) =
             getApplicationSummaries(
-                    type = ApplicationTypeToggle.PRESCHOOL,
-                    status = ApplicationStatusOption.values().toSet(),
-                    preschoolType = preschoolTypes.toSet()
-                )
-                .data
+                type = ApplicationTypeToggle.PRESCHOOL,
+                status = ApplicationStatusOption.values().toSet(),
+                preschoolType = preschoolTypes.toSet()
+            ).data
                 .map { it.id }
 
         assertEquals(
             listOf(noServiceNeed, preschoolDaycare).sorted(),
-            getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE).sorted(),
+            getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE).sorted()
         )
         assertEquals(
             listOf(preschoolClub),
@@ -174,13 +173,12 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
         assertEquals(
             listOf(
-                    noServiceNeed,
-                    preschoolDaycare,
-                    preschoolClub,
-                    preschoolAdditionalDaycare,
-                    preparatoryAdditionalDaycare
-                )
-                .sorted(),
+                noServiceNeed,
+                preschoolDaycare,
+                preschoolClub,
+                preschoolAdditionalDaycare,
+                preparatoryAdditionalDaycare
+            ).sorted(),
             getPreschoolApplications(*ApplicationPreschoolTypeToggle.values()).sorted()
         )
     }
@@ -331,21 +329,23 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     type = type,
                     additionalDaycareApplication = additionalDaycareApplication,
                     document =
-                        DaycareFormV0.fromApplication2(
+                        DaycareFormV0
+                            .fromApplication2(
                                 validDaycareApplication.copy(
                                     childId = child.id,
                                     guardianId = guardian.id,
                                     type = type
                                 )
-                            )
-                            .copy(urgent = urgent)
+                            ).copy(urgent = urgent)
                             .copy(extendedCare = extendedCare)
                             .copy(connectedDaycare = connectedDaycare)
                             .copy(serviceNeedOption = serviceNeedOption)
                             .let {
-                                if (preparatory)
+                                if (preparatory) {
                                     it.copy(careDetails = it.careDetails.copy(preparatory = true))
-                                else it
+                                } else {
+                                    it
+                                }
                             }
                 )
             }

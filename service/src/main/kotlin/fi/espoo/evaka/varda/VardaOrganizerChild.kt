@@ -69,8 +69,9 @@ data class VardaChildOrganizerRow(
 private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
     evakaPersonId: ChildId
-): List<VardaChildOrganizerRow> {
-    return tx.createQuery {
+): List<VardaChildOrganizerRow> =
+    tx
+        .createQuery {
             sql(
                 """
                 SELECT evaka_person_id, varda_person_id, varda_person_oid, varda_child_id, organizer_oid
@@ -78,9 +79,7 @@ private fun getVardaOrganizerChildRows(
                 WHERE evaka_person_id = ${bind(evakaPersonId)}
                 """
             )
-        }
-        .toList<VardaChildOrganizerRow>()
-}
+        }.toList<VardaChildOrganizerRow>()
 
 private fun createVardaPersonAndChild(
     tx: Database.Transaction,
@@ -172,8 +171,8 @@ private fun createVardaChildWhenPersonExists(
     organizerOid: String,
     isPaosChild: Boolean,
     sourceSystem: String
-): Long {
-    return if (isPaosChild) {
+): Long =
+    if (isPaosChild) {
         val vardaChildPayload =
             VardaPaosChildPayload(
                 personUrl = client.getPersonUrl(vardaPersonId.toLong()),
@@ -227,16 +226,15 @@ private fun createVardaChildWhenPersonExists(
 
         vardaChildId
     }
-}
 
 private fun getVardaPersonPayload(
     tx: Database.Transaction,
     evakaChildId: ChildId,
     organizerOid: String
-) =
-    tx.createQuery {
-            sql(
-                """
+) = tx
+    .createQuery {
+        sql(
+            """
                 SELECT 
                     p.id,
                     p.first_name,
@@ -248,10 +246,9 @@ private fun getVardaPersonPayload(
                 FROM person p
                 WHERE id = ${bind(evakaChildId)}
                 """
-            )
-        }
-        .toList<VardaPerson>()
-        .first()
+        )
+    }.toList<VardaPerson>()
+    .first()
 
 fun insertVardaOrganizerChild(
     tx: Database.Transaction,
@@ -261,7 +258,8 @@ fun insertVardaOrganizerChild(
     vardaPersonOid: String,
     organizerOid: String
 ) {
-    tx.createUpdate {
+    tx
+        .createUpdate {
             sql(
                 """
                 INSERT INTO varda_organizer_child (evaka_person_id, varda_child_id, varda_person_id, varda_person_oid, organizer_oid)
@@ -274,8 +272,7 @@ fun insertVardaOrganizerChild(
                 )
                 """
             )
-        }
-        .execute()
+        }.execute()
 }
 
 data class VardaPerson(
@@ -330,4 +327,7 @@ data class VardaChildRequest(
     val lahdejarjestelma: String
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true) data class VardaChildResponse(val id: Int)
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class VardaChildResponse(
+    val id: Int
+)

@@ -19,8 +19,7 @@ import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.jvmName
 
 sealed interface TsRepresentation<TypeArgs> {
-    fun getTypeArgs(typeArgs: List<KTypeProjection>): TypeArgs =
-        error("Type arguments are not supported")
+    fun getTypeArgs(typeArgs: List<KTypeProjection>): TypeArgs = error("Type arguments are not supported")
 }
 
 /** A declared type that has a name and is exported by some file and can be imported by others. */
@@ -41,7 +40,7 @@ data class TsExternalTypeRef(
     val deserializeJson: ((jsonExpr: TsCode) -> TsCode)?,
     val serializePathVariable: ((valueExpr: TsCode) -> TsCode)?,
     val serializeRequestParam: ((valueExpr: TsCode, nullable: Boolean) -> TsCode)?,
-    val imports: Set<TsImport>,
+    val imports: Set<TsImport>
 ) : TsRepresentation<Nothing> {
     constructor(
         type: String,
@@ -49,7 +48,7 @@ data class TsExternalTypeRef(
         deserializeJson: ((jsonExpr: TsCode) -> TsCode)? = null,
         serializePathVariable: ((valueExpr: TsCode) -> TsCode)?,
         serializeRequestParam: ((valueExpr: TsCode, nullable: Boolean) -> TsCode)?,
-        vararg imports: TsImport,
+        vararg imports: TsImport
     ) : this(
         type,
         keyRepresentation,
@@ -61,7 +60,9 @@ data class TsExternalTypeRef(
 }
 
 /** A plain TS type */
-data class TsPlain(val type: String) : TsRepresentation<Nothing>
+data class TsPlain(
+    val type: String
+) : TsRepresentation<Nothing>
 
 data object TsArray : TsRepresentation<KType?> {
     override fun getTypeArgs(typeArgs: List<KTypeProjection>): KType? {
@@ -70,7 +71,9 @@ data object TsArray : TsRepresentation<KType?> {
     }
 }
 
-data class TsTuple(val size: Int) : TsRepresentation<List<KType?>> {
+data class TsTuple(
+    val size: Int
+) : TsRepresentation<List<KType?>> {
     override fun getTypeArgs(typeArgs: List<KTypeProjection>): List<KType?> {
         require(typeArgs.size == size) { "Expected $size type arguments, got $typeArgs" }
         return typeArgs.map { it.type }
@@ -118,7 +121,9 @@ data class TsPlainObject(
 }
 
 /** An anonymous TS object literal, e.g. { a: string, b: number } */
-data class TsObjectLiteral(val properties: Map<String, TsProperty>) : TsRepresentation<Nothing> {
+data class TsObjectLiteral(
+    val properties: Map<String, TsProperty>
+) : TsRepresentation<Nothing> {
     constructor(clazz: KClass<*>) : this(collectProperties(clazz.declaredMemberProperties))
 }
 
@@ -132,8 +137,10 @@ data class TsSealedClass(
 }
 
 /** One variant of a sealed class, represented as a TS plain object */
-data class TsSealedVariant(val parent: TsSealedClass, val obj: TsPlainObject) :
-    TsRepresentation<Nothing> {
+data class TsSealedVariant(
+    val parent: TsSealedClass,
+    val obj: TsPlainObject
+) : TsRepresentation<Nothing> {
     val name: String = "${parent.name}.${obj.name}"
 }
 
@@ -167,23 +174,27 @@ data class TsType(
 )
 
 /** A TS object property, which may be optional (not necessarily the same thing as nullable) */
-data class TsProperty(val type: KType, val isOptional: Boolean = type.isMarkedNullable)
+data class TsProperty(
+    val type: KType,
+    val isOptional: Boolean = type.isMarkedNullable
+)
 
 private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, TsProperty> =
     props
         .filterNot {
             (it.findAnnotation<JsonIgnore>() ?: it.getter.findAnnotation<JsonIgnore>())?.value ==
                 true
-        }
-        .associate { prop ->
+        }.associate { prop ->
             prop.name to
                 TsProperty(
                     type =
-                        (prop.javaField
-                            ?.getAnnotation(ForceCodeGenType::class.java)
-                            ?.type
-                            ?.createType(nullable = prop.returnType.isMarkedNullable)
-                            ?: prop.returnType),
+                        (
+                            prop.javaField
+                                ?.getAnnotation(ForceCodeGenType::class.java)
+                                ?.type
+                                ?.createType(nullable = prop.returnType.isMarkedNullable)
+                                ?: prop.returnType
+                        ),
                     isOptional = false
                 )
         }

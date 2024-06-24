@@ -12,7 +12,10 @@ import software.amazon.awssdk.services.ses.SesClient
 @Configuration
 class EmailConfig {
     @Bean
-    fun emailClient(client: SesClient, env: EmailEnv): EmailClient =
+    fun emailClient(
+        client: SesClient,
+        env: EmailEnv
+    ): EmailClient =
         when (env.enabled) {
             true ->
                 SESEmailClient(

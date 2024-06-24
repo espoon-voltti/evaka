@@ -53,17 +53,22 @@ val generatedFiles =
                     "Citizen",
                     generateEnum<Action.Citizen.Application>(),
                     generateEnum<Action.Citizen.Child>(),
-                    generateEnum<Action.Citizen.Decision>(),
-                ),
+                    generateEnum<Action.Citizen.Decision>()
+                )
             )
         )
     )
 
-class FileDefinition(val name: String, private val generators: Array<out Generator>) {
+class FileDefinition(
+    val name: String,
+    private val generators: Array<out Generator>
+) {
     fun generate(): String = generateFileContents(*generators)
 
     fun generateTo(path: Path) = path.writeText(generate())
 }
 
-private fun defineFile(name: String, vararg generators: Generator): FileDefinition =
-    FileDefinition(name, generators)
+private fun defineFile(
+    name: String,
+    vararg generators: Generator
+): FileDefinition = FileDefinition(name, generators)

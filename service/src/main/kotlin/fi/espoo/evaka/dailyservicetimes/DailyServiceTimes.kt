@@ -43,8 +43,10 @@ sealed class DailyServiceTimesValue(
     abstract fun getTimesOnDate(date: LocalDate): TimeRange?
 
     @JsonTypeName("REGULAR")
-    data class RegularTimes(override val validityPeriod: DateRange, val regularTimes: TimeRange) :
-        DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.REGULAR) {
+    data class RegularTimes(
+        override val validityPeriod: DateRange,
+        val regularTimes: TimeRange
+    ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.REGULAR) {
         override fun asUpdateRow() =
             DailyServiceTimeUpdateRow(
                 type = DailyServiceTimesType.REGULAR,
@@ -132,8 +134,9 @@ sealed class DailyServiceTimesValue(
     }
 
     @JsonTypeName("VARIABLE_TIME")
-    data class VariableTimes(override val validityPeriod: DateRange) :
-        DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.VARIABLE_TIME) {
+    data class VariableTimes(
+        override val validityPeriod: DateRange
+    ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.VARIABLE_TIME) {
         override fun asUpdateRow() =
             DailyServiceTimeUpdateRow(
                 type = DailyServiceTimesType.VARIABLE_TIME,
@@ -148,15 +151,15 @@ sealed class DailyServiceTimesValue(
                 validityPeriod = validityPeriod
             )
 
-        override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
-            other is VariableTimes
+        override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean = other is VariableTimes
 
-        override fun getTimesOnDate(date: LocalDate): TimeRange? {
-            return null
-        }
+        override fun getTimesOnDate(date: LocalDate): TimeRange? = null
     }
 
-    fun withId(id: DailyServiceTimesId, childId: ChildId) = DailyServiceTimes(id, childId, this)
+    fun withId(
+        id: DailyServiceTimesId,
+        childId: ChildId
+    ) = DailyServiceTimes(id, childId, this)
 }
 
 data class DailyServiceTimeRow(
@@ -176,8 +179,8 @@ data class DailyServiceTimeRow(
 
 fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimes> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     child_id,
@@ -195,17 +198,14 @@ FROM daily_service_time
 WHERE child_id = ${bind(childId)}
 ORDER BY lower(validity_period) DESC
 """
-            )
-        }
-        .mapTo<DailyServiceTimeRow>()
+        )
+    }.mapTo<DailyServiceTimeRow>()
         .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.toList() }
 
-fun Database.Read.getDailyServiceTimesForChildren(
-    childIds: Set<ChildId>
-): Map<ChildId, List<DailyServiceTimesValue>> =
+fun Database.Read.getDailyServiceTimesForChildren(childIds: Set<ChildId>): Map<ChildId, List<DailyServiceTimesValue>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     child_id,
@@ -222,43 +222,43 @@ SELECT
 FROM daily_service_time
 WHERE child_id = ANY(${bind(childIds)})
 """
-            )
-        }
-        .mapTo<DailyServiceTimeRow>()
+        )
+    }.mapTo<DailyServiceTimeRow>()
         .useIterable { rows ->
             rows.map { toDailyServiceTimes(it) }.groupBy({ it.childId }, { it.times })
         }
 
-data class DailyServiceTimesValidity(val childId: ChildId, val validityPeriod: DateRange)
+data class DailyServiceTimesValidity(
+    val childId: ChildId,
+    val validityPeriod: DateRange
+)
 
-fun Database.Read.getDailyServiceTimesValidity(
-    id: DailyServiceTimesId
-): DailyServiceTimesValidity? =
+fun Database.Read.getDailyServiceTimesValidity(id: DailyServiceTimesId): DailyServiceTimesValidity? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child_id, validity_period
 FROM daily_service_time
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
-fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
-    return when (row.type) {
+fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes =
+    when (row.type) {
         DailyServiceTimesType.REGULAR ->
-            DailyServiceTimesValue.RegularTimes(
+            DailyServiceTimesValue
+                .RegularTimes(
                     validityPeriod = row.validityPeriod,
                     regularTimes =
                         row.regularTimes
                             ?: throw IllegalStateException(
                                 "Regular daily service times must have regular times"
                             )
-                )
-                .withId(row.id, row.childId)
+                ).withId(row.id, row.childId)
         DailyServiceTimesType.IRREGULAR ->
-            DailyServiceTimesValue.IrregularTimes(
+            DailyServiceTimesValue
+                .IrregularTimes(
                     validityPeriod = row.validityPeriod,
                     monday = row.mondayTimes,
                     tuesday = row.tuesdayTimes,
@@ -267,13 +267,12 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
                     friday = row.fridayTimes,
                     saturday = row.saturdayTimes,
                     sunday = row.sundayTimes
-                )
-                .withId(row.id, row.childId)
+                ).withId(row.id, row.childId)
         DailyServiceTimesType.VARIABLE_TIME ->
-            DailyServiceTimesValue.VariableTimes(validityPeriod = row.validityPeriod)
+            DailyServiceTimesValue
+                .VariableTimes(validityPeriod = row.validityPeriod)
                 .withId(row.id, row.childId)
     }.exhaust()
-}
 
 data class DailyServiceTimeUpdateRow(
     val type: DailyServiceTimesType,
@@ -346,8 +345,8 @@ fun Database.Transaction.createChildDailyServiceTimes(
 ): DailyServiceTimesId {
     val u = times.asUpdateRow()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         INSERT INTO daily_service_time (
             child_id, type, 
             regular_times, 
@@ -374,9 +373,8 @@ fun Database.Transaction.createChildDailyServiceTimes(
         )
         RETURNING id
     """
-            )
-        }
-        .exactlyOne<DailyServiceTimesId>()
+        )
+    }.exactlyOne<DailyServiceTimesId>()
 }
 
 data class DailyServiceTimesValidityWithId(
@@ -389,16 +387,15 @@ fun Database.Read.getOverlappingChildDailyServiceTimes(
     range: DateRange
 ): List<DailyServiceTimesValidityWithId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, validity_period
 FROM daily_service_time
 WHERE child_id = ${bind(childId)}
   AND ${bind(range)} && validity_period
 """
-            )
-        }
-        .toList<DailyServiceTimesValidityWithId>()
+        )
+    }.toList<DailyServiceTimesValidityWithId>()
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(
     id: DailyServiceTimesId,

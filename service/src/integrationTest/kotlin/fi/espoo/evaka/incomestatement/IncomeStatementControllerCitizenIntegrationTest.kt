@@ -37,10 +37,10 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockMultipartFile
 
-class IncomeStatementControllerCitizenIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var incomeStatementControllerCitizen: IncomeStatementControllerCitizen
+
     @Autowired private lateinit var attachmentsController: AttachmentsController
 
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
@@ -193,7 +193,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     otherInfo = "foo bar",
                     attachmentIds = listOf()
                 ),
-                testChild_1.id,
+                testChild_1.id
             )
         }
     }
@@ -248,7 +248,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = true,
                     otherInfo = "foo bar",
                     attachmentIds = listOf()
-                ),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -269,7 +269,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = true,
                     otherInfo = "foo bar",
                     attachmentIds = listOf()
-                ),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -302,7 +302,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf()
-                ),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -329,7 +329,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf()
-                ),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -356,7 +356,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf()
-                ),
+                )
             )
         }
     }
@@ -474,7 +474,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(nonExistingAttachmentId)
-                ),
+                )
             )
         }
     }
@@ -501,7 +501,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     alimonyPayer = false,
                     otherInfo = "foo bar",
                     attachmentIds = listOf(attachmentId)
-                ),
+                )
             )
         }
     }
@@ -649,7 +649,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 IncomeStatementBody.HighestFee(
                     startDate = LocalDate.of(2030, 4, 3),
                     endDate = null
-                ),
+                )
             )
         }
     }
@@ -706,26 +706,27 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 IncomeStatementBody.HighestFee(
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null
-                ),
+                )
             )
         }
     }
 
-    private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) =
-        db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    """
-            UPDATE income_statement
-            SET handler_id = (SELECT id FROM employee LIMIT 1), handler_note = :note
-            WHERE id = :id
-            """
-                        .trimIndent()
-                )
-                .bind("id", id)
-                .bind("note", note)
-                .execute()
-        }
+    private fun markIncomeStatementHandled(
+        id: IncomeStatementId,
+        note: String
+    ) = db.transaction { tx ->
+        @Suppress("DEPRECATION")
+        tx
+            .createUpdate(
+                """
+                UPDATE income_statement
+                SET handler_id = (SELECT id FROM employee LIMIT 1), handler_note = :note
+                WHERE id = :id
+                """.trimIndent()
+            ).bind("id", id)
+            .bind("note", note)
+            .execute()
+    }
 
     @Test
     fun `employee attachments are not visible to citizen`() {
@@ -841,22 +842,24 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertEquals(getIncomeStatementChildren().size, 0)
     }
 
-    private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): PagedIncomeStatements {
-        return incomeStatementControllerCitizen.getIncomeStatements(
+    private fun getIncomeStatements(
+        pageSize: Int = 10,
+        page: Int = 1
+    ): PagedIncomeStatements =
+        incomeStatementControllerCitizen.getIncomeStatements(
             dbInstance(),
             citizen,
             RealEvakaClock(),
             page = page,
             pageSize = pageSize
         )
-    }
 
     private fun getIncomeStatementsForChild(
         childId: ChildId,
         pageSize: Int = 10,
         page: Int = 1
-    ): PagedIncomeStatements {
-        return incomeStatementControllerCitizen.getChildIncomeStatements(
+    ): PagedIncomeStatements =
+        incomeStatementControllerCitizen.getChildIncomeStatements(
             dbInstance(),
             citizen,
             RealEvakaClock(),
@@ -864,37 +867,34 @@ class IncomeStatementControllerCitizenIntegrationTest :
             page = page,
             pageSize = pageSize
         )
-    }
 
-    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement {
-        return incomeStatementControllerCitizen.getIncomeStatement(
+    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
+        incomeStatementControllerCitizen.getIncomeStatement(
             dbInstance(),
             citizen,
             RealEvakaClock(),
             id
         )
-    }
 
-    private fun getIncomeStatementChildren(): List<ChildBasicInfo> {
-        return incomeStatementControllerCitizen.getIncomeStatementChildren(
+    private fun getIncomeStatementChildren(): List<ChildBasicInfo> =
+        incomeStatementControllerCitizen.getIncomeStatementChildren(
             dbInstance(),
             citizen,
-            RealEvakaClock(),
+            RealEvakaClock()
         )
-    }
 
     private fun createIncomeStatement(body: IncomeStatementBody) {
         incomeStatementControllerCitizen.createIncomeStatement(
             dbInstance(),
             citizen,
             RealEvakaClock(),
-            body,
+            body
         )
     }
 
     private fun createIncomeStatementForChild(
         body: IncomeStatementBody.ChildIncome,
-        childId: ChildId,
+        childId: ChildId
     ) {
         incomeStatementControllerCitizen.createChildIncomeStatement(
             dbInstance(),
@@ -907,7 +907,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     private fun updateIncomeStatement(
         id: IncomeStatementId,
-        body: IncomeStatementBody,
+        body: IncomeStatementBody
     ) {
         incomeStatementControllerCitizen.updateIncomeStatement(
             dbInstance(),
@@ -923,33 +923,30 @@ class IncomeStatementControllerCitizenIntegrationTest :
             dbInstance(),
             citizen,
             RealEvakaClock(),
-            id,
+            id
         )
     }
 
-    private fun uploadAttachment(user: AuthenticatedUser.Citizen = citizen): AttachmentId {
-        return attachmentsController.uploadIncomeStatementAttachmentCitizen(
+    private fun uploadAttachment(user: AuthenticatedUser.Citizen = citizen): AttachmentId =
+        attachmentsController.uploadIncomeStatementAttachmentCitizen(
             dbInstance(),
             user,
             RealEvakaClock(),
             incomeStatementId = null,
             file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
         )
-    }
 
-    private fun idToAttachment(id: AttachmentId) =
-        Attachment(id, "evaka-logo.png", "image/png", false)
+    private fun idToAttachment(id: AttachmentId) = Attachment(id, "evaka-logo.png", "image/png", false)
 
     private fun uploadAttachmentAsEmployee(
         user: AuthenticatedUser.Employee,
         incomeStatementId: IncomeStatementId
-    ): AttachmentId {
-        return attachmentsController.uploadIncomeStatementAttachmentEmployee(
+    ): AttachmentId =
+        attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
             user,
             RealEvakaClock(),
             incomeStatementId,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
         )
-    }
 }

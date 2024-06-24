@@ -93,8 +93,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
                         kuntakoodi = ophEnv.municipalityCode,
                         lahdejarjestelma = vardaClient.sourceSystem
                     )
-                )
-                .contains(""""paattymis_pvm":null""")
+                ).contains(""""paattymis_pvm":null""")
         )
 
         updateUnits(client)
@@ -184,14 +183,14 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
     fun `unit update error is saved`() {
         val client =
             object : VardaUnitClient {
-                override fun findToimipaikkaByOid(oid: String): VardaEntity =
-                    error("unit find failed")
+                override fun findToimipaikkaByOid(oid: String): VardaEntity = error("unit find failed")
 
-                override fun createToimipaikka(unit: VardaUnitRequest) =
-                    error("unit creation failed")
+                override fun createToimipaikka(unit: VardaUnitRequest) = error("unit creation failed")
 
-                override fun updateToimipaikka(url: URI, unit: VardaUnitRequest) =
-                    error("unit update failed")
+                override fun updateToimipaikka(
+                    url: URI,
+                    unit: VardaUnitRequest
+                ) = error("unit update failed")
             }
 
         updateUnits(client)

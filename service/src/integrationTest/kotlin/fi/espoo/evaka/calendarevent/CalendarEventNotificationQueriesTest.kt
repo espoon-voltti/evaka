@@ -73,15 +73,15 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = testChild_1.id))
 
             tx.insert(testChild_2, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = testChild_2.id,
                         unitId = testDaycare.id,
                         startDate = today.minusYears(1),
                         endDate = today.plusYears(1)
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
@@ -96,15 +96,15 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(DevGuardian(guardianId = testAdult_2.id, childId = testChild_2.id))
 
             tx.insert(testChild_3, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
                         startDate = today.minusYears(1),
                         endDate = today.plusYears(1)
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
@@ -139,35 +139,35 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
         createCalendarEvent(
             title = "Unit-wide event",
             period = FiniteDateRange(today, today),
-            unitId = testDaycare.id,
+            unitId = testDaycare.id
         )
 
         val expectedEvent =
             CalendarEventNotificationData(
                 title = "Unit-wide event",
-                period = FiniteDateRange(today, today),
+                period = FiniteDateRange(today, today)
             )
 
         assertEquals(
             listOf(
-                    ParentWithEvents(
-                        parentId = testAdult_1.id,
-                        language = Language.fi,
-                        events = listOf(expectedEvent)
-                    ),
-                    ParentWithEvents(
-                        parentId = testAdult_2.id,
-                        language = Language.fi,
-                        events = listOf(expectedEvent)
-                    ),
-                    ParentWithEvents(
-                        parentId = testAdult_3.id,
-                        language = Language.sv,
-                        events = listOf(expectedEvent)
-                    )
+                ParentWithEvents(
+                    parentId = testAdult_1.id,
+                    language = Language.fi,
+                    events = listOf(expectedEvent)
+                ),
+                ParentWithEvents(
+                    parentId = testAdult_2.id,
+                    language = Language.fi,
+                    events = listOf(expectedEvent)
+                ),
+                ParentWithEvents(
+                    parentId = testAdult_3.id,
+                    language = Language.sv,
+                    events = listOf(expectedEvent)
                 )
-                .sortedBy { it.parentId },
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+            ).sortedBy { it.parentId },
+            db
+                .read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
                 .sortedBy { it.parentId }
         )
     }
@@ -178,13 +178,13 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             title = "Group event",
             period = FiniteDateRange(today, today),
             unitId = testDaycare.id,
-            groupIds = listOf(testDaycareGroup.id),
+            groupIds = listOf(testDaycareGroup.id)
         )
 
         val expectedEvent =
             CalendarEventNotificationData(
                 title = "Group event",
-                period = FiniteDateRange(today, today),
+                period = FiniteDateRange(today, today)
             )
 
         assertEquals(
@@ -195,7 +195,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     events = listOf(expectedEvent)
                 )
             ),
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) },
+            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
         )
     }
 
@@ -235,31 +235,31 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
         createCalendarEvent(
             title = "Backup care",
             period = FiniteDateRange(today, today.plusDays(1)),
-            unitId = testDaycare.id,
+            unitId = testDaycare.id
         )
 
         val expectedEvent =
             CalendarEventNotificationData(
                 title = "Backup care",
-                period = FiniteDateRange(today, today.plusDays(1)),
+                period = FiniteDateRange(today, today.plusDays(1))
             )
 
         assertEquals(
             listOf(
-                    ParentWithEvents(
-                        parentId = testAdult_2.id,
-                        language = Language.fi,
-                        events = listOf(expectedEvent)
-                    ),
-                    ParentWithEvents(
-                        parentId = testAdult_3.id,
-                        language = Language.sv,
-                        events = listOf(expectedEvent)
-                    )
+                ParentWithEvents(
+                    parentId = testAdult_2.id,
+                    language = Language.fi,
+                    events = listOf(expectedEvent)
+                ),
+                ParentWithEvents(
+                    parentId = testAdult_3.id,
+                    language = Language.sv,
+                    events = listOf(expectedEvent)
                 )
-                .sortedBy { it.parentId },
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
-                .sortedBy { it.parentId },
+            ).sortedBy { it.parentId },
+            db
+                .read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+                .sortedBy { it.parentId }
         )
     }
 
@@ -285,31 +285,31 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 listOf(
                     testDaycareGroup.id to testChild_2.id,
                     testDaycareGroup2.id to testChild_3.id
-                ),
+                )
         )
 
         val expectedEvent =
             CalendarEventNotificationData(
                 title = "Child event",
-                period = FiniteDateRange(today, today),
+                period = FiniteDateRange(today, today)
             )
 
         assertEquals(
             listOf(
-                    ParentWithEvents(
-                        parentId = testAdult_2.id,
-                        language = Language.fi,
-                        events = listOf(expectedEvent)
-                    ),
-                    ParentWithEvents(
-                        parentId = testAdult_3.id,
-                        language = Language.sv,
-                        events = listOf(expectedEvent)
-                    )
+                ParentWithEvents(
+                    parentId = testAdult_2.id,
+                    language = Language.fi,
+                    events = listOf(expectedEvent)
+                ),
+                ParentWithEvents(
+                    parentId = testAdult_3.id,
+                    language = Language.sv,
+                    events = listOf(expectedEvent)
                 )
-                .sortedBy { it.parentId },
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
-                .sortedBy { it.parentId },
+            ).sortedBy { it.parentId },
+            db
+                .read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+                .sortedBy { it.parentId }
         )
     }
 
@@ -319,7 +319,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             title = "Unit-wide event",
             period = FiniteDateRange(today, today),
             unitId = testDaycare.id,
-            created = now.minusHours(24).minusMinutes(1),
+            created = now.minusHours(24).minusMinutes(1)
         )
 
         assertEquals(
@@ -335,7 +335,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
         created: HelsinkiDateTime = now,
         unitId: DaycareId,
         groupIds: List<GroupId> = listOf(),
-        groupChildIds: List<Pair<GroupId, ChildId>> = listOf(),
+        groupChildIds: List<Pair<GroupId, ChildId>> = listOf()
     ): CalendarEventId =
         db.transaction { tx ->
             val eventId =
@@ -349,22 +349,22 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     )
                 )
 
-            tx.createUpdate {
+            tx
+                .createUpdate {
                     sql(
                         """
                     UPDATE calendar_event
                     SET created_at = ${bind(created)} WHERE id = ${bind(eventId)}
                     """
                     )
-                }
-                .execute()
+                }.execute()
 
             groupIds.forEach { groupId ->
                 tx.insert(
                     DevCalendarEventAttendee(
                         calendarEventId = eventId,
                         unitId = unitId,
-                        groupId = groupId,
+                        groupId = groupId
                     )
                 )
             }
@@ -374,7 +374,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                         calendarEventId = eventId,
                         unitId = unitId,
                         groupId = groupId,
-                        childId = childId,
+                        childId = childId
                     )
                 )
             }
@@ -384,7 +384,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 tx.insert(
                     DevCalendarEventAttendee(
                         calendarEventId = eventId,
-                        unitId = unitId,
+                        unitId = unitId
                     )
                 )
             }

@@ -68,7 +68,10 @@ import org.springframework.beans.factory.annotation.Autowired
 class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var invoiceController: InvoiceController
 
-    private fun assertEqualEnough(expected: List<InvoiceSummary>, actual: List<InvoiceSummary>) {
+    private fun assertEqualEnough(
+        expected: List<InvoiceSummary>,
+        actual: List<InvoiceSummary>
+    ) {
         assertEquals(
             expected
                 .map {
@@ -77,8 +80,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         createdAt = null,
                         headOfFamily = it.headOfFamily.copy(email = null)
                     )
-                }
-                .toSet(),
+                }.toSet(),
             actual.map { it.copy(sentAt = null, createdAt = null) }.toSet()
         )
     }
@@ -469,7 +471,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     status = listOf(InvoiceStatus.DRAFT),
                     sortBy = InvoiceSortParam.START,
                     sortDirection = SortDirection.DESC
-                ),
+                )
             )
 
         assertEquals(2, result.total)
@@ -620,12 +622,10 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fun Database.Read.readCostCenterFields(invoiceId: InvoiceId): Pair<String, String> =
             @Suppress("DEPRECATION")
             createQuery(
-                    """
+                """
                 SELECT saved_cost_center, saved_sub_cost_center FROM invoice_row WHERE invoice_id = :invoiceId
-            """
-                        .trimIndent()
-                )
-                .bind("invoiceId", invoiceId)
+                """.trimIndent()
+            ).bind("invoiceId", invoiceId)
                 .exactlyOne {
                     Pair(
                         column<String>("saved_cost_center"),
@@ -927,28 +927,24 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> {
-        return invoiceController
+    private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> =
+        invoiceController
             .searchInvoices(
                 dbInstance(),
                 testUser,
                 RealEvakaClock(),
-                request,
-            )
-            .data
+                request
+            ).data
             .map { it.data }
-    }
 
-    private fun getInvoice(id: InvoiceId): InvoiceDetailed {
-        return invoiceController
+    private fun getInvoice(id: InvoiceId): InvoiceDetailed =
+        invoiceController
             .getInvoice(
                 dbInstance(),
                 testUser,
                 RealEvakaClock(),
-                id,
-            )
-            .data
-    }
+                id
+            ).data
 
     private fun updateInvoice(invoice: Invoice) {
         invoiceController.putInvoice(dbInstance(), testUser, RealEvakaClock(), invoice.id, invoice)
@@ -958,6 +954,5 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         invoiceController.markInvoicesSent(dbInstance(), testUser, RealEvakaClock(), ids)
     }
 
-    private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
-        db.transaction { tx -> tx.searchInvoices(status) }
+    private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> = db.transaction { tx -> tx.searchInvoices(status) }
 }

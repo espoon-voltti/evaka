@@ -35,19 +35,24 @@ class MissingHolidayReservationsReminders(
 
     init {
         asyncJobRunner.registerHandler {
-            db,
-            clock,
-            msg: AsyncJob.SendMissingHolidayReservationsReminder ->
+                db,
+                clock,
+                msg: AsyncJob.SendMissingHolidayReservationsReminder
+            ->
             sendMissingHolidayReminders(db, msg, clock)
         }
     }
 
-    fun scheduleReminders(tx: Database.Transaction, clock: EvakaClock): Int {
+    fun scheduleReminders(
+        tx: Database.Transaction,
+        clock: EvakaClock
+    ): Int {
         tx.removeUnclaimedJobs(
             setOf(AsyncJobType(AsyncJob.SendMissingHolidayReservationsReminder::class))
         )
 
-        return tx.getHolidayPeriodsWithReservationDeadline(clock.today().plusDays(2))
+        return tx
+            .getHolidayPeriodsWithReservationDeadline(clock.today().plusDays(2))
             .firstOrNull()
             ?.let { holidayPeriod ->
                 logger.info(
@@ -62,11 +67,11 @@ class MissingHolidayReservationsReminders(
                         .toSet()
 
                 val personsToBeNotified =
-                    tx.getChildGuardiansToNotify(
+                    tx
+                        .getChildGuardiansToNotify(
                             clock.today(),
                             childrenWithMaybeMissingHolidayReservations.toList()
-                        )
-                        .toSet()
+                        ).toSet()
 
                 logger.info(
                     "Got ${childrenWithMaybeMissingHolidayReservations.size} children with maybe missing holiday reservations and will notify ${personsToBeNotified.size} persons for holiday ${holidayPeriod.period}"
@@ -92,8 +97,8 @@ class MissingHolidayReservationsReminders(
         personId: PersonId? = null
     ): List<PersonId> =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH reservable_placements AS
      (SELECT p.child_id, p.unit_id, sn.shift_care
       FROM placement p
@@ -121,9 +126,8 @@ WHERE
         WHERE a.child_id = p.child_id AND a.date = ${bind(theDate)}
     )
 """
-                )
-            }
-            .mapTo<PersonId>()
+            )
+        }.mapTo<PersonId>()
             .toList()
 
     fun Database.Read.getChildGuardiansToNotify(
@@ -131,19 +135,17 @@ WHERE
         childIds: List<PersonId>
     ): List<PersonId> =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT DISTINCT(COALESCE(g.guardian_id, fp.parent_id))
 FROM person p
 LEFT JOIN guardian g ON p.id = g.child_id
 LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during @> ${bind(today)}
 WHERE p.id = ANY(${bind(childIds)})
  AND (g.guardian_id IS NOT NULL OR fp.parent_id IS NOT NULL)
-                    """
-                        .trimIndent()
-                )
-            }
-            .mapTo<PersonId>()
+                """.trimIndent()
+            )
+        }.mapTo<PersonId>()
             .toList()
 
     fun sendMissingHolidayReminders(
@@ -161,14 +163,14 @@ WHERE p.id = ANY(${bind(childIds)})
         if (receiver.email.isNullOrBlank()) return
         val language = receiver.language?.lowercase()?.let(Language::tryValueOf) ?: Language.fi
 
-        Email.create(
+        Email
+            .create(
                 dbc = db,
                 personId = msg.guardian,
                 emailType = EmailMessageType.MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.missingHolidayReservationsNotification(language),
-                traceId = msg.guardian.toString(),
-            )
-            ?.also { emailClient.send(it) }
+                traceId = msg.guardian.toString()
+            )?.also { emailClient.send(it) }
     }
 }

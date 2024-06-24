@@ -17,7 +17,6 @@ class SendApplicationReceivedEmailAsyncJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val applicationReceivedEmailService: ApplicationReceivedEmailService
 ) {
-
     init {
         asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendApplicationEmail ->
             runSendApplicationEmail(db, msg)

@@ -46,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val clockToday =

@@ -28,7 +28,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/personal-data")
-class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
+class PersonalDataControllerCitizen(
+    private val accessControl: AccessControl
+) {
     @PutMapping
     fun updatePersonalData(
         db: Database,
@@ -66,8 +68,9 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                             }
                     )
 
-                if (validationErrors.isNotEmpty())
+                if (validationErrors.isNotEmpty()) {
                     throw BadRequest(validationErrors.joinToString(", "))
+                }
 
                 tx.updatePersonalDetails(user.id, body)
             }
@@ -80,8 +83,9 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): EmailNotificationSettings {
-        return db.connect { dbc ->
+    ): EmailNotificationSettings =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -94,9 +98,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                         tx.getEnabledEmailTypes(user.id)
                     )
                 }
-            }
-            .also { Audit.CitizenNotificationSettingsRead.log(targetId = AuditId(user.id)) }
-    }
+            }.also { Audit.CitizenNotificationSettingsRead.log(targetId = AuditId(user.id)) }
 
     @PutMapping("/notification-settings")
     fun updateNotificationSettings(

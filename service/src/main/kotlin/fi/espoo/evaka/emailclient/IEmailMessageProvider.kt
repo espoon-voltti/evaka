@@ -23,30 +23,30 @@ data class EmailContent(
         fun fromHtml(
             subject: String,
             @org.intellij.lang.annotations.Language("html") html: String
-        ) =
-            Jsoup.parseBodyFragment(html).let { doc ->
-                val parsedHtml = doc.body().html()
+        ) = Jsoup.parseBodyFragment(html).let { doc ->
+            val parsedHtml = doc.body().html()
 
-                doc.select("hr").forEach { it.replaceWith(doc.createElement("p").text("-----")) }
-                doc.select("p").forEach { it.prependText("\n").appendText("\n") }
-                doc.select("a").forEach { a ->
-                    val replacement = doc.createElement("a")
-                    replacement.text(a.attr("href").removePrefix("mailto:"))
-                    a.replaceWith(replacement)
-                }
-
-                EmailContent(
-                    subject,
-                    text =
-                        doc.body()
-                            .wholeText()
-                            .lineSequence()
-                            .joinToString(separator = "\n") { it.trim() }
-                            .replace(TOO_MANY_NEWLINES, "\n\n")
-                            .trim(),
-                    html = parsedHtml,
-                )
+            doc.select("hr").forEach { it.replaceWith(doc.createElement("p").text("-----")) }
+            doc.select("p").forEach { it.prependText("\n").appendText("\n") }
+            doc.select("a").forEach { a ->
+                val replacement = doc.createElement("a")
+                replacement.text(a.attr("href").removePrefix("mailto:"))
+                a.replaceWith(replacement)
             }
+
+            EmailContent(
+                subject,
+                text =
+                    doc
+                        .body()
+                        .wholeText()
+                        .lineSequence()
+                        .joinToString(separator = "\n") { it.trim() }
+                        .replace(TOO_MANY_NEWLINES, "\n\n")
+                        .trim(),
+                html = parsedHtml
+            )
+        }
     }
 }
 
@@ -74,13 +74,25 @@ interface IEmailMessageProvider {
 
     fun missingHolidayReservationsNotification(language: Language): EmailContent
 
-    fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent
+    fun messageNotification(
+        language: Language,
+        thread: MessageThreadStub
+    ): EmailContent
 
-    fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
+    fun childDocumentNotification(
+        language: Language,
+        childId: ChildId
+    ): EmailContent
 
-    fun vasuNotification(language: Language, childId: ChildId): EmailContent
+    fun vasuNotification(
+        language: Language,
+        childId: ChildId
+    ): EmailContent
 
-    fun pedagogicalDocumentNotification(language: Language, childId: ChildId): EmailContent
+    fun pedagogicalDocumentNotification(
+        language: Language,
+        childId: ChildId
+    ): EmailContent
 
     fun incomeNotification(
         notificationType: IncomeNotificationType,
@@ -97,5 +109,5 @@ interface IEmailMessageProvider {
 
 data class CalendarEventNotificationData(
     val title: String,
-    val period: FiniteDateRange,
+    val period: FiniteDateRange
 )

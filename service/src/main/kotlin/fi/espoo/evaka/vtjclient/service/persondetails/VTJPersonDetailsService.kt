@@ -23,7 +23,7 @@ class VTJPersonDetailsService(
     /*
        Fetches person with dependants from VTJ, then for each dependant, fetches
        the dependant basic details from VTJ.
-    */
+     */
     override fun getPersonWithDependants(query: DetailsQuery): VtjPerson {
         val guardianResult = doVtjQuery(query, HUOLTAJA_HUOLLETTAVA)
 
@@ -35,8 +35,7 @@ class VTJPersonDetailsService(
                         targetIdentifier =
                             ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber)
                     )
-                }
-                .map { doVtjQuery(it, PERUSSANOMA3) }
+                }.map { doVtjQuery(it, PERUSSANOMA3) }
 
         return guardianResult.copy(dependants = dependants)
     }
@@ -44,7 +43,7 @@ class VTJPersonDetailsService(
     /*
         Fetches person with guardians from VTJ, then for each guardian, fetches
         the guardian basic details from VTJ.
-    */
+     */
     override fun getPersonWithGuardians(query: DetailsQuery): VtjPerson {
         val childResult = doVtjQuery(query, HUOLLETTAVA_HUOLTAJAT)
 
@@ -56,25 +55,21 @@ class VTJPersonDetailsService(
                         targetIdentifier =
                             ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber)
                     )
-                }
-                .map { doVtjQuery(it, PERUSSANOMA3) }
+                }.map { doVtjQuery(it, PERUSSANOMA3) }
 
         return childResult.copy(guardians = guardians)
     }
 
-    override fun getBasicDetailsFor(query: DetailsQuery): VtjPerson {
-        return doVtjQuery(query, PERUSSANOMA3)
-    }
+    override fun getBasicDetailsFor(query: DetailsQuery): VtjPerson = doVtjQuery(query, PERUSSANOMA3)
 
-    private fun doVtjQuery(query: DetailsQuery, requestType: RequestType): VtjPerson {
-        return doVtjQuery(query.mapToVtjQuery(requestType))
-    }
+    private fun doVtjQuery(
+        query: DetailsQuery,
+        requestType: RequestType
+    ): VtjPerson = doVtjQuery(query.mapToVtjQuery(requestType))
 
-    private fun doVtjQuery(vtjQuery: VTJQuery): VtjPerson {
-        return vtjClientService.query(vtjQuery)?.let(henkiloMapper::mapToVtjPerson)
+    private fun doVtjQuery(vtjQuery: VTJQuery): VtjPerson =
+        vtjClientService.query(vtjQuery)?.let(henkiloMapper::mapToVtjPerson)
             ?: throw NotFound("VTJ person not found")
-    }
 }
 
-fun DetailsQuery.mapToVtjQuery(type: RequestType) =
-    VTJQuery(requestingUserId = requestingUser.raw, ssn = targetIdentifier.ssn, type = type)
+fun DetailsQuery.mapToVtjQuery(type: RequestType) = VTJQuery(requestingUserId = requestingUser.raw, ssn = targetIdentifier.ssn, type = type)

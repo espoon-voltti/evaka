@@ -66,9 +66,13 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private val citizen = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
     @Autowired private lateinit var applicationController: ApplicationControllerV2
+
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired private lateinit var applicationStateService: ApplicationStateService
+
     @Autowired private lateinit var personService: PersonService
 
     private val decisionId = DecisionId(UUID.randomUUID())
@@ -79,7 +83,8 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertGeneralTestFixtures()
             MockPersonDetailsService.add(legacyMockVtjDataset())
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     // language=SQL
                     """
 UPDATE daycare SET
@@ -94,8 +99,7 @@ UPDATE daycare SET
   decision_handler_address = 'Test decision handler address'
 WHERE id = :unitId
 """
-                )
-                .bind("unitId", testDaycare.id)
+                ).bind("unitId", testDaycare.id)
                 .execute()
         }
     }

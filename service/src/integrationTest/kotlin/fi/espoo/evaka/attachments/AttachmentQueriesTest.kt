@@ -136,16 +136,14 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun Database.Transaction.insertAttachment(
         user: AuthenticatedUser,
         parent: AttachmentParent
-    ) =
-        insertAttachment(
-            user,
-            clock.now(),
-            "dummy-name",
-            "text/plain",
-            parent,
-            type = if (parent is AttachmentParent.Application) AttachmentType.URGENCY else null
-        )
+    ) = insertAttachment(
+        user,
+        clock.now(),
+        "dummy-name",
+        "text/plain",
+        parent,
+        type = if (parent is AttachmentParent.Application) AttachmentType.URGENCY else null
+    )
 
-    private fun parentOf(attachment: AttachmentId): AttachmentParent? =
-        db.read { it.getAttachment(attachment) }?.attachedTo
+    private fun parentOf(attachment: AttachmentId): AttachmentParent? = db.read { it.getAttachment(attachment) }?.attachedTo
 }

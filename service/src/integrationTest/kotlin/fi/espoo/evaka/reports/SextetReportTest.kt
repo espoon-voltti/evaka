@@ -97,7 +97,8 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
             // Round the clock -> 15
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         type = PlacementType.DAYCARE,
                         childId = testChild_4.id,
@@ -105,8 +106,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         startDate = startDate,
                         endDate = endDate
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,

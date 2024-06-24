@@ -28,8 +28,9 @@ fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from
 /** A timestamp in Europe/Helsinki timezone */
 @JsonSerialize(converter = HelsinkiDateTime.ToJson::class)
 @JsonDeserialize(converter = HelsinkiDateTime.FromJson::class)
-data class HelsinkiDateTime private constructor(private val instant: Instant) :
-    Comparable<HelsinkiDateTime> {
+data class HelsinkiDateTime private constructor(
+    private val instant: Instant
+) : Comparable<HelsinkiDateTime> {
     val year: Int
         get() = toZonedDateTime().year
 
@@ -87,9 +88,14 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
 
     fun isBefore(other: HelsinkiDateTime): Boolean = this.instant.isBefore(other.instant)
 
-    fun withTime(time: LocalTime): HelsinkiDateTime = update {
-        it.withHour(time.hour).withMinute(time.minute).withSecond(time.second).withNano(time.nano)
-    }
+    fun withTime(time: LocalTime): HelsinkiDateTime =
+        update {
+            it
+                .withHour(time.hour)
+                .withMinute(time.minute)
+                .withSecond(time.second)
+                .withNano(time.nano)
+        }
 
     fun atStartOfDay() = withTime(LocalTime.MIN)
 
@@ -123,14 +129,12 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
     fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.ofInstant(instant, europeHelsinki)
 
     /** Returns the amount of time elapsed since the given timestamp */
-    fun durationSince(other: HelsinkiDateTime): Duration =
-        Duration.between(other.toZonedDateTime(), this.toZonedDateTime())
+    fun durationSince(other: HelsinkiDateTime): Duration = Duration.between(other.toZonedDateTime(), this.toZonedDateTime())
 
     /** Returns the amount of time elapsed since this timestamp */
     fun elapsed(clock: Clock? = Clock.systemUTC()): Duration = now(clock).durationSince(this)
 
-    private inline fun update(crossinline f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime =
-        from(f(toZonedDateTime()).toInstant())
+    private inline fun update(crossinline f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime = from(f(toZonedDateTime()).toInstant())
 
     override fun compareTo(other: HelsinkiDateTime): Int = this.instant.compareTo(other.instant)
 
@@ -141,15 +145,16 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
          * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time
          * matches the given values
          */
-        fun of(date: LocalDate, time: LocalTime): HelsinkiDateTime =
-            from(ZonedDateTime.of(date, time, europeHelsinki))
+        fun of(
+            date: LocalDate,
+            time: LocalTime
+        ): HelsinkiDateTime = from(ZonedDateTime.of(date, time, europeHelsinki))
 
         /**
          * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time
          * matches the given value
          */
-        fun of(dateTime: LocalDateTime): HelsinkiDateTime =
-            from(ZonedDateTime.of(dateTime, europeHelsinki))
+        fun of(dateTime: LocalDateTime): HelsinkiDateTime = from(ZonedDateTime.of(dateTime, europeHelsinki))
 
         /**
          * Returns the current `HelsinkiDateTime` based on the given clock, or the system default
@@ -167,11 +172,9 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) :
          * Converts a `ZonedDateTime` to `HelsinkiDateTime` by reinterpreting its timestamp in
          * Europe/Helsinki timezone
          */
-        fun from(value: ZonedDateTime): HelsinkiDateTime =
-            HelsinkiDateTime(value.toInstant().truncateNanos())
+        fun from(value: ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(value.toInstant().truncateNanos())
 
-        fun atStartOfDay(date: LocalDate): HelsinkiDateTime =
-            from(date.atStartOfDay(europeHelsinki))
+        fun atStartOfDay(date: LocalDate): HelsinkiDateTime = from(date.atStartOfDay(europeHelsinki))
     }
 
     class FromJson : StdConverter<ZonedDateTime, HelsinkiDateTime>() {
@@ -199,8 +202,7 @@ data class HelsinkiDateTimeRange(
 
     override fun toString(): String = "[$start,$end)"
 
-    override fun overlaps(other: HelsinkiDateTimeRange) =
-        this.start < other.end && other.start < this.end
+    override fun overlaps(other: HelsinkiDateTimeRange) = this.start < other.end && other.start < this.end
 
     override fun leftAdjacentTo(other: HelsinkiDateTimeRange): Boolean = this.end == other.start
 
@@ -216,9 +218,7 @@ data class HelsinkiDateTimeRange(
     override fun gap(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange? =
         tryCreate(minOf(this.end, other.end), maxOf(this.start, other.start))
 
-    override fun subtract(
-        other: HelsinkiDateTimeRange
-    ): BoundedRange.SubtractResult<HelsinkiDateTimeRange> =
+    override fun subtract(other: HelsinkiDateTimeRange): BoundedRange.SubtractResult<HelsinkiDateTimeRange> =
         if (this.overlaps(other)) {
             val left = tryCreate(this.start, other.start)
             val right = tryCreate(other.end, this.end)
@@ -235,17 +235,16 @@ data class HelsinkiDateTimeRange(
                     BoundedRange.SubtractResult.None
                 }
             }
-        } else BoundedRange.SubtractResult.Original(this)
+        } else {
+            BoundedRange.SubtractResult.Original(this)
+        }
 
     override fun merge(other: HelsinkiDateTimeRange): HelsinkiDateTimeRange =
         HelsinkiDateTimeRange(minOf(this.start, other.start), maxOf(this.end, other.end))
 
-    override fun includes(point: HelsinkiDateTime): Boolean =
-        this.start <= point && point < this.end
+    override fun includes(point: HelsinkiDateTime): Boolean = this.start <= point && point < this.end
 
-    override fun relationTo(
-        other: HelsinkiDateTimeRange
-    ): BoundedRange.Relation<HelsinkiDateTimeRange> =
+    override fun relationTo(other: HelsinkiDateTimeRange): BoundedRange.Relation<HelsinkiDateTimeRange> =
         when {
             this.end <= other.start ->
                 BoundedRange.Relation.LeftTo(gap = tryCreate(this.end, other.start))
@@ -292,13 +291,18 @@ data class HelsinkiDateTimeRange(
     fun getDuration(): Duration = Duration.between(start.toInstant(), end.toInstant())
 
     companion object {
-        fun tryCreate(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange? =
-            if (start < end) HelsinkiDateTimeRange(start, end) else null
+        fun tryCreate(
+            start: HelsinkiDateTime,
+            end: HelsinkiDateTime
+        ): HelsinkiDateTimeRange? = if (start < end) HelsinkiDateTimeRange(start, end) else null
 
-        fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
-            HelsinkiDateTimeRange(
-                HelsinkiDateTime.of(date, startTime),
-                HelsinkiDateTime.of(date, endTime)
-            )
+        fun of(
+            date: LocalDate,
+            startTime: LocalTime,
+            endTime: LocalTime
+        ) = HelsinkiDateTimeRange(
+            HelsinkiDateTime.of(date, startTime),
+            HelsinkiDateTime.of(date, endTime)
+        )
     }
 }

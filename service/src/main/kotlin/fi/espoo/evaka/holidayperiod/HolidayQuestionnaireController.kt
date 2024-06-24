@@ -25,14 +25,17 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/holiday-period/questionnaire")
-class HolidayQuestionnaireController(private val accessControl: AccessControl) {
+class HolidayQuestionnaireController(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getQuestionnaires(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock
-    ): List<FixedPeriodQuestionnaire> {
-        return db.connect { dbc ->
+    ): List<FixedPeriodQuestionnaire> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -42,9 +45,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     )
                     it.getHolidayQuestionnaires()
                 }
-            }
-            .also { Audit.HolidayQuestionnairesList.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.HolidayQuestionnairesList.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping("/{id}")
     fun getQuestionnaire(
@@ -52,8 +53,9 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId
-    ): FixedPeriodQuestionnaire {
-        return db.connect { dbc ->
+    ): FixedPeriodQuestionnaire =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -63,9 +65,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     )
                     it.getFixedPeriodQuestionnaire(id) ?: throw NotFound()
                 }
-            }
-            .also { Audit.HolidayQuestionnaireRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.HolidayQuestionnaireRead.log(targetId = AuditId(id)) }
 
     @PostMapping
     fun createHolidayQuestionnaire(

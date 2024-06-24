@@ -71,7 +71,8 @@ class FuelExtensionsTest {
         FuelManager.instance.client = client
 
         val (_, response, result) =
-            Fuel.get("https://example.com")
+            Fuel
+                .get("https://example.com")
                 .responseStringWithRetries(2, 1L) // Would have to be 3 to succeed
         assertEquals(429, response.statusCode) // Status code of last response
         assertTrue(result is Result.Failure)
@@ -84,7 +85,8 @@ class FuelExtensionsTest {
         FuelManager.instance.client = client
 
         assertThrows<NumberFormatException> {
-            Fuel.get("https://example.com")
+            Fuel
+                .get("https://example.com")
                 .responseStringWithRetries(1, 1L) // Would have to be 2 to succeed
         }
     }
@@ -163,11 +165,10 @@ class FuelExtensionsTest {
     private fun createRetryResponse(
         retryAfter: String,
         headers: Headers = Headers.from(Headers.RETRY_AFTER to listOf(retryAfter))
-    ) =
-        Response(
-            statusCode = 429,
-            responseMessage = "RETRY",
-            url = URI("https://example.com").toURL(),
-            headers = headers
-        )
+    ) = Response(
+        statusCode = 429,
+        responseMessage = "RETRY",
+        url = URI("https://example.com").toURL(),
+        headers = headers
+    )
 }

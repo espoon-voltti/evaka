@@ -201,7 +201,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
                     modifiedAt = now
-                ),
+                )
             ),
             getAbsencesOfChild(child1.id).sortedWith(compareBy({ it.date }, { it.category }))
         )
@@ -214,7 +214,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
                     modifiedAt = now
-                ),
+                )
             ),
             getAbsencesOfChild(child2.id)
         )
@@ -261,8 +261,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .dates()
                 .map { date ->
                     Presence(childId = child1.id, date = date, category = AbsenceCategory.BILLABLE)
-                }
-                .toList()
+                }.toList()
         )
 
         assertEquals(
@@ -279,14 +278,13 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startTime = null,
                     endTime = null
                 ),
-
                 // This was added
                 Reservation(
                     childId = child1.id,
                     date = startDate.plusDays(3),
                     startTime = null,
                     endTime = null
-                ),
+                )
             ),
             getAllReservations()
         )
@@ -362,10 +360,9 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 .map { date ->
                     AbsenceController.HolidayReservationsDelete(
                         childId = child1.id,
-                        date = date,
+                        date = date
                     )
-                }
-                .toList()
+                }.toList()
         )
 
         assertEquals(
@@ -376,7 +373,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0)
-                ),
+                )
             ),
             getAllReservations()
         )
@@ -391,14 +388,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
                     modifiedAt = now
-                ),
+                )
             ),
             getAbsencesOfChild(child1.id)
         )
     }
 
-    private fun getAbsencesOfChild(childId: ChildId): List<Absence> {
-        return absenceController.getAbsencesOfChild(
+    private fun getAbsencesOfChild(childId: ChildId): List<Absence> =
+        absenceController.getAbsencesOfChild(
             dbInstance(),
             employee.user,
             MockEvakaClock(now),
@@ -406,7 +403,6 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             today.year,
             today.monthValue
         )
-    }
 
     private fun upsertAbsences(absences: List<AbsenceUpsert>) {
         absenceController.upsertAbsences(
@@ -428,9 +424,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun deleteHolidayReservations(
-        deletions: List<AbsenceController.HolidayReservationsDelete>
-    ) {
+    private fun deleteHolidayReservations(deletions: List<AbsenceController.HolidayReservationsDelete>) {
         absenceController.deleteHolidayReservations(
             dbInstance(),
             employee.user,
@@ -447,17 +441,16 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val endTime: LocalTime?
     )
 
-    private fun getAllReservations(): List<Reservation> {
-        return db.read { tx ->
+    private fun getAllReservations(): List<Reservation> =
+        db.read { tx ->
             @Suppress("DEPRECATION")
-            tx.createQuery(
+            tx
+                .createQuery(
                     """
                 SELECT child_id, date, start_time, end_time
                 FROM attendance_reservation
                 ORDER BY child_id, date
                 """
-                )
-                .toList<Reservation>()
+                ).toList<Reservation>()
         }
-    }
 }

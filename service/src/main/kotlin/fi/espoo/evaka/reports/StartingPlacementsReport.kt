@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class StartingPlacementsReportController(private val accessControl: AccessControl) {
+class StartingPlacementsReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/starting-placements", // deprecated
         "/employee/reports/starting-placements"
@@ -30,8 +32,9 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): List<StartingPlacementsRow> {
-        return db.connect { dbc ->
+    ): List<StartingPlacementsRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -42,13 +45,11 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getStartingPlacementsRows(year, month)
                 }
-            }
-            .also {
+            }.also {
                 Audit.StartingPlacementsReportRead.log(
                     meta = mapOf("year" to year, "month" to month, "count" to it.size)
                 )
             }
-    }
 }
 
 data class StartingPlacementsRow(
@@ -70,8 +71,8 @@ private fun Database.Read.getStartingPlacementsRows(
 ): List<StartingPlacementsRow> {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.child_id, p.start_date AS placement_start, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn,
     (CASE
         WHEN u.provider_type = 'PRIVATE_SERVICE_VOUCHER' THEN 'palvelusetelialue'
@@ -84,7 +85,6 @@ JOIN care_area ca ON u.care_area_id = ca.id
 LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
 WHERE between_start_and_end(${bind(range)}, p.start_date) AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
 """
-            )
-        }
-        .toList<StartingPlacementsRow>()
+        )
+    }.toList<StartingPlacementsRow>()
 }

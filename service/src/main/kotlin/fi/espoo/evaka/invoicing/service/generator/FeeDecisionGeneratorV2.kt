@@ -70,8 +70,11 @@ fun generateAndInsertFeeDecisionsV2(
             existingDrafts = existingDrafts,
             ignoredDrafts = ignoredDrafts,
             minDate =
-                if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
-                else financeMinDate
+                if (retroactiveOverride != null) {
+                    minOf(retroactiveOverride, financeMinDate)
+                } else {
+                    financeMinDate
+                }
         )
 
     tx.deleteFeeDecisions(existingDrafts.map { it.id })
@@ -103,12 +106,11 @@ fun generateFeeDecisionsDrafts(
     val newDrafts = feeBases.map { it.toFeeDecision() }
 
     return filterAndMergeDrafts(
-            newDrafts = newDrafts,
-            activeDecisions = activeDecisions,
-            ignoredDrafts = ignoredDrafts,
-            minDate = minDate
-        )
-        .map { it.withMetadataFromExisting(existingDrafts) }
+        newDrafts = newDrafts,
+        activeDecisions = activeDecisions,
+        ignoredDrafts = ignoredDrafts,
+        minDate = minDate
+    ).map { it.withMetadataFromExisting(existingDrafts) }
         .map {
             it.copy(
                 difference =
@@ -137,14 +139,14 @@ private fun getFeeBases(
     val allPersonIds = listOf(targetAdultId) + allPartnerIds + allChildIds
 
     val incomesByPerson =
-        tx.getIncomesFrom(
+        tx
+            .getIncomesFrom(
                 jsonMapper,
                 incomeTypesProvider,
                 coefficientMultiplierProvider,
                 allPersonIds,
                 minDate
-            )
-            .groupBy(
+            ).groupBy(
                 keySelector = { it.personId },
                 valueTransform = {
                     IncomeRange(
@@ -156,7 +158,8 @@ private fun getFeeBases(
 
     val placementDetailsByChild = getPlacementDetailsByChild(tx, allChildIds)
     val feeAlterationsByChild =
-        tx.getFeeAlterationsFrom(personIds = allChildIds.toList(), from = minDate)
+        tx
+            .getFeeAlterationsFrom(personIds = allChildIds.toList(), from = minDate)
             .groupBy(
                 keySelector = { it.personId },
                 valueTransform = {
@@ -201,8 +204,11 @@ private fun getFeeBases(
                 incomesByPerson[partner]?.find { it.range.contains(range) }?.income
             }
         val parentIncomes =
-            if (family?.partner != null) listOf(headOfFamilyIncome, partnerIncome)
-            else listOf(headOfFamilyIncome)
+            if (family?.partner != null) {
+                listOf(headOfFamilyIncome, partnerIncome)
+            } else {
+                listOf(headOfFamilyIncome)
+            }
 
         FeeBasis(
             range = range,
@@ -216,28 +222,25 @@ private fun getFeeBases(
                         compareByDescending<Child> { it.dateOfBirth }
                             .thenByDescending { it.ssn }
                             .thenBy { it.id }
-                    )
-                    .mapNotNull { child ->
+                    ).mapNotNull { child ->
                         placementDetailsByChild[child.id]
                             ?.find { it.range.contains(range) }
                             ?.let { placement -> child to placement }
-                    }
-                    .mapIndexed childMapping@{ siblingIndex, (child, placement) ->
+                    }.mapIndexed childMapping@{ siblingIndex, (child, placement) ->
                         val serviceNeedOptionFee =
                             allServiceNeedOptionFees
                                 .find {
                                     it.serviceNeedOptionFee.serviceNeedOptionId ==
-                                        placement.serviceNeedOption.id && it.range.contains(range)
-                                }
-                                ?.serviceNeedOptionFee
+                                        placement.serviceNeedOption.id &&
+                                        it.range.contains(range)
+                                }?.serviceNeedOptionFee
 
                         val income =
                             incomesByPerson[child.id]
                                 ?.find {
                                     it.range.contains(range) &&
                                         it.income.effect == IncomeEffect.INCOME
-                                }
-                                ?.income
+                                }?.income
 
                         val feeAlterations =
                             feeAlterationsByChild[child.id]
@@ -274,8 +277,8 @@ data class FeeBasis(
     val familySize: Int,
     val feeThresholds: FeeThresholds
 ) : WithRange {
-    fun toFeeDecision(): FeeDecision {
-        return FeeDecision(
+    fun toFeeDecision(): FeeDecision =
+        FeeDecision(
             id = FeeDecisionId(UUID.randomUUID()),
             validDuring = range,
             status = FeeDecisionStatus.DRAFT,
@@ -292,13 +295,15 @@ data class FeeBasis(
                         feeThresholds = feeThresholds,
                         familySize = familySize,
                         parentIncomes =
-                            if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
-                            else listOf(headOfFamilyIncome)
+                            if (partnerId != null) {
+                                listOf(headOfFamilyIncome, partnerIncome)
+                            } else {
+                                listOf(headOfFamilyIncome)
+                            }
                     )
                 },
             difference = emptySet()
         )
-    }
 }
 
 data class ChildFeeBasis(
@@ -370,7 +375,10 @@ private data class FamilyRelations(
     val children: List<Child>
 ) : WithFiniteRange
 
-private fun getFamilyRelations(tx: Database.Read, targetAdultId: PersonId): List<FamilyRelations> {
+private fun getFamilyRelations(
+    tx: Database.Read,
+    targetAdultId: PersonId
+): List<FamilyRelations> {
     val partnerRelations = tx.getPartnerRelations(targetAdultId)
     val adultIds = (partnerRelations.map { it.partnerId } + targetAdultId).toSet()
     val childRelationsByParent = tx.getChildRelations(adultIds)

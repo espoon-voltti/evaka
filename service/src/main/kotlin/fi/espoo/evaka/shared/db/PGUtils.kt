@@ -17,8 +17,8 @@ fun Throwable.psqlCause(): PSQLException? {
     return cause as? PSQLException
 }
 
-fun mapPSQLException(e: Exception): Exception {
-    return if (e.cause is PSQLException) {
+fun mapPSQLException(e: Exception): Exception =
+    if (e.cause is PSQLException) {
         val ex = e.cause as PSQLException
         when (ex.sqlState) {
             PSQLState.UNIQUE_VIOLATION.state,
@@ -29,4 +29,3 @@ fun mapPSQLException(e: Exception): Exception {
     } else {
         e
     }
-}

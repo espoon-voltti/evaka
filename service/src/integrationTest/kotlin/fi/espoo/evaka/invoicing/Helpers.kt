@@ -117,10 +117,12 @@ fun toDetailed(invoice: Invoice): InvoiceDetailed =
                     savedCostCenter =
                         if (
                             invoice.status == InvoiceStatus.SENT ||
-                                invoice.status == InvoiceStatus.WAITING_FOR_SENDING
-                        )
+                            invoice.status == InvoiceStatus.WAITING_FOR_SENDING
+                        ) {
                             unit.costCenter
-                        else null,
+                        } else {
+                            null
+                        },
                     description = row.description,
                     correctionId = row.correctionId,
                     note = null

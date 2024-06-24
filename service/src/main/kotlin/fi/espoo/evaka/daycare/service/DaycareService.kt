@@ -37,23 +37,27 @@ class DaycareService {
             tx.createDaycareGroupMessageAccount(it.id)
         }
 
-    fun deleteGroup(tx: Database.Transaction, groupId: GroupId) =
-        try {
-            if (tx.hasGroupPlacements(groupId))
-                throw Conflict("Cannot delete group which has children placed in it")
-
-            tx.deleteDaycareGroupMessageAccount(groupId)
-            tx.deleteDaycareGroup(groupId)
-        } catch (e: UnableToExecuteStatementException) {
-            throw e.psqlCause()
-                ?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
-                ?.let {
-                    Conflict(
-                        "Cannot delete group which is still referred to from other data",
-                        cause = e
-                    )
-                } ?: e
+    fun deleteGroup(
+        tx: Database.Transaction,
+        groupId: GroupId
+    ) = try {
+        if (tx.hasGroupPlacements(groupId)) {
+            throw Conflict("Cannot delete group which has children placed in it")
         }
+
+        tx.deleteDaycareGroupMessageAccount(groupId)
+        tx.deleteDaycareGroup(groupId)
+    } catch (e: UnableToExecuteStatementException) {
+        throw e
+            .psqlCause()
+            ?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
+            ?.let {
+                Conflict(
+                    "Cannot delete group which is still referred to from other data",
+                    cause = e
+                )
+            } ?: e
+    }
 
     fun getDaycareGroups(
         tx: Database.Read,
@@ -67,7 +71,11 @@ class DaycareService {
     }
 }
 
-data class DaycareManager(val name: String, val email: String, val phone: String)
+data class DaycareManager(
+    val name: String,
+    val email: String,
+    val phone: String
+)
 
 data class DaycareGroup(
     val id: GroupId,
@@ -79,4 +87,7 @@ data class DaycareGroup(
     val jamixCustomerNumber: Int?
 )
 
-data class Caretakers(val minimum: Double, val maximum: Double)
+data class Caretakers(
+    val minimum: Double,
+    val maximum: Double
+)

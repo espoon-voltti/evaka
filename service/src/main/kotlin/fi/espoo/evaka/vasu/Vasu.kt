@@ -62,8 +62,8 @@ data class VasuDocumentEvent(
     val createdBy: EvakaUserId
 )
 
-private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentState {
-    return events.fold(VasuDocumentState.DRAFT) { acc, event ->
+private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentState =
+    events.fold(VasuDocumentState.DRAFT) { acc, event ->
         when (event.eventType) {
             VasuDocumentEventType.PUBLISHED -> acc
             VasuDocumentEventType.MOVED_TO_READY -> VasuDocumentState.READY
@@ -73,7 +73,6 @@ private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentSta
             VasuDocumentEventType.MOVED_TO_CLOSED -> VasuDocumentState.CLOSED
         }
     }
-}
 
 @Deprecated(
     message = "use OfficialLanguage instead",
@@ -147,7 +146,10 @@ data class VasuPlacement(
     val range: FiniteDateRange
 )
 
-@Json data class ChildLanguage(val nativeLanguage: String, val languageSpokenAtHome: String)
+@Json data class ChildLanguage(
+    val nativeLanguage: String,
+    val languageSpokenAtHome: String
+)
 
 @Json
 data class VasuContent(
@@ -178,9 +180,7 @@ data class VasuContent(
 
     fun redact() = this.copy(sections = sections.map { it.redact() })
 
-    fun mapQuestions(
-        transform: (question: VasuQuestion, sectionIndex: Int, questionIndex: Int) -> VasuQuestion
-    ) =
+    fun mapQuestions(transform: (question: VasuQuestion, sectionIndex: Int, questionIndex: Int) -> VasuQuestion) =
         this.copy(
             sections =
                 this.sections.mapIndexed { sectionIndex, section ->
@@ -229,7 +229,9 @@ data class VasuSection(
         name = "STATIC_INFO_SUBSECTION"
     )
 )
-sealed class VasuQuestion(val type: VasuQuestionType) {
+sealed class VasuQuestion(
+    val type: VasuQuestionType
+) {
     abstract val name: String
     abstract val ophKey: OphQuestionKey?
     abstract val info: String
@@ -238,10 +240,9 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
 
     abstract fun equalsIgnoringValue(question: VasuQuestion?): Boolean
 
-    open fun isValid(section: VasuSection): Boolean {
-        return dependsOn?.all { dep -> section.questions.any { it.id == dep && it != this } }
+    open fun isValid(section: VasuSection): Boolean =
+        dependsOn?.all { dep -> section.questions.any { it.id == dep && it != this } }
             ?: true
-    }
 
     open fun redact(): VasuQuestion = this
 
@@ -252,9 +253,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val id: String? = null,
         override val dependsOn: List<String>? = null
     ) : VasuQuestion(VasuQuestionType.STATIC_INFO_SUBSECTION) {
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return true
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean = true
     }
 
     data class TextQuestion(
@@ -266,9 +265,8 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val multiline: Boolean,
         val value: String
     ) : VasuQuestion(VasuQuestionType.TEXT) {
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is TextQuestion && question.copy(value = this.value) == this
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is TextQuestion && question.copy(value = this.value) == this
     }
 
     data class CheckboxQuestion(
@@ -281,9 +279,8 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val label: String? = null,
         val notNumbered: Boolean? = false
     ) : VasuQuestion(VasuQuestionType.CHECKBOX) {
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is CheckboxQuestion && question.copy(value = this.value) == this
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is CheckboxQuestion && question.copy(value = this.value) == this
     }
 
     data class RadioGroupQuestion(
@@ -296,10 +293,9 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val value: String?,
         val dateRange: FiniteDateRange? = null
     ) : VasuQuestion(VasuQuestionType.RADIO_GROUP) {
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is RadioGroupQuestion &&
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is RadioGroupQuestion &&
                 question.copy(value = this.value, dateRange = this.dateRange) == this
-        }
 
         override fun isValid(section: VasuSection): Boolean {
             if (!super.isValid(section)) return false
@@ -325,15 +321,14 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val dateValue: Map<String, LocalDate>? = mapOf(),
         val dateRangeValue: Map<String, FiniteDateRange>? = mapOf()
     ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is MultiSelectQuestion &&
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is MultiSelectQuestion &&
                 question.copy(
                     value = this.value,
                     textValue = this.textValue,
                     dateValue = this.dateValue,
                     dateRangeValue = this.dateRangeValue
                 ) == this
-        }
 
         override fun isValid(section: VasuSection): Boolean {
             if (!super.isValid(section)) return false
@@ -369,9 +364,8 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
             }
         }
 
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is MultiField && question.copy(value = this.value) == this
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is MultiField && question.copy(value = this.value) == this
     }
 
     data class MultiFieldList(
@@ -389,9 +383,8 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
             }
         }
 
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is MultiFieldList && question.copy(value = this.value) == this
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is MultiFieldList && question.copy(value = this.value) == this
     }
 
     data class DateQuestion(
@@ -404,9 +397,8 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val nameInEvents: String = "",
         val value: LocalDate?
     ) : VasuQuestion(VasuQuestionType.DATE) {
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is DateQuestion && question.copy(value = this.value) == this
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is DateQuestion && question.copy(value = this.value) == this
     }
 
     data class Followup(
@@ -419,9 +411,8 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val value: List<FollowupEntry>,
         val continuesNumbering: Boolean = false
     ) : VasuQuestion(VasuQuestionType.FOLLOWUP) {
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is Followup && question.copy(value = this.value) == this
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean =
+            question is Followup && question.copy(value = this.value) == this
 
         override fun redact(): VasuQuestion =
             this.copy(
@@ -451,17 +442,17 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
             )
     }
 
-    data class Paragraph(val title: String, val paragraph: String) :
-        VasuQuestion(VasuQuestionType.PARAGRAPH) {
+    data class Paragraph(
+        val title: String,
+        val paragraph: String
+    ) : VasuQuestion(VasuQuestionType.PARAGRAPH) {
         override val name = ""
         override val info = ""
         override val ophKey: OphQuestionKey? = null
         override val id: String? = null
         override val dependsOn: List<String>? = null
 
-        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question == this
-        }
+        override fun equalsIgnoringValue(question: VasuQuestion?): Boolean = question == this
     }
 }
 
@@ -476,7 +467,10 @@ data class QuestionOption(
     val subText: String? = null
 )
 
-data class Field(val name: String, val info: String? = null)
+data class Field(
+    val name: String,
+    val info: String? = null
+)
 
 enum class VasuQuestionType {
     TEXT,
@@ -520,10 +514,10 @@ fun updateVasuDocumentState(
     val events =
         if (
             eventType in
-                listOf(
-                    VasuDocumentEventType.MOVED_TO_READY,
-                    VasuDocumentEventType.MOVED_TO_REVIEWED
-                )
+            listOf(
+                VasuDocumentEventType.MOVED_TO_READY,
+                VasuDocumentEventType.MOVED_TO_REVIEWED
+            )
         ) {
             listOf(VasuDocumentEventType.PUBLISHED, eventType)
         } else {
@@ -536,16 +530,15 @@ fun updateVasuDocumentState(
     val currentState = document.documentState
     events.forEach {
         when (it) {
-                VasuDocumentEventType.PUBLISHED -> currentState != VasuDocumentState.CLOSED
-                VasuDocumentEventType.MOVED_TO_READY -> currentState == VasuDocumentState.DRAFT
-                VasuDocumentEventType.RETURNED_TO_READY ->
-                    currentState == VasuDocumentState.REVIEWED
-                VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState == VasuDocumentState.READY
-                VasuDocumentEventType.RETURNED_TO_REVIEWED ->
-                    currentState == VasuDocumentState.CLOSED
-                VasuDocumentEventType.MOVED_TO_CLOSED -> true
-            }
-            .exhaust()
+            VasuDocumentEventType.PUBLISHED -> currentState != VasuDocumentState.CLOSED
+            VasuDocumentEventType.MOVED_TO_READY -> currentState == VasuDocumentState.DRAFT
+            VasuDocumentEventType.RETURNED_TO_READY ->
+                currentState == VasuDocumentState.REVIEWED
+            VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState == VasuDocumentState.READY
+            VasuDocumentEventType.RETURNED_TO_REVIEWED ->
+                currentState == VasuDocumentState.CLOSED
+            VasuDocumentEventType.MOVED_TO_CLOSED -> true
+        }.exhaust()
             .let { valid -> if (!valid) throw Conflict("Invalid state transition") }
     }
 
@@ -565,7 +558,10 @@ fun updateVasuDocumentState(
     return events.contains(VasuDocumentEventType.PUBLISHED)
 }
 
-fun closeVasusWithExpiredTemplate(tx: Database.Transaction, now: HelsinkiDateTime) {
+fun closeVasusWithExpiredTemplate(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime
+) {
     tx.getOpenVasusWithExpiredTemplate(now.toLocalDate()).forEach { documentId ->
         updateVasuDocumentState(
             tx,

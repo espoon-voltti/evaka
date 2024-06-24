@@ -24,14 +24,19 @@ fun splitOvernight(attendance: RawAttendance): Iterable<RawAttendance> {
         .map { date ->
             attendance.copy(
                 arrived =
-                    if (date == arrivedDate) attendance.arrived
-                    else HelsinkiDateTime.of(date, LocalTime.MIN),
+                    if (date == arrivedDate) {
+                        attendance.arrived
+                    } else {
+                        HelsinkiDateTime.of(date, LocalTime.MIN)
+                    },
                 departed =
-                    if (date == departedDate) attendance.departed
-                    else HelsinkiDateTime.of(date, LocalTime.MAX)
+                    if (date == departedDate) {
+                        attendance.departed
+                    } else {
+                        HelsinkiDateTime.of(date, LocalTime.MAX)
+                    }
             )
-        }
-        .toList()
+        }.toList()
 }
 
 fun staffAttendanceTypeFromTitaniaEventCode(code: String): StaffAttendanceType =

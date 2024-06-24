@@ -10,8 +10,8 @@ import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     draft.*,
     (SELECT coalesce(jsonb_agg(json_build_object(
@@ -28,29 +28,25 @@ FROM message_draft draft
 WHERE draft.account_id = ${bind(accountId)}
 ORDER BY draft.created DESC
 """
-            )
-        }
-        .toList<DraftContent>()
+        )
+    }.toList<DraftContent>()
 
-fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId {
-    return createQuery {
-            sql(
-                """
+fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId =
+    createQuery {
+        sql(
+            """
 INSERT INTO message_draft (account_id) VALUES (${bind(accountId)}) RETURNING id
 """
-            )
-        }
-        .exactlyOne<MessageDraftId>()
-}
+        )
+    }.exactlyOne<MessageDraftId>()
 
 fun Database.Transaction.updateDraft(
     accountId: MessageAccountId,
     id: MessageDraftId,
     draft: UpdatableDraftContent
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE message_draft
 SET
     account_id = ${bind(accountId)},
@@ -63,15 +59,16 @@ SET
     recipient_names = ${bind(draft.recipientNames)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
-fun Database.Transaction.deleteDraft(accountId: MessageAccountId, draftId: MessageDraftId) {
+fun Database.Transaction.deleteDraft(
+    accountId: MessageAccountId,
+    draftId: MessageDraftId
+) {
     createUpdate {
-            sql(
-                "DELETE FROM message_draft WHERE id = ${bind(draftId)} AND account_id = ${bind(accountId)}"
-            )
-        }
-        .execute()
+        sql(
+            "DELETE FROM message_draft WHERE id = ${bind(draftId)} AND account_id = ${bind(accountId)}"
+        )
+    }.execute()
 }

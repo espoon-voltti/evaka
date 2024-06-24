@@ -77,8 +77,11 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
+
     @Autowired private lateinit var voucherValueDecisionController: VoucherValueDecisionController
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired
     private lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
@@ -245,7 +248,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
         assertEquals(2, voucherValueDecisions.size)
-        val assumedPeriodStart = testChild.dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
+        val assumedPeriodStart =
+            testChild.dateOfBirth
+                .plusYears(3)
+                .plusMonths(1)
+                .withDayOfMonth(1)
         voucherValueDecisions.first().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
@@ -685,8 +692,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.headOfFamilyId }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_1.id),
                 Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_2.id)
             )
@@ -710,8 +716,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.partnerId }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_2.id),
                 Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_3.id)
             )
@@ -738,8 +743,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.headOfFamilyId }
-            )
-            .containsExactly(
+            ).containsExactly(
                 Tuple(period, emptySet<VoucherValueDecisionDifference>(), expectedHeadOfFamily.id)
             )
     }
@@ -826,8 +830,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.familySize }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), 2),
                 Tuple(
                     subPeriod2,
@@ -856,8 +859,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.placement?.unitId }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
                     emptySet<VoucherValueDecisionDifference>(),
@@ -892,8 +894,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.placement?.type }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
                     emptySet<VoucherValueDecisionDifference>(),
@@ -934,8 +935,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.serviceNeed?.voucherValueCoefficient }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1.asDateRange(),
                     emptySet<VoucherValueDecisionDifference>(),
@@ -967,8 +967,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
                 { it.siblingDiscount }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(
                     testChild_2.dateOfBirth,
                     subPeriod1,
@@ -1052,10 +1051,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')"
-                )
-                .bind("endDate", subPeriod1.end)
+                ).bind("endDate", subPeriod1.end)
                 .updateExactlyOne()
             tx.insert(
                 FeeThresholds(
@@ -1325,8 +1324,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         period: DateRange,
         type: PlacementType,
         daycareId: DaycareId
-    ): PlacementId {
-        return db.transaction { tx ->
+    ): PlacementId =
+        db.transaction { tx ->
             tx.insert(
                 DevPlacement(
                     type = type,
@@ -1337,7 +1336,6 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 )
             )
         }
-    }
 
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
@@ -1410,15 +1408,20 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     }
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
-        return db.read { tx ->
+        return db
+            .read { tx ->
                 @Suppress("DEPRECATION")
-                tx.createQuery("SELECT * FROM voucher_value_decision")
+                tx
+                    .createQuery("SELECT * FROM voucher_value_decision")
                     .toList<VoucherValueDecision>()
-            }
-            .shuffled() // randomize order to expose assumptions
+            }.shuffled() // randomize order to expose assumptions
     }
 
-    private fun insertIncome(adultId: PersonId, amount: Int, period: DateRange) {
+    private fun insertIncome(
+        adultId: PersonId,
+        amount: Int,
+        period: DateRange
+    ) {
         db.transaction { tx ->
             tx.insert(
                 DevIncome(
@@ -1447,7 +1450,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         }
     }
 
-    private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
+    private fun insertFeeAlteration(
+        personId: PersonId,
+        amount: Double,
+        period: DateRange
+    ) {
         db.transaction { tx ->
             tx.insert(
                 DevFeeAlteration(

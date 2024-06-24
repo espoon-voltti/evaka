@@ -87,7 +87,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         assistanceLevels = emptySet(),
                         motivationForDecision = null,
                         unreadGuardianIds = null,
-                        annulmentReason = "",
+                        annulmentReason = ""
                     )
                 )
             }
@@ -143,7 +143,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         assistanceLevels = emptySet(),
                         motivationForDecision = null,
                         unreadGuardianIds = null,
-                        annulmentReason = "",
+                        annulmentReason = ""
                     )
                 )
             }
@@ -240,10 +240,10 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "UPDATE assistance_need_decision SET selected_unit = :selectedUnit WHERE id = :id"
-                )
-                .bind("selectedUnit", daycareId)
+                ).bind("selectedUnit", daycareId)
                 .bind("id", assistanceNeedDecisionId)
                 .execute()
         }

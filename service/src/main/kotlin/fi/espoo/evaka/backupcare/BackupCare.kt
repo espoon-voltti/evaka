@@ -38,7 +38,11 @@ data class UnitBackupCare(
     val missingServiceNeedDays: Int
 )
 
-data class GroupBackupCare(val id: BackupCareId, val childId: ChildId, val period: FiniteDateRange)
+data class GroupBackupCare(
+    val id: BackupCareId,
+    val childId: ChildId,
+    val period: FiniteDateRange
+)
 
 data class BackupCareChild(
     val id: ChildId,
@@ -47,8 +51,18 @@ data class BackupCareChild(
     val birthDate: LocalDate
 )
 
-data class BackupCareUnit(val id: DaycareId, val name: String)
+data class BackupCareUnit(
+    val id: DaycareId,
+    val name: String
+)
 
-data class BackupCareGroup(@PropagateNull val id: GroupId, val name: String)
+data class BackupCareGroup(
+    @PropagateNull val id: GroupId,
+    val name: String
+)
 
-data class NewBackupCare(val unitId: DaycareId, val groupId: GroupId?, val period: FiniteDateRange)
+data class NewBackupCare(
+    val unitId: DaycareId,
+    val groupId: GroupId?,
+    val period: FiniteDateRange
+)

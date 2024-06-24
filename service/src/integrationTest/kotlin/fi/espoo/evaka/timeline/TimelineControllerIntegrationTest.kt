@@ -36,7 +36,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val range =
         FiniteDateRange(
             LocalDate.of(2022, 1, 1),
-            LocalDate.of(2023, 1, 1),
+            LocalDate.of(2023, 1, 1)
         )
 
     @BeforeEach
@@ -144,8 +144,8 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         )
     }
 
-    private fun getTimeline(personId: PersonId): Timeline {
-        return controller.getTimeline(
+    private fun getTimeline(personId: PersonId): Timeline =
+        controller.getTimeline(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)),
             MockEvakaClock(2022, 9, 1, 0, 0),
@@ -153,5 +153,4 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             range.start,
             range.end
         )
-    }
 }

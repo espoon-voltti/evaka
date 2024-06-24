@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/process-metadata")
-class ProcessMetadataController(private val accessControl: AccessControl) {
+class ProcessMetadataController(
+    private val accessControl: AccessControl
+) {
     data class ProcessMetadata(
         val process: ArchivedProcess,
         val primaryDocument: DocumentMetadata,
@@ -43,7 +45,9 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
 
     // wrapper that is needed because currently returning null
     // from an endpoint is not serialized correctly
-    data class ProcessMetadataResponse(val data: ProcessMetadata?)
+    data class ProcessMetadataResponse(
+        val data: ProcessMetadata?
+    )
 
     @GetMapping("/child-documents/{childDocumentId}")
     fun getChildDocumentMetadata(
@@ -52,7 +56,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childDocumentId: ChildDocumentId
     ): ProcessMetadataResponse {
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -85,11 +90,14 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         )
                     )
                 }
-            }
-            .also { response ->
+            }.also { response ->
                 Audit.ChildDocumentReadMetadata.log(
                     targetId = AuditId(childDocumentId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId =
+                        response.data
+                            ?.process
+                            ?.id
+                            ?.let(AuditId::invoke)
                 )
             }
     }
@@ -101,7 +109,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable decisionId: AssistanceNeedDecisionId
     ): ProcessMetadataResponse {
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -135,11 +144,14 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         )
                     )
                 }
-            }
-            .also { response ->
+            }.also { response ->
                 Audit.AssistanceNeedDecisionReadMetadata.log(
                     targetId = AuditId(decisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId =
+                        response.data
+                            ?.process
+                            ?.id
+                            ?.let(AuditId::invoke)
                 )
             }
     }
@@ -151,7 +163,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable decisionId: AssistanceNeedPreschoolDecisionId
     ): ProcessMetadataResponse {
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -186,11 +199,14 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         )
                     )
                 }
-            }
-            .also { response ->
+            }.also { response ->
                 Audit.AssistanceNeedPreschoolDecisionReadMetadata.log(
                     targetId = AuditId(decisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId =
+                        response.data
+                            ?.process
+                            ?.id
+                            ?.let(AuditId::invoke)
                 )
             }
     }
@@ -202,7 +218,8 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): ProcessMetadataResponse {
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -242,21 +259,22 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         )
                     )
                 }
-            }
-            .also { response ->
+            }.also { response ->
                 Audit.ApplicationReadMetadata.log(
                     targetId = AuditId(applicationId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId =
+                        response.data
+                            ?.process
+                            ?.id
+                            ?.let(AuditId::invoke)
                 )
             }
     }
 
-    private fun Database.Read.getChildDocumentMetadata(
-        documentId: ChildDocumentId
-    ): DocumentMetadata =
+    private fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): DocumentMetadata =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT 
             dt.name,
             cd.created AS created_at,
@@ -273,16 +291,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
         WHERE cd.id = ${bind(documentId)}
     """
-                )
-            }
-            .exactlyOne()
+            )
+        }.exactlyOne()
 
-    private fun Database.Read.getAssistanceNeedDecisionDocumentMetadata(
-        decisionId: AssistanceNeedDecisionId
-    ): DocumentMetadata =
+    private fun Database.Read.getAssistanceNeedDecisionDocumentMetadata(decisionId: AssistanceNeedDecisionId): DocumentMetadata =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT 
             'Päätös tuesta varhaiskasvatuksessa' AS name,
             d.created AS created_at,
@@ -297,16 +312,15 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         LEFT JOIN evaka_user e ON e.employee_id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
-                )
-            }
-            .exactlyOne()
+            )
+        }.exactlyOne()
 
     private fun Database.Read.getAssistanceNeedPreschoolDecisionDocumentMetadata(
         decisionId: AssistanceNeedPreschoolDecisionId
     ): DocumentMetadata =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT 
             'Päätös tuesta esiopetuksessa' AS name,
             d.created AS created_at,
@@ -321,16 +335,13 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         LEFT JOIN evaka_user e ON e.employee_id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
-                )
-            }
-            .exactlyOne()
+            )
+        }.exactlyOne()
 
-    private fun Database.Read.getApplicationDocumentMetadata(
-        applicationId: ApplicationId
-    ): DocumentMetadata =
+    private fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): DocumentMetadata =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT 
             CASE 
                 WHEN a.type = 'DAYCARE'
@@ -350,31 +361,25 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         LEFT JOIN evaka_user e ON e.id = a.created_by
         WHERE a.id = ${bind(applicationId)}
     """
-                )
-            }
-            .exactlyOne()
+            )
+        }.exactlyOne()
 
-    private fun Database.Read.getDecisionIdsByApplication(
-        applicationId: ApplicationId
-    ): List<DecisionId> =
+    private fun Database.Read.getDecisionIdsByApplication(applicationId: ApplicationId): List<DecisionId> =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT d.id
         FROM application a
         JOIN decision d ON a.id = d.application_id
         WHERE a.id = ${bind(applicationId)}
     """
-                )
-            }
-            .toList()
+            )
+        }.toList()
 
-    private fun Database.Read.getApplicationDecisionDocumentMetadata(
-        decisionId: DecisionId
-    ): DocumentMetadata =
+    private fun Database.Read.getApplicationDecisionDocumentMetadata(decisionId: DecisionId): DocumentMetadata =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT 
             CASE 
                 WHEN d.type = 'DAYCARE'
@@ -404,7 +409,6 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         LEFT JOIN evaka_user e ON e.id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
-                )
-            }
-            .exactlyOne()
+            )
+        }.exactlyOne()
 }

@@ -150,33 +150,31 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         startDate: LocalDate,
         endDate: LocalDate,
         unitId: DaycareId = testDaycare.id
-    ) =
-        db.transaction { tx ->
-            tx.insert(
-                DevPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = startDate,
-                    endDate = endDate
-                )
+    ) = db.transaction { tx ->
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = unitId,
+                startDate = startDate,
+                endDate = endDate
             )
-        }
+        )
+    }
 
     private fun toReportRow(
         person: DevPerson,
         partnerConflictCount: Int,
         childConflictCount: Int,
         unit: DevDaycare = testDaycare
-    ) =
-        FamilyConflictReportRow(
-            careAreaName = allAreas.find { it.id == unit.areaId }?.name ?: "",
-            unitId = unit.id,
-            unitName = unit.name,
-            id = person.id,
-            firstName = person.firstName,
-            lastName = person.lastName,
-            socialSecurityNumber = person.ssn,
-            partnerConflictCount = partnerConflictCount,
-            childConflictCount = childConflictCount
-        )
+    ) = FamilyConflictReportRow(
+        careAreaName = allAreas.find { it.id == unit.areaId }?.name ?: "",
+        unitId = unit.id,
+        unitName = unit.name,
+        id = person.id,
+        firstName = person.firstName,
+        lastName = person.lastName,
+        socialSecurityNumber = person.ssn,
+        partnerConflictCount = partnerConflictCount,
+        childConflictCount = childConflictCount
+    )
 }

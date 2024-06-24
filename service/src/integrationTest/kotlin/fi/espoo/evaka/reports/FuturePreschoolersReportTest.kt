@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -127,15 +126,9 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(3, report.size)
     }
 
-    private fun getChildrenReport(): List<FuturePreschoolersReportRow> {
-        return db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 1, 1)) }
-    }
+    private fun getChildrenReport(): List<FuturePreschoolersReportRow> = db.read { it.getFuturePreschoolerRows(LocalDate.of(2023, 1, 1)) }
 
-    private fun getUnitReport(): List<PreschoolUnitsReportRow> {
-        return db.read { it.getPreschoolUnitsRows(LocalDate.of(2023, 1, 1)) }
-    }
+    private fun getUnitReport(): List<PreschoolUnitsReportRow> = db.read { it.getPreschoolUnitsRows(LocalDate.of(2023, 1, 1)) }
 
-    private fun getSourceUnitReport(): List<SourceUnitsReportRow> {
-        return db.read { it.getSourceUnitsRows(LocalDate.of(2023, 1, 1)) }
-    }
+    private fun getSourceUnitReport(): List<SourceUnitsReportRow> = db.read { it.getSourceUnitsRows(LocalDate.of(2023, 1, 1)) }
 }

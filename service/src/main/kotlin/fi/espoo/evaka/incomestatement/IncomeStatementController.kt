@@ -30,7 +30,9 @@ import org.springframework.web.bind.annotation.RestController
     "/income-statements", // deprecated
     "/employee/income-statements"
 )
-class IncomeStatementController(private val accessControl: AccessControl) {
+class IncomeStatementController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/person/{personId}")
     fun getIncomeStatements(
         db: Database,
@@ -39,8 +41,9 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
-    ): PagedIncomeStatements {
-        return db.connect { dbc ->
+    ): PagedIncomeStatements =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -56,14 +59,12 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         pageSize = pageSize
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.IncomeStatementsOfPerson.log(
                     targetId = AuditId(personId),
                     meta = mapOf("total" to it.total)
                 )
             }
-    }
 
     @GetMapping("/person/{personId}/{incomeStatementId}")
     fun getIncomeStatement(
@@ -72,8 +73,9 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId
-    ): IncomeStatement {
-        return db.connect { dbc ->
+    ): IncomeStatement =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -88,11 +90,12 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         includeEmployeeContent = true
                     )
                 } ?: throw NotFound("No such income statement")
-            }
-            .also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
-    }
+            }.also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
 
-    data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)
+    data class SetIncomeStatementHandledBody(
+        val handled: Boolean,
+        val handlerNote: String
+    )
 
     @PostMapping("/{incomeStatementId}/handled")
     fun setIncomeStatementHandled(
@@ -127,8 +130,9 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest
-    ): PagedIncomeStatementsAwaitingHandler {
-        return db.connect { dbc ->
+    ): PagedIncomeStatementsAwaitingHandler =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -149,9 +153,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         body.sortDirection ?: SortDirection.ASC
                     )
                 }
-            }
-            .also { Audit.IncomeStatementsAwaitingHandler.log(meta = mapOf("total" to it.total)) }
-    }
+            }.also { Audit.IncomeStatementsAwaitingHandler.log(meta = mapOf("total" to it.total)) }
 
     @GetMapping("/guardian/{guardianId}/children")
     fun getIncomeStatementChildren(
@@ -159,8 +161,9 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable guardianId: PersonId
-    ): List<ChildBasicInfo> {
-        return db.connect { dbc ->
+    ): List<ChildBasicInfo> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -171,14 +174,12 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     )
                     it.getIncomeStatementChildrenByGuardian(guardianId, clock.today())
                 }
-            }
-            .also {
+            }.also {
                 Audit.GuardianChildrenRead.log(
                     targetId = AuditId(guardianId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 }
 
 data class SearchIncomeStatementsRequest(

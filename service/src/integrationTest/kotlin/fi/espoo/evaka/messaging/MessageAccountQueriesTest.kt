@@ -34,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     private val personId = PersonId(UUID.randomUUID())
     private val supervisorId = EmployeeId(UUID.randomUUID())
     private val employee1Id = EmployeeId(UUID.randomUUID())
@@ -239,7 +238,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `employee has no access to inactive accounts`() {
         assertEquals(
             3,
-            db.read {
+            db
+                .read {
                     it.getEmployeeMessageAccountIds(
                         accessControl.requireAuthorizationFilter(
                             it,
@@ -248,8 +248,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             Action.MessageAccount.ACCESS
                         )
                     )
-                }
-                .size
+                }.size
         )
         db.transaction { it.deactivateEmployeeMessageAccount(supervisorId) }
 
@@ -287,7 +286,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val allAccounts =
                 @Suppress("DEPRECATION")
-                tx.createQuery("SELECT id, name, 'PERSONAL' as type from message_account_view")
+                tx
+                    .createQuery("SELECT id, name, 'PERSONAL' as type from message_account_view")
                     .toList<MessageAccount>()
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
@@ -316,20 +316,21 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             3,
             db.read { tx ->
-                tx.getUnreadMessagesCounts(
+                tx
+                    .getUnreadMessagesCounts(
                         accessControl.requireAuthorizationFilter(
                             tx,
                             AuthenticatedUser.Employee(supervisorId, emptySet()),
                             clock,
                             Action.MessageAccount.ACCESS
                         )
-                    )
-                    .sumOf { it.unreadCount }
+                    ).sumOf { it.unreadCount }
             }
         )
         assertEquals(
             1,
-            db.read {
+            db
+                .read {
                     it.getUnreadMessagesCounts(
                         accessControl.requireAuthorizationFilter(
                             it,
@@ -338,8 +339,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             Action.MessageAccount.ACCESS
                         )
                     )
-                }
-                .first()
+                }.first()
                 .unreadCount
         )
     }

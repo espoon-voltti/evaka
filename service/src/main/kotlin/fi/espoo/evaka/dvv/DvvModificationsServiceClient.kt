@@ -45,8 +45,8 @@ class DvvModificationsServiceClient(
     private val fuel =
         if (
             xroadEnv.httpClientCertificateCheck &&
-                xroadEnv.keyStore != null &&
-                xroadEnv.trustStore != null
+            xroadEnv.keyStore != null &&
+            xroadEnv.trustStore != null
         ) {
             certCheckFuelManager(keyStore = xroadEnv.keyStore, trustStore = xroadEnv.trustStore)
         } else if (!xroadEnv.httpClientCertificateCheck) {
@@ -55,7 +55,10 @@ class DvvModificationsServiceClient(
             FuelManager()
         }
 
-    private fun certCheckFuelManager(keyStore: KeystoreEnv, trustStore: KeystoreEnv): FuelManager =
+    private fun certCheckFuelManager(
+        keyStore: KeystoreEnv,
+        trustStore: KeystoreEnv
+    ): FuelManager =
         FuelManager().apply {
             val keyManagerFactory =
                 KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
@@ -68,23 +71,21 @@ class DvvModificationsServiceClient(
             trustManagerFactory.init(trustKeyStore)
 
             socketFactory =
-                SSLContext.getInstance("SSL")
+                SSLContext
+                    .getInstance("SSL")
                     .apply {
                         init(
                             keyManagerFactory.keyManagers,
                             trustManagerFactory.trustManagers,
                             java.security.SecureRandom()
                         )
-                    }
-                    .socketFactory
+                    }.socketFactory
 
             hostnameVerifier = HostnameVerifier { _, _ -> true }
         }
 
     // Fetch the first modification token of the given date
-    fun getFirstModificationToken(
-        date: LocalDate
-    ): DvvModificationServiceModificationTokenResponse? {
+    fun getFirstModificationToken(date: LocalDate): DvvModificationServiceModificationTokenResponse? {
         logger.info {
             "Fetching the first modification token of $date from DVV modification service from $serviceUrl/kirjausavain/$date"
         }
@@ -109,14 +110,19 @@ class DvvModificationsServiceClient(
             }
             is Result.Failure -> {
                 logger.error(result.getException()) {
-                    "Fetching the first modification of $date from DVV modification service failed, message: ${String(result.error.errorData)}"
+                    "Fetching the first modification of $date from DVV modification service failed, message: ${String(
+                        result.error.errorData
+                    )}"
                 }
                 null
             }
         }
     }
 
-    fun getModifications(updateToken: String, ssns: List<String>): DvvModificationsResponse {
+    fun getModifications(
+        updateToken: String,
+        ssns: List<String>
+    ): DvvModificationsResponse {
         logger.info {
             "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/muutokset"
         }
@@ -128,14 +134,13 @@ class DvvModificationsServiceClient(
                 .header("MUTP-Salasana", dvvPassword.value)
                 .header("X-Road-Client", dvvXroadClientId)
                 .jsonBody(
-                    """{
-                    "viimeisinKirjausavain": $updateToken,
-                    "hetulista": [${ssns.map { "\"$it\"" }.joinToString()}]
-                }
-                """
-                        .trimIndent()
-                )
-                .apply { customizers.forEach { it.customize(this) } }
+                    """
+                    {
+                        "viimeisinKirjausavain": $updateToken,
+                        "hetulista": [${ssns.map { "\"$it\"" }.joinToString()}]
+                    }
+                    """.trimIndent()
+                ).apply { customizers.forEach { it.customize(this) } }
                 .responseString()
 
         return when (result) {
@@ -149,7 +154,9 @@ class DvvModificationsServiceClient(
             }
             is Result.Failure -> {
                 logger.error(result.getException()) {
-                    "Fetching modifications with token $updateToken from DVV modifications service failed, message: ${String(result.error.errorData)}"
+                    "Fetching modifications with token $updateToken from DVV modifications service failed, message: ${String(
+                        result.error.errorData
+                    )}"
                 }
                 throw result.getException()
             }

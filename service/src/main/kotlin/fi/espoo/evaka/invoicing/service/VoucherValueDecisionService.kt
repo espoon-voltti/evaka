@@ -59,7 +59,7 @@ class VoucherValueDecisionService(
     env: BucketEnv,
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailClient: EmailClient,
+    private val emailClient: EmailClient
 ) {
     private val bucket = env.voucherValueDecisions
 
@@ -67,7 +67,10 @@ class VoucherValueDecisionService(
         asyncJobRunner.registerHandler(::runSendNewVoucherValueDecisionEmail)
     }
 
-    fun createDecisionPdf(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
+    fun createDecisionPdf(
+        tx: Database.Transaction,
+        decisionId: VoucherValueDecisionId
+    ) {
         val decision = getDecision(tx, decisionId)
         check(decision.documentKey.isNullOrBlank()) {
             "Voucher value decision $decisionId has document key already!"
@@ -164,7 +167,8 @@ class VoucherValueDecisionService(
         ids: List<VoucherValueDecisionId>,
         today: LocalDate
     ) {
-        tx.getValueDecisionsByIds(ids)
+        tx
+            .getValueDecisionsByIds(ids)
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.DRAFT) {
                     throw BadRequest(
@@ -177,24 +181,24 @@ class VoucherValueDecisionService(
                     )
                 }
                 decision
-            }
-            .forEach { tx.setVoucherValueDecisionToIgnored(it.id) }
+            }.forEach { tx.setVoucherValueDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(tx: Database.Transaction, ids: List<VoucherValueDecisionId>): Set<PersonId> {
-        return tx.getValueDecisionsByIds(ids)
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<VoucherValueDecisionId>
+    ): Set<PersonId> =
+        tx
+            .getValueDecisionsByIds(ids)
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.IGNORED) {
                     throw BadRequest("Error with decision ${decision.id}: not ignored")
                 }
                 decision
-            }
-            .map {
+            }.map {
                 tx.removeVoucherValueDecisionIgnore(it.id)
                 it.headOfFamilyId
-            }
-            .toSet()
-    }
+            }.toSet()
 
     private fun getDecision(
         tx: Database.Read,
@@ -217,8 +221,11 @@ class VoucherValueDecisionService(
         settings: Map<SettingType, String>
     ): ByteArray {
         val lang =
-            if (decision.placement.unit.language == "sv") OfficialLanguage.SV
-            else OfficialLanguage.FI
+            if (decision.placement.unit.language == "sv") {
+                OfficialLanguage.SV
+            } else {
+                OfficialLanguage.FI
+            }
 
         return pdfGenerator.generateVoucherValueDecisionPdf(
             VoucherValueDecisionPdfData(decision, settings, lang)
@@ -263,15 +270,15 @@ class VoucherValueDecisionService(
                 emailMessageProvider.financeDecisionNotification(
                     FinanceDecisionType.VOUCHER_VALUE_DECISION
                 )
-            Email.create(
+            Email
+                .create(
                     db,
                     recipient.id,
                     EmailMessageType.DECISION_NOTIFICATION,
                     fromAddress,
                     content,
-                    "$voucherValueDecisionId - ${recipient.id}",
-                )
-                ?.also { emailClient.send(it) }
+                    "$voucherValueDecisionId - ${recipient.id}"
+                )?.also { emailClient.send(it) }
         }
 
         logger.info {

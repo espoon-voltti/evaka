@@ -8,7 +8,10 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 interface ITemplateProvider {
-    fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String
+    fun getLocalizedFilename(
+        type: DecisionType,
+        lang: OfficialLanguage
+    ): String
 
     fun getFeeDecisionPath(): String
 

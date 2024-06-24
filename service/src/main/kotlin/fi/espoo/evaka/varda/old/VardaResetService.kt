@@ -167,9 +167,10 @@ fun deleteChildDataFromVardaAndDbByVardaId(
 private fun getVardaChildIdsByEvakaChildId(
     db: Database.Connection,
     evakaChildId: ChildId
-): List<Long> {
-    return db.read {
-        it.createQuery {
+): List<Long> =
+    db.read {
+        it
+            .createQuery {
                 sql(
                     """
 select varda_child_id from varda_service_need where evaka_child_id = ${bind(evakaChildId)} and varda_child_id is not null 
@@ -177,7 +178,5 @@ union
 select varda_child_id from varda_organizer_child where evaka_person_id = ${bind(evakaChildId)}
 """
                 )
-            }
-            .toList<Long>()
+            }.toList<Long>()
     }
-}

@@ -42,31 +42,36 @@ class MessageControllerCitizen(
     private val accessControl: AccessControl,
     private val messageService: MessageService
 ) {
-
     @GetMapping("/my-account")
-    fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MessageAccountId {
-        return db.connect { dbc -> dbc.read { it.getCitizenMessageAccount(user.id) } }
+    fun getMyAccount(
+        db: Database,
+        user: AuthenticatedUser.Citizen
+    ): MessageAccountId =
+        db
+            .connect { dbc -> dbc.read { it.getCitizenMessageAccount(user.id) } }
             .also { Audit.MessagingMyAccountsRead.log(targetId = AuditId(it)) }
-    }
 
     @GetMapping("/unread-count")
-    fun getUnreadMessages(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): Int {
-        return db.connect { dbc ->
+    fun getUnreadMessages(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): Int =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
-                    tx.getUnreadMessagesCounts(
+                    tx
+                        .getUnreadMessagesCounts(
                             accessControl.requireAuthorizationFilter(
                                 tx,
                                 user,
                                 clock,
                                 Action.MessageAccount.ACCESS
                             )
-                        )
-                        .firstOrNull()
+                        ).firstOrNull()
                         ?.unreadCount ?: 0
                 }
-            }
-            .also { Audit.MessagingUnreadMessagesRead.log(meta = mapOf("count" to it)) }
-    }
+            }.also { Audit.MessagingUnreadMessagesRead.log(meta = mapOf("count" to it)) }
 
     @PutMapping("/threads/{threadId}/read")
     fun markThreadRead(
@@ -75,12 +80,12 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @PathVariable threadId: MessageThreadId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
                 accountId
-            }
-            .also { accountId ->
+            }.also { accountId ->
                 Audit.MessagingMarkMessagesReadWrite.log(
                     targetId = AuditId(listOf(accountId, threadId))
                 )
@@ -93,12 +98,12 @@ class MessageControllerCitizen(
         user: AuthenticatedUser.Citizen,
         @PathVariable threadId: MessageThreadId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.transaction { it.archiveThread(accountId, threadId) }
                 accountId
-            }
-            .also { accountId ->
+            }.also { accountId ->
                 Audit.MessagingArchiveMessageWrite.log(
                     targetId = AuditId(listOf(accountId, threadId))
                 )
@@ -112,11 +117,13 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
-    ): PagedCitizenMessageThreads {
-        return db.connect { dbc ->
+    ): PagedCitizenMessageThreads =
+        db
+            .connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val response =
-                    dbc.read {
+                    dbc
+                        .read {
                             it.getThreads(
                                 accountId,
                                 pageSize,
@@ -124,8 +131,7 @@ class MessageControllerCitizen(
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName
                             )
-                        }
-                        .mapTo(::PagedCitizenMessageThreads) {
+                        }.mapTo(::PagedCitizenMessageThreads) {
                             if (user.authLevel != CitizenAuthLevel.STRONG && it.sensitive) {
                                 CitizenMessageThread.Redacted.fromMessageThread(accountId, it)
                             } else {
@@ -133,15 +139,13 @@ class MessageControllerCitizen(
                             }
                         }
                 accountId to response
-            }
-            .let { (accountId, response) ->
+            }.let { (accountId, response) ->
                 Audit.MessagingReceivedMessagesRead.log(
                     targetId = AuditId(accountId),
                     meta = mapOf("total" to response.total)
                 )
                 response
             }
-    }
 
     data class GetReceiversResponse(
         val messageAccounts: Set<MessageAccount>,
@@ -153,8 +157,9 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock
-    ): GetReceiversResponse {
-        return db.connect { dbc ->
+    ): GetReceiversResponse =
+        db
+            .connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val accountsPerChild =
                     (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
@@ -165,15 +170,13 @@ class MessageControllerCitizen(
                             accountsPerChild.mapValues { entry -> entry.value.map { it.id } }
                     )
                 accountId to response
-            }
-            .let { (accountId, response) ->
+            }.let { (accountId, response) ->
                 Audit.MessagingCitizenFetchReceiversForAccount.log(
                     targetId = AuditId(accountId),
                     meta = mapOf("count" to response.messageAccounts.size)
                 )
                 response
             }
-    }
 
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
@@ -182,8 +185,9 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody
-    ): MessageService.ThreadReply {
-        return db.connect { dbc ->
+    ): MessageService.ThreadReply =
+        db
+            .connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val response =
                     messageService.replyToThread(
@@ -198,14 +202,12 @@ class MessageControllerCitizen(
                         serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                     )
                 accountId to response
-            }
-            .let { (accountId, response) ->
+            }.let { (accountId, response) ->
                 Audit.MessagingReplyToMessageWrite.log(
                     targetId = AuditId(listOf(accountId, messageId))
                 )
                 response
             }
-    }
 
     @PostMapping
     fun newMessage(
@@ -217,10 +219,12 @@ class MessageControllerCitizen(
         val now = clock.now()
         val today = now.toLocalDate()
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 val validRecipients =
-                    dbc.read { it.getCitizenReceivers(today, senderId) }
+                    dbc
+                        .read { it.getCitizenReceivers(today, senderId) }
                         .mapValues { entry -> entry.value.map { it.id }.toSet() }
                 val allRecipientsValid =
                     body.recipients.all { recipient ->
@@ -229,10 +233,15 @@ class MessageControllerCitizen(
                         }
                     }
                 val selectedChildren =
-                    dbc.read { it.getChildrenByParent(user.id, today) }
+                    dbc
+                        .read { it.getChildrenByParent(user.id, today) }
                         .filter { body.children.contains(it.id) }
                 val selectedChildrenInSameUnit =
-                    selectedChildren.asSequence().map { it.unit?.id }.toSet().size == 1
+                    selectedChildren
+                        .asSequence()
+                        .map { it.unit?.id }
+                        .toSet()
+                        .size == 1
                 if (allRecipientsValid && selectedChildrenInSameUnit) {
                     dbc.transaction { tx ->
                         val messageThreadId =
@@ -254,8 +263,7 @@ class MessageControllerCitizen(
                 } else {
                     throw BadRequest("Invalid recipients")
                 }
-            }
-            .let { (senderId, messageThreadId) ->
+            }.let { (senderId, messageThreadId) ->
                 Audit.MessagingCitizenSendMessage.log(
                     targetId = AuditId(listOf(senderId, messageThreadId))
                 )

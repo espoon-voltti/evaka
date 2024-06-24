@@ -19,13 +19,16 @@ import java.math.RoundingMode
 
 internal val FINANCE_DECISION_HANDLER_ROLES = setOf(UserRole.FINANCE_ADMIN)
 
-fun validateFinanceDecisionHandler(tx: Database.Read, decisionHandlerId: EmployeeId) {
+fun validateFinanceDecisionHandler(
+    tx: Database.Read,
+    decisionHandlerId: EmployeeId
+) {
     val employee =
         tx.getEmployeeWithRoles(decisionHandlerId)
             ?: throw NotFound("Decision handler $decisionHandlerId not found")
     if (
         employee.globalRoles.isEmpty() ||
-            employee.globalRoles.all { role -> !FINANCE_DECISION_HANDLER_ROLES.contains(role) }
+        employee.globalRoles.all { role -> !FINANCE_DECISION_HANDLER_ROLES.contains(role) }
     ) {
         throw BadRequest("Decision handler $decisionHandlerId is not finance admin")
     }
@@ -91,5 +94,7 @@ fun calculateTotalExpense(
                 )
         }
 
-fun calculateMonthlyAmount(amount: Int, multiplier: BigDecimal): Int =
-    (BigDecimal(amount) * multiplier).setScale(0, RoundingMode.HALF_UP).toInt()
+fun calculateMonthlyAmount(
+    amount: Int,
+    multiplier: BigDecimal
+): Int = (BigDecimal(amount) * multiplier).setScale(0, RoundingMode.HALF_UP).toInt()

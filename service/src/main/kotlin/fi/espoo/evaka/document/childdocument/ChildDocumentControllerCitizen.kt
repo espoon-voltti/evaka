@@ -35,8 +35,9 @@ class ChildDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestParam childId: ChildId
-    ): List<ChildDocumentCitizenSummary> {
-        return db.connect { dbc ->
+    ): List<ChildDocumentCitizenSummary> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -47,9 +48,7 @@ class ChildDocumentControllerCitizen(
                     )
                     tx.getChildDocumentCitizenSummaries(user, childId)
                 }
-            }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
 
     @GetMapping("/{documentId}")
     fun getDocument(
@@ -57,8 +56,9 @@ class ChildDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ChildDocumentCitizenDetails {
-        return db.connect { dbc ->
+    ): ChildDocumentCitizenDetails =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -71,9 +71,7 @@ class ChildDocumentControllerCitizen(
                     tx.getCitizenChildDocument(documentId)
                         ?: throw NotFound("Document $documentId not found")
                 }
-            }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
-    }
+            }.also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
 
     @GetMapping("/{documentId}/pdf")
     fun downloadChildDocument(
@@ -81,8 +79,9 @@ class ChildDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -93,9 +92,7 @@ class ChildDocumentControllerCitizen(
                     )
                     childDocumentService.getPdfResponse(tx, documentId)
                 }
-            }
-            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
-    }
+            }.also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
 
     @PutMapping("/{documentId}/read")
     fun putDocumentRead(
@@ -103,30 +100,29 @@ class ChildDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.ChildDocument.READ,
-                        documentId
-                    )
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.ChildDocument.READ,
+                    documentId
+                )
 
-                    tx.markChildDocumentAsRead(user, documentId, clock.now())
-                }
+                tx.markChildDocumentAsRead(user, documentId, clock.now())
             }
-            .also { Audit.ChildDocumentMarkRead.log(targetId = AuditId(documentId)) }
-    }
+        }.also { Audit.ChildDocumentMarkRead.log(targetId = AuditId(documentId)) }
 
     @GetMapping("/unread-count")
     fun getUnreadDocumentsCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): Map<ChildId, Int> {
-        return db.connect { dbc ->
+    ): Map<ChildId, Int> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -141,7 +137,5 @@ class ChildDocumentControllerCitizen(
                         tx.getChildDocumentCitizenSummaries(user, childId).count { it.unread }
                     }
                 }
-            }
-            .also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
-    }
+            }.also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
 }

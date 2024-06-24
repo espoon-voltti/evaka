@@ -96,19 +96,20 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
         assertNull(getCurrentSystemNotificationCitizen(beforeValidTo).notification)
     }
 
-    private fun putSystemNotification(now: HelsinkiDateTime, body: SystemNotification) =
-        controller.putSystemNotification(dbInstance(), admin.user, MockEvakaClock(now), body)
+    private fun putSystemNotification(
+        now: HelsinkiDateTime,
+        body: SystemNotification
+    ) = controller.putSystemNotification(dbInstance(), admin.user, MockEvakaClock(now), body)
 
     private fun deleteSystemNotification(
         now: HelsinkiDateTime,
         targetGroup: SystemNotificationTargetGroup
-    ) =
-        controller.deleteSystemNotification(
-            dbInstance(),
-            admin.user,
-            MockEvakaClock(now),
-            targetGroup
-        )
+    ) = controller.deleteSystemNotification(
+        dbInstance(),
+        admin.user,
+        MockEvakaClock(now),
+        targetGroup
+    )
 
     private fun getAllSystemNotifications(now: HelsinkiDateTime) =
         controller.getAllSystemNotifications(dbInstance(), admin.user, MockEvakaClock(now))

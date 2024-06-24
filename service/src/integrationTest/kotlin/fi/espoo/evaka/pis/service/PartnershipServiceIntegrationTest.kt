@@ -26,7 +26,8 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Autowired lateinit var partnershipService: PartnershipService
     private val clock = MockEvakaClock(HelsinkiDateTime.now())
     private val partnershipCreator =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+        AuthenticatedUser
+            .Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
             .evakaUserId
 
     @Test
@@ -63,9 +64,13 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return db.transaction { tx ->
-            tx.insert(
+    private fun createPerson(
+        ssn: String,
+        firstName: String
+    ): PersonDTO =
+        db.transaction { tx ->
+            tx
+                .insert(
                     DevPerson(
                         ssn = ssn,
                         dateOfBirth = getDobFromSsn(ssn),
@@ -75,10 +80,8 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         language = "fi"
                     ),
                     DevPersonType.RAW_ROW
-                )
-                .let { tx.getPersonById(it)!! }
+                ).let { tx.getPersonById(it)!! }
         }
-    }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
 

@@ -428,7 +428,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 questions =
                                     listOf(
                                         Question.TextQuestion(id = "q1", label = "foo"),
-                                        Question.CheckboxQuestion(id = "q1", label = "bar"),
+                                        Question.CheckboxQuestion(id = "q1", label = "bar")
                                     )
                             )
                         )

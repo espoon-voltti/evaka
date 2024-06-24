@@ -56,7 +56,9 @@ class HttpFilterConfig {
             order = -8
         }
 
-    class HttpAccessControl(env: Environment) : HttpFilter() {
+    class HttpAccessControl(
+        env: Environment
+    ) : HttpFilter() {
         private val devApiEnabled = env.activeProfiles.contains("enable_dev_api")
         private val mockIntegrationEnabled =
             env.activeProfiles.contains("enable_varda_mock_integration_endpoint")
@@ -100,7 +102,9 @@ class HttpFilterConfig {
             }
     }
 
-    class BasicMdcFilter(private val tracer: Tracer) : HttpFilter() {
+    class BasicMdcFilter(
+        private val tracer: Tracer
+    ) : HttpFilter() {
         override fun doFilter(
             request: HttpServletRequest,
             response: HttpServletResponse,
@@ -130,5 +134,4 @@ class HttpFilterConfig {
     }
 }
 
-private fun HttpServletRequest.isHealthCheck() =
-    requestURI == "/health" || requestURI == "/actuator/health"
+private fun HttpServletRequest.isHealthCheck() = requestURI == "/health" || requestURI == "/actuator/health"

@@ -171,13 +171,12 @@ class MockVardaIntegrationEndpoint {
     fun deleteDecision(
         @PathVariable vardaId: Long,
         @RequestHeader(name = "Authorization") auth: String
-    ) =
-        lock.withLock {
-            logger.info {
-                "Mock varda integration endpoint DELETE /varhaiskasvatuspaatokset/$vardaId/ called"
-            }
-            decisions.remove(vardaId)
+    ) = lock.withLock {
+        logger.info {
+            "Mock varda integration endpoint DELETE /varhaiskasvatuspaatokset/$vardaId/ called"
         }
+        decisions.remove(vardaId)
+    }
 
     @PostMapping("/v1/varhaiskasvatussuhteet/")
     fun createPlacement(
@@ -211,13 +210,12 @@ class MockVardaIntegrationEndpoint {
     fun deletePlacement(
         @PathVariable vardaId: Long,
         @RequestHeader(name = "Authorization") auth: String
-    ) =
-        lock.withLock {
-            logger.info {
-                "Mock varda integration endpoint DELETE /varhaiskasvatussuhteet/$vardaId/ called"
-            }
-            placements.remove(vardaId)
+    ) = lock.withLock {
+        logger.info {
+            "Mock varda integration endpoint DELETE /varhaiskasvatussuhteet/$vardaId/ called"
         }
+        placements.remove(vardaId)
+    }
 
     @PostMapping("/v1/maksutiedot/")
     fun createFeeData(
@@ -299,8 +297,7 @@ class MockVardaIntegrationEndpoint {
                         decisionKeysToRemove.contains(
                             vardaIdFromVardaUrl(it.value.varhaiskasvatuspaatos)
                         )
-                    }
-                    .keys
+                    }.keys
             logger.info(
                 "Mock varda integration endpoint DELETE ALL deleting ${feeDataKeysToRemove.size} fee data, ${decisionKeysToRemove.size} decisions, ${placementKeysToRemove.size}"
             )
@@ -341,111 +338,106 @@ class MockVardaIntegrationEndpoint {
             )
         }
 
-    private fun getMockUnitResponse(id: Long): String {
-        return """
-            {
-            "url": "https://varda.api/v1/toimipaikat/$id/",
-            "id": $id,
-            "vakajarjestaja": "https://varda.api/v1/vakajarjestajat/298/",
-            "organisaatio_oid": "1.2.246.562.10.47181946360",
-            "kayntiosoite": "kayntiosoite",
-            "postiosoite": "postiosoite",
-            "toiminnallisetpainotukset_top": [],
-            "kielipainotukset_top": [],
-            "ohjaajasuhteet_top": [],
-            "varhaiskasvatussuhteet_top": [],
-            "lahdejarjestelma": "VARDA",
-            "nimi": "Testi",
-            "kayntiosoite_postinumero": "00001",
-            "kayntiosoite_postitoimipaikka": "postitoimipaikka",
-            "postinumero": "00001",
-            "postitoimipaikka": "postitoimipaikka",
-            "kunta_koodi": "049",
-            "puhelinnumero": "+358123456789",
-            "sahkopostiosoite": "toimipaikka@example.com",
-            "kasvatusopillinen_jarjestelma_koodi": "kj01",
-            "toimintamuoto_koodi": "tm01",
-            "asiointikieli_koodi": ["FI"],
-            "jarjestamismuoto_koodi": ["jm01"],
-            "varhaiskasvatuspaikat": 1,
-            "toiminnallinenpainotus_kytkin": false,
-            "kielipainotus_kytkin": false,
-            "alkamis_pvm": "2019-01-01",
-            "paattymis_pvm": null,
-            "muutos_pvm": "2019-11-04T11:31:36.218854Z"
-            }
+    private fun getMockUnitResponse(id: Long): String =
         """
-            .trimIndent()
-    }
+        {
+        "url": "https://varda.api/v1/toimipaikat/$id/",
+        "id": $id,
+        "vakajarjestaja": "https://varda.api/v1/vakajarjestajat/298/",
+        "organisaatio_oid": "1.2.246.562.10.47181946360",
+        "kayntiosoite": "kayntiosoite",
+        "postiosoite": "postiosoite",
+        "toiminnallisetpainotukset_top": [],
+        "kielipainotukset_top": [],
+        "ohjaajasuhteet_top": [],
+        "varhaiskasvatussuhteet_top": [],
+        "lahdejarjestelma": "VARDA",
+        "nimi": "Testi",
+        "kayntiosoite_postinumero": "00001",
+        "kayntiosoite_postitoimipaikka": "postitoimipaikka",
+        "postinumero": "00001",
+        "postitoimipaikka": "postitoimipaikka",
+        "kunta_koodi": "049",
+        "puhelinnumero": "+358123456789",
+        "sahkopostiosoite": "toimipaikka@example.com",
+        "kasvatusopillinen_jarjestelma_koodi": "kj01",
+        "toimintamuoto_koodi": "tm01",
+        "asiointikieli_koodi": ["FI"],
+        "jarjestamismuoto_koodi": ["jm01"],
+        "varhaiskasvatuspaikat": 1,
+        "toiminnallinenpainotus_kytkin": false,
+        "kielipainotus_kytkin": false,
+        "alkamis_pvm": "2019-01-01",
+        "paattymis_pvm": null,
+        "muutos_pvm": "2019-11-04T11:31:36.218854Z"
+        }
+        """.trimIndent()
 
-    private fun getMockOrganizerResponse(id: Long): String {
-        return """
-            {
-              "url": "http://localhost:8888/mock-integration/varda/api/v1/vakajarjestajat/$id/",
-              "id": $id,
-              "nimi": "Espoon kaupunki",
-              "y_tunnus": "0101263-6",
-              "yritysmuoto": "KUNTA",
-              "kunnallinen_kytkin": true,
-              "organisaatio_oid": "1.2.246.562.10.90008375488",
-              "kunta_koodi": "049",
-              "kayntiosoite": "Brogatan 11",
-              "kayntiosoite_postinumero": "02770",
-              "kayntiosoite_postitoimipaikka": "ESBO",
-              "postiosoite": "PL 661",
-              "postinumero": "02070",
-              "postitoimipaikka": "ESPOON KAUPUNKI",
-              "alkamis_pvm": "1978-03-15",
-              "paattymis_pvm": null,
-              "muutos_pvm": "2019-12-18 14:31:07.350419+00:00",
-              "toimipaikat_top": [],
-              "sahkopostiosoite": "sposti@email.moi",
-              "tilinumero": "",
-              "ipv4_osoitteet": null,
-              "ipv6_osoitteet": null,
-              "puhelinnumero": "+358400132233"
-            }
+    private fun getMockOrganizerResponse(id: Long): String =
         """
-            .trimIndent()
-    }
+        {
+          "url": "http://localhost:8888/mock-integration/varda/api/v1/vakajarjestajat/$id/",
+          "id": $id,
+          "nimi": "Espoon kaupunki",
+          "y_tunnus": "0101263-6",
+          "yritysmuoto": "KUNTA",
+          "kunnallinen_kytkin": true,
+          "organisaatio_oid": "1.2.246.562.10.90008375488",
+          "kunta_koodi": "049",
+          "kayntiosoite": "Brogatan 11",
+          "kayntiosoite_postinumero": "02770",
+          "kayntiosoite_postitoimipaikka": "ESBO",
+          "postiosoite": "PL 661",
+          "postinumero": "02070",
+          "postitoimipaikka": "ESPOON KAUPUNKI",
+          "alkamis_pvm": "1978-03-15",
+          "paattymis_pvm": null,
+          "muutos_pvm": "2019-12-18 14:31:07.350419+00:00",
+          "toimipaikat_top": [],
+          "sahkopostiosoite": "sposti@email.moi",
+          "tilinumero": "",
+          "ipv4_osoitteet": null,
+          "ipv6_osoitteet": null,
+          "puhelinnumero": "+358400132233"
+        }
+        """.trimIndent()
 
-    private fun getMockChildResponse(id: Long): String {
-        return """
-            {
-              "url": "https://backend-qa.varda-db.csc.fi/api/v1/lapset/$id/",
-              "id": $id,
-              "henkilo": "https://backend-qa.varda-db.csc.fi/api/v1/henkilot/687426/",
-              "vakatoimija": "https://backend-qa.varda-db.csc.fi/api/v1/vakajarjestajat/299/",
-              "oma_organisaatio": null,
-              "oma_organisaatio_oid": null,
-              "paos_organisaatio": null,
-              "paos_organisaatio_oid": null,
-              "paos_kytkin": false,
-              "varhaiskasvatuspaatokset_top": [],
-              "muutos_pvm": "2020-04-15T08:22:02.364895Z"
-            }
+    private fun getMockChildResponse(id: Long): String =
         """
-            .trimIndent()
-    }
+        {
+          "url": "https://backend-qa.varda-db.csc.fi/api/v1/lapset/$id/",
+          "id": $id,
+          "henkilo": "https://backend-qa.varda-db.csc.fi/api/v1/henkilot/687426/",
+          "vakatoimija": "https://backend-qa.varda-db.csc.fi/api/v1/vakajarjestajat/299/",
+          "oma_organisaatio": null,
+          "oma_organisaatio_oid": null,
+          "paos_organisaatio": null,
+          "paos_organisaatio_oid": null,
+          "paos_kytkin": false,
+          "varhaiskasvatuspaatokset_top": [],
+          "muutos_pvm": "2020-04-15T08:22:02.364895Z"
+        }
+        """.trimIndent()
 
-    private fun getMockPersonResponse(id: Long): String {
-        return """
-            {
-              "url": "http://localhost:8888/mock-integration/varda/api/v1/henkilot/$id/",
-              "id": $id,
-              "etunimet": "Testaaja Tessa",
-              "kutsumanimi": "Testaaja",
-              "sukunimi": "Holopainen",
-              "henkilo_oid": "1.2.246.562.24.$id",
-              "syntyma_pvm": null,
-              "lapsi": []
-            }
+    private fun getMockPersonResponse(id: Long): String =
         """
-            .trimIndent()
-    }
+        {
+          "url": "http://localhost:8888/mock-integration/varda/api/v1/henkilot/$id/",
+          "id": $id,
+          "etunimet": "Testaaja Tessa",
+          "kutsumanimi": "Testaaja",
+          "sukunimi": "Holopainen",
+          "henkilo_oid": "1.2.246.562.24.$id",
+          "syntyma_pvm": null,
+          "lapsi": []
+        }
+        """.trimIndent()
 
-    private fun getMockFeeDataResponse(id: Long, feeData: VardaFeeData): String {
-        return """
+    private fun getMockFeeDataResponse(
+        id: Long,
+        feeData: VardaFeeData
+    ): String =
+        """
         {
           "url": "https://backend-qa.varda-db.csc.fi/api/v1/maksutiedot/$id/",
           "id": $id,
@@ -466,9 +458,7 @@ class MockVardaIntegrationEndpoint {
           "tallennetut_huoltajat_count": ${feeData.huoltajat.size},
           "ei_tallennetut_huoltajat_count": 0
         }
-        """
-            .trimIndent()
-    }
+        """.trimIndent()
 
     fun getMockErrorResponseForFeeData() =
         """
@@ -504,23 +494,19 @@ class MockVardaIntegrationEndpoint {
                 """{"huoltajat":{"1":{"etunimet":[{"error_code":"HE012","description":"Name has disallowed characters.","translations":[{"language":"SV","description":"Namnet innehåller förbjudna tecken. "},{"language":"FI","description":"Nimessä on merkkejä, jotka eivät ole sallittuja."}]}]}}}"""
         )
 
-    private fun getMockDecisionResponse(id: Long): String {
-        return """
+    private fun getMockDecisionResponse(id: Long): String =
+        """
 {
     "id": $id
 }
-        """
-            .trimIndent()
-    }
+        """.trimIndent()
 
-    private fun getMockPlacementResponse(id: Long): String {
-        return """
+    private fun getMockPlacementResponse(id: Long): String =
+        """
 {
     "id": $id
 }
-        """
-            .trimIndent()
-    }
+        """.trimIndent()
 
     enum class VardaCallType {
         DECISION,
@@ -531,7 +517,11 @@ class MockVardaIntegrationEndpoint {
     private var failResponseCode = 200
     private var failResponseMessage = ""
 
-    fun failNextVardaCall(failWithHttpCode: Int, ofType: VardaCallType, message: String) {
+    fun failNextVardaCall(
+        failWithHttpCode: Int,
+        ofType: VardaCallType,
+        message: String
+    ) {
         failNextRequest = ofType
         failResponseCode = failWithHttpCode
         failResponseMessage = message

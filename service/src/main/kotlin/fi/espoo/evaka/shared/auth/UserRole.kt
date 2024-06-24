@@ -23,7 +23,9 @@ enum class UserRole : DatabaseEnum {
     /** Varhaiskasvatussihteeri */
     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
     MOBILE,
-    @Deprecated("Exists only for backwards compatibility") GROUP_STAFF;
+
+    @Deprecated("Exists only for backwards compatibility")
+    GROUP_STAFF;
 
     fun isGlobalRole(): Boolean =
         when (this) {

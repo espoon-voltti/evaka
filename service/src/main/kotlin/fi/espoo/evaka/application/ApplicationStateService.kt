@@ -98,10 +98,11 @@ class ApplicationStateService(
         child: PersonDTO,
         hideFromGuardian: Boolean = false,
         sentDate: LocalDate? = null,
-        allowOtherGuardianAccess: Boolean = false,
+        allowOtherGuardianAccess: Boolean = false
     ): ApplicationId {
         val form =
-            ApplicationForm.initForm(type, guardian, child)
+            ApplicationForm
+                .initForm(type, guardian, child)
                 .let { form -> withDefaultStartDate(tx, now.toLocalDate(), type, form) }
                 .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
 
@@ -142,14 +143,15 @@ class ApplicationStateService(
         val startDate =
             when (type) {
                 ApplicationType.PRESCHOOL ->
-                    tx.getPreschoolTerms()
+                    tx
+                        .getPreschoolTerms()
                         .find {
                             it.applicationPeriod.start <= today && today < it.extendedTerm.start
-                        }
-                        ?.extendedTerm
+                        }?.extendedTerm
                         ?.start
                 ApplicationType.CLUB ->
-                    tx.getClubTerms()
+                    tx
+                        .getClubTerms()
                         .find { it.applicationPeriod.start <= today && today < it.term.start }
                         ?.term
                         ?.start
@@ -178,8 +180,7 @@ class ApplicationStateService(
                     .filter { it.id != child.id }
                     .filter {
                         personService.personsLiveInTheSameAddress(guardian, it.toPersonDTO())
-                    }
-                    .map {
+                    }.map {
                         PersonBasics(
                             firstName = it.firstName,
                             lastName = it.lastName,
@@ -231,9 +232,13 @@ class ApplicationStateService(
 
         tx.getPersonById(application.guardianId)?.let {
             val email =
-                if (!application.form.guardian.email.isNullOrBlank())
+                if (!application.form.guardian.email
+                        .isNullOrBlank()
+                ) {
                     application.form.guardian.email
-                else it.email
+                } else {
+                    it.email
+                }
 
             tx.updatePersonBasicContactInfo(
                 id = application.guardianId,
@@ -245,7 +250,9 @@ class ApplicationStateService(
         if (!application.hideFromGuardian && application.type == ApplicationType.DAYCARE) {
             val preferredUnit =
                 tx.getDaycare(
-                    application.form.preferences.preferredUnits.first().id
+                    application.form.preferences.preferredUnits
+                        .first()
+                        .id
                 )!! // should never be null after validation
 
             asyncJobRunner.plan(
@@ -296,24 +303,24 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, SENT)
 
         featureConfig.archiveMetadataConfigs[
-                ArchiveProcessType.fromApplicationType(application.type)]
-            ?.also { config ->
-                val processId =
-                    tx.insertProcess(
-                            processDefinitionNumber = config.processDefinitionNumber,
-                            year = clock.now().year,
-                            organization = featureConfig.archiveMetadataOrganization,
-                            archiveDurationMonths = config.archiveDurationMonths
-                        )
-                        .id
-                tx.insertProcessHistoryRow(
-                    processId = processId,
-                    state = ArchivedProcessState.INITIAL,
-                    now = clock.now(),
-                    userId = user.evakaUserId
-                )
-                tx.setApplicationProcessId(applicationId, processId)
-            }
+            ArchiveProcessType.fromApplicationType(application.type)
+        ]?.also { config ->
+            val processId =
+                tx
+                    .insertProcess(
+                        processDefinitionNumber = config.processDefinitionNumber,
+                        year = clock.now().year,
+                        organization = featureConfig.archiveMetadataOrganization,
+                        archiveDurationMonths = config.archiveDurationMonths
+                    ).id
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.INITIAL,
+                now = clock.now(),
+                userId = user.evakaUserId
+            )
+            tx.setApplicationProcessId(applicationId, processId)
+        }
 
         Audit.ApplicationSend.log(targetId = AuditId(applicationId))
     }
@@ -593,7 +600,7 @@ class ApplicationStateService(
 
         if (
             status == PlacementPlanConfirmationStatus.REJECTED ||
-                status == PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED
+            status == PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED
         ) {
             if (rejectReason == null) {
                 throw BadRequest("Must give reason for rejecting")
@@ -646,7 +653,8 @@ class ApplicationStateService(
         }
 
         val validIds =
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
                         """
                         SELECT application_id
@@ -658,8 +666,7 @@ class ApplicationStateService(
                             pp.unit_confirmation_status = 'ACCEPTED'
                         """
                     )
-                }
-                .toList<ApplicationId>()
+                }.toList<ApplicationId>()
 
         validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
         Audit.PlacementProposalAccept.log(targetId = AuditId(unitId), objectId = AuditId(validIds))
@@ -717,12 +724,14 @@ class ApplicationStateService(
         }
 
         if (
-            (decision.type == DecisionType.PRESCHOOL_DAYCARE ||
-                decision.type == DecisionType.PRESCHOOL_CLUB) &&
-                decisions.any {
-                    it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION) &&
-                        it.status != DecisionStatus.ACCEPTED
-                }
+            (
+                decision.type == DecisionType.PRESCHOOL_DAYCARE ||
+                    decision.type == DecisionType.PRESCHOOL_CLUB
+            ) &&
+            decisions.any {
+                it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION) &&
+                    it.status != DecisionStatus.ACCEPTED
+            }
         ) {
             throw BadRequest("Primary decision must be accepted first")
         }
@@ -838,8 +847,10 @@ class ApplicationStateService(
                 decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
             ) {
                 decisions.find {
-                    (it.type == DecisionType.PRESCHOOL_DAYCARE ||
-                        it.type == DecisionType.PRESCHOOL_CLUB) &&
+                    (
+                        it.type == DecisionType.PRESCHOOL_DAYCARE ||
+                            it.type == DecisionType.PRESCHOOL_CLUB
+                    ) &&
                         it.status == DecisionStatus.PENDING
                 }
             } else {
@@ -903,8 +914,9 @@ class ApplicationStateService(
         }
 
         if (asDraft) {
-            if (original.status != CREATED)
+            if (original.status != CREATED) {
                 throw BadRequest("Cannot save as draft, application already sent")
+            }
         } else {
             validateApplication(tx, original.type, updatedForm, now.toLocalDate(), strict = true)
 
@@ -966,13 +978,11 @@ class ApplicationStateService(
         )
     }
 
-    private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
-        return createQuery {
-                sql("SELECT 1 FROM preschool_term WHERE application_period @> ${bind(sentDate)}")
-            }
-            .toList<Boolean>()
+    private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean =
+        createQuery {
+            sql("SELECT 1 FROM preschool_term WHERE application_period @> ${bind(sentDate)}")
+        }.toList<Boolean>()
             .firstOrNull() ?: false
-    }
 
     private fun Database.Transaction.updateApplicationContents(
         now: HelsinkiDateTime,
@@ -1096,9 +1106,11 @@ class ApplicationStateService(
                 listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
             } else {
                 val defaultDueDate = sentDate.plusMonths(4)
-                if (config.preferredStartRelativeApplicationDueDate && preferredStartDate != null)
+                if (config.preferredStartRelativeApplicationDueDate && preferredStartDate != null) {
                     maxOf(defaultDueDate, preferredStartDate)
-                else defaultDueDate
+                } else {
+                    defaultDueDate
+                }
             }
         }
     }
@@ -1108,18 +1120,23 @@ class ApplicationStateService(
     private fun getApplication(
         tx: Database.Read,
         applicationId: ApplicationId
-    ): ApplicationDetails {
-        return tx.fetchApplicationDetails(applicationId)
+    ): ApplicationDetails =
+        tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
-    }
 
-    private fun verifyStatus(application: ApplicationDetails, status: ApplicationStatus) {
+    private fun verifyStatus(
+        application: ApplicationDetails,
+        status: ApplicationStatus
+    ) {
         if (application.status != status) {
             throw BadRequest("Expected status $status but was ${application.status}")
         }
     }
 
-    private fun verifyStatus(application: ApplicationDetails, statuses: Set<ApplicationStatus>) {
+    private fun verifyStatus(
+        application: ApplicationDetails,
+        statuses: Set<ApplicationStatus>
+    ) {
         if (!statuses.contains(application.status)) {
             throw BadRequest(
                 "Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}"
@@ -1158,7 +1175,8 @@ class ApplicationStateService(
                     ?: application.preferences.preferredStartDate
             if (serviceNeedStartDate != null) {
                 val serviceNeedOptionId = application.preferences.serviceNeed.serviceNeedOption.id
-                tx.getServiceNeedOptionPublicInfos(PlacementType.entries)
+                tx
+                    .getServiceNeedOptionPublicInfos(PlacementType.entries)
                     .find { it.id == serviceNeedOptionId }
                     ?.also {
                         if (!DateRange(it.validFrom, it.validTo).includes(serviceNeedStartDate)) {
@@ -1184,8 +1202,10 @@ class ApplicationStateService(
                     for (daycare in daycares) {
                         if (
                             type == ApplicationType.DAYCARE &&
-                                (daycare.daycareApplyPeriod == null ||
-                                    !daycare.daycareApplyPeriod.includes(preferredStartDate))
+                            (
+                                daycare.daycareApplyPeriod == null ||
+                                    !daycare.daycareApplyPeriod.includes(preferredStartDate)
+                            )
                         ) {
                             throw BadRequest(
                                 "Cannot apply for daycare in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})"
@@ -1193,8 +1213,10 @@ class ApplicationStateService(
                         }
                         if (
                             type == ApplicationType.PRESCHOOL &&
-                                (daycare.preschoolApplyPeriod == null ||
-                                    !daycare.preschoolApplyPeriod.includes(preferredStartDate))
+                            (
+                                daycare.preschoolApplyPeriod == null ||
+                                    !daycare.preschoolApplyPeriod.includes(preferredStartDate)
+                            )
                         ) {
                             throw BadRequest(
                                 "Cannot apply for preschool in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})"
@@ -1202,8 +1224,10 @@ class ApplicationStateService(
                         }
                         if (
                             type == ApplicationType.CLUB &&
-                                (daycare.clubApplyPeriod == null ||
-                                    !daycare.clubApplyPeriod.includes(preferredStartDate))
+                            (
+                                daycare.clubApplyPeriod == null ||
+                                    !daycare.clubApplyPeriod.includes(preferredStartDate)
+                            )
                         ) {
                             throw BadRequest(
                                 "Cannot apply for club in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})"
@@ -1255,8 +1279,10 @@ class ApplicationStateService(
         application: ApplicationDetails
     ): Boolean {
         val hasSsn =
-            (tx.getPersonById(application.guardianId)!!.identity is ExternalIdentifier.SSN &&
-                tx.getPersonById(application.childId)!!.identity is ExternalIdentifier.SSN)
+            (
+                tx.getPersonById(application.guardianId)!!.identity is ExternalIdentifier.SSN &&
+                    tx.getPersonById(application.childId)!!.identity is ExternalIdentifier.SSN
+            )
         val guardianIsVtjGuardian =
             personService
                 .getGuardians(tx, user, application.childId)

@@ -20,8 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class SystemNotificationsController(private val accessControl: AccessControl) {
-
+class SystemNotificationsController(
+    private val accessControl: AccessControl
+) {
     @PutMapping("/employee/system-notifications")
     fun putSystemNotification(
         db: Database,
@@ -85,8 +86,9 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<SystemNotification> {
-        return db.connect { dbc ->
+    ): List<SystemNotification> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -94,59 +96,58 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_SYSTEM_NOTIFICATIONS
                     )
-                    tx.createQuery { sql("SELECT * FROM system_notification") }
+                    tx
+                        .createQuery { sql("SELECT * FROM system_notification") }
                         .toList<SystemNotification>()
                 }
-            }
-            .also { Audit.SystemNotificationsReadAll.log() }
-    }
+            }.also { Audit.SystemNotificationsReadAll.log() }
 
-    data class CurrentNotificationResponse(val notification: SystemNotification?)
+    data class CurrentNotificationResponse(
+        val notification: SystemNotification?
+    )
 
     @GetMapping("/citizen/public/system-notifications/current")
     fun getCurrentSystemNotificationCitizen(
         db: Database,
         clock: EvakaClock
-    ): CurrentNotificationResponse {
-        return db.connect { dbc ->
+    ): CurrentNotificationResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
-                    tx.createQuery {
+                    tx
+                        .createQuery {
                             sql(
                                 """
                     SELECT * FROM system_notification
                     WHERE target_group = 'CITIZENS' AND valid_to > ${bind(clock.now())}
                 """
                             )
-                        }
-                        .exactlyOneOrNull<SystemNotification>()
+                        }.exactlyOneOrNull<SystemNotification>()
                         .let { CurrentNotificationResponse(it) }
                 }
-            }
-            .also { Audit.SystemNotificationsReadCitizen.log() }
-    }
+            }.also { Audit.SystemNotificationsReadCitizen.log() }
 
     @GetMapping("/employee-mobile/system-notifications/current")
     fun getCurrentSystemNotificationEmployeeMobile(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock
-    ): CurrentNotificationResponse {
-        return db.connect { dbc ->
+    ): CurrentNotificationResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
-                    tx.createQuery {
+                    tx
+                        .createQuery {
                             sql(
                                 """
                     SELECT * FROM system_notification
                     WHERE target_group = 'EMPLOYEES' AND valid_to > ${bind(clock.now())}
                 """
                             )
-                        }
-                        .exactlyOneOrNull<SystemNotification>()
+                        }.exactlyOneOrNull<SystemNotification>()
                         .let { CurrentNotificationResponse(it) }
                 }
-            }
-            .also { Audit.SystemNotificationsReadEmployeeMobile.log() }
-    }
+            }.also { Audit.SystemNotificationsReadEmployeeMobile.log() }
 }
 
 data class SystemNotification(

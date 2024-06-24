@@ -23,8 +23,7 @@ class MockEmailClient : EmailClient {
 
         fun addEmail(email: Email) = lock.write { data.add(email) }
 
-        fun getEmail(toAddress: String): Email? =
-            lock.read { emails.find { email -> email.toAddress == toAddress } }
+        fun getEmail(toAddress: String): Email? = lock.read { emails.find { email -> email.toAddress == toAddress } }
     }
 
     override fun send(email: Email) {

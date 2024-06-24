@@ -40,8 +40,9 @@ class PedagogicalDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: PedagogicalDocumentPostBody
-    ): PedagogicalDocument {
-        return db.connect { dbc ->
+    ): PedagogicalDocument =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -57,14 +58,12 @@ class PedagogicalDocumentController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PedagogicalDocumentCreate.log(
                     targetId = AuditId(body.childId),
                     objectId = AuditId(it.id)
                 )
             }
-    }
 
     @PutMapping("/{documentId}")
     fun updatePedagogicalDocument(
@@ -73,8 +72,9 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
-    ): PedagogicalDocument {
-        return db.connect { dbc ->
+    ): PedagogicalDocument =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -90,9 +90,7 @@ class PedagogicalDocumentController(
                         )
                     }
                 }
-            }
-            .also { Audit.PedagogicalDocumentUpdate.log(targetId = AuditId(documentId)) }
-    }
+            }.also { Audit.PedagogicalDocumentUpdate.log(targetId = AuditId(documentId)) }
 
     @GetMapping("/child/{childId}")
     fun getChildPedagogicalDocuments(
@@ -100,8 +98,9 @@ class PedagogicalDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<PedagogicalDocument> {
-        return db.connect { dbc ->
+    ): List<PedagogicalDocument> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -112,14 +111,12 @@ class PedagogicalDocumentController(
                     )
                     it.findPedagogicalDocumentsByChild(childId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.PedagogicalDocumentRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @DeleteMapping("/{documentId}")
     fun deletePedagogicalDocument(
@@ -159,50 +156,47 @@ data class PedagogicalDocument(
     val updated: HelsinkiDateTime
 )
 
-data class PedagogicalDocumentPostBody(val childId: ChildId, val description: String)
+data class PedagogicalDocumentPostBody(
+    val childId: ChildId,
+    val description: String
+)
 
 private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody
-): PedagogicalDocument {
-    return createUpdate {
-            sql(
-                """
+): PedagogicalDocument =
+    createUpdate {
+        sql(
+            """
 INSERT INTO pedagogical_document(child_id, created_by, description)
 VALUES (${bind(body.childId)}, ${bind(user.evakaUserId)}, ${bind(body.description)})
 RETURNING *
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<PedagogicalDocument>()
-}
 
 private fun Database.Transaction.updateDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody,
     documentId: PedagogicalDocumentId
-): PedagogicalDocument {
-    return createUpdate {
-            sql(
-                """
+): PedagogicalDocument =
+    createUpdate {
+        sql(
+            """
 UPDATE pedagogical_document
 SET description = ${bind(body.description)}, 
     updated_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(documentId)} AND child_id = ${bind(body.childId)}
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<PedagogicalDocument>()
-}
 
-private fun Database.Read.findPedagogicalDocumentsByChild(
-    childId: ChildId
-): List<PedagogicalDocument> {
-    return createQuery {
-            sql(
-                """
+private fun Database.Read.findPedagogicalDocumentsByChild(childId: ChildId): List<PedagogicalDocument> =
+    createQuery {
+        sql(
+            """
                 SELECT 
                     pd.id,
                     pd.child_id,
@@ -212,19 +206,16 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
                 FROM pedagogical_document pd
                 WHERE child_id = ${bind(childId)}
                 """
-            )
-        }
-        .toList<PedagogicalDocument>()
+        )
+    }.toList<PedagogicalDocument>()
         .map { pd -> pd.copy(attachments = getPedagogicalDocumentAttachments(pd.id)) }
-}
 
 private fun Database.Transaction.deleteDocument(documentId: PedagogicalDocumentId) {
     createUpdate {
-            sql(
-                "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ${bind(documentId)}"
-            )
-        }
-        .execute()
+        sql(
+            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ${bind(documentId)}"
+        )
+    }.execute()
     createUpdate { sql("DELETE FROM pedagogical_document WHERE id = ${bind(documentId)}") }
         .execute()
 }

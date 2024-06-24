@@ -10,9 +10,11 @@ import mu.KotlinLogging
 class MockEspooBiClient : EspooBiClient {
     private val logger = KotlinLogging.logger {}
 
-    override fun sendBiCsvFile(fileName: String, stream: EspooBiJob.CsvInputStream) =
-        stream.use {
-            val byteCount = ByteStreams.exhaust(stream)
-            logger.info { "Mock BI client ignored $fileName ($byteCount bytes)" }
-        }
+    override fun sendBiCsvFile(
+        fileName: String,
+        stream: EspooBiJob.CsvInputStream
+    ) = stream.use {
+        val byteCount = ByteStreams.exhaust(stream)
+        logger.info { "Mock BI client ignored $fileName ($byteCount bytes)" }
+    }
 }

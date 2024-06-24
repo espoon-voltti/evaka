@@ -89,32 +89,31 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
             )
 
             listOf(
-                    // Inside holiday period
-                    DevReservation(
-                        childId = testChild_1.id,
-                        date = holidayPeriodStart,
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw),
-                    ),
-                    // Inside holiday period, created by staff
-                    DevReservation(
-                        childId = testChild_1.id,
-                        date = holidayPeriodEnd,
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    ),
-                    // Outside holiday period
-                    DevReservation(
-                        childId = testChild_1.id,
-                        date = holidayPeriodEnd.plusDays(1),
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw),
-                    )
+                // Inside holiday period
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = holidayPeriodStart,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(testAdult_1.id.raw)
+                ),
+                // Inside holiday period, created by staff
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = holidayPeriodEnd,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                ),
+                // Outside holiday period
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = holidayPeriodEnd.plusDays(1),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = EvakaUserId(testAdult_1.id.raw)
                 )
-                .forEach { tx.insert(it) }
+            ).forEach { tx.insert(it) }
         }
 
         holidayPeriodController.createHolidayPeriod(
@@ -155,7 +154,8 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val reservations =
             db.read {
-                it.createQuery { sql("SELECT date FROM attendance_reservation ORDER BY date") }
+                it
+                    .createQuery { sql("SELECT date FROM attendance_reservation ORDER BY date") }
                     .toList<LocalDate>()
             }
         assertEquals(listOf(holidayPeriodEnd, holidayPeriodEnd.plusDays(1)), reservations)

@@ -25,11 +25,16 @@ private typealias StudyRightOid = String
 
 private typealias Ssn = String
 
-data class MockStudyRight(val version: Int, val opiskeluoikeus: Opiskeluoikeus)
+data class MockStudyRight(
+    val version: Int,
+    val opiskeluoikeus: Opiskeluoikeus
+)
 
 @RestController
 @RequestMapping("/public/mock-koski")
-class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
+class MockKoskiEndpoint(
+    private val jsonMapper: JsonMapper
+) {
     private val logger = KotlinLogging.logger {}
     private val lock = ReentrantLock()
     private val persons = HashMap<Ssn, PersonOid>()
@@ -40,13 +45,17 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
     private var studyRightOid = Random.nextInt(1_000_000)
 
     @RequestMapping("/oppija", method = [RequestMethod.PUT, RequestMethod.POST])
-    fun oppija(method: HttpMethod, @RequestBody oppija: Oppija): ResponseEntity<Any> {
+    fun oppija(
+        method: HttpMethod,
+        @RequestBody oppija: Oppija
+    ): ResponseEntity<Any> {
         logger.info { "Mock Koski received $method body: $oppija" }
 
         when (method) {
             HttpMethod.POST -> {
                 if (oppija.opiskeluoikeudet.any { it.oid != null }) {
-                    return ResponseEntity.badRequest()
+                    return ResponseEntity
+                        .badRequest()
                         .body("Trying to create a study right with OID")
                 }
                 oppija.opiskeluoikeudet.forEach { opiskeluOikeus ->
@@ -63,7 +72,8 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                         .mapNotNull { it.oid }
                         .any { !studyRights.containsKey(it) }
                 ) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
                         .body(
                             listOf(
                                 KoskiClient.Error(
@@ -143,11 +153,9 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
         return ResponseEntity.ok(response)
     }
 
-    fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> =
-        lock.withLock { HashMap(studyRights) }
+    fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> = lock.withLock { HashMap(studyRights) }
 
-    fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> =
-        lock.withLock { personStudyRights.get(oid) }
+    fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> = lock.withLock { personStudyRights.get(oid) }
 
     fun clearData() =
         lock.withLock {

@@ -33,7 +33,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/income-statements")
-class IncomeStatementControllerCitizen(private val accessControl: AccessControl) {
+class IncomeStatementControllerCitizen(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getIncomeStatements(
         db: Database,
@@ -41,8 +43,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
-    ): PagedIncomeStatements {
-        return db.connect { dbc ->
+    ): PagedIncomeStatements =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -58,14 +61,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         pageSize = pageSize
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.IncomeStatementsOfPerson.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("total" to it.total)
                 )
             }
-    }
 
     @GetMapping("/child/{childId}")
     fun getChildIncomeStatements(
@@ -75,8 +76,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
         @RequestParam pageSize: Int
-    ): PagedIncomeStatements {
-        return db.connect { dbc ->
+    ): PagedIncomeStatements =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -92,14 +94,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         pageSize = pageSize
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.IncomeStatementsOfChild.log(
                     targetId = AuditId(childId),
                     meta = mapOf("total" to it.total)
                 )
             }
-    }
 
     @GetMapping("/child/start-dates/{childId}")
     fun getChildIncomeStatementStartDates(
@@ -107,8 +107,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<LocalDate> {
-        return db.connect { dbc ->
+    ): List<LocalDate> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -119,22 +120,21 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     )
                     it.readIncomeStatementStartDates(childId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.IncomeStatementStartDatesOfChild.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @GetMapping("/start-dates/")
     fun getIncomeStatementStartDates(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<LocalDate> {
-        return db.connect { dbc ->
+    ): List<LocalDate> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -145,14 +145,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     )
                     it.readIncomeStatementStartDates(user.id)
                 }
-            }
-            .also {
+            }.also {
                 Audit.IncomeStatementStartDates.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @GetMapping("/{incomeStatementId}")
     fun getIncomeStatement(
@@ -160,8 +158,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId
-    ): IncomeStatement {
-        return db.connect { dbc ->
+    ): IncomeStatement =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -176,9 +175,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         includeEmployeeContent = false
                     ) ?: throw NotFound("No such income statement")
                 }
-            }
-            .also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
-    }
+            }.also { Audit.IncomeStatementReadOfPerson.log(targetId = AuditId(incomeStatementId)) }
 
     @GetMapping("/child/{childId}/{incomeStatementId}")
     fun getChildIncomeStatement(
@@ -187,8 +184,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @PathVariable incomeStatementId: IncomeStatementId
-    ): IncomeStatement {
-        return db.connect { dbc ->
+    ): IncomeStatement =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -203,9 +201,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         includeEmployeeContent = false
                     ) ?: throw NotFound("No such child income statement")
                 }
-            }
-            .also { Audit.IncomeStatementReadOfChild.log(targetId = AuditId(incomeStatementId)) }
-    }
+            }.also { Audit.IncomeStatementReadOfChild.log(targetId = AuditId(incomeStatementId)) }
 
     @PostMapping
     fun createIncomeStatement(
@@ -264,7 +260,8 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     ) {
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         db.connect { dbc ->
-            dbc.transaction { tx ->
+            dbc
+                .transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -288,8 +285,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                             }
                         }
                     }
-                }
-                .let { success -> if (!success) throw NotFound("Income statement not found") }
+                }.let { success -> if (!success) throw NotFound("Income statement not found") }
         }
         Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))
     }
@@ -303,11 +299,13 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        if (!validateIncomeStatementBody(body))
+        if (!validateIncomeStatementBody(body)) {
             throw BadRequest("Invalid child income statement body")
+        }
 
         db.connect { dbc ->
-            dbc.transaction { tx ->
+            dbc
+                .transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -335,8 +333,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                             }
                         }
                     }
-                }
-                .let { success -> if (!success) throw NotFound("Income statement not found") }
+                }.let { success -> if (!success) throw NotFound("Income statement not found") }
         }
         Audit.IncomeStatementUpdateForChild.log(targetId = AuditId(incomeStatementId))
     }
@@ -395,7 +392,8 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock
     ): List<ChildBasicInfo> {
         val personId = user.id
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -406,8 +404,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     )
                     it.getIncomeStatementChildrenByGuardian(personId, clock.today())
                 }
-            }
-            .also {
+            }.also {
                 Audit.CitizenChildrenRead.log(
                     targetId = AuditId(personId),
                     meta = mapOf("count" to it.size)

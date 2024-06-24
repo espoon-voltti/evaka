@@ -19,15 +19,18 @@ private val logger = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/mock-integration/dvv/api")
 class MockDvvModificationsService {
-
     @GetMapping("/v1/kirjausavain/{date}")
-    fun getApiKey(@PathVariable date: String?): String {
+    fun getApiKey(
+        @PathVariable date: String?
+    ): String {
         logger.info { "Mock dvv GET /kirjausavain/$date called" }
         return "{\"viimeisinKirjausavain\":100000021}"
     }
 
     @PostMapping("/v1/muutokset")
-    fun getModifications(@RequestBody body: ModificationsRequest): String {
+    fun getModifications(
+        @RequestBody body: ModificationsRequest
+    ): String {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
 
         val nextToken = body.viimeisinKirjausavain.toInt() + 1
@@ -41,12 +44,11 @@ class MockDvvModificationsService {
     }
 }
 
-fun getModifications(ssns: List<String>): String {
-    return ssns
+fun getModifications(ssns: List<String>): String =
+    ssns
         .map { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }
         .filterNotNull()
         .joinToString(",")
-}
 
 val modifications =
     mapOf<String, String>(
@@ -116,8 +118,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "010179-9992" to
             """
 {
@@ -136,8 +137,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "020180-999Y" to
             """
 {
@@ -166,8 +166,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "030180-999L" to
             """
 {
@@ -223,8 +222,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "010180-999A" to
             """
 {
@@ -242,8 +240,7 @@ val modifications =
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "yksinhuoltaja-muutos" to
             """
 {
@@ -316,8 +313,7 @@ val modifications =
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "huoltaja" to
             """
 {
@@ -358,8 +354,7 @@ val modifications =
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }            
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "010181-999K" to
             """
 {
@@ -388,8 +383,7 @@ val modifications =
       ],
       "muutospv": "2019-09-24T21:00:00.000Z"
     }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "040180-9998" to
             """
 {
@@ -460,8 +454,7 @@ val modifications =
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "050180-999W" to
             """
 {
@@ -491,8 +484,7 @@ val modifications =
   ],
   "muutospv": "2020-09-30T22:01:04.568Z"
 }            
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "060118A999J" to
             """
 {
@@ -522,8 +514,7 @@ val modifications =
   ],
   "muutospv": "2020-09-30T22:01:04.568Z"
 }            
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "tuntematon_muutos" to
             """
 {
@@ -536,8 +527,7 @@ val modifications =
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }            
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "010170-123F" to
             """
 {
@@ -557,8 +547,7 @@ val modifications =
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }
-    """
-                .trimIndent(),
+            """.trimIndent(),
         "rikkinainen_tietue" to
             """
 {
@@ -566,8 +555,10 @@ val modifications =
   "bogus": [],
   "bogus": "2021-09-14T12:01:04.568Z"
 }
-    """
-                .trimIndent()
+            """.trimIndent()
     )
 
-data class ModificationsRequest(val viimeisinKirjausavain: String, val hetulista: List<String>)
+data class ModificationsRequest(
+    val viimeisinKirjausavain: String,
+    val hetulista: List<String>
+)

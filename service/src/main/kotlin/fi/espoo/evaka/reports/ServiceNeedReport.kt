@@ -21,18 +21,21 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ServiceNeedReport(private val accessControl: AccessControl) {
+class ServiceNeedReport(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/service-need", // deprecated
-        "/employee/reports/service-need",
+        "/employee/reports/service-need"
     )
     fun getServiceNeedReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): List<ServiceNeedReportRow> {
-        return db.connect { dbc ->
+    ): List<ServiceNeedReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -44,11 +47,9 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getServiceNeedRows(date, filter)
                 }
-            }
-            .also {
+            }.also {
                 Audit.ServiceNeedReportRead.log(meta = mapOf("date" to date, "count" to it.size))
             }
-    }
 }
 
 private fun Database.Read.getServiceNeedRows(
@@ -56,38 +57,38 @@ private fun Database.Read.getServiceNeedRows(
     idFilter: AccessControlFilter<DaycareId>
 ): List<ServiceNeedReportRow> =
     createQuery {
-            sql(
-                """
-        WITH ages AS (SELECT age FROM generate_series(0, 8) as age)
-        SELECT
-                care_area.name as care_area_name,
-                d.name as unit_name,
-                d.provider_type as unit_provider_type,
-                d.type as unit_type,
-                ages.age,
-        
-                count(DISTINCT p.id) FILTER ( WHERE sno.part_day = false ) as full_day,
-                count(DISTINCT p.id) FILTER ( WHERE sno.part_day = true ) as part_day,
-                count(DISTINCT p.id) FILTER ( WHERE sn.part_week = false ) as full_week,
-                count(DISTINCT p.id) FILTER ( WHERE sn.part_week = true ) as part_week,
-                count(DISTINCT p.id) FILTER ( WHERE sn.shift_care = 'FULL') as shift_care,
-                count(DISTINCT p.id) FILTER ( WHERE sn is null ) as missing_service_need,
-                count(DISTINCT p.id) as total
-        FROM daycare d
-        JOIN ages ON true
-        JOIN care_area ON d.care_area_id = care_area.id
-        LEFT JOIN placement pl ON d.id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)} AND pl.type != 'CLUB'::placement_type
-        LEFT JOIN person p ON pl.child_id = p.id AND date_part('year', age(${bind(date)}, p.date_of_birth)) = ages.age
-        LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
-        LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-        WHERE ${predicate(idFilter.forTable("d"))}
-        GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type
-        ORDER BY care_area_name, unit_name, ages.age
+        sql(
             """
-                    .trimIndent()
-            )
-        }
-        .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
+            WITH ages AS (SELECT age FROM generate_series(0, 8) as age)
+            SELECT
+                    care_area.name as care_area_name,
+                    d.name as unit_name,
+                    d.provider_type as unit_provider_type,
+                    d.type as unit_type,
+                    ages.age,
+            
+                    count(DISTINCT p.id) FILTER ( WHERE sno.part_day = false ) as full_day,
+                    count(DISTINCT p.id) FILTER ( WHERE sno.part_day = true ) as part_day,
+                    count(DISTINCT p.id) FILTER ( WHERE sn.part_week = false ) as full_week,
+                    count(DISTINCT p.id) FILTER ( WHERE sn.part_week = true ) as part_week,
+                    count(DISTINCT p.id) FILTER ( WHERE sn.shift_care = 'FULL') as shift_care,
+                    count(DISTINCT p.id) FILTER ( WHERE sn is null ) as missing_service_need,
+                    count(DISTINCT p.id) as total
+            FROM daycare d
+            JOIN ages ON true
+            JOIN care_area ON d.care_area_id = care_area.id
+            LEFT JOIN placement pl ON d.id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(
+                date
+            )} AND pl.type != 'CLUB'::placement_type
+            LEFT JOIN person p ON pl.child_id = p.id AND date_part('year', age(${bind(date)}, p.date_of_birth)) = ages.age
+            LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
+            LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+            WHERE ${predicate(idFilter.forTable("d"))}
+            GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type
+            ORDER BY care_area_name, unit_name, ages.age
+            """.trimIndent()
+        )
+    }.registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .toList<ServiceNeedReportRow>()
 
 data class ServiceNeedReportRow(

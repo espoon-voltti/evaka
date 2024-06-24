@@ -37,8 +37,7 @@ export { isoLanguages }
     return body.trim()
 }
 
-private fun IsoLanguage.toTypescript(): String =
-    """{ id: "$id", alpha2: "$alpha2", nameFi: "$nameFi" }"""
+private fun IsoLanguage.toTypescript(): String = """{ id: "$id", alpha2: "$alpha2", nameFi: "$nameFi" }"""
 
 fun checkLanguages(target: Path) {
     if (languageFileBody() != target.readText().skipFileHeader()) {

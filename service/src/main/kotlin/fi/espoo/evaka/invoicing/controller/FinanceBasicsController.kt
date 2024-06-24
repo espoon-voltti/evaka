@@ -44,15 +44,16 @@ import org.springframework.web.bind.annotation.RestController
     "/employee/finance-basics"
 )
 class FinanceBasicsController(
-    private val accessControl: AccessControl,
+    private val accessControl: AccessControl
 ) {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<FeeThresholdsWithId> {
-        return db.connect { dbc ->
+    ): List<FeeThresholdsWithId> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -62,9 +63,7 @@ class FinanceBasicsController(
                     )
                     tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start }
                 }
-            }
-            .also { Audit.FinanceBasicsFeeThresholdsRead.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.FinanceBasicsFeeThresholdsRead.log(meta = mapOf("count" to it.size)) }
 
     @PostMapping("/fee-thresholds")
     fun createFeeThresholds(
@@ -90,7 +89,7 @@ class FinanceBasicsController(
                     if (latest != null) {
                         if (
                             latest.thresholds.validDuring.end != null &&
-                                latest.thresholds.validDuring.overlaps(body.validDuring)
+                            latest.thresholds.validDuring.overlaps(body.validDuring)
                         ) {
                             throwDateOverlapEx()
                         }
@@ -135,8 +134,9 @@ class FinanceBasicsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> {
-        return db.connect { dbc ->
+    ): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -146,9 +146,7 @@ class FinanceBasicsController(
                     )
                     tx.getVoucherValuesByServiceNeedOption()
                 }
-            }
-            .also { Audit.FinanceBasicsVoucherValuesRead.log() }
-    }
+            }.also { Audit.FinanceBasicsVoucherValuesRead.log() }
 
     @PostMapping("/voucher-values")
     fun createVoucherValue(
@@ -168,11 +166,13 @@ class FinanceBasicsController(
                     )
 
                     val serviceNeedOption =
-                        tx.getServiceNeedOptions()
+                        tx
+                            .getServiceNeedOptions()
                             .filter { it.id == body.serviceNeedOptionId }
                             .firstOrNull()
-                    if (serviceNeedOption == null)
+                    if (serviceNeedOption == null) {
                         throw BadRequest("Invalid service need option ID")
+                    }
 
                     val currentVoucherValues = tx.getVoucherValuesByServiceNeedOption()
 
@@ -180,10 +180,11 @@ class FinanceBasicsController(
                         .getOrDefault(body.serviceNeedOptionId, emptyList())
                         .maxByOrNull { it.voucherValues.range.start }
                         ?.let { latest ->
-                            if (!body.range.start.isAfter(latest.voucherValues.range.start))
+                            if (!body.range.start.isAfter(latest.voucherValues.range.start)) {
                                 throw BadRequest(
                                     "New voucher value range must start after existing ones"
                                 )
+                            }
 
                             if (latest.voucherValues.range.overlaps(body.range)) {
                                 tx.updateVoucherValueEndDate(
@@ -223,19 +224,21 @@ class FinanceBasicsController(
 
                 if (
                     values.size > 1 &&
-                        values[1].voucherValues.range.end != null &&
-                        body.range.start < values[1].voucherValues.range.end
-                )
+                    values[1].voucherValues.range.end != null &&
+                    body.range.start < values[1].voucherValues.range.end
+                ) {
                     tx.updateVoucherValueEndDate(values[1].id, body.range.start.minusDays(1))
+                }
 
                 tx.updateVouchervalue(id, body)
 
                 if (
                     values.size > 1 &&
-                        values[1].voucherValues.range.end != null &&
-                        body.range.start > values[1].voucherValues.range.end
-                )
+                    values[1].voucherValues.range.end != null &&
+                    body.range.start > values[1].voucherValues.range.end
+                ) {
                     tx.updateVoucherValueEndDate(values[1].id, body.range.start.minusDays(1))
+                }
             }
         }
 
@@ -276,55 +279,56 @@ data class ServiceNeedOptionVoucherValueRangeWithId(
     @Nested val voucherValues: ServiceNeedOptionVoucherValueRange
 )
 
-data class FeeThresholdsWithId(val id: FeeThresholdsId, @Nested val thresholds: FeeThresholds)
+data class FeeThresholdsWithId(
+    val id: FeeThresholdsId,
+    @Nested val thresholds: FeeThresholds
+)
 
 private fun validateFeeThresholds(thresholds: FeeThresholds) {
     val allMaxFeesMatch =
         listOf(
-                calculateMaxFeeFromThresholds(
-                    thresholds.minIncomeThreshold2,
-                    thresholds.maxIncomeThreshold2,
-                    thresholds.incomeMultiplier2
-                ),
-                calculateMaxFeeFromThresholds(
-                    thresholds.minIncomeThreshold3,
-                    thresholds.maxIncomeThreshold3,
-                    thresholds.incomeMultiplier3
-                ),
-                calculateMaxFeeFromThresholds(
-                    thresholds.minIncomeThreshold4,
-                    thresholds.maxIncomeThreshold4,
-                    thresholds.incomeMultiplier4
-                ),
-                calculateMaxFeeFromThresholds(
-                    thresholds.minIncomeThreshold5,
-                    thresholds.maxIncomeThreshold5,
-                    thresholds.incomeMultiplier5
-                ),
-                calculateMaxFeeFromThresholds(
-                    thresholds.minIncomeThreshold6,
-                    thresholds.maxIncomeThreshold6,
-                    thresholds.incomeMultiplier6
-                )
+            calculateMaxFeeFromThresholds(
+                thresholds.minIncomeThreshold2,
+                thresholds.maxIncomeThreshold2,
+                thresholds.incomeMultiplier2
+            ),
+            calculateMaxFeeFromThresholds(
+                thresholds.minIncomeThreshold3,
+                thresholds.maxIncomeThreshold3,
+                thresholds.incomeMultiplier3
+            ),
+            calculateMaxFeeFromThresholds(
+                thresholds.minIncomeThreshold4,
+                thresholds.maxIncomeThreshold4,
+                thresholds.incomeMultiplier4
+            ),
+            calculateMaxFeeFromThresholds(
+                thresholds.minIncomeThreshold5,
+                thresholds.maxIncomeThreshold5,
+                thresholds.incomeMultiplier5
+            ),
+            calculateMaxFeeFromThresholds(
+                thresholds.minIncomeThreshold6,
+                thresholds.maxIncomeThreshold6,
+                thresholds.incomeMultiplier6
             )
-            .all { it == thresholds.maxFee }
+        ).all { it == thresholds.maxFee }
 
-    if (!allMaxFeesMatch)
+    if (!allMaxFeesMatch) {
         throw BadRequest("Inconsistent max fees from income thresholds", "inconsistent-thresholds")
+    }
 }
 
 private fun calculateMaxFeeFromThresholds(
     minThreshold: Int,
     maxThreshold: Int,
     multiplier: BigDecimal
-): Int {
-    return roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
-}
+): Int = roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
 
 fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     valid_during,
@@ -354,14 +358,13 @@ SELECT
     temporary_fee_sibling_part_day
 FROM fee_thresholds
 """
-            )
-        }
-        .toList<FeeThresholdsWithId>()
+        )
+    }.toList<FeeThresholdsWithId>()
 
 fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds): FeeThresholdsId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO fee_thresholds (
     id,
     valid_during,
@@ -419,23 +422,25 @@ INSERT INTO fee_thresholds (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<FeeThresholdsId>()
 
-fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
-    createUpdate {
-            sql(
-                "UPDATE fee_thresholds SET valid_during = ${bind(newValidity)} WHERE id = ${bind(id)}"
-            )
-        }
-        .execute()
+fun Database.Transaction.updateFeeThresholdsValidity(
+    id: FeeThresholdsId,
+    newValidity: DateRange
+) = createUpdate {
+    sql(
+        "UPDATE fee_thresholds SET valid_during = ${bind(newValidity)} WHERE id = ${bind(id)}"
+    )
+}.execute()
 
-fun Database.Transaction.updateFeeThresholds(id: FeeThresholdsId, feeThresholds: FeeThresholds) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.updateFeeThresholds(
+    id: FeeThresholdsId,
+    feeThresholds: FeeThresholds
+) = createUpdate {
+    sql(
+        """
 UPDATE fee_thresholds
 SET
     valid_during = ${bind(feeThresholds.validDuring)},
@@ -465,16 +470,15 @@ SET
     temporary_fee_sibling_part_day = ${bind(feeThresholds.temporaryFeeSiblingPartDay)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .execute()
+    )
+}.execute()
 
 fun Database.Read.getServiceNeedVoucherValuesByVoucherValueRangeId(
     voucherValueId: ServiceNeedOptionVoucherValueId
 ): List<ServiceNeedOptionVoucherValueRangeWithId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     service_need_option_id,
@@ -493,16 +497,13 @@ WHERE service_need_option_id = (
 )
 ORDER by upper(validity) DESC
 """
-            )
-        }
-        .toList<ServiceNeedOptionVoucherValueRangeWithId>()
+        )
+    }.toList<ServiceNeedOptionVoucherValueRangeWithId>()
 
-fun Database.Transaction.insertNewVoucherValue(
-    voucherValue: ServiceNeedOptionVoucherValueRange
-): ServiceNeedOptionVoucherValueId =
+fun Database.Transaction.insertNewVoucherValue(voucherValue: ServiceNeedOptionVoucherValueRange): ServiceNeedOptionVoucherValueId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO service_need_option_voucher_value (
     service_need_option_id,
     validity,
@@ -525,9 +526,8 @@ INSERT INTO service_need_option_voucher_value (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<ServiceNeedOptionVoucherValueId>()
 
 fun Database.Transaction.updateVouchervalue(
@@ -537,33 +537,31 @@ fun Database.Transaction.updateVouchervalue(
     execute {
         sql(
             """
-                UPDATE service_need_option_voucher_value
-                SET
-                    validity = ${bind(voucherValue.range)},
-                    base_value = ${bind(voucherValue.baseValue)},
-                    coefficient = ${bind(voucherValue.coefficient)},
-                    value = ${bind(voucherValue.value)},
-                    base_value_under_3y = ${bind(voucherValue.baseValueUnder3y)},
-                    coefficient_under_3y = ${bind(voucherValue.coefficientUnder3y)},
-                    value_under_3y = ${bind(voucherValue.valueUnder3y)}
-                WHERE id = ${bind(id)}
-            """
-                .trimIndent()
+            UPDATE service_need_option_voucher_value
+            SET
+                validity = ${bind(voucherValue.range)},
+                base_value = ${bind(voucherValue.baseValue)},
+                coefficient = ${bind(voucherValue.coefficient)},
+                value = ${bind(voucherValue.value)},
+                base_value_under_3y = ${bind(voucherValue.baseValueUnder3y)},
+                coefficient_under_3y = ${bind(voucherValue.coefficientUnder3y)},
+                value_under_3y = ${bind(voucherValue.valueUnder3y)}
+            WHERE id = ${bind(id)}
+            """.trimIndent()
         )
     }
 }
 
 fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE
                 FROM service_need_option_voucher_value
                 WHERE id = ${bind(id)}
             """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.updateVoucherValueEndDate(
@@ -571,19 +569,18 @@ fun Database.Transaction.updateVoucherValueEndDate(
     endDate: LocalDate?
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE service_need_option_voucher_value
                 SET validity = daterange(lower(validity), ${bind(endDate)}, '[]')
                 WHERE id = ${bind(id)}
             """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
-fun <T> mapConstraintExceptions(fn: () -> T): T {
-    return try {
+fun <T> mapConstraintExceptions(fn: () -> T): T =
+    try {
         fn()
     } catch (e: JdbiException) {
         when (e.psqlCause()?.sqlState) {
@@ -591,7 +588,6 @@ fun <T> mapConstraintExceptions(fn: () -> T): T {
             else -> throw e
         }
     }
-}
 
 fun throwDateOverlapEx(cause: Throwable? = null): Nothing =
     throw BadRequest("Fee thresholds over lap with existing fee thresholds", "date-overlap", cause)

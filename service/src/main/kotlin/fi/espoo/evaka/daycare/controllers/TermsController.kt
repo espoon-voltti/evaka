@@ -41,31 +41,28 @@ import org.springframework.web.bind.annotation.RestController
 private val logger = KotlinLogging.logger {}
 
 @RestController
-class TermsController(private val accessControl: AccessControl) {
-
+class TermsController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         path =
             [
                 "/public/club-terms", // deprecated
                 "/citizen/public/club-terms",
-                "/employee/public/club-terms",
+                "/employee/public/club-terms"
             ]
     )
-    fun getClubTerms(db: Database): List<ClubTerm> {
-        return db.connect { dbc -> dbc.read { it.getClubTerms() } }
-    }
+    fun getClubTerms(db: Database): List<ClubTerm> = db.connect { dbc -> dbc.read { it.getClubTerms() } }
 
     @GetMapping(
         path =
             [
                 "/public/preschool-terms", // deprecated
                 "/citizen/public/preschool-terms",
-                "/employee/public/preschool-terms",
+                "/employee/public/preschool-terms"
             ]
     )
-    fun getPreschoolTerms(db: Database): List<PreschoolTerm> {
-        return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
-    }
+    fun getPreschoolTerms(db: Database): List<PreschoolTerm> = db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
 
     @PostMapping(
         "/club-terms", // deprecated
@@ -77,7 +74,8 @@ class TermsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: ClubTermRequest
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -90,8 +88,7 @@ class TermsController(private val accessControl: AccessControl) {
 
                     tx.insertClubTerm(body.term, body.applicationPeriod, body.termBreaks)
                 }
-            }
-            .also { termId -> Audit.ClubTermCreate.log(targetId = AuditId(termId)) }
+            }.also { termId -> Audit.ClubTermCreate.log(targetId = AuditId(termId)) }
     }
 
     @PutMapping(
@@ -105,7 +102,8 @@ class TermsController(private val accessControl: AccessControl) {
         @PathVariable id: ClubTermId,
         @RequestBody body: ClubTermRequest
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.ClubTerm.UPDATE, id)
 
@@ -115,8 +113,7 @@ class TermsController(private val accessControl: AccessControl) {
 
                     tx.updateClubTerm(id, body.term, body.applicationPeriod, body.termBreaks)
                 }
-            }
-            .also { Audit.ClubTermUpdate.log(targetId = AuditId(id)) }
+            }.also { Audit.ClubTermUpdate.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -129,7 +126,8 @@ class TermsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: ClubTermId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.ClubTerm.DELETE, id)
 
@@ -142,8 +140,7 @@ class TermsController(private val accessControl: AccessControl) {
 
                     tx.deleteFutureClubTerm(clock, id)
                 }
-            }
-            .also { Audit.ClubTermDelete.log(targetId = AuditId(id)) }
+            }.also { Audit.ClubTermDelete.log(targetId = AuditId(id)) }
     }
 
     @PostMapping(
@@ -156,7 +153,8 @@ class TermsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: PreschoolTermRequest
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -175,8 +173,7 @@ class TermsController(private val accessControl: AccessControl) {
                         body.termBreaks
                     )
                 }
-            }
-            .also { termId -> Audit.PreschoolTermCreate.log(targetId = AuditId(termId)) }
+            }.also { termId -> Audit.PreschoolTermCreate.log(targetId = AuditId(termId)) }
     }
 
     @PutMapping(
@@ -190,7 +187,8 @@ class TermsController(private val accessControl: AccessControl) {
         @PathVariable id: PreschoolTermId,
         @RequestBody body: PreschoolTermRequest
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -213,8 +211,7 @@ class TermsController(private val accessControl: AccessControl) {
                         body.termBreaks
                     )
                 }
-            }
-            .also { Audit.PreschoolTermUpdate.log(targetId = AuditId(id)) }
+            }.also { Audit.PreschoolTermUpdate.log(targetId = AuditId(id)) }
     }
 
     @DeleteMapping(
@@ -227,7 +224,8 @@ class TermsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: PreschoolTermId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -243,15 +241,14 @@ class TermsController(private val accessControl: AccessControl) {
 
                     if (
                         existingTerm.finnishPreschool.start.isBefore(clock.today()) ||
-                            existingTerm.swedishPreschool.start.isBefore(clock.today())
+                        existingTerm.swedishPreschool.start.isBefore(clock.today())
                     ) {
                         throw BadRequest("Cannot delete term if it has started")
                     }
 
                     tx.deleteFuturePreschoolTerm(clock, id)
                 }
-            }
-            .also { Audit.PreschoolTermDelete.log(targetId = AuditId(id)) }
+            }.also { Audit.PreschoolTermDelete.log(targetId = AuditId(id)) }
     }
 
     private fun validateClubTermRequest(
@@ -305,7 +302,7 @@ class TermsController(private val accessControl: AccessControl) {
 
         if (
             !termReq.extendedTerm.contains(termReq.finnishPreschool) ||
-                !termReq.extendedTerm.contains(termReq.swedishPreschool)
+            !termReq.extendedTerm.contains(termReq.swedishPreschool)
         ) {
             throw BadRequest(
                 "Extended term ${termReq.extendedTerm} has to include the finnish and swedish term periods"

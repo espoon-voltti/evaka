@@ -17,12 +17,15 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 
-fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> {
+fun Database.Read.getStaffAttendances(
+    unitId: DaycareId,
+    now: HelsinkiDateTime
+): List<StaffMember> {
     val rangeStart = now.atStartOfDay()
     val rangeEnd = now.atEndOfDay()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT DISTINCT 
     dacl.employee_id,
     coalesce(e.preferred_first_name, e.first_name) AS first_name,
@@ -45,20 +48,22 @@ SELECT DISTINCT
         SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type, 'departedAutomatically', a.departed_automatically, 'occupancyCoefficient', a.occupancy_coefficient) ORDER BY a.arrived)
         FROM staff_attendance_realtime a
         LEFT JOIN daycare_group dg ON dg.id = a.group_id
-        WHERE e.id = a.employee_id AND (dg.daycare_id = ${bind(unitId)} OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && tstzrange(${
-            bind(
-                rangeStart
-            )
-        }, ${bind(rangeEnd)})
+        WHERE e.id = a.employee_id AND (dg.daycare_id = ${bind(
+                unitId
+            )} OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && tstzrange(${
+                bind(
+                    rangeStart
+                )
+            }, ${bind(rangeEnd)})
     ), '[]'::jsonb) AS attendances,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type) ORDER BY p.start_time)
         FROM staff_attendance_plan p
         WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && tstzrange(${bind(rangeStart)}, ${
-            bind(
-                rangeEnd
-            )
-        })
+                bind(
+                    rangeEnd
+                )
+            })
     ), '[]'::jsonb) AS planned_attendances,
     EXISTS(
         SELECT 1 FROM staff_attendance_realtime osar
@@ -79,49 +84,44 @@ LEFT JOIN LATERAL (
     FROM staff_attendance_realtime sa
     JOIN daycare_group dg ON dg.id = sa.group_id
     WHERE sa.employee_id = dacl.employee_id AND dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${
-            bind(
-                rangeStart
-            )
-        }, ${bind(rangeEnd)})
+                bind(
+                    rangeStart
+                )
+            }, ${bind(rangeEnd)})
     ORDER BY sa.arrived DESC
     LIMIT 1
 ) att ON TRUE
-WHERE dacl.daycare_id = ${bind(unitId)} AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
+WHERE dacl.daycare_id = ${bind(
+                unitId
+            )} AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
 ORDER BY e.last_name, first_name
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
-fun Database.Read.getExternalStaffAttendance(
-    id: StaffAttendanceExternalId,
-): ExternalStaffMember? =
+fun Database.Read.getExternalStaffAttendance(id: StaffAttendanceExternalId): ExternalStaffMember? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT sae.id, sae.name, sae.group_id, sae.arrived
 FROM staff_attendance_external sae
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
-fun Database.Read.getExternalStaffAttendances(
-    unitId: DaycareId,
-): List<ExternalStaffMember> =
+fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalStaffMember> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT sae.id, sae.name, sae.group_id, sae.arrived
 FROM staff_attendance_external sae
 JOIN daycare_group dg on sae.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)} AND departed IS NULL 
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Transaction.markStaffArrival(
     employeeId: EmployeeId,
@@ -130,16 +130,15 @@ fun Database.Transaction.markStaffArrival(
     occupancyCoefficient: BigDecimal
 ): StaffAttendanceRealtimeId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, occupancy_coefficient) VALUES (
     ${bind(employeeId)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(occupancyCoefficient)}
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<StaffAttendanceRealtimeId>()
 
 data class StaffAttendance(
@@ -164,54 +163,61 @@ fun Database.Transaction.upsertStaffAttendance(
 ): StaffAttendanceRealtimeId =
     if (attendanceId == null) {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type, departed_automatically)
-VALUES (${bind(employeeId)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(type)}, ${bind(departedAutomatically)})
+VALUES (${bind(
+                    employeeId
+                )}, ${bind(
+                    groupId
+                )}, ${bind(
+                    arrivalTime
+                )}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(type)}, ${bind(departedAutomatically)})
 RETURNING id
 """
-                )
-            }
-            .executeAndReturnGeneratedKeys()
+            )
+        }.executeAndReturnGeneratedKeys()
             .exactlyOne<StaffAttendanceRealtimeId>()
     } else {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 UPDATE staff_attendance_realtime
-SET group_id = ${bind(groupId)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, type = ${bind(type)}, departed_automatically = ${bind(departedAutomatically)}
+SET group_id = ${bind(
+                    groupId
+                )}, arrived = ${bind(
+                    arrivalTime
+                )}, departed = ${bind(departureTime)}, type = ${bind(type)}, departed_automatically = ${bind(departedAutomatically)}
 WHERE id = ${bind(attendanceId)}
 """
-                )
-            }
-            .updateExactlyOne()
+            )
+        }.updateExactlyOne()
             .let { attendanceId }
     }
 
 fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceRealtimeId) {
     createUpdate {
-            sql("""
+        sql(
+            """
 DELETE FROM staff_attendance_realtime
 WHERE id = ${bind(attendanceId)}
-""")
-        }
-        .updateExactlyOne()
+"""
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.markStaffDeparture(
     attendanceId: StaffAttendanceRealtimeId,
     departureTime: HelsinkiDateTime
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE staff_attendance_realtime 
 SET departed = ${bind(departureTime)}
 WHERE id = ${bind(attendanceId)} AND departed IS NULL AND arrived < ${bind(departureTime)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
 data class ExternalStaffArrival(
     val name: String,
@@ -220,19 +226,16 @@ data class ExternalStaffArrival(
     val occupancyCoefficient: BigDecimal
 )
 
-fun Database.Transaction.markExternalStaffArrival(
-    params: ExternalStaffArrival
-): StaffAttendanceExternalId =
+fun Database.Transaction.markExternalStaffArrival(params: ExternalStaffArrival): StaffAttendanceExternalId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coefficient) VALUES (
     ${bind(params.name)}, ${bind(params.groupId)}, ${bind(params.arrived)}, ${bind(params.occupancyCoefficient)}
 ) RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<StaffAttendanceExternalId>()
 
 data class ExternalStaffDeparture(
@@ -242,15 +245,14 @@ data class ExternalStaffDeparture(
 
 fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDeparture) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE staff_attendance_external 
 SET departed = ${bind(params.departed)}, departed_automatically = false
 WHERE id = ${bind(params.id)} AND departed IS NULL AND arrived < ${bind(params.departed)}
 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 
 fun Database.Transaction.upsertExternalStaffAttendance(
     attendanceId: StaffAttendanceExternalId?,
@@ -263,40 +265,43 @@ fun Database.Transaction.upsertExternalStaffAttendance(
 ): StaffAttendanceExternalId {
     if (attendanceId == null) {
         return createUpdate {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient, departed_automatically)
-VALUES (${bind(name)}, ${bind(groupId)}, ${bind(arrivalTime)}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(departedAutomatically)})
+VALUES (${bind(
+                    name
+                )}, ${bind(
+                    groupId
+                )}, ${bind(arrivalTime)}, ${bind(departureTime)}, ${bind(occupancyCoefficient)}, ${bind(departedAutomatically)})
 RETURNING id
 """
-                )
-            }
-            .executeAndReturnGeneratedKeys()
+            )
+        }.executeAndReturnGeneratedKeys()
             .exactlyOne<StaffAttendanceExternalId>()
     } else {
         return createUpdate {
-                sql(
-                    """
+            sql(
+                """
 UPDATE staff_attendance_external
 SET name = ${bind(name)}, arrived = ${bind(arrivalTime)}, departed = ${bind(departureTime)}, 
     occupancy_coefficient = ${bind(occupancyCoefficient)}, departed_automatically = ${bind(departedAutomatically)}
 WHERE id = ${bind(attendanceId)}
 """
-                )
-            }
-            .updateExactlyOne()
+            )
+        }.updateExactlyOne()
             .let { attendanceId }
     }
 }
 
 fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttendanceExternalId) {
     createUpdate {
-            sql("""
+        sql(
+            """
 DELETE FROM staff_attendance_external
 WHERE id = ${bind(attendanceId)}
-""")
-        }
-        .updateExactlyOne()
+"""
+        )
+    }.updateExactlyOne()
 }
 
 data class RawAttendance(
@@ -320,8 +325,8 @@ fun Database.Read.getStaffAttendancesForDateRange(
     val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
-            sql(
-                """ 
+        sql(
+            """ 
 SELECT
     sa.id,
     sa.employee_id,
@@ -340,9 +345,8 @@ JOIN employee emp ON sa.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
 WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
 fun Database.Read.getEmployeeAttendancesForDate(
@@ -353,8 +357,8 @@ fun Database.Read.getEmployeeAttendancesForDate(
     val start = HelsinkiDateTime.of(date, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     sa.id,
     sa.employee_id,
@@ -371,11 +375,12 @@ FROM staff_attendance_realtime sa
 LEFT JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
-WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(unitId)}) AND emp.id = ${bind(employeeId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(
+                unitId
+            )}) AND emp.id = ${bind(employeeId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
 fun Database.Read.getStaffAttendancesWithoutGroup(
@@ -385,8 +390,8 @@ fun Database.Read.getStaffAttendancesWithoutGroup(
     val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     sa.id,
     sa.employee_id,
@@ -401,26 +406,25 @@ SELECT
     sa.departed_automatically
 FROM staff_attendance_realtime sa
 JOIN employee emp ON sa.employee_id = emp.id
-WHERE sa.employee_id = ANY(${bind(employeeIds)}) AND sa.group_id IS NULL AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE sa.employee_id = ANY(${bind(
+                employeeIds
+            )}) AND sa.group_id IS NULL AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
 data class RawAttendanceEmployee(
     val id: EmployeeId,
     val firstName: String,
     val lastName: String,
-    val currentOccupancyCoefficient: BigDecimal?,
+    val currentOccupancyCoefficient: BigDecimal?
 )
 
-fun Database.Read.getCurrentStaffForAttendanceCalendar(
-    unitId: DaycareId,
-): List<RawAttendanceEmployee> =
+fun Database.Read.getCurrentStaffForAttendanceCalendar(unitId: DaycareId): List<RawAttendanceEmployee> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT DISTINCT dacl.employee_id as id, emp.first_name, emp.last_name, soc.coefficient AS currentOccupancyCoefficient
 FROM daycare_acl dacl
 JOIN employee emp on emp.id = dacl.employee_id
@@ -428,9 +432,8 @@ LEFT JOIN daycare_group_acl dgacl ON dgacl.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dacl.daycare_id AND soc.employee_id = emp.id
 WHERE dacl.daycare_id = ${bind(unitId)} AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER') OR dgacl.employee_id IS NOT NULL)
     """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
@@ -439,16 +442,15 @@ fun Database.Read.getExternalStaffAttendancesByDateRange(
     val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.departed, sae.occupancy_coefficient, sae.departed_automatically
 FROM staff_attendance_external sae
 JOIN daycare_group dg on sae.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && tstzrange(${bind(start)}, ${bind(end)})
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
 fun Database.Read.getGroupsForEmployees(
@@ -456,8 +458,8 @@ fun Database.Read.getGroupsForEmployees(
     employeeIds: Set<EmployeeId>
 ): Map<EmployeeId, List<GroupId>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT employee_id, array_agg(daycare_group_id) AS group_ids
 FROM daycare_group_acl
 WHERE
@@ -465,9 +467,8 @@ WHERE
     employee_id = ANY(${bind(employeeIds)})
 GROUP BY employee_id
 """
-            )
-        }
-        .toMap { columnPair("employee_id", "group_ids") }
+        )
+    }.toMap { columnPair("employee_id", "group_ids") }
 
 fun Database.Transaction.addMissingStaffAttendanceDepartures(now: HelsinkiDateTime) {
     execute {
@@ -523,14 +524,13 @@ fun Database.Read.getPlannedStaffAttendances(
     val start = now.minusHours(8)
     val end = now.plusHours(8)
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT start_time AS start, end_time AS end, type FROM staff_attendance_plan
 WHERE employee_id = ${bind(employeeId)} AND tstzrange(start_time, end_time) && tstzrange(${bind(start)}, ${bind(end)})
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
 fun Database.Read.getPlannedStaffAttendanceForDays(
@@ -540,44 +540,41 @@ fun Database.Read.getPlannedStaffAttendanceForDays(
     val startTime = HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT)
     val endTime = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT)
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT start_time AS start, end_time AS end, type, employee_id FROM staff_attendance_plan
 WHERE employee_id = ANY(${bind(employeeIds)}) AND (tstzrange(start_time, end_time) && tstzrange(${bind(startTime)}, ${bind(endTime)}))
 """
-            )
-        }
-        .toList { column<EmployeeId>("employee_id") to row<PlannedStaffAttendance>() }
+        )
+    }.toList { column<EmployeeId>("employee_id") to row<PlannedStaffAttendance>() }
         .groupBy({ it.first }, { it.second })
 }
 
 fun Database.Read.getOngoingAttendance(employeeId: EmployeeId): StaffAttendance? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 FROM staff_attendance_realtime WHERE employee_id = ${bind(employeeId)} AND departed IS NULL
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
     now: HelsinkiDateTime
 ): StaffAttendance? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 FROM staff_attendance_realtime 
 WHERE employee_id = ${bind(employeeId)} 
     AND ${bind(now.atStartOfDay())} <= departed AND departed < ${bind(now.plusDays(1).atStartOfDay())}
 ORDER BY departed DESC LIMIT 1   
 """
-            )
-        }
-        .exactlyOneOrNull<StaffAttendance>()
+        )
+    }.exactlyOneOrNull<StaffAttendance>()
 
 fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     unitId: DaycareId,

@@ -36,7 +36,9 @@ data class VardaDecision(
     val kokopaivainen_vaka_kytkin: Boolean = tuntimaara_viikossa >= 25
 }
 
-data class VardaDecisionResponse(@JsonProperty("id") val vardaDecisionId: Long)
+data class VardaDecisionResponse(
+    @JsonProperty("id") val vardaDecisionId: Long
+)
 
 data class VardaPlacement(
     val varhaiskasvatuspaatos: String,
@@ -46,7 +48,9 @@ data class VardaPlacement(
     val lahdejarjestelma: String
 )
 
-data class VardaPlacementResponse(@JsonProperty("id") val vardaPlacementId: Long)
+data class VardaPlacementResponse(
+    @JsonProperty("id") val vardaPlacementId: Long
+)
 
 internal val vardaPlacementTypes =
     arrayOf(
@@ -60,7 +64,9 @@ internal val vardaPlacementTypes =
 internal val vardaTemporaryPlacementTypes =
     arrayOf(PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
 
-enum class FeeBasisCode(val code: String) {
+enum class FeeBasisCode(
+    val code: String
+) {
     FIVE_YEAR_OLDS_DAYCARE("MP02"),
     DAYCARE("MP03")
 }
@@ -84,7 +90,10 @@ data class VardaFeeData(
     val lahdejarjestelma: String
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true) data class VardaFeeDataResponse(val id: Long)
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class VardaFeeDataResponse(
+    val id: Long
+)
 
 data class VardaGuardianWithId(
     val id: PersonId,
@@ -156,7 +165,10 @@ data class EvakaServiceNeedInfoForVarda(
 
     val asPeriod = DateRange(startDate, endDate)
 
-    fun toVardaDecisionForChild(vardaChildUrl: String, sourceSystem: String): VardaDecision =
+    fun toVardaDecisionForChild(
+        vardaChildUrl: String,
+        sourceSystem: String
+    ): VardaDecision =
         VardaDecision(
             lapsi = vardaChildUrl,
             hakemus_pvm = this.applicationDate,
@@ -171,7 +183,10 @@ data class EvakaServiceNeedInfoForVarda(
             lahdejarjestelma = sourceSystem
         )
 
-    fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement =
+    fun toVardaPlacement(
+        vardaDecisionUrl: String,
+        sourceSystem: String
+    ): VardaPlacement =
         VardaPlacement(
             varhaiskasvatuspaatos = vardaDecisionUrl,
             toimipaikka_oid =

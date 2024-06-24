@@ -18,16 +18,15 @@ data class KoskiStudyRightKey(
     val type: OpiskeluoikeudenTyyppiKoodi
 )
 
-fun Database.Read.getPendingStudyRights(
-    today: LocalDate,
-): List<KoskiStudyRightKey> {
-    val dataVersionCheck = Predicate {
-        // intentionally doesn't use bind
-        where("$it.data_version IS DISTINCT FROM $KOSKI_DATA_VERSION")
-    }
+fun Database.Read.getPendingStudyRights(today: LocalDate): List<KoskiStudyRightKey> {
+    val dataVersionCheck =
+        Predicate {
+            // intentionally doesn't use bind
+            where("$it.data_version IS DISTINCT FROM $KOSKI_DATA_VERSION")
+        }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT kasr.child_id, kasr.unit_id, 'PRESCHOOL'::koski_study_right_type AS type
 FROM koski_active_preschool_study_right(${bind(today)}) kasr
 LEFT JOIN koski_study_right ksr
@@ -54,40 +53,40 @@ SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
 FROM koski_voided_study_right(${bind(today)}) kvsr
 WHERE kvsr.void_date IS NULL
 """
-            )
-        }
-        .toList<KoskiStudyRightKey>()
+        )
+    }.toList<KoskiStudyRightKey>()
 }
 
 private fun Database.Transaction.refreshStudyRight(
     key: KoskiStudyRightKey,
     today: LocalDate
 ): Pair<KoskiStudyRightId, Boolean> {
-    val studyRightQuery = QuerySql {
-        when (key.type) {
-            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
-                sql(
-                    """
+    val studyRightQuery =
+        QuerySql {
+            when (key.type) {
+                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+                    sql(
+                        """
 SELECT
     child_id, unit_id, type,
     input_data AS preschool_input_data, NULL::koski_preparatory_input_data AS preparatory_input_data
 FROM koski_active_preschool_study_right(${bind(today)}) kasr
 """
-                )
-            OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
-                sql(
-                    """
+                    )
+                OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                    sql(
+                        """
 SELECT
     child_id, unit_id, type,
     NULL::koski_preschool_input_data AS preschool_input_data, input_data AS preparatory_input_data
 FROM koski_active_preparatory_study_right(${bind(today)}) kasr
 """
-                )
+                    )
+            }
         }
-    }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO koski_study_right (child_id, unit_id, type, void_date, preschool_input_data, preparatory_input_data, data_version, payload, version)
 SELECT
     child_id, unit_id, type,
@@ -109,9 +108,8 @@ DO UPDATE SET
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
-            )
-        }
-        .exactlyOne { columnPair<KoskiStudyRightId, Boolean>("id", "voided") }
+        )
+    }.exactlyOne { columnPair<KoskiStudyRightId, Boolean>("id", "voided") }
 }
 
 fun Database.Transaction.beginKoskiUpload(
@@ -124,8 +122,8 @@ fun Database.Transaction.beginKoskiUpload(
     val (id, voided) = refreshStudyRight(key, today)
     return if (voided) {
         createQuery {
-                sql(
-                    """
+            sql(
+                """
             SELECT
                 kvsr.*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
@@ -138,16 +136,15 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
                     """
-                )
-            }
-            .exactlyOneOrNull<KoskiVoidedDataRaw>()
+            )
+        }.exactlyOneOrNull<KoskiVoidedDataRaw>()
             ?.toKoskiData(sourceSystem, ophOrganizationOid)
     } else {
         when (key.type) {
             OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
                 createQuery {
-                        sql(
-                            """
+                    sql(
+                        """
             SELECT
                 kasr.child_id, kasr.unit_id, (kasr.input_data).*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
@@ -160,13 +157,12 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
                     """
-                        )
-                    }
-                    .exactlyOneOrNull<KoskiActivePreschoolDataRaw>()
+                    )
+                }.exactlyOneOrNull<KoskiActivePreschoolDataRaw>()
             OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
                 createQuery {
-                        sql(
-                            """
+                    sql(
+                        """
             SELECT
                 kasr.child_id, kasr.unit_id, (kasr.input_data).*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
@@ -184,9 +180,8 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
                     """
-                        )
-                    }
-                    .exactlyOneOrNull<KoskiActivePreparatoryDataRaw>()
+                    )
+                }.exactlyOneOrNull<KoskiActivePreparatoryDataRaw>()
         }?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
     }
 }
@@ -199,10 +194,13 @@ data class KoskiUploadResponse(
     val payload: String
 )
 
-fun Database.Read.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean =
+fun Database.Read.isPayloadChanged(
+    key: KoskiStudyRightKey,
+    payload: String
+): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT ksr.payload != ${bind(payload)}::jsonb
 FROM (
     SELECT ${bind(key.childId)} AS child_id, ${bind(key.unitId)} AS unit_id, ${bind(key.type)} AS type
@@ -210,19 +208,17 @@ FROM (
 LEFT JOIN koski_study_right ksr
 USING (child_id, unit_id, type)
 """
-            )
-        }
-        .exactlyOne<Boolean>()
+        )
+    }.exactlyOne<Boolean>()
 
 fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE koski_study_right
 SET study_right_oid = ${bind(response.studyRightOid)}, person_oid = ${bind(response.personOid)},
     version = ${bind(response.version)}, payload = ${bind(response.payload)}::jsonb
 WHERE id = ${bind(response.id)}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()

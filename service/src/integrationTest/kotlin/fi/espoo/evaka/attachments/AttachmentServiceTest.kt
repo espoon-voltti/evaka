@@ -43,7 +43,10 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
         private val uploadFn: () -> DocumentLocation,
         private val deleteFn: () -> Unit
     ) : DocumentService {
-        override fun get(bucketName: String, key: String): Document = error("Not implemented")
+        override fun get(
+            bucketName: String,
+            key: String
+        ): Document = error("Not implemented")
 
         override fun response(
             bucketName: String,
@@ -51,9 +54,15 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             contentDisposition: ContentDisposition
         ): ResponseEntity<Any> = error("Not implemented")
 
-        override fun upload(bucketName: String, document: Document): DocumentLocation = uploadFn()
+        override fun upload(
+            bucketName: String,
+            document: Document
+        ): DocumentLocation = uploadFn()
 
-        override fun delete(bucketName: String, key: String) = deleteFn()
+        override fun delete(
+            bucketName: String,
+            key: String
+        ) = deleteFn()
     }
 
     private fun createAttachmentService(documentService: DocumentService) =
@@ -163,13 +172,12 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun Database.Transaction.insertTestAttachment(
         clock: EvakaClock,
         parent: AttachmentParent
-    ) =
-        insertAttachment(
-            AuthenticatedUser.SystemInternalUser,
-            clock.now(),
-            "test.pdf",
-            "text/plain",
-            parent,
-            type = null
-        )
+    ) = insertAttachment(
+        AuthenticatedUser.SystemInternalUser,
+        clock.now(),
+        "test.pdf",
+        "text/plain",
+        parent,
+        type = null
+    )
 }

@@ -19,9 +19,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 
-class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
-    FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
-
+class DvvModificationsServiceIntegrationTestBase(
+    resetDbBeforeEach: Boolean
+) : FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
     @Autowired protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient
@@ -64,7 +64,8 @@ class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
                 )
 
             socketFactory =
-                SSLContext.getInstance("SSL")
+                SSLContext
+                    .getInstance("SSL")
                     .apply { init(null, trustAllCerts, java.security.SecureRandom()) }
                     .socketFactory
 

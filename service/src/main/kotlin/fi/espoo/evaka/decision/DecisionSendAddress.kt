@@ -14,9 +14,7 @@ private fun addressIsUnusable(
     streetAddress: String?,
     postalCode: String?,
     postOffice: String?
-): Boolean {
-    return streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()
-}
+): Boolean = streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()
 
 fun getSendAddress(
     messageProvider: IMessageProvider,

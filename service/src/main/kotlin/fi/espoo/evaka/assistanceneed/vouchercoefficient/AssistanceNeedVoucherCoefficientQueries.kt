@@ -15,87 +15,75 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     data: AssistanceNeedVoucherCoefficientRequest
 ): AssistanceNeedVoucherCoefficient =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO assistance_need_voucher_coefficient (child_id, coefficient, validity_period)
 VALUES (${bind(childId)}, ${bind(data.coefficient)}, ${bind(data.validityPeriod)})
 RETURNING id, child_id, coefficient, validity_period
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
-fun Database.Read.getAssistanceNeedVoucherCoefficientById(
-    id: AssistanceNeedVoucherCoefficientId
-): AssistanceNeedVoucherCoefficient =
+fun Database.Read.getAssistanceNeedVoucherCoefficientById(id: AssistanceNeedVoucherCoefficientId): AssistanceNeedVoucherCoefficient =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, child_id, coefficient, validity_period
 FROM assistance_need_voucher_coefficient
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
+        )
+    }.exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
-fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
-    childId: ChildId
-): List<AssistanceNeedVoucherCoefficient> =
+fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(childId: ChildId): List<AssistanceNeedVoucherCoefficient> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, child_id, coefficient, validity_period
 FROM assistance_need_voucher_coefficient
 WHERE child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId,
     data: AssistanceNeedVoucherCoefficientRequest
 ): AssistanceNeedVoucherCoefficient =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 UPDATE assistance_need_voucher_coefficient
 SET coefficient = ${bind(data.coefficient)},
     validity_period = ${bind(data.validityPeriod)}
 WHERE id = ${bind(id)}
 RETURNING id, child_id, coefficient, validity_period
 """
-            )
-        }
-        .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
+        )
+    }.exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
-fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
-    id: AssistanceNeedVoucherCoefficientId
-): AssistanceNeedVoucherCoefficient? =
+fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(id: AssistanceNeedVoucherCoefficientId): AssistanceNeedVoucherCoefficient? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM assistance_need_voucher_coefficient
 WHERE id = ${bind(id)}
 RETURNING id, child_id, coefficient, validity_period
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
     childId: ChildId,
     range: FiniteDateRange
 ): List<AssistanceNeedVoucherCoefficient> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, child_id, coefficient, validity_period
 FROM assistance_need_voucher_coefficient
 WHERE child_id = ${bind(childId)}
   AND ${bind(range)} && validity_period
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()

@@ -34,12 +34,18 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
         private var unscopedRules: Map<Action.UnscopedAction, List<UnscopedActionRule>> = emptyMap()
         private var scopedRules: Map<Action.ScopedAction<*>, List<ScopedActionRule<*>>> = emptyMap()
 
-        fun add(action: Action.UnscopedAction, rule: UnscopedActionRule) {
+        fun add(
+            action: Action.UnscopedAction,
+            rule: UnscopedActionRule
+        ) {
             unscopedRules =
                 unscopedRules + (action to ((unscopedRules[action] ?: emptyList()) + rule))
         }
 
-        fun <T> add(action: Action.ScopedAction<T>, rule: ScopedActionRule<in T>) {
+        fun <T> add(
+            action: Action.ScopedAction<T>,
+            rule: ScopedActionRule<in T>
+        ) {
             scopedRules = scopedRules + (action to ((scopedRules[action] ?: emptyList()) + rule))
         }
 
@@ -47,9 +53,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
             unscopedRules[action]?.asSequence() ?: emptySequence()
 
         @Suppress("UNCHECKED_CAST")
-        override fun <T> rulesOf(
-            action: Action.ScopedAction<in T>
-        ): Sequence<ScopedActionRule<in T>> =
+        override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> =
             scopedRules[action as Action.ScopedAction<Any>]?.asSequence()?.let {
                 it as Sequence<ScopedActionRule<in T>>
             } ?: emptySequence()
@@ -64,16 +68,15 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
     protected fun createTestEmployee(
         globalRoles: Set<UserRole>,
         unitRoles: Map<DaycareId, UserRole> = emptyMap()
-    ) =
-        db.transaction { tx ->
-            assert(globalRoles.all { it.isGlobalRole() })
-            val id = tx.insert(DevEmployee(roles = globalRoles))
-            tx.upsertEmployeeUser(id)
-            unitRoles.forEach { (daycareId, role) -> tx.insertDaycareAclRow(daycareId, id, role) }
-            val globalAndUnitRoles =
-                unitRoles.values.fold(globalRoles) { acc, roles -> acc + roles }
-            AuthenticatedUser.Employee(id, globalAndUnitRoles)
-        }
+    ) = db.transaction { tx ->
+        assert(globalRoles.all { it.isGlobalRole() })
+        val id = tx.insert(DevEmployee(roles = globalRoles))
+        tx.upsertEmployeeUser(id)
+        unitRoles.forEach { (daycareId, role) -> tx.insertDaycareAclRow(daycareId, id, role) }
+        val globalAndUnitRoles =
+            unitRoles.values.fold(globalRoles) { acc, roles -> acc + roles }
+        AuthenticatedUser.Employee(id, globalAndUnitRoles)
+    }
 
     protected fun createTestMobile(daycareId: DaycareId) =
         db.transaction { tx ->

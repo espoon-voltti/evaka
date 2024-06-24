@@ -8,10 +8,10 @@ import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
-fun Database.Read.getFeeThresholds(from: LocalDate? = null): List<FeeThresholds> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getFeeThresholds(from: LocalDate? = null): List<FeeThresholds> =
+    createQuery {
+        sql(
+            """
 SELECT
     valid_during,
     min_income_threshold_2,
@@ -41,7 +41,5 @@ SELECT
 FROM fee_thresholds
 WHERE valid_during && daterange(${bind(from)}, null)
 """
-            )
-        }
-        .toList<FeeThresholds>()
-}
+        )
+    }.toList<FeeThresholds>()

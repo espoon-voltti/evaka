@@ -477,8 +477,8 @@ fun createValidDecision(
     sentDate: LocalDate = LocalDate.now(),
     status: DecisionStatus = DecisionStatus.ACCEPTED,
     resolved: LocalDate? = null
-): Decision {
-    return Decision(
+): Decision =
+    Decision(
         id = id,
         createdBy = createdBy,
         type = type,
@@ -497,4 +497,3 @@ fun createValidDecision(
         resolvedByName = null,
         documentContainsContactInfo = false
     )
-}

@@ -11,8 +11,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
-fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Database.Query {
-    return createQuery {
+fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Database.Query =
+    createQuery {
         sql(
             """
             SELECT id, employee_number
@@ -21,53 +21,58 @@ fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Dat
             """
         )
     }
-}
 
-fun Database.Read.getEmployeeIdsByNumbers(employeeNumbers: List<String>): Map<String, EmployeeId> {
-    return employeeNumbersQuery(employeeNumbers).toMap { columnPair("employee_number", "id") }
-}
+fun Database.Read.getEmployeeIdsByNumbers(employeeNumbers: List<String>): Map<String, EmployeeId> =
+    employeeNumbersQuery(employeeNumbers).toMap {
+        columnPair("employee_number", "id")
+    }
 
 fun Database.Transaction.createEmployees(employees: List<NewEmployee>): Map<String, EmployeeId> =
     prepareBatch(employees) {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active)
-VALUES (${bind { it.firstName }}, ${bind { it.lastName }}, ${bind { it.email }}, ${bind { it.externalId }}, ${bind { it.employeeNumber }}, ${bind { it.roles }}, true)
+VALUES (${bind {
+                it.firstName
+            }}, ${bind {
+                it.lastName
+            }}, ${bind { it.email }}, ${bind { it.externalId }}, ${bind { it.employeeNumber }}, ${bind { it.roles }}, true)
 RETURNING id, employee_number
 """
-            )
-        }
-        .executeAndReturn()
+        )
+    }.executeAndReturn()
         .toMap { columnPair("employee_number", "id") }
 
-fun Database.Read.getEmployeeIdsByNumbersMapById(
-    employeeNumbers: Collection<String>
-): Map<EmployeeId, String> {
-    return employeeNumbersQuery(employeeNumbers).toMap { columnPair("id", "employee_number") }
-}
+fun Database.Read.getEmployeeIdsByNumbersMapById(employeeNumbers: Collection<String>): Map<EmployeeId, String> =
+    employeeNumbersQuery(employeeNumbers).toMap { columnPair("id", "employee_number") }
 
 fun Database.Read.findStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null
 ): List<StaffAttendancePlan> =
     createQuery {
-            val employeeIdFilter: Predicate =
-                if (employeeIds == null) Predicate.alwaysTrue()
-                else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate =
-                if (period == null) Predicate.alwaysTrue()
-                else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+        val employeeIdFilter: Predicate =
+            if (employeeIds == null) {
+                Predicate.alwaysTrue()
+            } else {
+                Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
+            }
+        val daterangeFilter: Predicate =
+            if (period == null) {
+                Predicate.alwaysTrue()
+            } else {
+                Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+            }
 
-            sql(
-                """
+        sql(
+            """
             SELECT employee_id, type, start_time, end_time, description
             FROM staff_attendance_plan
             WHERE ${predicate(employeeIdFilter.forTable("staff_attendance_plan"))}
             AND ${predicate(daterangeFilter.forTable("staff_attendance_plan"))}
         """
-            )
-        }
-        .toList<StaffAttendancePlan>()
+        )
+    }.toList<StaffAttendancePlan>()
 
 fun Database.Transaction.insertStaffAttendancePlans(plans: List<StaffAttendancePlan>): IntArray {
     if (plans.isEmpty()) {
@@ -88,43 +93,55 @@ fun Database.Transaction.deleteStaffAttendancePlansBy(
     period: FiniteDateRange? = null
 ): List<StaffAttendancePlan> =
     createQuery {
-            val employeeIdFilter: Predicate =
-                if (employeeIds == null) Predicate.alwaysTrue()
-                else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate =
-                if (period == null) Predicate.alwaysTrue()
-                else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+        val employeeIdFilter: Predicate =
+            if (employeeIds == null) {
+                Predicate.alwaysTrue()
+            } else {
+                Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
+            }
+        val daterangeFilter: Predicate =
+            if (period == null) {
+                Predicate.alwaysTrue()
+            } else {
+                Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+            }
 
-            sql(
-                """
+        sql(
+            """
             DELETE FROM staff_attendance_plan
             WHERE ${predicate(employeeIdFilter.forTable("staff_attendance_plan"))}
             AND ${predicate(daterangeFilter.forTable("staff_attendance_plan"))}
             RETURNING employee_id, type, start_time, end_time, description
         """
-            )
-        }
-        .toList<StaffAttendancePlan>()
+        )
+    }.toList<StaffAttendancePlan>()
 
 fun Database.Read.findStaffAttendancesBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null
 ): List<RawAttendance> =
     createQuery {
-            val employeeIdFilter: Predicate =
-                if (employeeIds == null) Predicate.alwaysTrue()
-                else Predicate { where("$it.employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate =
-                if (period == null) Predicate.alwaysTrue()
-                else
-                    Predicate {
-                        where(
-                            "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(period.start)}, ${bind(period.end)}, '[]')"
-                        )
-                    }
+        val employeeIdFilter: Predicate =
+            if (employeeIds == null) {
+                Predicate.alwaysTrue()
+            } else {
+                Predicate { where("$it.employee_id = ANY (${bind(employeeIds)})") }
+            }
+        val daterangeFilter: Predicate =
+            if (period == null) {
+                Predicate.alwaysTrue()
+            } else {
+                Predicate {
+                    where(
+                        "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(
+                            period.start
+                        )}, ${bind(period.end)}, '[]')"
+                    )
+                }
+            }
 
-            sql(
-                """
+        sql(
+            """
 SELECT
     sa.id,
     sa.employee_id,
@@ -144,6 +161,5 @@ LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND 
 WHERE ${predicate(employeeIdFilter.forTable("sa"))}
 AND ${predicate(daterangeFilter.forTable("sa"))}
         """
-            )
-        }
-        .toList<RawAttendance>()
+        )
+    }.toList<RawAttendance>()

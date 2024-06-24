@@ -38,9 +38,15 @@ data class MobileDeviceDetails(
     val unitIds: List<DaycareId>,
     val employeeId: EmployeeId?,
     val personalDevice: Boolean,
-    val pushApplicationServerKey: String? = null,
+    val pushApplicationServerKey: String? = null
 )
 
-data class MobileDevice(val id: MobileDeviceId, val name: String)
+data class MobileDevice(
+    val id: MobileDeviceId,
+    val name: String
+)
 
-data class MobileDeviceIdentity(val id: MobileDeviceId, val longTermToken: UUID)
+data class MobileDeviceIdentity(
+    val id: MobileDeviceId,
+    val longTermToken: UUID
+)

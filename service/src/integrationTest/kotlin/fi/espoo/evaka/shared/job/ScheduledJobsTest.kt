@@ -402,7 +402,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun createExpiredDailyNote(now: Instant) {
         db.transaction {
             val sixteenHoursAgo = now - Duration.ofHours(16)
-            it.createChildDailyNote(
+            it
+                .createChildDailyNote(
                     testChild_1.id,
                     ChildDailyNoteBody(
                         feedingNote = null,
@@ -412,13 +413,12 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         reminders = emptyList(),
                         sleepingNote = null
                     )
-                )
-                .let { id ->
+                ).let { id ->
                     @Suppress("DEPRECATION")
-                    it.createUpdate(
+                    it
+                        .createUpdate(
                             "UPDATE child_daily_note SET modified_at = :date WHERE id = :id"
-                        )
-                        .bind("id", id)
+                        ).bind("id", id)
                         .bind("date", sixteenHoursAgo)
                         .updateExactlyOne()
                 }
@@ -482,8 +482,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         preschoolDaycare: Boolean = false,
         childId: ChildId = testChild_1.id,
         status: ApplicationStatus = ApplicationStatus.SENT
-    ): ApplicationId {
-        return db.transaction { tx ->
+    ): ApplicationId =
+        db.transaction { tx ->
             tx.insertTestApplication(
                 status = status,
                 childId = childId,
@@ -491,7 +491,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 transferApplication = true,
                 type = type,
                 document =
-                    DaycareFormV0.fromApplication2(validDaycareApplication)
+                    DaycareFormV0
+                        .fromApplication2(validDaycareApplication)
                         .copy(
                             type = type,
                             preferredStartDate = preferredStartDate,
@@ -499,15 +500,14 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
             )
         }
-    }
 
     private fun createNormalApplication(
         type: ApplicationType,
         preferredStartDate: LocalDate,
         preparatory: Boolean = false,
         childId: ChildId = testChild_1.id
-    ): ApplicationId {
-        return db.transaction { tx ->
+    ): ApplicationId =
+        db.transaction { tx ->
             tx.insertTestApplication(
                 status = ApplicationStatus.SENT,
                 childId = childId,
@@ -523,7 +523,6 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     }
             )
         }
-    }
 
     private fun createPlacement(
         type: PlacementType,
@@ -543,12 +542,12 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun getApplicationStatus(applicationId: ApplicationId): ApplicationStatus {
-        return db.read {
+    private fun getApplicationStatus(applicationId: ApplicationId): ApplicationStatus =
+        db.read {
             @Suppress("DEPRECATION")
-            it.createQuery("SELECT status FROM application WHERE id = :id")
+            it
+                .createQuery("SELECT status FROM application WHERE id = :id")
                 .bind("id", applicationId)
                 .exactlyOne<ApplicationStatus>()
         }
-    }
 }

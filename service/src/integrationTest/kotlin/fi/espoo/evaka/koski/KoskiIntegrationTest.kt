@@ -57,7 +57,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             KoskiTester(
                 db,
                 KoskiClient(
-                    KoskiEnv.fromEnvironment(env)
+                    KoskiEnv
+                        .fromEnvironment(env)
                         .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env),
                     asyncJobRunner = null
@@ -79,7 +80,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertPlacement()
 
         fun assertSingleStudyRight() =
-            db.read { it.getStoredResults() }
+            db
+                .read { it.getStoredResults() }
                 .let {
                     val stored = it.single()
                     val sent = koskiEndpoint.getStudyRights().entries.single()
@@ -99,7 +101,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertPlacement()
 
         fun assertSingleStudyRight() =
-            db.read { it.getStoredResults() }
+            db
+                .read { it.getStoredResults() }
                 .let {
                     val stored = it.single()
                     val sent = koskiEndpoint.getStudyRights().entries.single()
@@ -141,7 +144,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fun countActiveStudyRights() =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
+                it
+                    .createQuery("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
                     .exactlyOne<Long>()
             }
 
@@ -164,7 +168,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val placementId = insertPlacement()
 
         fun assertSingleStudyRight(version: Int) =
-            db.read { it.getStoredResults() }
+            db
+                .read { it.getStoredResults() }
                 .let {
                     val stored = it.single()
                     val sent = koskiEndpoint.getStudyRights().entries.single()
@@ -177,7 +182,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE placement SET end_date = :endDate WHERE id = :id")
+            it
+                .createUpdate("UPDATE placement SET end_date = :endDate WHERE id = :id")
                 .bind("id", placementId)
                 .bind("endDate", preschoolTerm2019.end.minusDays(1))
                 .execute()
@@ -199,7 +205,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Opiskeluoikeusjakso.läsnä(LocalDate.of(2018, 8, 1)),
                 Opiskeluoikeusjakso.valmistunut(LocalDate.of(2019, 5, 1))
             ),
-            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
     }
 
@@ -215,7 +225,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Opiskeluoikeusjakso.läsnä(LocalDate.of(2018, 8, 1)),
                 Opiskeluoikeusjakso.eronnut(LocalDate.of(2019, 4, 30))
             ),
-            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
     }
 
@@ -231,7 +245,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Opiskeluoikeusjakso.läsnä(LocalDate.of(2018, 12, 1)),
                 Opiskeluoikeusjakso.valmistunut(LocalDate.of(2019, 5, 1))
             ),
-            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
     }
 
@@ -244,7 +262,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        val studyRight = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val studyRight =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(OpiskeluoikeudenTyyppiKoodi.PREPARATORY, studyRight.tyyppi.koodiarvo)
         assertEquals(
             listOf(
@@ -319,7 +342,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         val stored =
-            db.read { it.getStoredResults() }
+            db
+                .read { it.getStoredResults() }
                 .let { studyRights ->
                     listOf(
                         studyRights.single { it.unitId == testDaycare.id },
@@ -351,7 +375,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `preschool assistance info is converted to Koski extra information`() {
         data class TestCase(
             val period: FiniteDateRange,
-            val level: PreschoolAssistanceLevel,
+            val level: PreschoolAssistanceLevel
         )
         insertPlacement(testChild_1)
         val intensifiedSupport =
@@ -361,7 +385,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val level1 =
             TestCase(
                 testPeriod(4L to 5L),
-                PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1,
+                PreschoolAssistanceLevel.SPECIAL_SUPPORT_WITH_DECISION_LEVEL_1
             )
         val level2 =
             TestCase(
@@ -375,7 +399,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         modifiedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                         childId = testChild_1.id,
                         validDuring = it.period,
-                        level = it.level,
+                        level = it.level
                     )
                 )
             }
@@ -386,11 +410,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             Lisätiedot(
                 vammainen =
                     listOf(
-                        Aikajakso.from(level1.period),
+                        Aikajakso.from(level1.period)
                     ),
                 vaikeastiVammainen =
                     listOf(
-                        Aikajakso.from(level2.period),
+                        Aikajakso.from(level2.period)
                     ),
                 pidennettyOppivelvollisuus = Aikajakso.from(level1.period.merge(level2.period)),
                 kuljetusetu = null,
@@ -401,7 +425,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
             ),
-            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus.lisätiedot
         )
     }
 
@@ -437,7 +465,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 kuljetusetu = Aikajakso.from(testPeriod(1L to 4L)),
                 erityisenTuenPäätökset = null
             ),
-            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus.lisätiedot
         )
     }
 
@@ -457,7 +489,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start.plusDays(15)),
                 Opiskeluoikeusjakso.valmistunut(preschoolTerm2019.end)
             ),
-            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
     }
 
@@ -477,7 +513,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start.plusDays(15)),
                 Opiskeluoikeusjakso.eronnut(preschoolTerm2019.start.plusDays(16))
             ),
-            koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.tila.opiskeluoikeusjaksot
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus.tila.opiskeluoikeusjaksot
         )
     }
 
@@ -486,8 +526,16 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertPlacement(testChild_1, period = testPeriod((0L to 2L)))
         insertPlacement(testChild_1, period = testPeriod((4L to null)))
 
-        fun assertStudyRight(dateRanges: List<Opiskeluoikeusjakso>, qualified: Boolean) {
-            val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        fun assertStudyRight(
+            dateRanges: List<Opiskeluoikeusjakso>,
+            qualified: Boolean
+        ) {
+            val opiskeluoikeus =
+                koskiEndpoint
+                    .getStudyRights()
+                    .values
+                    .single()
+                    .opiskeluoikeus
             val suoritus = opiskeluoikeus.suoritukset.single()
             assertEquals(dateRanges, opiskeluoikeus.tila.opiskeluoikeusjaksot)
             if (qualified) {
@@ -558,7 +606,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val today = preschoolTerm2020.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         val suoritus = opiskeluoikeus.suoritukset.single()
         assertEquals(
             listOf(
@@ -582,7 +635,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val oldOid = koskiEndpoint.getStudyRights().keys.single()
         db.transaction {
-            @Suppress("DEPRECATION") it.createUpdate("DELETE FROM placement").execute()
+            @Suppress("DEPRECATION")
+            it.createUpdate("DELETE FROM placement").execute()
         }
         koskiTester.triggerUploads(today.plusDays(1))
         assertTrue(koskiEndpoint.getStudyRights().isEmpty())
@@ -609,7 +663,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val today = preschoolTerm2019.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED),
             opiskeluoikeus.järjestämismuoto
@@ -627,7 +686,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val today = preschoolTerm2019.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED),
             opiskeluoikeus.järjestämismuoto
@@ -647,7 +711,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.end.minusDays(1))
         )
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
@@ -670,7 +739,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             FiniteDateRange(preschoolTerm2019.start.plusDays(1), preschoolTerm2019.end.minusDays(1))
         )
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start),
@@ -693,7 +767,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val today = preschoolTerm2020.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
@@ -724,7 +803,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val today = preschoolTerm2020.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
@@ -759,7 +843,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val today = preschoolTerm2020.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
@@ -791,7 +880,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val today = preschoolTerm2020.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
+        val opiskeluoikeus =
+            koskiEndpoint
+                .getStudyRights()
+                .values
+                .single()
+                .opiskeluoikeus
         assertEquals(
             listOf(
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
@@ -808,7 +902,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertPlacement(child = testChild_7)
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE person SET oph_person_oid = :oid WHERE id = :id")
+            it
+                .createUpdate("UPDATE person SET oph_person_oid = :oid WHERE id = :id")
                 .bind("id", testChild_7.id)
                 .bind("oid", personOid)
                 .execute()
@@ -817,7 +912,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val studyRights = koskiEndpoint.getStudyRights()
         assertEquals(1, studyRights.size)
-        val studyRightOid = studyRights.values.first().opiskeluoikeus.oid
+        val studyRightOid =
+            studyRights.values
+                .first()
+                .opiskeluoikeus.oid
         assertEquals(setOf(studyRightOid), koskiEndpoint.getPersonStudyRights(personOid))
     }
 
@@ -840,7 +938,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val studyRights =
             koskiEndpoint.getStudyRights().values.sortedBy {
-                it.opiskeluoikeus.suoritukset[0].toimipiste.oid
+                it.opiskeluoikeus.suoritukset[0]
+                    .toimipiste.oid
             }
         assertEquals(2, studyRights.size)
         assertEquals(
@@ -867,7 +966,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             KoskiTester(
                 db,
                 KoskiClient(
-                    KoskiEnv.fromEnvironment(env)
+                    KoskiEnv
+                        .fromEnvironment(env)
                         .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env).copy(municipalityCode = "001"),
                     asyncJobRunner = null
@@ -978,7 +1078,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 testPeriod(0L to 9L) to Pair(testDaycare.id, PlacementType.PREPARATORY),
                 testPeriod(10L to 19L) to Pair(testDaycare2.id, PlacementType.PRESCHOOL),
                 testPeriod(20L to 29L) to Pair(daycare3, PlacementType.PREPARATORY),
-                testPeriod(30L to null) to Pair(daycare4, PlacementType.PRESCHOOL),
+                testPeriod(30L to null) to Pair(daycare4, PlacementType.PRESCHOOL)
             )
         placements.forEach { (dateRange, placement) ->
             val (unit, type) = placement
@@ -990,8 +1090,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val terminalStates =
             koskiEndpoint
                 .getStudyRights()
-                .map { it.value.opiskeluoikeus.tila.opiskeluoikeusjaksot.last() }
-                .sortedBy { it.alku }
+                .map {
+                    it.value.opiskeluoikeus.tila.opiskeluoikeusjaksot
+                        .last()
+                }.sortedBy { it.alku }
 
         assertEquals(
             listOf(
@@ -1026,29 +1128,27 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId,
         absenceType: AbsenceType,
         vararg periods: FiniteDateRange
-    ) =
-        db.transaction { tx ->
-            for (period in periods) {
-                for (date in period.dates()) {
-                    tx.insert(
-                        DevAbsence(
-                            childId = childId,
-                            date = date,
-                            absenceType = absenceType,
-                            absenceCategory = AbsenceCategory.NONBILLABLE
-                        )
+    ) = db.transaction { tx ->
+        for (period in periods) {
+            for (date in period.dates()) {
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = date,
+                        absenceType = absenceType,
+                        absenceCategory = AbsenceCategory.NONBILLABLE
                     )
-                }
+                )
             }
         }
+    }
 }
 
 private fun Database.Transaction.clearKoskiInputCache() =
     @Suppress("DEPRECATION")
     createUpdate(
-            "UPDATE koski_study_right SET preschool_input_data = NULL, preparatory_input_data = NULL"
-        )
-        .execute()
+        "UPDATE koski_study_right SET preschool_input_data = NULL, preparatory_input_data = NULL"
+    ).execute()
 
 private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
 private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))

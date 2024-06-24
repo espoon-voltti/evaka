@@ -30,7 +30,10 @@ data class CitizenApplicationUpdate(
     val allowOtherGuardianAccess: Boolean
 )
 
-data class ApplicationUpdate(val form: ApplicationFormUpdate, val dueDate: LocalDate? = null)
+data class ApplicationUpdate(
+    val form: ApplicationFormUpdate,
+    val dueDate: LocalDate? = null
+)
 
 data class ApplicationSummary(
     val id: ApplicationId,
@@ -117,18 +120,27 @@ data class ApplicationDetails(
         when (type) {
             ApplicationType.PRESCHOOL -> {
                 if (form.preferences.preparatory) {
-                    if (form.preferences.serviceNeed != null) PlacementType.PREPARATORY_DAYCARE
-                    else PlacementType.PREPARATORY
+                    if (form.preferences.serviceNeed != null) {
+                        PlacementType.PREPARATORY_DAYCARE
+                    } else {
+                        PlacementType.PREPARATORY
+                    }
                 } else {
-                    if (form.preferences.serviceNeed != null)
-                        form.preferences.serviceNeed.serviceNeedOption?.validPlacementType
+                    if (form.preferences.serviceNeed != null) {
+                        form.preferences.serviceNeed.serviceNeedOption
+                            ?.validPlacementType
                             ?: PlacementType.PRESCHOOL_DAYCARE
-                    else PlacementType.PRESCHOOL
+                    } else {
+                        PlacementType.PRESCHOOL
+                    }
                 }
             }
             ApplicationType.DAYCARE ->
-                if (form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME
-                else PlacementType.DAYCARE
+                if (form.preferences.serviceNeed?.partTime == true) {
+                    PlacementType.DAYCARE_PART_TIME
+                } else {
+                    PlacementType.DAYCARE
+                }
             ApplicationType.CLUB -> PlacementType.CLUB
         }
 }
@@ -172,7 +184,10 @@ enum class ApplicationOrigin : DatabaseEnum {
     override val sqlType: String = "application_origin_type"
 }
 
-data class PreferredUnit(val id: DaycareId, val name: String)
+data class PreferredUnit(
+    val id: DaycareId,
+    val name: String
+)
 
 data class ApplicationNote(
     val id: ApplicationNoteId,
@@ -217,7 +232,7 @@ data class CitizenApplicationSummary(
     val applicationStatus: ApplicationStatus,
     val createdDate: HelsinkiDateTime,
     val modifiedDate: HelsinkiDateTime,
-    val transferApplication: Boolean,
+    val transferApplication: Boolean
 )
 
 fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
@@ -226,8 +241,7 @@ fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
     personService: PersonService,
     applicationId: ApplicationId
 ): ApplicationDetails? =
-    tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)?.let {
-        application ->
+    tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)?.let { application ->
         val otherGuardian =
             personService.getOtherGuardian(tx, user, application.guardianId, application.childId)
         application.copy(

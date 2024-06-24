@@ -1143,8 +1143,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 .get(
                     "/reports/service-voucher-value/units/$unitId",
                     listOf("year" to year, "month" to month)
-                )
-                .asUser(adminUser)
+                ).asUser(adminUser)
                 .responseObject<ServiceVoucherValueReportController.ServiceVoucherUnitReport>(
                     jsonMapper
                 )

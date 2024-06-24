@@ -74,8 +74,11 @@ fun generateAndInsertVoucherValueDecisionsV2(
             existingDrafts = existingDrafts,
             ignoredDrafts = ignoredDrafts,
             minDate =
-                if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
-                else financeMinDate
+                if (retroactiveOverride != null) {
+                    minOf(retroactiveOverride, financeMinDate)
+                } else {
+                    financeMinDate
+                }
         )
 
     tx.deleteValueDecisions(existingDrafts.map { it.id })
@@ -109,12 +112,11 @@ fun generateVoucherValueDecisionsDrafts(
     val newDrafts = voucherBases.map { it.toVoucherValueDecision() }
 
     return filterAndMergeDrafts(
-            newDrafts = newDrafts,
-            activeDecisions = activeDecisions,
-            ignoredDrafts = ignoredDrafts,
-            minDate = minDate
-        )
-        .map { it.withMetadataFromExisting(existingDrafts) }
+        newDrafts = newDrafts,
+        activeDecisions = activeDecisions,
+        ignoredDrafts = ignoredDrafts,
+        minDate = minDate
+    ).map { it.withMetadataFromExisting(existingDrafts) }
         .map {
             it.copy(
                 difference =
@@ -148,14 +150,14 @@ private fun getVoucherBases(
         familyRelations.flatMap { it.childrenInFamily.map { child -> child.id } }.toSet()
 
     val incomesByPerson =
-        tx.getIncomesFrom(
+        tx
+            .getIncomesFrom(
                 mapper = jsonMapper,
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 personIds = (allHeadOfChildIds + allPartnerIds + targetChildId).toList(),
                 from = minDate
-            )
-            .groupBy(
+            ).groupBy(
                 keySelector = { it.personId },
                 valueTransform = {
                     IncomeRange(
@@ -242,11 +244,9 @@ private fun getVoucherBases(
                     compareByDescending<Child> { it.dateOfBirth }
                         .thenByDescending { it.ssn }
                         .thenBy { it.id }
-                )
-                .filter { child ->
+                ).filter { child ->
                     placementDetailsByChild[child.id]?.any { it.range.contains(range) } ?: false
-                }
-                .indexOfFirst { it.id == targetChildId }
+                }.indexOfFirst { it.id == targetChildId }
                 .takeIf { it >= 0 } ?: 0
 
         VoucherBasis(
@@ -287,7 +287,7 @@ data class VoucherBasis(
     fun toVoucherValueDecision(): VoucherValueDecision {
         if (
             placement == null ||
-                placement.financeDecisionType != FinanceDecisionType.VOUCHER_VALUE_DECISION
+            placement.financeDecisionType != FinanceDecisionType.VOUCHER_VALUE_DECISION
         ) {
             return VoucherValueDecision.empty(
                 validFrom = range.start,
@@ -324,8 +324,11 @@ data class VoucherBasis(
                 )
 
         val parentIncomes =
-            if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
-            else listOf(headOfFamilyIncome)
+            if (partnerId != null) {
+                listOf(headOfFamilyIncome, partnerIncome)
+            } else {
+                listOf(headOfFamilyIncome)
+            }
 
         val baseFee =
             calculateBaseFee(feeThresholds, familySize, parentIncomes + listOfNotNull(childIncome))
@@ -460,31 +463,29 @@ private data class HeadOfChildRelation(
     val headOfChild: PersonId
 ) : WithFiniteRange
 
-private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOfChildRelation> {
-    return createQuery {
-            sql(
-                """
+private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOfChildRelation> =
+    createQuery {
+        sql(
+            """
             SELECT head_of_child, daterange(start_date, end_date, '[]') as finite_range
             FROM fridge_child
             WHERE child_id = ${bind(childId)} AND NOT conflict
         """
-            )
-        }
-        .toList<HeadOfChildRelation>()
-}
+        )
+    }.toList<HeadOfChildRelation>()
 
-private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
-    return createQuery {
-            sql(
-                """
+private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth =
+    createQuery {
+        sql(
+            """
             SELECT id, date_of_birth
             FROM person
             WHERE id = ${bind(childId)}
         """
-            )
-        }
-        .exactlyOne<ChildWithDateOfBirth>()
-}
+        )
+    }.exactlyOne<ChildWithDateOfBirth>()
 
-private data class AssistanceNeedRange(override val range: DateRange, val coefficient: BigDecimal) :
-    WithRange
+private data class AssistanceNeedRange(
+    override val range: DateRange,
+    val coefficient: BigDecimal
+) : WithRange

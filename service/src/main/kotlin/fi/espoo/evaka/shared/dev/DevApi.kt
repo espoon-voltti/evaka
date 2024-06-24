@@ -270,7 +270,10 @@ class DevApi(
     }
 
     @PostMapping("/test-mode")
-    fun setTestMode(db: Database, @RequestParam enabled: Boolean) {
+    fun setTestMode(
+        db: Database,
+        @RequestParam enabled: Boolean
+    ) {
         asyncJobRunners.forEach {
             if (enabled) {
                 it.stopBackgroundPolling()
@@ -283,7 +286,10 @@ class DevApi(
     }
 
     @PostMapping("/reset-service-state")
-    fun resetServiceState(db: Database, clock: EvakaClock) {
+    fun resetServiceState(
+        db: Database,
+        clock: EvakaClock
+    ) {
         // Run async jobs before database reset to avoid database locks/deadlocks
         runAllAsyncJobs(clock)
 
@@ -301,25 +307,34 @@ class DevApi(
     }
 
     @PostMapping("/care-areas")
-    fun createCareAreas(db: Database, @RequestBody careAreas: List<DevCareArea>) {
+    fun createCareAreas(
+        db: Database,
+        @RequestBody careAreas: List<DevCareArea>
+    ) {
         db.connect { dbc ->
             dbc.transaction { careAreas.forEach { careArea -> it.insert(careArea) } }
         }
     }
 
     @PostMapping("/daycares")
-    fun createDaycares(db: Database, @RequestBody daycares: List<DevDaycare>) {
+    fun createDaycares(
+        db: Database,
+        @RequestBody daycares: List<DevDaycare>
+    ) {
         db.connect { dbc -> dbc.transaction { daycares.forEach { daycare -> it.insert(daycare) } } }
     }
 
     @DeleteMapping("/daycare/{daycareId}/cost-center")
-    fun deleteDaycareCostCenter(db: Database, @PathVariable daycareId: DaycareId) {
+    fun deleteDaycareCostCenter(
+        db: Database,
+        @PathVariable daycareId: DaycareId
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.createUpdate {
+                tx
+                    .createUpdate {
                         sql("UPDATE daycare SET cost_center = NULL WHERE id = ${bind(daycareId)}")
-                    }
-                    .execute()
+                    }.execute()
             }
         }
     }
@@ -342,12 +357,18 @@ class DevApi(
     }
 
     @PostMapping("/daycare-group-acl")
-    fun createDaycareGroupAclRows(db: Database, @RequestBody rows: List<DevDaycareGroupAcl>) {
+    fun createDaycareGroupAclRows(
+        db: Database,
+        @RequestBody rows: List<DevDaycareGroupAcl>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> rows.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/daycare-groups")
-    fun createDaycareGroups(db: Database, @RequestBody groups: List<DevDaycareGroup>) {
+    fun createDaycareGroups(
+        db: Database,
+        @RequestBody groups: List<DevDaycareGroup>
+    ) {
         db.connect { dbc -> dbc.transaction { groups.forEach { group -> it.insert(group) } } }
     }
 
@@ -381,7 +402,10 @@ class DevApi(
     )
 
     @PostMapping("/daycare-caretakers")
-    fun createDaycareCaretakers(db: Database, @RequestBody caretakers: List<Caretaker>) {
+    fun createDaycareCaretakers(
+        db: Database,
+        @RequestBody caretakers: List<Caretaker>
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 caretakers.forEach { caretaker ->
@@ -400,12 +424,18 @@ class DevApi(
     }
 
     @PostMapping("/children")
-    fun createChildren(db: Database, @RequestBody children: List<DevChild>) {
+    fun createChildren(
+        db: Database,
+        @RequestBody children: List<DevChild>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> children.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/daycare-placements")
-    fun createDaycarePlacements(db: Database, @RequestBody placements: List<DevPlacement>) {
+    fun createDaycarePlacements(
+        db: Database,
+        @RequestBody placements: List<DevPlacement>
+    ) {
         db.connect { dbc ->
             dbc.transaction { placements.forEach { placement -> it.insert(placement) } }
         }
@@ -419,18 +449,25 @@ class DevApi(
     )
 
     @PostMapping("/placement/terminate")
-    fun terminatePlacement(db: Database, @RequestBody req: DevTerminatePlacementRequest) {
+    fun terminatePlacement(
+        db: Database,
+        @RequestBody req: DevTerminatePlacementRequest
+    ) {
         db.connect { dbc ->
-            dbc.transaction {
+            dbc
+                .transaction {
                     it.createUpdate {
                         sql(
                             """
-UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date = ${bind(req.terminationRequestedDate)}, terminated_by = ${bind(req.terminatedBy)} WHERE id = ${bind(req.placementId)}
+UPDATE placement SET end_date = ${bind(
+                                req.endDate
+                            )}, termination_requested_date = ${bind(
+                                req.terminationRequestedDate
+                            )}, terminated_by = ${bind(req.terminatedBy)} WHERE id = ${bind(req.placementId)}
 """
                         )
                     }
-                }
-                .execute()
+                }.execute()
         }
     }
 
@@ -478,12 +515,19 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/decisions/{id}/actions/create-pdf")
-    fun createDecisionPdf(db: Database, @PathVariable id: DecisionId) {
+    fun createDecisionPdf(
+        db: Database,
+        @PathVariable id: DecisionId
+    ) {
         db.connect { dbc -> dbc.transaction { decisionService.createDecisionPdf(it, id) } }
     }
 
     @PostMapping("/decisions/{id}/actions/reject-by-citizen")
-    fun rejectDecisionByCitizen(db: Database, clock: EvakaClock, @PathVariable id: DecisionId) {
+    fun rejectDecisionByCitizen(
+        db: Database,
+        clock: EvakaClock,
+        @PathVariable id: DecisionId
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decision = tx.getDecision(id) ?: throw NotFound("decision not found")
@@ -505,25 +549,26 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun getApplication(
         db: Database,
         @PathVariable applicationId: ApplicationId
-    ): ApplicationDetails {
-        return db.connect { dbc -> dbc.read { tx -> tx.fetchApplicationDetails(applicationId) } }
+    ): ApplicationDetails =
+        db.connect { dbc -> dbc.read { tx -> tx.fetchApplicationDetails(applicationId) } }
             ?: throw NotFound("application not found")
-    }
 
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
         db: Database,
         @PathVariable applicationId: ApplicationId
-    ): List<Decision> {
-        return db.connect { dbc ->
+    ): List<Decision> =
+        db.connect { dbc ->
             dbc.read { tx ->
                 tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
             }
         }
-    }
 
     @PostMapping("/fee-decisions")
-    fun createFeeDecisions(db: Database, @RequestBody decisions: List<FeeDecision>) {
+    fun createFeeDecisions(
+        db: Database,
+        @RequestBody decisions: List<FeeDecision>
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.upsertFeeDecisions(decisions)
@@ -560,7 +605,10 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/invoices")
-    fun createInvoices(db: Database, @RequestBody invoices: List<Invoice>) {
+    fun createInvoices(
+        db: Database,
+        @RequestBody invoices: List<Invoice>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> tx.insertInvoices(invoices) } }
     }
 
@@ -576,35 +624,46 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     )
 
     @PostMapping("/income-statements")
-    fun createIncomeStatements(db: Database, @RequestBody body: DevCreateIncomeStatements) =
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                body.data.forEach { tx.createIncomeStatement(body.personId, it) }
-            }
+    fun createIncomeStatements(
+        db: Database,
+        @RequestBody body: DevCreateIncomeStatements
+    ) = db.connect { dbc ->
+        dbc.transaction { tx ->
+            body.data.forEach { tx.createIncomeStatement(body.personId, it) }
         }
+    }
 
     @PostMapping("/income")
-    fun createIncome(db: Database, @RequestBody body: DevIncome) {
+    fun createIncome(
+        db: Database,
+        @RequestBody body: DevIncome
+    ) {
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
     @PostMapping("/income-notifications")
-    fun createIncomeNotification(db: Database, @RequestBody body: IncomeNotification) {
+    fun createIncomeNotification(
+        db: Database,
+        @RequestBody body: IncomeNotification
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 val id = it.createIncomeNotification(body.receiverId, body.notificationType)
-                it.createUpdate {
+                it
+                    .createUpdate {
                         sql(
                             "UPDATE income_notification SET created = ${bind(body.created)} WHERE id = ${bind(id)}"
                         )
-                    }
-                    .execute()
+                    }.execute()
             }
         }
     }
 
     @PostMapping("/person")
-    fun upsertPerson(db: Database, @RequestBody body: DevPerson): PersonId {
+    fun upsertPerson(
+        db: Database,
+        @RequestBody body: DevPerson
+    ): PersonId {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -621,8 +680,11 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/person/create")
-    fun createPerson(db: Database, @RequestBody body: DevPerson): PersonId {
-        return db.connect { dbc ->
+    fun createPerson(
+        db: Database,
+        @RequestBody body: DevPerson
+    ): PersonId =
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 val personId = tx.insert(body, DevPersonType.ADULT)
                 val dto = body.copy(id = personId).toPersonDTO()
@@ -632,41 +694,49 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 personId
             }
         }
-    }
 
     @PostMapping("/parentship")
-    fun createParentships(db: Database, @RequestBody parentships: List<DevParentship>) {
+    fun createParentships(
+        db: Database,
+        @RequestBody parentships: List<DevParentship>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> parentships.forEach { tx.insert(it) } } }
     }
 
     @GetMapping("/employee")
-    fun getEmployees(db: Database): List<Employee> {
-        return db.connect { dbc -> dbc.read { it.getEmployees() } }
-    }
+    fun getEmployees(db: Database): List<Employee> = db.connect { dbc -> dbc.read { it.getEmployees() } }
 
     @PostMapping("/employee")
-    fun createEmployee(db: Database, @RequestBody body: DevEmployee): EmployeeId {
-        return db.connect { dbc -> dbc.transaction { it.insert(body) } }
-    }
+    fun createEmployee(
+        db: Database,
+        @RequestBody body: DevEmployee
+    ): EmployeeId = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @GetMapping("/citizen/ssn/{ssn}")
-    fun getCitizen(@PathVariable ssn: String): Citizen =
-        Citizen.from(MockPersonDetailsService.getPerson(ssn) ?: throw NotFound())
+    fun getCitizen(
+        @PathVariable ssn: String
+    ): Citizen = Citizen.from(MockPersonDetailsService.getPerson(ssn) ?: throw NotFound())
 
     @GetMapping("/citizen")
     fun getCitizens(): List<Citizen> =
-        MockPersonDetailsService.getAllPersons()
+        MockPersonDetailsService
+            .getAllPersons()
             .filter { it.guardians.isEmpty() }
             .map(Citizen::from)
 
     @PostMapping("/guardian")
-    fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
+    fun insertGuardians(
+        db: Database,
+        @RequestBody guardians: List<DevGuardian>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> guardians.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/child")
-    fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId =
-        db.connect { dbc -> dbc.transaction { it.insert(body, DevPersonType.CHILD) } }
+    fun insertChild(
+        db: Database,
+        @RequestBody body: DevPerson
+    ): ChildId = db.connect { dbc -> dbc.transaction { it.insert(body, DevPersonType.CHILD) } }
 
     @PostMapping("/message-account/upsert-all")
     fun createMessageAccounts(db: Database) {
@@ -702,7 +772,10 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/backup-cares")
-    fun createBackupCares(db: Database, @RequestBody backupCares: List<DevBackupCare>) {
+    fun createBackupCares(
+        db: Database,
+        @RequestBody backupCares: List<DevBackupCare>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> backupCares.forEach { tx.insert(it) } } }
     }
 
@@ -717,12 +790,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 applications.map { application ->
                     val id = tx.insertApplication(application)
                     application.otherGuardians.forEach { otherGuardianId ->
-                        tx.createUpdate {
+                        tx
+                            .createUpdate {
                                 sql(
-                                    "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(id)}, ${bind(otherGuardianId)})"
+                                    "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(
+                                        id
+                                    )}, ${bind(otherGuardianId)})"
                                 )
-                            }
-                            .execute()
+                            }.execute()
                     }
                     id
                 }
@@ -764,9 +839,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @GetMapping("/messages")
-    fun getMessages(db: Database): List<SfiMessage> {
-        return MockSfiMessagesClient.getMessages()
-    }
+    fun getMessages(db: Database): List<SfiMessage> = MockSfiMessagesClient.getMessages()
 
     @PostMapping("/messages/clean-up")
     fun cleanUpMessages(db: Database) {
@@ -774,12 +847,18 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/vtj-persons")
-    fun upsertVtjDataset(db: Database, @RequestBody dataset: MockVtjDataset) {
+    fun upsertVtjDataset(
+        db: Database,
+        @RequestBody dataset: MockVtjDataset
+    ) {
         MockPersonDetailsService.add(dataset)
     }
 
     @PostMapping("/persons/{person}/force-full-vtj-refresh")
-    fun forceFullVtjRefresh(db: Database, @PathVariable person: PersonId) {
+    fun forceFullVtjRefresh(
+        db: Database,
+        @PathVariable person: PersonId
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val user = AuthenticatedUser.SystemInternalUser
@@ -791,9 +870,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @GetMapping("/emails")
-    fun getSentEmails(): List<Email> {
-        return MockEmailClient.emails
-    }
+    fun getSentEmails(): List<Email> = MockEmailClient.emails
 
     @PostMapping("/applications/{applicationId}/actions/{action}")
     fun simpleAction(
@@ -862,8 +939,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             period = it.period,
                             preschoolDaycarePeriod = it.preschoolDaycarePeriod
                         )
-                    }
-                    .let {
+                    }.let {
                         applicationStateService.createPlacementPlan(
                             tx,
                             fakeAdmin,
@@ -881,11 +957,10 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @RequestBody body: PairingsController.PostPairingChallengeReq
-    ): Pairing {
-        return db.connect { dbc ->
+    ): Pairing =
+        db.connect { dbc ->
             dbc.transaction { it.challengePairing(clock, body.challengeKey) }
         }
-    }
 
     @PostMapping("/mobile/pairings/{id}/response")
     fun postPairingResponse(
@@ -893,8 +968,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         clock: EvakaClock,
         @PathVariable id: PairingId,
         @RequestBody body: PairingsController.PostPairingResponseReq
-    ): Pairing {
-        return db.connect { dbc ->
+    ): Pairing =
+        db.connect { dbc ->
             dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
             dbc.transaction {
                 it.respondPairingChallengeCreateDevice(
@@ -905,15 +980,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 )
             }
         }
-    }
 
     @PostMapping("/mobile/pairings")
     fun postPairing(
         db: Database,
         clock: EvakaClock,
         @RequestBody body: PairingsController.PostPairingReq
-    ): Pairing {
-        return db.connect { dbc ->
+    ): Pairing =
+        db.connect { dbc ->
             dbc.transaction {
                 when (body) {
                     is PairingsController.PostPairingReq.Unit ->
@@ -923,15 +997,20 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 }
             }
         }
-    }
 
     @PostMapping("/mobile/devices")
-    fun postMobileDevice(db: Database, @RequestBody body: DevMobileDevice) {
+    fun postMobileDevice(
+        db: Database,
+        @RequestBody body: DevMobileDevice
+    ) {
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
     @PostMapping("/mobile/personal-devices")
-    fun postPersonalMobileDevice(db: Database, @RequestBody body: DevPersonalMobileDevice) {
+    fun postPersonalMobileDevice(
+        db: Database,
+        @RequestBody body: DevPersonalMobileDevice
+    ) {
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
@@ -944,19 +1023,22 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.insertHolidayPeriod(body.period, body.reservationDeadline).let {
-                    tx.createUpdate {
+                    tx
+                        .createUpdate {
                             sql(
                                 "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}"
                             )
-                        }
-                        .execute()
+                        }.execute()
                 }
             }
         }
     }
 
     @PostMapping("/holiday")
-    fun createHoliday(db: Database, @RequestBody holiday: DevHoliday) {
+    fun createHoliday(
+        db: Database,
+        @RequestBody holiday: DevHoliday
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> tx.insert(holiday) } }
     }
 
@@ -969,12 +1051,12 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createFixedPeriodQuestionnaire(body).let {
-                    tx.createUpdate {
+                    tx
+                        .createUpdate {
                             sql(
                                 "UPDATE holiday_period_questionnaire SET id = ${bind(id)} WHERE id = ${bind(it)}"
                             )
-                        }
-                        .execute()
+                        }.execute()
                 }
             }
         }
@@ -1006,49 +1088,50 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         @PathVariable childId: ChildId,
         @RequestBody body: ChildDailyNoteBody
-    ): ChildDailyNoteId {
-        return db.connect { dbc ->
+    ): ChildDailyNoteId =
+        db.connect { dbc ->
             dbc.transaction { it.createChildDailyNote(childId = childId, note = body) }
         }
-    }
 
     @PostMapping("/children/{childId}/child-sticky-notes")
     fun postChildStickyNote(
         db: Database,
         @PathVariable childId: ChildId,
         @RequestBody body: ChildStickyNoteBody
-    ): ChildStickyNoteId {
-        return db.connect { dbc ->
+    ): ChildStickyNoteId =
+        db.connect { dbc ->
             dbc.transaction { it.createChildStickyNote(childId = childId, note = body) }
         }
-    }
 
     @PostMapping("/daycare-groups/{groupId}/group-notes")
     fun postGroupNote(
         db: Database,
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupNoteBody
-    ): GroupNoteId {
-        return db.connect { dbc ->
+    ): GroupNoteId =
+        db.connect { dbc ->
             dbc.transaction { it.createGroupNote(groupId = groupId, note = body) }
         }
-    }
 
     @GetMapping("/digitransit/autocomplete")
     fun digitransitAutocomplete() = digitransit.autocomplete()
 
     @PutMapping("/digitransit/autocomplete")
-    fun putDigitransitAutocomplete(@RequestBody mockResponse: MockDigitransit.Autocomplete) =
-        digitransit.setAutocomplete(mockResponse)
+    fun putDigitransitAutocomplete(
+        @RequestBody mockResponse: MockDigitransit.Autocomplete
+    ) = digitransit.setAutocomplete(mockResponse)
 
     @PostMapping("/digitransit/query")
-    fun postDigitransitQuery(@RequestBody body: String): String {
-        return if (body.matches(Regex("^\\{\\s*plan\\("))) {
+    fun postDigitransitQuery(
+        @RequestBody body: String
+    ): String =
+        if (body.matches(Regex("^\\{\\s*plan\\("))) {
             "7"
         } else {
             val rex = Regex("(id.*):\\s*plan\\(")
             val contents =
-                rex.findAll(body)
+                rex
+                    .findAll(body)
                     .mapIndexed { ix, match ->
                         """
                         "${match.groupValues[1]}": {
@@ -1057,45 +1140,61 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             }]
                         }
                     """
-                    }
-                    .joinToString(",")
+                    }.joinToString(",")
             "{ \"data\": { $contents } }"
         }
-    }
 
     @PostMapping("/family-contact")
-    fun createFamilyContact(db: Database, @RequestBody contacts: List<DevFamilyContact>) {
+    fun createFamilyContact(
+        db: Database,
+        @RequestBody contacts: List<DevFamilyContact>
+    ) {
         db.connect { dbc -> dbc.transaction { contacts.forEach { contact -> it.insert(contact) } } }
     }
 
     @PostMapping("/backup-pickup")
-    fun createBackupPickup(db: Database, @RequestBody backupPickups: List<DevBackupPickup>) {
+    fun createBackupPickup(
+        db: Database,
+        @RequestBody backupPickups: List<DevBackupPickup>
+    ) {
         db.connect { dbc ->
             dbc.transaction { backupPickups.forEach { backupPickup -> it.insert(backupPickup) } }
         }
     }
 
     @PostMapping("/fridge-child")
-    fun createFridgeChild(db: Database, @RequestBody fridgeChildren: List<DevFridgeChild>) {
+    fun createFridgeChild(
+        db: Database,
+        @RequestBody fridgeChildren: List<DevFridgeChild>
+    ) {
         db.connect { dbc ->
             dbc.transaction { fridgeChildren.forEach { child -> it.insert(child) } }
         }
     }
 
     @PostMapping("/fridge-partner")
-    fun createFridgePartner(db: Database, @RequestBody fridgePartners: List<DevFridgePartner>) {
+    fun createFridgePartner(
+        db: Database,
+        @RequestBody fridgePartners: List<DevFridgePartner>
+    ) {
         db.connect { dbc ->
             dbc.transaction { fridgePartners.forEach { partner -> it.insert(partner) } }
         }
     }
 
     @PostMapping("/foster-parent")
-    fun createFosterParent(db: Database, @RequestBody fosterParents: List<DevFosterParent>) {
+    fun createFosterParent(
+        db: Database,
+        @RequestBody fosterParents: List<DevFosterParent>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> fosterParents.forEach { tx.insert(it) } } }
     }
 
     @PostMapping("/employee-pin")
-    fun createEmployeePins(db: Database, @RequestBody employeePins: List<DevEmployeePin>) {
+    fun createEmployeePins(
+        db: Database,
+        @RequestBody employeePins: List<DevEmployeePin>
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 employeePins.forEach { employeePin ->
@@ -1140,8 +1239,9 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @PathVariable pedagogicalDocumentId: PedagogicalDocumentId,
         @RequestParam employeeId: EmployeeId,
         @RequestPart("file") file: MultipartFile
-    ): String {
-        return db.connect { dbc ->
+    ): String =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     val id =
                         tx.insertAttachment(
@@ -1161,9 +1261,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                         )
                     )
                 }
-            }
-            .key
-    }
+            }.key
 
     data class CreateVasuTemplateBody(
         val name: String = "testipohja",
@@ -1177,8 +1275,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createVasuTemplate(
         db: Database,
         @RequestBody body: CreateVasuTemplateBody
-    ): VasuTemplateId {
-        return db.connect { dbc ->
+    ): VasuTemplateId =
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.insertVasuTemplate(
                     name = body.name,
@@ -1189,13 +1287,13 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 )
             }
         }
-    }
 
     @PostMapping("/vasu/revokeSharingPermission/{docId}")
-    fun revokeSharingPermission(db: Database, @PathVariable docId: VasuDocumentId) {
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.revokeVasuGuardianHasGivenPermissionToShare(docId) }
-        }
+    fun revokeSharingPermission(
+        db: Database,
+        @PathVariable docId: VasuDocumentId
+    ) = db.connect { dbc ->
+        dbc.transaction { tx -> tx.revokeVasuGuardianHasGivenPermissionToShare(docId) }
     }
 
     @DeleteMapping("/vasu/templates")
@@ -1210,8 +1308,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @RequestBody body: PostVasuDocBody
-    ): VasuDocumentId {
-        return db.connect { dbc ->
+    ): VasuDocumentId =
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 val template =
                     tx.getVasuTemplate(body.templateId)
@@ -1219,17 +1317,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 tx.insertVasuDocument(clock.now(), body.childId, template)
             }
         }
-    }
 
     @PostMapping("/vasu/doc/publish/{documentId}")
     fun publishVasuDocument(
         db: Database,
         clock: EvakaClock,
         @PathVariable documentId: VasuDocumentId
-    ) {
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.publishVasuDocument(clock.now(), documentId) }
-        }
+    ) = db.connect { dbc ->
+        dbc.transaction { tx -> tx.publishVasuDocument(clock.now(), documentId) }
     }
 
     @PostMapping("/document-templates")
@@ -1237,21 +1332,20 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @RequestBody body: DevDocumentTemplate
-    ): DocumentTemplateId {
-        return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
-    }
+    ): DocumentTemplateId = db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
 
     @PostMapping("/child-documents")
     fun createChildDocument(
         db: Database,
         clock: EvakaClock,
         @RequestBody body: DevChildDocument
-    ): ChildDocumentId {
-        return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
-    }
+    ): ChildDocumentId = db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
 
     @PostMapping("/service-need")
-    fun createServiceNeeds(db: Database, @RequestBody serviceNeeds: List<DevServiceNeed>) {
+    fun createServiceNeeds(
+        db: Database,
+        @RequestBody serviceNeeds: List<DevServiceNeed>
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> serviceNeeds.forEach { tx.insert(it) } } }
     }
 
@@ -1368,21 +1462,31 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/attendances")
-    fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
-        db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
+    fun postAttendances(
+        db: Database,
+        @RequestBody attendances: List<DevChildAttendance>
+    ) = db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
 
-    data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: HelsinkiDateTime?)
+    data class DevVardaReset(
+        val evakaChildId: ChildId,
+        val resetTimestamp: HelsinkiDateTime?
+    )
 
     @PostMapping("/varda/reset-child")
-    fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
+    fun createVardaReset(
+        db: Database,
+        @RequestBody body: DevVardaReset
+    ) {
         db.connect { dbc ->
             dbc.transaction {
-                it.createUpdate {
+                it
+                    .createUpdate {
                         sql(
-                            "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (${bind(body.evakaChildId)}, ${bind(body.resetTimestamp)})"
+                            "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (${bind(
+                                body.evakaChildId
+                            )}, ${bind(body.resetTimestamp)})"
                         )
-                    }
-                    .execute()
+                    }.execute()
             }
         }
     }
@@ -1396,18 +1500,25 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     )
 
     @PostMapping("/varda/varda-service-need")
-    fun createVardaServiceNeed(db: Database, @RequestBody body: DevVardaServiceNeed) {
+    fun createVardaServiceNeed(
+        db: Database,
+        @RequestBody body: DevVardaServiceNeed
+    ) {
         db.connect { dbc ->
             dbc.transaction {
-                it.createUpdate {
+                it
+                    .createUpdate {
                         sql(
                             """
 INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors)
-VALUES (${bind(body.evakaServiceNeedId)}, ${bind(body.evakaServiceNeedUpdated)}, ${bind(body.evakaChildId)}, ${bind(body.updateFailed)}, ${bind(body.errors)})
+VALUES (${bind(
+                                body.evakaServiceNeedId
+                            )}, ${bind(
+                                body.evakaServiceNeedUpdated
+                            )}, ${bind(body.evakaChildId)}, ${bind(body.updateFailed)}, ${bind(body.errors)})
 """
                         )
-                    }
-                    .execute()
+                    }.execute()
             }
         }
     }
@@ -1419,7 +1530,8 @@ VALUES (${bind(body.evakaServiceNeedId)}, ${bind(body.evakaServiceNeedUpdated)},
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                it.createUpdate {
+                it
+                    .createUpdate {
                         sql(
                             """
 INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
@@ -1427,74 +1539,97 @@ VALUES (${bind(body.unitId)}, ${bind(body.employeeId)}, ${bind(body.coefficient)
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
 """
                         )
-                    }
-                    .execute()
+                    }.execute()
             }
         }
     }
 
     @GetMapping("/realtime-staff-attendance")
-    fun getStaffAttendances(db: Database) =
-        db.connect { dbc -> dbc.transaction { it.getRealtimeStaffAttendances() } }
+    fun getStaffAttendances(db: Database) = db.connect { dbc -> dbc.transaction { it.getRealtimeStaffAttendances() } }
 
     @PostMapping("/realtime-staff-attendance")
-    fun addStaffAttendance(db: Database, @RequestBody body: DevStaffAttendance) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addStaffAttendance(
+        db: Database,
+        @RequestBody body: DevStaffAttendance
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/staff-attendance-plan")
-    fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addStaffAttendancePlan(
+        db: Database,
+        @RequestBody body: DevStaffAttendancePlan
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/daily-service-time")
-    fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTimes) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addDailyServiceTime(
+        db: Database,
+        @RequestBody body: DevDailyServiceTimes
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/daily-service-time-notification")
     fun addDailyServiceTimeNotification(
         db: Database,
         @RequestBody body: DevDailyServiceTimeNotification
-    ) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate {
-                        sql(
-                            """
+    ) = db.connect { dbc ->
+        dbc.transaction {
+            it
+                .createUpdate {
+                    sql(
+                        """
 INSERT INTO daily_service_time_notification (id, guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
-VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTimeId)}, ${bind(body.dateFrom)}, ${bind(body.hasDeletedReservations)})
+VALUES (${bind(
+                            body.id
+                        )}, ${bind(
+                            body.guardianId
+                        )}, ${bind(body.dailyServiceTimeId)}, ${bind(body.dateFrom)}, ${bind(body.hasDeletedReservations)})
 """
-                        )
-                    }
-                    .execute()
-            }
+                    )
+                }.execute()
         }
+    }
 
     @PostMapping("/payments")
-    fun addPayment(db: Database, @RequestBody body: DevPayment) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addPayment(
+        db: Database,
+        @RequestBody body: DevPayment
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event")
-    fun addCalendarEvent(db: Database, @RequestBody body: DevCalendarEvent) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addCalendarEvent(
+        db: Database,
+        @RequestBody body: DevCalendarEvent
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event-attendee")
-    fun addCalendarEventAttendee(db: Database, @RequestBody body: DevCalendarEventAttendee) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addCalendarEventAttendee(
+        db: Database,
+        @RequestBody body: DevCalendarEventAttendee
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/calendar-event-time")
-    fun addCalendarEventTime(db: Database, @RequestBody body: DevCalendarEventTime) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addCalendarEventTime(
+        db: Database,
+        @RequestBody body: DevCalendarEventTime
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/absence")
-    fun addAbsence(db: Database, @RequestBody body: DevAbsence) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addAbsence(
+        db: Database,
+        @RequestBody body: DevAbsence
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/club-term")
-    fun createClubTerm(db: Database, @RequestBody body: DevClubTerm) {
+    fun createClubTerm(
+        db: Database,
+        @RequestBody body: DevClubTerm
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
     @PostMapping("/preschool-term")
-    fun createPreschoolTerm(db: Database, @RequestBody body: DevPreschoolTerm) {
+    fun createPreschoolTerm(
+        db: Database,
+        @RequestBody body: DevPreschoolTerm
+    ) {
         db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
 
@@ -1577,7 +1712,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
                                     LocalDate.now().plusDays(7),
                                     LocalDate.now().plusDays(7)
                                 )
-                            ),
+                            )
                         )
                     )
                 EmailMessageType.financeDecisionNotification ->
@@ -1586,9 +1721,11 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
                     )
             }
         val content =
-            if (format == "html") emailContent.html
-            else
+            if (format == "html") {
+                emailContent.html
+            } else {
                 "<div style=\"font-family: monospace; white-space: pre-wrap\">${emailContent.text}</div>"
+            }
 
         val options =
             EmailMessageType.values().joinToString("") {
@@ -1620,7 +1757,10 @@ $form
     }
 
     @PutMapping("/diets")
-    fun putDiets(db: Database, @RequestBody diets: List<SpecialDiet>) {
+    fun putDiets(
+        db: Database,
+        @RequestBody diets: List<SpecialDiet>
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.resetSpecialDietsNotContainedWithin(diets)
@@ -1629,22 +1769,27 @@ $form
         }
     }
 
-    data class DevPersonEmail(val personId: PersonId, val email: String?)
+    data class DevPersonEmail(
+        val personId: PersonId,
+        val email: String?
+    )
 
     @PostMapping("/person-email")
-    fun setPersonEmail(db: Database, @RequestBody body: DevPersonEmail) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate {
-                        sql(
-                            """
+    fun setPersonEmail(
+        db: Database,
+        @RequestBody body: DevPersonEmail
+    ) = db.connect { dbc ->
+        dbc.transaction {
+            it
+                .createUpdate {
+                    sql(
+                        """
 UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}            
 """
-                        )
-                    }
-                    .execute()
-            }
+                    )
+                }.execute()
         }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1696,27 +1841,27 @@ private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
 
 private fun Database.Read.getActiveConnections(): List<ActiveConnection> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT state, xact_start, query_start, left(query, 100) AS query FROM pg_stat_activity
 WHERE pid <> pg_backend_pid() AND datname = current_database() AND usename = current_user AND backend_type = 'client backend'
 AND state != 'idle'
     """
-            )
-        }
-        .toList<ActiveConnection>()
+        )
+    }.toList<ActiveConnection>()
 
 fun Database.Transaction.ensureFakeAdminExists() {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO employee (id, first_name, last_name, email, external_id, roles, active)
-VALUES (${bind(fakeAdmin.id)}, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || ${bind(fakeAdmin.id)}, '{ADMIN, SERVICE_WORKER}'::user_role[], TRUE)
+VALUES (${bind(
+                fakeAdmin.id
+            )}, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || ${bind(fakeAdmin.id)}, '{ADMIN, SERVICE_WORKER}'::user_role[], TRUE)
 ON CONFLICT DO NOTHING
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
     upsertEmployeeUser(fakeAdmin.id)
 }
 
@@ -1782,13 +1927,12 @@ INSERT INTO service_need_option_voucher_value (service_need_option_id, validity,
 
 fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE fee_decision SET sent_at = ${bind(feeDecision.sentAt)} WHERE id = ${bind(feeDecision.id)}    
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 
 data class DevCareArea(
     val id: AreaId = AreaId(UUID.randomUUID()),
@@ -1818,7 +1962,10 @@ data class DevChild(
     val mealTextureId: Int? = null
 )
 
-data class DevHoliday(val date: LocalDate, val description: String = "Test Holiday")
+data class DevHoliday(
+    val date: LocalDate,
+    val description: String = "Test Holiday"
+)
 
 data class DevHolidayPeriod(
     val id: HolidayPeriodId = HolidayPeriodId(UUID.randomUUID()),
@@ -1906,7 +2053,7 @@ data class DevDaycareGroupPlacement(
     val daycarePlacementId: PlacementId,
     val daycareGroupId: GroupId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    val endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    val endDate: LocalDate = LocalDate.of(2019, 12, 31)
 )
 
 data class DevAssistanceNeedDecision(
@@ -1938,7 +2085,7 @@ data class DevAssistanceNeedDecision(
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?,
     val unreadGuardianIds: List<PersonId>?,
-    val annulmentReason: String,
+    val annulmentReason: String
 )
 
 data class DevAssistanceNeedPreschoolDecision(
@@ -2021,7 +2168,7 @@ data class DevPerson(
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String? = null,
     val duplicateOf: PersonId? = null,
-    val enabledEmailTypes: List<EmailMessageType>? = null,
+    val enabledEmailTypes: List<EmailMessageType>? = null
 ) {
     fun toPersonDTO() =
         PersonDTO(
@@ -2107,7 +2254,7 @@ data class DevMobileDevice(
     val unitId: DaycareId,
     val name: String = "Laite",
     val longTermToken: UUID? = null,
-    val pushNotificationCategories: Set<PushNotificationCategory> = emptySet(),
+    val pushNotificationCategories: Set<PushNotificationCategory> = emptySet()
 )
 
 data class DevPersonalMobileDevice(
@@ -2117,7 +2264,10 @@ data class DevPersonalMobileDevice(
     val longTermToken: UUID? = null
 )
 
-data class DaycareAclInsert(val externalId: ExternalId, val role: UserRole?)
+data class DaycareAclInsert(
+    val externalId: ExternalId,
+    val role: UserRole?
+)
 
 data class PlacementPlan(
     val unitId: DaycareId,
@@ -2147,7 +2297,10 @@ data class DevApplicationWithForm(
     val formModified: HelsinkiDateTime
 )
 
-data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: EmployeeId)
+data class DevDaycareGroupAcl(
+    val groupId: GroupId,
+    val employeeId: EmployeeId
+)
 
 data class DevServiceNeed(
     val id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),
@@ -2161,7 +2314,10 @@ data class DevServiceNeed(
     val confirmedAt: HelsinkiDateTime? = null
 )
 
-data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
+data class PostVasuDocBody(
+    val childId: ChildId,
+    val templateId: VasuTemplateId
+)
 
 data class DevUpsertStaffOccupancyCoefficient(
     val unitId: DaycareId,
@@ -2234,7 +2390,7 @@ data class DevCalendarEventAttendee(
     val calendarEventId: CalendarEventId,
     val unitId: DaycareId,
     val groupId: GroupId? = null,
-    val childId: ChildId? = null,
+    val childId: ChildId? = null
 )
 
 data class DevCalendarEventTime(
@@ -2256,10 +2412,13 @@ data class DevAbsence(
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     val absenceCategory: AbsenceCategory,
-    val questionnaireId: HolidayQuestionnaireId? = null,
+    val questionnaireId: HolidayQuestionnaireId? = null
 )
 
-data class DevGuardian(val guardianId: PersonId, val childId: ChildId)
+data class DevGuardian(
+    val guardianId: PersonId,
+    val childId: ChildId
+)
 
 data class DevDaycareCaretaker(
     val id: DaycareCaretakerId = DaycareCaretakerId(UUID.randomUUID()),
@@ -2320,7 +2479,7 @@ data class DevAssistanceFactor(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val capacityFactor: Double = 1.0,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
 )
 
 data class DevDaycareAssistance(
@@ -2330,7 +2489,7 @@ data class DevDaycareAssistance(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val level: DaycareAssistanceLevel = DaycareAssistanceLevel.GENERAL_SUPPORT,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
 )
 
 data class DevPreschoolAssistance(
@@ -2340,7 +2499,7 @@ data class DevPreschoolAssistance(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val level: PreschoolAssistanceLevel = PreschoolAssistanceLevel.INTENSIFIED_SUPPORT,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
 )
 
 data class DevOtherAssistanceMeasure(
@@ -2350,7 +2509,7 @@ data class DevOtherAssistanceMeasure(
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
     val type: OtherAssistanceMeasureType,
     val modified: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
 )
 
 data class DevVardaOrganizerChild(
@@ -2482,5 +2641,5 @@ data class DevVoucherValueDecision(
     val validityUpdatedAt: HelsinkiDateTime? = null,
     val childIncome: DecisionIncome? = null,
     val difference: List<VoucherValueDecisionDifference> = emptyList(),
-    val serviceNeedMissing: Boolean = false,
+    val serviceNeedMissing: Boolean = false
 )

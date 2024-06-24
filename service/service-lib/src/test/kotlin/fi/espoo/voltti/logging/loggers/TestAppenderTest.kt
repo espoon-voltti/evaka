@@ -8,14 +8,14 @@ import fi.espoo.voltti.logging.utils.clearTestMessages
 import fi.espoo.voltti.logging.utils.getJson
 import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import mu.KLogger
 import mu.KotlinLogging
 import net.logstash.logback.argument.StructuredArguments
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 private val logger = KotlinLogging.logger { }.also(KLogger::setupTestAppender)
 

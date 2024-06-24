@@ -45,9 +45,15 @@ class PendingDecisionEmailService(
         sendPendingDecisionEmail(db, clock, msg)
     }
 
-    data class GuardianDecisions(val guardianId: PersonId, val decisionIds: List<DecisionId>)
+    data class GuardianDecisions(
+        val guardianId: PersonId,
+        val decisionIds: List<DecisionId>
+    )
 
-    fun scheduleSendPendingDecisionsEmails(db: Database.Connection, clock: EvakaClock): Int {
+    fun scheduleSendPendingDecisionsEmails(
+        db: Database.Connection,
+        clock: EvakaClock
+    ): Int {
         val jobCount =
             db.transaction { tx ->
                 tx.removeUnclaimedJobs(
@@ -56,7 +62,8 @@ class PendingDecisionEmailService(
 
                 val today = clock.today()
                 val pendingGuardianDecisions =
-                    tx.createQuery {
+                    tx
+                        .createQuery {
                             sql(
                                 """
 WITH pending_decisions AS (
@@ -72,8 +79,7 @@ FROM pending_decisions JOIN application ON pending_decisions.application_id = ap
 GROUP BY application.guardian_id
 """
                             )
-                        }
-                        .toList<GuardianDecisions>()
+                        }.toList<GuardianDecisions>()
 
                 val createdJobCount =
                     pendingGuardianDecisions.fold(0) { count, pendingDecision ->
@@ -129,15 +135,15 @@ GROUP BY application.guardian_id
         logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
         val lang = getLanguage(pendingDecision.language)
 
-        Email.create(
+        Email
+            .create(
                 db,
                 pendingDecision.guardianId,
                 EmailMessageType.DECISION_NOTIFICATION,
                 emailEnv.sender(lang),
                 emailMessageProvider.pendingDecisionNotification(lang),
-                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
-            )
-            ?.also { emailClient.send(it) }
+                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}"
+            )?.also { emailClient.send(it) }
 
         val now = clock.now()
         db.transaction { tx ->
@@ -157,13 +163,12 @@ WHERE id = ${bind(decisionId)}
         }
     }
 
-    private fun getLanguage(languageStr: String?): Language {
-        return when (languageStr) {
+    private fun getLanguage(languageStr: String?): Language =
+        when (languageStr) {
             "sv",
             "SV" -> Language.sv
             "en",
             "EN" -> Language.en
             else -> Language.fi
         }
-    }
 }

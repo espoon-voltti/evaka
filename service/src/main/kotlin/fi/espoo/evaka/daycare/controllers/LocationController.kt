@@ -31,7 +31,7 @@ class LocationController {
             [
                 "/units", // deprecated
                 "/public/units", // deprecated
-                "/employee/units",
+                "/employee/units"
             ]
     )
     fun getApplicationUnits(
@@ -40,11 +40,10 @@ class LocationController {
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
-    ): List<PublicUnit> {
-        return db.connect { dbc ->
+    ): List<PublicUnit> =
+        db.connect { dbc ->
             dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = false) }
         }
-    }
 
     @GetMapping(
         path =
@@ -56,21 +55,21 @@ class LocationController {
     fun getAllApplicableUnits(
         db: Database,
         @PathVariable applicationType: ApplicationType
-    ): List<PublicUnit> {
-        return db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
-    }
+    ): List<PublicUnit> = db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
 
     @GetMapping(
         "/areas", // deprecated
         "/employee/areas"
     )
-    fun getAreas(db: Database, user: AuthenticatedUser.Employee): List<AreaJSON> {
-        return db.connect { dbc ->
+    fun getAreas(
+        db: Database,
+        user: AuthenticatedUser.Employee
+    ): List<AreaJSON> =
+        db.connect { dbc ->
             dbc.read {
                 it.createQuery { sql("SELECT id, name, short_name FROM care_area") }.toList()
             }
         }
-    }
 
     @GetMapping(
         "/filters/units", // deprecated
@@ -81,11 +80,11 @@ class LocationController {
         user: AuthenticatedUser.Employee,
         @RequestParam type: UnitTypeFilter,
         @RequestParam areaIds: List<AreaId>?,
-        @RequestParam from: LocalDate?,
-    ): List<UnitStub> {
-        return db.connect { dbc -> dbc.read { it.getUnits(areaIds, type, from) } }
+        @RequestParam from: LocalDate?
+    ): List<UnitStub> =
+        db
+            .connect { dbc -> dbc.read { it.getUnits(areaIds, type, from) } }
             .sortedBy { it.name.lowercase() }
-    }
 }
 
 enum class ApplicationUnitType {
@@ -115,7 +114,11 @@ data class PublicUnit(
     val clubApplyPeriod: DateRange?
 )
 
-data class AreaJSON(val id: AreaId, val name: String, val shortName: String)
+data class AreaJSON(
+    val id: AreaId,
+    val name: String,
+    val shortName: String
+)
 
 enum class UnitTypeFilter {
     ALL,
@@ -131,8 +134,8 @@ private fun Database.Read.getUnits(
 ): List<UnitStub> {
     val areaIdsParam = areaIds?.takeIf { it.isNotEmpty() }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT unit.id, unit.name, unit.type as care_types
 FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
@@ -144,7 +147,6 @@ AND (${bind(type)} = 'ALL' OR
 )
 AND (${bind(from)}::date IS NULL OR daterange(unit.opening_date, unit.closing_date, '[]') && daterange(${bind(from)}, NULL))
     """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }

@@ -39,7 +39,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 areaId = area.id,
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
-                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50))
             )
         val group = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = null)
 
@@ -56,10 +56,10 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val jobs =
             db.read { tx ->
-                tx.createQuery {
+                tx
+                    .createQuery {
                         sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'")
-                    }
-                    .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
+                    }.map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
                     .toList()
             }
 
@@ -74,7 +74,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 areaId = area.id,
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
-                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50))
             )
         val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 88)
         val group2 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 99)
@@ -93,10 +93,10 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val jobs =
             db.read { tx ->
-                tx.createQuery {
+                tx
+                    .createQuery {
                         sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'")
-                    }
-                    .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
+                    }.map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
                     .toList()
             }
 
@@ -129,7 +129,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 areaId = area.id,
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
-                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50))
             )
         val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 88)
         val group2 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 99)
@@ -146,15 +146,15 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
@@ -165,39 +165,38 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 }
             listOf(
-                    // All three meals on Monday
-                    DevReservation(
-                        childId = child.id,
-                        date = monday,
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = employee.evakaUserId
-                    ),
-                    // Breakfast only on Tuesday
-                    DevReservation(
-                        childId = child.id,
-                        date = tuesday,
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(9, 0),
-                        createdBy = employee.evakaUserId
-                    )
+                // All three meals on Monday
+                DevReservation(
+                    childId = child.id,
+                    date = monday,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = employee.evakaUserId
+                ),
+                // Breakfast only on Tuesday
+                DevReservation(
+                    childId = child.id,
+                    date = tuesday,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(9, 0),
+                    createdBy = employee.evakaUserId
                 )
-                .forEach { tx.insert(it) }
+            ).forEach { tx.insert(it) }
 
             tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation")))
             tx.setMealTextures(listOf(MealTexture(42, "Sosemainen")))
 
             tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
             tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1, mealTextureId = 42))
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = childWithSpecialDiet.id,
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = tuesday
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = placementId,
@@ -278,7 +277,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 dietID = null,
                                 additionalInfo = null,
                                 textureID = null
-                            ),
+                            )
                         )
                 ),
                 JamixClient.MealOrder(
@@ -370,7 +369,6 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `diet sync generates warning emails`() {
-
         val monday = LocalDate.of(2024, 4, 8)
         val tuesday = LocalDate.of(2024, 4, 9)
 
@@ -380,7 +378,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 areaId = area.id,
                 mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
                 mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
-                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
+                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50))
             )
         val employee1 = DevEmployee(email = "supervisor_the_first@city.fi")
         val employee2 = DevEmployee(email = "supervisor_the_second@city.fi")
@@ -479,21 +477,16 @@ class TestJamixClient(
 ) : JamixClient {
     val orders = mutableListOf<JamixClient.MealOrder>()
 
-    override fun getCustomers(): List<JamixClient.Customer> {
-        return customers.map { (customerNumber, customerId) ->
+    override fun getCustomers(): List<JamixClient.Customer> =
+        customers.map { (customerNumber, customerId) ->
             JamixClient.Customer(customerId, customerNumber)
         }
-    }
 
     override fun createMealOrder(order: JamixClient.MealOrder) {
         orders.add(order)
     }
 
-    override fun getDiets(): List<JamixSpecialDiet> {
-        return specialDiets
-    }
+    override fun getDiets(): List<JamixSpecialDiet> = specialDiets
 
-    override fun getTextures(): List<JamixTexture> {
-        return mealTextures
-    }
+    override fun getTextures(): List<JamixTexture> = mealTextures
 }

@@ -16,8 +16,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
   backup_care.id,
   daycare.id AS unit_id,
@@ -32,17 +32,16 @@ LEFT JOIN daycare_group
 ON daycare_group.id = group_id
 WHERE child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList<ChildBackupCare>()
+        )
+    }.toList<ChildBackupCare>()
 
 fun Database.Read.getBackupCaresForDaycare(
     daycareId: DaycareId,
     period: FiniteDateRange
 ): List<UnitBackupCare> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
   backup_care.id,
   person.id AS child_id,
@@ -80,9 +79,8 @@ JOIN LATERAL (
 WHERE unit_id = ${bind(daycareId)}
 AND daterange(backup_care.start_date, backup_care.end_date, '[]') && ${bind(period)}
 """
-            )
-        }
-        .toList<UnitBackupCare>()
+        )
+    }.toList<UnitBackupCare>()
 
 fun Database.Read.getBackupCareChildrenInGroup(
     daycareId: DaycareId,
@@ -90,37 +88,39 @@ fun Database.Read.getBackupCareChildrenInGroup(
     period: FiniteDateRange
 ): List<ChildId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child_id FROM backup_care
 WHERE unit_id = ${bind(daycareId)}
   AND group_id = ${bind(groupId)}
   AND daterange(start_date, end_date, '[]') && ${bind(period)}
 """
-            )
-        }
-        .toList<ChildId>()
+        )
+    }.toList<ChildId>()
 
-data class BackupCareInfo(val childId: ChildId, val unitId: DaycareId, val period: FiniteDateRange)
+data class BackupCareInfo(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val period: FiniteDateRange
+)
 
 fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull<BackupCareInfo>()
+        )
+    }.exactlyOneOrNull<BackupCareInfo>()
 
 fun Database.Transaction.createBackupCare(
     childId: ChildId,
     backupCare: NewBackupCare
 ): BackupCareId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO backup_care (child_id, unit_id, group_id, start_date, end_date)
 VALUES (
   ${bind(childId)},
@@ -131,9 +131,8 @@ VALUES (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<BackupCareId>()
 
 fun Database.Transaction.updateBackupCare(
@@ -153,18 +152,24 @@ WHERE id = ${bind(id)}
     )
 }
 
-fun Database.Transaction.deleteBackupCare(id: BackupCareId) = execute {
-    sql("""
+fun Database.Transaction.deleteBackupCare(id: BackupCareId) =
+    execute {
+        sql(
+            """
 DELETE FROM backup_care
 WHERE id = ${bind(id)}
-""")
-}
+"""
+        )
+    }
 
 fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
-    createQuery { sql("""
+    createQuery {
+        sql(
+            """
 SELECT child_id FROM backup_care WHERE id = ${bind(id)}
-""") }
-        .exactlyOne<ChildId>()
+"""
+        )
+    }.exactlyOne<ChildId>()
 
 /** Recreates backup cares for a child so that they are always within placements. */
 fun Database.Transaction.recreateBackupCares(childId: ChildId) {
@@ -178,9 +183,9 @@ fun Database.Transaction.recreateBackupCares(childId: ChildId) {
     val backupCares = getBackupCaresForChild(childId)
 
     val desired =
-        if (placementSpan == null)
+        if (placementSpan == null) {
             DateMap.empty() // no placements -> we shouldn't have backup cares
-        else {
+        } else {
             // Invalid backup care ranges are either 1. outside placements completely, or 2. in gaps
             // between placements
             val backupCareDates = DateMap.of(backupCares.asSequence().map { it.period to it.id })

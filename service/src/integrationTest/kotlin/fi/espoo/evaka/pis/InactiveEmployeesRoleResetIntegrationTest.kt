@@ -239,14 +239,13 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     ) {
         @Suppress("DEPRECATION")
         createUpdate(
-                """
+            """
 ALTER TABLE daycare_acl DISABLE TRIGGER USER;
 UPDATE daycare_acl SET updated = :timestamp
 WHERE daycare_id = :unitId AND employee_id = :employeeId;
 ALTER TABLE daycare_acl ENABLE TRIGGER USER;
 """
-            )
-            .bind("timestamp", timestamp)
+        ).bind("timestamp", timestamp)
             .bind("unitId", unitId)
             .bind("employeeId", employeeId)
             .execute()
@@ -259,14 +258,13 @@ ALTER TABLE daycare_acl ENABLE TRIGGER USER;
     ) {
         @Suppress("DEPRECATION")
         createUpdate(
-                """
+            """
 ALTER TABLE daycare_group_acl DISABLE TRIGGER USER;
 UPDATE daycare_group_acl SET updated = :timestamp
 WHERE daycare_group_id = :groupId AND employee_id = :employeeId;
 ALTER TABLE daycare_group_acl ENABLE TRIGGER USER;
 """
-            )
-            .bind("timestamp", timestamp)
+        ).bind("timestamp", timestamp)
             .bind("groupId", groupId)
             .bind("employeeId", employeeId)
             .execute()

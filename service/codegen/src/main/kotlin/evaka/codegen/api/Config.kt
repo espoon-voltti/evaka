@@ -342,7 +342,7 @@ private val plannedEndpoints =
         "/employee-mobile/realtime-staff-attendances/departure",
         "/employee-mobile/realtime-staff-attendances/departure-external",
         "/employee-mobile/units/stats",
-        "/employee-mobile/units/{unitId}",
+        "/employee-mobile/units/{unitId}"
     )
 
 val endpointExcludes = plannedEndpoints + deprecatedEndpoints

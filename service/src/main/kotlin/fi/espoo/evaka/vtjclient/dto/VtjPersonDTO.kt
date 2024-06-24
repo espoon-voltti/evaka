@@ -20,7 +20,6 @@ data class VtjPersonDTO(
     val restrictedDetailsEndDate: LocalDate?,
     val streetAddress: String,
     val postalCode: String,
-
     // TODO: this should be postOffice
     val city: String,
     val residenceCode: String,

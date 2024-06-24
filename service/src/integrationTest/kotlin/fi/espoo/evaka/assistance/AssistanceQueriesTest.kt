@@ -19,7 +19,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     @Test
     fun `endAssistanceFactorsWhichBelongToPastPlacements sets end date from placement`() {
         val placementStart = LocalDate.of(2024, 1, 1)

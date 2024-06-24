@@ -12,12 +12,17 @@ import fi.espoo.voltti.logging.loggers.error
 import java.time.Duration
 import mu.KotlinLogging
 
-class EspooBiHttpClient(private val env: EspooBiEnv) : EspooBiClient {
+class EspooBiHttpClient(
+    private val env: EspooBiEnv
+) : EspooBiClient {
     private val fuel = FuelManager()
     private val logger = KotlinLogging.logger {}
     private val readTimeout = Duration.ofMinutes(5)
 
-    override fun sendBiCsvFile(fileName: String, stream: EspooBiJob.CsvInputStream) {
+    override fun sendBiCsvFile(
+        fileName: String,
+        stream: EspooBiJob.CsvInputStream
+    ) {
         logger.info("Sending BI CSV file $fileName")
         val (_, _, result) =
             fuel

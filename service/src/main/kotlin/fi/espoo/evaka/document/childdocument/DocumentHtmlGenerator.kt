@@ -89,31 +89,30 @@ private val childDocumentCss =
         overflow: hidden;
         padding-right: 24px;
     }
-"""
-        .trimIndent()
+    """.trimIndent()
 
-fun generateChildDocumentHtml(document: ChildDocumentDetails): String {
-    return """
-        <html>
-            <head>
-                <style>$childDocumentCss</style>
-            </head>
-            ${generateBody(document).toHtml()}
-        </html>
+fun generateChildDocumentHtml(document: ChildDocumentDetails): String =
     """
-        .trimIndent()
-}
+    <html>
+        <head>
+            <style>$childDocumentCss</style>
+        </head>
+        ${generateBody(document).toHtml()}
+    </html>
+    """.trimIndent()
 
-private fun generateBody(document: ChildDocumentDetails): HtmlElement {
-    return HtmlBuilder.body {
+private fun generateBody(document: ChildDocumentDetails): HtmlElement =
+    HtmlBuilder.body {
         listOf(
             generateHeader(document.template),
             h2(
                 text =
                     "${document.child.firstName} ${document.child.lastName} " +
-                        (document.child.dateOfBirth?.let {
-                            "(s. ${it.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))})"
-                        } ?: ""),
+                        (
+                            document.child.dateOfBirth?.let {
+                                "(s. ${it.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))})"
+                            } ?: ""
+                        ),
                 className = "child-info"
             ),
             div(className = "sections") {
@@ -123,10 +122,9 @@ private fun generateBody(document: ChildDocumentDetails): HtmlElement {
             }
         )
     }
-}
 
-private fun generateHeader(template: DocumentTemplate): HtmlElement {
-    return HtmlBuilder.div(className = "header-section") {
+private fun generateHeader(template: DocumentTemplate): HtmlElement =
+    HtmlBuilder.div(className = "header-section") {
         listOf(
             h1(template.name),
             div(className = "legal-info") {
@@ -134,20 +132,22 @@ private fun generateHeader(template: DocumentTemplate): HtmlElement {
                     template.legalBasis
                         .takeIf { it.isNotBlank() }
                         ?.let { div(text = it, className = "legal-basis") },
-                    if (template.confidential) div(getTranslations(template.language).confidential)
-                    else null
+                    if (template.confidential) {
+                        div(getTranslations(template.language).confidential)
+                    } else {
+                        null
+                    }
                 )
             }
         )
     }
-}
 
 private fun generateSectionHtml(
     section: Section,
     answers: List<AnsweredQuestion<*>>,
     language: OfficialLanguage
-): HtmlElement {
-    return HtmlBuilder.div(className = "section") {
+): HtmlElement =
+    HtmlBuilder.div(className = "section") {
         listOf(
             h2(section.label),
             div(className = "questions") {
@@ -155,20 +155,20 @@ private fun generateSectionHtml(
             }
         )
     }
-}
 
 private fun generateQuestionHtml(
     question: Question,
     answers: List<AnsweredQuestion<*>>,
     language: OfficialLanguage
-): HtmlElement {
-    return question.generateHtml(
+): HtmlElement =
+    question.generateHtml(
         answeredQuestion = answers.find { it.questionId == question.id },
         language = language
     )
-}
 
-private data class Translations(val confidential: String)
+private data class Translations(
+    val confidential: String
+)
 
 private val translationsFi = Translations(confidential = "Salassapidettävä")
 

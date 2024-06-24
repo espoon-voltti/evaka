@@ -13,4 +13,6 @@ private val about =
         repositoryUrl = "https://github.com/espoon-voltti/evaka"
     )
 
-open class EvakaRule(name: String) : Rule(RuleId("evaka:$name"), about)
+open class EvakaRule(
+    name: String
+) : Rule(RuleId("evaka:$name"), about)

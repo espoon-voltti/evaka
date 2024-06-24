@@ -29,7 +29,8 @@ import org.junit.jupiter.api.Test
 class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val clock = MockEvakaClock(HelsinkiDateTime.now())
     private val partnershipCreator =
-        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+        AuthenticatedUser
+            .Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
             .evakaUserId
 
     @BeforeEach
@@ -134,9 +135,13 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(null, fetched.endDate)
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO =
+    private fun createPerson(
+        ssn: String,
+        firstName: String
+    ): PersonDTO =
         db.transaction { tx ->
-            tx.insert(
+            tx
+                .insert(
                     DevPerson(
                         ssn = ssn,
                         dateOfBirth = getDobFromSsn(ssn),
@@ -146,8 +151,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         language = "fi"
                     ),
                     DevPersonType.RAW_ROW
-                )
-                .let { tx.getPersonById(it)!! }
+                ).let { tx.getPersonById(it)!! }
         }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")

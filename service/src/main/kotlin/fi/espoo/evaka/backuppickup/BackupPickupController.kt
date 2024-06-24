@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class BackupPickupController(private val accessControl: AccessControl) {
+class BackupPickupController(
+    private val accessControl: AccessControl
+) {
     @PostMapping(
         "/children/{childId}/backup-pickups", // deprecated
         "/employee/children/{childId}/backup-pickups"
@@ -33,9 +35,10 @@ class BackupPickupController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: ChildBackupPickupContent
-    ): ChildBackupPickupCreateResponse {
-        return ChildBackupPickupCreateResponse(
-            db.connect { dbc ->
+    ): ChildBackupPickupCreateResponse =
+        ChildBackupPickupCreateResponse(
+            db
+                .connect { dbc ->
                     dbc.transaction { tx ->
                         accessControl.requirePermissionFor(
                             tx,
@@ -46,15 +49,13 @@ class BackupPickupController(private val accessControl: AccessControl) {
                         )
                         tx.createBackupPickup(childId, body)
                     }
-                }
-                .also { backupPickupId ->
+                }.also { backupPickupId ->
                     Audit.ChildBackupPickupCreate.log(
                         targetId = AuditId(childId),
                         objectId = AuditId(backupPickupId)
                     )
                 }
         )
-    }
 
     @GetMapping(
         "/children/{childId}/backup-pickups", // deprecated
@@ -65,8 +66,9 @@ class BackupPickupController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<ChildBackupPickup> {
-        return db.connect { dbc ->
+    ): List<ChildBackupPickup> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -77,14 +79,12 @@ class BackupPickupController(private val accessControl: AccessControl) {
                     )
                     tx.getBackupPickupsForChild(childId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildBackupPickupRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PutMapping(
         "/backup-pickups/{id}", // deprecated
@@ -131,40 +131,42 @@ fun Database.Transaction.createBackupPickup(
     data: ChildBackupPickupContent
 ): BackupPickupId =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO backup_pickup (child_id, name, phone)
 VALUES (${bind(childId)}, ${bind(data.name)}, ${bind(data.phone)})
 RETURNING id
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
 fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> =
     createQuery {
-            sql(
-                "SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = ${bind(childId)}"
-            )
-        }
-        .toList()
+        sql(
+            "SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = ${bind(childId)}"
+        )
+    }.toList()
 
-fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBackupPickupContent) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.updateBackupPickup(
+    id: BackupPickupId,
+    data: ChildBackupPickupContent
+) = createUpdate {
+    sql(
+        """
 UPDATE backup_pickup
 SET name = ${bind(data.name)}, phone = ${bind(data.phone)}
 WHERE id  = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
 fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) =
     createUpdate { sql("DELETE FROM backup_pickup WHERE id = ${bind(id)}") }.updateExactlyOne()
 
-data class ChildBackupPickupContent(val name: String, val phone: String)
+data class ChildBackupPickupContent(
+    val name: String,
+    val phone: String
+)
 
 data class ChildBackupPickup(
     val id: BackupPickupId,
@@ -173,4 +175,6 @@ data class ChildBackupPickup(
     val phone: String
 )
 
-data class ChildBackupPickupCreateResponse(val id: BackupPickupId)
+data class ChildBackupPickupCreateResponse(
+    val id: BackupPickupId
+)

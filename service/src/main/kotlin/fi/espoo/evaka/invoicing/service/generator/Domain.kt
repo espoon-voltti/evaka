@@ -75,8 +75,11 @@ data class PlacementDetails(
             }
 }
 
-data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn: String?) :
-    HasDateOfBirth
+data class Child(
+    val id: PersonId,
+    override val dateOfBirth: LocalDate,
+    val ssn: String?
+) : HasDateOfBirth
 
 data class ChildRelation(
     val headOfChild: PersonId,
@@ -84,12 +87,22 @@ data class ChildRelation(
     @Nested("child") val child: Child
 ) : WithFiniteRange
 
-data class PartnerRelation(val partnerId: PersonId, override val range: DateRange) : WithRange
+data class PartnerRelation(
+    val partnerId: PersonId,
+    override val range: DateRange
+) : WithRange
 
-data class IncomeRange(override val range: DateRange, val income: DecisionIncome) : WithRange
+data class IncomeRange(
+    override val range: DateRange,
+    val income: DecisionIncome
+) : WithRange
 
-data class FeeAlterationRange(override val range: DateRange, val feeAlteration: FeeAlteration) :
-    WithRange
+data class FeeAlterationRange(
+    override val range: DateRange,
+    val feeAlteration: FeeAlteration
+) : WithRange
 
-data class FeeThresholdsRange(override val range: DateRange, val thresholds: FeeThresholds) :
-    WithRange
+data class FeeThresholdsRange(
+    override val range: DateRange,
+    val thresholds: FeeThresholds
+) : WithRange

@@ -39,10 +39,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class FeeDecisionGenerationForDataChangesIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class FeeDecisionGenerationForDataChangesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
+
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     val originalRange = dateRange(10, 20)
@@ -102,7 +103,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(5, 9), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(10, 20), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(10, 20), 1)
             )
         )
     }
@@ -115,7 +116,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertDrafts(
             listOf(
                 dateRange(10, 14) to 0,
-                dateRange(15, 20) to 1,
+                dateRange(15, 20) to 1
             )
         )
 
@@ -124,7 +125,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(FeeDecisionStatus.ANNULLED, dateRange(10, 20), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(15, 20), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(15, 20), 1)
             )
         )
     }
@@ -140,7 +141,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
 
         assertFinal(
             listOf(
-                Triple(FeeDecisionStatus.SENT, dateRange(10, 15), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(10, 15), 1)
             )
         )
     }
@@ -157,7 +158,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 20), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(21, 25), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(21, 25), 1)
             )
         )
     }
@@ -174,7 +175,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(5, 9), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(10, 15), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(10, 15), 1)
             )
         )
     }
@@ -192,7 +193,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(5, 9), 1),
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 20), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(21, 25), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(21, 25), 1)
             )
         )
     }
@@ -251,7 +252,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertDrafts(
             listOf(
                 dateRange(14, 15) to 0,
-                dateRange(16, 20) to 1,
+                dateRange(16, 20) to 1
             )
         )
 
@@ -260,7 +261,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(FeeDecisionStatus.SENT, dateRange(10, 13), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(16, 20), 1),
+                Triple(FeeDecisionStatus.SENT, dateRange(16, 20), 1)
             )
         )
     }
@@ -337,7 +338,10 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
 
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
 
-    private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
+    private fun dateRange(
+        f: Int,
+        t: Int
+    ) = DateRange(day(f), day(t))
 
     private fun assertDrafts(expectedDrafts: List<Pair<DateRange, Int>>) {
         val decisions = getAllFeeDecisions()
@@ -369,10 +373,10 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         }
     }
 
-    private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx -> tx.createQuery(feeDecisionQuery()).toList<FeeDecision>() }
+    private fun getAllFeeDecisions(): List<FeeDecision> =
+        db
+            .read { tx -> tx.createQuery(feeDecisionQuery()).toList<FeeDecision>() }
             .sortedBy { it.validFrom }
-    }
 
     private fun generate() {
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }

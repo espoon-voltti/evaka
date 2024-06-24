@@ -8,76 +8,107 @@ import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 
-fun Database.Transaction.insertTemplate(template: DocumentTemplateBasicsRequest): DocumentTemplate {
-    return createQuery {
-            sql(
-                """
+fun Database.Transaction.insertTemplate(template: DocumentTemplateBasicsRequest): DocumentTemplate =
+    createQuery {
+        sql(
+            """
 INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
+VALUES (${bind(
+                template.name
+            )}, ${bind(
+                template.type
+            )}, ${bind(
+                template.language
+            )}, ${bind(
+                template.confidential
+            )}, ${bind(
+                template.legalBasis
+            )}, ${bind(
+                template.validity
+            )}, ${bind(
+                template.processDefinitionNumber
+            )}, ${bind(template.archiveDurationMonths)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
 RETURNING *
 """
-            )
-        }
-        .exactlyOne<DocumentTemplate>()
-}
+        )
+    }.exactlyOne<DocumentTemplate>()
 
 fun Database.Transaction.importTemplate(template: ExportedDocumentTemplate): DocumentTemplate =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content)
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.content)})
+VALUES (${bind(
+                template.name
+            )}, ${bind(
+                template.type
+            )}, ${bind(
+                template.language
+            )}, ${bind(
+                template.confidential
+            )}, ${bind(
+                template.legalBasis
+            )}, ${bind(
+                template.validity
+            )}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.content)})
 RETURNING *
 """
-            )
-        }
-        .exactlyOne<DocumentTemplate>()
+        )
+    }.exactlyOne<DocumentTemplate>()
 
 fun Database.Transaction.duplicateTemplate(
     id: DocumentTemplateId,
     template: DocumentTemplateBasicsRequest
-): DocumentTemplate {
-    return createQuery {
-            sql(
-                """
+): DocumentTemplate =
+    createQuery {
+        sql(
+            """
 INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
-SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, content FROM document_template WHERE id = ${bind(id)}
+SELECT ${bind(
+                template.name
+            )}, ${bind(
+                template.type
+            )}, ${bind(
+                template.language
+            )}, ${bind(
+                template.confidential
+            )}, ${bind(
+                template.legalBasis
+            )}, ${bind(
+                template.validity
+            )}, ${bind(
+                template.processDefinitionNumber
+            )}, ${bind(template.archiveDurationMonths)}, content FROM document_template WHERE id = ${bind(id)}
 RETURNING *
 """
-            )
-        }
-        .exactlyOne<DocumentTemplate>()
-}
+        )
+    }.exactlyOne<DocumentTemplate>()
 
-fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> =
+    createQuery {
+        sql(
+            """
                 SELECT id, name, type, language, validity, published
                 FROM document_template
                 """
-            )
-        }
-        .toList<DocumentTemplateSummary>()
-}
+        )
+    }.toList<DocumentTemplateSummary>()
 
-fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
-    return createQuery { sql("SELECT * FROM document_template WHERE id = ${bind(id)}") }
+fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? =
+    createQuery { sql("SELECT * FROM document_template WHERE id = ${bind(id)}") }
         .exactlyOneOrNull<DocumentTemplate>()
-}
 
-fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTemplate? {
-    return createQuery { sql("SELECT * FROM document_template WHERE id = ${bind(id)}") }
+fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTemplate? =
+    createQuery { sql("SELECT * FROM document_template WHERE id = ${bind(id)}") }
         .exactlyOneOrNull<ExportedDocumentTemplate>()
-}
 
 fun Database.Transaction.updateDraftTemplateBasics(
     id: DocumentTemplateId,
     basics: DocumentTemplateBasicsRequest
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE document_template
                 SET
                     name = ${bind(basics.name)}, 
@@ -90,9 +121,8 @@ fun Database.Transaction.updateDraftTemplateBasics(
                     archive_duration_months = ${bind(basics.archiveDurationMonths)}
                 WHERE id = ${bind(id)} AND published = false
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.updateDraftTemplateContent(
@@ -100,41 +130,41 @@ fun Database.Transaction.updateDraftTemplateContent(
     content: DocumentTemplateContent
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE document_template
                 SET content = ${bind(content)}
                 WHERE id = ${bind(id)} AND published = false
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
-fun Database.Transaction.updateTemplateValidity(id: DocumentTemplateId, validity: DateRange) {
+fun Database.Transaction.updateTemplateValidity(
+    id: DocumentTemplateId,
+    validity: DateRange
+) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE document_template
                 SET validity = ${bind(validity)}
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 fun Database.Transaction.publishTemplate(id: DocumentTemplateId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE document_template
                 SET published = true
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }
 
 // not for production use
@@ -162,12 +192,11 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
 
 fun Database.Transaction.deleteDraftTemplate(id: DocumentTemplateId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM document_template 
                 WHERE id = ${bind(id)} AND published = false
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }

@@ -42,8 +42,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-internal class AttendanceReservationReportByChildTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+internal class AttendanceReservationReportByChildTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var attendanceReservationReportController:
         AttendanceReservationReportController
@@ -153,8 +152,7 @@ internal class AttendanceReservationReportByChildTest :
                 { it.reservationId },
                 { it.reservationStartTime },
                 { it.reservationEndTime }
-            )
-            .containsExactly(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2), null, null, null))
+            ).containsExactly(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2), null, null, null))
     }
 
     @Test
@@ -277,34 +275,33 @@ internal class AttendanceReservationReportByChildTest :
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
             listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                    testChild_8
+                testChild_1,
+                testChild_2,
+                testChild_3,
+                testChild_4,
+                testChild_5,
+                testChild_6,
+                testChild_7,
+                testChild_8
+            ).forEach { testChild ->
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    )
                 )
-                .forEach { testChild ->
-                    tx.insert(
-                        DevPlacement(
-                            childId = testChild.id,
-                            unitId = testDaycare.id,
-                            startDate = date,
-                            endDate = date
-                        )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild.id,
+                        date = date,
+                        startTime = LocalTime.of(8, 15),
+                        endTime = LocalTime.of(8, 16),
+                        createdBy = admin.evakaUserId
                     )
-                    tx.insert(
-                        DevReservation(
-                            childId = testChild.id,
-                            date = date,
-                            startTime = LocalTime.of(8, 15),
-                            endTime = LocalTime.of(8, 16),
-                            createdBy = admin.evakaUserId
-                        )
-                    )
-                }
+                )
+            }
         }
 
         val result = getReport(date, date)
@@ -562,8 +559,7 @@ internal class AttendanceReservationReportByChildTest :
                 { it.date },
                 { it.reservationStartTime },
                 { it.absenceType }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(testChild_1.id, LocalDate.of(2022, 10, 24), LocalTime.of(8, 15), null),
                 Tuple(testChild_1.id, LocalDate.of(2022, 10, 25), LocalTime.of(8, 15), null),
                 Tuple(testChild_1.id, LocalDate.of(2022, 10, 26), LocalTime.of(8, 15), null),
@@ -633,8 +629,7 @@ internal class AttendanceReservationReportByChildTest :
                 { it.date },
                 { it.reservationStartTime },
                 { it.absenceType }
-            )
-            .containsExactlyInAnyOrder(
+            ).containsExactlyInAnyOrder(
                 Tuple(testChild_1.id, LocalDate.of(2022, 10, 24), LocalTime.of(8, 0), null),
                 Tuple(testChild_1.id, LocalDate.of(2022, 10, 25), LocalTime.of(9, 0), null),
                 Tuple(
@@ -650,8 +645,8 @@ internal class AttendanceReservationReportByChildTest :
         startDate: LocalDate,
         endDate: LocalDate,
         groupIds: List<GroupId>? = null
-    ): List<AttendanceReservationReportByChildRow> {
-        return attendanceReservationReportController.getAttendanceReservationReportByUnitAndChild(
+    ): List<AttendanceReservationReportByChildRow> =
+        attendanceReservationReportController.getAttendanceReservationReportByUnitAndChild(
             dbInstance(),
             RealEvakaClock(),
             admin,
@@ -660,5 +655,4 @@ internal class AttendanceReservationReportByChildTest :
             endDate,
             groupIds
         )
-    }
 }

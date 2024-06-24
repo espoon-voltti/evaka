@@ -12,27 +12,46 @@ import net.logstash.logback.argument.StructuredArguments
  * and an unnecessary dependency to net.logstash.logback.
  */
 
-fun KLogger.trace(meta: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.trace(
+    meta: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isTraceEnabled) trace(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.debug(meta: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.debug(
+    meta: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isDebugEnabled) debug(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.info(meta: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.info(
+    meta: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isInfoEnabled) info(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.warn(meta: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.warn(
+    meta: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isWarnEnabled) warn(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.error(meta: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.error(
+    meta: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isErrorEnabled) error(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.error(error: Any, meta: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.error(
+    error: Any,
+    meta: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isErrorEnabled) error(m.toStringSafe(), metaToLoggerArgs(meta), error)
 }
 

@@ -81,8 +81,11 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
+
     @Autowired private lateinit var emailEnv: EmailEnv
 
     private val user =
@@ -296,7 +299,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
     }
 
-    private fun assertEqualEnough(expected: FeeDecisionDetailed, actual: FeeDecisionDetailed) {
+    private fun assertEqualEnough(
+        expected: FeeDecisionDetailed,
+        actual: FeeDecisionDetailed
+    ) {
         val created = HelsinkiDateTime.now()
         assertEquals(
             expected.copy(
@@ -862,7 +868,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     """
                     UPDATE daycare
                     SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
-                    WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
+                    WHERE id = ${bind(
+                        draft.children
+                            .maxByOrNull { p -> p.child.dateOfBirth }!!
+                            .placement.unitId
+                    )}
                 """
                 )
             }
@@ -895,7 +905,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     """
                     UPDATE daycare
                     SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
-                    WHERE id = ${bind(draft.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
+                    WHERE id = ${bind(
+                        draft.children
+                            .maxByOrNull { p -> p.child.dateOfBirth }!!
+                            .placement.unitId
+                    )}
                     """
                 )
             }
@@ -934,7 +948,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     """
                     UPDATE daycare
                     SET finance_decision_handler = ${bind(testDecisionMaker_2.id)}
-                    WHERE id = ${bind(oldDecision.children.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unitId)}
+                    WHERE id = ${bind(
+                        oldDecision.children
+                            .maxByOrNull { p -> p.child.dateOfBirth }!!
+                            .placement.unitId
+                    )}
                 """
                 )
             }
@@ -1209,13 +1227,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val draftDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.DRAFT)
-                    )
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    statuses = listOf(FeeDecisionStatus.DRAFT)
                 )
-                .data
+            ).data
 
         assertEquals(1, draftDecisions.size)
         assertEquals(notToBeCreated.id, draftDecisions.first().id)
@@ -1240,13 +1257,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val draftDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.DRAFT)
-                    )
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    statuses = listOf(FeeDecisionStatus.DRAFT)
                 )
-                .data
+            ).data
 
         assertEquals(1, draftDecisions.size)
         assertEquals(notToBeCreated.id, draftDecisions.first().id)
@@ -1389,26 +1405,24 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val newSentDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.SENT)
-                    )
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    statuses = listOf(FeeDecisionStatus.SENT)
                 )
-                .data
+            ).data
 
         assertEquals(1, newSentDecisions.size)
         assertEquals(newDraft.id, newSentDecisions.first().id)
 
         val annulledDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.ANNULLED)
-                    )
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    statuses = listOf(FeeDecisionStatus.ANNULLED)
                 )
-                .data
+            ).data
 
         assertEquals(2, annulledDecisions.size)
         assertEquals(sentDecisions.map { it.id }.toSet(), annulledDecisions.map { it.id }.toSet())
@@ -1505,13 +1519,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val decisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.SENT)
-                    )
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    statuses = listOf(FeeDecisionStatus.SENT)
                 )
-                .data
+            ).data
 
         assertEquals(3, decisions.size)
         decisions
@@ -1805,7 +1818,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate("update person set force_manual_fee_decisions = true where id = :id")
+            tx
+                .createUpdate("update person set force_manual_fee_decisions = true where id = :id")
                 .bind("id", decision.headOfFamilyId)
                 .execute()
         }
@@ -2164,7 +2178,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 ssn = "291090-9986",
                 email = "optout@test.com",
                 forceManualFeeDecisions = false,
-                enabledEmailTypes = listOf(),
+                enabledEmailTypes = listOf()
             )
         db.transaction {
             it.insert(optOutAdult, DevPersonType.RAW_ROW)
@@ -2188,7 +2202,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(emptySet(), MockEmailClient.emails.map { it.toAddress }.toSet())
     }
 
-    private fun getPdf(id: FeeDecisionId, user: AuthenticatedUser.Employee) {
+    private fun getPdf(
+        id: FeeDecisionId,
+        user: AuthenticatedUser.Employee
+    ) {
         feeDecisionController.getFeeDecisionPdf(dbInstance(), user, RealEvakaClock(), id)
     }
 
@@ -2223,8 +2240,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         headOfFamily: DevPerson,
         partner: DevPerson?,
         familyChildren: List<DevPerson>
-    ): FeeDecision {
-        return createFeeDecisionFixture(
+    ): FeeDecision =
+        createFeeDecisionFixture(
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = headOfFamily.id,
@@ -2243,24 +2260,20 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 },
             partnerId = partner?.id
         )
-    }
 
-    private fun searchDecisions(body: SearchFeeDecisionRequest): PagedFeeDecisionSummaries {
-        return feeDecisionController.searchFeeDecisions(dbInstance(), user, RealEvakaClock(), body)
-    }
+    private fun searchDecisions(body: SearchFeeDecisionRequest): PagedFeeDecisionSummaries =
+        feeDecisionController.searchFeeDecisions(dbInstance(), user, RealEvakaClock(), body)
 
-    private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed {
-        return feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id)
-    }
+    private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed =
+        feeDecisionController.getFeeDecision(dbInstance(), user, RealEvakaClock(), id)
 
-    private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> {
-        return feeDecisionController.getHeadOfFamilyFeeDecisions(
+    private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> =
+        feeDecisionController.getHeadOfFamilyFeeDecisions(
             dbInstance(),
             user,
             RealEvakaClock(),
             id
         )
-    }
 
     private fun confirmDrafts(
         decisionIds: List<FeeDecisionId>,
@@ -2269,7 +2282,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         feeDecisionController.confirmFeeDecisionDrafts(dbInstance(), user, now, decisionIds, null)
     }
 
-    private fun setDecisionType(id: FeeDecisionId, body: FeeDecisionTypeRequest) {
+    private fun setDecisionType(
+        id: FeeDecisionId,
+        body: FeeDecisionTypeRequest
+    ) {
         feeDecisionController.setFeeDecisionType(dbInstance(), user, RealEvakaClock(), id, body)
     }
 

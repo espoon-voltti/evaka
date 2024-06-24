@@ -60,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired lateinit var paymentController: PaymentController
 
     private val janFirst = LocalDate.of(2020, 1, 1)
@@ -512,12 +513,16 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         return db.read { tx ->
             @Suppress("DEPRECATION")
-            tx.createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""")
+            tx
+                .createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""")
                 .toList<PaymentId>()
         }
     }
 
-    private fun confirmPaymentDrafts(today: LocalDate, ids: List<PaymentId>) {
+    private fun confirmPaymentDrafts(
+        today: LocalDate,
+        ids: List<PaymentId>
+    ) {
         paymentController.confirmDraftPayments(
             dbInstance(),
             financeUser,
@@ -526,7 +531,10 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun revertPaymentsToDrafts(today: LocalDate, ids: List<PaymentId>) {
+    private fun revertPaymentsToDrafts(
+        today: LocalDate,
+        ids: List<PaymentId>
+    ) {
         paymentController.revertPaymentsToDrafts(
             dbInstance(),
             financeUser,
@@ -535,7 +543,10 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun deletePaymentDrafts(today: LocalDate, paymentIds: List<PaymentId>) {
+    private fun deletePaymentDrafts(
+        today: LocalDate,
+        paymentIds: List<PaymentId>
+    ) {
         paymentController.deleteDraftPayments(
             dbInstance(),
             financeUser,

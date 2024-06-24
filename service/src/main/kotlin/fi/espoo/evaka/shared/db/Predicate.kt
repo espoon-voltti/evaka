@@ -14,7 +14,9 @@ import org.intellij.lang.annotations.Language
  * operator precedence or other issues when using them.
  */
 @JvmInline
-value class PredicateSqlString(@Language("sql", prefix = "SELECT WHERE ") private val sql: String) {
+value class PredicateSqlString(
+    @Language("sql", prefix = "SELECT WHERE ") private val sql: String
+) {
     override fun toString(): String = "($sql)"
 }
 
@@ -41,10 +43,10 @@ sealed interface Predicate {
     fun or(other: Predicate): Predicate = any(this, other)
 
     @JvmInline
-    private value class Single(val f: PredicateSql.Builder.(table: String) -> PredicateSql) :
-        Predicate {
-        override fun forTable(table: String): PredicateSql =
-            PredicateSql.Builder().run { (f)(table) }
+    private value class Single(
+        val f: PredicateSql.Builder.(table: String) -> PredicateSql
+    ) : Predicate {
+        override fun forTable(table: String): PredicateSql = PredicateSql.Builder().run { (f)(table) }
     }
 
     private data object AlwaysTrue : Predicate {
@@ -55,20 +57,21 @@ sealed interface Predicate {
         override fun forTable(table: String): PredicateSql = PredicateSql.alwaysFalse()
     }
 
-    private data class AnyOperator(val predicates: List<Predicate>) : Predicate {
-        override fun forTable(table: String): PredicateSql =
-            PredicateSql.any(predicates.map { it.forTable(table) })
+    private data class AnyOperator(
+        val predicates: List<Predicate>
+    ) : Predicate {
+        override fun forTable(table: String): PredicateSql = PredicateSql.any(predicates.map { it.forTable(table) })
     }
 
-    private data class AllOperator(val predicates: List<Predicate>) : Predicate {
-        override fun forTable(table: String): PredicateSql =
-            PredicateSql.all(predicates.map { it.forTable(table) })
+    private data class AllOperator(
+        val predicates: List<Predicate>
+    ) : Predicate {
+        override fun forTable(table: String): PredicateSql = PredicateSql.all(predicates.map { it.forTable(table) })
     }
 
     companion object {
         /** Returns a predicate using a builder function that accepts a table name as a parameter */
-        operator fun invoke(f: PredicateSql.Builder.(table: String) -> PredicateSql): Predicate =
-            Single(f)
+        operator fun invoke(f: PredicateSql.Builder.(table: String) -> PredicateSql): Predicate = Single(f)
 
         /**
          * Returns a predicate that is always true, regardless of how it's used or which table it is
@@ -177,7 +180,9 @@ sealed interface PredicateSql {
         override fun and(other: PredicateSql): PredicateSql = this
     }
 
-    private data class OrOperator(val predicates: List<PredicateSql>) : PredicateSql {
+    private data class OrOperator(
+        val predicates: List<PredicateSql>
+    ) : PredicateSql {
         override val sql
             get() = PredicateSqlString(predicates.joinToString(" OR ") { it.sql.toString() })
 
@@ -194,7 +199,9 @@ sealed interface PredicateSql {
             }
     }
 
-    private data class AndOperator(val predicates: List<PredicateSql>) : PredicateSql {
+    private data class AndOperator(
+        val predicates: List<PredicateSql>
+    ) : PredicateSql {
         override val sql
             get() = PredicateSqlString(predicates.joinToString(" AND ") { it.sql.toString() })
 
@@ -219,7 +226,9 @@ sealed interface PredicateSql {
             this.bindings += binding
         }
 
-        fun where(@Language("sql", prefix = "SELECT WHERE ") sql: String): PredicateSql {
+        fun where(
+            @Language("sql", prefix = "SELECT WHERE ") sql: String
+        ): PredicateSql {
             check(!used) { "builder has already been used" }
             this.used = true
             return when (sql) {
@@ -246,8 +255,7 @@ sealed interface PredicateSql {
          *
          * If no non-null predicates are given, the returned predicate returns *true*.
          */
-        fun allNotNull(vararg predicates: PredicateSql?): PredicateSql =
-            all(predicates.filterNotNull())
+        fun allNotNull(vararg predicates: PredicateSql?): PredicateSql = all(predicates.filterNotNull())
 
         /**
          * Returns a predicate that returns true if all the given predicates return true.
@@ -261,8 +269,7 @@ sealed interface PredicateSql {
          *
          * If no predicates are given, the returned predicate returns *true*.
          */
-        fun all(predicates: Collection<PredicateSql>): PredicateSql =
-            predicates.reduceOrNull(PredicateSql::and) ?: alwaysTrue()
+        fun all(predicates: Collection<PredicateSql>): PredicateSql = predicates.reduceOrNull(PredicateSql::and) ?: alwaysTrue()
 
         /**
          * Returns a predicate that returns true if any of the given predicates that are not null
@@ -270,8 +277,7 @@ sealed interface PredicateSql {
          *
          * If no non-null predicates are given, the returned predicate returns *false*.
          */
-        fun anyNotNull(vararg predicates: PredicateSql?): PredicateSql =
-            any(predicates.filterNotNull())
+        fun anyNotNull(vararg predicates: PredicateSql?): PredicateSql = any(predicates.filterNotNull())
 
         /**
          * Returns a predicate that returns true if any of the given predicates returns true.
@@ -285,7 +291,6 @@ sealed interface PredicateSql {
          *
          * If no predicates are given, the returned predicate returns *false*.
          */
-        fun any(predicates: Collection<PredicateSql>): PredicateSql =
-            predicates.reduceOrNull(PredicateSql::or) ?: alwaysFalse()
+        fun any(predicates: Collection<PredicateSql>): PredicateSql = predicates.reduceOrNull(PredicateSql::or) ?: alwaysFalse()
     }
 }

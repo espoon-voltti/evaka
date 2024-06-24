@@ -43,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired
 data class ManualDuplicationReportTestData(
     val areaId: AreaId,
     val daycareId: DaycareId,
-    val preschoolId: DaycareId,
+    val preschoolId: DaycareId
 )
 
 internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -57,8 +57,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
     private val testChild = DevPerson(dateOfBirth = testRootTime.toLocalDate().minusYears(5))
     private val testGuardian = DevPerson()
 
-    fun initTestData(): ManualDuplicationReportTestData {
-        return db.transaction { tx ->
+    fun initTestData(): ManualDuplicationReportTestData =
+        db.transaction { tx ->
             tx.insertServiceNeedOptions()
             tx.insert(admin)
             tx.insert(testChild, DevPersonType.RAW_ROW)
@@ -89,12 +89,11 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 preschoolId = preschoolId,
                 daycareId = daycareId,
                 sentDate = testRootTime.toLocalDate(),
-                transferDecisionType = DecisionType.PRESCHOOL_DAYCARE,
+                transferDecisionType = DecisionType.PRESCHOOL_DAYCARE
             )
 
             ManualDuplicationReportTestData(areaId, daycareId, preschoolId)
         }
-    }
 
     fun addAcceptedPreschoolApplicationWithDecisions(
         tx: Database.Transaction,
@@ -103,7 +102,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
         sentDate: LocalDate,
         transferDecisionType: DecisionType,
         preschoolId: DaycareId,
-        daycareId: DaycareId = preschoolId,
+        daycareId: DaycareId = preschoolId
     ) {
         val applicationId = ApplicationId(UUID.randomUUID())
 
@@ -119,7 +118,8 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
             sentDate = sentDate,
             dueDate = null,
             document =
-                DaycareFormV0.fromApplication2(validPreschoolApplication)
+                DaycareFormV0
+                    .fromApplication2(validPreschoolApplication)
                     .copy(child = Child(dateOfBirth = child.dateOfBirth))
         )
 
@@ -201,7 +201,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 guardian = testGuardian,
                 preschoolId = testData.preschoolId,
                 sentDate = laterDecisionDate,
-                transferDecisionType = DecisionType.PRESCHOOL_CLUB,
+                transferDecisionType = DecisionType.PRESCHOOL_CLUB
             )
         }
 
@@ -230,7 +230,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 guardian = testGuardian,
                 preschoolId = testData.preschoolId,
                 sentDate = laterDecisionDate,
-                transferDecisionType = DecisionType.PRESCHOOL_CLUB,
+                transferDecisionType = DecisionType.PRESCHOOL_CLUB
             )
             // ...however the case has already been duplicated
             tx.insert(DevPerson(duplicateOf = testChild.id), DevPersonType.RAW_ROW)
@@ -273,7 +273,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 preschoolId = testData.preschoolId,
                 daycareId = transferDaycareId,
                 sentDate = laterDecisionDate,
-                transferDecisionType = DecisionType.PRESCHOOL_DAYCARE,
+                transferDecisionType = DecisionType.PRESCHOOL_DAYCARE
             )
         }
 

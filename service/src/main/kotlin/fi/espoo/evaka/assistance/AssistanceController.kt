@@ -41,22 +41,22 @@ class AssistanceController(
 ) {
     data class AssistanceFactorResponse(
         val data: AssistanceFactor,
-        val permittedActions: Set<Action.AssistanceFactor>,
+        val permittedActions: Set<Action.AssistanceFactor>
     )
 
     data class DaycareAssistanceResponse(
         val data: DaycareAssistance,
-        val permittedActions: Set<Action.DaycareAssistance>,
+        val permittedActions: Set<Action.DaycareAssistance>
     )
 
     data class PreschoolAssistanceResponse(
         val data: PreschoolAssistance,
-        val permittedActions: Set<Action.PreschoolAssistance>,
+        val permittedActions: Set<Action.PreschoolAssistance>
     )
 
     data class OtherAssistanceMeasureResponse(
         val data: OtherAssistanceMeasure,
-        val permittedActions: Set<Action.OtherAssistanceMeasure>,
+        val permittedActions: Set<Action.OtherAssistanceMeasure>
     )
 
     data class AssistanceResponse(
@@ -64,7 +64,7 @@ class AssistanceController(
         val daycareAssistances: List<DaycareAssistanceResponse>,
         val preschoolAssistances: List<PreschoolAssistanceResponse>,
         val otherAssistanceMeasures: List<OtherAssistanceMeasureResponse>,
-        val assistanceActions: List<AssistanceActionResponse>,
+        val assistanceActions: List<AssistanceActionResponse>
     )
 
     @GetMapping(
@@ -138,8 +138,7 @@ class AssistanceController(
                     )
 
                 val preschoolAssistances =
-                    tx.getPreschoolAssistanceByChildId(child, preschoolAssistanceFilter).let { rows
-                        ->
+                    tx.getPreschoolAssistanceByChildId(child, preschoolAssistanceFilter).let { rows ->
                         val actions: Map<PreschoolAssistanceId, Set<Action.PreschoolAssistance>> =
                             accessControl.getPermittedActions(tx, user, clock, rows.map { it.id })
                         rows.map { PreschoolAssistanceResponse(it, actions[it.id] ?: emptySet()) }
@@ -154,7 +153,8 @@ class AssistanceController(
                     )
 
                 val otherAssistanceMeasures =
-                    tx.getOtherAssistanceMeasuresByChildId(child, otherAssistanceMeasureFilter)
+                    tx
+                        .getOtherAssistanceMeasuresByChildId(child, otherAssistanceMeasureFilter)
                         .let { rows ->
                             val actions:
                                 Map<OtherAssistanceMeasureId, Set<Action.OtherAssistanceMeasure>> =
@@ -173,7 +173,7 @@ class AssistanceController(
                     daycareAssistances = daycareAssistances,
                     preschoolAssistances = preschoolAssistances,
                     assistanceActions = assistanceActions,
-                    otherAssistanceMeasures = otherAssistanceMeasures,
+                    otherAssistanceMeasures = otherAssistanceMeasures
                 )
             }
         }
@@ -188,8 +188,9 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceActionRequest
-    ): AssistanceAction {
-        return db.connect { dbc ->
+    ): AssistanceAction =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -205,18 +206,16 @@ class AssistanceController(
                     childId = childId,
                     data = body
                 )
-            }
-            .also { assistanceAction ->
+            }.also { assistanceAction ->
                 Audit.ChildAssistanceActionCreate.log(
                     targetId = AuditId(childId),
                     objectId = AuditId(assistanceAction.id)
                 )
             }
-    }
 
     @PutMapping(
         "/assistance-actions/{id}", // deprecated
-        "/employee/assistance-actions/{id}",
+        "/employee/assistance-actions/{id}"
     )
     fun updateAssistanceAction(
         db: Database,
@@ -224,8 +223,9 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: AssistanceActionId,
         @RequestBody body: AssistanceActionRequest
-    ): AssistanceAction {
-        return db.connect { dbc ->
+    ): AssistanceAction =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -241,13 +241,11 @@ class AssistanceController(
                     id = id,
                     data = body
                 )
-            }
-            .also { Audit.ChildAssistanceActionUpdate.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ChildAssistanceActionUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/assistance-actions/{id}", // deprecated
-        "/employee/assistance-actions/{id}",
+        "/employee/assistance-actions/{id}"
     )
     fun deleteAssistanceAction(
         db: Database,
@@ -278,8 +276,9 @@ class AssistanceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<AssistanceActionOption> {
-        return db.connect { dbc ->
+    ): List<AssistanceActionOption> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -289,9 +288,7 @@ class AssistanceController(
                     )
                 }
                 assistanceActionService.getAssistanceActionOptions(dbc)
-            }
-            .also { Audit.AssistanceActionOptionsRead.log() }
-    }
+            }.also { Audit.AssistanceActionOptionsRead.log() }
 
     @PostMapping(
         "/children/{child}/assistance-factors", // deprecated
@@ -304,7 +301,8 @@ class AssistanceController(
         @PathVariable child: ChildId,
         @RequestBody body: AssistanceFactorUpdate
     ): AssistanceFactorId =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -326,14 +324,13 @@ class AssistanceController(
                         )
                     }
                 }
-            }
-            .also { id ->
+            }.also { id ->
                 Audit.AssistanceFactorCreate.log(targetId = AuditId(child), objectId = AuditId(id))
             }
 
     @PostMapping(
         "/assistance-factors/{id}", // deprecated
-        "/employee/assistance-factors/{id}",
+        "/employee/assistance-factors/{id}"
     )
     fun updateAssistanceFactor(
         db: Database,
@@ -341,81 +338,78 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: AssistanceFactorId,
         @RequestBody body: AssistanceFactorUpdate
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.AssistanceFactor.UPDATE,
-                        id
-                    )
-                    val original = tx.getAssistanceFactor(id)
-                    tx.updateAssistanceFactor(user, clock.now(), id, body)
-                    if (original != null) {
-                        val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
-                        affectedRanges.spanningRange()?.let {
-                            asyncJobRunner.plan(
-                                tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        original.childId,
-                                        it.asDateRange(),
-                                    )
-                                ),
-                                runAt = clock.now()
-                            )
-                        }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceFactor.UPDATE,
+                    id
+                )
+                val original = tx.getAssistanceFactor(id)
+                tx.updateAssistanceFactor(user, clock.now(), id, body)
+                if (original != null) {
+                    val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
+                    affectedRanges.spanningRange()?.let {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    original.childId,
+                                    it.asDateRange()
+                                )
+                            ),
+                            runAt = clock.now()
+                        )
                     }
                 }
             }
-            .also { Audit.AssistanceFactorUpdate.log(targetId = AuditId(id)) }
+        }.also { Audit.AssistanceFactorUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/assistance-factors/{id}", // deprecated
-        "/employee/assistance-factors/{id}",
+        "/employee/assistance-factors/{id}"
     )
     fun deleteAssistanceFactor(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceFactorId,
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl
-                        .checkPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.AssistanceFactor.DELETE,
-                            id,
-                        )
-                        .let {
-                            if (it.isPermitted()) {
-                                tx.deleteAssistanceFactor(id)?.also { deleted ->
-                                    asyncJobRunner.plan(
-                                        tx,
-                                        listOf(
-                                            AsyncJob.GenerateFinanceDecisions.forChild(
-                                                deleted.childId,
-                                                deleted.validDuring.asDateRange()
-                                            )
-                                        ),
-                                        runAt = clock.now()
-                                    )
-                                }
-                                id
-                            } else {
-                                null
+        @PathVariable id: AssistanceFactorId
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl
+                    .checkPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceFactor.DELETE,
+                        id
+                    ).let {
+                        if (it.isPermitted()) {
+                            tx.deleteAssistanceFactor(id)?.also { deleted ->
+                                asyncJobRunner.plan(
+                                    tx,
+                                    listOf(
+                                        AsyncJob.GenerateFinanceDecisions.forChild(
+                                            deleted.childId,
+                                            deleted.validDuring.asDateRange()
+                                        )
+                                    ),
+                                    runAt = clock.now()
+                                )
                             }
+                            id
+                        } else {
+                            null
                         }
-                }
+                    }
             }
-            .also { deletedId ->
-                deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
-            }
+        }.also { deletedId ->
+            deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
+        }
 
     @PostMapping(
         "/children/{child}/daycare-assistances", // deprecated
@@ -428,7 +422,8 @@ class AssistanceController(
         @PathVariable child: ChildId,
         @RequestBody body: DaycareAssistanceUpdate
     ): DaycareAssistanceId =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -439,8 +434,7 @@ class AssistanceController(
                     )
                     tx.insertDaycareAssistance(user, clock.now(), child, body)
                 }
-            }
-            .also { id ->
+            }.also { id ->
                 Audit.DaycareAssistanceCreate.log(targetId = AuditId(child), objectId = AuditId(id))
             }
 
@@ -454,20 +448,19 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: DaycareAssistanceId,
         @RequestBody body: DaycareAssistanceUpdate
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.DaycareAssistance.UPDATE,
-                        id
-                    )
-                    tx.updateDaycareAssistance(user, clock.now(), id, body)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.DaycareAssistance.UPDATE,
+                    id
+                )
+                tx.updateDaycareAssistance(user, clock.now(), id, body)
             }
-            .also { Audit.DaycareAssistanceUpdate.log(targetId = AuditId(id)) }
+        }.also { Audit.DaycareAssistanceUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/daycare-assistances/{id}", // deprecated
@@ -477,31 +470,29 @@ class AssistanceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: DaycareAssistanceId,
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl
-                        .checkPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.DaycareAssistance.DELETE,
-                            id,
-                        )
-                        .let {
-                            if (it.isPermitted()) {
-                                tx.deleteDaycareAssistance(id)
-                                id
-                            } else {
-                                null
-                            }
+        @PathVariable id: DaycareAssistanceId
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl
+                    .checkPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.DaycareAssistance.DELETE,
+                        id
+                    ).let {
+                        if (it.isPermitted()) {
+                            tx.deleteDaycareAssistance(id)
+                            id
+                        } else {
+                            null
                         }
-                }
+                    }
             }
-            .also { deletedId ->
-                deletedId?.let { Audit.DaycareAssistanceDelete.log(targetId = AuditId(it)) }
-            }
+        }.also { deletedId ->
+            deletedId?.let { Audit.DaycareAssistanceDelete.log(targetId = AuditId(it)) }
+        }
 
     @PostMapping(
         "/children/{child}/preschool-assistances", // deprecated
@@ -514,7 +505,8 @@ class AssistanceController(
         @PathVariable child: ChildId,
         @RequestBody body: PreschoolAssistanceUpdate
     ): PreschoolAssistanceId =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -525,8 +517,7 @@ class AssistanceController(
                     )
                     tx.insertPreschoolAssistance(user, clock.now(), child, body)
                 }
-            }
-            .also { id ->
+            }.also { id ->
                 Audit.PreschoolAssistanceCreate.log(
                     targetId = AuditId(child),
                     objectId = AuditId(id)
@@ -543,20 +534,19 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: PreschoolAssistanceId,
         @RequestBody body: PreschoolAssistanceUpdate
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.PreschoolAssistance.UPDATE,
-                        id
-                    )
-                    tx.updatePreschoolAssistance(user, clock.now(), id, body)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.PreschoolAssistance.UPDATE,
+                    id
+                )
+                tx.updatePreschoolAssistance(user, clock.now(), id, body)
             }
-            .also { Audit.PreschoolAssistanceUpdate.log(targetId = AuditId(id)) }
+        }.also { Audit.PreschoolAssistanceUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/preschool-assistances/{id}", // deprecated
@@ -566,31 +556,29 @@ class AssistanceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: PreschoolAssistanceId,
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl
-                        .checkPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.PreschoolAssistance.DELETE,
-                            id,
-                        )
-                        .let {
-                            if (it.isPermitted()) {
-                                tx.deletePreschoolAssistance(id)
-                                id
-                            } else {
-                                null
-                            }
+        @PathVariable id: PreschoolAssistanceId
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl
+                    .checkPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.PreschoolAssistance.DELETE,
+                        id
+                    ).let {
+                        if (it.isPermitted()) {
+                            tx.deletePreschoolAssistance(id)
+                            id
+                        } else {
+                            null
                         }
-                }
+                    }
             }
-            .also { deletedId ->
-                deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = AuditId(it)) }
-            }
+        }.also { deletedId ->
+            deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = AuditId(it)) }
+        }
 
     @PostMapping(
         "/children/{child}/other-assistance-measures", // deprecated
@@ -603,7 +591,8 @@ class AssistanceController(
         @PathVariable child: ChildId,
         @RequestBody body: OtherAssistanceMeasureUpdate
     ): OtherAssistanceMeasureId =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -614,8 +603,7 @@ class AssistanceController(
                     )
                     tx.insertOtherAssistanceMeasure(user, clock.now(), child, body)
                 }
-            }
-            .also { id ->
+            }.also { id ->
                 Audit.OtherAssistanceMeasureCreate.log(
                     targetId = AuditId(child),
                     objectId = AuditId(id)
@@ -632,20 +620,19 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: OtherAssistanceMeasureId,
         @RequestBody body: OtherAssistanceMeasureUpdate
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.OtherAssistanceMeasure.UPDATE,
-                        id
-                    )
-                    tx.updateOtherAssistanceMeasure(user, clock.now(), id, body)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.OtherAssistanceMeasure.UPDATE,
+                    id
+                )
+                tx.updateOtherAssistanceMeasure(user, clock.now(), id, body)
             }
-            .also { Audit.OtherAssistanceMeasureUpdate.log(targetId = AuditId(id)) }
+        }.also { Audit.OtherAssistanceMeasureUpdate.log(targetId = AuditId(id)) }
 
     @DeleteMapping(
         "/other-assistance-measures/{id}", // deprecated
@@ -655,29 +642,27 @@ class AssistanceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: OtherAssistanceMeasureId,
-    ) =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl
-                        .checkPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.OtherAssistanceMeasure.DELETE,
-                            id,
-                        )
-                        .let {
-                            if (it.isPermitted()) {
-                                tx.deleteOtherAssistanceMeasure(id)
-                                id
-                            } else {
-                                null
-                            }
+        @PathVariable id: OtherAssistanceMeasureId
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl
+                    .checkPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.OtherAssistanceMeasure.DELETE,
+                        id
+                    ).let {
+                        if (it.isPermitted()) {
+                            tx.deleteOtherAssistanceMeasure(id)
+                            id
+                        } else {
+                            null
                         }
-                }
+                    }
             }
-            .also { deletedId ->
-                deletedId?.let { Audit.OtherAssistanceMeasureDelete.log(targetId = AuditId(it)) }
-            }
+        }.also { deletedId ->
+            deletedId?.let { Audit.OtherAssistanceMeasureDelete.log(targetId = AuditId(it)) }
+        }
 }

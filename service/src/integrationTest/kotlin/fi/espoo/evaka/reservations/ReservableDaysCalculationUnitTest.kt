@@ -17,7 +17,10 @@ class ReservableDaysCalculationUnitTest {
     private val end2021 = LocalDate.of(2021, 8, 31)
     private val end2022 = LocalDate.of(2022, 8, 31)
 
-    private fun assertReservableDays(expected: FiniteDateRange, date: LocalDateTime) {
+    private fun assertReservableDays(
+        expected: FiniteDateRange,
+        date: LocalDateTime
+    ) {
         assertEquals(expected, getReservableRange(HelsinkiDateTime.of(date), thresholdMondayAt1800))
     }
 

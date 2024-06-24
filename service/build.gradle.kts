@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import java.util.regex.Pattern
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.util.regex.Pattern
 
 buildscript {
     repositories {
@@ -205,14 +205,12 @@ allprojects {
             configurations
                 .matching {
                     it.isCanBeResolved &&
-                    // ignore configurations that fetch sources (e.g. Java source code)
-                    !it.name.endsWith("dependencySources", ignoreCase = true)
-                }
-                .map {
+                        // ignore configurations that fetch sources (e.g. Java source code)
+                        !it.name.endsWith("dependencySources", ignoreCase = true)
+                }.map {
                     val files = it.resolve()
                     it.name to files.size
-                }
-                .groupBy({ (_, count) -> count }) { (name, _) -> name }
+                }.groupBy({ (_, count) -> count }) { (name, _) -> name }
                 .forEach { (count, names) ->
                     @Suppress("ktlint:evaka:no-println")
                     println(
@@ -288,5 +286,9 @@ tasks {
 }
 
 ktlint {
-    version.set(libs.versions.ktlint.asProvider().get())
+    version.set(
+        libs.versions.ktlint
+            .asProvider()
+            .get()
+    )
 }

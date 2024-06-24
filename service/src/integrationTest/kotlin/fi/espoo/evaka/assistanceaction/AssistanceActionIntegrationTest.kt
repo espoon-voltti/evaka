@@ -88,7 +88,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = testDate(10),
                     endDate = testDate(20),
                     actions = allActionTypes,
-                    otherAction = "foo",
+                    otherAction = "foo"
                 )
             )
 
@@ -185,7 +185,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         createAssistanceAction(
             admin.user,
             child,
-            AssistanceActionRequest(startDate = testDate(11), endDate = testDate(15)),
+            AssistanceActionRequest(startDate = testDate(11), endDate = testDate(15))
         )
 
         val assistanceActions = db.read { it.getAssistanceActionsByChild(child) }
@@ -443,8 +443,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         startDate: LocalDate,
         endDate: LocalDate,
         childId: ChildId = child
-    ): AssistanceActionId {
-        return db.transaction {
+    ): AssistanceActionId =
+        db.transaction {
             it.insert(
                 DevAssistanceAction(
                     childId = childId,
@@ -454,15 +454,14 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             )
         }
-    }
 
     private fun givenPlacement(
         startDate: LocalDate,
         endDate: LocalDate,
         type: PlacementType,
         childId: ChildId = child
-    ): PlacementId {
-        return db.transaction {
+    ): PlacementId =
+        db.transaction {
             it.insert(
                 DevPlacement(
                     childId = childId,
@@ -473,19 +472,19 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             )
         }
-    }
 
     private fun createAssistanceAction(
         user: AuthenticatedUser.Employee,
         child: ChildId,
         request: AssistanceActionRequest
-    ): AssistanceAction =
-        controller.createAssistanceAction(dbInstance(), user, clock, child, request)
+    ): AssistanceAction = controller.createAssistanceAction(dbInstance(), user, clock, child, request)
 
-    private fun getAssistanceActions(user: AuthenticatedUser.Employee, child: ChildId) =
-        controller.getChildAssistance(dbInstance(), user, clock, child).assistanceActions.map {
-            it.action
-        }
+    private fun getAssistanceActions(
+        user: AuthenticatedUser.Employee,
+        child: ChildId
+    ) = controller.getChildAssistance(dbInstance(), user, clock, child).assistanceActions.map {
+        it.action
+    }
 
     private fun updateAssistanceAction(
         user: AuthenticatedUser.Employee,
@@ -493,6 +492,8 @@ class AssistanceActionIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         request: AssistanceActionRequest
     ): AssistanceAction = controller.updateAssistanceAction(dbInstance(), user, clock, id, request)
 
-    private fun deleteAssistanceAction(user: AuthenticatedUser.Employee, id: AssistanceActionId) =
-        controller.deleteAssistanceAction(dbInstance(), user, clock, id)
+    private fun deleteAssistanceAction(
+        user: AuthenticatedUser.Employee,
+        id: AssistanceActionId
+    ) = controller.deleteAssistanceAction(dbInstance(), user, clock, id)
 }

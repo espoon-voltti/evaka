@@ -246,17 +246,16 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(listOf(placementId3), details.recentlyTerminatedPlacements.map { it.id })
         assertEquals(
             listOf(
-                    UnitChildrenCapacityFactors(testChild_1.id, 1.0, 1.0),
-                    UnitChildrenCapacityFactors(testChild_2.id, 1.0, 1.0),
-                    UnitChildrenCapacityFactors(testChild_3.id, 1.0, 1.75),
-                )
-                .sortedBy { it.childId },
+                UnitChildrenCapacityFactors(testChild_1.id, 1.0, 1.0),
+                UnitChildrenCapacityFactors(testChild_2.id, 1.0, 1.0),
+                UnitChildrenCapacityFactors(testChild_3.id, 1.0, 1.75)
+            ).sortedBy { it.childId },
             details.unitChildrenCapacityFactors.sortedBy { it.childId }
         )
         assertEquals(
             mapOf(
                 group1.id to Caretakers(3.0, 3.0),
-                group2.id to Caretakers(1.0, 1.0),
+                group2.id to Caretakers(1.0, 1.0)
             ),
             details.caretakers
         )
@@ -429,28 +428,26 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
-        return daycareController.getDaycare(dbInstance(), staffMember, RealEvakaClock(), daycareId)
-    }
+    private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse =
+        daycareController.getDaycare(dbInstance(), staffMember, RealEvakaClock(), daycareId)
 
     private fun createDaycareGroup(
         daycareId: DaycareId,
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double
-    ): DaycareGroup {
-        return daycareController.createGroup(
+    ): DaycareGroup =
+        daycareController.createGroup(
             dbInstance(),
             supervisor,
             RealEvakaClock(),
             daycareId,
             DaycareController.CreateGroupRequest(name, startDate, initialCaretakers)
         )
-    }
 
     private fun deleteDaycareGroup(
         daycareId: DaycareId,
-        groupId: GroupId,
+        groupId: GroupId
     ) {
         daycareController.deleteGroup(
             dbInstance(),
@@ -461,19 +458,19 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun getGroupDetails(daycareId: DaycareId): UnitGroupDetails {
-        return daycareController.getUnitGroupDetails(
+    private fun getGroupDetails(daycareId: DaycareId): UnitGroupDetails =
+        daycareController.getUnitGroupDetails(
             dbInstance(),
             supervisor,
             MockEvakaClock(now),
             daycareId,
             from = today,
-            to = today,
+            to = today
         )
-    }
 
     private fun groupHasMessageAccount(groupId: GroupId): Boolean =
-        db.read {
+        db
+            .read {
                 it.createQuery {
                     sql(
                         """
@@ -483,6 +480,5 @@ SELECT EXISTS(
 """
                     )
                 }
-            }
-            .exactlyOne()
+            }.exactlyOne()
 }

@@ -27,11 +27,16 @@ val unitTypesToUpload =
 interface VardaUnitClient {
     fun findToimipaikkaByOid(oid: String): VardaEntity
 
-    data class ToimipaikkaResponse(val organisaatio_oid: String)
+    data class ToimipaikkaResponse(
+        val organisaatio_oid: String
+    )
 
     fun createToimipaikka(unit: VardaUnitRequest): ToimipaikkaResponse
 
-    fun updateToimipaikka(url: URI, unit: VardaUnitRequest): ToimipaikkaResponse
+    fun updateToimipaikka(
+        url: URI,
+        unit: VardaUnitRequest
+    ): ToimipaikkaResponse
 }
 
 fun updateUnits(
@@ -119,8 +124,8 @@ inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, 
 
 fun Database.Read.getVardaUnits(): List<VardaUnit> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT
                     daycare.id AS evaka_daycare_id,
                     daycare.oph_unit_oid,
@@ -143,9 +148,8 @@ fun Database.Read.getVardaUnits(): List<VardaUnit> =
                 FROM daycare
                 WHERE daycare.upload_to_varda IS TRUE AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
                 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun setUnitUploaded(
     tx: Database.Transaction,
@@ -154,7 +158,8 @@ fun setUnitUploaded(
     ophUnitOid: String?,
     state: Any
 ) {
-    tx.createUpdate {
+    tx
+        .createUpdate {
             sql(
                 """
                 INSERT INTO varda_unit (evaka_daycare_id, state, last_success_at, errored_at, error)
@@ -163,15 +168,14 @@ fun setUnitUploaded(
                 DO UPDATE SET state = ${bindJson(state)}, last_success_at = ${bind(now)}, errored_at = NULL, error = NULL
                 """
             )
-        }
-        .execute()
+        }.execute()
 
-    tx.createUpdate {
+    tx
+        .createUpdate {
             sql(
                 "UPDATE daycare SET oph_unit_oid = ${bind(ophUnitOid)} WHERE daycare.id = ${bind(unitId)}"
             )
-        }
-        .execute()
+        }.execute()
 }
 
 fun setUnitUploadFailed(
@@ -180,7 +184,8 @@ fun setUnitUploadFailed(
     unitId: DaycareId,
     error: String
 ) {
-    tx.createUpdate {
+    tx
+        .createUpdate {
             sql(
                 """
                 INSERT INTO varda_unit (evaka_daycare_id, last_success_at, errored_at, error)
@@ -189,12 +194,13 @@ fun setUnitUploadFailed(
                 DO UPDATE SET errored_at = ${bind(now)}, error = ${bind(error)}
                 """
             )
-        }
-        .execute()
+        }.execute()
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardajarjestamismuoto/koodi
-enum class VardaUnitProviderType(val vardaCode: String) : DatabaseEnum {
+enum class VardaUnitProviderType(
+    val vardaCode: String
+) : DatabaseEnum {
     MUNICIPAL("jm01"),
     MUNICIPAL_SCHOOL("jm01"),
     PURCHASED("jm02"),
@@ -218,7 +224,9 @@ enum class VardaUnitProviderType(val vardaCode: String) : DatabaseEnum {
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardatoimintamuoto/koodi
-enum class VardaUnitType(val vardaCode: String) {
+enum class VardaUnitType(
+    val vardaCode: String
+) {
     CENTRE("tm01"),
     PRESCHOOL("tm01"),
     PREPARATORY_EDUCATION(""),
@@ -228,14 +236,18 @@ enum class VardaUnitType(val vardaCode: String) {
 }
 
 //  https://virkailija.opintopolku.fi/koodisto-service/rest/json/kieli/koodi
-enum class VardaLanguage(val vardaCode: String) {
+enum class VardaLanguage(
+    val vardaCode: String
+) {
     FI("FI"),
     SV("SV"),
     EN("EN")
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardakasvatusopillinenjarjestelma/koodi
-enum class VardaUnitEducationSystem(val vardaCode: String) {
+enum class VardaUnitEducationSystem(
+    val vardaCode: String
+) {
     STEINER("kj01"),
     MONTESSORI("kj02"),
     FREINET("kj03"),
@@ -268,39 +280,38 @@ data class VardaUnit(
     fun toVardaUnitRequest(
         lahdejarjestelma: String,
         vakajarjestaja: String,
-        kuntakoodi: String,
-    ) =
-        VardaUnitRequest(
-            vakajarjestaja = vakajarjestaja,
-            nimi = name,
-            kayntiosoite = streetAddress,
-            kayntiosoite_postinumero = postalCode,
-            kayntiosoite_postitoimipaikka = postOffice,
-            postiosoite = mailingPoBox,
-            postinumero = mailingPostalCode,
-            postitoimipaikka = mailingPostOffice,
-            puhelinnumero = unitManagerPhone,
-            sahkopostiosoite = unitManagerEmail,
-            varhaiskasvatuspaikat = capacity,
-            alkamis_pvm = openingDate,
-            paattymis_pvm = closingDate,
-            kunta_koodi = kuntakoodi,
-            lahdejarjestelma = lahdejarjestelma,
-            toiminnallinenpainotus_kytkin = false,
-            kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
-            jarjestamismuoto_koodi = listOfNotNull(providerType.vardaCode),
-            toimintamuoto_koodi =
-                when {
-                    type.contains(VardaUnitType.CENTRE) -> VardaUnitType.CENTRE.vardaCode
-                    type.contains(VardaUnitType.FAMILY) -> VardaUnitType.FAMILY.vardaCode
-                    type.contains(VardaUnitType.GROUP_FAMILY) ->
-                        VardaUnitType.GROUP_FAMILY.vardaCode
-                    type.contains(VardaUnitType.PRESCHOOL) -> VardaUnitType.PRESCHOOL.vardaCode
-                    else -> null
-                },
-            toimintakieli_koodi = listOfNotNull(language.vardaCode),
-            kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false
-        )
+        kuntakoodi: String
+    ) = VardaUnitRequest(
+        vakajarjestaja = vakajarjestaja,
+        nimi = name,
+        kayntiosoite = streetAddress,
+        kayntiosoite_postinumero = postalCode,
+        kayntiosoite_postitoimipaikka = postOffice,
+        postiosoite = mailingPoBox,
+        postinumero = mailingPostalCode,
+        postitoimipaikka = mailingPostOffice,
+        puhelinnumero = unitManagerPhone,
+        sahkopostiosoite = unitManagerEmail,
+        varhaiskasvatuspaikat = capacity,
+        alkamis_pvm = openingDate,
+        paattymis_pvm = closingDate,
+        kunta_koodi = kuntakoodi,
+        lahdejarjestelma = lahdejarjestelma,
+        toiminnallinenpainotus_kytkin = false,
+        kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
+        jarjestamismuoto_koodi = listOfNotNull(providerType.vardaCode),
+        toimintamuoto_koodi =
+            when {
+                type.contains(VardaUnitType.CENTRE) -> VardaUnitType.CENTRE.vardaCode
+                type.contains(VardaUnitType.FAMILY) -> VardaUnitType.FAMILY.vardaCode
+                type.contains(VardaUnitType.GROUP_FAMILY) ->
+                    VardaUnitType.GROUP_FAMILY.vardaCode
+                type.contains(VardaUnitType.PRESCHOOL) -> VardaUnitType.PRESCHOOL.vardaCode
+                else -> null
+            },
+        toimintakieli_koodi = listOfNotNull(language.vardaCode),
+        kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false
+    )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -14,22 +14,19 @@ import java.time.LocalDate
 
 private fun Database.Read.getChildStickyNotes(predicate: Predicate = Predicate.alwaysTrue()) =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, child_id, note, modified_at, expires
 FROM child_sticky_note csn
 WHERE ${predicate(predicate.forTable("csn"))}
 """
-            )
-        }
-        .mapTo<ChildStickyNote>()
+        )
+    }.mapTo<ChildStickyNote>()
 
 fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> =
     getChildStickyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).toList()
 
-fun Database.Read.getChildStickyNotesForChildren(
-    children: Collection<ChildId>
-): List<ChildStickyNote> =
+fun Database.Read.getChildStickyNotesForChildren(children: Collection<ChildId>): List<ChildStickyNote> =
     getChildStickyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
 fun Database.Read.getChildStickyNotesForGroup(
@@ -37,36 +34,33 @@ fun Database.Read.getChildStickyNotesForGroup(
     today: LocalDate
 ): List<ChildStickyNote> =
     getChildStickyNotes(
-            Predicate {
-                where(
-                    """
+        Predicate {
+            where(
+                """
 $it.child_id IN (
     SELECT child_id
     FROM realized_placement_all(${bind(today)})
     WHERE group_id = ${bind(groupId)}
 )
 """
-                )
-            }
-        )
-        .toList()
+            )
+        }
+    ).toList()
 
 fun Database.Transaction.createChildStickyNote(
     childId: ChildId,
     note: ChildStickyNoteBody
-): ChildStickyNoteId {
-    return createUpdate {
-            sql(
-                """
+): ChildStickyNoteId =
+    createUpdate {
+        sql(
+            """
 INSERT INTO child_sticky_note (child_id, note, expires)
 VALUES (${bind(childId)}, ${bind(note.note)}, ${bind(note.expires)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<ChildStickyNoteId>()
-}
 
 fun Database.Transaction.updateChildStickyNote(
     clock: EvakaClock,
@@ -75,8 +69,8 @@ fun Database.Transaction.updateChildStickyNote(
 ): ChildStickyNote {
     val now = clock.now()
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE child_sticky_note SET
     note = ${bind(note.note)},
     expires = ${bind(note.expires)},
@@ -84,9 +78,8 @@ UPDATE child_sticky_note SET
 WHERE id = ${bind(id)}
 RETURNING *
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<ChildStickyNote>()
 }
 

@@ -155,9 +155,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(1, report.count { it.isOpened == null })
     }
 
-    private fun whenPostAssistanceNeedDecisionAndSendThenExpectSuccess(
-        request: AssistanceNeedDecisionRequest
-    ): AssistanceNeedDecision {
+    private fun whenPostAssistanceNeedDecisionAndSendThenExpectSuccess(request: AssistanceNeedDecisionRequest): AssistanceNeedDecision {
         val (_, res, result) =
             http
                 .post("/children/${testChild_1.id}/assistance-needs/decision")
@@ -191,9 +189,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         return result.get()
     }
 
-    private fun whenGetAssistanceNeedDecisionsReportUnreadCountThenExpectSuccess(
-        decisionMaker: AuthenticatedUser
-    ): Int {
+    private fun whenGetAssistanceNeedDecisionsReportUnreadCountThenExpectSuccess(decisionMaker: AuthenticatedUser): Int {
         val (_, res, result) =
             http
                 .get("/reports/assistance-need-decisions/unread-count")
@@ -221,18 +217,17 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
         mapOf(decisionMaker1.id to 3, decisionMaker2.id to 1).mapValues { entry ->
             List(entry.value) {
                 whenPostAssistanceNeedDecisionAndSendThenExpectSuccess(
-                        AssistanceNeedDecisionRequest(
-                            decision =
-                                testDecision.copy(
-                                    decisionMaker =
-                                        AssistanceNeedDecisionMakerForm(
-                                            employeeId = entry.key,
-                                            title = "regional director"
-                                        )
-                                )
-                        )
+                    AssistanceNeedDecisionRequest(
+                        decision =
+                            testDecision.copy(
+                                decisionMaker =
+                                    AssistanceNeedDecisionMakerForm(
+                                        employeeId = entry.key,
+                                        title = "regional director"
+                                    )
+                            )
                     )
-                    .id
+                ).id
             }
         }
 }

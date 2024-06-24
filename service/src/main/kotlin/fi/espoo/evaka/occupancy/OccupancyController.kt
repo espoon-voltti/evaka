@@ -39,7 +39,6 @@ class OccupancyController(
     private val accessControl: AccessControl,
     private val placementPlanService: PlacementPlanService
 ) {
-
     @GetMapping(
         "/occupancy/by-unit/{unitId}", // deprecated
         "/employee-mobile/occupancy/by-unit/{unitId}"
@@ -109,7 +108,8 @@ class OccupancyController(
                 null
             }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -139,8 +139,7 @@ class OccupancyController(
                                 application,
                                 period,
                                 preschoolDaycarePeriod
-                            )
-                            .map {
+                            ).map {
                                 Placement(
                                     groupingId = it.unitId,
                                     placementId = it.id,
@@ -171,8 +170,7 @@ class OccupancyController(
                         max6MonthsSpeculated = sixMonths.speculated
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.OccupancySpeculatedRead.log(targetId = AuditId(listOf(unitId, applicationId)))
             }
     }
@@ -253,8 +251,7 @@ class OccupancyController(
         return occupancies
             .groupBy({ it.groupId }) {
                 OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)
-            }
-            .entries
+            }.entries
             .map { (key, value) ->
                 OccupancyResponseGroupLevel(
                     groupId = key,
@@ -289,8 +286,8 @@ private fun getUnitOccupancies(
     unitId: DaycareId,
     period: FiniteDateRange,
     unitFilter: AccessControlFilter<DaycareId>
-): UnitOccupancies {
-    return UnitOccupancies(
+): UnitOccupancies =
+    UnitOccupancies(
         planned =
             getOccupancyResponse(
                 tx.calculateOccupancyPeriods(
@@ -341,17 +338,18 @@ private fun getUnitOccupancies(
             },
         caretakers = tx.getUnitStats(unitId, period.start, period.end)
     )
-}
 
-private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse {
-    return OccupancyResponse(
+private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse =
+    OccupancyResponse(
         occupancies = occupancies,
         max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
         min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! }
     )
-}
 
-data class OccupancyResponseGroupLevel(val groupId: GroupId, val occupancies: OccupancyResponse)
+data class OccupancyResponseGroupLevel(
+    val groupId: GroupId,
+    val occupancies: OccupancyResponse
+)
 
 data class OccupancyResponse(
     val occupancies: List<OccupancyPeriod>,
@@ -388,9 +386,8 @@ fun Database.Read.calculateOccupancyPeriods(
     }
 
     return reduceDailyOccupancyValues(
-            calculateDailyUnitOccupancyValues(today, period, type, unitFilter, unitId = unitId)
-        )
-        .flatMap { (_, values) -> values }
+        calculateDailyUnitOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+    ).flatMap { (_, values) -> values }
 }
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
@@ -407,20 +404,19 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     }
 
     return reduceDailyOccupancyValues(
-            calculateDailyGroupOccupancyValues(today, period, type, unitFilter, unitId = unitId)
-        )
-        .flatMap { (groupKey, values) ->
-            values.map { value ->
-                OccupancyPeriodGroupLevel(
-                    groupId = groupKey.groupId,
-                    period = value.period,
-                    sum = value.sum,
-                    headcount = value.headcount,
-                    percentage = value.percentage,
-                    caretakers = value.caretakers
-                )
-            }
+        calculateDailyGroupOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+    ).flatMap { (groupKey, values) ->
+        values.map { value ->
+            OccupancyPeriodGroupLevel(
+                groupId = groupKey.groupId,
+                period = value.period,
+                sum = value.sum,
+                headcount = value.headcount,
+                percentage = value.percentage,
+                caretakers = value.caretakers
+            )
         }
+    }
 }
 
 private data class SpeculatedMaxOccupancies(

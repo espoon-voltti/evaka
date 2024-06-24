@@ -51,7 +51,11 @@ fun createDecisionDrafts(
         sql(
             """
 INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
-VALUES (${bind(user.evakaUserId)}, ${bind { it.unitId }}, ${bind(application.id)}, ${bind { it.type }}, ${bind { it.startDate }}, ${bind { it.endDate }}, ${bind { it.planned }});
+VALUES (${bind(
+                user.evakaUserId
+            )}, ${bind { it.unitId }}, ${bind(
+                application.id
+            )}, ${bind { it.type }}, ${bind { it.startDate }}, ${bind { it.endDate }}, ${bind { it.planned }});
 """
         )
     }
@@ -63,16 +67,18 @@ fun updateDecisionDrafts(
     updates: List<DecisionDraftUpdate>
 ) {
     val successfulUpdates =
-        tx.executeBatch(updates) {
+        tx
+            .executeBatch(updates) {
                 sql(
                     """
             UPDATE decision
-            SET unit_id = ${bind { it.unitId }}, start_date = ${bind { it.startDate }}, end_date = ${bind { it.endDate }}, planned = ${bind { it.planned }}
+            SET unit_id = ${bind {
+                        it.unitId
+                    }}, start_date = ${bind { it.startDate }}, end_date = ${bind { it.endDate }}, planned = ${bind { it.planned }}
             WHERE id = ${bind { it.id }} AND application_id = ${bind(applicationId)}
 """
                 )
-            }
-            .sum()
+            }.sum()
 
     if (successfulUpdates < updates.size) {
         throw NotFound("Some decision draft was not found")
@@ -88,7 +94,8 @@ data class DecisionDraftUpdate(
 )
 
 fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> =
-    tx.createQuery {
+    tx
+        .createQuery {
             sql(
                 """
 SELECT 
@@ -108,11 +115,14 @@ FROM daycare u
 ORDER BY name
 """
             )
-        }
-        .toList()
+        }.toList()
 
-fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit =
-    tx.createQuery {
+fun getDecisionUnit(
+    tx: Database.Read,
+    unitId: DaycareId
+): DecisionUnit =
+    tx
+        .createQuery {
             sql(
                 """
 SELECT 
@@ -132,11 +142,10 @@ FROM daycare u
 WHERE u.id = ${bind(unitId)}
 """
             )
-        }
-        .exactlyOne()
+        }.exactlyOne()
 
-private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
-    return listOf(
+private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> =
+    listOf(
         DecisionDraft(
             id = DecisionId(UUID.randomUUID()), // placeholder
             unitId = plan.unitId,
@@ -146,7 +155,6 @@ private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
             planned = true
         )
     )
-}
 
 private fun planDaycareDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
     val type =
@@ -173,9 +181,11 @@ private fun planPreschoolDecisionDrafts(
     application: ApplicationDetails
 ): List<DecisionDraft> {
     val primaryType =
-        if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE))
+        if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE)) {
             DecisionType.PREPARATORY_EDUCATION
-        else DecisionType.PRESCHOOL
+        } else {
+            DecisionType.PRESCHOOL
+        }
 
     val primary =
         DecisionDraft(
@@ -192,8 +202,11 @@ private fun planPreschoolDecisionDrafts(
             id = DecisionId(UUID.randomUUID()), // placeholder
             unitId = plan.unitId,
             type =
-                if (plan.type == PlacementType.PRESCHOOL_CLUB) DecisionType.PRESCHOOL_CLUB
-                else DecisionType.PRESCHOOL_DAYCARE,
+                if (plan.type == PlacementType.PRESCHOOL_CLUB) {
+                    DecisionType.PRESCHOOL_CLUB
+                } else {
+                    DecisionType.PRESCHOOL_DAYCARE
+                },
             startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
             endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
             planned =

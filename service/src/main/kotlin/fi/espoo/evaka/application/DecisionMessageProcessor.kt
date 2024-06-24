@@ -28,28 +28,30 @@ class DecisionMessageProcessor(
         db: Database.Connection,
         clock: EvakaClock,
         msg: AsyncJob.NotifyDecisionCreated
-    ) =
-        db.transaction { tx ->
-            val decisionId = msg.decisionId
+    ) = db.transaction { tx ->
+        val decisionId = msg.decisionId
 
-            decisionService.createDecisionPdf(tx, decisionId)
+        decisionService.createDecisionPdf(tx, decisionId)
 
-            logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
-            if (msg.sendAsMessage) {
-                logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(AsyncJob.SendDecision(decisionId)),
-                    runAt = clock.now()
-                )
-            }
+        logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
+        if (msg.sendAsMessage) {
+            logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.SendDecision(decisionId)),
+                runAt = clock.now()
+            )
         }
+    }
 
-    fun runSendJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendDecision) =
-        db.transaction { tx ->
-            val decisionId = msg.decisionId
+    fun runSendJob(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendDecision
+    ) = db.transaction { tx ->
+        val decisionId = msg.decisionId
 
-            decisionService.deliverDecisionToGuardians(tx, clock, decisionId)
-            logger.info { "Successfully sent decision(s) pdf for decision (id: $decisionId)." }
-        }
+        decisionService.deliverDecisionToGuardians(tx, clock, decisionId)
+        logger.info { "Successfully sent decision(s) pdf for decision (id: $decisionId)." }
+    }
 }

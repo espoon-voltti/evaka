@@ -226,5 +226,5 @@ val ISO_LANGUAGES_SUBSET =
         IsoLanguage("yor", "yor", "yor", "yo", "joruba"),
         IsoLanguage("zha", "zha", "zha", "za", "zhuang"),
         IsoLanguage("zho", "chi", "zho", "zh", "kiina"),
-        IsoLanguage("zul", "zul", "zul", "zu", "zulu"),
+        IsoLanguage("zul", "zul", "zul", "zu", "zulu")
     )

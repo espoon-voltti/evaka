@@ -49,6 +49,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     @Autowired lateinit var controller: PersonController
+
     @Autowired lateinit var childController: ChildController
 
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
@@ -116,12 +117,12 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled"
-            )
-            .isEqualTo(original)
+            ).isEqualTo(original)
         val duplicateOf =
             db.transaction { tx ->
                 @Suppress("DEPRECATION")
-                tx.createQuery("SELECT duplicate_of FROM person WHERE id = :id")
+                tx
+                    .createQuery("SELECT duplicate_of FROM person WHERE id = :id")
                     .bind("id", duplicateId)
                     .exactlyOne<PersonId>()
             }
@@ -158,8 +159,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled"
-            )
-            .isEqualTo(original)
+            ).isEqualTo(original)
     }
 
     @Test
@@ -195,8 +195,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled",
                 "person.ophPersonOid"
-            )
-            .isEqualTo(original)
+            ).isEqualTo(original)
     }
 
     @Test
@@ -233,8 +232,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled",
                 "person.ophPersonOid"
-            )
-            .isEqualTo(original)
+            ).isEqualTo(original)
     }
 
     @Test
@@ -492,11 +490,10 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(1, controller.getPersonGuardians(dbInstance(), admin, clock, childId).size)
     }
 
-    private fun createPerson(person: DevPerson = testPerson): PersonDTO {
-        return db.transaction { tx ->
+    private fun createPerson(person: DevPerson = testPerson): PersonDTO =
+        db.transaction { tx ->
             tx.insert(person, DevPersonType.RAW_ROW).let { tx.getPersonById(it)!! }
         }
-    }
 
     private val testPerson =
         DevPerson(

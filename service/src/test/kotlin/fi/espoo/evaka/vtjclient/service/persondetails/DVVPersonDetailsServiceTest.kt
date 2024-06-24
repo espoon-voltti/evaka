@@ -36,7 +36,6 @@ import org.mockito.kotlin.whenever
 
 @ExtendWith(MockitoExtension::class)
 class DVVPersonDetailsServiceTest {
-
     @InjectMocks lateinit var service: VTJPersonDetailsService
 
     @Mock lateinit var vtjService: IVtjClientService

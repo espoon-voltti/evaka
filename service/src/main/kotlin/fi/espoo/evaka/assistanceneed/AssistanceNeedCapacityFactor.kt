@@ -7,4 +7,7 @@ package fi.espoo.evaka.assistanceneed
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 
-data class AssistanceNeedCapacityFactor(val dateRange: DateRange, val capacityFactor: BigDecimal)
+data class AssistanceNeedCapacityFactor(
+    val dateRange: DateRange,
+    val capacityFactor: BigDecimal
+)

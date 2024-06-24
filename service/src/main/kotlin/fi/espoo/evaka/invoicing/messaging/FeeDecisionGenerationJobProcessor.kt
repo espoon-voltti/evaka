@@ -25,7 +25,11 @@ class FeeDecisionGenerationJobProcessor(
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)
     }
 
-    fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.GenerateFinanceDecisions) {
+    fun runJob(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.GenerateFinanceDecisions
+    ) {
         logger.info { "Generating finance decisions with parameters $msg" }
         db.transaction { tx ->
             when (msg.person) {
@@ -51,12 +55,14 @@ fun planFinanceDecisionGeneration(
 ) {
     val heads =
         targetHeadsOfFamily.ifEmpty {
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
-                        "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND conflict = false"
+                        "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && ${bind(
+                            dateRange
+                        )} AND conflict = false"
                     )
-                }
-                .toList<PersonId>()
+                }.toList<PersonId>()
         }
 
     asyncJobRunner.plan(

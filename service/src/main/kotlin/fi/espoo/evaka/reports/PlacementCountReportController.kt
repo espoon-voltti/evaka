@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PlacementCountReportController(private val accessControl: AccessControl) {
+class PlacementCountReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/placement-count", // deprecated
         "/employee/reports/placement-count"
@@ -34,8 +36,9 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam examinationDate: LocalDate,
         @RequestParam providerTypes: List<ProviderType>?,
         @RequestParam placementTypes: List<PlacementType>?
-    ): PlacementCountReportResult {
-        return db.connect { dbc ->
+    ): PlacementCountReportResult =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -50,8 +53,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                         placementTypes ?: PlacementType.entries
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.PlacementCountReportRead.log(
                     meta =
                         mapOf(
@@ -61,7 +63,6 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                         )
                 )
             }
-    }
 
     private fun Database.Read.getPlacementCountReportRows(
         examinationDate: LocalDate,
@@ -70,8 +71,8 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
     ): PlacementCountReportResult {
         val resultRows =
             createQuery {
-                    sql(
-                        """
+                sql(
+                    """
 SELECT ca.id                                                             AS area_id,
        ca.name                                                           AS area_name,
        d.id                                                              AS daycare_id,
@@ -110,9 +111,8 @@ WHERE d.opening_date <= ${bind(examinationDate)}
 GROUP BY ROLLUP ((ca.id, ca.name), (d.id, d.name))
 ORDER BY ca.name, d.name ASC
             """
-                    )
-                }
-                .toList<PlacementCountReportRow>()
+                )
+            }.toList<PlacementCountReportRow>()
 
         val daycaresByArea = mutableMapOf<String, MutableList<PlacementCountDaycareResult>>()
         val collectedAreaResults = mutableListOf<PlacementCountAreaResult>()

@@ -19,7 +19,9 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private data class TestJob(val data: UUID) : AsyncJobPayload {
+    private data class TestJob(
+        val data: UUID
+    ) : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
@@ -103,7 +105,8 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         val completedCount =
             jdbi.open().use { h ->
-                h.createQuery("SELECT count(*) FROM async_job WHERE completed_at IS NOT NULL")
+                h
+                    .createQuery("SELECT count(*) FROM async_job WHERE completed_at IS NOT NULL")
                     .mapTo(Int::class.java)
                     .one()
             }
@@ -123,8 +126,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         TestJobParams(it, completed = false),
                         TestJobParams(it, completed = true)
                     )
-                }
-                .forEach { params -> tx.insertTestJob(params) }
+                }.forEach { params -> tx.insertTestJob(params) }
             tx.insertTestJob(TestJobParams(future, completed = false))
         }
 
@@ -133,10 +135,10 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val remainingJobs =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2"
-                    )
-                    .toList {
+                    ).toList {
                         TestJobParams(
                             runAt = column<HelsinkiDateTime>("run_at").toLocalDate(),
                             completed = column("completed")
@@ -153,23 +155,27 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
     }
 
-    private data class Retry(val runAt: HelsinkiDateTime, val retryCount: Long)
+    private data class Retry(
+        val runAt: HelsinkiDateTime,
+        val retryCount: Long
+    )
 }
 
-private data class TestJobParams(val runAt: LocalDate, val completed: Boolean)
+private data class TestJobParams(
+    val runAt: LocalDate,
+    val completed: Boolean
+)
 
 private fun Database.Transaction.insertTestJob(params: TestJobParams) =
     @Suppress("DEPRECATION")
     createUpdate(
-            """
+        """
 INSERT INTO async_job (type, run_at, retry_count, retry_interval, payload, claimed_at, claimed_by, completed_at)
 VALUES ('TestJob', :runAt, 0, interval '1 hours', '{}', :completedAt, :claimedBy, :completedAt)
     """
-        )
-        .bind("runAt", HelsinkiDateTime.of(params.runAt, LocalTime.of(12, 0)))
+    ).bind("runAt", HelsinkiDateTime.of(params.runAt, LocalTime.of(12, 0)))
         .bind(
             "completedAt",
             HelsinkiDateTime.of(params.runAt, LocalTime.of(14, 0)).takeIf { params.completed }
-        )
-        .bind("claimedBy", 42.takeIf { params.completed })
+        ).bind("claimedBy", 42.takeIf { params.completed })
         .execute()

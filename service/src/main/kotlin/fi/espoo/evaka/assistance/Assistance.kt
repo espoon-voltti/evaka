@@ -20,12 +20,12 @@ data class AssistanceFactor(
     val validDuring: FiniteDateRange,
     val capacityFactor: Double,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    val modifiedBy: String
 )
 
 data class AssistanceFactorUpdate(
     val validDuring: FiniteDateRange,
-    val capacityFactor: Double,
+    val capacityFactor: Double
 )
 
 @ConstList("daycareAssistanceLevels")
@@ -44,12 +44,12 @@ data class DaycareAssistance(
     val validDuring: FiniteDateRange,
     val level: DaycareAssistanceLevel,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    val modifiedBy: String
 )
 
 data class DaycareAssistanceUpdate(
     val validDuring: FiniteDateRange,
-    val level: DaycareAssistanceLevel,
+    val level: DaycareAssistanceLevel
 )
 
 @ConstList("preschoolAssistanceLevels")
@@ -68,12 +68,12 @@ data class PreschoolAssistance(
     val validDuring: FiniteDateRange,
     val level: PreschoolAssistanceLevel,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    val modifiedBy: String
 )
 
 data class PreschoolAssistanceUpdate(
     val validDuring: FiniteDateRange,
-    val level: PreschoolAssistanceLevel,
+    val level: PreschoolAssistanceLevel
 )
 
 @ConstList("otherAssistanceMeasureTypes")
@@ -94,10 +94,10 @@ data class OtherAssistanceMeasure(
     val validDuring: FiniteDateRange,
     val type: OtherAssistanceMeasureType,
     val modified: HelsinkiDateTime,
-    val modifiedBy: String,
+    val modifiedBy: String
 )
 
 data class OtherAssistanceMeasureUpdate(
     val validDuring: FiniteDateRange,
-    val type: OtherAssistanceMeasureType,
+    val type: OtherAssistanceMeasureType
 )

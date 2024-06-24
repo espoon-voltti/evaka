@@ -11,10 +11,16 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import java.time.LocalDate
 
-fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
+fun Database.Transaction.initCaretakers(
+    groupId: GroupId,
+    startDate: LocalDate,
+    amount: Double
+) {
     execute {
         sql(
-            "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(groupId)}, ${bind(startDate)}, NULL, ${bind(amount)})"
+            "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (${bind(
+                groupId
+            )}, ${bind(startDate)}, NULL, ${bind(amount)})"
         )
     }
 }
@@ -29,8 +35,8 @@ fun Database.Read.getUnitStats(
     }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 with dailyTotals as (
     select t, sum(ct.amount) as total
     from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') t
@@ -44,9 +50,8 @@ select
     coalesce(max(total), 0.0) as maximum
 from dailyTotals
         """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 }
 
 fun Database.Read.getGroupStats(
@@ -55,8 +60,8 @@ fun Database.Read.getGroupStats(
     endDate: LocalDate
 ): Map<GroupId, Caretakers> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 select
     dg.id as group_id,
     min(coalesce(dc.amount, 0)) as minimum,
@@ -68,6 +73,5 @@ and daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(dc.start_
 and daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(dg.start_date, dg.end_date, '[]')
 group by dg.id
 """
-            )
-        }
-        .toMap { column<GroupId>("group_id") to row<Caretakers>() }
+        )
+    }.toMap { column<GroupId>("group_id") to row<Caretakers>() }

@@ -19,8 +19,13 @@ import java.util.Locale
 import org.unbescape.html.HtmlEscape
 
 /** Use http://localhost:9099/api/internal/dev-api/email-content to preview email messages */
-class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvider {
-    private fun link(language: Language, path: String): String {
+class EvakaEmailMessageProvider(
+    private val env: EvakaEnv
+) : IEmailMessageProvider {
+    private fun link(
+        language: Language,
+        path: String
+    ): String {
         val baseUrl =
             when (language) {
                 Language.sv -> env.frontendBaseUrlSv
@@ -34,47 +39,61 @@ class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvid
 
     private fun calendarLink(language: Language) = link(language, "/calendar")
 
-    private fun messageLink(language: Language, threadId: MessageThreadId) =
-        link(language, "/messages/$threadId")
+    private fun messageLink(
+        language: Language,
+        threadId: MessageThreadId
+    ) = link(language, "/messages/$threadId")
 
-    private fun childLink(language: Language, childId: ChildId) =
-        link(language, "/children/$childId")
+    private fun childLink(
+        language: Language,
+        childId: ChildId
+    ) = link(language, "/children/$childId")
 
     private fun incomeLink(language: Language) = link(language, "/income")
 
-    private fun unsubscribeLink(language: Language) =
-        link(language, "/personal-details#notifications")
+    private fun unsubscribeLink(language: Language) = link(language, "/personal-details#notifications")
 
     private val unsubscribeFi =
-        """<p><small>Jos et halua enää saada tämänkaltaisia viestejä, voit muuttaa asetuksia eVakan Omat tiedot -sivulla: ${unsubscribeLink(Language.fi)}</small></p>"""
+        """<p><small>Jos et halua enää saada tämänkaltaisia viestejä, voit muuttaa asetuksia eVakan Omat tiedot -sivulla: ${unsubscribeLink(
+            Language.fi
+        )}</small></p>"""
     private val unsubscribeSv =
-        """<p><small>Om du inte längre vill ta emot meddelanden som detta, kan du ändra dina inställningar på eVakas Personuppgifter-sida: ${unsubscribeLink(Language.sv)}</small></p>"""
+        """<p><small>Om du inte längre vill ta emot meddelanden som detta, kan du ändra dina inställningar på eVakas Personuppgifter-sida: ${unsubscribeLink(
+            Language.sv
+        )}</small></p>"""
     private val unsubscribeEn =
-        """<p><small>If you no longer want to receive messages like this, you can change your settings on eVaka's Personal information page: ${unsubscribeLink(Language.en)}</small></p>"""
+        """<p><small>If you no longer want to receive messages like this, you can change your settings on eVaka's Personal information page: ${unsubscribeLink(
+            Language.en
+        )}</small></p>"""
 
-    override fun pendingDecisionNotification(language: Language): EmailContent {
-        return EmailContent.fromHtml(
+    override fun pendingDecisionNotification(language: Language): EmailContent =
+        EmailContent.fromHtml(
             subject =
                 "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
             html =
                 """
 <p>Sinulla on vastaamaton päätös Espoon varhaiskasvatukselta. Päätös tulee hyväksyä tai hylätä kahden viikon sisällä sen saapumisesta.</p>
-<p>Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen ${frontPageLink(Language.fi)}, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.</p>
+<p>Hakemuksen tekijä voi hyväksyä tai hylätä vastaamattomat päätökset kirjautumalla osoitteeseen ${frontPageLink(
+                    Language.fi
+                )}, tai palauttamalla täytetyn lomakkeen päätöksen viimeiseltä sivulta siinä mainittuun osoitteeseen.</p>
 <p>Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen palveluohjaukseen p. 09 816 31000</p>
 $unsubscribeFi
 <hr>
 <p>Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.</p>
-<p>Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen ${frontPageLink(Language.sv)} eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.</p>
+<p>Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen ${frontPageLink(
+                    Language.sv
+                )} eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.</p>
 <p>Detta meddelande kan inte besvaras. Kontakta vid behov servicehandledningen inom småbarnspedagogiken, tfn 09 816 27600</p>
 $unsubscribeSv
 <hr>
 <p>You have an unanswered decision from Espoo’s early childhood education. The decision must be accepted or rejected within two weeks of receiving it.</p>
-<p>The person who submitted the application can accept or reject an unanswered decision by logging in to ${frontPageLink(Language.en)} or by sending the completed form on the last page of the decision to the address specified on the page.</p>
+<p>The person who submitted the application can accept or reject an unanswered decision by logging in to ${frontPageLink(
+                    Language.en
+                )} or by sending the completed form on the last page of the decision to the address specified on the page.</p>
 <p>You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.</p>
 $unsubscribeEn
 """
         )
-    }
 
     private val applicationReceivedSubject =
         "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
@@ -87,7 +106,9 @@ $unsubscribeEn
                 // links are not included
                 """
 <p>Hyvä(t) huoltaja(t),</p>
-<p>Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.</p>
+<p>Lapsenne kerhohakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(
+                    Language.fi
+                )} siihen saakka, kunnes se on otettu käsittelyyn.</p>
 <p>Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.</p>
 <p>Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.</p>
 <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${frontPageLink(Language.fi)}.</p>
@@ -103,7 +124,9 @@ $unsubscribeEn
                 // links are not included
                 """
 <p>Hyvä(t) huoltaja(t),<br>Lapsenne varhaiskasvatushakemus on vastaanotettu.</p>
-<p>Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.</p>
+<p>Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(
+                    Language.fi
+                )} siihen saakka, kunnes se on otettu käsittelyyn.</p>
 <p>Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen varhaiskasvatuksen toivottua aloittamista huomioiden varhaiskasvatuslain mukaiset neljän (4) kuukauden tai kahden viikon hakuajat.</p>
 <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${frontPageLink(Language.fi)}.</p>
 <p>Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
@@ -115,7 +138,9 @@ $unsubscribeEn
 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit</a></p>
 <hr>
 <p>Bästa vårdnadshavare,<br>Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.</p>
-<p>Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader.</strong> Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(Language.sv)} tills den har tagits upp till behandling.</p>
+<p>Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader.</strong> Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(
+                    Language.sv
+                )} tills den har tagits upp till behandling.</p>
 <p>Du får besked om ditt barns plats i småbarnspedagogiken cirka en månad före ansökt datum med beaktande av ansökningstiderna på fyra (4) månader eller två veckor enligt lagen om småbarnspedagogik.</p>
 <p>Du kan se och godkänna/förkasta beslutet på ${frontPageLink(Language.sv)}.</p>
 <p>När du ansöker plats till ett servicesedel daghem behöver du senast  vara i kontakt med daghemmet när du lämnat in ansökan till enheten i fråga.</p>
@@ -128,7 +153,9 @@ $unsubscribeEn
 <p>Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehandledning (tfn 09 816 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehandledning <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a></p>
 <hr>
 <p>Dear guardian(s),<br>We have received your child’s application for early childhood education.</p>
-<p>The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at ${frontPageLink(Language.en)} until its processing starts.</p>
+<p>The <strong>application period</strong> for early childhood education applications is <strong>four (4) months</strong>. The guardian who submitted the application can make changes to it at ${frontPageLink(
+                    Language.en
+                )} until its processing starts.</p>
 <p>You will be informed of your child’s early childhood education unit approximately one month before the desired start date of early childhood education, taking into account the application periods of four (4) months or two (2) weeks specified in the Act on Early Childhood Education and Care.</p>
 <p>You can see the decision and accept/reject it at ${frontPageLink(Language.en)}.</p>
 <p>When applying for a service voucher day care centre, please contact the unit directly at the latest after submitting your application.</p>
@@ -153,7 +180,9 @@ $unsubscribeEn
                     // unsubscribe links are not included
                     """
 <p>Hyvä(t) huoltaja(t),</p>
-<p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
+<p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(
+                        Language.fi
+                    )} siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
 <p>Päätökset tehdään hakuaikana (tammikuu) saapuneisiin hakemuksiin maaliskuun aikana.</p>
 <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${frontPageLink(Language.fi)}.</p>
 <p>Hakiessanne palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
@@ -163,7 +192,9 @@ $unsubscribeEn
 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
 <hr>
 <p>Bästa vårdnadshavare,</p>
-<p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(Language.sv)} tills den har tagits upp till behandling.</p>
+<p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(
+                        Language.sv
+                    )} tills den har tagits upp till behandling.</p>
 <p>Om de ansökningar som kommit in under ansökningstiden (januari) fattas beslut i mars.</p>
 <p>Du kan se och godkänna/förkasta beslutet på adressen ${frontPageLink(Language.sv)}.</p>
 <p>När du ansöker till ett servicesedeldaghem, kontakta daghemmet direkt senast efter att du lämnat ansökan.</p>
@@ -173,7 +204,9 @@ $unsubscribeEn
 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
 <hr>
 <p>Dear guardian(s),</p>
-<p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${frontPageLink(Language.en)} until its processing starts.</p>
+<p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${frontPageLink(
+                        Language.en
+                    )} until its processing starts.</p>
 <p>The city will make decisions on applications received during the application period (January) in March.</p>
 <p>You can see the decision and accept/reject it at ${frontPageLink(Language.en)}</p>
 <p>When applying to a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
@@ -191,7 +224,9 @@ $unsubscribeEn
                     // unsubscribe links are not included
                     """
 <p>Hyvä(t) huoltaja(t),</p>
-<p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(Language.fi)} siihen saakka, kunnes se on otettu käsittelyyn.</p>
+<p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa ${frontPageLink(
+                        Language.fi
+                    )} siihen saakka, kunnes se on otettu käsittelyyn.</p>
 <p>Saatte tiedon lapsenne esiopetuspaikasta mahdollisimman pian, huomioiden hakemuksessa oleva aloitustoive ja alueen esiopetuspaikkatilanne.</p>
 <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${frontPageLink(Language.fi)}.</p>
 <p>Hakiessanne esiopetusta palvelusetelipäiväkotiin, olkaa viimeistään hakemuksen jättämisen jälkeen yhteydessä suoraan kyseiseen yksikköön.</p>
@@ -203,7 +238,9 @@ $unsubscribeEn
 <p>Hakeminen yksityisiin varhaiskasvatusyksiköihin: <a href="https://espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityinen-varhaiskasvatus-ja-paivakodit">Yksityinen varhaiskasvatus</a></p>
 <hr>
 <p>Bästa vårdnadshavare,</p>
-<p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(Language.sv)} tills den har tagits upp till behandling.</p>
+<p>Vi har tagit emot ansökan om förskoleundervisning för ditt barn. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen ${frontPageLink(
+                        Language.sv
+                    )} tills den har tagits upp till behandling.</p>
 <p>Du får information om ditt barns förskoleplats så snart som möjligt, med beaktande av önskemålet om startdatum och läget med förskoleplatser i området.</p>
 <p>Du kan se och godkänna/förkasta beslutet på adressen ${frontPageLink(Language.sv)}.</p>
 <p>När du ansöker om förskoleundervisning i ett servicesedeldaghem, kontakta enheten direkt senast efter att du lämnat ansökan.</p>
@@ -215,7 +252,9 @@ $unsubscribeEn
 <p>Ansökan till privata enheter för småbarnspedagogik: <a href="https://esbo.fi/tjanster/privat-smabarnspedagogik">Privat småbarnspedagogik</a></p>
 <hr>
 <p>Dear guardian(s),</p>
-<p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${frontPageLink(Language.en)} until its processing starts.</p>
+<p>We have received your child’s application for pre-primary education. The guardian who submitted the application can make changes to it at ${frontPageLink(
+                        Language.en
+                    )} until its processing starts.</p>
 <p>You will be informed of your child’s pre-primary education unit as soon as possible, taking into account the preferred starting date indicated in your application and the availability of pre-primary education places in your area.</p>
 <p>You can see the decision and accept/reject it at ${frontPageLink(Language.en)}.</p>
 <p>When applying for pre-primary education at a service voucher day care centre, please contact the unit no later than after you have submitted the application.</p>
@@ -235,7 +274,8 @@ $unsubscribeEn
     ): EmailContent {
         val start =
             checkedRange.start.format(
-                DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                DateTimeFormatter
+                    .ofLocalizedDate(FormatStyle.SHORT)
                     .withLocale(Locale.of("fi", "FI"))
             )
         return EmailContent.fromHtml(
@@ -246,32 +286,41 @@ $unsubscribeEn
 <p>Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian: ${calendarLink(Language.fi)}</p>
 $unsubscribeFi
 <hr>
-<p>Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt: ${calendarLink(Language.sv)}</p>
+<p>Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt: ${calendarLink(
+                    Language.sv
+                )}</p>
 $unsubscribeSv
 <hr>
-<p>There are missing attendance reservations for week starting $start. Please mark them as soon as possible: ${calendarLink(Language.en)}</p>
+<p>There are missing attendance reservations for week starting $start. Please mark them as soon as possible: ${calendarLink(
+                    Language.en
+                )}</p>
 $unsubscribeEn
 """
         )
     }
 
-    override fun missingHolidayReservationsNotification(language: Language): EmailContent {
-        return EmailContent.fromHtml(
+    override fun missingHolidayReservationsNotification(language: Language): EmailContent =
+        EmailContent.fromHtml(
             subject =
                 "Loma-ajan ilmoitus sulkeutuu / Semesteranmälan löper ut / Holiday notification period closing",
             html =
                 """
-<p>Loma-ajan kysely sulkeutuu kahden päivän päästä. Jos lapseltanne/lapsiltanne puuttuu loma-ajan ilmoitus yhdeltä tai useammalta lomapäivältä, teettehän ilmoituksen eVakan kalenterissa mahdollisimman pian: ${calendarLink(Language.fi)}</p>
+<p>Loma-ajan kysely sulkeutuu kahden päivän päästä. Jos lapseltanne/lapsiltanne puuttuu loma-ajan ilmoitus yhdeltä tai useammalta lomapäivältä, teettehän ilmoituksen eVakan kalenterissa mahdollisimman pian: ${calendarLink(
+                    Language.fi
+                )}</p>
 $unsubscribeFi
 <hr>
-<p>Förfrågan om barnets frånvaro i semestertider stängs om två dagar. Om ditt/dina barn saknar anmälan för en eller flera helgdagar, vänligen gör anmälan i eVaka-kalendern så snart som möjligt: ${calendarLink(Language.sv)}</p>
+<p>Förfrågan om barnets frånvaro i semestertider stängs om två dagar. Om ditt/dina barn saknar anmälan för en eller flera helgdagar, vänligen gör anmälan i eVaka-kalendern så snart som möjligt: ${calendarLink(
+                    Language.sv
+                )}</p>
 $unsubscribeSv
 <hr>
-<p>Two days left to submit a holiday notification. If you have not submitted a notification for each day, please submit them through the eVaka calendar as soon as possible: ${calendarLink(Language.en)}</p>
+<p>Two days left to submit a holiday notification. If you have not submitted a notification for each day, please submit them through the eVaka calendar as soon as possible: ${calendarLink(
+                    Language.en
+                )}</p>
 $unsubscribeEn
 """
         )
-    }
 
     override fun assistanceNeedDecisionNotification(language: Language): EmailContent =
         EmailContent.fromHtml(
@@ -298,47 +347,66 @@ $unsubscribeEn
     override fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent =
         assistanceNeedDecisionNotification(language) // currently same content
 
-    override fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent {
+    override fun messageNotification(
+        language: Language,
+        thread: MessageThreadStub
+    ): EmailContent {
         val (typeFi, typeSv, typeEn) =
             when (thread.type) {
                 MessageType.MESSAGE ->
-                    if (thread.urgent)
+                    if (thread.urgent) {
                         Triple(
                             "kiireellinen viesti",
                             "brådskande personligt meddelande",
                             "urgent message"
                         )
-                    else Triple("viesti", "personligt meddelande", "message")
+                    } else {
+                        Triple("viesti", "personligt meddelande", "message")
+                    }
                 MessageType.BULLETIN ->
-                    if (thread.urgent)
+                    if (thread.urgent) {
                         Triple(
                             "kiireellinen tiedote",
                             "brådskande allmänt meddelande",
                             "urgent bulletin"
                         )
-                    else Triple("tiedote", "allmänt meddelande", "bulletin")
+                    } else {
+                        Triple("tiedote", "allmänt meddelande", "bulletin")
+                    }
             }
         return EmailContent.fromHtml(
             subject = "Uusi $typeFi eVakassa / Nytt $typeSv i eVaka / New $typeEn in eVaka",
             html =
                 """
-<p>Sinulle on saapunut uusi $typeFi eVakaan. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(Language.fi, thread.id)}</p>
+<p>Sinulle on saapunut uusi $typeFi eVakaan. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(
+                    Language.fi,
+                    thread.id
+                )}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
 <hr>
-<p>Du har fått ett nytt $typeSv i eVaka. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: ${messageLink(Language.sv, thread.id)}</p>
+<p>Du har fått ett nytt $typeSv i eVaka. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: ${messageLink(
+                    Language.sv,
+                    thread.id
+                )}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 $unsubscribeSv
 <hr>
-<p>You have received a new $typeEn in eVaka. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(Language.en, thread.id)}</p>
+<p>You have received a new $typeEn in eVaka. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(
+                    Language.en,
+                    thread.id
+                )}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
 """
         )
     }
 
-    override fun childDocumentNotification(language: Language, childId: ChildId): EmailContent {
-        return EmailContent.fromHtml(
+    override fun childDocumentNotification(
+        language: Language,
+        childId: ChildId
+    ): EmailContent =
+        EmailContent.fromHtml(
             subject = "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka",
             html =
                 """
@@ -355,17 +423,17 @@ $unsubscribeSv
 $unsubscribeEn
 """
         )
-    }
 
-    override fun vasuNotification(language: Language, childId: ChildId): EmailContent {
-        return childDocumentNotification(language, childId)
-    }
+    override fun vasuNotification(
+        language: Language,
+        childId: ChildId
+    ): EmailContent = childDocumentNotification(language, childId)
 
     override fun pedagogicalDocumentNotification(
         language: Language,
         childId: ChildId
-    ): EmailContent {
-        return EmailContent.fromHtml(
+    ): EmailContent =
+        EmailContent.fromHtml(
             subject =
                 "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
             html =
@@ -383,22 +451,20 @@ $unsubscribeSv
 $unsubscribeEn
 """
         )
-    }
 
     override fun incomeNotification(
         notificationType: IncomeNotificationType,
         language: Language
-    ): EmailContent {
-        return when (notificationType) {
+    ): EmailContent =
+        when (notificationType) {
             IncomeNotificationType.INITIAL_EMAIL -> outdatedIncomeNotificationInitial()
             IncomeNotificationType.REMINDER_EMAIL -> outdatedIncomeNotificationReminder()
             IncomeNotificationType.EXPIRED_EMAIL -> outdatedIncomeNotificationExpired()
             IncomeNotificationType.NEW_CUSTOMER -> newCustomerIncomeNotification()
         }
-    }
 
-    private fun outdatedIncomeNotificationInitial(): EmailContent {
-        return EmailContent.fromHtml(
+    private fun outdatedIncomeNotificationInitial(): EmailContent =
+        EmailContent.fromHtml(
             subject =
                 "Tulotietojen tarkastuskehotus / Uppmaning att göra en inkomstutredning / Request to review income information",
             html =
@@ -434,10 +500,9 @@ $unsubscribeSv
 $unsubscribeEn
 """
         )
-    }
 
-    private fun outdatedIncomeNotificationReminder(): EmailContent {
-        return EmailContent.fromHtml(
+    private fun outdatedIncomeNotificationReminder(): EmailContent =
+        EmailContent.fromHtml(
             subject =
                 "Tulotietojen tarkastuskehotus / Uppmaning att göra en inkomstutredning / Request to review income information",
             html =
@@ -473,10 +538,9 @@ $unsubscribeSv
 $unsubscribeEn
 """
         )
-    }
 
-    private fun outdatedIncomeNotificationExpired(): EmailContent {
-        return EmailContent.fromHtml(
+    private fun outdatedIncomeNotificationExpired(): EmailContent =
+        EmailContent.fromHtml(
             subject =
                 "Tulotietojen tarkastuskehotus / Uppmaning att göra en inkomstutredning / Request to review income information",
             html =
@@ -500,10 +564,9 @@ $unsubscribeSv
 $unsubscribeEn
 """
         )
-    }
 
-    private fun newCustomerIncomeNotification(): EmailContent {
-        return EmailContent.fromHtml(
+    private fun newCustomerIncomeNotification(): EmailContent =
+        EmailContent.fromHtml(
             subject =
                 "Tulotietojen tarkastuskehotus / Uppmaning att göra en inkomstutredning / Request to review income information",
             html =
@@ -528,10 +591,8 @@ $unsubscribeSv
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-            """
-                    .trimIndent()
+                """.trimIndent()
         )
-    }
 
     override fun calendarEventNotification(
         language: Language,
@@ -596,8 +657,7 @@ $unsubscribeSv
 <p>You have received a new $decisionTypeEn in eVaka.</p>
 <p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
 $unsubscribeEn
-            """
-                    .trimIndent()
+                """.trimIndent()
         )
     }
 }

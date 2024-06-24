@@ -46,8 +46,9 @@ class HolidayPeriodControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<HolidayPeriod> {
-        return db.connect { dbc ->
+    ): List<HolidayPeriod> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -57,9 +58,7 @@ class HolidayPeriodControllerCitizen(
                     )
                     it.getHolidayPeriods()
                 }
-            }
-            .also { Audit.HolidayPeriodsList.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.HolidayPeriodsList.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping("/questionnaire")
     fun getActiveQuestionnaires(
@@ -67,7 +66,8 @@ class HolidayPeriodControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<ActiveQuestionnaire> {
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -106,8 +106,7 @@ class HolidayPeriodControllerCitizen(
                         )
                     }
                 }
-            }
-            .also { Audit.HolidayQuestionnairesList.log(meta = mapOf("count" to it.size)) }
+            }.also { Audit.HolidayQuestionnairesList.log(meta = mapOf("count" to it.size)) }
     }
 
     @PostMapping("/questionnaire/fixed-period/{id}")
@@ -133,8 +132,9 @@ class HolidayPeriodControllerCitizen(
                 )
                 val questionnaire =
                     tx.getFixedPeriodQuestionnaire(id)?.also {
-                        if (!it.active.includes(today))
+                        if (!it.active.includes(today)) {
                             throw BadRequest("Questionnaire is not open")
+                        }
                     } ?: throw BadRequest("Questionnaire not found")
                 if (questionnaire.conditions.continuousPlacement != null) {
                     val eligibleChildren =
@@ -194,4 +194,6 @@ class HolidayPeriodControllerCitizen(
     }
 }
 
-data class FixedPeriodsBody(val fixedPeriods: Map<ChildId, FiniteDateRange?>)
+data class FixedPeriodsBody(
+    val fixedPeriods: Map<ChildId, FiniteDateRange?>
+)

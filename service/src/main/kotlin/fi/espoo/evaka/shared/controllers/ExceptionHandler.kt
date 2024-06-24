@@ -34,37 +34,57 @@ data class ErrorResponse(
 @ControllerAdvice
 class ExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [BadRequest::class])
-    fun badRequest(req: HttpServletRequest, ex: BadRequest): ResponseEntity<ErrorResponse> {
+    fun badRequest(
+        req: HttpServletRequest,
+        ex: BadRequest
+    ): ResponseEntity<ErrorResponse> {
         logger.warn("Bad request (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [NotFound::class])
-    fun notFound(req: HttpServletRequest, ex: NotFound): ResponseEntity<ErrorResponse> {
+    fun notFound(
+        req: HttpServletRequest,
+        ex: NotFound
+    ): ResponseEntity<ErrorResponse> {
         logger.warn("Not found (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [Conflict::class])
-    fun conflict(req: HttpServletRequest, ex: Conflict): ResponseEntity<ErrorResponse> {
+    fun conflict(
+        req: HttpServletRequest,
+        ex: Conflict
+    ): ResponseEntity<ErrorResponse> {
         logger.warn("Conflict (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.CONFLICT)
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [Unauthorized::class])
-    fun unauthorized(req: HttpServletRequest, ex: Unauthorized): ResponseEntity<ErrorResponse> {
+    fun unauthorized(
+        req: HttpServletRequest,
+        ex: Unauthorized
+    ): ResponseEntity<ErrorResponse> {
         logger.warn("Unauthorized (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [Forbidden::class])
-    fun forbidden(req: HttpServletRequest, ex: Forbidden): ResponseEntity<ErrorResponse> {
+    fun forbidden(
+        req: HttpServletRequest,
+        ex: Forbidden
+    ): ResponseEntity<ErrorResponse> {
         logger.warn("Forbidden (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
             .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
@@ -80,7 +100,10 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
 
     // We don't want alerts from ClientAbortExceptions or return any http responses to them
     @ExceptionHandler(value = [IOException::class])
-    fun IOExceptions(req: HttpServletRequest, ex: IOException): ResponseEntity<ErrorResponse>? {
+    fun IOExceptions(
+        req: HttpServletRequest,
+        ex: IOException
+    ): ResponseEntity<ErrorResponse>? {
         if (ex.toString().contains("ClientAbortException", true)) {
             logger.warn("ClientAbortException", ex)
             return null
@@ -101,7 +124,10 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(value = [Throwable::class])
-    fun unexpectedError(req: HttpServletRequest, ex: Throwable): ResponseEntity<ErrorResponse> {
+    fun unexpectedError(
+        req: HttpServletRequest,
+        ex: Throwable
+    ): ResponseEntity<ErrorResponse> {
         val message = "Unexpected error (${ex.message})"
         logger.error(message, ex)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse())

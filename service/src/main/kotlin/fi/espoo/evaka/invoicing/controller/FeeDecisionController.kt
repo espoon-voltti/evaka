@@ -95,7 +95,8 @@ class FeeDecisionController(
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate) {
             throw BadRequest("End date cannot be before start date")
         }
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -122,8 +123,7 @@ class FeeDecisionController(
                         body.difference ?: emptySet()
                     )
                 }
-            }
-            .also { Audit.FeeDecisionSearch.log(meta = mapOf("total" to it.total)) }
+            }.also { Audit.FeeDecisionSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     @PostMapping("/confirm")
@@ -251,8 +251,9 @@ class FeeDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable decisionId: FeeDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -283,9 +284,7 @@ class FeeDecisionController(
                     }
                 }
                 service.getFeeDecisionPdfResponse(dbc, decisionId)
-            }
-            .also { Audit.FeeDecisionPdfRead.log(targetId = AuditId(decisionId)) }
-    }
+            }.also { Audit.FeeDecisionPdfRead.log(targetId = AuditId(decisionId)) }
 
     @GetMapping("/{id}")
     fun getFeeDecision(
@@ -293,8 +292,8 @@ class FeeDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FeeDecisionId
-    ): FeeDecisionDetailed {
-        return db.connect { dbc ->
+    ): FeeDecisionDetailed =
+        db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(it, user, clock, Action.FeeDecision.READ, id)
                 it.getFeeDecision(id)
@@ -303,7 +302,6 @@ class FeeDecisionController(
             ?: throw NotFound("No fee decision found with given ID ($id)").also {
                 Audit.FeeDecisionRead.log(targetId = AuditId(id))
             }
-    }
 
     @GetMapping("/head-of-family/{id}")
     fun getHeadOfFamilyFeeDecisions(
@@ -311,8 +309,9 @@ class FeeDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId
-    ): List<FeeDecision> {
-        return db.connect { dbc ->
+    ): List<FeeDecision> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -323,14 +322,12 @@ class FeeDecisionController(
                     )
                     it.findFeeDecisionsForHeadOfFamily(id, null, null)
                 }
-            }
-            .also {
+            }.also {
                 Audit.FeeDecisionHeadOfFamilyRead.log(
                     targetId = AuditId(id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveFeeDecisions(
@@ -373,7 +370,9 @@ class FeeDecisionController(
     }
 }
 
-data class CreateRetroactiveFeeDecisionsBody(val from: LocalDate)
+data class CreateRetroactiveFeeDecisionsBody(
+    val from: LocalDate
+)
 
 data class SearchFeeDecisionRequest(
     val page: Int,
@@ -392,4 +391,6 @@ data class SearchFeeDecisionRequest(
     val difference: Set<FeeDecisionDifference>? = null
 )
 
-data class FeeDecisionTypeRequest(val type: FeeDecisionType)
+data class FeeDecisionTypeRequest(
+    val type: FeeDecisionType
+)

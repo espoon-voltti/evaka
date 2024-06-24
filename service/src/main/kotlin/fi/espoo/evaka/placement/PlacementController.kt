@@ -66,8 +66,9 @@ class PlacementController(
         @RequestParam childId: ChildId? = null,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
-    ): PlacementResponse {
-        return db.connect { dbc ->
+    ): PlacementResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     when {
                         daycareId != null ->
@@ -90,7 +91,8 @@ class PlacementController(
                     }
 
                     val authorizedDaycares =
-                        tx.getDaycares(
+                        tx
+                            .getDaycares(
                                 clock,
                                 accessControl.requireAuthorizationFilter(
                                     tx,
@@ -98,12 +100,12 @@ class PlacementController(
                                     clock,
                                     Action.Unit.READ
                                 )
-                            )
-                            .asSequence()
+                            ).asSequence()
                             .map { it.id }
                             .toSet()
 
-                    tx.getDetailedDaycarePlacements(daycareId, childId, from, to)
+                    tx
+                        .getDetailedDaycarePlacements(daycareId, childId, from, to)
                         .map { placement ->
                             // TODO: is some info only hidden on frontend?
                             if (!authorizedDaycares.contains(placement.daycare.id)) {
@@ -111,8 +113,7 @@ class PlacementController(
                             } else {
                                 placement
                             }
-                        }
-                        .toSet()
+                        }.toSet()
                         .let { placements ->
                             val placementIds = placements.map { placement -> placement.id }
                             val serviceNeedIds =
@@ -134,19 +135,17 @@ class PlacementController(
                                         user,
                                         clock,
                                         serviceNeedIds
-                                    ),
+                                    )
                             )
                         }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PlacementSearch.log(
                     targetId = daycareId?.let(AuditId::invoke) ?: childId?.let(AuditId::invoke),
                     meta =
                         mapOf("startDate" to from, "endDate" to to, "count" to it.placements.size)
                 )
             }
-    }
 
     @GetMapping(
         "/placements/plans", // deprecated
@@ -159,8 +158,9 @@ class PlacementController(
         @RequestParam daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
-    ): List<PlacementPlanDetails> {
-        return db.connect { dbc ->
+    ): List<PlacementPlanDetails> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -172,14 +172,12 @@ class PlacementController(
 
                     it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, from, to)
                 }
-            }
-            .also {
+            }.also {
                 Audit.PlacementPlanSearch.log(
                     targetId = AuditId(daycareId),
                     meta = mapOf("startDate" to from, "endDate" to to, "count" to it.size)
                 )
             }
-    }
 
     @PostMapping(
         "/placements", // deprecated
@@ -191,8 +189,9 @@ class PlacementController(
         clock: EvakaClock,
         @RequestBody body: PlacementCreateRequestBody
     ) {
-        if (body.startDate > body.endDate)
+        if (body.startDate > body.endDate) {
             throw BadRequest("Placement start date cannot be after the end date")
+        }
         val now = clock.now()
 
         val placements =
@@ -215,60 +214,59 @@ class PlacementController(
                     }
 
                     createPlacement(
-                            tx,
-                            childId = body.childId,
-                            unitId = body.unitId,
-                            period = FiniteDateRange(body.startDate, body.endDate),
-                            type = body.type,
-                            useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                            placeGuarantee = body.placeGuarantee
-                        )
-                        .also {
-                            generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
+                        tx,
+                        childId = body.childId,
+                        unitId = body.unitId,
+                        period = FiniteDateRange(body.startDate, body.endDate),
+                        type = body.type,
+                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                        placeGuarantee = body.placeGuarantee
+                    ).also {
+                        generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
 
-                            val future = DateRange(now.toLocalDate().plusDays(1), null)
-                            val range = DateRange(body.startDate, body.endDate).intersection(future)
+                        val future = DateRange(now.toLocalDate().plusDays(1), null)
+                        val range = DateRange(body.startDate, body.endDate).intersection(future)
 
-                            // Only proceed with future absence and reservation deletion if
-                            // placements range is in future
-                            if (range != null) {
-                                // Delete future absences if new absence category is specific
-                                if (
-                                    body.type.absenceCategories().size !=
-                                        AbsenceCategory.values().size
-                                ) {
-                                    deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                                        tx,
-                                        clock,
-                                        body.childId,
-                                        range,
-                                        setOf(
-                                            when (body.type.absenceCategories().single()) {
-                                                AbsenceCategory.BILLABLE ->
-                                                    AbsenceCategory.NONBILLABLE
-                                                AbsenceCategory.NONBILLABLE ->
-                                                    AbsenceCategory.BILLABLE
-                                            }
-                                        )
-                                    )
-                                }
-                                tx.clearReservationsForRangeExceptInHolidayPeriod(
+                        // Only proceed with future absence and reservation deletion if
+                        // placements range is in future
+                        if (range != null) {
+                            // Delete future absences if new absence category is specific
+                            if (
+                                body.type.absenceCategories().size !=
+                                AbsenceCategory.values().size
+                            ) {
+                                deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                                    tx,
+                                    clock,
                                     body.childId,
-                                    range
+                                    range,
+                                    setOf(
+                                        when (body.type.absenceCategories().single()) {
+                                            AbsenceCategory.BILLABLE ->
+                                                AbsenceCategory.NONBILLABLE
+                                            AbsenceCategory.NONBILLABLE ->
+                                                AbsenceCategory.BILLABLE
+                                        }
+                                    )
                                 )
                             }
-
-                            asyncJobRunner.plan(
-                                tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forChild(
-                                        body.childId,
-                                        DateRange(body.startDate, body.endDate)
-                                    )
-                                ),
-                                runAt = now
+                            tx.clearReservationsForRangeExceptInHolidayPeriod(
+                                body.childId,
+                                range
                             )
                         }
+
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    body.childId,
+                                    DateRange(body.startDate, body.endDate)
+                                )
+                            ),
+                            runAt = now
+                        )
+                    }
                 }
             }
         Audit.PlacementCreate.log(
@@ -299,7 +297,8 @@ class PlacementController(
                     placementId
                 )
                 val authorizedDaycares =
-                    tx.getDaycares(
+                    tx
+                        .getDaycares(
                             clock,
                             accessControl.requireAuthorizationFilter(
                                 tx,
@@ -307,8 +306,7 @@ class PlacementController(
                                 clock,
                                 Action.Unit.READ
                             )
-                        )
-                        .asSequence()
+                        ).asSequence()
                         .map { it.id }
                         .toSet()
                 val aclAuth = AclAuthorization.Subset(ids = authorizedDaycares)
@@ -325,7 +323,7 @@ class PlacementController(
                 // Clear absences and reservations that are not in range of updated placement period
                 if (
                     body.endDate.isAfter(now.toLocalDate()) &&
-                        body.endDate.isBefore(oldPlacement.endDate)
+                    body.endDate.isBefore(oldPlacement.endDate)
                 ) {
                     val range = DateRange(body.endDate, oldPlacement.endDate)
                     deleteFutureNonGeneratedAbsencesByCategoryInRange(
@@ -367,7 +365,8 @@ class PlacementController(
         @PathVariable placementId: PlacementId
     ) {
         val now = clock.now()
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -386,8 +385,11 @@ class PlacementController(
                         // period
                         if (placement.endDate.isAfter(now.toLocalDate())) {
                             val startDate =
-                                if (placement.startDate.isAfter(clock.today())) placement.startDate
-                                else clock.today().plusDays(1)
+                                if (placement.startDate.isAfter(clock.today())) {
+                                    placement.startDate
+                                } else {
+                                    clock.today().plusDays(1)
+                                }
                             val range = DateRange(startDate, placement.endDate)
                             deleteFutureNonGeneratedAbsencesByCategoryInRange(
                                 tx,
@@ -414,8 +416,7 @@ class PlacementController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PlacementCancel.log(
                     targetId = AuditId(placementId),
                     objectId = AuditId(listOf(it.childId, it.unitId))
@@ -433,8 +434,9 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
-    ): GroupPlacementId {
-        return db.connect { dbc ->
+    ): GroupPlacementId =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -450,15 +452,13 @@ class PlacementController(
                         endDate = body.endDate
                     )
                 }
-            }
-            .also { groupPlacementId ->
+            }.also { groupPlacementId ->
                 Audit.DaycareGroupPlacementCreate.log(
                     targetId = AuditId(placementId),
                     objectId = AuditId(groupPlacementId),
                     meta = mapOf("groupId" to body.groupId)
                 )
             }
-    }
 
     @DeleteMapping(
         "/group-placements/{groupPlacementId}", // deprecated
@@ -523,8 +523,9 @@ class PlacementController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable adultId: PersonId
-    ): List<FiniteDateRange> {
-        return db.connect { dbc ->
+    ): List<FiniteDateRange> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -533,7 +534,8 @@ class PlacementController(
                         Action.Person.READ_CHILD_PLACEMENT_PERIODS,
                         adultId
                     )
-                    tx.createQuery {
+                    tx
+                        .createQuery {
                             sql(
                                 """
 WITH all_fridge_children AS (
@@ -552,17 +554,14 @@ FROM placement p
 JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
 """
                             )
-                        }
-                        .toList { FiniteDateRange(column("start"), column("end")) }
+                        }.toList { FiniteDateRange(column("start"), column("end")) }
                 }
-            }
-            .also {
+            }.also {
                 Audit.PlacementChildPlacementPeriodsRead.log(
                     targetId = AuditId(adultId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 }
 
 data class PlacementCreateRequestBody(
@@ -574,7 +573,10 @@ data class PlacementCreateRequestBody(
     val placeGuarantee: Boolean
 )
 
-data class PlacementUpdateRequestBody(val startDate: LocalDate, val endDate: LocalDate)
+data class PlacementUpdateRequestBody(
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
 
 data class GroupPlacementRequestBody(
     val groupId: GroupId,
@@ -582,4 +584,7 @@ data class GroupPlacementRequestBody(
     val endDate: LocalDate
 )
 
-data class GroupTransferRequestBody(val groupId: GroupId, val startDate: LocalDate)
+data class GroupTransferRequestBody(
+    val groupId: GroupId,
+    val startDate: LocalDate
+)

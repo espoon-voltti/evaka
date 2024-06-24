@@ -17,4 +17,7 @@ data class ChildStickyNote(
     val expires: LocalDate
 )
 
-data class ChildStickyNoteBody(val note: String, val expires: LocalDate)
+data class ChildStickyNoteBody(
+    val note: String,
+    val expires: LocalDate
+)

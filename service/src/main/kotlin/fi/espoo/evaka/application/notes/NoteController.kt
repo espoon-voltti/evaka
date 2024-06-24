@@ -28,7 +28,9 @@ import org.springframework.web.bind.annotation.RestController
     "/note", // deprecated
     "/employee/note"
 )
-class NoteController(private val accessControl: AccessControl) {
+class NoteController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/application/{applicationId}")
     fun getNotes(
         db: Database,
@@ -59,7 +61,8 @@ class NoteController(private val accessControl: AccessControl) {
             }
         }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val notes = notesQuery(tx)
                     val permittedActions =
@@ -80,8 +83,7 @@ class NoteController(private val accessControl: AccessControl) {
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.NoteRead.log(
                     targetId = AuditId(applicationId),
                     meta = mapOf("count" to it.size)
@@ -96,8 +98,9 @@ class NoteController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest
-    ): ApplicationNote {
-        return db.connect { dbc ->
+    ): ApplicationNote =
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
                         it,
@@ -108,11 +111,9 @@ class NoteController(private val accessControl: AccessControl) {
                     )
                     it.createApplicationNote(applicationId, note.text, user.evakaUserId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.NoteCreate.log(targetId = AuditId(applicationId), objectId = AuditId(it.id))
             }
-    }
 
     @PutMapping("/{noteId}")
     fun updateNote(
@@ -182,7 +183,9 @@ class NoteController(private val accessControl: AccessControl) {
     }
 }
 
-data class NoteRequest(val text: String)
+data class NoteRequest(
+    val text: String
+)
 
 data class ApplicationNoteResponse(
     val note: ApplicationNote,

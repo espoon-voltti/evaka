@@ -14,14 +14,24 @@ fun KLogger.auditVTJ(m: () -> Any?) {
     auditVTJ(emptyMap(), m)
 }
 
-fun KLogger.auditVTJ(args: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.auditVTJ(
+    args: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isWarnEnabled) warn(auditMarker, m.toStringSafe(), StructuredArguments.entries(args))
 }
 
-fun KLogger.auditVTJ(t: Throwable, m: () -> Any?) {
+fun KLogger.auditVTJ(
+    t: Throwable,
+    m: () -> Any?
+) {
     auditVTJ(emptyMap(), t, m)
 }
 
-fun KLogger.auditVTJ(args: Map<String, Any?>, t: Throwable, m: () -> Any?) {
+fun KLogger.auditVTJ(
+    args: Map<String, Any?>,
+    t: Throwable,
+    m: () -> Any?
+) {
     if (isWarnEnabled) warn(auditMarker, m.toStringSafe(), t, StructuredArguments.entries(args))
 }

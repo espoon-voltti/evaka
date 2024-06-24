@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.RestController
 const val MAX_NUMBER_OF_DAYS = 14
 
 @RestController
-class PresenceReportController(private val accessControl: AccessControl) {
+class PresenceReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/presences", // deprecated
         "/employee/reports/presences"
@@ -34,10 +36,12 @@ class PresenceReportController(private val accessControl: AccessControl) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<PresenceReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
-        if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong())))
+        if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) {
             throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
+        }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -48,8 +52,7 @@ class PresenceReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPresenceRows(from, to)
                 }
-            }
-            .also {
+            }.also {
                 Audit.PresenceReportRead.log(
                     meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
@@ -57,10 +60,13 @@ class PresenceReportController(private val accessControl: AccessControl) {
     }
 }
 
-fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<PresenceReportRow> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getPresenceRows(
+    from: LocalDate,
+    to: LocalDate
+): List<PresenceReportRow> =
+    createQuery {
+        sql(
+            """
 WITH days AS
 (
     SELECT t, extract(DOW FROM t) dw
@@ -84,10 +90,8 @@ WHERE dw = ANY(coalesce(daycare.shift_care_operation_days, daycare.operation_day
   (h.date IS NULL OR daycare.shift_care_open_on_holidays) AND
   (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
 """
-            )
-        }
-        .toList<PresenceReportRow>()
-}
+        )
+    }.toList<PresenceReportRow>()
 
 data class PresenceReportRow(
     val date: LocalDate,

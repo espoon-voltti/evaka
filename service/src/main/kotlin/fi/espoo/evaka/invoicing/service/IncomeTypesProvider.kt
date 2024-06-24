@@ -7,13 +7,12 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.invoicing.domain.IncomeType
 
 fun interface IncomeTypesProvider {
-
     fun get(): Map<String, IncomeType>
 }
 
 class EspooIncomeTypesProvider : IncomeTypesProvider {
-    override fun get(): Map<String, IncomeType> {
-        return linkedMapOf(
+    override fun get(): Map<String, IncomeType> =
+        linkedMapOf(
             "MAIN_INCOME" to IncomeType("Päätulot", 1, true, false),
             "SHIFT_WORK_ADD_ON" to IncomeType("Vuorotyölisät", 1, false, true),
             "PERKS" to IncomeType("Luontaisedut", 1, false, true),
@@ -30,5 +29,4 @@ class EspooIncomeTypesProvider : IncomeTypesProvider {
             "ALL_EXPENSES" to
                 IncomeType("Menot (esim. maksetut elatusmaksut tai syytinki)", -1, false, false)
         )
-    }
 }

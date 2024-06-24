@@ -35,8 +35,9 @@ class PedagogicalDocumentNotificationService(
     fun getPedagogicalDocumentationNotifications(
         tx: Database.Transaction,
         id: PedagogicalDocumentId
-    ): List<AsyncJob.SendPedagogicalDocumentNotificationEmail> {
-        return tx.createQuery {
+    ): List<AsyncJob.SendPedagogicalDocumentNotificationEmail> =
+        tx
+            .createQuery {
                 sql(
                     """
 SELECT DISTINCT
@@ -51,36 +52,31 @@ WHERE doc.id = ${bind(id)}
   AND p.email IS NOT NULL
 """
                 )
-            }
-            .toList {
+            }.toList {
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,
                     recipientId = column("recipient_id"),
                     language = getLanguage(column("language"))
                 )
             }
-    }
 
     private fun Database.Transaction.updateDocumentEmailJobCreatedAt(
         id: PedagogicalDocumentId,
         date: HelsinkiDateTime
     ) {
         createUpdate {
-                sql(
-                    "UPDATE pedagogical_document SET email_job_created_at = ${bind(date)} WHERE id = ${bind(id)}"
-                )
-            }
-            .updateExactlyOne()
+            sql(
+                "UPDATE pedagogical_document SET email_job_created_at = ${bind(date)} WHERE id = ${bind(id)}"
+            )
+        }.updateExactlyOne()
     }
 
-    private fun Database.Read.shouldCreateNotificationJobForDocument(
-        id: PedagogicalDocumentId
-    ): Boolean {
+    private fun Database.Read.shouldCreateNotificationJobForDocument(id: PedagogicalDocumentId): Boolean {
         // notification job should be created only if description is set or an attachment is
         // uploaded
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT EXISTS(
     SELECT 1
     FROM pedagogical_document doc
@@ -91,12 +87,14 @@ SELECT EXISTS(
         (LENGTH(doc.description) > 0 OR a.id IS NOT NULL)
 )
             """
-                )
-            }
-            .exactlyOne<Boolean>()
+            )
+        }.exactlyOne<Boolean>()
     }
 
-    fun maybeScheduleEmailNotification(tx: Database.Transaction, id: PedagogicalDocumentId) {
+    fun maybeScheduleEmailNotification(
+        tx: Database.Transaction,
+        id: PedagogicalDocumentId
+    ) {
         if (tx.shouldCreateNotificationJobForDocument(id)) {
             tx.updateDocumentEmailJobCreatedAt(id, HelsinkiDateTime.now())
 
@@ -112,13 +110,12 @@ SELECT EXISTS(
         }
     }
 
-    private fun getLanguage(languageStr: String?): Language {
-        return when (languageStr?.lowercase()) {
+    private fun getLanguage(languageStr: String?): Language =
+        when (languageStr?.lowercase()) {
             "sv" -> Language.sv
             "en" -> Language.en
             else -> Language.fi
         }
-    }
 
     fun sendNotification(
         db: Database.Connection,
@@ -126,16 +123,16 @@ SELECT EXISTS(
         msg: AsyncJob.SendPedagogicalDocumentNotificationEmail
     ) {
         val childId = db.read { tx -> tx.getPedagogicalDocumentChild(msg.pedagogicalDocumentId) }
-        Email.create(
+        Email
+            .create(
                 dbc = db,
                 personId = msg.recipientId,
                 emailType = EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content =
                     emailMessageProvider.pedagogicalDocumentNotification(msg.language, childId),
-                traceId = msg.pedagogicalDocumentId.toString(),
-            )
-            ?.also {
+                traceId = msg.pedagogicalDocumentId.toString()
+            )?.also {
                 emailClient.send(it)
                 db.transaction { tx ->
                     tx.markPedagogicalDocumentNotificationSent(msg.pedagogicalDocumentId)
@@ -144,17 +141,14 @@ SELECT EXISTS(
     }
 }
 
-private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
-    id: PedagogicalDocumentId
-) {
+private fun Database.Transaction.markPedagogicalDocumentNotificationSent(id: PedagogicalDocumentId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE pedagogical_document
                 SET email_sent = TRUE 
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }

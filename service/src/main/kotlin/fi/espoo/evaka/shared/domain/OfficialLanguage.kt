@@ -10,9 +10,12 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 
 /** Official language of Finland */
 @ConstList("officialLanguages")
-enum class OfficialLanguage(val isoLanguage: IsoLanguage) : DatabaseEnum {
+enum class OfficialLanguage(
+    val isoLanguage: IsoLanguage
+) : DatabaseEnum {
     @JsonAlias("fi") // support legacy data deserialization
     FI(IsoLanguage.FIN),
+
     @JsonAlias("sv") // support legacy data deserialization
     SV(IsoLanguage.SWE);
 

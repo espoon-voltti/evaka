@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController
 private val logger = KotlinLogging.logger {}
 
 @RestController
-class ChildDailyNoteController(private val ac: AccessControl) {
+class ChildDailyNoteController(
+    private val ac: AccessControl
+) {
     @PostMapping("/children/{childId}/child-daily-notes")
     fun createChildDailyNote(
         db: Database,
@@ -36,7 +38,8 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNoteId {
         try {
-            return db.connect { dbc ->
+            return db
+                .connect { dbc ->
                     dbc.transaction {
                         ac.requirePermissionFor(
                             it,
@@ -47,8 +50,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
                         )
                         it.createChildDailyNote(childId, body)
                     }
-                }
-                .also { noteId ->
+                }.also { noteId ->
                     Audit.ChildDailyNoteCreate.log(
                         targetId = AuditId(childId),
                         objectId = AuditId(noteId)
@@ -69,15 +71,14 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         clock: EvakaClock,
         @PathVariable noteId: ChildDailyNoteId,
         @RequestBody body: ChildDailyNoteBody
-    ): ChildDailyNote {
-        return db.connect { dbc ->
+    ): ChildDailyNote =
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     ac.requirePermissionFor(it, user, clock, Action.ChildDailyNote.UPDATE, noteId)
                     it.updateChildDailyNote(clock, noteId, body)
                 }
-            }
-            .also { Audit.ChildDailyNoteUpdate.log(targetId = AuditId(noteId)) }
-    }
+            }.also { Audit.ChildDailyNoteUpdate.log(targetId = AuditId(noteId)) }
 
     @DeleteMapping("/child-daily-notes/{noteId}")
     fun deleteChildDailyNote(

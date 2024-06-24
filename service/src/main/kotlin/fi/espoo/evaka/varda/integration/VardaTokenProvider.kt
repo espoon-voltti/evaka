@@ -31,8 +31,10 @@ interface VardaTokenProvider {
  * automatically and internally in this provider with a mutex.
  */
 @Service
-class VardaTempTokenProvider(private val jsonMapper: JsonMapper, env: VardaEnv) :
-    VardaTokenProvider {
+class VardaTempTokenProvider(
+    private val jsonMapper: JsonMapper,
+    env: VardaEnv
+) : VardaTokenProvider {
     private val fuel = FuelManager()
     private val basicAuth = "Basic ${env.basicAuth.value}"
     private val apiTokenUrl = "${env.url}/user/apikey/"
@@ -69,20 +71,24 @@ class VardaTempTokenProvider(private val jsonMapper: JsonMapper, env: VardaEnv) 
                 { d -> VardaApiToken.from(jsonMapper.readTree(d).get("token").asText()) },
                 { err ->
                     throw IllegalStateException(
-                        "Requesting Varda API token failed: status code ${err.response.statusCode}, error ${String(err.errorData)}. Aborting update",
+                        "Requesting Varda API token failed: status code ${err.response.statusCode}, error ${String(
+                            err.errorData
+                        )}. Aborting update",
                         err
                     )
                 }
             )
 }
 
-private data class VardaApiToken(val token: String, val createdAt: Instant) {
+private data class VardaApiToken(
+    val token: String,
+    val createdAt: Instant
+) {
     companion object {
         fun from(token: String) = VardaApiToken(token, Instant.now())
 
         // NOTE: This is just our perception of a token's validity. Varda API can invalidate a token
         // at any point.
-        fun isValid(token: VardaApiToken?): Boolean =
-            token?.createdAt?.isAfter(Instant.now().minus(12, ChronoUnit.HOURS)) ?: false
+        fun isValid(token: VardaApiToken?): Boolean = token?.createdAt?.isAfter(Instant.now().minus(12, ChronoUnit.HOURS)) ?: false
     }
 }

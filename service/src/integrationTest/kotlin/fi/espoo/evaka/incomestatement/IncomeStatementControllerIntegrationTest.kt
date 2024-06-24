@@ -54,6 +54,7 @@ import org.springframework.mock.web.MockMultipartFile
 
 class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var incomeStatementController: IncomeStatementController
+
     @Autowired private lateinit var attachmentsController: AttachmentsController
 
     private val employeeId = EmployeeId(UUID.randomUUID())
@@ -367,7 +368,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
                         personName = "Doe John",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = "Test Area"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -377,7 +378,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = "Lwiz Foo"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -387,7 +388,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
                         personName = "Foo Mark",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = "Lwiz Foo"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement4.id,
@@ -397,7 +398,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_4.id,
                         personName = "Aman Dork",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = "Test Area"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement5.id,
@@ -407,7 +408,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_5.id,
                         personName = "Karhula Johannes Olavi Antero Tapio",
-                        primaryCareArea = null,
+                        primaryCareArea = null
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement6.id,
@@ -638,7 +639,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
+            it
+                .createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
                 .bind("newCreated", newCreated)
                 .bind("id", incomeStatement1.id)
                 .execute()
@@ -761,7 +763,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
+            it
+                .createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
                 .bind("newCreated", newCreated)
                 .bind("id", incomeStatement1.id)
                 .execute()
@@ -921,7 +924,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET created = :newCreated")
+            it
+                .createUpdate("UPDATE income_statement SET created = :newCreated")
                 .bind("newCreated", newCreated)
                 .execute()
         }
@@ -968,18 +972,17 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         )
     }
 
-    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement {
-        return incomeStatementController.getIncomeStatement(
+    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
+        incomeStatementController.getIncomeStatement(
             dbInstance(),
             employee,
             RealEvakaClock(),
             citizenId,
             id
         )
-    }
 
-    private fun getIncomeStatements(personId: PersonId): PagedIncomeStatements {
-        return incomeStatementController.getIncomeStatements(
+    private fun getIncomeStatements(personId: PersonId): PagedIncomeStatements =
+        incomeStatementController.getIncomeStatements(
             dbInstance(),
             employee,
             RealEvakaClock(),
@@ -987,7 +990,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             page = 1,
             pageSize = 10
         )
-    }
 
     private fun setIncomeStatementHandled(
         id: IncomeStatementId,
@@ -1006,22 +1008,20 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         body: SearchIncomeStatementsRequest =
             SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
         clock: EvakaClock = RealEvakaClock()
-    ): PagedIncomeStatementsAwaitingHandler {
-        return incomeStatementController.getIncomeStatementsAwaitingHandler(
+    ): PagedIncomeStatementsAwaitingHandler =
+        incomeStatementController.getIncomeStatementsAwaitingHandler(
             dbInstance(),
             employee,
             clock,
             body
         )
-    }
 
-    private fun uploadAttachment(id: IncomeStatementId): AttachmentId {
-        return attachmentsController.uploadIncomeStatementAttachmentEmployee(
+    private fun uploadAttachment(id: IncomeStatementId): AttachmentId =
+        attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
             employee,
             RealEvakaClock(),
             id,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
         )
-    }
 }

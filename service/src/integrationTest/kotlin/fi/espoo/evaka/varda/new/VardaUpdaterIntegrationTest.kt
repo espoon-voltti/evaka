@@ -129,7 +129,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 status = VoucherValueDecisionStatus.SENT,
                 familySize = 4,
                 voucherValue = 100000,
-                finalCoPayment = 2000,
+                finalCoPayment = 2000
             )
 
         val feeDecisionUnit2 =
@@ -161,15 +161,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = municipalDaycare1.id,
                         startDate = mUnit1Range1.start,
                         endDate = mUnit1Range2.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -196,15 +196,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(feeDecisionUnit1Range2)
             tx.insert(feeDecisionChildUnit1Range2)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = voucherDaycare.id,
                         startDate = vUnitRange.start,
                         endDate = vUnitRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -218,15 +218,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
             tx.insert(voucherValueDecision)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = municipalDaycare2.id,
                         startDate = mUnit2Range.start,
                         endDate = mUnit2Range.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -258,7 +258,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -277,25 +277,25 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         mUnit1Range2,
                                         tuntimaara_viikossa = 25.0
                                     ),
-                                    varhaiskasvatuspaatos(municipalUnit2Oid, mUnit2Range),
+                                    varhaiskasvatuspaatos(municipalUnit2Oid, mUnit2Range)
                                 ),
                             maksutiedot =
                                 listOf(
                                     maksutieto(
                                         range = mUnit1Range1,
                                         perheen_koko = 2,
-                                        asiakasmaksu = 0.0,
+                                        asiakasmaksu = 0.0
                                     ),
                                     maksutieto(
                                         range = mUnit1Range2,
                                         perheen_koko = 3,
-                                        asiakasmaksu = 10.0,
+                                        asiakasmaksu = 10.0
                                     ),
                                     maksutieto(
                                         range = mUnit2Range,
                                         perheen_koko = 5,
-                                        asiakasmaksu = 30.0,
-                                    ),
+                                        asiakasmaksu = 30.0
+                                    )
                                 )
                         ),
                         VardaUpdater.EvakaLapsiNode(
@@ -319,7 +319,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         range = vUnitRange,
                                         perheen_koko = 4,
                                         palveluseteli_arvo = 1000.0,
-                                        asiakasmaksu = 20.0,
+                                        asiakasmaksu = 20.0
                                     )
                                 )
                         )
@@ -346,15 +346,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = unit.id,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -383,7 +383,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset = emptyList()
             ),
@@ -432,15 +432,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = unit.id,
                         startDate = start(0),
                         endDate = end(serviceNeeds.size)
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     serviceNeeds.forEachIndexed { i, (sno, shiftCare) ->
                         val period = range(i)
                         tx.insert(
@@ -475,7 +475,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -492,13 +492,13 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     varhaiskasvatuspaatos(
                                         unitOid,
                                         range(0),
-                                        tuntimaara_viikossa = 35.0,
+                                        tuntimaara_viikossa = 35.0
                                     ),
                                     // snDaycareFullDay25to35,
                                     varhaiskasvatuspaatos(
                                         unitOid,
                                         range(1),
-                                        tuntimaara_viikossa = 30.0,
+                                        tuntimaara_viikossa = 30.0
                                     ),
                                     // snDaycareFullDayPartWeek25,
                                     varhaiskasvatuspaatos(
@@ -536,7 +536,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         vuorohoito_kytkin = true,
                                         kokopaivainen_vaka_kytkin = false,
                                         paivittainen_vaka_kytkin = false
-                                    ),
+                                    )
                                 ),
                             maksutiedot = emptyList()
                         )
@@ -557,7 +557,11 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val employee = DevEmployee()
         val area = DevCareArea()
 
-        class TestItem(index: Long, providerType: ProviderType, val jarjestamismuoto: String) {
+        class TestItem(
+            index: Long,
+            providerType: ProviderType,
+            val jarjestamismuoto: String
+        ) {
             val unitOid = "unitOid$index"
             val range =
                 FiniteDateRange(
@@ -569,8 +573,11 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     areaId = area.id,
                     providerType = providerType,
                     ophOrganizerOid =
-                        if (providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) ophOrganizerOid
-                        else municipalOrganizerOid,
+                        if (providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
+                            ophOrganizerOid
+                        } else {
+                            municipalOrganizerOid
+                        },
                     ophUnitOid = unitOid
                 )
         }
@@ -582,7 +589,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 TestItem(2, ProviderType.PRIVATE, "jm04"),
                 TestItem(3, ProviderType.MUNICIPAL_SCHOOL, "jm01"),
                 TestItem(4, ProviderType.PRIVATE_SERVICE_VOUCHER, "jm03"),
-                TestItem(5, ProviderType.EXTERNAL_PURCHASED, "jm02"),
+                TestItem(5, ProviderType.EXTERNAL_PURCHASED, "jm02")
             )
 
         val child = DevPerson(ssn = "030320A904N")
@@ -595,15 +602,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
 
             testItems.forEach {
-                tx.insert(
+                tx
+                    .insert(
                         DevPlacement(
                             childId = child.id,
                             unitId = it.unit.id,
                             startDate = it.range.start,
                             endDate = it.range.end
                         )
-                    )
-                    .also { placementId ->
+                    ).also { placementId ->
                         tx.insert(
                             DevServiceNeed(
                                 placementId = placementId,
@@ -634,7 +641,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     testItems
@@ -642,18 +649,19 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         .map { (isVoucher, items) ->
                             VardaUpdater.EvakaLapsiNode(
                                 lapsi =
-                                    if (isVoucher)
+                                    if (isVoucher) {
                                         Lapsi(
                                             vakatoimija_oid = null,
                                             oma_organisaatio_oid = municipalOrganizerOid,
-                                            paos_organisaatio_oid = ophOrganizerOid,
+                                            paos_organisaatio_oid = ophOrganizerOid
                                         )
-                                    else
+                                    } else {
                                         Lapsi(
                                             vakatoimija_oid = municipalOrganizerOid,
                                             oma_organisaatio_oid = null,
                                             paos_organisaatio_oid = null
-                                        ),
+                                        )
+                                    },
                                 varhaiskasvatuspaatokset =
                                     items.map {
                                         varhaiskasvatuspaatos(
@@ -696,7 +704,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                         childId = child.id,
@@ -704,8 +713,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -718,14 +726,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
 
-            tx.insert(
+            tx
+                .insert(
                     DevFeeDecision(
                         headOfFamilyId = guardian.id,
                         validDuring = placementRange,
                         status = FeeDecisionStatus.SENT
                     )
-                )
-                .also { feeDecisionId ->
+                ).also { feeDecisionId ->
                     tx.insert(
                         DevFeeDecisionChild(
                             feeDecisionId = feeDecisionId,
@@ -748,7 +756,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -764,14 +772,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     varhaiskasvatuspaatos(
                                         unitOid,
                                         placementRange,
-                                        tuntimaara_viikossa = 35.0,
+                                        tuntimaara_viikossa = 35.0
                                     )
                                 ),
                             maksutiedot =
                                 listOf(
                                     maksutieto(
                                         range = placementRange,
-                                        maksun_peruste_koodi = "MP02",
+                                        maksun_peruste_koodi = "MP02"
                                     )
                                 )
                         )
@@ -810,15 +818,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = placementRange1.start,
                         endDate = placementRange1.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -830,14 +838,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-            tx.insert(
+            tx
+                .insert(
                     DevFeeDecision(
                         headOfFamilyId = guardian.id,
                         validDuring = placementRange1,
                         status = FeeDecisionStatus.SENT
                     )
-                )
-                .let { feeDecisionId ->
+                ).let { feeDecisionId ->
                     tx.insert(
                         DevFeeDecisionChild(
                             feeDecisionId = feeDecisionId,
@@ -848,15 +856,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = placementRange2.start,
                         endDate = placementRange2.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -868,14 +876,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         )
                     )
                 }
-            tx.insert(
+            tx
+                .insert(
                     DevFeeDecision(
                         headOfFamilyId = guardian.id,
                         validDuring = placementRange2,
                         status = FeeDecisionStatus.SENT
                     )
-                )
-                .let { feeDecisionId ->
+                ).let { feeDecisionId ->
                     tx.insert(
                         DevFeeDecisionChild(
                             feeDecisionId = feeDecisionId,
@@ -898,7 +906,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -916,15 +924,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         FiniteDateRange(
                                             LocalDate.of(2021, 1, 1),
                                             LocalDate.of(2021, 3, 31)
-                                        ),
+                                        )
                                     ),
                                     varhaiskasvatuspaatos(
                                         unitOid,
                                         FiniteDateRange(
                                             LocalDate.of(2021, 9, 1),
                                             LocalDate.of(2021, 12, 31)
-                                        ),
-                                    ),
+                                        )
+                                    )
                                 ),
                             maksutiedot =
                                 listOf(
@@ -992,15 +1000,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             tx.insert(child, DevPersonType.CHILD)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -1026,7 +1034,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset = emptyList()
             ),
@@ -1062,15 +1070,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = unit.id,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -1083,14 +1091,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 }
 
-            tx.insert(
+            tx
+                .insert(
                     DevFeeDecision(
                         headOfFamilyId = guardian.id,
                         validDuring = placementRange,
                         status = FeeDecisionStatus.SENT
                     )
-                )
-                .also { feeDecisionId ->
+                ).also { feeDecisionId ->
                     tx.insert(
                         DevFeeDecisionChild(
                             feeDecisionId = feeDecisionId,
@@ -1112,7 +1120,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -1170,15 +1178,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = unit.id,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -1192,14 +1200,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
 
             feeRanges.forEach { feeRange ->
-                tx.insert(
+                tx
+                    .insert(
                         DevFeeDecision(
                             headOfFamilyId = guardian.id,
                             validDuring = feeRange,
                             status = FeeDecisionStatus.SENT
                         )
-                    )
-                    .also { feeDecisionId ->
+                    ).also { feeDecisionId ->
                         tx.insert(
                             DevFeeDecisionChild(
                                 feeDecisionId = feeDecisionId,
@@ -1222,7 +1230,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -1298,42 +1306,41 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertGuardian(guardian.id, child.id)
 
             listOf(
-                    unit1.id to lapsi1placement1range,
-                    unit1.id to lapsi1placement2range,
-                    unit2.id to lapsi2placement1range,
-                    unit2.id to lapsi2placement2range
-                )
-                .forEach { (unitId, range) ->
-                    tx.insert(
-                            DevPlacement(
-                                childId = child.id,
-                                unitId = unitId,
+                unit1.id to lapsi1placement1range,
+                unit1.id to lapsi1placement2range,
+                unit2.id to lapsi2placement1range,
+                unit2.id to lapsi2placement2range
+            ).forEach { (unitId, range) ->
+                tx
+                    .insert(
+                        DevPlacement(
+                            childId = child.id,
+                            unitId = unitId,
+                            startDate = range.start,
+                            endDate = range.end
+                        )
+                    ).also { placementId ->
+                        tx.insert(
+                            DevServiceNeed(
+                                placementId = placementId,
                                 startDate = range.start,
-                                endDate = range.end
+                                endDate = range.end,
+                                optionId = snDaycareFullDay35.id,
+                                confirmedBy = employee.evakaUserId
                             )
                         )
-                        .also { placementId ->
-                            tx.insert(
-                                DevServiceNeed(
-                                    placementId = placementId,
-                                    startDate = range.start,
-                                    endDate = range.end,
-                                    optionId = snDaycareFullDay35.id,
-                                    confirmedBy = employee.evakaUserId,
-                                )
-                            )
-                        }
-                }
+                    }
+            }
             listOf(unit1.id to lapsi1fee1, unit1.id to lapsi1fee2, unit2.id to lapsi2fee1)
                 .forEach { (unitId, range) ->
-                    tx.insert(
+                    tx
+                        .insert(
                             DevFeeDecision(
                                 headOfFamilyId = guardian.id,
                                 validDuring = range,
                                 status = FeeDecisionStatus.SENT
                             )
-                        )
-                        .also { feeDecisionId ->
+                        ).also { feeDecisionId ->
                             tx.insert(
                                 DevFeeDecisionChild(
                                     feeDecisionId = feeDecisionId,
@@ -1360,7 +1367,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -1433,15 +1440,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(guardian.id, child.id)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = unit1.id,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -1455,13 +1462,13 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
 
             // This application is picked up!
-            tx.insertApplication(
+            tx
+                .insertApplication(
                     guardian = guardian,
                     child = child,
                     status = ApplicationStatus.ACTIVE,
-                    sentDate = applicationDate1,
-                )
-                .let { applicationDetails ->
+                    sentDate = applicationDate1
+                ).let { applicationDetails ->
                     tx.insertTestDecision(
                         TestDecision(
                             applicationId = applicationDetails.id,
@@ -1470,20 +1477,20 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endDate = placementRange.end,
                             status = DecisionStatus.ACCEPTED,
                             type = DecisionType.DAYCARE,
-                            createdBy = employee.evakaUserId,
+                            createdBy = employee.evakaUserId
                         )
                     )
                 }
 
             // This application is not picked up because its sent date is before the previous one:
             // The latest application is always picked up
-            tx.insertApplication(
+            tx
+                .insertApplication(
                     guardian = guardian,
                     child = child,
                     status = ApplicationStatus.ACTIVE,
-                    sentDate = applicationDate1.minusDays(1),
-                )
-                .let { applicationDetails ->
+                    sentDate = applicationDate1.minusDays(1)
+                ).let { applicationDetails ->
                     tx.insertTestDecision(
                         TestDecision(
                             applicationId = applicationDetails.id,
@@ -1492,20 +1499,20 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endDate = placementRange.end,
                             status = DecisionStatus.ACCEPTED,
                             type = DecisionType.DAYCARE,
-                            createdBy = employee.evakaUserId,
+                            createdBy = employee.evakaUserId
                         )
                     )
                 }
 
             // This application is not picked up because the decision's date range doesn't overlap
             // with the placement
-            tx.insertApplication(
+            tx
+                .insertApplication(
                     guardian = guardian,
                     child = child,
                     status = ApplicationStatus.ACTIVE,
-                    sentDate = applicationDate2,
-                )
-                .let { applicationDetails ->
+                    sentDate = applicationDate2
+                ).let { applicationDetails ->
                     tx.insertTestDecision(
                         TestDecision(
                             applicationId = applicationDetails.id,
@@ -1514,19 +1521,19 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endDate = placementRange.start.minusDays(1),
                             status = DecisionStatus.ACCEPTED,
                             type = DecisionType.DAYCARE,
-                            createdBy = employee.evakaUserId,
+                            createdBy = employee.evakaUserId
                         )
                     )
                 }
 
             // This application is not picked up because the decision targets a wrong unit
-            tx.insertApplication(
+            tx
+                .insertApplication(
                     guardian = guardian,
                     child = child,
                     status = ApplicationStatus.ACTIVE,
-                    sentDate = applicationDate3,
-                )
-                .let { applicationDetails ->
+                    sentDate = applicationDate3
+                ).let { applicationDetails ->
                     tx.insertTestDecision(
                         TestDecision(
                             applicationId = applicationDetails.id,
@@ -1535,7 +1542,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endDate = placementRange.end,
                             status = DecisionStatus.ACCEPTED,
                             type = DecisionType.DAYCARE,
-                            createdBy = employee.evakaUserId,
+                            createdBy = employee.evakaUserId
                         )
                     )
                 }
@@ -1552,7 +1559,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset =
                     listOf(
@@ -1610,7 +1617,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             etunimet = "Test",
                             sukunimi = "Person",
                             henkilo_oid = null,
-                            henkilotunnus = "030320A904N",
+                            henkilotunnus = "030320A904N"
                         ),
                     lapset =
                         listOf(
@@ -1866,7 +1873,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     )
                                 )
                         ),
-
                         // This will be removed altogether
                         VardaUpdater.VardaLapsiNode(
                             lapsi =
@@ -1932,7 +1938,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                             )
                                     )
                                 )
-                        ),
+                        )
                     )
             )
 
@@ -1943,7 +1949,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = "Test",
                         sukunimi = "Person",
                         henkilo_oid = null,
-                        henkilotunnus = "030320A904N",
+                        henkilotunnus = "030320A904N"
                     ),
                 lapset =
                     listOf(
@@ -2147,7 +2153,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = "Test",
                         sukunimi = "Person",
                         henkilo_oid = null,
-                        henkilotunnus = "030320A904N",
+                        henkilotunnus = "030320A904N"
                     ),
                 // No data in eVaka
                 lapset = listOf()
@@ -2223,7 +2229,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                             VardaReadClient.VarhaiskasvatuspaatosResponse(
                                                 url = old.varhaiskasvatusPaatosToEndUrl,
                                                 lahdejarjestelma =
-                                                    null, // This will be set to new.sourceSystem
+                                                null, // This will be set to new.sourceSystem
                                                 alkamis_pvm = old.beforeEvakaRange.start,
                                                 paattymis_pvm = old.beforeEvakaRange.end,
                                                 hakemus_pvm = old.applicationDate,
@@ -2311,7 +2317,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = "Test",
                         sukunimi = "Person",
                         henkilo_oid = null,
-                        henkilotunnus = "030320A904N",
+                        henkilotunnus = "030320A904N"
                     ),
                 lapset =
                     listOf(
@@ -2349,14 +2355,20 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 "SetPaattymisPvm" to
-                    (old.maksutietoToEndUrl to
-                        VardaWriteClient.SetPaattymisPvmRequest(old.sourceSystem, dayBeforeEvaka)),
+                    (
+                        old.maksutietoToEndUrl to
+                            VardaWriteClient.SetPaattymisPvmRequest(old.sourceSystem, dayBeforeEvaka)
+                    ),
                 "SetPaattymisPvm" to
-                    (old.varhaiskasvatusSuhdeToEndUrl to
-                        VardaWriteClient.SetPaattymisPvmRequest(old.sourceSystem, dayBeforeEvaka)),
+                    (
+                        old.varhaiskasvatusSuhdeToEndUrl to
+                            VardaWriteClient.SetPaattymisPvmRequest(old.sourceSystem, dayBeforeEvaka)
+                    ),
                 "SetPaattymisPvm" to
-                    (old.varhaiskasvatusPaatosToEndUrl to
-                        VardaWriteClient.SetPaattymisPvmRequest(new.sourceSystem, dayBeforeEvaka)),
+                    (
+                        old.varhaiskasvatusPaatosToEndUrl to
+                            VardaWriteClient.SetPaattymisPvmRequest(new.sourceSystem, dayBeforeEvaka)
+                    ),
                 "Delete" to old.varhaiskasvatusSuhdeToDeleteUrl,
                 "Delete" to old.varhaiskasvatusPaatosToDeleteUrl,
                 "Create" to
@@ -2501,7 +2513,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = "Test",
                         sukunimi = "Person",
                         henkilo_oid = null,
-                        henkilotunnus = "030320A904N",
+                        henkilotunnus = "030320A904N"
                     ),
                 // No data in eVaka
                 lapset = listOf()
@@ -2535,15 +2547,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(employee)
 
             tx.insert(child1, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child1.id,
                         unitId = unit.id,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -2557,15 +2569,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
 
             tx.insert(child2, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child2.id,
                         unitId = unit.id,
                         startDate = placementRange.start,
                         endDate = placementRange.end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     tx.insert(
                         DevServiceNeed(
                             placementId = placementId,
@@ -2609,9 +2621,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : FailEveryOperation() {
-            override fun haeHenkilo(
-                body: VardaReadClient.HaeHenkiloRequest
-            ): VardaReadClient.HenkiloResponse =
+            override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest): VardaReadClient.HenkiloResponse =
                 VardaReadClient.HenkiloResponse(
                     url = URI.create("henkilo"),
                     henkilo_oid = "henkilo_oid",
@@ -2629,7 +2639,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         val state =
-            db.read { it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id)) }
+            db
+                .read { it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id)) }
                 .values
                 .first()
 
@@ -2640,7 +2651,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = "ophPersonOid",
-                        henkilotunnus = null,
+                        henkilotunnus = null
                     ),
                 lapset = emptyList()
             ),
@@ -2681,7 +2692,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         val state =
-            db.read { it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id)) }
+            db
+                .read { it.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id)) }
                 .values
                 .first()
 
@@ -2692,7 +2704,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         etunimet = child.firstName,
                         sukunimi = child.lastName,
                         henkilo_oid = null,
-                        henkilotunnus = child.ssn,
+                        henkilotunnus = child.ssn
                     ),
                 lapset = emptyList()
             ),
@@ -2715,9 +2727,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : FailEveryOperation() {
-            override fun getOrCreateHenkilo(
-                body: VardaReadClient.GetOrCreateHenkiloRequest
-            ): VardaReadClient.HenkiloResponse =
+            override fun getOrCreateHenkilo(body: VardaReadClient.GetOrCreateHenkiloRequest): VardaReadClient.HenkiloResponse =
                 VardaReadClient.HenkiloResponse(
                     url = URI.create("henkilo"),
                     henkilo_oid = "henkilo_oid",
@@ -2754,9 +2764,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : FailEveryOperation() {
-            override fun getOrCreateHenkilo(
-                body: VardaReadClient.GetOrCreateHenkiloRequest
-            ): VardaReadClient.HenkiloResponse = error("this is an error message")
+            override fun getOrCreateHenkilo(body: VardaReadClient.GetOrCreateHenkiloRequest): VardaReadClient.HenkiloResponse =
+                error("this is an error message")
         }
 
         updater.updateChild(
@@ -2770,15 +2779,15 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val (lastSuccessAt, erroredAt, error) =
             db.read { tx ->
-                tx.createQuery { sql("SELECT last_success_at, errored_at, error FROM varda_state") }
+                tx
+                    .createQuery { sql("SELECT last_success_at, errored_at, error FROM varda_state") }
                     .map {
                         Triple<HelsinkiDateTime?, HelsinkiDateTime?, String?>(
                             column("last_success_at"),
                             column("errored_at"),
                             column("error")
                         )
-                    }
-                    .exactlyOne()
+                    }.exactlyOne()
             }
 
         assertEquals(null, lastSuccessAt)
@@ -2815,23 +2824,22 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         paivittainen_vaka_kytkin: Boolean = true,
         vuorohoito_kytkin: Boolean = false,
         jarjestamismuoto_koodi: String = "jm01"
-    ) =
-        VardaUpdater.EvakaVarhaiskasvatuspaatosNode(
-            varhaiskasvatuspaatos =
-                Varhaiskasvatuspaatos(
-                    hakemus_pvm = hakemus_pvm,
-                    alkamis_pvm = range.start,
-                    paattymis_pvm = range.end,
-                    tuntimaara_viikossa = tuntimaara_viikossa,
-                    kokopaivainen_vaka_kytkin = kokopaivainen_vaka_kytkin,
-                    tilapainen_vaka_kytkin = tilapainen_vaka_kytkin,
-                    paivittainen_vaka_kytkin = paivittainen_vaka_kytkin,
-                    vuorohoito_kytkin = vuorohoito_kytkin,
-                    jarjestamismuoto_koodi = jarjestamismuoto_koodi,
-                ),
-            varhaiskasvatussuhteet =
-                listOf(Varhaiskasvatussuhde(toimipaikka_oid, range.start, range.end))
-        )
+    ) = VardaUpdater.EvakaVarhaiskasvatuspaatosNode(
+        varhaiskasvatuspaatos =
+            Varhaiskasvatuspaatos(
+                hakemus_pvm = hakemus_pvm,
+                alkamis_pvm = range.start,
+                paattymis_pvm = range.end,
+                tuntimaara_viikossa = tuntimaara_viikossa,
+                kokopaivainen_vaka_kytkin = kokopaivainen_vaka_kytkin,
+                tilapainen_vaka_kytkin = tilapainen_vaka_kytkin,
+                paivittainen_vaka_kytkin = paivittainen_vaka_kytkin,
+                vuorohoito_kytkin = vuorohoito_kytkin,
+                jarjestamismuoto_koodi = jarjestamismuoto_koodi
+            ),
+        varhaiskasvatussuhteet =
+            listOf(Varhaiskasvatussuhde(toimipaikka_oid, range.start, range.end))
+    )
 
     private fun maksutieto(
         range: FiniteDateRange,
@@ -2848,48 +2856,30 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     sukunimi = "Person"
                 )
             )
-    ) =
-        Maksutieto(
-            alkamis_pvm = range.start,
-            paattymis_pvm = range.end,
-            perheen_koko = perheen_koko,
-            maksun_peruste_koodi = maksun_peruste_koodi,
-            asiakasmaksu = asiakasmaksu,
-            palveluseteli_arvo = palveluseteli_arvo,
-            huoltajat = huoltajat
-        )
+    ) = Maksutieto(
+        alkamis_pvm = range.start,
+        paattymis_pvm = range.end,
+        perheen_koko = perheen_koko,
+        maksun_peruste_koodi = maksun_peruste_koodi,
+        asiakasmaksu = asiakasmaksu,
+        palveluseteli_arvo = palveluseteli_arvo,
+        huoltajat = huoltajat
+    )
 }
 
 open class FailEveryOperation : VardaReadClient {
-    override fun haeHenkilo(
-        body: VardaReadClient.HaeHenkiloRequest
-    ): VardaReadClient.HenkiloResponse {
-        throw NotImplementedError()
-    }
+    override fun haeHenkilo(body: VardaReadClient.HaeHenkiloRequest): VardaReadClient.HenkiloResponse = throw NotImplementedError()
 
-    override fun getOrCreateHenkilo(
-        body: VardaReadClient.GetOrCreateHenkiloRequest
-    ): VardaReadClient.HenkiloResponse {
+    override fun getOrCreateHenkilo(body: VardaReadClient.GetOrCreateHenkiloRequest): VardaReadClient.HenkiloResponse =
         throw NotImplementedError()
-    }
 
-    override fun getLapsi(url: URI): VardaReadClient.LapsiResponse {
-        throw NotImplementedError()
-    }
+    override fun getLapsi(url: URI): VardaReadClient.LapsiResponse = throw NotImplementedError()
 
-    override fun getMaksutiedotByLapsi(lapsiUrl: URI): List<VardaReadClient.MaksutietoResponse> {
-        throw NotImplementedError()
-    }
+    override fun getMaksutiedotByLapsi(lapsiUrl: URI): List<VardaReadClient.MaksutietoResponse> = throw NotImplementedError()
 
-    override fun getVarhaiskasvatuspaatoksetByLapsi(
-        lapsiUrl: URI
-    ): List<VardaReadClient.VarhaiskasvatuspaatosResponse> {
+    override fun getVarhaiskasvatuspaatoksetByLapsi(lapsiUrl: URI): List<VardaReadClient.VarhaiskasvatuspaatosResponse> =
         throw NotImplementedError()
-    }
 
-    override fun getVarhaiskasvatussuhteetByLapsi(
-        lapsiUrl: URI
-    ): List<VardaReadClient.VarhaiskasvatussuhdeResponse> {
+    override fun getVarhaiskasvatussuhteetByLapsi(lapsiUrl: URI): List<VardaReadClient.VarhaiskasvatussuhdeResponse> =
         throw NotImplementedError()
-    }
 }

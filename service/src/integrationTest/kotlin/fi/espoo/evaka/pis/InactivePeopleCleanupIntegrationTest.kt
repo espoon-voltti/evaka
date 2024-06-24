@@ -181,12 +181,12 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         assertCleanedUpPeople(testDate, setOf())
 
         db.transaction { tx ->
-            tx.createUpdate {
+            tx
+                .createUpdate {
                     sql(
                         "DELETE FROM application_other_guardian WHERE guardian_id = ${bind(otherGuardian)}"
                     )
-                }
-                .execute()
+                }.execute()
         }
         assertCleanedUpPeople(testDate, setOf(otherGuardian))
     }
@@ -430,7 +430,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     assistanceLevels = emptySet(),
                     motivationForDecision = null,
                     unreadGuardianIds = null,
-                    annulmentReason = "",
+                    annulmentReason = ""
                 )
             )
         }
@@ -490,13 +490,13 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                             preparer2Title = "",
                             preparer2PhoneNumber = "",
                             decisionMakerEmployeeId = employeeId,
-                            decisionMakerTitle = "",
+                            decisionMakerTitle = ""
                         ),
                     status = AssistanceNeedDecisionStatus.ACCEPTED,
                     annulmentReason = "",
                     sentForDecision = null,
                     decisionMade = LocalDate.of(2019, 5, 1),
-                    unreadGuardianIds = emptySet(),
+                    unreadGuardianIds = emptySet()
                 )
             )
         }
@@ -504,7 +504,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         assertCleanedUpPeople(testDate, setOf())
     }
 
-    private fun assertCleanedUpPeople(queryDate: LocalDate, cleanedUpPeople: Set<PersonId>) {
+    private fun assertCleanedUpPeople(
+        queryDate: LocalDate,
+        cleanedUpPeople: Set<PersonId>
+    ) {
         val result = db.transaction { cleanUpInactivePeople(it, queryDate) }
 
         assertEquals(cleanedUpPeople, result)

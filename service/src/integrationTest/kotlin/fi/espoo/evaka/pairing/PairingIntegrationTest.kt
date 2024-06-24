@@ -30,7 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var systemController: SystemController
+
     @Autowired private lateinit var mobileDevicesController: MobileDevicesController
+
     @Autowired private lateinit var pairingsController: PairingsController
 
     private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
@@ -430,32 +432,35 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         concatenated.forEach { c -> assertFalse(c.isUpperCase()) }
     }
 
-    private fun givenPairing(pairing: Pairing, attempts: Int = 0) {
+    private fun givenPairing(
+        pairing: Pairing,
+        attempts: Int = 0
+    ) {
         // language=sql
         val sql =
             """
             INSERT INTO pairing (id, unit_id, expires, status, challenge_key, response_key, attempts, mobile_device_id) 
             VALUES (:id, :unitId, :expires, :status, :challengeKey, :responseKey, :attempts, :mobileDeviceId);
-            """
-                .trimIndent()
+            """.trimIndent()
         db.transaction { tx ->
             if (pairing.mobileDeviceId != null) {
                 @Suppress("DEPRECATION")
-                tx.createUpdate(
+                tx
+                    .createUpdate(
                         "INSERT INTO employee (id, first_name, last_name, active) VALUES (:id, '', '', TRUE)"
-                    )
-                    .bind("id", pairing.mobileDeviceId)
+                    ).bind("id", pairing.mobileDeviceId)
                     .execute()
                 @Suppress("DEPRECATION")
-                tx.createUpdate(
+                tx
+                    .createUpdate(
                         "INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, 'Laite')"
-                    )
-                    .bind("id", pairing.mobileDeviceId)
+                    ).bind("id", pairing.mobileDeviceId)
                     .bind("unitId", pairing.unitId)
                     .execute()
             }
             @Suppress("DEPRECATION")
-            tx.createUpdate(sql)
+            tx
+                .createUpdate(sql)
                 .bind("id", pairing.id)
                 .bind("unitId", pairing.unitId)
                 .bind("expires", pairing.expires)
@@ -515,23 +520,22 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         )
 
-    private fun getPairingStatus(id: PairingId): PairingStatus =
-        pairingsController.getPairingStatus(dbInstance(), clock, id).status
+    private fun getPairingStatus(id: PairingId): PairingStatus = pairingsController.getPairingStatus(dbInstance(), clock, id).status
 
-    private fun getMobileDevices(): List<MobileDevice> =
-        mobileDevicesController.getMobileDevices(dbInstance(), user, clock, testUnit)
+    private fun getMobileDevices(): List<MobileDevice> = mobileDevicesController.getMobileDevices(dbInstance(), user, clock, testUnit)
 
-    private fun putMobileDeviceName(id: MobileDeviceId, name: String) =
-        mobileDevicesController.putMobileDeviceName(
-            dbInstance(),
-            user,
-            clock,
-            id,
-            MobileDevicesController.RenameRequest(name)
-        )
+    private fun putMobileDeviceName(
+        id: MobileDeviceId,
+        name: String
+    ) = mobileDevicesController.putMobileDeviceName(
+        dbInstance(),
+        user,
+        clock,
+        id,
+        MobileDevicesController.RenameRequest(name)
+    )
 
-    private fun deleteMobileDevice(id: MobileDeviceId) =
-        mobileDevicesController.deleteMobileDevice(dbInstance(), user, clock, id)
+    private fun deleteMobileDevice(id: MobileDeviceId) = mobileDevicesController.deleteMobileDevice(dbInstance(), user, clock, id)
 
     private fun authenticateMobileDevice(id: MobileDeviceId): MobileDeviceDetails =
         systemController.authenticateMobileDevice(

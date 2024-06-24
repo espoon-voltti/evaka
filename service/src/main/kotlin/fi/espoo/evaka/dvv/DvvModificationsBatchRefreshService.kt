@@ -37,7 +37,10 @@ class DvvModificationsBatchRefreshService(
         )
     }
 
-    fun scheduleBatch(db: Database.Connection, clock: EvakaClock): Int {
+    fun scheduleBatch(
+        db: Database.Connection,
+        clock: EvakaClock
+    ): Int {
         val jobCount =
             db.transaction { tx ->
                 tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.DvvModificationsRefresh::class)))

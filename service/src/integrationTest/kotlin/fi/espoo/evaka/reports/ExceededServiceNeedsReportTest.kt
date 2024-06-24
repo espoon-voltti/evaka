@@ -61,15 +61,15 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
 
             tx.insert(daycareGroup)
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child1.id,
                         unitId = daycare.id,
                         startDate = start,
                         endDate = end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     val period = FiniteDateRange(start, end)
                     tx.insert(
                         DevServiceNeed(
@@ -91,15 +91,15 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                     )
                 }
 
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child2.id,
                         unitId = daycare.id,
                         startDate = start,
                         endDate = end
                     )
-                )
-                .also { placementId ->
+                ).also { placementId ->
                     val period = FiniteDateRange(start, end)
                     tx.insert(
                         DevServiceNeed(

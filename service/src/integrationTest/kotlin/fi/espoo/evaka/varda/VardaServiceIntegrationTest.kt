@@ -71,18 +71,18 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         insertVardaUnit(db)
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "INSERT INTO guardian(guardian_id, child_id) VALUES (:guardianId, :childId)"
-                )
-                .bind("guardianId", testAdult_1.id)
+                ).bind("guardianId", testAdult_1.id)
                 .bind("childId", testChild_1.id)
                 .execute()
 
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (:evakaChildId, now())"
-                )
-                .bind("evakaChildId", testChild_1.id)
+                ).bind("evakaChildId", testChild_1.id)
                 .execute()
         }
         mockEndpoint.cleanUp()
@@ -96,10 +96,10 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         fun countChildrenToBeReset(): Int =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT count(*) FROM varda_reset_child WHERE reset_timestamp IS NULL"
-                    )
-                    .exactlyOne<Int>()
+                    ).exactlyOne<Int>()
             }
 
         assertEquals(0, countChildrenToBeReset())
@@ -118,14 +118,13 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     """
-                INSERT INTO varda_service_need (evaka_child_id, evaka_service_need_id, evaka_service_need_updated) 
-                VALUES (:evakaChildId, :evakaServiceNeedId, :since)
-                """
-                        .trimIndent()
-                )
-                .bind("evakaChildId", childId)
+                    INSERT INTO varda_service_need (evaka_child_id, evaka_service_need_id, evaka_service_need_updated) 
+                    VALUES (:evakaChildId, :evakaServiceNeedId, :since)
+                    """.trimIndent()
+                ).bind("evakaChildId", childId)
                 .bind("evakaServiceNeedId", snId)
                 .bind("since", since)
                 .execute()
@@ -294,7 +293,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId =
-                        deletedSnId, // Does not exist in evaka, thus should be deleted
+                    deletedSnId, // Does not exist in evaka, thus should be deleted
                     evakaServiceNeedUpdated = since.minusHours(100)
                 )
             )
@@ -331,7 +330,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 VardaServiceNeed(
                     evakaChildId = childId,
                     evakaServiceNeedId =
-                        deletedSnId, // Does not exist in evaka, thus should be deleted
+                    deletedSnId, // Does not exist in evaka, thus should be deleted
                     evakaServiceNeedUpdated = since.minusHours(100)
                 )
             )
@@ -832,7 +831,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE fee_decision SET status = 'SENT' WHERE id = :id")
+            it
+                .createUpdate("UPDATE fee_decision SET status = 'SENT' WHERE id = :id")
                 .bind("id", fdId)
                 .execute()
         }
@@ -928,15 +928,16 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `updateChildData sends child service need fee data to varda with both guardians if they live in the same address`() {
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "INSERT INTO guardian(guardian_id, child_id) VALUES (:guardianId, :childId)"
-                )
-                .bind("guardianId", testAdult_2.id)
+                ).bind("guardianId", testAdult_2.id)
                 .bind("childId", testChild_1.id)
                 .execute()
 
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id = ANY(:ids)")
+            it
+                .createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id = ANY(:ids)")
                 .bind("ids", listOf(testAdult_1.id, testAdult_2.id).toTypedArray())
                 .execute()
 
@@ -969,7 +970,12 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertVardaElementCounts(1, 1, 1)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertEquals(2, mockEndpoint.feeData.values.elementAt(0).huoltajat.size)
+        assertEquals(
+            2,
+            mockEndpoint.feeData.values
+                .elementAt(0)
+                .huoltajat.size
+        )
         assertVardaDecision(
             vardaDecision,
             serviceNeedPeriod.start,
@@ -1004,7 +1010,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         )
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("update person set oph_person_oid = ' ' where id = :id")
+            it
+                .createUpdate("update person set oph_person_oid = ' ' where id = :id")
                 .bind("id", testAdult_1.id)
                 .execute()
         }
@@ -1022,15 +1029,16 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `updateChildData sends child service need fee data to varda with one guardian only if guardians live in different address`() {
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "INSERT INTO guardian(guardian_id, child_id) VALUES (:guardianId, :childId)"
-                )
-                .bind("guardianId", testAdult_2.id)
+                ).bind("guardianId", testAdult_2.id)
                 .bind("childId", testChild_1.id)
                 .execute()
 
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id = ANY(:ids)")
+            it
+                .createUpdate("UPDATE person SET residence_code = 'aptunnus_1' WHERE id = ANY(:ids)")
                 .bind("ids", listOf(testAdult_1.id).toTypedArray())
                 .execute()
 
@@ -1063,7 +1071,12 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertVardaElementCounts(1, 1, 1)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertEquals(1, mockEndpoint.feeData.values.elementAt(0).huoltajat.size)
+        assertEquals(
+            1,
+            mockEndpoint.feeData.values
+                .elementAt(0)
+                .huoltajat.size
+        )
         assertVardaDecision(
             vardaDecision,
             serviceNeedPeriod.start,
@@ -1130,7 +1143,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     @Test
     fun `updateChildData sends child service need to varda without the fee data if child has no guardians`() {
         db.transaction {
-            @Suppress("DEPRECATION") it.createUpdate("DELETE FROM guardian").execute()
+            @Suppress("DEPRECATION")
+            it.createUpdate("DELETE FROM guardian").execute()
             it.insertVardaChild(testChild_1.id)
         }
         val since = HelsinkiDateTime.now()
@@ -1454,7 +1468,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("update service_need set option_id = :id")
+            it
+                .createUpdate("update service_need set option_id = :id")
                 .bind("id", snDefaultPreschool.id)
                 .execute()
         }
@@ -1471,7 +1486,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("update service_need set start_date = :startDate, end_date = :endDate")
+            it
+                .createUpdate("update service_need set start_date = :startDate, end_date = :endDate")
                 .bind("startDate", LocalDate.now().plusYears(1))
                 .bind("endDate", LocalDate.now().plusYears(2))
                 .execute()
@@ -1593,24 +1609,23 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val failures =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT update_failed FROM varda_service_need WHERE update_failed = true"
-                    )
-                    .toList<Boolean>()
+                    ).toList<Boolean>()
             }
         assertEquals(n, failures.size)
     }
 
-    private fun getVardaServiceNeedError(snId: ServiceNeedId): List<String> {
-        return db.read {
+    private fun getVardaServiceNeedError(snId: ServiceNeedId): List<String> =
+        db.read {
             @Suppress("DEPRECATION")
-            it.createQuery(
+            it
+                .createQuery(
                     "SELECT errors[0] FROM varda_service_need WHERE evaka_service_need_id = :snId AND array_length(errors, 1) > 0"
-                )
-                .bind("snId", snId)
+                ).bind("snId", snId)
                 .toList<String>()
         }
-    }
 
     private fun assertVardaServiceNeedIds(
         evakaServiceNeedId: ServiceNeedId,
@@ -1684,7 +1699,10 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertEquals(expectedHoursPerWeek, vardaDecision.tuntimaara_viikossa)
     }
 
-    private fun assertVardaFeeData(expectedVardaFeeData: VardaFeeData, vardaFeeData: VardaFeeData) {
+    private fun assertVardaFeeData(
+        expectedVardaFeeData: VardaFeeData,
+        vardaFeeData: VardaFeeData
+    ) {
         expectedVardaFeeData.huoltajat.forEach { expectedHuoltaja ->
             assertEquals(
                 true,
@@ -1821,8 +1839,8 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         child: DevPerson,
         sentAt: Instant,
         status: VoucherValueDecisionStatus = VoucherValueDecisionStatus.DRAFT
-    ): VoucherValueDecision {
-        return db.transaction {
+    ): VoucherValueDecision =
+        db.transaction {
             val decision =
                 createVoucherValueDecisionFixture(
                     status,
@@ -1841,18 +1859,16 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             it.setVoucherValueDecisionSentAt(decision.id, sentAt)
             decision
         }
-    }
 }
 
 private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: ServiceNeedId): ChildId? =
     @Suppress("DEPRECATION")
     createQuery(
-            """
+        """
 SELECT p.child_id FROM placement p LEFT JOIN service_need sn ON p.id = sn.placement_id
 WHERE sn.id = :serviceNeedId
         """
-        )
-        .bind("serviceNeedId", serviceNeedId)
+    ).bind("serviceNeedId", serviceNeedId)
         .exactlyOneOrNull<ChildId>()
 
 private fun ServiceNeedOption.toFeeDecisionServiceNeed() =
@@ -1865,13 +1881,17 @@ private fun ServiceNeedOption.toFeeDecisionServiceNeed() =
         missing = false
     )
 
-private fun Database.Transaction.setFeeDecisionSentAt(id: FeeDecisionId, sentAt: Instant) =
+private fun Database.Transaction.setFeeDecisionSentAt(
+    id: FeeDecisionId,
+    sentAt: Instant
+) =
     @Suppress("DEPRECATION")
-    createUpdate("""
+    createUpdate(
+        """
 UPDATE fee_decision SET sent_at = :sentAt
 WHERE id = :id 
-        """)
-        .bind("id", id)
+        """
+    ).bind("id", id)
         .bind("sentAt", sentAt)
         .execute()
 
@@ -1881,11 +1901,10 @@ private fun Database.Transaction.setVoucherValueDecisionSentAt(
 ) =
     @Suppress("DEPRECATION")
     createUpdate(
-            """
+        """
 UPDATE voucher_value_decision SET sent_at = :sentAt
 WHERE id = :id 
         """
-        )
-        .bind("id", id)
+    ).bind("id", id)
         .bind("sentAt", sentAt)
         .execute()

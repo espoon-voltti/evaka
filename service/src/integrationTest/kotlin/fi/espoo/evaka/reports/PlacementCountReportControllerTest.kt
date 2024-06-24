@@ -103,7 +103,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                 mockToday,
                 mockToday.today(),
                 null,
-                null,
+                null
             )
         assertEquals(2, reportAll.placementCount)
         assertEquals(1, reportAll.placementCount3vAndOver)

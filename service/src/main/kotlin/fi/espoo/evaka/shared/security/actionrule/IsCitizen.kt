@@ -33,9 +33,10 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 private typealias FilterByCitizen =
     QuerySql.Builder.(personId: PersonId, now: HelsinkiDateTime) -> QuerySql
 
-data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
-    fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) =
-        authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
+data class IsCitizen(
+    val allowWeakLogin: Boolean
+) : DatabaseActionRule.Params {
+    fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
 
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
         when (ctx.user) {
@@ -46,9 +47,13 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
     private fun <T : Id<*>> rule(filter: FilterByCitizen): DatabaseActionRule.Scoped<T, IsCitizen> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
-    private data class Query<T : Id<*>>(private val filter: FilterByCitizen) :
-        DatabaseActionRule.Scoped.Query<T, IsCitizen> {
-        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+    private data class Query<T : Id<*>>(
+        private val filter: FilterByCitizen
+    ) : DatabaseActionRule.Scoped.Query<T, IsCitizen> {
+        override fun cacheKey(
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime
+        ): Any =
             when (user) {
                 is AuthenticatedUser.Citizen -> QuerySql { filter(user.id, now) }
                 else -> Pair(user, now)
@@ -65,14 +70,12 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                         .createQuery {
                             sql(
                                 """
-                    SELECT id
-                    FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
-                    WHERE ${predicate(targetCheck.forTable("fragment"))}
-                    """
-                                    .trimIndent()
+                                SELECT id
+                                FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
+                                WHERE ${predicate(targetCheck.forTable("fragment"))}
+                                """.trimIndent()
                             )
-                        }
-                        .toSet<Id<DatabaseTable>>()
+                        }.toSet<Id<DatabaseTable>>()
                         .let { matched ->
                             targets
                                 .filter { matched.contains(it) }
@@ -97,8 +100,9 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
             }
     }
 
-    private class Deferred(private val authLevel: CitizenAuthLevel) :
-        DatabaseActionRule.Deferred<IsCitizen> {
+    private class Deferred(
+        private val authLevel: CitizenAuthLevel
+    ) : DatabaseActionRule.Deferred<IsCitizen> {
         override fun evaluate(params: IsCitizen): AccessControlDecision =
             if (params.isPermittedAuthLevel(authLevel)) {
                 AccessControlDecision.Permitted(params)
@@ -122,8 +126,10 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
             override val params = this@IsCitizen
             override val query =
                 object : DatabaseActionRule.Scoped.Query<PersonId, IsCitizen> {
-                    override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
-                        Pair(user, now)
+                    override fun cacheKey(
+                        user: AuthenticatedUser,
+                        now: HelsinkiDateTime
+                    ): Any = Pair(user, now)
 
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
@@ -156,8 +162,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
 SELECT id
 FROM attachment
 WHERE uploaded_by = ${bind(personId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -168,8 +173,7 @@ WHERE uploaded_by = ${bind(personId)}
 SELECT child_id AS id
 FROM guardian
 WHERE guardian_id = ${bind(guardianId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -180,8 +184,7 @@ WHERE guardian_id = ${bind(guardianId)}
 SELECT child_id AS id
 FROM foster_parent
 WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -194,8 +197,7 @@ FROM child_images img
 JOIN person child ON img.child_id = child.id
 JOIN foster_parent ON child.id = foster_parent.child_id
 WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -208,8 +210,7 @@ FROM child_images img
 JOIN person child ON img.child_id = child.id
 JOIN guardian ON child.id = guardian.child_id
 WHERE guardian_id = ${bind(guardianId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -221,8 +222,7 @@ SELECT id
 FROM income_statement i
 JOIN guardian g ON i.person_id = g.child_id
 WHERE g.guardian_id = ${bind(citizenId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -234,8 +234,7 @@ SELECT pd.id
 FROM pedagogical_document pd
 JOIN guardian g ON pd.child_id = g.child_id
 WHERE g.guardian_id = ${bind(guardianId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -247,8 +246,7 @@ SELECT pd.id
 FROM pedagogical_document pd
 JOIN foster_parent fp ON pd.child_id = fp.child_id
 WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -261,8 +259,7 @@ FROM attachment a
 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
 JOIN guardian g ON pd.child_id = g.child_id
 WHERE g.guardian_id = ${bind(guardianId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -275,8 +272,7 @@ FROM attachment a
 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
 JOIN foster_parent fp ON pd.child_id = fp.child_id
 WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -288,8 +284,7 @@ SELECT id
 FROM curriculum_document cd
 JOIN guardian g ON cd.child_id = g.child_id
 WHERE g.guardian_id = ${bind(citizenId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -313,8 +308,7 @@ SELECT placement.id
 FROM placement
 JOIN guardian ON placement.child_id = guardian.child_id
 WHERE guardian_id = ${bind(guardianId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -326,8 +320,7 @@ SELECT placement.id
 FROM placement
 JOIN foster_parent fp ON placement.child_id = fp.child_id AND fp.valid_during @> ${bind(now.toLocalDate())}
 WHERE parent_id = ${bind(userId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -338,8 +331,7 @@ WHERE parent_id = ${bind(userId)}
 SELECT id
 FROM assistance_need_decision ad
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = ad.child_id)
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -349,9 +341,10 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} A
                 """
 SELECT id
 FROM assistance_need_decision ad
-WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = ad.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
-            """
-                    .trimIndent()
+WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(
+                    citizenId
+                )} AND fp.child_id = ad.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
+                """.trimIndent()
             )
         }
 
@@ -362,8 +355,7 @@ WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenI
 SELECT id
 FROM assistance_need_preschool_decision ad
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = ad.child_id)
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -373,9 +365,10 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} A
                 """
 SELECT id
 FROM assistance_need_preschool_decision ad
-WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = ad.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
-            """
-                    .trimIndent()
+WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(
+                    citizenId
+                )} AND fp.child_id = ad.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
+                """.trimIndent()
             )
         }
 
@@ -387,8 +380,7 @@ SELECT id
 FROM child_document cd
 WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = cd.child_id)
     AND cd.published_at IS NOT NULL 
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -398,10 +390,11 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} A
                 """
 SELECT id
 FROM child_document cd
-WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = cd.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
+WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(
+                    citizenId
+                )} AND fp.child_id = cd.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
     AND cd.published_at IS NOT NULL 
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -432,7 +425,9 @@ WHERE aog.guardian_id = ${bind(citizenId)}
 AND allow_other_guardian_access IS TRUE
 AND (
     EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
-    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(
+                    now.toLocalDate()
+                )})
 )
 """
             )
@@ -464,7 +459,9 @@ AND decision.sent_date IS NOT NULL
 AND allow_other_guardian_access IS TRUE
 AND (
     EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
-    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(
+                    now.toLocalDate()
+                )})
 )
 """
             )
@@ -483,7 +480,9 @@ AND decision.sent_date IS NOT NULL
 AND allow_other_guardian_access IS TRUE
 AND (
     EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
-    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(
+                    now.toLocalDate()
+                )})
 )
 AND NOT decision.document_contains_contact_info
 """
@@ -497,8 +496,7 @@ AND NOT decision.document_contains_contact_info
 SELECT id
 FROM income_statement
 WHERE person_id = ${bind(citizenId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -509,8 +507,7 @@ WHERE person_id = ${bind(citizenId)}
 SELECT id
 FROM daily_service_time_notification
 WHERE guardian_id = ${bind(citizenId)}
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -521,8 +518,7 @@ WHERE guardian_id = ${bind(citizenId)}
 SELECT fd.id
 FROM fee_decision fd
 WHERE (fd.head_of_family_id = ${bind(citizenId)} OR fd.partner_id = ${bind(citizenId)}) 
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -533,8 +529,7 @@ WHERE (fd.head_of_family_id = ${bind(citizenId)} OR fd.partner_id = ${bind(citiz
 SELECT vvd.id
 FROM voucher_value_decision vvd
 WHERE (vvd.head_of_family_id = ${bind(citizenId)} OR vvd.partner_id = ${bind(citizenId)}) 
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 

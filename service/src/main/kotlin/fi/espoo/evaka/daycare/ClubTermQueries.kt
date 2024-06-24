@@ -14,79 +14,75 @@ import java.time.LocalDate
 
 data class ClubTerm(
     val id: ClubTermId,
-    /*The period during which club activity is arranged.*/
+    // The period during which club activity is arranged.
     val term: FiniteDateRange,
-    /*The official application period.*/
+    // The official application period.
     val applicationPeriod: FiniteDateRange,
-    /*Club is not arranged during these periods (e.g. Christmas holiday).*/
+    // Club is not arranged during these periods (e.g. Christmas holiday).
     val termBreaks: DateSet
 ) {
     fun scheduleType(date: LocalDate): ScheduleType? =
         when {
             term.includes(date) -> {
-                if (termBreaks.includes(date)) ScheduleType.TERM_BREAK
-                else ScheduleType.FIXED_SCHEDULE
+                if (termBreaks.includes(date)) {
+                    ScheduleType.TERM_BREAK
+                } else {
+                    ScheduleType.FIXED_SCHEDULE
+                }
             }
             else -> null
         }
 }
 
-fun Database.Read.getClubTerms(): List<ClubTerm> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getClubTerms(): List<ClubTerm> =
+    createQuery {
+        sql(
+            """
                SELECT id, term, application_period, term_breaks FROM club_term order by term
            """
-            )
-        }
-        .toList()
-}
+        )
+    }.toList()
 
 fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                SELECT id, term, application_period, term_breaks FROM club_term WHERE id = ${bind(id)}
             """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? =
     createQuery {
-            sql(
-                "SELECT id, term, application_period, term_breaks FROM club_term WHERE term @> ${bind(date)} LIMIT 1"
-            )
-        }
-        .exactlyOneOrNull()
+        sql(
+            "SELECT id, term, application_period, term_breaks FROM club_term WHERE term @> ${bind(date)} LIMIT 1"
+        )
+    }.exactlyOneOrNull()
 
 fun Database.Transaction.insertClubTerm(
     term: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
-): ClubTermId {
-    return createUpdate {
-            sql(
-                """
+): ClubTermId =
+    createUpdate {
+        sql(
+            """
         INSERT INTO club_term (term, application_period, term_breaks)
         VALUES (${bind(term)}, ${bind(applicationPeriod)}, ${bind(termBreaks)})
         RETURNING id
         """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne()
-}
 
 fun Database.Transaction.updateClubTerm(
     id: ClubTermId,
     term: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
             UPDATE club_term 
             SET 
                 term = ${bind(term)},
@@ -94,18 +90,19 @@ fun Database.Transaction.updateClubTerm(
                 term_breaks =  ${bind(termBreaks)}
             WHERE id = ${bind(id)}
             """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
-fun Database.Transaction.deleteFutureClubTerm(clock: EvakaClock, termId: ClubTermId) {
+fun Database.Transaction.deleteFutureClubTerm(
+    clock: EvakaClock,
+    termId: ClubTermId
+) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
            DELETE FROM club_term
            WHERE id = ${bind(termId)} AND lower(term) > ${bind(clock.today())}
         """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }

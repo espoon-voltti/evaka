@@ -33,8 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 
 class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
-    @MockBean(name = "personService") lateinit var personService: PersonService
+    @MockBean(name = "personService")
+    lateinit var personService: PersonService
 
     @MockBean lateinit var parentshipService: ParentshipService
 

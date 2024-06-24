@@ -31,8 +31,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<AssistanceNeedPreschoolDecisionCitizenListItem> {
-        return db.connect { dbc ->
+    ): List<AssistanceNeedPreschoolDecisionCitizenListItem> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -44,11 +45,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
 
                     tx.getAssistanceNeedPreschoolDecisionsForCitizen(clock.today(), user.id)
                 }
-            }
-            .also {
+            }.also {
                 Audit.AssistanceNeedPreschoolDecisionsListCitizen.log(targetId = AuditId(user.id))
             }
-    }
 
     @GetMapping("/children/assistance-need-preschool-decisions/{id}")
     fun getAssistanceNeedPreschoolDecision(
@@ -56,8 +55,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
-    ): AssistanceNeedPreschoolDecision {
-        return db.connect { dbc ->
+    ): AssistanceNeedPreschoolDecision =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -74,11 +74,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
 
                     decision
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionReadCitizen.log(targetId = AuditId(id))
             }
-    }
 
     @GetMapping("/children/assistance-need-preschool-decisions/{id}/pdf")
     fun getAssistanceNeedPreschoolDecisionPdf(
@@ -86,8 +84,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -98,13 +97,11 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                     )
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionDownloadCitizen.log(
                     targetId = AuditId(id)
                 )
             }
-    }
 
     @PutMapping("/children/assistance-need-preschool-decisions/{id}/read")
     fun markAssistanceNeedPreschoolDecisionAsRead(
@@ -112,33 +109,32 @@ class AssistanceNeedPreschoolDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.AssistanceNeedPreschoolDecision.MARK_AS_READ,
-                        id
-                    )
-                    tx.markAssistanceNeedPreschoolDecisionAsReadByGuardian(id, user.id)
-                }
-            }
-            .also {
-                Audit.ChildAssistanceNeedPreschoolDecisionMarkReadCitizen.log(
-                    targetId = AuditId(id)
+    ) = db
+        .connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.AssistanceNeedPreschoolDecision.MARK_AS_READ,
+                    id
                 )
+                tx.markAssistanceNeedPreschoolDecisionAsReadByGuardian(id, user.id)
             }
-    }
+        }.also {
+            Audit.ChildAssistanceNeedPreschoolDecisionMarkReadCitizen.log(
+                targetId = AuditId(id)
+            )
+        }
 
     @GetMapping("/children/assistance-need-preschool-decisions/unread-counts")
     fun getAssistanceNeedPreschoolDecisionUnreadCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<UnreadAssistanceNeedDecisionItem> {
-        return db.connect { dbc ->
+    ): List<UnreadAssistanceNeedDecisionItem> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -152,11 +148,9 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                         user.id
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAssistanceNeedPreschoolDecisionGetUnreadCountCitizen.log(
                     targetId = AuditId(user.id)
                 )
             }
-    }
 }

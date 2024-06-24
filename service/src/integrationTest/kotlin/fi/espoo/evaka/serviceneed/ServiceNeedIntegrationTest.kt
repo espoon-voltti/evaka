@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var placementController: PlacementController
+
     @Autowired lateinit var serviceNeedController: ServiceNeedController
 
     private val clock = RealEvakaClock()
@@ -77,7 +78,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 endDate = testDate(30),
                 optionId = snDefaultDaycare.id,
                 shiftCare = ShiftCareType.NONE,
-                partWeek = false,
+                partWeek = false
             )
         )
 
@@ -107,7 +108,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     partWeek = false
-                ),
+                )
             )
         }
     }
@@ -134,15 +135,15 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `post service need with range not contained by option validity`() {
         db.transaction {
-            it.createUpdate {
+            it
+                .createUpdate {
                     sql(
                         """
                 UPDATE service_need_option SET valid_from = ${bind(testDate(2))}
                 WHERE id = ${bind(snDefaultDaycare.id)}
             """
                     )
-                }
-                .execute()
+                }.execute()
         }
         assertThrows<BadRequest> {
             serviceNeedController.postServiceNeed(
@@ -175,7 +176,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     optionId = snPreschoolDaycare45.id,
                     shiftCare = ShiftCareType.NONE,
                     partWeek = false
-                ),
+                )
             )
         }
     }
@@ -479,8 +480,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         end: Int,
         placementId: PlacementId,
         optionId: ServiceNeedOptionId = snDefaultDaycare.id
-    ): ServiceNeedId {
-        return db.transaction { tx ->
+    ): ServiceNeedId =
+        db.transaction { tx ->
             val period = FiniteDateRange(testDate(start), testDate(end))
             tx.insert(
                 DevServiceNeed(
@@ -493,9 +494,11 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
             )
         }
-    }
 
-    private fun getServiceNeeds(childId: ChildId, placementId: PlacementId): List<ServiceNeed> =
+    private fun getServiceNeeds(
+        childId: ChildId,
+        placementId: PlacementId
+    ): List<ServiceNeed> =
         placementController
             .getPlacements(dbInstance(), unitSupervisor, clock, childId = childId)
             .placements

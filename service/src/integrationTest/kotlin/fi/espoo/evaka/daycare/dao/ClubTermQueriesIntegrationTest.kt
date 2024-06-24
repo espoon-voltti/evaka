@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->

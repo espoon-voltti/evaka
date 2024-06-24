@@ -15,8 +15,8 @@ private val logger = KotlinLogging.logger {}
 
 fun Database.Transaction.insertJob(jobParams: JobParams<*>): UUID =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO async_job (type, retry_count, retry_interval, run_at, payload)
 VALUES (
     ${bind(AsyncJobType.ofPayload(jobParams.payload).name)},
@@ -27,56 +27,54 @@ VALUES (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<UUID>()
 
 fun Database.Transaction.upsertPermit(pool: AsyncJobPool.Id<*>) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO async_job_work_permit (pool_id, available_at)
 VALUES (${bind(pool.toString())}, '-infinity')
 ON CONFLICT DO NOTHING
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.claimPermit(pool: AsyncJobPool.Id<*>): WorkPermit =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT available_at
 FROM async_job_work_permit
 WHERE pool_id = ${bind(pool.toString())}
 FOR UPDATE
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
-fun Database.Transaction.updatePermit(pool: AsyncJobPool.Id<*>, availableAt: HelsinkiDateTime) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.updatePermit(
+    pool: AsyncJobPool.Id<*>,
+    availableAt: HelsinkiDateTime
+) = createUpdate {
+    sql(
+        """
 UPDATE async_job_work_permit
 SET available_at = ${bind(availableAt)}
 WHERE pool_id = ${bind(pool.toString())}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
     jobTypes: Collection<AsyncJobType<out T>>
 ): ClaimedJobRef<out T>? =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 WITH claimed_job AS (
   SELECT id
   FROM async_job
@@ -97,9 +95,8 @@ SET
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
         """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOneOrNull {
             ClaimedJobRef(
                 jobId = column("jobId"),
@@ -117,8 +114,8 @@ fun <T : AsyncJobPayload> Database.Transaction.startJob(
     now: HelsinkiDateTime
 ): T? =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 WITH started_job AS (
   SELECT id
   FROM async_job
@@ -131,9 +128,8 @@ SET started_at = ${bind(now)}
 WHERE id = (SELECT id FROM started_job)
 RETURNING payload
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOneOrNull {
             column(
                 "payload",
@@ -141,51 +137,51 @@ RETURNING payload
             )
         }
 
-fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.completeJob(
+    job: ClaimedJobRef<*>,
+    now: HelsinkiDateTime
+) = createUpdate {
+    sql(
+        """
 UPDATE async_job
 SET completed_at = ${bind(now)}
 WHERE id = ${bind(job.jobId)}
 """
-            )
-        }
-        .execute()
+    )
+}.execute()
 
 fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int =
     createUpdate {
-            sql("""
+        sql(
+            """
 DELETE FROM async_job
 WHERE completed_at < ${bind(completedBefore)}
-""")
-        }
-        .execute()
+"""
+        )
+    }.execute()
 
 fun Database.Transaction.removeUnclaimedJobs(jobTypes: Collection<AsyncJobType<*>>): Int =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM async_job
 WHERE completed_at IS NULL
 AND claimed_at IS NULL
 AND type = ANY(${bind(jobTypes.map { it.name })})
     """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 
 fun Database.Transaction.removeUncompletedJobs(runBefore: HelsinkiDateTime): Int =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM async_job
 WHERE completed_at IS NULL
 AND run_at < ${bind(runBefore)}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 
 fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
     val completedBefore = now.minusMonths(6)

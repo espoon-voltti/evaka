@@ -19,7 +19,10 @@ data class StaffAttendancePlan(
     fun canMerge(other: StaffAttendancePlan) =
         this.employeeId == other.employeeId &&
             this.type == other.type &&
-            this.endTime.plusMinutes(1).durationSince(other.startTime).abs() <
-                Duration.ofMinutes(1) &&
+            this.endTime
+                .plusMinutes(1)
+                .durationSince(other.startTime)
+                .abs() <
+            Duration.ofMinutes(1) &&
             this.description == other.description
 }

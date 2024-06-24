@@ -17,9 +17,14 @@ class MockDigitransit {
 
     fun setAutocomplete(mockResponse: Autocomplete) = lock.write { mockAutocomplete = mockResponse }
 
-    data class Autocomplete(val features: List<Feature>)
+    data class Autocomplete(
+        val features: List<Feature>
+    )
 
-    data class Feature(val geometry: Geometry, val properties: FeatureProperties)
+    data class Feature(
+        val geometry: Geometry,
+        val properties: FeatureProperties
+    )
 
     data class Geometry(
         @JsonFormat(shape = JsonFormat.Shape.ARRAY) val coordinates: Pair<Double, Double>

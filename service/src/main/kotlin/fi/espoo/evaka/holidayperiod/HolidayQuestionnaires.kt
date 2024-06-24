@@ -20,7 +20,9 @@ enum class QuestionnaireType : DatabaseEnum {
     override val sqlType: String = "questionnaire_type"
 }
 
-data class QuestionnaireConditions(val continuousPlacement: FiniteDateRange? = null)
+data class QuestionnaireConditions(
+    val continuousPlacement: FiniteDateRange? = null
+)
 
 // TODO use sealed class when OPEN_RANGES is implemented
 data class FixedPeriodQuestionnaire(
@@ -37,7 +39,6 @@ data class FixedPeriodQuestionnaire(
      * conditions are satisfied.
      */
     @Nested("condition") val conditions: QuestionnaireConditions,
-
     // fixed period specific
     val periodOptions: List<FiniteDateRange>,
     @Json val periodOptionLabel: Translatable

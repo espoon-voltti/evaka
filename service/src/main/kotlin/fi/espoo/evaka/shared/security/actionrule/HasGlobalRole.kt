@@ -24,8 +24,10 @@ import java.util.EnumSet
 private typealias Filter =
     QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
 
-data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
-    StaticActionRule, DatabaseActionRule.Params {
+data class HasGlobalRole(
+    val oneOf: EnumSet<UserRole>
+) : StaticActionRule,
+    DatabaseActionRule.Params {
     init {
         oneOf.forEach { check(it.isGlobalRole()) { "Expected a global role, got $it" } }
     }
@@ -41,15 +43,18 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
             AccessControlDecision.None
         }
 
-    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
-        evaluate(ctx.user).isPermitted()
+    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean = evaluate(ctx.user).isPermitted()
 
     private fun <T : Id<*>> rule(filter: Filter): DatabaseActionRule.Scoped<T, HasGlobalRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
-    data class Query<T : Id<*>>(private val filter: Filter) :
-        DatabaseActionRule.Scoped.Query<T, HasGlobalRole> {
-        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+    data class Query<T : Id<*>>(
+        private val filter: Filter
+    ) : DatabaseActionRule.Scoped.Query<T, HasGlobalRole> {
+        override fun cacheKey(
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime
+        ): Any =
             when (user) {
                 is AuthenticatedUser.Employee -> QuerySql { filter(user, now) }
                 else -> Pair(user, now)
@@ -66,14 +71,12 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
                         .createQuery {
                             sql(
                                 """
-                    SELECT id
-                    FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
-                    WHERE ${predicate(targetCheck.forTable("fragment"))}
-                    """
-                                    .trimIndent()
+                                SELECT id
+                                FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
+                                WHERE ${predicate(targetCheck.forTable("fragment"))}
+                                """.trimIndent()
                             )
-                        }
-                        .toSet<Id<DatabaseTable>>()
+                        }.toSet<Id<DatabaseTable>>()
                         .let { matched ->
                             targets
                                 .filter { matched.contains(it) }
@@ -98,8 +101,9 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
             }
     }
 
-    private class Deferred(private val globalRoles: Set<UserRole>) :
-        DatabaseActionRule.Deferred<HasGlobalRole> {
+    private class Deferred(
+        private val globalRoles: Set<UserRole>
+    ) : DatabaseActionRule.Deferred<HasGlobalRole> {
         override fun evaluate(params: HasGlobalRole): AccessControlDecision =
             if (globalRoles.any { params.oneOf.contains(it) }) {
                 AccessControlDecision.Permitted(params)
@@ -116,8 +120,7 @@ SELECT attachment.id
 FROM attachment
 JOIN evaka_user ON uploaded_by = evaka_user.id
 WHERE evaka_user.type = 'EMPLOYEE'
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -129,8 +132,7 @@ SELECT id
 FROM assistance_need_decision
 WHERE decision_maker_employee_id = ${bind(employee.id)}
 AND sent_for_decision IS NOT NULL
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -141,8 +143,7 @@ AND sent_for_decision IS NOT NULL
 SELECT id
 FROM assistance_need_decision
 WHERE sent_for_decision IS NOT NULL
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -153,8 +154,7 @@ WHERE sent_for_decision IS NOT NULL
 SELECT id
 FROM assistance_need_preschool_decision
 WHERE sent_for_decision IS NOT NULL
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -166,27 +166,27 @@ SELECT p.child_id AS id
 FROM placement p
 JOIN daycare pd ON pd.id = p.unit_id
 WHERE pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
-            """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
     fun andUnitProviderAndCareTypeEquals(
         providerTypes: Set<ProviderType>,
         careTypes: Set<CareType>
-    ) =
-        rule<DaycareId> { _, _ ->
-            sql(
-                """
+    ) = rule<DaycareId> { _, _ ->
+        sql(
+            """
 SELECT id
 FROM daycare
 WHERE provider_type = ANY(${bind(providerTypes)})
 ${
-    if (careTypes.isNotEmpty()) "AND (${bind(careTypes)} && daycare.type)"
-    else ""
-}
-            """
-                    .trimIndent()
-            )
-        }
+                if (careTypes.isNotEmpty()) {
+                    "AND (${bind(careTypes)} && daycare.type)"
+                } else {
+                    ""
+                }
+            }
+            """.trimIndent()
+        )
+    }
 }

@@ -34,15 +34,18 @@ import org.springframework.web.bind.annotation.RestController
     "/foster-parent", // deprecated
     "/employee/foster-parent"
 )
-class FosterParentController(private val accessControl: AccessControl) {
+class FosterParentController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/by-parent/{parentId}")
     fun getFosterChildren(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable parentId: PersonId
-    ): List<FosterParentRelationship> {
-        return db.connect { dbc ->
+    ): List<FosterParentRelationship> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -53,9 +56,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     )
                     tx.getFosterChildren(parentId)
                 }
-            }
-            .also { Audit.FosterParentReadChildren.log(targetId = AuditId(parentId)) }
-    }
+            }.also { Audit.FosterParentReadChildren.log(targetId = AuditId(parentId)) }
 
     @GetMapping("/by-child/{childId}")
     fun getFosterParents(
@@ -63,8 +64,9 @@ class FosterParentController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: PersonId
-    ): List<FosterParentRelationship> {
-        return db.connect { dbc ->
+    ): List<FosterParentRelationship> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -75,9 +77,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     )
                     tx.getFosterParents(childId)
                 }
-            }
-            .also { Audit.FosterParentReadParents.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.FosterParentReadParents.log(targetId = AuditId(childId)) }
 
     @PostMapping
     fun createFosterParentRelationship(
@@ -86,7 +86,8 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: CreateFosterParentRelationshipBody
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -97,8 +98,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     )
                     tx.createFosterParentRelationship(body)
                 }
-            }
-            .also { id ->
+            }.also { id ->
                 Audit.FosterParentCreateRelationship.log(
                     targetId = AuditId(body.parentId),
                     objectId = AuditId(body.childId),
@@ -115,7 +115,8 @@ class FosterParentController(private val accessControl: AccessControl) {
         @PathVariable id: FosterParentId,
         @RequestBody validDuring: DateRange
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -126,8 +127,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     )
                     tx.updateFosterParentRelationshipValidity(id, validDuring)
                 }
-            }
-            .also {
+            }.also {
                 Audit.FosterParentUpdateRelationship.log(
                     targetId = AuditId(id),
                     meta = mapOf("validDuring" to validDuring)
@@ -142,7 +142,8 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: FosterParentId
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -153,8 +154,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                     )
                     tx.deleteFosterParentRelationship(id)
                 }
-            }
-            .also { Audit.FosterParentDeleteRelationship.log(targetId = AuditId(id)) }
+            }.also { Audit.FosterParentDeleteRelationship.log(targetId = AuditId(id)) }
     }
 }
 

@@ -26,19 +26,18 @@ data class JamixChildData(
 
 fun Database.Read.getJamixCustomerNumbers(): Set<Int> =
     createQuery {
-            sql(
-                "SELECT DISTINCT jamix_customer_number FROM daycare_group WHERE jamix_customer_number IS NOT NULL"
-            )
-        }
-        .toSet()
+        sql(
+            "SELECT DISTINCT jamix_customer_number FROM daycare_group WHERE jamix_customer_number IS NOT NULL"
+        )
+    }.toSet()
 
 fun Database.Read.getJamixChildData(
     jamixCustomerNumber: Int,
     date: LocalDate
 ): List<JamixChildData> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     rp.child_id,
     rp.unit_id,
@@ -67,6 +66,5 @@ JOIN person p ON p.id = rp.child_id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.jamix_customer_number = ${bind(jamixCustomerNumber)}
                     """
-            )
-        }
-        .toList()
+        )
+    }.toList()

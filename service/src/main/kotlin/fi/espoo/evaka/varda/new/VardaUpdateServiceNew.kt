@@ -55,7 +55,8 @@ class VardaUpdateServiceNew(
     //           local_dev_port: 65443
     //
     private val httpClient: OkHttpClient =
-        OkHttpClient.Builder()
+        OkHttpClient
+            .Builder()
             .connectTimeout(Duration.ofMinutes(2))
             .readTimeout(Duration.ofMinutes(2))
             .writeTimeout(Duration.ofMinutes(2))
@@ -81,15 +82,14 @@ class VardaUpdateServiceNew(
                 } else {
                     it
                 }
-            }
-            .build()
+            }.build()
 
     private val vardaClient =
         VardaClient(
             httpClient,
             jsonMapper,
             vardaEnv.url,
-            vardaEnv.basicAuth.value,
+            vardaEnv.basicAuth.value
         )
 
     private val vardaEnabledRange =
@@ -106,7 +106,10 @@ class VardaUpdateServiceNew(
         asyncJobRunner.registerHandler(::updateChildJob)
     }
 
-    fun updateUnits(dbc: Database.Connection, clock: EvakaClock) {
+    fun updateUnits(
+        dbc: Database.Connection,
+        clock: EvakaClock
+    ) {
         updateUnits(
             dbc,
             clock,
@@ -117,7 +120,11 @@ class VardaUpdateServiceNew(
         )
     }
 
-    fun planChildrenUpdate(dbc: Database.Connection, clock: EvakaClock, migrationSpeed: Int = 0) {
+    fun planChildrenUpdate(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        migrationSpeed: Int = 0
+    ) {
         logger.info { "Planning Varda child updates" }
 
         val chunkSize = 1000
@@ -137,7 +144,8 @@ class VardaUpdateServiceNew(
         val childIdsRequiringUpdate =
             // Process children in chunks to avoid running out of memory
             childIds.chunked(chunkSize).flatMap { chunk ->
-                dbc.read { updater.getEvakaStates(it, today, chunk) }
+                dbc
+                    .read { updater.getEvakaStates(it, today, chunk) }
                     .filter { (_, _, status) -> status == VardaUpdater.Status.NEEDS_UPDATE }
                     .map { (childId, _, _) -> childId }
             }
@@ -240,8 +248,11 @@ class VardaUpdater(
         }
     }
 
-    fun getEvakaState(tx: Database.Read, today: LocalDate, childId: ChildId): EvakaHenkiloNode? =
-        getEvakaStates(tx, today, listOf(childId)).firstOrNull()?.second
+    fun getEvakaState(
+        tx: Database.Read,
+        today: LocalDate,
+        childId: ChildId
+    ): EvakaHenkiloNode? = getEvakaStates(tx, today, listOf(childId)).firstOrNull()?.second
 
     fun getEvakaStates(
         tx: Database.Read,
@@ -255,20 +266,22 @@ class VardaUpdater(
         val updateStates = tx.getVardaUpdateState<EvakaHenkiloNode>(childIds)
         return children.entries.mapNotNull { (childId, child) ->
             computeEvakaState(
-                    today,
-                    child,
-                    guardians[childId] ?: emptyList(),
-                    serviceNeeds[childId] ?: emptyList(),
-                    feeData[childId] ?: emptyList(),
+                today,
+                child,
+                guardians[childId] ?: emptyList(),
+                serviceNeeds[childId] ?: emptyList(),
+                feeData[childId] ?: emptyList()
+            )?.let { evakaState ->
+                Triple(
+                    childId,
+                    evakaState,
+                    if (evakaState == updateStates[childId]) {
+                        Status.UP_TO_DATE
+                    } else {
+                        Status.NEEDS_UPDATE
+                    }
                 )
-                ?.let { evakaState ->
-                    Triple(
-                        childId,
-                        evakaState,
-                        if (evakaState == updateStates[childId]) Status.UP_TO_DATE
-                        else Status.NEEDS_UPDATE
-                    )
-                }
+            }
         }
     }
 
@@ -329,8 +342,7 @@ class VardaUpdater(
                                     feeData
                                         .filter { fee ->
                                             fee.ophOrganizerOid == lapsi.effectiveOrganizerOid()
-                                        }
-                                        .mapNotNull { fee ->
+                                        }.mapNotNull { fee ->
                                             // Make sure the maksutieto is within the range of
                                             // varhaiskasvatuspaatokset
                                             fee.validDuring.intersection(feeDataRange)?.let {
@@ -349,7 +361,7 @@ class VardaUpdater(
 
     private fun getVardaState(
         client: VardaReadClient,
-        evakaHenkilo: Henkilo,
+        evakaHenkilo: Henkilo
     ): VardaHenkiloNode {
         val henkilo =
             if (evakaHenkilo.henkilotunnus != null) {
@@ -403,7 +415,7 @@ class VardaUpdater(
     fun diffAndUpdate(
         client: VardaWriteClient,
         vardaHenkilo: VardaHenkiloNode,
-        evakaHenkilo: EvakaHenkiloNode,
+        evakaHenkilo: EvakaHenkiloNode
     ) {
         // End or delete data from other source systems if needed
         val dayBeforeEvaka =
@@ -420,8 +432,7 @@ class VardaUpdater(
                         lapsi.varhaiskasvatuspaatokset.flatMap {
                             it.varhaiskasvatussuhteet + it.varhaiskasvatuspaatos
                         }
-                }
-                .filter { it.lahdejarjestelma != lahdejarjestelma }
+                }.filter { it.lahdejarjestelma != lahdejarjestelma }
                 .forEach { client.endOrDeleteIfNeeded(it, dayBeforeEvaka) }
         }
 
@@ -445,7 +456,7 @@ class VardaUpdater(
                         Maksutieto.fromVarda(varda).copy(huoltajat = emptyList()) ==
                             evaka.copy(huoltajat = emptyList())
                     },
-                    onDeleted = { client.deleteMaksutieto(it) },
+                    onDeleted = { client.deleteMaksutieto(it) }
                 )
                 diff(
                     old = vardaLapsi.varhaiskasvatuspaatokset,
@@ -466,10 +477,10 @@ class VardaUpdater(
                                     vardaPaatos.varhaiskasvatuspaatos.url,
                                     it
                                 )
-                            },
+                            }
                         )
                     },
-                    onAdded = { client.createVarhaiskasvatuspaatosDeep(vardaLapsi.lapsi.url, it) },
+                    onAdded = { client.createVarhaiskasvatuspaatosDeep(vardaLapsi.lapsi.url, it) }
                 )
                 diff(
                     old = vardaLapsi.maksutiedot,
@@ -478,10 +489,10 @@ class VardaUpdater(
                         Maksutieto.fromVarda(varda).copy(huoltajat = emptyList()) ==
                             evaka.copy(huoltajat = emptyList())
                     },
-                    onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) },
+                    onAdded = { client.createMaksutieto(vardaLapsi.lapsi.url, it) }
                 )
             },
-            onAdded = { client.createLapsiDeep(vardaHenkilo.henkilo.url, it) },
+            onAdded = { client.createLapsiDeep(vardaHenkilo.henkilo.url, it) }
         )
     }
 
@@ -511,23 +522,23 @@ class VardaUpdater(
     }
 
     /** Returns true if the varhaiskasvatuspaatos and associated data were deleted */
-    private fun VardaWriteClient.deleteVarhaiskasvatuspaatosDeep(
-        vardaVarhaiskasvatuspaatos: VardaVarhaiskasvatuspaatosNode
-    ): Boolean {
+    private fun VardaWriteClient.deleteVarhaiskasvatuspaatosDeep(vardaVarhaiskasvatuspaatos: VardaVarhaiskasvatuspaatosNode): Boolean {
         val deletePaatos =
             vardaVarhaiskasvatuspaatos.varhaiskasvatussuhteet.allSucceed { suhde ->
                 deleteVarhaiskasvatussuhde(suhde)
             }
         return if (
             !deletePaatos ||
-                (vardaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.lahdejarjestelma !=
+            (
+                vardaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.lahdejarjestelma !=
                     lahdejarjestelma ||
                     !vardaEnabledRange.contains(
                         DateRange(
                             vardaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.alkamis_pvm,
                             vardaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.paattymis_pvm
                         )
-                    ))
+                    )
+            )
         ) {
             false
         } else {
@@ -542,12 +553,12 @@ class VardaUpdater(
     ): Boolean =
         if (
             vardaVarhaiskasvatussuhde.lahdejarjestelma != lahdejarjestelma ||
-                !vardaEnabledRange.contains(
-                    DateRange(
-                        vardaVarhaiskasvatussuhde.alkamis_pvm,
-                        vardaVarhaiskasvatussuhde.paattymis_pvm
-                    )
+            !vardaEnabledRange.contains(
+                DateRange(
+                    vardaVarhaiskasvatussuhde.alkamis_pvm,
+                    vardaVarhaiskasvatussuhde.paattymis_pvm
                 )
+            )
         ) {
             false
         } else {
@@ -556,14 +567,12 @@ class VardaUpdater(
         }
 
     /** Returns true if the maksutieto was deleted */
-    private fun VardaWriteClient.deleteMaksutieto(
-        vardaMaksutieto: VardaReadClient.MaksutietoResponse
-    ): Boolean =
+    private fun VardaWriteClient.deleteMaksutieto(vardaMaksutieto: VardaReadClient.MaksutietoResponse): Boolean =
         if (
             vardaMaksutieto.lahdejarjestelma != lahdejarjestelma ||
-                !vardaEnabledRange.contains(
-                    DateRange(vardaMaksutieto.alkamis_pvm, vardaMaksutieto.paattymis_pvm)
-                )
+            !vardaEnabledRange.contains(
+                DateRange(vardaMaksutieto.alkamis_pvm, vardaMaksutieto.paattymis_pvm)
+            )
         ) {
             false
         } else {
@@ -571,7 +580,10 @@ class VardaUpdater(
             true
         }
 
-    private fun VardaWriteClient.createLapsiDeep(henkiloUrl: URI, evakaLapsi: EvakaLapsiNode) {
+    private fun VardaWriteClient.createLapsiDeep(
+        henkiloUrl: URI,
+        evakaLapsi: EvakaLapsiNode
+    ) {
         val lapsiUrl = this.createLapsi(evakaLapsi.lapsi.toVarda(lahdejarjestelma, henkiloUrl)).url
         evakaLapsi.varhaiskasvatuspaatokset.forEach { paatosNode ->
             createVarhaiskasvatuspaatosDeep(lapsiUrl, paatosNode)
@@ -581,16 +593,15 @@ class VardaUpdater(
 
     private fun VardaWriteClient.createVarhaiskasvatuspaatosDeep(
         lapsiUrl: URI,
-        evakaVarhaiskasvatuspaatos: EvakaVarhaiskasvatuspaatosNode,
+        evakaVarhaiskasvatuspaatos: EvakaVarhaiskasvatuspaatosNode
     ) {
         val paatosUrl =
             createVarhaiskasvatuspaatos(
-                    evakaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.toVarda(
-                        lahdejarjestelma,
-                        lapsiUrl
-                    )
+                evakaVarhaiskasvatuspaatos.varhaiskasvatuspaatos.toVarda(
+                    lahdejarjestelma,
+                    lapsiUrl
                 )
-                .url
+            ).url
         evakaVarhaiskasvatuspaatos.varhaiskasvatussuhteet.forEach { suhde ->
             createVarhaiskasvatussuhde(paatosUrl, suhde)
         }
@@ -603,7 +614,10 @@ class VardaUpdater(
         createVarhaiskasvatussuhde(evakaVarhaiskasvatussuhde.toVarda(lahdejarjestelma, paatosUrl))
     }
 
-    private fun VardaWriteClient.createMaksutieto(lapsiUrl: URI, evakaMaksutieto: Maksutieto) {
+    private fun VardaWriteClient.createMaksutieto(
+        lapsiUrl: URI,
+        evakaMaksutieto: Maksutieto
+    ) {
         createMaksutieto(evakaMaksutieto.toVarda(lahdejarjestelma, lapsiUrl))
     }
 
@@ -636,7 +650,10 @@ class VardaUpdater(
         NEEDS_UPDATE
     }
 
-    data class EvakaHenkiloNode(val henkilo: Henkilo, val lapset: List<EvakaLapsiNode>)
+    data class EvakaHenkiloNode(
+        val henkilo: Henkilo,
+        val lapset: List<EvakaLapsiNode>
+    )
 
     data class EvakaLapsiNode(
         val lapsi: Lapsi,
@@ -646,7 +663,7 @@ class VardaUpdater(
 
     data class EvakaVarhaiskasvatuspaatosNode(
         val varhaiskasvatuspaatos: Varhaiskasvatuspaatos,
-        val varhaiskasvatussuhteet: List<Varhaiskasvatussuhde>,
+        val varhaiskasvatussuhteet: List<Varhaiskasvatussuhde>
     )
 
     data class VardaHenkiloNode(
@@ -662,7 +679,7 @@ class VardaUpdater(
 
     data class VardaVarhaiskasvatuspaatosNode(
         val varhaiskasvatuspaatos: VardaReadClient.VarhaiskasvatuspaatosResponse,
-        val varhaiskasvatussuhteet: List<VardaReadClient.VarhaiskasvatussuhdeResponse>,
+        val varhaiskasvatussuhteet: List<VardaReadClient.VarhaiskasvatussuhdeResponse>
     )
 }
 
@@ -675,7 +692,8 @@ private fun <Old, New> diff(
     onUnchanged: ((Old, New) -> Unit)? = null
 ) {
     if (onDeleted != null) {
-        old.filter { oldItem -> new.none { newItem -> eq(oldItem, newItem) } }
+        old
+            .filter { oldItem -> new.none { newItem -> eq(oldItem, newItem) } }
             .forEach { onDeleted(it) }
     }
     if (onUnchanged != null) {
@@ -687,7 +705,8 @@ private fun <Old, New> diff(
         }
     }
     if (onAdded != null) {
-        new.filter { newItem -> old.none { oldItem -> eq(oldItem, newItem) } }
+        new
+            .filter { newItem -> old.none { oldItem -> eq(oldItem, newItem) } }
             .forEach { onAdded(it) }
     }
 }
@@ -695,11 +714,18 @@ private fun <Old, New> diff(
 class DryRunClient : VardaWriteClient {
     private var ids = mutableMapOf<String, Int>()
 
-    private data class Operation(val op: String, val type: String?, val data: Any)
+    private data class Operation(
+        val op: String,
+        val type: String?,
+        val data: Any
+    )
 
     private val _operations = mutableListOf<Operation>()
 
-    private fun create(what: String?, data: Any) {
+    private fun create(
+        what: String?,
+        data: Any
+    ) {
         _operations.add(Operation("Create", what, data))
     }
 
@@ -709,30 +735,22 @@ class DryRunClient : VardaWriteClient {
         return URI("${type}_$i")
     }
 
-    override fun createLapsi(
-        body: VardaWriteClient.CreateLapsiRequest
-    ): VardaWriteClient.CreateResponse {
+    override fun createLapsi(body: VardaWriteClient.CreateLapsiRequest): VardaWriteClient.CreateResponse {
         create("lapsi", body)
         return VardaWriteClient.CreateResponse(url = nextUri("lapsi"))
     }
 
-    override fun createVarhaiskasvatuspaatos(
-        body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest
-    ): VardaWriteClient.CreateResponse {
+    override fun createVarhaiskasvatuspaatos(body: VardaWriteClient.CreateVarhaiskasvatuspaatosRequest): VardaWriteClient.CreateResponse {
         create("varhaiskasvatuspaatos", body)
         return VardaWriteClient.CreateResponse(url = nextUri("varhaiskasvatuspaatos"))
     }
 
-    override fun createVarhaiskasvatussuhde(
-        body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest
-    ): VardaWriteClient.CreateResponse {
+    override fun createVarhaiskasvatussuhde(body: VardaWriteClient.CreateVarhaiskasvatussuhdeRequest): VardaWriteClient.CreateResponse {
         create("varhaiskasvatussuhde", body)
         return VardaWriteClient.CreateResponse(url = nextUri("varhaiskasvatussuhde"))
     }
 
-    override fun createMaksutieto(
-        body: VardaWriteClient.CreateMaksutietoRequest
-    ): VardaWriteClient.CreateResponse {
+    override fun createMaksutieto(body: VardaWriteClient.CreateMaksutietoRequest): VardaWriteClient.CreateResponse {
         create("maksutieto", body)
         return VardaWriteClient.CreateResponse(url = nextUri("maksutieto"))
     }
@@ -741,7 +759,10 @@ class DryRunClient : VardaWriteClient {
         _operations.add(Operation("Delete", null, data))
     }
 
-    override fun setPaattymisPvm(url: URI, body: VardaWriteClient.SetPaattymisPvmRequest) {
+    override fun setPaattymisPvm(
+        url: URI,
+        body: VardaWriteClient.SetPaattymisPvmRequest
+    ) {
         _operations.add(Operation("SetPaattymisPvm", null, url to body))
     }
 

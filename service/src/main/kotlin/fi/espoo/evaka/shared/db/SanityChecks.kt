@@ -10,13 +10,19 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
+fun runSanityChecks(
+    tx: Database.Read,
+    clock: EvakaClock
+) {
     logResult("child attendances on future days", tx.sanityCheckAttendancesInFuture(clock.today()))
     logResult("service need outside placement", tx.sanityCheckServiceNeedOutsidePlacement())
     logResult("group placement outside placement", tx.sanityCheckGroupPlacementOutsidePlacement())
 }
 
-private fun logResult(description: String, violations: Int) {
+private fun logResult(
+    description: String,
+    violations: Int
+) {
     if (violations > 0) {
         logger.warn("Sanity check failed - $description: $violations instances")
     } else {
@@ -24,43 +30,37 @@ private fun logResult(description: String, violations: Int) {
     }
 }
 
-fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): Int {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): Int =
+    createQuery {
+        sql(
+            """
         SELECT count(*)
         FROM child_attendance 
         WHERE date > ${bind(today)}
     """
-            )
-        }
-        .exactlyOne()
-}
+        )
+    }.exactlyOne()
 
-fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): Int {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): Int =
+    createQuery {
+        sql(
+            """
         SELECT count(*)
         FROM service_need sn
         JOIN placement pl on pl.id = sn.placement_id
         WHERE sn.start_date < pl.start_date OR sn.end_date > pl.end_date
     """
-            )
-        }
-        .exactlyOne()
-}
+        )
+    }.exactlyOne()
 
-fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): Int {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): Int =
+    createQuery {
+        sql(
+            """
         SELECT count(*)
         FROM daycare_group_placement gpl
         JOIN placement pl on pl.id = gpl.daycare_placement_id
         WHERE gpl.start_date < pl.start_date OR gpl.end_date > pl.end_date
     """
-            )
-        }
-        .exactlyOne()
-}
+        )
+    }.exactlyOne()

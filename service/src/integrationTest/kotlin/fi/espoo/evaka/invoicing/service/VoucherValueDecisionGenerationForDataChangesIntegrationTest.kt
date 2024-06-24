@@ -39,10 +39,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class VoucherValueDecisionGenerationForDataChangesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var generator: FinanceDecisionGenerator
+
     @Autowired private lateinit var decisionController: VoucherValueDecisionController
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     val originalRange = dateRange(10, 20)
@@ -102,7 +103,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(VoucherValueDecisionStatus.SENT, dateRange(5, 9), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 20), false),
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 20), false)
             )
         )
     }
@@ -115,7 +116,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertDrafts(
             listOf(
                 dateRange(10, 14) to true,
-                dateRange(15, 20) to false,
+                dateRange(15, 20) to false
             )
         )
 
@@ -124,7 +125,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(VoucherValueDecisionStatus.ANNULLED, dateRange(10, 20), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(15, 20), false),
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(15, 20), false)
             )
         )
     }
@@ -140,7 +141,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
         assertFinal(
             listOf(
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 15), false),
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 15), false)
             )
         )
     }
@@ -157,7 +158,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 20), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(21, 25), false),
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(21, 25), false)
             )
         )
     }
@@ -174,7 +175,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(VoucherValueDecisionStatus.SENT, dateRange(5, 9), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 15), false),
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 15), false)
             )
         )
     }
@@ -192,7 +193,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
             listOf(
                 Triple(VoucherValueDecisionStatus.SENT, dateRange(5, 9), false),
                 Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 20), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(21, 25), false),
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(21, 25), false)
             )
         )
     }
@@ -253,7 +254,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertDrafts(
             listOf(
                 dateRange(14, 15) to true,
-                dateRange(16, 20) to false,
+                dateRange(16, 20) to false
             )
         )
 
@@ -262,7 +263,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 13), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(16, 20), false),
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(16, 20), false)
             )
         )
     }
@@ -339,7 +340,10 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
     private fun day(d: Int) = LocalDate.of(2022, 6, d)
 
-    private fun dateRange(f: Int, t: Int) = DateRange(day(f), day(t))
+    private fun dateRange(
+        f: Int,
+        t: Int
+    ) = DateRange(day(f), day(t))
 
     private fun assertDrafts(expectedDrafts: List<Pair<DateRange, Boolean>>) {
         val decisions = getAllVoucherValueDecisions()
@@ -359,9 +363,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         }
     }
 
-    private fun assertFinal(
-        expectedFinalState: List<Triple<VoucherValueDecisionStatus, DateRange, Boolean>>
-    ) {
+    private fun assertFinal(expectedFinalState: List<Triple<VoucherValueDecisionStatus, DateRange, Boolean>>) {
         val sent = getAllVoucherValueDecisions()
         assertEquals(expectedFinalState.size, sent.size)
         expectedFinalState.forEach { (status, range, empty) ->
@@ -373,10 +375,10 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         }
     }
 
-    private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
-        return db.read { tx -> tx.findValueDecisionsForChild(testChild_1.id) }
+    private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> =
+        db
+            .read { tx -> tx.findValueDecisionsForChild(testChild_1.id) }
             .sortedBy { it.validFrom }
-    }
 
     private fun generate() {
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }

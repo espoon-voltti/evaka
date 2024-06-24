@@ -22,14 +22,17 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen")
-class DailyServiceTimesCitizenController(private val accessControl: AccessControl) {
+class DailyServiceTimesCitizenController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/daily-service-time-notifications")
     fun getDailyServiceTimeNotifications(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<DailyServiceTimeNotification> {
-        return db.connect { dbc ->
+    ): List<DailyServiceTimeNotification> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -40,14 +43,12 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
                     )
                     tx.getDailyServiceTimesNotifications(user.id)
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildDailyServiceTimeNotificationsRead.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PostMapping("/daily-service-time-notifications/dismiss")
     fun dismissDailyServiceTimeNotification(
@@ -56,7 +57,8 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         clock: EvakaClock,
         @RequestBody body: List<DailyServiceTimeNotificationId>
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
                         .checkPermissionFor(
@@ -65,14 +67,12 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
                             clock,
                             Action.Citizen.DailyServiceTimeNotification.DISMISS,
                             body
-                        )
-                        .asSequence()
+                        ).asSequence()
                         .mapNotNull { (id, permission) -> id.takeIf { permission.isPermitted() } }
                         .toList()
                         .also { tx.deleteDailyServiceTimesNotifications(it) }
                 }
-            }
-            .also { Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = AuditId(it)) }
+            }.also { Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = AuditId(it)) }
     }
 }
 
@@ -82,21 +82,16 @@ data class DailyServiceTimeNotification(
     val hasDeletedReservations: Boolean
 )
 
-fun Database.Read.getDailyServiceTimesNotifications(
-    userId: PersonId
-): List<DailyServiceTimeNotification> =
+fun Database.Read.getDailyServiceTimesNotifications(userId: PersonId): List<DailyServiceTimeNotification> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notification WHERE guardian_id = ${bind(userId)}
     """
-            )
-        }
-        .toList<DailyServiceTimeNotification>()
+        )
+    }.toList<DailyServiceTimeNotification>()
 
-fun Database.Transaction.deleteDailyServiceTimesNotifications(
-    notificationIds: List<DailyServiceTimeNotificationId>
-) {
+fun Database.Transaction.deleteDailyServiceTimesNotifications(notificationIds: List<DailyServiceTimeNotificationId>) {
     execute {
         sql("DELETE FROM daily_service_time_notification WHERE id = ANY(${bind(notificationIds)})")
     }

@@ -40,8 +40,7 @@ export type Multi =
   | 'A'
   | 'B'
   | 'C'
-"""
-                .trimStart(),
+""".trimStart(),
             generateEnum<Multi>()()
         )
     }

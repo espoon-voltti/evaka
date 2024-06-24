@@ -21,8 +21,7 @@ fun VtjXroadClientEnv.toClientHeader(): JAXBElement<XRoadClientIdentifierType>? 
             it.memberClass = memberClass
             it.memberCode = memberCode
             it.subsystemCode = subsystemCode
-        }
-        .let { factory.createClient(it) }
+        }.let { factory.createClient(it) }
 
 fun VtjXroadServiceEnv.toServiceHeader(): JAXBElement<XRoadServiceIdentifierType> =
     XRoadServiceIdentifierType()
@@ -34,8 +33,7 @@ fun VtjXroadServiceEnv.toServiceHeader(): JAXBElement<XRoadServiceIdentifierType
             it.subsystemCode = subsystemCode
             it.serviceCode = serviceCode
             it.serviceVersion = serviceVersion
-        }
-        .let { factory.createService(it) }
+        }.let { factory.createService(it) }
 
 class XroadMapper {
     companion object {

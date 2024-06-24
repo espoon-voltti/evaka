@@ -51,7 +51,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired lateinit var placementController: PlacementController
 
     private val mockClock =
@@ -126,8 +125,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get(
                     "/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
-                )
-                .asUser(serviceWorker)
+                ).asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
@@ -140,8 +138,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get(
                     "/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
-                )
-                .asUser(serviceWorker)
+                ).asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
@@ -187,8 +184,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get(
                     "/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
-                )
-                .asUser(serviceWorker)
+                ).asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
@@ -201,8 +197,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get(
                     "/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
-                )
-                .asUser(serviceWorker)
+                ).asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
@@ -229,7 +224,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+        Assertions
+            .assertThat(groupPlacements.first().daycarePlacementId)
             .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(groupPlacementStart)
@@ -249,7 +245,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+        Assertions
+            .assertThat(groupPlacements.first().daycarePlacementId)
             .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(placementStart)
@@ -269,7 +266,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+        Assertions
+            .assertThat(groupPlacements.first().daycarePlacementId)
             .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(placementStart)
@@ -297,7 +295,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+        Assertions
+            .assertThat(groupPlacements.first().daycarePlacementId)
             .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(placementStart)
@@ -365,20 +364,20 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = firstAbsence,
+                        date = firstAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = secondAbsence,
+                        date = secondAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = thirdAbsence,
+                        date = thirdAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = fourthAbsence,
-                    ),
+                        date = fourthAbsence
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -487,7 +486,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         childId = childId,
                         date = fourthReservation,
                         reservation = reservationTime
-                    ),
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -582,20 +581,20 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = firstAbsence,
+                        date = firstAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = secondAbsence,
+                        date = secondAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = thirdAbsence,
+                        date = thirdAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = fourthAbsence,
-                    ),
+                        date = fourthAbsence
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -687,7 +686,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         childId = childId,
                         date = fourthReservation,
                         reservation = reservationTime
-                    ),
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -765,20 +764,20 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = firstAbsence,
+                        date = firstAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = secondAbsence,
+                        date = secondAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = thirdAbsence,
+                        date = thirdAbsence
                     ),
                     DailyReservationRequest.Absent(
                         childId = childId,
-                        date = fourthAbsence,
-                    ),
+                        date = fourthAbsence
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -857,7 +856,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         childId = childId,
                         date = secondReservation,
                         reservation = reservationTime
-                    ),
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -934,7 +933,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         childId = childId,
                         date = fourthReservation,
                         reservation = reservationTime
-                    ),
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -1032,7 +1031,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .asUser(unitSupervisor)
                 .responseObject<PlacementResponse>(jsonMapper)
 
-        val groupPlacementsAfter = result.get().placements.toList()[0].groupPlacements
+        val groupPlacementsAfter =
+            result
+                .get()
+                .placements
+                .toList()[0]
+                .groupPlacements
         Assertions.assertThat(groupPlacementsAfter).hasSize(1)
         Assertions.assertThat(groupPlacementsAfter.first().groupId).isNull()
     }
@@ -1069,14 +1073,17 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .asUser(unitSupervisor)
                 .responseObject<PlacementResponse>(jsonMapper)
 
-        org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(200, res.statusCode)
 
         val placements = result.get().placements.toList()
         val allowed = placements.find { it.id == allowedId }!!
         val restricted = placements.find { it.id == restrictedId }!!
 
-        org.junit.jupiter.api.Assertions.assertFalse(allowed.isRestrictedFromUser)
-        org.junit.jupiter.api.Assertions.assertTrue(restricted.isRestrictedFromUser)
+        org.junit.jupiter.api.Assertions
+            .assertFalse(allowed.isRestrictedFromUser)
+        org.junit.jupiter.api.Assertions
+            .assertTrue(restricted.isRestrictedFromUser)
     }
 
     @Test
@@ -1104,7 +1111,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .asUser(unitSupervisor)
                 .response()
 
-        org.junit.jupiter.api.Assertions.assertEquals(403, forbidden.statusCode)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(403, forbidden.statusCode)
 
         val (_, allowed, _) =
             http
@@ -1113,12 +1121,15 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .asUser(unitSupervisor)
                 .response()
 
-        org.junit.jupiter.api.Assertions.assertEquals(200, allowed.statusCode)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(200, allowed.statusCode)
 
         db.read { r ->
             val updated = r.getPlacementsForChild(childId).find { it.id == allowedId }!!
-            org.junit.jupiter.api.Assertions.assertEquals(newStart, updated.startDate)
-            org.junit.jupiter.api.Assertions.assertEquals(newEnd, updated.endDate)
+            org.junit.jupiter.api.Assertions
+                .assertEquals(newStart, updated.startDate)
+            org.junit.jupiter.api.Assertions
+                .assertEquals(newEnd, updated.endDate)
         }
     }
 
@@ -1149,7 +1160,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .asUser(unitSupervisor)
                 .response()
 
-        org.junit.jupiter.api.Assertions.assertEquals(409, res.statusCode)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(409, res.statusCode)
     }
 
     @Test
@@ -1157,15 +1169,15 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val newEnd = placementEnd.plusDays(1)
         val secondPlacement =
             db.transaction { tx ->
-                tx.insert(
+                tx
+                    .insert(
                         DevPlacement(
                             childId = childId,
                             unitId = testDaycare2.id,
                             startDate = newEnd,
                             endDate = newEnd.plusMonths(2)
                         )
-                    )
-                    .also {
+                    ).also {
                         tx.updateDaycareAclWithEmployee(
                             testDaycare2.id,
                             unitSupervisor.id,
@@ -1186,14 +1198,17 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .asUser(unitSupervisor)
                 .response()
 
-        org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(200, res.statusCode)
 
         val placements = db.read { r -> r.getPlacementsForChild(childId) }
         val first = placements.find { it.id == testPlacement.id }!!
         val second = placements.find { it.id == secondPlacement }!!
 
-        org.junit.jupiter.api.Assertions.assertEquals(newEnd, first.endDate)
-        org.junit.jupiter.api.Assertions.assertEquals(newEnd.plusDays(1), second.startDate)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(newEnd, first.endDate)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(newEnd.plusDays(1), second.startDate)
     }
 
     @Test
@@ -1212,7 +1227,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 .asUser(unitSupervisor)
                 .response()
 
-        org.junit.jupiter.api.Assertions.assertEquals(403, res.statusCode)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(403, res.statusCode)
     }
 
     @Test
@@ -1348,13 +1364,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private fun createGroupPlacement(
         placementId: PlacementId,
         groupPlacement: GroupPlacementRequestBody
-    ): ResponseResultOf<ByteArray> {
-        return http
+    ): ResponseResultOf<ByteArray> =
+        http
             .post("/placements/$placementId/group-placements")
             .asUser(unitSupervisor)
             .objectBody(bodyObject = groupPlacement, mapper = jsonMapper)
             .response()
-    }
 
     private fun createPlacementAndGroupPlacement(
         placementStartDate: LocalDate,
@@ -1377,7 +1392,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
         val placement =
             db.read { r ->
-                r.getDaycarePlacements(daycareId, childId, placementStartDate, placementEndDate)
+                r
+                    .getDaycarePlacements(daycareId, childId, placementStartDate, placementEndDate)
                     .first()
             }
         val groupPlacementId =
@@ -1396,8 +1412,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private fun getGroupPlacements(
         childId: ChildId,
         daycareId: DaycareId
-    ): List<DaycareGroupPlacement> {
-        return http
+    ): List<DaycareGroupPlacement> =
+        http
             .get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
             .responseObject<PlacementResponse>(jsonMapper)
@@ -1408,14 +1424,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             .first { it.id == testPlacement.id }
             .groupPlacements
             .filter { it.id != null }
-    }
 
     private fun getAbsencesOfChildByRange(range: DateRange) =
         db.read {
-            it.getAbsencesOfChildByRange(
+            it
+                .getAbsencesOfChildByRange(
                     childId,
-                    range,
-                )
-                .sortedWith(compareBy({ it.date }, { it.category }))
+                    range
+                ).sortedWith(compareBy({ it.date }, { it.category }))
         }
 }

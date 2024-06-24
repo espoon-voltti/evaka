@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class LocationControllerCitizen {
     @GetMapping(
-        "/citizen/units",
+        "/citizen/units"
     )
     fun getApplicationUnits(
         db: Database,
@@ -27,17 +27,14 @@ class LocationControllerCitizen {
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
-    ): List<PublicUnit> {
-        return db.connect { dbc ->
+    ): List<PublicUnit> =
+        db.connect { dbc ->
             dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = true) }
         }
-    }
 
     @GetMapping("/citizen/public/units/{applicationType}")
     fun getAllApplicableUnits(
         db: Database,
         @PathVariable applicationType: ApplicationType
-    ): List<PublicUnit> {
-        return db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
-    }
+    ): List<PublicUnit> = db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
 }

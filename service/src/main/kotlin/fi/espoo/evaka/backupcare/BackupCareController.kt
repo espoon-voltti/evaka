@@ -33,7 +33,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class BackupCareController(private val accessControl: AccessControl) {
+class BackupCareController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/children/{childId}/backup-cares", // deprecated
         "/employee/children/{childId}/backup-cares"
@@ -43,9 +45,10 @@ class BackupCareController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): ChildBackupCaresResponse {
-        return ChildBackupCaresResponse(
-            db.connect { dbc ->
+    ): ChildBackupCaresResponse =
+        ChildBackupCaresResponse(
+            db
+                .connect { dbc ->
                     dbc.read { tx ->
                         accessControl.requirePermissionFor(
                             tx,
@@ -67,15 +70,13 @@ class BackupCareController(private val accessControl: AccessControl) {
                             ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet())
                         }
                     }
-                }
-                .also {
+                }.also {
                     Audit.ChildBackupCareRead.log(
                         targetId = AuditId(childId),
                         meta = mapOf("count" to it.size)
                     )
                 }
         )
-    }
 
     @PostMapping(
         "/children/{childId}/backup-cares", // deprecated
@@ -104,7 +105,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 "The new backup care period is not contained within a placement"
                             )
                         }
-                        tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end)
+                        tx
+                            .getPlacementsForChildDuring(childId, body.period.start, body.period.end)
                             .forEach { placement ->
                                 tx.clearCalendarEventAttendees(
                                     childId,
@@ -174,12 +176,12 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 // the backup care was extended; clear calendar event attendees for
                                 // the main placement
                                 // for the extended period
-                                tx.getPlacementsForChildDuring(
+                                tx
+                                    .getPlacementsForChildDuring(
                                         existing.childId,
                                         body.period.start,
                                         existing.period.start
-                                    )
-                                    .forEach { placement ->
+                                    ).forEach { placement ->
                                         tx.clearCalendarEventAttendees(
                                             existing.childId,
                                             placement.unitId,
@@ -207,12 +209,12 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 // the backup care was extended; clear calendar event attendees for
                                 // the main placement
                                 // for the extended period
-                                tx.getPlacementsForChildDuring(
+                                tx
+                                    .getPlacementsForChildDuring(
                                         existing.childId,
                                         existing.period.end,
                                         body.period.end
-                                    )
-                                    .forEach { placement ->
+                                    ).forEach { placement ->
                                         tx.clearCalendarEventAttendees(
                                             existing.childId,
                                             placement.unitId,
@@ -295,10 +297,19 @@ class BackupCareController(private val accessControl: AccessControl) {
     }
 }
 
-data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCareResponse>)
+data class ChildBackupCaresResponse(
+    val backupCares: List<ChildBackupCareResponse>
+)
 
-data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
+data class UnitBackupCaresResponse(
+    val backupCares: List<UnitBackupCare>
+)
 
-data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: GroupId?)
+data class BackupCareUpdateRequest(
+    val period: FiniteDateRange,
+    val groupId: GroupId?
+)
 
-data class BackupCareCreateResponse(val id: BackupCareId)
+data class BackupCareCreateResponse(
+    val id: BackupCareId
+)

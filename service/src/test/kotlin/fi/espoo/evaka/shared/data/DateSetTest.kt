@@ -134,5 +134,8 @@ class DateSetTest {
 
     private fun testDate(day: Int) = LocalDate.of(2019, 1, day)
 
-    private fun testRange(from: Int, to: Int) = FiniteDateRange(testDate(from), testDate(to))
+    private fun testRange(
+        from: Int,
+        to: Int
+    ) = FiniteDateRange(testDate(from), testDate(to))
 }

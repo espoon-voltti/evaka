@@ -63,7 +63,10 @@ data class Gross(
     val otherIncomeInfo: String
 )
 
-data class SelfEmployed(val attachments: Boolean, val estimatedIncome: EstimatedIncome?)
+data class SelfEmployed(
+    val attachments: Boolean,
+    val estimatedIncome: EstimatedIncome?
+)
 
 data class EstimatedIncome(
     val estimatedMonthlyIncome: Int,
@@ -71,9 +74,16 @@ data class EstimatedIncome(
     val incomeEndDate: LocalDate?
 )
 
-data class LimitedCompany(val incomeSource: IncomeSource)
+data class LimitedCompany(
+    val incomeSource: IncomeSource
+)
 
-data class Accountant(val name: String, val address: String, val phone: String, val email: String)
+data class Accountant(
+    val name: String,
+    val address: String,
+    val phone: String,
+    val email: String
+)
 
 data class Entrepreneur(
     val fullTime: Boolean,
@@ -89,10 +99,15 @@ data class Entrepreneur(
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class IncomeStatementBody(open val startDate: LocalDate, open val endDate: LocalDate?) {
+sealed class IncomeStatementBody(
+    open val startDate: LocalDate,
+    open val endDate: LocalDate?
+) {
     @JsonTypeName("HIGHEST_FEE")
-    data class HighestFee(override val startDate: LocalDate, override val endDate: LocalDate?) :
-        IncomeStatementBody(startDate, endDate)
+    data class HighestFee(
+        override val startDate: LocalDate,
+        override val endDate: LocalDate?
+    ) : IncomeStatementBody(startDate, endDate)
 
     @JsonTypeName("INCOME")
     data class Income(
@@ -127,21 +142,29 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
                 body.entrepreneur.let { entrepreneur ->
                     entrepreneur == null ||
                         // At least one company type must be selected
-                        ((entrepreneur.selfEmployed != null ||
-                            entrepreneur.limitedCompany != null ||
-                            entrepreneur.partnership ||
-                            entrepreneur.lightEntrepreneur) &&
-                            // Accountant must be given if limitedCompany or partnership is selected
-                            ((entrepreneur.limitedCompany == null && !entrepreneur.partnership) ||
-                                (entrepreneur.accountant != null)) &&
-                            // Accountant name, phone and email must be non-empty
-                            entrepreneur.accountant.let { accountant ->
-                                accountant == null ||
-                                    (accountant.name != "" &&
-                                        accountant.phone != "" &&
-                                        accountant.email != "")
-                            } &&
-                            validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome))
+                        (
+                            (
+                                entrepreneur.selfEmployed != null ||
+                                    entrepreneur.limitedCompany != null ||
+                                    entrepreneur.partnership ||
+                                    entrepreneur.lightEntrepreneur
+                            ) &&
+                                // Accountant must be given if limitedCompany or partnership is selected
+                                (
+                                    (entrepreneur.limitedCompany == null && !entrepreneur.partnership) ||
+                                        (entrepreneur.accountant != null)
+                                ) &&
+                                // Accountant name, phone and email must be non-empty
+                                entrepreneur.accountant.let { accountant ->
+                                    accountant == null ||
+                                        (
+                                            accountant.name != "" &&
+                                                accountant.phone != "" &&
+                                                accountant.email != ""
+                                        )
+                                } &&
+                                validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome)
+                        )
                 }
             }
     }
@@ -198,7 +221,9 @@ data class Attachment(
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class IncomeStatement(val type: IncomeStatementType) {
+sealed class IncomeStatement(
+    val type: IncomeStatementType
+) {
     abstract val id: IncomeStatementId
     abstract val personId: PersonId
     abstract val firstName: String

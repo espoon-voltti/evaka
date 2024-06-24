@@ -229,18 +229,28 @@ class ScheduledJobs(
         db.transaction { tx -> tx.endAssistanceFactorsWhichBelongToPastPlacements(clock.today()) }
     }
 
-    fun endActiveDaycareAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
+    fun endActiveDaycareAssistanceDecisions(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(clock.today()) }
     }
 
-    fun endActivePreschoolAssistanceDecisions(db: Database.Connection, clock: EvakaClock) {
+    fun endActivePreschoolAssistanceDecisions(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx -> tx.endActivePreschoolAssistanceDecisions(clock.today()) }
     }
 
-    fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
+    fun endOfDayAttendanceUpkeep(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         val today = clock.today()
         db.transaction {
-            it.createUpdate {
+            it
+                .createUpdate {
                     sql(
                         """
 WITH attendances_to_end AS (
@@ -265,18 +275,24 @@ UPDATE child_attendance SET end_time = '23:59'::time
 WHERE id IN (SELECT id FROM attendances_to_end)
 """
                     )
-                }
-                .execute()
+                }.execute()
         }
     }
 
-    fun endOfDayStaffAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
+    fun endOfDayStaffAttendanceUpkeep(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { it.addMissingStaffAttendanceDepartures(clock.now()) }
     }
 
-    fun endOfDayReservationUpkeep(db: Database.Connection, clock: EvakaClock) {
+    fun endOfDayReservationUpkeep(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction {
-            it.createUpdate {
+            it
+                .createUpdate {
                     sql(
                         """
                         DELETE FROM attendance_reservation ar
@@ -287,20 +303,28 @@ WHERE id IN (SELECT id FROM attendances_to_end)
                         )
                         """
                     )
-                }
-                .execute()
+                }.execute()
         }
     }
 
-    fun dvvUpdate(db: Database.Connection, clock: EvakaClock) {
+    fun dvvUpdate(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         dvvModificationsBatchRefreshService.scheduleBatch(db, clock)
     }
 
-    fun koskiUpdate(db: Database.Connection, clock: EvakaClock) {
+    fun koskiUpdate(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         koskiUpdateService.scheduleKoskiUploads(db, clock)
     }
 
-    fun vardaUpdate(db: Database.Connection, clock: EvakaClock) {
+    fun vardaUpdate(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         if (vardaEnv.newIntegrationEnabled) {
             vardaUpdateServiceNew.updateUnits(db, clock)
             vardaUpdateServiceNew.planChildrenUpdate(
@@ -317,7 +341,10 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         vardaUpdateService.planVardaChildrenUpdate(db, clock)
     }
 
-    fun vardaReset(db: Database.Connection, clock: EvakaClock) {
+    fun vardaReset(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         vardaResetService.planVardaReset(
             db,
             clock,
@@ -325,11 +352,17 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         )
     }
 
-    fun removeOldDraftApplications(db: Database.Connection, clock: EvakaClock) {
+    fun removeOldDraftApplications(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { it.removeOldDrafts(clock) }
     }
 
-    fun cancelOutdatedTransferApplications(db: Database.Connection, clock: EvakaClock) {
+    fun cancelOutdatedTransferApplications(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         val canceledApplications =
             db.transaction {
                 val applicationIds = it.cancelOutdatedSentTransferApplications(clock)
@@ -340,91 +373,143 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         }
     }
 
-    fun sendJamixOrders(db: Database.Connection, clock: EvakaClock) {
+    fun sendJamixOrders(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         jamixService.planOrders(db, clock)
     }
 
-    fun syncJamixDiets(db: Database.Connection, clock: EvakaClock) {
+    fun syncJamixDiets(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         jamixService.planDietSync(db, clock)
     }
 
-    fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {
+    fun sendPendingDecisionReminderEmails(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         pendingDecisionEmailService.scheduleSendPendingDecisionsEmails(db, clock)
     }
 
-    fun freezeVoucherValueReports(db: Database.Connection, clock: EvakaClock) {
+    fun freezeVoucherValueReports(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         val now = clock.now()
         db.transaction { freezeVoucherValueReportRows(it, now.year, now.month.value, now) }
     }
 
-    fun generateFinanceDecisions(db: Database.Connection, clock: EvakaClock) {
+    fun generateFinanceDecisions(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { financeDecisionGenerator.scheduleBatchGeneration(it) }
     }
 
-    fun removeExpiredNotes(db: Database.Connection, clock: EvakaClock) {
+    fun removeExpiredNotes(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { it.deleteExpiredNotes(clock.now()) }
     }
 
-    fun removeOldAsyncJobs(db: Database.Connection, clock: EvakaClock) {
+    fun removeOldAsyncJobs(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.removeOldAsyncJobs(clock.now())
     }
 
-    fun inactivePeopleCleanup(db: Database.Connection, clock: EvakaClock) {
+    fun inactivePeopleCleanup(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { cleanUpInactivePeople(it, clock.today()) }
     }
 
-    fun inactiveEmployeesRoleReset(db: Database.Connection, clock: EvakaClock) {
+    fun inactiveEmployeesRoleReset(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction {
             val ids = it.deactivateInactiveEmployees(clock.now())
             logger.info { "Roles cleared for ${ids.size} inactive employees: $ids" }
         }
     }
 
-    fun sendMissingReservationReminders(db: Database.Connection, clock: EvakaClock) {
+    fun sendMissingReservationReminders(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx ->
             val count = missingReservationsReminders.scheduleReminders(tx, clock)
             logger.info("Scheduled $count reminders about missing reservations")
         }
     }
 
-    fun sendMissingHolidayReservationReminders(db: Database.Connection, clock: EvakaClock) {
+    fun sendMissingHolidayReservationReminders(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx ->
             val count = missingHolidayReservationsReminders.scheduleReminders(tx, clock)
             logger.info("Scheduled $count reminders about missing holiday reservations")
         }
     }
 
-    fun sendOutdatedIncomeNotifications(db: Database.Connection, clock: EvakaClock) {
+    fun sendOutdatedIncomeNotifications(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx ->
             val count = outdatedIncomeNotifications.scheduleNotifications(tx, clock)
             logger.info("Scheduled $count notifications about outdated income")
         }
     }
 
-    fun sendNewCustomerIncomeNotifications(db: Database.Connection, clock: EvakaClock) {
+    fun sendNewCustomerIncomeNotifications(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx ->
             val count = newCustomerIncomeNotification.scheduleNotifications(tx, clock)
             logger.info("Scheduled $count notifications for new customer about income")
         }
     }
 
-    fun closeVasusWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {
+    fun closeVasusWithExpiredTemplate(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx -> closeVasusWithExpiredTemplate(tx, clock.now()) }
     }
 
-    fun completeChildDocumentsWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {
+    fun completeChildDocumentsWithExpiredTemplate(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         db.transaction { tx ->
             childDocumentService.completeAndPublishChildDocumentsAtEndOfTerm(tx, clock.now())
         }
     }
 
-    fun sendCalendarEventDigests(db: Database.Connection, clock: EvakaClock) {
+    fun sendCalendarEventDigests(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) {
         calendarEventNotificationService.sendCalendarEventDigests(db, clock.now())
     }
 
-    fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) =
-        db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
+    fun scheduleOrphanAttachmentDeletion(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) = db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
 
-    fun databaseSanityChecks(db: Database.Connection, clock: EvakaClock) =
-        db.transaction { runSanityChecks(it, clock) }
+    fun databaseSanityChecks(
+        db: Database.Connection,
+        clock: EvakaClock
+    ) = db.transaction { runSanityChecks(it, clock) }
 }

@@ -4,10 +4,13 @@
 
 package fi.espoo.evaka.shared.domain
 
-fun formatName(firstName: String?, lastName: String?, lastNameFirst: Boolean? = false): String {
-    return if (lastNameFirst == true) {
+fun formatName(
+    firstName: String?,
+    lastName: String?,
+    lastNameFirst: Boolean? = false
+): String =
+    if (lastNameFirst == true) {
         listOfNotNull(lastName, firstName).joinToString(" ")
     } else {
         listOfNotNull(firstName, lastName).joinToString(" ")
     }
-}

@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ManualDuplicationReportController(private val accessControl: AccessControl) {
+class ManualDuplicationReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/manual-duplication", // deprecated
         "/employee/reports/manual-duplication"
@@ -30,8 +32,9 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam viewMode: ManualDuplicationReportViewMode?
-    ): List<ManualDuplicationReportRow> {
-        return db.connect { dbc ->
+    ): List<ManualDuplicationReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -44,13 +47,9 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
                         viewMode ?: ManualDuplicationReportViewMode.NONDUPLICATED
                     )
                 }
-            }
-            .also { Audit.ManualDuplicationReportRead.log() }
-    }
+            }.also { Audit.ManualDuplicationReportRead.log() }
 
-    private fun Database.Read.getManualDuplicationReportRows(
-        viewMode: ManualDuplicationReportViewMode
-    ): List<ManualDuplicationReportRow> {
+    private fun Database.Read.getManualDuplicationReportRows(viewMode: ManualDuplicationReportViewMode): List<ManualDuplicationReportRow> {
         val showDuplicatedWhereClause =
             when (viewMode) {
                 ManualDuplicationReportViewMode.DUPLICATED ->
@@ -71,8 +70,8 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
             }
 
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 select conn_app.id                                           as application_id,
        p.id                                                  as child_id,
        p.first_name                                          as child_first_name,
@@ -111,9 +110,8 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
   and connected_decision.status = 'ACCEPTED'
   $showDuplicatedWhereClause
             """
-                )
-            }
-            .toList<ManualDuplicationReportRow>()
+            )
+        }.toList<ManualDuplicationReportRow>()
     }
 
     data class ManualDuplicationReportRow(

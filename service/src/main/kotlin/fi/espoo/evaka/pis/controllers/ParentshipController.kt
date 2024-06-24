@@ -94,7 +94,8 @@ class ParentshipController(
                     "One of parameters headOfChildId and childId should be validated not to be null"
                 )
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -120,8 +121,7 @@ class ParentshipController(
                         ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ParentShipsRead.log(
                     targetId = AuditId(listOfNotNull(headOfChildId, childId)),
                     meta = mapOf("count" to it.size)
@@ -135,15 +135,14 @@ class ParentshipController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ParentshipId
-    ): Parentship {
-        return db.connect { dbc ->
+    ): Parentship =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(it, user, clock, Action.Parentship.READ, id)
                     it.getParentship(id)
                 } ?: throw NotFound()
-            }
-            .also { Audit.ParentShipsRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.ParentShipsRead.log(targetId = AuditId(id)) }
 
     @PutMapping("/{id}")
     fun updateParentship(
@@ -230,7 +229,10 @@ class ParentshipController(
         val endDate: LocalDate
     )
 
-    data class ParentshipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate)
+    data class ParentshipUpdateRequest(
+        val startDate: LocalDate,
+        val endDate: LocalDate
+    )
 
     data class ParentshipWithPermittedActions(
         val data: ParentshipDetailed,

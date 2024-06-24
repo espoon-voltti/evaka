@@ -81,7 +81,7 @@ class DateMapTest {
             listOf(
                 testEntry(1..2, "A"),
                 testEntry(3..4, "B"),
-                testEntry(6..6, "C"),
+                testEntry(6..6, "C")
             )
         val set =
             DateMap.of(testEntry(1..3, "A")).set(testEntry(3..4, "B")).set(testEntry(6..6, "C"))
@@ -97,14 +97,13 @@ class DateMapTest {
         // =  AAAAAA
         val entries =
             listOf(
-                    testEntry(1..2, "A"),
-                    testEntry(3..4, "A"),
-                    testEntry(5..6, "A"),
-                )
-                .shuffled()
+                testEntry(1..2, "A"),
+                testEntry(3..4, "A"),
+                testEntry(5..6, "A")
+            ).shuffled()
         val result =
             listOf(
-                testEntry(1..6, "A"),
+                testEntry(1..6, "A")
             )
         val set = DateMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
@@ -120,16 +119,15 @@ class DateMapTest {
         // =  AABBCC
         val entries =
             listOf(
-                    testEntry(1..2, "A"),
-                    testEntry(3..4, "B"),
-                    testEntry(5..6, "C"),
-                )
-                .shuffled()
+                testEntry(1..2, "A"),
+                testEntry(3..4, "B"),
+                testEntry(5..6, "C")
+            ).shuffled()
         val result =
             listOf(
                 testEntry(1..2, "A"),
                 testEntry(3..4, "B"),
-                testEntry(5..6, "C"),
+                testEntry(5..6, "C")
             )
         val set = DateMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
@@ -149,14 +147,13 @@ class DateMapTest {
         val resolve = { _: FiniteDateRange, old: Int, new: Int -> old + new }
         val entries =
             listOf(
-                    testEntry(1..2, 1),
-                    testEntry(2..4, 1),
-                    testEntry(4..6, 1),
-                    testEntry(2..5, 1),
-                    testEntry(5..6, 1),
-                    testEntry(1..3, 1)
-                )
-                .shuffled()
+                testEntry(1..2, 1),
+                testEntry(2..4, 1),
+                testEntry(4..6, 1),
+                testEntry(2..5, 1),
+                testEntry(5..6, 1),
+                testEntry(1..3, 1)
+            ).shuffled()
         val set = DateMap.empty<Int>().update(entries, resolve)
         assertTrue(entries.all { set.contains(it.first) })
         assertEquals(
@@ -164,7 +161,7 @@ class DateMapTest {
                 testEntry(1..1, 2),
                 testEntry(2..2, 4),
                 testEntry(3..5, 3),
-                testEntry(6..6, 2),
+                testEntry(6..6, 2)
             ),
             set.entries().toList()
         )
@@ -172,8 +169,10 @@ class DateMapTest {
 
     private fun testDate(day: Int) = LocalDate.of(2019, 1, day)
 
-    private fun testRange(range: IntRange) =
-        FiniteDateRange(testDate(range.first), testDate(range.last))
+    private fun testRange(range: IntRange) = FiniteDateRange(testDate(range.first), testDate(range.last))
 
-    private fun <T> testEntry(range: IntRange, value: T) = testRange(range) to value
+    private fun <T> testEntry(
+        range: IntRange,
+        value: T
+    ) = testRange(range) to value
 }

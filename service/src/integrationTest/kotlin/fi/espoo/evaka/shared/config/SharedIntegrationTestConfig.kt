@@ -60,7 +60,9 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.utils.AttributeMap
 
 // Hides Closeable interface from Spring, which would close the shared instance otherwise
-class TestDataSource(pool: HikariDataSource) : DataSource by pool
+class TestDataSource(
+    pool: HikariDataSource
+) : DataSource by pool
 
 private val globalLock = object {}
 private var testDataSource: TestDataSource? = null
@@ -69,44 +71,40 @@ fun getTestDataSource(): TestDataSource =
     synchronized(globalLock) {
         testDataSource
             ?: TestDataSource(
-                    HikariDataSource(
-                            HikariConfig().apply {
-                                jdbcUrl = "jdbc:postgresql://localhost:5432/evaka_it"
-                                username = "evaka_it"
-                                password = "evaka_it"
+                HikariDataSource(
+                    HikariConfig().apply {
+                        jdbcUrl = "jdbc:postgresql://localhost:5432/evaka_it"
+                        username = "evaka_it"
+                        password = "evaka_it"
+                    }
+                ).also {
+                    Flyway
+                        .configure()
+                        .apply {
+                            pluginRegister
+                                .getPlugin(PostgreSQLConfigurationExtension::class.java)
+                                .isTransactionalLock = false
+                        }.dataSource(
+                            PGSimpleDataSource().apply {
+                                setUrl("jdbc:postgresql://localhost:5432/evaka_it")
+                                user = "evaka_migration_local"
+                                password = "flyway"
                             }
-                        )
-                        .also {
-                            Flyway.configure()
-                                .apply {
-                                    pluginRegister
-                                        .getPlugin(PostgreSQLConfigurationExtension::class.java)
-                                        .isTransactionalLock = false
-                                }
-                                .dataSource(
-                                    PGSimpleDataSource().apply {
-                                        setUrl("jdbc:postgresql://localhost:5432/evaka_it")
-                                        user = "evaka_migration_local"
-                                        password = "flyway"
-                                    }
-                                )
-                                .placeholders(
-                                    mapOf(
-                                        "application_user" to "evaka_application_local",
-                                        "migration_user" to "evaka_migration_local"
-                                    )
-                                )
-                                .load()
-                                .run { migrate() }
-                            Database(Jdbi.create(it), NoopTracerFactory.create()).connect { db ->
-                                db.transaction { tx ->
-                                    tx.runDevScript("reset-database.sql")
-                                    tx.resetDatabase()
-                                }
-                            }
+                        ).placeholders(
+                            mapOf(
+                                "application_user" to "evaka_application_local",
+                                "migration_user" to "evaka_migration_local"
+                            )
+                        ).load()
+                        .run { migrate() }
+                    Database(Jdbi.create(it), NoopTracerFactory.create()).connect { db ->
+                        db.transaction { tx ->
+                            tx.runDevScript("reset-database.sql")
+                            tx.resetDatabase()
                         }
-                )
-                .also { testDataSource = it }
+                    }
+                }
+            ).also { testDataSource = it }
     }
 
 @TestConfiguration
@@ -118,21 +116,21 @@ class SharedIntegrationTestConfig {
     @Bean
     fun s3Client(env: BucketEnv): S3Client {
         val attrs =
-            AttributeMap.builder()
+            AttributeMap
+                .builder()
                 .put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true)
                 .build()
         val client =
-            S3Client.builder()
+            S3Client
+                .builder()
                 .httpClient(DefaultSdkHttpClientBuilder().buildWithDefaults(attrs))
                 .region(Region.US_EAST_1)
                 .serviceConfiguration(
                     S3Configuration.builder().pathStyleAccessEnabled(true).build()
-                )
-                .endpointOverride(env.s3MockUrl)
+                ).endpointOverride(env.s3MockUrl)
                 .credentialsProvider(
                     StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
-                )
-                .build()
+                ).build()
 
         val existingBuckets = client.listBuckets().buckets().map { it.name()!! }
         for (bucket in env.allBuckets().filterNot { existingBuckets.contains(it) }) {
@@ -144,14 +142,14 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun s3Presigner(env: BucketEnv): S3Presigner =
-        S3Presigner.builder()
+        S3Presigner
+            .builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
             .endpointOverride(env.s3MockUrl)
             .credentialsProvider(
                 StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
-            )
-            .build()
+            ).build()
 
     @Bean
     fun integrationTestJwtAlgorithm(): Algorithm {
@@ -164,18 +162,15 @@ class SharedIntegrationTestConfig {
     }
 
     @Bean
-    fun invoiceIntegrationClient(jsonMapper: JsonMapper): InvoiceIntegrationClient =
-        InvoiceIntegrationClient.MockClient(jsonMapper)
+    fun invoiceIntegrationClient(jsonMapper: JsonMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(jsonMapper)
 
     @Bean
-    fun patuIntegrationClient(jsonMapper: JsonMapper): PatuIntegrationClient =
-        PatuIntegrationClient.MockPatuClient(jsonMapper)
+    fun patuIntegrationClient(jsonMapper: JsonMapper): PatuIntegrationClient = PatuIntegrationClient.MockPatuClient(jsonMapper)
 
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
     @Bean
-    fun paymentIntegrationClient(jsonMapper: JsonMapper): PaymentIntegrationClient =
-        PaymentIntegrationClient.MockClient(jsonMapper)
+    fun paymentIntegrationClient(jsonMapper: JsonMapper): PaymentIntegrationClient = PaymentIntegrationClient.MockClient(jsonMapper)
 
     @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 
@@ -191,8 +186,7 @@ class SharedIntegrationTestConfig {
     @Bean fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 
     @Bean
-    fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider =
-        EspooIncomeCoefficientMultiplierProvider()
+    fun coefficientMultiplierProvider(): IncomeCoefficientMultiplierProvider = EspooIncomeCoefficientMultiplierProvider()
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
 
@@ -256,6 +250,6 @@ val testFeatureConfig =
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.456.b",
                         archiveDurationMonths = 120 * 12
-                    ),
+                    )
             )
     )

@@ -73,7 +73,8 @@ class AssistanceNeedPreschoolDecisionService(
         db.transaction { tx ->
             val decision = tx.getAssistanceNeedPreschoolDecisionById(decisionId)
             val endDate =
-                tx.getAssistanceNeedPreschoolDecisionsByChildId(decision.child.id)
+                tx
+                    .getAssistanceNeedPreschoolDecisionsByChildId(decision.child.id)
                     .find { it.id == decisionId }
                     ?.validTo
 
@@ -92,8 +93,7 @@ class AssistanceNeedPreschoolDecisionService(
                             pdf,
                             "application/pdf"
                         )
-                    )
-                    .key
+                    ).key
 
             tx.updateAssistanceNeedPreschoolDocumentKey(decision.id, key)
 
@@ -144,15 +144,15 @@ class AssistanceNeedPreschoolDecisionService(
         val guardians =
             db.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
         guardians.forEach { guardianId ->
-            Email.create(
+            Email
+                .create(
                     db,
                     guardianId,
                     EmailMessageType.DECISION_NOTIFICATION,
                     fromAddress,
                     content,
-                    "$decisionId - $guardianId",
-                )
-                ?.also { emailClient.send(it) }
+                    "$decisionId - $guardianId"
+                )?.also { emailClient.send(it) }
         }
 
         logger.info {
@@ -176,10 +176,14 @@ class AssistanceNeedPreschoolDecisionService(
                     )
 
             val lang =
-                if (decision.form.language == OfficialLanguage.SV) OfficialLanguage.SV
-                else OfficialLanguage.FI
+                if (decision.form.language == OfficialLanguage.SV) {
+                    OfficialLanguage.SV
+                } else {
+                    OfficialLanguage.FI
+                }
 
-            tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
+            tx
+                .getChildGuardiansAndFosterParents(decision.child.id, clock.today())
                 .mapNotNull { tx.getPersonById(it) }
                 .forEach { guardian ->
                     if (guardian.identity !is ExternalIdentifier.SSN) {
@@ -243,19 +247,20 @@ class AssistanceNeedPreschoolDecisionService(
         sentDate: LocalDate,
         decision: AssistanceNeedPreschoolDecision,
         validTo: LocalDate?
-    ): ByteArray {
-        return pdfGenerator.render(
+    ): ByteArray =
+        pdfGenerator.render(
             Page(
                 Template(templateProvider.getAssistanceNeedPreschoolDecisionPath()),
                 Context().apply {
-                    locale = decision.form.language.isoLanguage.toLocale()
+                    locale =
+                        decision.form.language.isoLanguage
+                            .toLocale()
                     setVariable("decision", decision)
                     setVariable("sentDate", sentDate)
                     setVariable("validTo", validTo)
                 }
             )
         )
-    }
 }
 
 private fun suomiFiDocumentFileName(lang: OfficialLanguage) =

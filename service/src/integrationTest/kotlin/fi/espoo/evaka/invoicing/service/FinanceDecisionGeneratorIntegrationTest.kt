@@ -124,8 +124,8 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
         period: DateRange,
         type: PlacementType,
         daycareId: DaycareId
-    ): PlacementId {
-        return db.transaction { tx ->
+    ): PlacementId =
+        db.transaction { tx ->
             tx.insert(
                 DevPlacement(
                     type = type,
@@ -136,7 +136,6 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
                 )
             )
         }
-    }
 
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
@@ -158,7 +157,8 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx ->
+        return db
+            .read { tx ->
                 @Suppress("DEPRECATION")
                 tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().useIterable { rows ->
                     rows
@@ -166,19 +166,18 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
                             row.copy(
                                 children = row.children.sortedByDescending { it.child.dateOfBirth }
                             )
-                        }
-                        .toList()
+                        }.toList()
                 }
-            }
-            .shuffled() // randomize order to expose assumptions
+            }.shuffled() // randomize order to expose assumptions
     }
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
-        return db.read { tx ->
+        return db
+            .read { tx ->
                 @Suppress("DEPRECATION")
-                tx.createQuery("SELECT * FROM voucher_value_decision")
+                tx
+                    .createQuery("SELECT * FROM voucher_value_decision")
                     .toList<VoucherValueDecision>()
-            }
-            .shuffled() // randomize order to expose assumptions
+            }.shuffled() // randomize order to expose assumptions
     }
 }

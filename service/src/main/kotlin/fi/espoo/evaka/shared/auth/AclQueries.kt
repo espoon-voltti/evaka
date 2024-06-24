@@ -32,8 +32,8 @@ fun Database.Read.getDaycareAclRows(
     role: UserRole? = null
 ): List<DaycareAclRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT e.id,
        e.first_name,
        e.last_name,
@@ -55,80 +55,74 @@ FROM daycare_acl
          LEFT JOIN staff_occupancy_coefficient soc USING (daycare_id, employee_id)
 WHERE daycare_id = ${bind(daycareId)} ${if (role != null) "AND role = ${bind(role)}" else ""}
     """
-            )
-        }
-        .toList<DaycareAclRow>()
+        )
+    }.toList<DaycareAclRow>()
 
 fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT EXISTS(
             SELECT 1 FROM daycare_acl
             WHERE employee_id = ${bind(employeeId)}
         )
     """
-            )
-        }
-        .exactlyOne<Boolean>()
+        )
+    }.exactlyOne<Boolean>()
 
 fun Database.Transaction.insertDaycareAclRow(
     daycareId: DaycareId,
     employeeId: EmployeeId,
     role: UserRole
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 INSERT INTO daycare_acl (daycare_id, employee_id, role)
 VALUES (${bind(daycareId)}, ${bind(employeeId)}, ${bind(role)})
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role
     """
-            )
-        }
-        .execute()
+    )
+}.execute()
 
 fun Database.Transaction.deleteDaycareAclRow(
     daycareId: DaycareId,
     employeeId: EmployeeId,
     role: UserRole
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 DELETE FROM daycare_acl
 WHERE daycare_id = ${bind(daycareId)}
 AND employee_id = ${bind(employeeId)}
 AND role = ${bind(role)}
     """
-            )
-        }
-        .execute()
+    )
+}.execute()
 
-fun Database.Transaction.clearDaycareGroupAcl(daycareId: DaycareId, employeeId: EmployeeId) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.clearDaycareGroupAcl(
+    daycareId: DaycareId,
+    employeeId: EmployeeId
+) = createUpdate {
+    sql(
+        """
 DELETE FROM daycare_group_acl
 WHERE employee_id = ${bind(employeeId)}
 AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)})
 """
-            )
-        }
-        .execute()
+    )
+}.execute()
 
 fun Database.Transaction.insertDaycareGroupAcl(
     daycareId: DaycareId,
     employeeId: EmployeeId,
     groupIds: Collection<GroupId>
-) =
-    executeBatch(groupIds) {
-        sql(
-            """
+) = executeBatch(groupIds) {
+    sql(
+        """
 INSERT INTO daycare_group_acl
 SELECT id, ${bind(employeeId)}
 FROM daycare_group
 WHERE id = ${bind { it }} AND daycare_id = ${bind(daycareId)}
 """
-        )
-    }
+    )
+}

@@ -7,5 +7,4 @@ package fi.espoo.evaka.invoicing.domain
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-fun roundToEuros(cents: BigDecimal): BigDecimal =
-    cents.divide(BigDecimal(100), 0, RoundingMode.HALF_UP).multiply(BigDecimal(100))
+fun roundToEuros(cents: BigDecimal): BigDecimal = cents.divide(BigDecimal(100), 0, RoundingMode.HALF_UP).multiply(BigDecimal(100))

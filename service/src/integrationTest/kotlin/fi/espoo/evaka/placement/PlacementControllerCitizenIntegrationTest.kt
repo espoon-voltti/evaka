@@ -55,6 +55,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 @ExtendWith(OutputCaptureExtension::class)
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
+
     @Autowired private lateinit var placementController: PlacementController
 
     private val child = testChild_1
@@ -510,7 +511,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         2. terminate again terminateDaycareOnly = true
                              terminationDate   x
         |--- PRESCHOOL_DAYCARE ---||- DAYCARE -|               |------- PRESCHOOL -------|
-        */
+         */
 
         val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
@@ -613,7 +614,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     /*
     |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
-    */
+     */
     private fun insertComplexPlacements(
         childId: PersonId,
         startPreschool: LocalDate,
@@ -624,7 +625,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         endNextPreschoolDaycare: LocalDate
     ) {
         db.transaction {
-            it.insert(
+            it
+                .insert(
                     DevPlacement(
                         type = PlacementType.PRESCHOOL_DAYCARE,
                         childId = childId,
@@ -632,8 +634,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         startDate = startPreschool,
                         endDate = endPreschool
                     )
-                )
-                .let { id ->
+                ).let { id ->
                     it.insertServiceNeed(
                         id,
                         startPreschool,
@@ -663,7 +664,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         )
                     )
                 }
-            it.insert(
+            it
+                .insert(
                     DevPlacement(
                         type = PlacementType.DAYCARE,
                         childId = childId,
@@ -671,8 +673,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         startDate = startDaycare,
                         endDate = endDaycare
                     )
-                )
-                .let { id ->
+                ).let { id ->
                     it.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = id,
@@ -682,7 +683,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         )
                     )
                 }
-            it.insert(
+            it
+                .insert(
                     DevPlacement(
                         type = PlacementType.PRESCHOOL_DAYCARE,
                         childId = childId,
@@ -690,8 +692,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                         startDate = startNextPreschoolDaycare,
                         endDate = endNextPreschoolDaycare
                     )
-                )
-                .let { id ->
+                ).let { id ->
                     it.insert(
                         DevDaycareGroupPlacement(
                             daycarePlacementId = id,
@@ -962,7 +963,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     private fun terminatePlacements(
         childId: ChildId,
-        termination: PlacementControllerCitizen.PlacementTerminationRequestBody,
+        termination: PlacementControllerCitizen.PlacementTerminationRequestBody
     ) {
         placementControllerCitizen.postPlacementTermination(
             dbInstance(),
@@ -973,18 +974,16 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         )
     }
 
-    private fun getChildPlacements(childId: ChildId): List<TerminatablePlacementGroup> {
-        return placementControllerCitizen
+    private fun getChildPlacements(childId: ChildId): List<TerminatablePlacementGroup> =
+        placementControllerCitizen
             .getPlacements(dbInstance(), authenticatedParent, RealEvakaClock(), childId)
             .placements
-    }
 
-    private fun getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
-        return placementController
+    private fun getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> =
+        placementController
             .getPlacements(dbInstance(), admin, RealEvakaClock(), childId = childId)
             .placements
             .toList()
             .flatMap { it.groupPlacements }
             .filter { it.id != null }
-    }
 }

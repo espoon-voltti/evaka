@@ -20,34 +20,34 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class DatabaseConfig {
     @Bean
-    fun jdbi(dataSource: DataSource, env: DatabaseEnv) =
-        configureJdbi(Jdbi.create(dataSource)).apply {
-            if (env.logSql) {
-                setSqlLogger(Database.sqlLogger)
-            }
+    fun jdbi(
+        dataSource: DataSource,
+        env: DatabaseEnv
+    ) = configureJdbi(Jdbi.create(dataSource)).apply {
+        if (env.logSql) {
+            setSqlLogger(Database.sqlLogger)
         }
+    }
 
     @Bean
     fun dataSource(env: DatabaseEnv): DataSource {
-        Flyway.configure()
+        Flyway
+            .configure()
             .apply {
                 pluginRegister
                     .getPlugin(PostgreSQLConfigurationExtension::class.java)
                     .isTransactionalLock = false
-            }
-            .ignoreMigrationPatterns(
+            }.ignoreMigrationPatterns(
                 if (env.flywayIgnoreFutureMigrations) {
                     "*:future"
                 } else {
                     ""
                 }
-            )
-            .dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
+            ).dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
             .locations(*env.flywayLocations.toTypedArray())
             .placeholders(
                 mapOf("application_user" to env.username, "migration_user" to env.flywayUsername)
-            )
-            .load()
+            ).load()
             .run { migrate() }
         return HikariDataSource(
             HikariConfig().apply {

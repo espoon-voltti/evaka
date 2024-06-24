@@ -13,10 +13,10 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 fun Database.Read.getChildDocumentCitizenSummaries(
     user: AuthenticatedUser.Citizen,
     childId: PersonId
-): List<ChildDocumentCitizenSummary> {
-    return createQuery {
-            sql(
-                """
+): List<ChildDocumentCitizenSummary> =
+    createQuery {
+        sql(
+            """
                 SELECT cd.id, cd.status, dt.type, cd.published_at, dt.name as template_name,
                     (NOT EXISTS(
                         SELECT 1 FROM child_document_read cdr 
@@ -26,16 +26,14 @@ fun Database.Read.getChildDocumentCitizenSummaries(
                 JOIN document_template dt on cd.template_id = dt.id
                 WHERE cd.child_id = ${bind(childId)} AND published_at IS NOT NULL
                 """
-            )
-        }
-        .toList<ChildDocumentCitizenSummary>()
+        )
+    }.toList<ChildDocumentCitizenSummary>()
         .filter { !it.type.isMigrated() }
-}
 
-fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? =
+    createQuery {
+        sql(
+            """
                 SELECT 
                     cd.id,
                     cd.status,
@@ -60,11 +58,9 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                 JOIN person p on cd.child_id = p.id
                 WHERE cd.id = ${bind(id)} AND published_at IS NOT NULL
                 """
-            )
-        }
-        .exactlyOneOrNull<ChildDocumentCitizenDetails>()
+        )
+    }.exactlyOneOrNull<ChildDocumentCitizenDetails>()
         ?.takeIf { !it.template.type.isMigrated() }
-}
 
 fun Database.Transaction.markChildDocumentAsRead(
     user: AuthenticatedUser.Citizen,
@@ -72,13 +68,12 @@ fun Database.Transaction.markChildDocumentAsRead(
     now: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 INSERT INTO child_document_read (document_id, person_id, read_at) 
                 VALUES (${bind(id)}, ${bind(user.id)}, ${bind(now)})
                 ON CONFLICT DO NOTHING;
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }

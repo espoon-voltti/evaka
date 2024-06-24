@@ -107,12 +107,14 @@ data class FeeThresholds(
             )
         }
 
-    fun calculatePriceForTemporary(partDay: Boolean, siblingOrdinal: Int): Int {
-        return when (siblingOrdinal) {
+    fun calculatePriceForTemporary(
+        partDay: Boolean,
+        siblingOrdinal: Int
+    ): Int =
+        when (siblingOrdinal) {
             1 -> if (partDay) temporaryFeePartDay else temporaryFee
             else -> if (partDay) temporaryFeeSiblingPartDay else temporaryFeeSibling
         }
-    }
 }
 
 data class FeeDecisionThresholds(
@@ -123,4 +125,8 @@ data class FeeDecisionThresholds(
     val minFee: Int
 )
 
-data class SiblingDiscount(val multiplier: BigDecimal, val percent: Int, val fee: Int?)
+data class SiblingDiscount(
+    val multiplier: BigDecimal,
+    val percent: Int,
+    val fee: Int?
+)

@@ -301,6 +301,8 @@ class DateRangeTest {
         assertTrue(f.overlaps(e))
     }
 
-    private fun testRange(from: Int, to: Int?) =
-        DateRange(LocalDate.of(2019, 1, from), if (to == null) null else LocalDate.of(2019, 1, to))
+    private fun testRange(
+        from: Int,
+        to: Int?
+    ) = DateRange(LocalDate.of(2019, 1, from), if (to == null) null else LocalDate.of(2019, 1, to))
 }

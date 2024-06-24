@@ -96,10 +96,11 @@ fun Request.responseStringWithRetries(
                                     "Failed to find a valid Retry-After header with throttle response"
                                 )
 
-                        if (retryAfter > maxRetryAfterWaitSeconds)
+                        if (retryAfter > maxRetryAfterWaitSeconds) {
                             throw IllegalStateException(
                                 "Aborting fuel request after too big Retry-After value: $retryAfter > $maxRetryAfterWaitSeconds seconds"
                             )
+                        }
 
                         if (retryAfter > retryWaitLoggingThresholdSeconds) {
                             logger.warn(

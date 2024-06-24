@@ -205,18 +205,17 @@ fun createFeeDecisionChildFixture(
     siblingDiscount: Int = 0,
     fee: Int = 28900,
     feeAlterations: List<FeeAlterationWithEffect> = listOf()
-) =
-    FeeDecisionChild(
-        child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
-        placement = FeeDecisionPlacement(placementUnitId, placementType),
-        serviceNeed = serviceNeed,
-        baseFee = baseFee,
-        siblingDiscount = siblingDiscount,
-        fee = fee,
-        feeAlterations = feeAlterations,
-        finalFee = fee + feeAlterations.sumOf { it.effect },
-        childIncome = null
-    )
+) = FeeDecisionChild(
+    child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    placement = FeeDecisionPlacement(placementUnitId, placementType),
+    serviceNeed = serviceNeed,
+    baseFee = baseFee,
+    siblingDiscount = siblingDiscount,
+    fee = fee,
+    feeAlterations = feeAlterations,
+    finalFee = fee + feeAlterations.sumOf { it.effect },
+    childIncome = null
+)
 
 fun createFeeDecisionFixture(
     status: FeeDecisionStatus,
@@ -231,22 +230,21 @@ fun createFeeDecisionFixture(
     partnerIncome: DecisionIncome? = null,
     familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0,
     created: HelsinkiDateTime = HelsinkiDateTime.now()
-) =
-    FeeDecision(
-        id = FeeDecisionId(UUID.randomUUID()),
-        status = status,
-        decisionType = decisionType,
-        validDuring = period,
-        headOfFamilyId = headOfFamilyId,
-        partnerId = partnerId,
-        headOfFamilyIncome = headOfFamilyIncome,
-        partnerIncome = partnerIncome,
-        familySize = familySize,
-        feeThresholds = feeThresholds,
-        children = children,
-        difference = emptySet(),
-        created = created
-    )
+) = FeeDecision(
+    id = FeeDecisionId(UUID.randomUUID()),
+    status = status,
+    decisionType = decisionType,
+    validDuring = period,
+    headOfFamilyId = headOfFamilyId,
+    partnerId = partnerId,
+    headOfFamilyIncome = headOfFamilyIncome,
+    partnerIncome = partnerIncome,
+    familySize = familySize,
+    feeThresholds = feeThresholds,
+    children = children,
+    difference = emptySet(),
+    created = created
+)
 
 fun createVoucherValueDecisionFixture(
     status: VoucherValueDecisionStatus,
@@ -266,51 +264,49 @@ fun createVoucherValueDecisionFixture(
     siblingDiscount: Int = 0,
     coPayment: Int = 28900,
     feeAlterations: List<FeeAlterationWithEffect> = listOf()
-) =
-    VoucherValueDecision(
-        id = VoucherValueDecisionId(UUID.randomUUID()),
-        status = status,
-        decisionType = VoucherValueDecisionType.NORMAL,
-        validFrom = validFrom,
-        validTo = validTo,
-        headOfFamilyId = headOfFamilyId,
-        partnerId = null,
-        headOfFamilyIncome = null,
-        partnerIncome = null,
-        childIncome = null,
-        familySize = familySize,
-        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
-        child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
-        placement = VoucherValueDecisionPlacement(unitId, placementType),
-        serviceNeed = serviceNeed,
-        baseValue = baseValue,
-        assistanceNeedCoefficient = assistanceNeedCoefficient,
-        voucherValue = value,
-        baseCoPayment = baseCoPayment,
-        siblingDiscount = siblingDiscount,
-        coPayment = coPayment,
-        feeAlterations = feeAlterations,
-        finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
-        difference = emptySet()
-    )
+) = VoucherValueDecision(
+    id = VoucherValueDecisionId(UUID.randomUUID()),
+    status = status,
+    decisionType = VoucherValueDecisionType.NORMAL,
+    validFrom = validFrom,
+    validTo = validTo,
+    headOfFamilyId = headOfFamilyId,
+    partnerId = null,
+    headOfFamilyIncome = null,
+    partnerIncome = null,
+    childIncome = null,
+    familySize = familySize,
+    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
+    child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    placement = VoucherValueDecisionPlacement(unitId, placementType),
+    serviceNeed = serviceNeed,
+    baseValue = baseValue,
+    assistanceNeedCoefficient = assistanceNeedCoefficient,
+    voucherValue = value,
+    baseCoPayment = baseCoPayment,
+    siblingDiscount = siblingDiscount,
+    coPayment = coPayment,
+    feeAlterations = feeAlterations,
+    finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
+    difference = emptySet()
+)
 
 fun createInvoiceRowFixture(
     childId: ChildId,
     unitId: DaycareId,
     amount: Int = 1,
     unitPrice: Int = 28900
-) =
-    InvoiceRow(
-        id = InvoiceRowId(UUID.randomUUID()),
-        child = childId,
-        amount = amount,
-        unitPrice = unitPrice,
-        product = ProductKey("DAYCARE"),
-        unitId = unitId,
-        periodStart = LocalDate.of(2019, 1, 1),
-        periodEnd = LocalDate.of(2019, 1, 31),
-        correctionId = null
-    )
+) = InvoiceRow(
+    id = InvoiceRowId(UUID.randomUUID()),
+    child = childId,
+    amount = amount,
+    unitPrice = unitPrice,
+    product = ProductKey("DAYCARE"),
+    unitId = unitId,
+    periodStart = LocalDate.of(2019, 1, 1),
+    periodEnd = LocalDate.of(2019, 1, 31),
+    correctionId = null
+)
 
 fun createInvoiceFixture(
     status: InvoiceStatus,
@@ -319,15 +315,14 @@ fun createInvoiceFixture(
     number: Long? = null,
     period: FiniteDateRange = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
     rows: List<InvoiceRow>
-) =
-    Invoice(
-        id = InvoiceId(UUID.randomUUID()),
-        status = status,
-        number = number,
-        areaId = areaId,
-        headOfFamily = headOfFamilyId,
-        codebtor = null,
-        periodStart = period.start,
-        periodEnd = period.end,
-        rows = rows
-    )
+) = Invoice(
+    id = InvoiceId(UUID.randomUUID()),
+    status = status,
+    number = number,
+    areaId = areaId,
+    headOfFamily = headOfFamilyId,
+    codebtor = null,
+    periodStart = period.start,
+    periodEnd = period.end,
+    rows = rows
+)

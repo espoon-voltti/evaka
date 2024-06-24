@@ -17,13 +17,15 @@ import java.util.Objects
  * dates) assigned to one same value contains internally 365 entries, but the equivalent
  * `DateMap<T>` contains just 1 entry.
  */
-class DateMap<T> private constructor(entries: List<Pair<FiniteDateRange, T>>) :
-    RangeBasedMap<T, LocalDate, FiniteDateRange, DateMap<T>>(entries) {
-    override fun List<Pair<FiniteDateRange, T>>.toThis(): DateMap<T> =
-        if (isEmpty()) empty() else DateMap(this)
+class DateMap<T> private constructor(
+    entries: List<Pair<FiniteDateRange, T>>
+) : RangeBasedMap<T, LocalDate, FiniteDateRange, DateMap<T>>(entries) {
+    override fun List<Pair<FiniteDateRange, T>>.toThis(): DateMap<T> = if (isEmpty()) empty() else DateMap(this)
 
-    override fun range(start: LocalDate, end: LocalDate): FiniteDateRange =
-        FiniteDateRange(start, end)
+    override fun range(
+        start: LocalDate,
+        end: LocalDate
+    ): FiniteDateRange = FiniteDateRange(start, end)
 
     override fun equals(other: Any?): Boolean = other is DateMap<*> && this.entries == other.entries
 
@@ -43,29 +45,36 @@ class DateMap<T> private constructor(entries: List<Pair<FiniteDateRange, T>>) :
      * - { [1-100]:1 }.transpose() returns { 1: {[1-100]} }
      * - { [1-2]:1, [3-4]:3, [5-6]:1 }.transpose() returns { 1: {[1-2], [5-6]}, 3:{[3-4]} }
      */
-    fun transpose(): Map<T, DateSet> =
-        entries.groupingBy { it.second }.fold(DateSet.of()) { acc, entry -> acc.add(entry.first) }
+    fun transpose(): Map<T, DateSet> = entries.groupingBy { it.second }.fold(DateSet.of()) { acc, entry -> acc.add(entry.first) }
 
     companion object {
         private val EMPTY: DateMap<*> = DateMap<Any>(emptyList())
+
         /** Returns an empty date map */
         fun <T> empty(): DateMap<T> {
-            @Suppress("UNCHECKED_CAST") return EMPTY as DateMap<T>
+            @Suppress("UNCHECKED_CAST")
+            return EMPTY as DateMap<T>
         }
+
         /** Returns a new date map containing all the given entries */
-        fun <T> of(vararg entries: Pair<FiniteDateRange, T>): DateMap<T> =
-            empty<T>().setAll(entries.asSequence())
+        fun <T> of(vararg entries: Pair<FiniteDateRange, T>): DateMap<T> = empty<T>().setAll(entries.asSequence())
+
         /** Returns a new date map containing all the given ranges mapped to the given value. */
-        fun <T> of(ranges: Iterable<FiniteDateRange>, value: T): DateMap<T> =
-            empty<T>().setAll(ranges.asSequence().map { it to value })
+        fun <T> of(
+            ranges: Iterable<FiniteDateRange>,
+            value: T
+        ): DateMap<T> = empty<T>().setAll(ranges.asSequence().map { it to value })
+
         /** Returns a new date map containing all the given ranges mapped to the given value. */
-        fun <T> of(ranges: Sequence<FiniteDateRange>, value: T): DateMap<T> =
-            empty<T>().setAll(ranges.map { it to value })
+        fun <T> of(
+            ranges: Sequence<FiniteDateRange>,
+            value: T
+        ): DateMap<T> = empty<T>().setAll(ranges.map { it to value })
+
         /** Returns a new date map containing all the given entries */
-        fun <T> of(entries: Iterable<Pair<FiniteDateRange, T>>): DateMap<T> =
-            empty<T>().setAll(entries.asSequence())
+        fun <T> of(entries: Iterable<Pair<FiniteDateRange, T>>): DateMap<T> = empty<T>().setAll(entries.asSequence())
+
         /** Returns a new date map containing all the given entries */
-        fun <T> of(entries: Sequence<Pair<FiniteDateRange, T>>): DateMap<T> =
-            empty<T>().setAll(entries)
+        fun <T> of(entries: Sequence<Pair<FiniteDateRange, T>>): DateMap<T> = empty<T>().setAll(entries)
     }
 }

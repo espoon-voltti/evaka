@@ -16,7 +16,7 @@ data class ChildAclConfig(
     /** Enables access via backup care placements */
     val backupCare: Boolean = true,
     /** Enables access via placement plans originating from applications */
-    val application: Boolean = true,
+    val application: Boolean = true
 ) {
     init {
         require(placement || backupCare || application) {
@@ -29,27 +29,34 @@ data class ChildAclConfig(
      *
      * The queries return (child_id, unit_id, role) rows for the given user.
      */
-    fun aclQueries(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) =
-        listOfNotNull(
-            if (this.placement) employeeChildAclViaPlacement(user.id, now) else null,
-            if (this.backupCare) employeeChildAclViaBackupCare(user.id, now) else null,
-            if (this.application) employeeChildAclViaApplication(user.id) else null
-        )
+    fun aclQueries(
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime
+    ) = listOfNotNull(
+        if (this.placement) employeeChildAclViaPlacement(user.id, now) else null,
+        if (this.backupCare) employeeChildAclViaBackupCare(user.id, now) else null,
+        if (this.application) employeeChildAclViaApplication(user.id) else null
+    )
 
     /**
      * Returns a list of mobile device ACL queries based on this configuration.
      *
      * The queries return (child_id) rows for the given mobile device.
      */
-    fun aclQueries(user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime) =
-        listOfNotNull(
-            if (this.placement) mobileChildAclViaPlacement(user.id, now) else null,
-            if (this.backupCare) mobileChildAclViaBackupCare(user.id, now) else null,
-            if (this.application) mobileChildAclViaApplication(user.id) else null
-        )
+    fun aclQueries(
+        user: AuthenticatedUser.MobileDevice,
+        now: HelsinkiDateTime
+    ) = listOfNotNull(
+        if (this.placement) mobileChildAclViaPlacement(user.id, now) else null,
+        if (this.backupCare) mobileChildAclViaBackupCare(user.id, now) else null,
+        if (this.application) mobileChildAclViaApplication(user.id) else null
+    )
 }
 
-fun employeeChildAclViaPlacement(employee: EmployeeId, now: HelsinkiDateTime) = QuerySql {
+fun employeeChildAclViaPlacement(
+    employee: EmployeeId,
+    now: HelsinkiDateTime
+) = QuerySql {
     sql(
         """
 SELECT pl.child_id, pl.unit_id, role
@@ -61,7 +68,10 @@ AND daycare_acl.employee_id = ${bind(employee)}
     )
 }
 
-fun employeeChildAclViaBackupCare(employee: EmployeeId, now: HelsinkiDateTime) = QuerySql {
+fun employeeChildAclViaBackupCare(
+    employee: EmployeeId,
+    now: HelsinkiDateTime
+) = QuerySql {
     sql(
         """
 SELECT bc.child_id, bc.unit_id, role
@@ -73,9 +83,10 @@ AND daycare_acl.employee_id = ${bind(employee)}
     )
 }
 
-fun employeeChildAclViaApplication(employee: EmployeeId) = QuerySql {
-    sql(
-        """
+fun employeeChildAclViaApplication(employee: EmployeeId) =
+    QuerySql {
+        sql(
+            """
 SELECT a.child_id, pp.unit_id, role
 FROM placement_plan pp
 JOIN application a ON pp.application_id = a.id
@@ -84,10 +95,13 @@ WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECI
 AND NOT (role = 'SPECIAL_EDUCATION_TEACHER' AND coalesce((a.document -> 'careDetails' ->> 'assistanceNeeded')::boolean, FALSE) IS FALSE)
 AND daycare_acl.employee_id = ${bind(employee)}
 """
-    )
-}
+        )
+    }
 
-fun mobileChildAclViaPlacement(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) = QuerySql {
+fun mobileChildAclViaPlacement(
+    mobileDevice: MobileDeviceId,
+    now: HelsinkiDateTime
+) = QuerySql {
     sql(
         """
 SELECT pl.child_id
@@ -102,7 +116,10 @@ AND EXISTS (
     )
 }
 
-fun mobileChildAclViaBackupCare(mobileDevice: MobileDeviceId, now: HelsinkiDateTime) = QuerySql {
+fun mobileChildAclViaBackupCare(
+    mobileDevice: MobileDeviceId,
+    now: HelsinkiDateTime
+) = QuerySql {
     sql(
         """
 SELECT bc.child_id
@@ -117,9 +134,10 @@ AND EXISTS (
     )
 }
 
-fun mobileChildAclViaApplication(mobileDevice: MobileDeviceId) = QuerySql {
-    sql(
-        """
+fun mobileChildAclViaApplication(mobileDevice: MobileDeviceId) =
+    QuerySql {
+        sql(
+            """
 SELECT a.child_id
 FROM placement_plan pp
 JOIN application a ON pp.application_id = a.id
@@ -130,5 +148,5 @@ AND EXISTS (
     WHERE md.id = ${bind(mobileDevice)} AND (md.unit_id = pp.unit_id OR acl.daycare_id = pp.unit_id)
 )
 """
-    )
-}
+        )
+    }

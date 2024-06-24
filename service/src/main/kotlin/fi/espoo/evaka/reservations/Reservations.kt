@@ -58,19 +58,19 @@ sealed interface DailyReservationRequest {
     @JsonTypeName("PRESENT")
     data class Present(
         override val childId: ChildId,
-        override val date: LocalDate,
+        override val date: LocalDate
     ) : DailyReservationRequest
 
     @JsonTypeName("ABSENT")
     data class Absent(
         override val childId: ChildId,
-        override val date: LocalDate,
+        override val date: LocalDate
     ) : DailyReservationRequest
 
     @JsonTypeName("NOTHING")
     data class Nothing(
         override val childId: ChildId,
-        override val date: LocalDate,
+        override val date: LocalDate
     ) : DailyReservationRequest
 }
 
@@ -82,9 +82,13 @@ fun reservationRequestRange(body: List<DailyReservationRequest>): FiniteDateRang
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class Reservation : Comparable<Reservation> {
-    @JsonTypeName("NO_TIMES") object NoTimes : Reservation()
+    @JsonTypeName("NO_TIMES")
+    object NoTimes : Reservation()
 
-    @JsonTypeName("TIMES") data class Times(val range: TimeRange) : Reservation()
+    @JsonTypeName("TIMES")
+    data class Times(
+        val range: TimeRange
+    ) : Reservation()
 
     fun asTimeRange(): TimeRange? =
         when (this) {
@@ -92,53 +96,61 @@ sealed class Reservation : Comparable<Reservation> {
             is Times -> range
         }
 
-    override fun compareTo(other: Reservation): Int {
-        return when {
+    override fun compareTo(other: Reservation): Int =
+        when {
             this is Times && other is Times -> this.range.start.compareTo(other.range.start)
             this is NoTimes && other is NoTimes -> 0
             this is NoTimes && other is Times -> -1
             this is Times && other is NoTimes -> 1
             else -> throw IllegalStateException("Unknown reservation type")
         }
-    }
 
     companion object {
-        fun of(startTime: LocalTime?, endTime: LocalTime?) =
-            if (startTime != null && endTime != null) {
-                Times(TimeRange(startTime, endTime))
-            } else if (startTime == null && endTime == null) {
-                NoTimes
-            } else {
-                throw IllegalArgumentException("Both start and end times must be null or not null")
-            }
+        fun of(
+            startTime: LocalTime?,
+            endTime: LocalTime?
+        ) = if (startTime != null && endTime != null) {
+            Times(TimeRange(startTime, endTime))
+        } else if (startTime == null && endTime == null) {
+            NoTimes
+        } else {
+            throw IllegalArgumentException("Both start and end times must be null or not null")
+        }
     }
 }
 
-data class AbsenceTypeResponse(val absenceType: AbsenceType, val staffCreated: Boolean)
+data class AbsenceTypeResponse(
+    val absenceType: AbsenceType,
+    val staffCreated: Boolean
+)
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class ReservationResponse : Comparable<ReservationResponse> {
-    @JsonTypeName("NO_TIMES") data class NoTimes(val staffCreated: Boolean) : ReservationResponse()
+    @JsonTypeName("NO_TIMES")
+    data class NoTimes(
+        val staffCreated: Boolean
+    ) : ReservationResponse()
 
     @JsonTypeName("TIMES")
-    data class Times(val range: TimeRange, val staffCreated: Boolean) : ReservationResponse()
+    data class Times(
+        val range: TimeRange,
+        val staffCreated: Boolean
+    ) : ReservationResponse()
 
-    override fun compareTo(other: ReservationResponse): Int {
-        return when {
+    override fun compareTo(other: ReservationResponse): Int =
+        when {
             this is Times && other is Times -> this.range.start.compareTo(other.range.start)
             this is NoTimes && other is NoTimes -> 0
             this is NoTimes && other is Times -> -1
             this is Times && other is NoTimes -> 1
             else -> throw IllegalStateException("Unknown reservation type")
         }
-    }
 
-    fun asTimeRange(): TimeRange? {
-        return when (this) {
+    fun asTimeRange(): TimeRange? =
+        when (this) {
             is NoTimes -> null
             is Times -> range
         }
-    }
 
     companion object {
         fun from(reservationRow: ReservationRow) =
@@ -253,7 +265,8 @@ fun createReservationsAndAbsences(
                                 // reservation is allowed
                                 is DailyReservationRequest.Reservations ->
                                     placementStartAfterHolidayDeadline(request) ||
-                                        hasReservation && !hasAbsence
+                                        hasReservation &&
+                                        !hasAbsence
                                 is DailyReservationRequest.Present -> hasReservation && !hasAbsence
                                 is DailyReservationRequest.Absent -> true
                                 is DailyReservationRequest.Nothing -> false
@@ -274,8 +287,7 @@ fun createReservationsAndAbsences(
                     }
                     request
                 }
-            }
-            .map { request ->
+            }.map { request ->
                 when (request) {
                     is DailyReservationRequest.Reservations,
                     is DailyReservationRequest.Present -> {
@@ -331,9 +343,11 @@ fun createReservationsAndAbsences(
             FullDayAbsenseUpsert(
                 it.childId,
                 it.date,
-                if (plannedAbsenceEnabled && reservableRange.includes(it.date))
+                if (plannedAbsenceEnabled && reservableRange.includes(it.date)) {
                     AbsenceType.PLANNED_ABSENCE
-                else AbsenceType.OTHER_ABSENCE
+                } else {
+                    AbsenceType.OTHER_ABSENCE
+                }
             )
         }
     val upsertedAbsences =
@@ -367,7 +381,7 @@ data class UpsertChildDatePresenceResult(
     val insertedAttendances: List<ChildAttendanceId>,
     val deletedAttendances: List<ChildAttendanceId>,
     val insertedAbsences: List<AbsenceId>,
-    val deletedAbsences: List<AbsenceId>,
+    val deletedAbsences: List<AbsenceId>
 )
 
 fun upsertChildDatePresence(
@@ -386,20 +400,22 @@ fun upsertChildDatePresence(
     val reservations =
         input.reservations.map { reservation ->
             val existingId =
-                tx.createQuery {
+                tx
+                    .createQuery {
                         sql(
                             """
             SELECT id 
             FROM attendance_reservation ar
             WHERE date = ${bind(input.date)} AND child_id = ${bind(input.childId)} AND
             ${when (reservation) {
-                is Reservation.NoTimes -> "start_time IS NULL AND end_time IS NULL"
-                is Reservation.Times -> "start_time = ${bind(reservation.range.start)} AND end_time = ${bind(reservation.range.end)}"
-            }}
+                                is Reservation.NoTimes -> "start_time IS NULL AND end_time IS NULL"
+                                is Reservation.Times -> "start_time = ${bind(
+                                    reservation.range.start
+                                )} AND end_time = ${bind(reservation.range.end)}"
+                            }}
         """
                         )
-                    }
-                    .exactlyOneOrNull<AttendanceReservationId>()
+                    }.exactlyOneOrNull<AttendanceReservationId>()
             reservation to existingId
         }
 
@@ -449,10 +465,14 @@ fun upsertChildDatePresence(
     )
 }
 
-private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: PlacementType) {
+private fun ChildDatePresence.validate(
+    now: HelsinkiDateTime,
+    placementType: PlacementType
+) {
     if (reservations.size > 2) throw BadRequest("Too many reservations")
-    if (reservations.map { it == Reservation.NoTimes }.distinct().size > 1)
+    if (reservations.map { it == Reservation.NoTimes }.distinct().size > 1) {
         throw BadRequest("Mixed reservation types")
+    }
     reservations.filterIsInstance<Reservation.Times>().zipWithNext().forEach { (r1, r2) ->
         if (r2.range.overlaps(r1.range)) throw BadRequest("Overlapping reservation times")
     }
@@ -465,8 +485,12 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
     attendances.forEach {
         if (
             date == now.toLocalDate() &&
-                (it.end == null && it.startsAfter(threshold) ||
-                    it.end != null && it.overlaps(TimeInterval(threshold, null)))
+            (
+                it.end == null &&
+                    it.startsAfter(threshold) ||
+                    it.end != null &&
+                    it.overlaps(TimeInterval(threshold, null))
+            )
         ) {
             throw BadRequest(
                 "Cannot mark attendances into future",
@@ -476,10 +500,14 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
     }
 
     if (
-        (absenceBillable != null &&
-            !placementType.absenceCategories().contains(AbsenceCategory.BILLABLE)) ||
-            (absenceNonbillable != null &&
-                !placementType.absenceCategories().contains(AbsenceCategory.NONBILLABLE))
+        (
+            absenceBillable != null &&
+                !placementType.absenceCategories().contains(AbsenceCategory.BILLABLE)
+        ) ||
+        (
+            absenceNonbillable != null &&
+                !placementType.absenceCategories().contains(AbsenceCategory.NONBILLABLE)
+        )
     ) {
         throw BadRequest("Invalid absence category")
     }
@@ -489,36 +517,34 @@ private fun Database.Transaction.deleteReservations(
     date: LocalDate,
     childId: ChildId,
     skip: List<AttendanceReservationId>
-): List<AttendanceReservationId> {
-    return createQuery {
-            sql(
-                """
+): List<AttendanceReservationId> =
+    createQuery {
+        sql(
+            """
         DELETE FROM attendance_reservation
         WHERE date = ${bind(date)} AND child_id = ${bind(childId)} AND NOT (id = ANY (${bind(skip)}))
         RETURNING id
     """
-            )
-        }
-        .toList<AttendanceReservationId>()
-}
+        )
+    }.toList<AttendanceReservationId>()
 
 private fun Database.Transaction.insertReservation(
     userId: EvakaUserId,
     date: LocalDate,
     childId: ChildId,
     reservation: Reservation
-): AttendanceReservationId {
-    return createQuery {
-            sql(
-                """
+): AttendanceReservationId =
+    createQuery {
+        sql(
+            """
         INSERT INTO attendance_reservation (child_id, created_by, date, start_time, end_time) 
-        VALUES (${bind(childId)}, ${bind(userId)}, ${bind(date)}, ${bind(reservation.asTimeRange()?.start)}, ${bind(reservation.asTimeRange()?.end)})
+        VALUES (${bind(
+                childId
+            )}, ${bind(userId)}, ${bind(date)}, ${bind(reservation.asTimeRange()?.start)}, ${bind(reservation.asTimeRange()?.end)})
         RETURNING id
     """
-            )
-        }
-        .exactlyOne<AttendanceReservationId>()
-}
+        )
+    }.exactlyOne<AttendanceReservationId>()
 
 data class UsedServiceResult(
     val reservedMinutes: Long,
@@ -543,7 +569,8 @@ fun computeUsedService(
     // ongoing attendance
     val isDateInFuture =
         date > today ||
-            date == today && (attendances.isEmpty() || attendances.any { it.end == null })
+            date == today &&
+            (attendances.isEmpty() || attendances.any { it.end == null })
 
     val endedAttendances = attendances.mapNotNull { it.asTimeRange() }
 
@@ -582,12 +609,13 @@ fun computeUsedService(
         )
     }
 
-    val isPlannedAbsence = run {
-        val absenceTypes = absences.map { it.first }.toSet()
-        val absenceCategories = absences.map { it.second }.toSet()
-        absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
-            absenceCategories == placementType.absenceCategories()
-    }
+    val isPlannedAbsence =
+        run {
+            val absenceTypes = absences.map { it.first }.toSet()
+            val absenceCategories = absences.map { it.second }.toSet()
+            absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
+                absenceCategories == placementType.absenceCategories()
+        }
     if (endedAttendances.isEmpty() && isPlannedAbsence) {
         return UsedServiceResult(
             reservedMinutes = 0,

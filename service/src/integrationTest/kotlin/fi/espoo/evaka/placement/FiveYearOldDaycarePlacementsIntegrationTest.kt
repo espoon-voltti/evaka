@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     private val childId = testChild_1.id
     private val yearChildTurnsFive = testChild_1.dateOfBirth.plusYears(5).year
 
@@ -123,7 +122,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 5, 31)
 
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -133,8 +133,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val newEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)
         db.transaction {
@@ -166,7 +165,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalEndDate = LocalDate.of(yearChildTurnsFive + 1, 5, 31)
 
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -176,8 +176,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val newEndDate = LocalDate.of(yearChildTurnsFive + 1, 8, 31)
         db.transaction {
@@ -209,7 +208,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalEndDate = LocalDate.of(yearChildTurnsFive + 1, 8, 31)
 
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -219,8 +219,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive + 1, 7, 1)
         db.transaction {
@@ -252,7 +251,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)
 
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -262,8 +262,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive, 7, 1)
         db.transaction {
@@ -295,7 +294,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 7, 31)
 
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -305,8 +305,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive, 8, 1)
         val newEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)
@@ -334,7 +333,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 7, 31)
 
         val oldPlacement =
-            db.transaction {
+            db
+                .transaction {
                     createPlacement(
                         it,
                         childId,
@@ -344,8 +344,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = false,
                         placeGuarantee = false
                     )
-                }
-                .first()
+                }.first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive, 8, 1)
         val newEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)

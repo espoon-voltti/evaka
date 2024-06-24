@@ -34,10 +34,10 @@ WHERE d.id = ${bind { it.unitId }}
     }
 }
 
-fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List<Payment> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List<Payment> =
+    createQuery {
+        sql(
+            """
 SELECT 
     p.id, p.created, p.updated, p.unit_id, 
     d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id, d.type as unit_care_type,
@@ -46,15 +46,13 @@ FROM payment p
 JOIN daycare d ON d.id = p.unit_id
 WHERE p.id = ANY(${bind(ids)})
 """
-            )
-        }
-        .toList<Payment>()
-}
+        )
+    }.toList<Payment>()
 
-fun Database.Read.readPayments(): List<Payment> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.readPayments(): List<Payment> =
+    createQuery {
+        sql(
+            """
 SELECT
     p.id, p.created, p.updated,
     p.unit_id, p.unit_name, p.unit_business_id, p.unit_iban, p.unit_provider_id,
@@ -64,15 +62,13 @@ FROM payment p
 JOIN daycare d ON d.id = p.unit_id
 ORDER BY period DESC, unit_name
 """
-            )
-        }
-        .toList<Payment>()
-}
+        )
+    }.toList<Payment>()
 
 data class PagedPayments(
     val data: List<Payment>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
@@ -89,8 +85,8 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
         params.distinctions.contains(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS)
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     p.id, p.created, p.updated,
     p.unit_id, p.unit_name,
@@ -116,28 +112,24 @@ WHERE
 ORDER BY $orderBy $ascDesc
 LIMIT ${bind(params.pageSize)} OFFSET ${bind(params.pageSize)} * (${bind(params.page)} - 1)
 """
-            )
-        }
-        .mapToPaged(::PagedPayments, params.pageSize)
+        )
+    }.mapToPaged(::PagedPayments, params.pageSize)
 }
 
-fun Database.Read.getMaxPaymentNumber(): Long {
-    return createQuery { sql("SELECT max(number) FROM payment") }.exactlyOneOrNull<Long>() ?: 0
-}
+fun Database.Read.getMaxPaymentNumber(): Long = createQuery { sql("SELECT max(number) FROM payment") }.exactlyOneOrNull<Long>() ?: 0
 
 fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
     if (draftIds.isEmpty()) return
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM payment
                 WHERE status = ${bind(PaymentStatus.DRAFT)}::payment_status
                 AND id = ANY (${bind(draftIds)})
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.updateConfirmedPaymentsAsSent(

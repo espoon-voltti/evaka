@@ -15,10 +15,16 @@ fun KLogger.audit(m: () -> Any?) {
     audit(emptyMap(), m)
 }
 
-fun KLogger.audit(t: Throwable, m: () -> Any?) {
+fun KLogger.audit(
+    t: Throwable,
+    m: () -> Any?
+) {
     if (isWarnEnabled) warn(AUDIT_MARKER, m.toStringSafe(), t)
 }
 
-fun KLogger.audit(args: Map<String, Any?>, m: () -> Any?) {
+fun KLogger.audit(
+    args: Map<String, Any?>,
+    m: () -> Any?
+) {
     if (isWarnEnabled) warn(AUDIT_MARKER, m.toStringSafe(), StructuredArguments.entries(args))
 }

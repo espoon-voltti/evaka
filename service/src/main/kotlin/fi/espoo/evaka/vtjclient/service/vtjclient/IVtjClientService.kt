@@ -8,12 +8,17 @@ import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma
 import java.util.UUID
 
 interface IVtjClientService {
-
-    data class VTJQuery(val requestingUserId: UUID, val type: RequestType, val ssn: String)
+    data class VTJQuery(
+        val requestingUserId: UUID,
+        val type: RequestType,
+        val ssn: String
+    )
 
     fun query(query: VTJQuery): VTJHenkiloVastaussanoma.Henkilo?
 
-    enum class RequestType(val queryName: String) {
+    enum class RequestType(
+        val queryName: String
+    ) {
         HUOLTAJA_HUOLLETTAVA("Huoltaja-Huollettavat"),
         HUOLLETTAVA_HUOLTAJAT("Huollettava-Huoltajat"),
         PERUSSANOMA3("Perussanoma 3"),

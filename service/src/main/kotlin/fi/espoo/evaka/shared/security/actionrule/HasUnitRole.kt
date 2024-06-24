@@ -71,8 +71,7 @@ data class HasUnitRole(
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    fun withUnitProviderTypes(vararg allOf: ProviderType) =
-        copy(unitProviderTypes = allOf.toEnumSet())
+    fun withUnitProviderTypes(vararg allOf: ProviderType) = copy(unitProviderTypes = allOf.toEnumSet())
 
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
         when (ctx.user) {
@@ -92,14 +91,11 @@ SELECT EXISTS (
 )
                 """
                         )
-                    }
-                    .exactlyOne<Boolean>()
+                    }.exactlyOne<Boolean>()
             else -> false
         }
 
-    private fun <T : Id<*>> rule(
-        getUnitRoles: GetUnitRoles
-    ): DatabaseActionRule.Scoped<T, HasUnitRole> =
+    private fun <T : Id<*>> rule(getUnitRoles: GetUnitRoles): DatabaseActionRule.Scoped<T, HasUnitRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getUnitRoles))
 
     /**
@@ -110,8 +106,7 @@ SELECT EXISTS (
      */
     private fun <T : Id<*>> ruleViaChildAcl(
         cfg: ChildAclConfig,
-        idChildQuery:
-            QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
+        idChildQuery: QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
     ): DatabaseActionRule.Scoped<T, HasUnitRole> =
         DatabaseActionRule.Scoped.Simple(
             this,
@@ -134,9 +129,13 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
             }
         )
 
-    private class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) :
-        DatabaseActionRule.Scoped.Query<T, HasUnitRole> {
-        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+    private class Query<T : Id<*>>(
+        private val getUnitRoles: GetUnitRoles
+    ) : DatabaseActionRule.Scoped.Query<T, HasUnitRole> {
+        override fun cacheKey(
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime
+        ): Any =
             when (user) {
                 is AuthenticatedUser.Employee -> QuerySql { getUnitRoles(user, now) }
                 else -> Pair(user, now)
@@ -159,8 +158,7 @@ JOIN daycare ON fragment.unit_id = daycare.id
 WHERE ${predicate(targetCheck.forTable("fragment"))}
                     """
                             )
-                        }
-                        .mapTo<IdRoleFeatures>()
+                        }.mapTo<IdRoleFeatures>()
                         .useIterable { rows ->
                             rows.fold(
                                 targets.associateTo(linkedMapOf()) {
@@ -170,8 +168,7 @@ WHERE ${predicate(targetCheck.forTable("fragment"))}
                                 acc[target]?.plusAssign(result)
                                 acc
                             }
-                        }
-                        .mapValues { (_, queryResult) -> Deferred(queryResult) }
+                        }.mapValues { (_, queryResult) -> Deferred(queryResult) }
                 }
                 else -> emptyMap()
             }
@@ -198,15 +195,18 @@ ${if (params.unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(
             }
     }
 
-    private data class Deferred(private val queryResult: Set<RoleAndFeatures>) :
-        DatabaseActionRule.Deferred<HasUnitRole> {
+    private data class Deferred(
+        private val queryResult: Set<RoleAndFeatures>
+    ) : DatabaseActionRule.Deferred<HasUnitRole> {
         override fun evaluate(params: HasUnitRole): AccessControlDecision =
             if (
                 queryResult.any {
                     params.oneOf.contains(it.role) &&
                         it.unitFeatures.containsAll(params.unitFeatures) &&
-                        (params.unitProviderTypes == null ||
-                            params.unitProviderTypes.contains(it.unitProviderType))
+                        (
+                            params.unitProviderTypes == null ||
+                                params.unitProviderTypes.contains(it.unitProviderType)
+                        )
                 }
             ) {
                 AccessControlDecision.Permitted(params)
@@ -219,12 +219,12 @@ ${if (params.unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(
         DatabaseActionRule.Unscoped(
             this,
             object : DatabaseActionRule.Unscoped.Query<HasUnitRole> {
-                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
-                    Pair(user, now)
+                override fun cacheKey(
+                    user: AuthenticatedUser,
+                    now: HelsinkiDateTime
+                ): Any = Pair(user, now)
 
-                override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<HasUnitRole> =
+                override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<HasUnitRole> =
                     when (ctx.user) {
                         is AuthenticatedUser.Employee ->
                             Deferred(
@@ -238,8 +238,7 @@ JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(ctx.user.id)}
                                 """
                                         )
-                                    }
-                                    .toSet<RoleAndFeatures>()
+                                    }.toSet<RoleAndFeatures>()
                             )
                         else -> DatabaseActionRule.Deferred.None
                     }
@@ -254,7 +253,9 @@ SELECT a.id, role, acl.daycare_id AS unit_id
 FROM application a
 JOIN placement_plan pp ON pp.application_id = a.id
 JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
-WHERE employee_id = ${bind(user.id)} AND a.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
+WHERE employee_id = ${bind(
+                    user.id
+                )} AND a.status = ANY ('{WAITING_CONFIRMATION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
 ${if (onlyAllowDeletedForTypes != null) "AND (a.type = ANY(${bind(onlyAllowDeletedForTypes)}) OR NOT pp.deleted)" else ""}
             """
             )
@@ -263,15 +264,14 @@ ${if (onlyAllowDeletedForTypes != null) "AND (a.type = ANY(${bind(onlyAllowDelet
     fun inPlacementUnitOfChildOfAssistanceAction(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<AssistanceActionId>(cfg) { _, now ->
-            sql(
-                """
+    ) = ruleViaChildAcl<AssistanceActionId>(cfg) { _, now ->
+        sql(
+            """
 SELECT aa.id, child_id
 FROM assistance_action aa
 """ +
-                    if (hidePastAssistance)
-                        """
+                if (hidePastAssistance) {
+                    """
 WHERE CASE
         WHEN EXISTS (
             SELECT true
@@ -288,22 +288,23 @@ WHERE CASE
         ELSE TRUE
      END
 AND aa.end_date >= ${bind(now.toLocalDate())}"""
-                    else ""
-            )
-        }
+                } else {
+                    ""
+                }
+        )
+    }
 
     fun inPlacementUnitOfChildOfAssistanceFactor(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<AssistanceFactorId>(cfg) { _, now ->
-            sql(
-                """
+    ) = ruleViaChildAcl<AssistanceFactorId>(cfg) { _, now ->
+        sql(
+            """
 SELECT af.id, child_id
 FROM assistance_factor af
 """ +
-                    if (hidePastAssistance)
-                        """
+                if (hidePastAssistance) {
+                    """
 WHERE CASE
         WHEN EXISTS (
             SELECT true
@@ -320,22 +321,23 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT af.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
-            )
-        }
+                } else {
+                    ""
+                }
+        )
+    }
 
     fun inPlacementUnitOfChildOfAssistanceNeedDecision(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
-            sql(
-                """
+    ) = ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
+        sql(
+            """
 SELECT ad.id, child_id
 FROM assistance_need_decision ad
 """ +
-                    if (hidePastAssistance)
-                        """
+                if (hidePastAssistance) {
+                    """
 WHERE CASE
         WHEN EXISTS (
             SELECT true
@@ -352,22 +354,23 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
-            )
-        }
+                } else {
+                    ""
+                }
+        )
+    }
 
     fun inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
-            sql(
-                """
+    ) = ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, now ->
+        sql(
+            """
 SELECT ad.id, child_id
 FROM assistance_need_decision ad
 WHERE ad.status = 'ACCEPTED'""" +
-                    if (hidePastAssistance)
-                        """
+                if (hidePastAssistance) {
+                    """
 AND CASE
         WHEN EXISTS (
             SELECT true
@@ -385,13 +388,13 @@ AND CASE
      END
 AND NOT ad.validity_period << ${bind(now.toLocalDate().toFiniteDateRange())}
             """
-                    else ""
-            )
-        }
+                } else {
+                    ""
+                }
+        )
+    }
 
-    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
             sql(
                 """
@@ -405,15 +408,14 @@ WHERE apd.status = 'ACCEPTED'
     fun inPlacementUnitOfChildOfDaycareAssistance(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<DaycareAssistanceId>(cfg) { _, now ->
-            sql(
-                """
+    ) = ruleViaChildAcl<DaycareAssistanceId>(cfg) { _, now ->
+        sql(
+            """
 SELECT da.id, child_id
 FROM daycare_assistance da
 """ +
-                    if (hidePastAssistance)
-                        """
+                if (hidePastAssistance) {
+                    """
 WHERE CASE
         WHEN EXISTS (
             SELECT true
@@ -430,22 +432,23 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT da.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
-            )
-        }
+                } else {
+                    ""
+                }
+        )
+    }
 
     fun inPlacementUnitOfChildOfOtherAssistanceMeasure(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<OtherAssistanceMeasureId>(cfg) { _, now ->
-            sql(
-                """
+    ) = ruleViaChildAcl<OtherAssistanceMeasureId>(cfg) { _, now ->
+        sql(
+            """
 SELECT oam.id, child_id
 FROM other_assistance_measure oam
 """ +
-                    if (hidePastAssistance)
-                        """
+                if (hidePastAssistance) {
+                    """
 WHERE CASE
         WHEN EXISTS (
             SELECT true
@@ -462,22 +465,23 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT oam.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
-            )
-        }
+                } else {
+                    ""
+                }
+        )
+    }
 
     fun inPlacementUnitOfChildOfPreschoolAssistance(
         hidePastAssistance: Boolean,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<PreschoolAssistanceId>(cfg) { _, now ->
-            sql(
-                """
+    ) = ruleViaChildAcl<PreschoolAssistanceId>(cfg) { _, now ->
+        sql(
+            """
 SELECT pa.id, child_id
 FROM preschool_assistance pa
 """ +
-                    if (hidePastAssistance)
-                        """
+                if (hidePastAssistance) {
+                    """
 WHERE CASE
         WHEN EXISTS (
             SELECT true
@@ -494,16 +498,20 @@ WHERE CASE
         ELSE TRUE
      END
 AND NOT pa.valid_during << ${bind(now.toLocalDate().toFiniteDateRange())}"""
-                    else ""
-            )
-        }
+                } else {
+                    ""
+                }
+        )
+    }
 
     fun inSelectedUnitOfAssistanceNeedDecision(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT ad.id, child_id
 FROM assistance_need_decision ad
-""")
+"""
+            )
         }
 
     // For Tampere
@@ -519,9 +527,7 @@ WHERE ad.decision_maker_employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { _, _ ->
             sql(
                 """
@@ -542,9 +548,7 @@ FROM assistance_need_preschool_decision ad
         }
 
     // For Tampere
-    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { user, _ ->
             sql(
                 """
@@ -556,9 +560,7 @@ WHERE ad.decision_maker_employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<AssistanceNeedVoucherCoefficientId>(cfg) { _, _ ->
             sql(
                 """
@@ -576,18 +578,22 @@ WHERE EXISTS(
 
     fun inPlacementUnitOfChildOfBackupCare(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<BackupCareId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT bc.id, child_id
 FROM backup_care bc
-            """)
+            """
+            )
         }
 
     fun inPlacementUnitOfChildOfBackupPickup(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<BackupPickupId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT bp.id, child_id
 FROM backup_pickup bp
-            """)
+            """
+            )
         }
 
     fun inPlacementUnitOfChild(cfg: ChildAclConfig = ChildAclConfig()) =
@@ -609,26 +615,32 @@ FROM (${subquery(aclQuery)}) acl
 
     fun inPlacementUnitOfChildOfChildDailyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildDailyNoteId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT child_daily_note.id, child_id
 FROM child_daily_note
-""")
+"""
+            )
         }
 
     fun inPlacementUnitOfChildOfChildStickyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildStickyNoteId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT csn.id, child_id
 FROM child_sticky_note csn
-            """)
+            """
+            )
         }
 
     fun inPlacementUnitOfChildOfChildImage(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildImageId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT img.id, child_id
 FROM child_images img
-            """)
+            """
+            )
         }
 
     fun inPlacementUnitOfChildOfDecision() =
@@ -669,15 +681,15 @@ WHERE employee_id = ${bind(user.id)}
 
     fun inPlacementUnitOfChildOfPedagogicalDocument(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<PedagogicalDocumentId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT pd.id, child_id
 FROM pedagogical_document pd
-            """)
+            """
+            )
         }
 
-    fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<AttachmentId>(cfg) { _, _ ->
             sql(
                 """
@@ -741,10 +753,9 @@ WHERE employee_id = ${bind(user.id)}
         deletable: Boolean = false,
         publishable: Boolean = false,
         cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
-            sql(
-                """
+    ) = ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
+        sql(
+            """
 SELECT child_document.id AS id, child_id
 FROM child_document
 WHERE TRUE
@@ -752,12 +763,10 @@ ${if (editable) "AND status = ANY(${bind(DocumentStatus.values().filter { it.edi
 ${if (deletable) "AND status = 'DRAFT' AND published_at IS NULL" else ""}
 ${if (publishable) "AND status <> 'COMPLETED'" else ""}
             """
-            )
-        }
+        )
+    }
 
-    fun inPlacementUnitOfDuplicateChildOfHojksChildDocument(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun inPlacementUnitOfDuplicateChildOfHojksChildDocument(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
             sql(
                 """
@@ -772,15 +781,15 @@ WHERE document_template.type = 'HOJKS'
 
     fun inPlacementUnitOfChildOfVasuDocument(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT curriculum_document.id, child_id
 FROM curriculum_document
-""")
+"""
+            )
         }
 
-    fun inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
             sql(
                 """
@@ -798,9 +807,7 @@ WHERE ct.type = 'DAYCARE' AND cd.created = (
             )
         }
 
-    fun inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
+    fun inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
             sql(
                 """
@@ -815,10 +822,12 @@ WHERE curriculum_template.type = 'PRESCHOOL'
 
     fun inPlacementUnitOfChildOfDailyServiceTime(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<DailyServiceTimesId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT dst.id, child_id
 FROM daily_service_time dst
-            """)
+            """
+            )
         }
 
     fun inPlacementUnitOfChildOfFutureDailyServiceTime(cfg: ChildAclConfig = ChildAclConfig()) =

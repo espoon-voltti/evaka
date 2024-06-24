@@ -17,11 +17,10 @@ class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun getServiceNeedOptionPublicInfos() {
         assertThat(
-                db.read { tx ->
-                    tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList())
-                }
-            )
-            .isEmpty()
+            db.read { tx ->
+                tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList())
+            }
+        ).isEmpty()
     }
 
     @Test

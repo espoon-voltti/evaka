@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
+class AssistanceNeedDecisionsReport(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/assistance-need-decisions", // deprecated
         "/employee/reports/assistance-need-decisions"
@@ -31,8 +33,9 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<AssistanceNeedDecisionsReportRow> {
-        return db.connect { dbc ->
+    ): List<AssistanceNeedDecisionsReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
 
@@ -53,9 +56,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
 
                     it.getDecisionRows(user.evakaUserId, filterDaycare, filterPreschool)
                 }
-            }
-            .also { Audit.AssistanceNeedDecisionsReportRead.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.AssistanceNeedDecisionsReportRead.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping(
         "/reports/assistance-need-decisions/unread-count", // deprecated
@@ -65,8 +66,9 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): Int {
-        return db.connect { dbc ->
+    ): Int =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     if (
                         accessControl.isPermittedForSomeTarget(
@@ -81,19 +83,17 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
                         0
                     }
                 }
-            }
-            .also { Audit.AssistanceNeedDecisionsReportUnreadCount.log() }
-    }
+            }.also { Audit.AssistanceNeedDecisionsReportUnreadCount.log() }
 }
 
 private fun Database.Read.getDecisionRows(
     userId: EvakaUserId,
     idFilterDaycare: AccessControlFilter<AssistanceNeedDecisionId>,
-    idFilterPreschool: AccessControlFilter<AssistanceNeedPreschoolDecisionId>,
+    idFilterPreschool: AccessControlFilter<AssistanceNeedPreschoolDecisionId>
 ): List<AssistanceNeedDecisionsReportRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH decisions AS (
     SELECT 
         id, decision_number, false as preschool, status, sent_for_decision, decision_made,
@@ -118,11 +118,9 @@ FROM decisions ad
 JOIN person child ON child.id = ad.child_id
 JOIN daycare ON daycare.id = ad.selected_unit
 JOIN care_area ON care_area.id = daycare.care_area_id
-        """
-                    .trimIndent()
-            )
-        }
-        .toList<AssistanceNeedDecisionsReportRow>()
+            """.trimIndent()
+        )
+    }.toList<AssistanceNeedDecisionsReportRow>()
 
 data class AssistanceNeedDecisionsReportRow(
     val id: UUID,
@@ -137,10 +135,10 @@ data class AssistanceNeedDecisionsReportRow(
     val isOpened: Boolean?
 )
 
-private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int {
-    return createQuery {
-            sql(
-                """
+private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int =
+    createQuery {
+        sql(
+            """
         SELECT COUNT(*)
         FROM (
             SELECT 1 FROM assistance_need_decision
@@ -156,7 +154,5 @@ private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int 
             AND NOT decision_maker_has_opened
         ) decisions
         """
-            )
-        }
-        .exactlyOne<Int>()
-}
+        )
+    }.exactlyOne<Int>()

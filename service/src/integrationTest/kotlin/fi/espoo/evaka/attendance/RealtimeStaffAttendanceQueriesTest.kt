@@ -117,15 +117,15 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     fun externalAttendanceQueries() {
         val now = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
         db.transaction { tx ->
-            tx.markExternalStaffArrival(
+            tx
+                .markExternalStaffArrival(
                     ExternalStaffArrival(
                         "Foo Absent",
                         group1.id,
                         now.minusDays(1),
                         occupancyCoefficientSeven
                     )
-                )
-                .let {
+                ).let {
                     tx.markExternalStaffDeparture(
                         ExternalStaffDeparture(it, now.minusDays(1).plusHours(8))
                     )
@@ -187,7 +187,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 DevStaffAttendancePlan(
                     employeeId = employee1Id,
                     startTime = arrival,
-                    endTime = plannedDeparture,
+                    endTime = plannedDeparture
                 )
             )
 
@@ -224,7 +224,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 DevStaffAttendancePlan(
                     employeeId = employee1Id,
                     startTime = arrival,
-                    endTime = plannedDeparture,
+                    endTime = plannedDeparture
                 )
             )
 
@@ -259,7 +259,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 DevStaffAttendancePlan(
                     employeeId = employee1Id,
                     startTime = arrival,
-                    endTime = plannedDeparture,
+                    endTime = plannedDeparture
                 )
             )
 
@@ -294,7 +294,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 DevStaffAttendancePlan(
                     employeeId = employee1Id,
                     startTime = arrival,
-                    endTime = plannedDeparture,
+                    endTime = plannedDeparture
                 )
             )
 
@@ -321,7 +321,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 DevStaffAttendancePlan(
                     employeeId = employee1Id,
                     startTime = arrival,
-                    endTime = plannedDeparture,
+                    endTime = plannedDeparture
                 )
             )
 
@@ -384,7 +384,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 DevStaffAttendancePlan(
                     employeeId = employee1Id,
                     startTime = plannedArrival,
-                    endTime = plannedDeparture,
+                    endTime = plannedDeparture
                 )
             )
 

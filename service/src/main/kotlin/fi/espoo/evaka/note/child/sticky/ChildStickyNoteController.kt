@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildStickyNoteController(private val ac: AccessControl) {
+class ChildStickyNoteController(
+    private val ac: AccessControl
+) {
     @PostMapping("/children/{childId}/child-sticky-notes")
     fun createChildStickyNote(
         db: Database,
@@ -35,7 +37,8 @@ class ChildStickyNoteController(private val ac: AccessControl) {
     ): ChildStickyNoteId {
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction {
                     ac.requirePermissionFor(
                         it,
@@ -46,8 +49,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
                     )
                     it.createChildStickyNote(childId, body)
                 }
-            }
-            .also { noteId ->
+            }.also { noteId ->
                 Audit.ChildStickyNoteCreate.log(
                     targetId = AuditId(childId),
                     objectId = AuditId(noteId)
@@ -65,13 +67,13 @@ class ChildStickyNoteController(private val ac: AccessControl) {
     ): ChildStickyNote {
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction {
                     ac.requirePermissionFor(it, user, clock, Action.ChildStickyNote.UPDATE, noteId)
                     it.updateChildStickyNote(clock, noteId, body)
                 }
-            }
-            .also { Audit.ChildStickyNoteUpdate.log(targetId = AuditId(noteId)) }
+            }.also { Audit.ChildStickyNoteUpdate.log(targetId = AuditId(noteId)) }
     }
 
     @DeleteMapping("/child-sticky-notes/{noteId}")
@@ -80,17 +82,18 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable noteId: ChildStickyNoteId
-    ) {
-        return db.connect { dbc ->
-                dbc.transaction {
-                    ac.requirePermissionFor(it, user, clock, Action.ChildStickyNote.DELETE, noteId)
-                    it.deleteChildStickyNote(noteId)
-                }
+    ) = db
+        .connect { dbc ->
+            dbc.transaction {
+                ac.requirePermissionFor(it, user, clock, Action.ChildStickyNote.DELETE, noteId)
+                it.deleteChildStickyNote(noteId)
             }
-            .also { Audit.ChildStickyNoteDelete.log(targetId = AuditId(noteId)) }
-    }
+        }.also { Audit.ChildStickyNoteDelete.log(targetId = AuditId(noteId)) }
 
-    private fun validateExpiration(evakaClock: EvakaClock, expires: LocalDate) {
+    private fun validateExpiration(
+        evakaClock: EvakaClock,
+        expires: LocalDate
+    ) {
         val validRange = FiniteDateRange(evakaClock.today(), evakaClock.today().plusDays(7))
         if (!validRange.includes(expires)) {
             throw BadRequest("Expiration date was invalid")

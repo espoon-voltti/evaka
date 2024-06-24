@@ -64,7 +64,6 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
 
     private val clock =
@@ -124,7 +123,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                                     dateOfBirth = child.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = PlacementType.DAYCARE,
-                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                                 )
                             )
                     )
@@ -153,7 +152,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                                     headOfFamily.id,
                                     headOfFamily.firstName,
                                     headOfFamily.lastName
-                                ),
+                                )
                             ),
                         decisionChildren = emptyList()
                     )
@@ -206,7 +205,6 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `finance decisions found for head of family`() {
-
         val financeDecisions =
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
@@ -214,7 +212,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 clock
             )
 
-        Assertions.assertThatIterable(financeDecisions)
+        Assertions
+            .assertThatIterable(financeDecisions)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
             .isEqualTo(feeDecisions + voucherValueDecisions)
@@ -222,7 +221,6 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `fee decision found for partner`() {
-
         val financeDecisions =
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
@@ -230,7 +228,8 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 clock
             )
 
-        Assertions.assertThatIterable(financeDecisions)
+        Assertions
+            .assertThatIterable(financeDecisions)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
             .isEqualTo(feeDecisions)
@@ -238,7 +237,6 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `no permission without strong auth`() {
-
         assertThrows<Forbidden> {
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
@@ -267,34 +265,33 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         coPayment: Int = 28900,
         feeAlterations: List<FeeAlterationWithEffect> = listOf(),
         documentKey: String = "test-voucher-document-key"
-    ) =
-        VoucherValueDecision(
-            id = id,
-            status = VoucherValueDecisionStatus.DRAFT,
-            decisionType = VoucherValueDecisionType.NORMAL,
-            validFrom = validFrom,
-            validTo = validTo,
-            headOfFamilyId = headOfFamilyId,
-            partnerId = null,
-            headOfFamilyIncome = null,
-            partnerIncome = null,
-            childIncome = null,
-            familySize = familySize,
-            feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
-            child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
-            placement = VoucherValueDecisionPlacement(unitId, placementType),
-            serviceNeed = serviceNeed,
-            baseValue = baseValue,
-            assistanceNeedCoefficient = assistanceNeedCoefficient,
-            voucherValue = value,
-            baseCoPayment = baseCoPayment,
-            siblingDiscount = siblingDiscount,
-            coPayment = coPayment,
-            feeAlterations = feeAlterations,
-            finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
-            difference = emptySet(),
-            documentKey = documentKey
-        )
+    ) = VoucherValueDecision(
+        id = id,
+        status = VoucherValueDecisionStatus.DRAFT,
+        decisionType = VoucherValueDecisionType.NORMAL,
+        validFrom = validFrom,
+        validTo = validTo,
+        headOfFamilyId = headOfFamilyId,
+        partnerId = null,
+        headOfFamilyIncome = null,
+        partnerIncome = null,
+        childIncome = null,
+        familySize = familySize,
+        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
+        child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+        placement = VoucherValueDecisionPlacement(unitId, placementType),
+        serviceNeed = serviceNeed,
+        baseValue = baseValue,
+        assistanceNeedCoefficient = assistanceNeedCoefficient,
+        voucherValue = value,
+        baseCoPayment = baseCoPayment,
+        siblingDiscount = siblingDiscount,
+        coPayment = coPayment,
+        feeAlterations = feeAlterations,
+        finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
+        difference = emptySet(),
+        documentKey = documentKey
+    )
 
     private fun createTestFeeDecision(
         id: FeeDecisionId,
@@ -310,21 +307,20 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0,
         created: HelsinkiDateTime = HelsinkiDateTime.now(),
         documentKey: String = "test-fee-document-key"
-    ) =
-        FeeDecision(
-            id = id,
-            status = FeeDecisionStatus.DRAFT,
-            decisionType = decisionType,
-            validDuring = period,
-            headOfFamilyId = headOfFamilyId,
-            partnerId = partnerId,
-            headOfFamilyIncome = headOfFamilyIncome,
-            partnerIncome = partnerIncome,
-            familySize = familySize,
-            feeThresholds = feeThresholds,
-            children = children,
-            difference = emptySet(),
-            created = created,
-            documentKey = documentKey
-        )
+    ) = FeeDecision(
+        id = id,
+        status = FeeDecisionStatus.DRAFT,
+        decisionType = decisionType,
+        validDuring = period,
+        headOfFamilyId = headOfFamilyId,
+        partnerId = partnerId,
+        headOfFamilyIncome = headOfFamilyIncome,
+        partnerIncome = partnerIncome,
+        familySize = familySize,
+        feeThresholds = feeThresholds,
+        children = children,
+        difference = emptySet(),
+        created = created,
+        documentKey = documentKey
+    )
 }

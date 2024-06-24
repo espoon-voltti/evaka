@@ -49,8 +49,7 @@ val invoiceQueryBase =
         row.description,
         row.correction_id
     FROM invoice LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
-    """
-        .trimIndent()
+    """.trimIndent()
 
 // language=SQL
 val invoiceDetailedQueryBase =
@@ -150,87 +149,77 @@ val invoiceDetailedQueryBase =
     JOIN care_area ON invoice.area_id = care_area.id
     LEFT JOIN person as head ON invoice.head_of_family = head.id
     LEFT JOIN person as codebtor ON invoice.codebtor = codebtor.id
-    """
-        .trimIndent()
+    """.trimIndent()
 
 fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> {
     if (ids.isEmpty()) return listOf()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
                 $invoiceDetailedQueryBase
                 WHERE invoice.id = ANY(${bind(ids)})
                 ORDER BY invoice.id
                 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 }
 
-fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getInvoice(id: InvoiceId): Invoice? =
+    createQuery {
+        sql(
+            """
                 $invoiceQueryBase
                 WHERE invoice.id = ${bind(id)}
                 ORDER BY invoice.id, row.idx
                 """
-            )
-        }
-        .map(Row::toInvoice)
+        )
+    }.map(Row::toInvoice)
         .useIterable { flatten(it) }
         .firstOrNull()
-}
 
-fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? =
+    createQuery {
+        sql(
+            """
                 $invoiceDetailedQueryBase
                 WHERE invoice.id = ${bind(id)}
                 ORDER BY invoice.id
                 """
-            )
-        }
-        .exactlyOneOrNull()
-}
+        )
+    }.exactlyOneOrNull()
 
-fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invoice> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invoice> =
+    createQuery {
+        sql(
+            """
                 $invoiceQueryBase
                 WHERE invoice.head_of_family = ${bind(headOfFamilyUuid)}
                 ORDER BY invoice.id, row.idx
                 """
-            )
-        }
-        .map(Row::toInvoice)
+        )
+    }.map(Row::toInvoice)
         .useIterable { flatten(it) }
-}
 
 fun Database.Read.getInvoiceIdsByDates(
     range: FiniteDateRange,
     areas: List<String>
-): List<InvoiceId> {
-    return createQuery {
-            sql(
-                """
+): List<InvoiceId> =
+    createQuery {
+        sql(
+            """
                 SELECT id FROM invoice
                 WHERE between_start_and_end(${bind(range)}, invoice_date)
                 AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))
                 AND status = ${bind(InvoiceStatus.DRAFT)}::invoice_status
                 """
-            )
-        }
-        .toList<InvoiceId>()
-}
+        )
+    }.toList<InvoiceId>()
 
 data class PagedInvoiceSummaries(
     val data: List<InvoiceSummary>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 fun Database.Read.paginatedSearch(
@@ -259,12 +248,11 @@ fun Database.Read.paginatedSearch(
 
     val params =
         listOf(
-                Binding.of("page", page),
-                Binding.of("pageSize", pageSize),
-                Binding.of("periodStart", periodStart),
-                Binding.of("periodEnd", periodEnd)
-            )
-            .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
+            Binding.of("page", page),
+            Binding.of("pageSize", pageSize),
+            Binding.of("periodStart", periodStart),
+            Binding.of("periodEnd", periodEnd)
+        ).let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
             .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
             .let { ps -> if (unit != null) ps + Binding.of("unit", unit) else ps }
 
@@ -275,13 +263,17 @@ fun Database.Read.paginatedSearch(
     val conditions =
         listOfNotNull(
             if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
-            if (areas.isNotEmpty())
+            if (areas.isNotEmpty()) {
                 "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))"
-            else null,
+            } else {
+                null
+            },
             if (unit != null) "row.unit_id = :unit" else null,
-            if (withMissingAddress)
+            if (withMissingAddress) {
                 "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
-            else null,
+            } else {
+                null
+            },
             if (searchTerms.isNotBlank()) freeTextQuery else null,
             if (periodStart != null) "invoice_date  >= :periodStart" else null,
             if (periodEnd != null) "invoice_date  <= :periodEnd" else null
@@ -350,8 +342,7 @@ fun Database.Read.paginatedSearch(
             LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
             LEFT JOIN person as child ON row.child = child.id
         ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id, row.idx
-        """
-            .trimIndent()
+        """.trimIndent()
 
     @Suppress("DEPRECATION")
     return createQuery(sql)
@@ -374,31 +365,26 @@ fun Database.Read.searchInvoices(
         )
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 $invoiceDetailedQueryBase
 WHERE ${predicate(predicate.forTable("invoice"))}
 ORDER BY status DESC, due_date, invoice.id
-"""
-                    .trimIndent()
-            )
-        }
-        .toList()
+            """.trimIndent()
+        )
+    }.toList()
 }
 
-fun Database.Read.getMaxInvoiceNumber(): Long {
-    return createQuery { sql("SELECT max(number) FROM invoice") }.exactlyOneOrNull<Long?>() ?: 0
-}
+fun Database.Read.getMaxInvoiceNumber(): Long = createQuery { sql("SELECT max(number) FROM invoice") }.exactlyOneOrNull<Long?>() ?: 0
 
 fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
     if (draftIds.isEmpty()) return
 
     createUpdate {
-            sql(
-                "DELETE FROM invoice WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status AND id = ANY(${bind(draftIds)})"
-            )
-        }
-        .execute()
+        sql(
+            "DELETE FROM invoice WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status AND id = ANY(${bind(draftIds)})"
+        )
+    }.execute()
 }
 
 fun Database.Transaction.setDraftsSent(
@@ -427,17 +413,16 @@ WHERE id = ${bind { it.id }}
 
 fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE invoice_row
 SET saved_cost_center = daycare.cost_center, saved_sub_cost_center = care_area.sub_cost_center
 FROM daycare, care_area WHERE invoice_row.unit_id = daycare.id
 AND daycare.care_area_id = care_area.id
 AND invoice_id = ANY(${bind(invoiceIds)})
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 
 fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
     if (invoices.isEmpty()) return
@@ -458,17 +443,15 @@ WHERE id = ${bind { it.id }}
 }
 
 fun Database.Transaction.deleteDraftInvoicesByDateRange(range: FiniteDateRange) {
-
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM invoice
                 WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status
                 AND daterange(period_start, period_end, '[]') && ${bind(range)}
                 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
@@ -491,7 +474,10 @@ fun Database.Transaction.insertInvoices(
     )
 }
 
-fun Database.Transaction.updateInvoiceRows(invoiceId: InvoiceId, rows: List<InvoiceRow>) {
+fun Database.Transaction.updateInvoiceRows(
+    invoiceId: InvoiceId,
+    rows: List<InvoiceRow>
+) {
     deleteInvoiceRows(invoiceId)
     insertInvoiceRows(listOf(invoiceId to rows))
 }
@@ -532,9 +518,7 @@ private fun Database.Transaction.deleteInvoiceRows(invoiceId: InvoiceId) {
     execute { sql("DELETE FROM invoice_row WHERE invoice_id = ${bind(invoiceId)}") }
 }
 
-private fun Database.Transaction.insertInvoiceRows(
-    invoiceRows: List<Pair<InvoiceId, List<InvoiceRow>>>
-) {
+private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<InvoiceId, List<InvoiceRow>>>) {
     val batchRows: Sequence<Triple<InvoiceId, Int, InvoiceRow>> =
         invoiceRows.asSequence().flatMap { (invoiceId, rows) ->
             rows.withIndex().map { (idx, row) -> Triple(invoiceId, idx, row) }
@@ -574,9 +558,7 @@ INSERT INTO invoice_row (
     }
 }
 
-private fun Database.Transaction.insertInvoicedFeeDecisions(
-    relations: List<Pair<InvoiceId, FeeDecisionId>>
-) {
+private fun Database.Transaction.insertInvoicedFeeDecisions(relations: List<Pair<InvoiceId, FeeDecisionId>>) {
     if (relations.isEmpty()) return
 
     executeBatch(relations) {

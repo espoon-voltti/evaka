@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Autowired
     private lateinit var placementGuaranteeReportController: PlacementGuaranteeReportController
 

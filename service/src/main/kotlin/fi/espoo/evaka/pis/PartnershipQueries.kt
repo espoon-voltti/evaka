@@ -16,10 +16,10 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getPartnership(id: PartnershipId): Partnership? =
+    createQuery {
+        sql(
+            """
         SELECT
             fp1.partnership_id,
             fp1.start_date,
@@ -37,18 +37,16 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
         JOIN person p2 ON fp2.person_id = p2.id
         WHERE fp1.partnership_id = ${bind(id)}
         """
-            )
-        }
-        .exactlyOneOrNull(toPartnership("p1", "p2"))
-}
+        )
+    }.exactlyOneOrNull(toPartnership("p1", "p2"))
 
 fun Database.Read.getPartnershipsForPerson(
     personId: PersonId,
     includeConflicts: Boolean = false
-): List<Partnership> {
-    return createQuery {
-            sql(
-                """
+): List<Partnership> =
+    createQuery {
+        sql(
+            """
 SELECT
     fp1.partnership_id,
     fp1.start_date,
@@ -67,19 +65,17 @@ JOIN person p2 ON fp2.person_id = p2.id
 WHERE fp1.person_id = ${bind(personId)} OR fp2.person_id = ${bind(personId)}
 AND (${bind(includeConflicts)} OR fp1.conflict = false)
 """
-            )
-        }
-        .toList(toPartnership("p1", "p2"))
-}
+        )
+    }.toList(toPartnership("p1", "p2"))
 
 fun Database.Read.getPartnersForPerson(
     personId: PersonId,
     includeConflicts: Boolean,
     period: DateRange? = null
-): List<Partner> {
-    return createQuery {
-            sql(
-                """
+): List<Partner> =
+    createQuery {
+        sql(
+            """
 SELECT
     fp.*,
     ${aliasedPersonColumns("p")},
@@ -95,10 +91,8 @@ WHERE fp.person_id = ${bind(personId)}
 AND daterange(fp.start_date, fp.end_date, '[]') && daterange(${bind(period?.start)}, ${bind(period?.end)}, '[]')
 AND (${bind(includeConflicts)} OR fp.conflict = false)
 """
-            )
-        }
-        .toList(toPartner("p"))
-}
+        )
+    }.toList(toPartner("p"))
 
 fun Database.Transaction.createPartnership(
     personId1: PersonId,
@@ -119,13 +113,29 @@ fun Database.Transaction.createPartnership(
 
     val partnershipId = UUID.randomUUID()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         WITH new_fridge_partner AS (
             INSERT INTO fridge_partner (partnership_id, indx, other_indx, person_id, start_date, end_date, conflict, created_by, created_at, created_from_application, create_source)
             VALUES
-                (${bind(partnershipId)}, 1, 2, ${bind(personId1)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createSource)}),
-                (${bind(partnershipId)}, 2, 1, ${bind(personId2)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(conflict)}, ${bind(creatorId)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createSource)})
+                (${bind(
+                partnershipId
+            )}, 1, 2, ${bind(
+                personId1
+            )}, ${bind(
+                startDate
+            )}, ${bind(
+                endDate
+            )}, ${bind(conflict)}, ${bind(creatorId)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createSource)}),
+                (${bind(
+                partnershipId
+            )}, 2, 1, ${bind(
+                personId2
+            )}, ${bind(
+                startDate
+            )}, ${bind(
+                endDate
+            )}, ${bind(conflict)}, ${bind(creatorId)}, ${bind(createDate)}, ${bind(applicationId)}, ${bind(createSource)})
             RETURNING *
         )
         SELECT
@@ -147,9 +157,8 @@ fun Database.Transaction.createPartnership(
         JOIN person p1 ON fp1.person_id = p1.id
         JOIN person p2 ON fp2.person_id = p2.id
         """
-            )
-        }
-        .exactlyOne(toPartnership("p1", "p2"))
+        )
+    }.exactlyOne(toPartnership("p1", "p2"))
 }
 
 fun Database.Transaction.updatePartnershipDuration(
@@ -159,19 +168,21 @@ fun Database.Transaction.updatePartnershipDuration(
     modifySource: ModifySource,
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId?
-): Boolean {
-    return createQuery {
-            sql(
-                """
-        UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modify_source = ${bind(modifySource)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
+): Boolean =
+    createQuery {
+        sql(
+            """
+        UPDATE fridge_partner SET start_date = ${bind(
+                startDate
+            )}, end_date = ${bind(
+                endDate
+            )}, modify_source = ${bind(modifySource)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
         WHERE partnership_id = ${bind(id)}
         RETURNING partnership_id
         """
-            )
-        }
-        .mapTo<PartnershipId>()
+        )
+    }.mapTo<PartnershipId>()
         .useIterable { it.firstOrNull() } != null
-}
 
 fun Database.Transaction.retryPartnership(
     id: PartnershipId,
@@ -179,25 +190,22 @@ fun Database.Transaction.retryPartnership(
     modificationDate: HelsinkiDateTime
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
         UPDATE fridge_partner SET conflict = false, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
         WHERE partnership_id = ${bind(id)}
     """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
-fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
-    return createQuery {
-            sql(
-                "DELETE FROM fridge_partner WHERE partnership_id = ${bind(id)} RETURNING partnership_id"
-            )
-        }
-        .mapTo<PartnershipId>()
+fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean =
+    createQuery {
+        sql(
+            "DELETE FROM fridge_partner WHERE partnership_id = ${bind(id)} RETURNING partnership_id"
+        )
+    }.mapTo<PartnershipId>()
         .useIterable { it.firstOrNull() } != null
-}
 
 private val toPartnership: (String, String) -> Row.() -> Partnership =
     { partner1Alias, partner2Alias ->

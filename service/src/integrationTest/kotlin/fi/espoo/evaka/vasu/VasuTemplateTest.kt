@@ -15,7 +15,6 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class VasuTemplateTest {
-
     private fun currentlyValidTemplate(): VasuTemplateSummary {
         val today = HelsinkiDateTime.now().toLocalDate()
         return VasuTemplateSummary(
@@ -28,16 +27,21 @@ class VasuTemplateTest {
         )
     }
 
-    private fun templateUpdate(valid: FiniteDateRange): VasuTemplateUpdate =
-        VasuTemplateUpdate(name = "foo", valid = valid)
+    private fun templateUpdate(valid: FiniteDateRange): VasuTemplateUpdate = VasuTemplateUpdate(name = "foo", valid = valid)
 
-    private fun assertFailure(template: VasuTemplateSummary, templateUpdate: VasuTemplateUpdate) {
+    private fun assertFailure(
+        template: VasuTemplateSummary,
+        templateUpdate: VasuTemplateUpdate
+    ) {
         assertFailsWith<BadRequest> {
             validateTemplateUpdate(template = template, body = templateUpdate)
         }
     }
 
-    private fun assertValid(template: VasuTemplateSummary, templateUpdate: VasuTemplateUpdate) {
+    private fun assertValid(
+        template: VasuTemplateSummary,
+        templateUpdate: VasuTemplateUpdate
+    ) {
         assertTrue { validateTemplateUpdate(template = template, body = templateUpdate) }
     }
 

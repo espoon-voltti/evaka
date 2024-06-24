@@ -29,8 +29,7 @@ class WebPushTest : PureJdbiTest(resetDbBeforeEach = true) {
         clock = MockEvakaClock(2023, 1, 1, 12, 0)
     }
 
-    private fun getValidToken(uri: URI) =
-        db.transaction { tx -> webPush.getValidToken(tx, clock, uri) }
+    private fun getValidToken(uri: URI) = db.transaction { tx -> webPush.getValidToken(tx, clock, uri) }
 
     @Test
     fun `getValidToken returns the same JWT token if it's still valid`() {

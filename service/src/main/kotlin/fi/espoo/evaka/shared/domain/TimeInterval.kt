@@ -16,7 +16,10 @@ import java.time.LocalTime
 
 @JsonSerialize(using = TimeIntervalJsonSerializer::class)
 @JsonDeserialize(using = TimeIntervalJsonDeserializer::class)
-data class TimeInterval(val start: TimeRangeEndpoint.Start, val end: TimeRangeEndpoint.End?) {
+data class TimeInterval(
+    val start: TimeRangeEndpoint.Start,
+    val end: TimeRangeEndpoint.End?
+) {
     constructor(
         start: TimeRangeEndpoint,
         end: TimeRangeEndpoint?
@@ -41,31 +44,34 @@ data class TimeInterval(val start: TimeRangeEndpoint.Start, val end: TimeRangeEn
 
     fun startsAfter(point: LocalTime) = this.startsAfter(TimeRangeEndpoint.Start(point))
 
-    fun includes(point: TimeRangeEndpoint) =
-        this.start <= point && (this.end == null || point < this.end)
+    fun includes(point: TimeRangeEndpoint) = this.start <= point && (this.end == null || point < this.end)
 
     fun includes(point: LocalTime) = this.includes(TimeRangeEndpoint.Start(point))
 
     fun asTimeRange(): TimeRange? = end?.let { TimeRange(start, it) }
 }
 
-private data class SerializableTimeInterval(val start: LocalTime, val end: LocalTime?)
+private data class SerializableTimeInterval(
+    val start: LocalTime,
+    val end: LocalTime?
+)
 
 class TimeIntervalJsonSerializer : JsonSerializer<TimeInterval>() {
     override fun serialize(
         value: TimeInterval,
         gen: JsonGenerator,
         serializers: SerializerProvider
-    ) {
-        return serializers.defaultSerializeValue(
-            SerializableTimeInterval(value.start.inner, value.end?.inner),
-            gen
-        )
-    }
+    ) = serializers.defaultSerializeValue(
+        SerializableTimeInterval(value.start.inner, value.end?.inner),
+        gen
+    )
 }
 
 class TimeIntervalJsonDeserializer : JsonDeserializer<TimeInterval>() {
-    override fun deserialize(parser: JsonParser, ctx: DeserializationContext): TimeInterval {
+    override fun deserialize(
+        parser: JsonParser,
+        ctx: DeserializationContext
+    ): TimeInterval {
         val value = parser.readValueAs(SerializableTimeInterval::class.java)
         return TimeInterval(value.start, value.end)
     }

@@ -12,20 +12,21 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: LocalDate): Boolean {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.personHasActiveIncomeOnDate(
+    personId: PersonId,
+    theDate: LocalDate
+): Boolean =
+    createQuery {
+        sql(
+            """
                 SELECT 1
                 FROM income
                 WHERE daterange(valid_from, valid_to, '[]') @> ${bind(theDate)}
                     AND person_id = ${bind(personId)}
                 """
-            )
-        }
-        .toList<Int>()
+        )
+    }.toList<Int>()
         .isNotEmpty()
-}
 
 enum class IncomeNotificationType : DatabaseEnum {
     INITIAL_EMAIL,
@@ -36,7 +37,10 @@ enum class IncomeNotificationType : DatabaseEnum {
     override val sqlType: String = "income_notification_type"
 }
 
-data class PersonIncomeExpirationDate(val personId: PersonId, val expirationDate: LocalDate)
+data class PersonIncomeExpirationDate(
+    val personId: PersonId,
+    val expirationDate: LocalDate
+)
 
 fun Database.Read.expiringIncomes(
     today: LocalDate,
@@ -46,8 +50,8 @@ fun Database.Read.expiringIncomes(
 ): List<PersonIncomeExpirationDate> {
     val dayAfterExpiration = checkForExpirationRange.end.plusDays(1)
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH latest_income AS (
     SELECT DISTINCT ON (person_id)
     id, person_id, valid_to
@@ -66,7 +70,9 @@ WITH latest_income AS (
     )
 
     -- spouse of the head of child
-    LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)} AND fp.conflict = false
+    LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(
+                today
+            )} AND fp.conflict = false
     LEFT JOIN fridge_partner fp_spouse ON (
         fp_spouse.partnership_id = fp.partnership_id AND
         fp_spouse.person_id <> fp.person_id AND
@@ -84,16 +90,19 @@ WHERE NOT EXISTS (
         AND (created > ${bind(today)} - INTERVAL '1 month' OR (end_date IS NOT NULL AND ${bind(dayAfterExpiration)} <= end_date))
         AND handler_id IS NULL
 ) 
-${if (checkForExistingRecentIncomeNotificationType != null) """AND NOT EXISTS (
+${if (checkForExistingRecentIncomeNotificationType != null) {
+                """AND NOT EXISTS (
     SELECT 1 FROM income_notification
     WHERE receiver_id = expiring_income.person_id AND notification_type = ${bind(checkForExistingRecentIncomeNotificationType)}
     AND created > ${bind(today)} - INTERVAL '1 month'
-)""" else ""}                
+)"""
+            } else {
+                ""
+            }}                
 ${if (aPersonId != null) " AND person_id = ${bind(aPersonId)}" else ""}
 """
-            )
-        }
-        .toList<PersonIncomeExpirationDate>()
+        )
+    }.toList<PersonIncomeExpirationDate>()
 }
 
 fun Database.Read.newCustomerIdsForIncomeNotifications(
@@ -103,8 +112,8 @@ fun Database.Read.newCustomerIdsForIncomeNotifications(
     val currentMonth = FiniteDateRange.ofMonth(today)
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH fridge_parents AS (
     SELECT fc_head.head_of_child AS parent_id, fp_spouse.person_id AS spouse_id
     FROM placement pl
@@ -116,7 +125,9 @@ WITH fridge_parents AS (
     )
     
     -- spouse of the head of child
-    LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)} AND fp.conflict = false
+    LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(
+                today
+            )} AND fp.conflict = false
     LEFT JOIN fridge_partner fp_spouse ON (
         fp_spouse.partnership_id = fp.partnership_id AND
         fp_spouse.person_id <> fp.person_id AND
@@ -144,9 +155,8 @@ SELECT DISTINCT person_id FROM (
     WHERE spouse_id IS NOT NULL
 ) AS parent
 """
-            )
-        }
-        .toList<PersonId>()
+        )
+    }.toList<PersonId>()
 }
 
 data class IncomeNotification(
@@ -158,24 +168,21 @@ data class IncomeNotification(
 fun Database.Transaction.createIncomeNotification(
     receiverId: PersonId,
     notificationType: IncomeNotificationType
-): IncomeNotificationId {
-    return createUpdate {
-            sql(
-                """
+): IncomeNotificationId =
+    createUpdate {
+        sql(
+            """
 INSERT INTO income_notification(receiver_id, notification_type)
 VALUES (${bind(receiverId)}, ${bind(notificationType)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<IncomeNotificationId>()
-}
 
 fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
     createQuery {
-            sql(
-                "SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = ${bind(receiverId)}"
-            )
-        }
-        .toList<IncomeNotification>()
+        sql(
+            "SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = ${bind(receiverId)}"
+        )
+    }.toList<IncomeNotification>()

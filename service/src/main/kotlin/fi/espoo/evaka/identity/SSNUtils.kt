@@ -49,12 +49,13 @@ private fun checkDigitMatches(ssn: String): Boolean {
     return ssn[10] == checkDigit
 }
 
-fun isValidSSN(ssn: String?): Boolean {
-    return (ssn != null &&
-        SSN_PATTERN.toRegex().matches(ssn) &&
-        containsValidDate(ssn) &&
-        checkDigitMatches(ssn))
-}
+fun isValidSSN(ssn: String?): Boolean =
+    (
+        ssn != null &&
+            SSN_PATTERN.toRegex().matches(ssn) &&
+            containsValidDate(ssn) &&
+            checkDigitMatches(ssn)
+    )
 
 private fun containsValidDate(ssn: String): Boolean =
     try {

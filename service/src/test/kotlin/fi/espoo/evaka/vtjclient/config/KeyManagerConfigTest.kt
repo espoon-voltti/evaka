@@ -20,7 +20,6 @@ import org.springframework.ws.soap.security.support.KeyStoreFactoryBean
 
 @ExtendWith(MockitoExtension::class)
 class KeyManagerConfigTest {
-
     private val contextRunner =
         ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(KeyManagerTestConfig::class.java))

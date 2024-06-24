@@ -73,7 +73,10 @@ class DecisionService(
         return decisionIds
     }
 
-    fun createDecisionPdf(tx: Database.Transaction, decisionId: DecisionId) {
+    fun createDecisionPdf(
+        tx: Database.Transaction,
+        decisionId: DecisionId
+    ) {
         val settings = tx.getSettings()
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
@@ -131,24 +134,25 @@ class DecisionService(
     private fun Database.Read.isDecisionForSecondGuardianRequired(
         decision: Decision,
         application: ApplicationDetails,
-        otherGuardian: PersonId,
-    ) =
-        decision.type != DecisionType.CLUB &&
-            !personService.personsLiveInTheSameAddress(this, application.guardianId, otherGuardian)
+        otherGuardian: PersonId
+    ) = decision.type != DecisionType.CLUB &&
+        !personService.personsLiveInTheSameAddress(this, application.guardianId, otherGuardian)
 
     private fun determineDecisionLanguage(
         decision: Decision,
         tx: Database.Transaction
-    ): OfficialLanguage {
-        return if (decision.type == DecisionType.CLUB) {
+    ): OfficialLanguage =
+        if (decision.type == DecisionType.CLUB) {
             OfficialLanguage.FI
         } else {
             tx.getDecisionLanguage(decision.id)
         }
-    }
 
-    private fun constructObjectKey(decision: Decision, lang: OfficialLanguage): String {
-        return when (decision.type) {
+    private fun constructObjectKey(
+        decision: Decision,
+        lang: OfficialLanguage
+    ): String =
+        when (decision.type) {
             DecisionType.CLUB -> "clubdecision"
             DecisionType.DAYCARE,
             DecisionType.DAYCARE_PART_TIME -> "daycaredecision"
@@ -157,9 +161,12 @@ class DecisionService(
             DecisionType.PRESCHOOL_CLUB -> "connectingdaycaredecision"
             DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
         }.let { "${it}_${decision.id}_$lang" }
-    }
 
-    private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
+    private fun uploadPdfToS3(
+        bucket: String,
+        key: String,
+        document: ByteArray
+    ): DocumentLocation =
         documentClient
             .upload(bucket, Document(name = key, bytes = document, contentType = "application/pdf"))
             .also { logger.debug { "PDF (object name: $key) uploaded to S3 with $it." } }
@@ -272,7 +279,10 @@ class DecisionService(
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
     }
 
-    fun getDecisionPdf(dbc: Database.Connection, decision: Decision): ResponseEntity<Any> {
+    fun getDecisionPdf(
+        dbc: Database.Connection,
+        decision: Decision
+    ): ResponseEntity<Any> {
         val (documentKey, fileName) =
             dbc.read { tx ->
                 val documentKey =
@@ -285,7 +295,10 @@ class DecisionService(
         return documentClient.responseAttachment(decisionBucket, documentKey, fileName)
     }
 
-    private fun calculateDecisionFileName(decision: Decision, lang: OfficialLanguage): String {
+    private fun calculateDecisionFileName(
+        decision: Decision,
+        lang: OfficialLanguage
+    ): String {
         val decisionUniqueId = decision.decisionNumber
         val prefix = templateProvider.getLocalizedFilename(decision.type, lang)
         return "${prefix}_$decisionUniqueId.pdf".replace(" ", "_")
@@ -330,8 +343,8 @@ private fun generateDecisionPages(
     manager: DaycareManager,
     isPartTimeDecision: Boolean,
     serviceNeed: ServiceNeed?
-): Page {
-    return Page(
+): Page =
+    Page(
         Template(template),
         Context().apply {
             locale = lang.isoLanguage.toLocale()
@@ -366,14 +379,13 @@ private fun generateDecisionPages(
             setVariable("sentDate", decision.sentDate)
         }
     )
-}
 
 private fun createTemplate(
     templateProvider: ITemplateProvider,
     decision: Decision,
     isTransferApplication: Boolean
-): String {
-    return when (decision.type) {
+): String =
+    when (decision.type) {
         DecisionType.CLUB -> templateProvider.getClubDecisionPath()
         DecisionType.DAYCARE,
         DecisionType.PRESCHOOL_DAYCARE,
@@ -392,4 +404,3 @@ private fun createTemplate(
         DecisionType.PRESCHOOL -> templateProvider.getPreschoolDecisionPath()
         DecisionType.PREPARATORY_EDUCATION -> templateProvider.getPreparatoryDecisionPath()
     }
-}

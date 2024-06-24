@@ -15,8 +15,12 @@ import java.time.LocalDate
 import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
 
-fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> =
-    tx.createQuery {
+fun getCaretakers(
+    tx: Database.Read,
+    groupId: GroupId
+): List<CaretakerAmount> =
+    tx
+        .createQuery {
             sql(
                 """
             SELECT id, group_id, start_date, end_date, amount
@@ -25,8 +29,7 @@ fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> =
             ORDER BY start_date DESC
         """
             )
-        }
-        .toList()
+        }.toList()
 
 fun insertCaretakers(
     tx: Database.Transaction,
@@ -35,8 +38,9 @@ fun insertCaretakers(
     endDate: LocalDate?,
     amount: Double
 ): DaycareCaretakerId {
-    if (endDate != null && endDate.isBefore(startDate))
+    if (endDate != null && endDate.isBefore(startDate)) {
         throw BadRequest("End date cannot be before start")
+    }
 
     try {
         tx.endPreviousRow(groupId, startDate)
@@ -52,7 +56,8 @@ fun insertCaretakers(
     }
 
     try {
-        return tx.createUpdate {
+        return tx
+            .createUpdate {
                 sql(
                     """
 INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
@@ -60,15 +65,17 @@ VALUES (${bind(groupId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(amount)})
 RETURNING id
 """
                 )
-            }
-            .executeAndReturnGeneratedKeys()
+            }.executeAndReturnGeneratedKeys()
             .exactlyOne<DaycareCaretakerId>()
     } catch (e: Exception) {
         throw mapPSQLException(e)
     }
 }
 
-private fun Database.Transaction.endPreviousRow(groupId: GroupId, startDate: LocalDate) {
+private fun Database.Transaction.endPreviousRow(
+    groupId: GroupId,
+    startDate: LocalDate
+) {
     execute {
         sql(
             """
@@ -88,11 +95,13 @@ fun updateCaretakers(
     endDate: LocalDate?,
     amount: Double
 ) {
-    if (endDate != null && endDate.isBefore(startDate))
+    if (endDate != null && endDate.isBefore(startDate)) {
         throw BadRequest("End date cannot be before start")
+    }
 
     try {
-        tx.execute {
+        tx
+            .execute {
                 sql(
                     """
 UPDATE daycare_caretaker
@@ -100,20 +109,23 @@ SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, amount = ${bin
 WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}
 """
                 )
-            }
-            .let { updated -> if (updated == 0) throw NotFound("Caretakers $id not found") }
+            }.let { updated -> if (updated == 0) throw NotFound("Caretakers $id not found") }
     } catch (e: Exception) {
         throw mapPSQLException(e)
     }
 }
 
-fun deleteCaretakers(tx: Database.Transaction, groupId: GroupId, id: DaycareCaretakerId) {
-    tx.execute {
+fun deleteCaretakers(
+    tx: Database.Transaction,
+    groupId: GroupId,
+    id: DaycareCaretakerId
+) {
+    tx
+        .execute {
             sql(
                 "DELETE FROM daycare_caretaker WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}"
             )
-        }
-        .let { deleted -> if (deleted == 0) throw NotFound("Caretakers $id not found") }
+        }.let { deleted -> if (deleted == 0) throw NotFound("Caretakers $id not found") }
 }
 
 data class CaretakerAmount(

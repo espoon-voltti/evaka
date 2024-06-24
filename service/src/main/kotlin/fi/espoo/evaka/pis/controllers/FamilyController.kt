@@ -49,8 +49,9 @@ class FamilyController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId
-    ): FamilyOverview {
-        return db.connect { dbc ->
+    ): FamilyOverview =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -79,9 +80,7 @@ class FamilyController(
                         )
                     }
                 } ?: throw NotFound("No family overview found for person $id")
-            }
-            .also { Audit.PisFamilyRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.PisFamilyRead.log(targetId = AuditId(id)) }
 
     @GetMapping("/contacts")
     fun getFamilyContactSummary(
@@ -89,8 +88,9 @@ class FamilyController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam childId: ChildId
-    ): List<FamilyContact> {
-        return db.connect { dbc ->
+    ): List<FamilyContact> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -101,14 +101,12 @@ class FamilyController(
                     )
                     it.fetchFamilyContacts(clock.today(), childId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.FamilyContactsRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PostMapping("/contacts")
     fun updateFamilyContactDetails(
@@ -202,41 +200,43 @@ private fun Database.Transaction.updateFamilyContactPriority(
         sql("SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED")
     }
 
-    this.createUpdate {
+    this
+        .createUpdate {
             sql(
                 """
 WITH deleted_contact AS (
-    DELETE FROM family_contact WHERE child_id = ${bind(childId)} AND contact_person_id = ${bind(contactPersonId)} RETURNING priority AS old_priority
+    DELETE FROM family_contact WHERE child_id = ${bind(
+                    childId
+                )} AND contact_person_id = ${bind(contactPersonId)} RETURNING priority AS old_priority
 )
 UPDATE family_contact SET priority = priority - 1
 FROM deleted_contact
 WHERE child_id = ${bind(childId)} AND priority > old_priority
 """
             )
-        }
-        .execute()
+        }.execute()
 
     if (priority == null) return
 
-    this.createUpdate {
+    this
+        .createUpdate {
             sql(
                 """
 UPDATE family_contact SET priority = priority + 1 WHERE child_id = ${bind(childId)} AND priority >= ${bind(priority)};
 INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (${bind(childId)}, ${bind(contactPersonId)}, ${bind(priority)});
 """
             )
-        }
-        .execute()
+        }.execute()
 }
 
 fun Database.Read.isFamilyContactForChild(
     today: LocalDate,
     childId: ChildId,
     personId: PersonId
-): Boolean {
-    return createQuery {
-            sql(
-                """
+): Boolean =
+    createQuery {
+        sql(
+            """
 SELECT EXISTS (
     -- is a guardian
     SELECT 1 FROM guardian
@@ -259,15 +259,16 @@ SELECT EXISTS (
         )
 )
 """
-            )
-        }
-        .exactlyOne<Boolean>()
-}
+        )
+    }.exactlyOne<Boolean>()
 
-fun Database.Read.fetchFamilyContacts(today: LocalDate, childId: ChildId): List<FamilyContact> =
+fun Database.Read.fetchFamilyContacts(
+    today: LocalDate,
+    childId: ChildId
+): List<FamilyContact> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH child_guardian AS (
     SELECT guardian_id AS id FROM guardian
     WHERE child_id = ${bind(childId)}
@@ -279,7 +280,9 @@ WITH child_guardian AS (
     WHERE fc.child_id = ${bind(childId)} AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)} AND conflict IS FALSE
 ), head_of_child_partner AS (
     SELECT partner_person_id AS id FROM head_of_child hoc
-    JOIN fridge_partner_view fp ON hoc.id = fp.person_id AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)} AND conflict IS FALSE
+    JOIN fridge_partner_view fp ON hoc.id = fp.person_id AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(
+                today
+            )} AND conflict IS FALSE
 ), same_household_adult AS (
     SELECT id FROM head_of_child
     UNION ALL
@@ -315,9 +318,8 @@ FROM contact
 JOIN person p USING (id)
 LEFT JOIN family_contact ON family_contact.contact_person_id = contact.id AND family_contact.child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList<FamilyContact>()
+        )
+    }.toList<FamilyContact>()
         .sortedBy { it.role.ordinal }
         .let(::addDefaultPriorities)
         .sortedWith(compareBy({ it.priority ?: Int.MAX_VALUE }, { it.role.ordinal }))

@@ -60,9 +60,13 @@ import org.springframework.mock.web.MockMultipartFile
 
 class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired private lateinit var messageService: MessageService
+
     @Autowired private lateinit var documentClient: DocumentService
+
     @Autowired private lateinit var bucketEnv: BucketEnv
+
     @Autowired private lateinit var childImageController: ChildImageController
 
     private lateinit var mergeService: MergeService
@@ -83,7 +87,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val countBefore =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT 1 FROM person WHERE id = :id")
+                it
+                    .createQuery("SELECT 1 FROM person WHERE id = :id")
                     .bind("id", id)
                     .toList<Int>()
                     .size
@@ -95,7 +100,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val countAfter =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT 1 FROM person WHERE id = :id")
+                it
+                    .createQuery("SELECT 1 FROM person WHERE id = :id")
                     .bind("id", id)
                     .toList<Int>()
                     .size
@@ -146,7 +152,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val countBefore =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
+                it
+                    .createQuery("SELECT 1 FROM income WHERE person_id = :id")
                     .bind("id", adultIdDuplicate)
                     .toList<Int>()
                     .size
@@ -158,7 +165,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val countAfter =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
+                it
+                    .createQuery("SELECT 1 FROM income WHERE person_id = :id")
                     .bind("id", adultId)
                     .toList<Int>()
                     .size
@@ -206,7 +214,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val countBefore =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
+                it
+                    .createQuery("SELECT 1 FROM placement WHERE child_id = :id")
                     .bind("id", childIdDuplicate)
                     .toList<Int>()
                     .size
@@ -218,7 +227,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val countAfter =
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
+                it
+                    .createQuery("SELECT 1 FROM placement WHERE child_id = :id")
                     .bind("id", childId)
                     .toList<Int>()
                     .size
@@ -287,8 +297,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     .map {
                         tx.insert(DevPerson(id = it), DevPersonType.ADULT)
                         tx.getCitizenMessageAccount(it)
-                    }
-                    .also { tx.insertGuardian(receiverIdDuplicate, testChild_1.id) }
+                    }.also { tx.insertGuardian(receiverIdDuplicate, testChild_1.id) }
             }
 
         db.transaction { tx ->
@@ -330,7 +339,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.read { tx ->
             accountIds.map {
                 val archiveFolderId = tx.getArchiveFolderId(it)
-                tx.getReceivedThreads(it, 10, 1, "Espoo", "Espoon palveluohjaus", archiveFolderId)
+                tx
+                    .getReceivedThreads(it, 10, 1, "Espoo", "Espoon palveluohjaus", archiveFolderId)
                     .total
             }
         }
@@ -367,7 +377,11 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
         db.transaction { tx ->
             val threadId =
-                tx.getThreads(senderAccount, 1, 1, "Espoo", "Espoon palveluohjaus").data.first().id
+                tx
+                    .getThreads(senderAccount, 1, 1, "Espoo", "Espoon palveluohjaus")
+                    .data
+                    .first()
+                    .id
             tx.archiveThread(receiverDuplicateAccount, threadId)
         }
 
@@ -452,7 +466,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.read {
             val (citizenId, name) =
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
+                it
+                    .createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
                     .bind("id", duplicate.id)
                     .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }
 
@@ -467,7 +482,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.read {
             val (citizenId, name) =
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
+                it
+                    .createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
                     .bind("id", duplicate.id)
                     .exactlyOne { column<PersonId?>("citizen_id") to column<String>("name") }
 
@@ -523,7 +539,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             title = "Juhannus",
             content = "Juhannus tulee kohta",
             urgent = false,
-            sensitive = false,
+            sensitive = false
         )
 
     private fun setChildImage(childId: ChildId) =
@@ -537,10 +553,10 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     private fun childImageCount(childId: ChildId): Int =
         db.read {
-            it.createQuery {
+            it
+                .createQuery {
                     sql("SELECT COUNT(*) FROM child_images WHERE child_id = ${bind(childId)}")
-                }
-                .exactlyOne()
+                }.exactlyOne()
         }
 
     private val imageName = "test1.jpg"
@@ -553,6 +569,5 @@ FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 10
-"""
-            .decodeHex()
+""".decodeHex()
 }

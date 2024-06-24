@@ -48,8 +48,7 @@ object EspooInvoiceProducts {
         val key = ProductKey(this.name)
     }
 
-    fun findProduct(key: ProductKey) =
-        Product.entries.find { it.key == key } ?: error("Product with key $key not found")
+    fun findProduct(key: ProductKey) = Product.entries.find { it.key == key } ?: error("Product with key $key not found")
 
     class Provider : InvoiceProductProvider {
         override val products = Product.entries.map { ProductWithName(it.key, it.nameFi) }

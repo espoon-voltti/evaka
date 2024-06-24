@@ -162,8 +162,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         rows =
                             listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
                     )
-                }
-                .let { invoices -> tx.insertInvoices(invoices) }
+                }.let { invoices -> tx.insertInvoices(invoices) }
 
             val maxNumber = tx.getMaxInvoiceNumber()
 

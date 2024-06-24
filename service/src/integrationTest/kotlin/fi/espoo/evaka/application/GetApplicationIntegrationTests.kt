@@ -53,8 +53,11 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var applicationController: ApplicationControllerV2
+
     @Autowired lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+
     @Autowired lateinit var stateService: ApplicationStateService
+
     @Autowired lateinit var scheduledJobs: ScheduledJobs
 
     private val serviceWorker =
@@ -221,10 +224,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     """update application set created = :createdAt where id = :applicationId"""
-                )
-                .bind("applicationId", old)
+                ).bind("applicationId", old)
                 .bind("createdAt", Instant.parse("2020-01-01T00:00:00Z"))
                 .execute()
         }
@@ -287,7 +290,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     fun `other guardian does not see sensitive info`() {
         val applicationId =
             db.transaction { tx ->
-                tx.insertTestApplication(
+                tx
+                    .insertTestApplication(
                         childId = testChild_1.id,
                         guardianId = testAdult_1.id,
                         type = ApplicationType.DAYCARE,
@@ -312,8 +316,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         )
                                     )
                             )
-                    )
-                    .also {
+                    ).also {
                         tx.insert(
                             DevGuardian(guardianId = testAdult_2.id, childId = testChild_1.id)
                         )
@@ -363,26 +366,24 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     private fun getApplication(
         applicationId: ApplicationId,
         user: AuthenticatedUser.Employee = serviceWorker
-    ): ApplicationResponse {
-        return applicationController.getApplicationDetails(
+    ): ApplicationResponse =
+        applicationController.getApplicationDetails(
             dbInstance(),
             user,
             RealEvakaClock(),
             applicationId
         )
-    }
 
     private fun getApplication(
         applicationId: ApplicationId,
         user: AuthenticatedUser.Citizen
-    ): ApplicationDetails {
-        return applicationControllerCitizen.getApplication(
+    ): ApplicationDetails =
+        applicationControllerCitizen.getApplication(
             dbInstance(),
             user,
             RealEvakaClock(),
             applicationId
         )
-    }
 
     private fun createPlacementProposalWithAttachments(unitId: DaycareId): ApplicationId {
         val applicationId =

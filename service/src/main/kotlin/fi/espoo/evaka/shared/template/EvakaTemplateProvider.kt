@@ -8,8 +8,11 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 
 class EvakaTemplateProvider : ITemplateProvider {
-    override fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String {
-        return when (lang) {
+    override fun getLocalizedFilename(
+        type: DecisionType,
+        lang: OfficialLanguage
+    ): String =
+        when (lang) {
             OfficialLanguage.SV ->
                 when (type) {
                     DecisionType.CLUB -> "Kerhopäätös" // All clubs are in Finnish
@@ -32,7 +35,6 @@ class EvakaTemplateProvider : ITemplateProvider {
                     DecisionType.PREPARATORY_EDUCATION -> "Valmistava_päätös"
                 }
         }
-    }
 
     override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
@@ -52,6 +54,5 @@ class EvakaTemplateProvider : ITemplateProvider {
 
     override fun getAssistanceNeedDecisionPath(): String = "assistance-need/decision"
 
-    override fun getAssistanceNeedPreschoolDecisionPath(): String =
-        "assistance-need-preschool/decision"
+    override fun getAssistanceNeedPreschoolDecisionPath(): String = "assistance-need-preschool/decision"
 }

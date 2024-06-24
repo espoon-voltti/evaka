@@ -100,7 +100,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             setOf(accounts.person1.id, accounts.person2.id),
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT recipient_id FROM message_recipients")
+                it
+                    .createQuery("SELECT recipient_id FROM message_recipients")
                     .toSet<MessageAccountId>()
             }
         )
@@ -127,12 +128,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
         assertEquals(
             setOf("Person Firstname", "Person Two Firstname"),
-            db.read {
+            db
+                .read {
                     @Suppress("DEPRECATION")
-                    it.createQuery("SELECT recipient_names FROM message")
+                    it
+                        .createQuery("SELECT recipient_names FROM message")
                         .exactlyOne<Array<String>>()
-                }
-                .toSet()
+                }.toSet()
         )
     }
 
@@ -165,7 +167,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // employee is not a recipient in any threads
         assertEquals(
             0,
-            db.read {
+            db
+                .read {
                     it.getReceivedThreads(
                         accounts.employee1.id,
                         10,
@@ -173,8 +176,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoo",
                         "Espoon palveluohjaus"
                     )
-                }
-                .data
+                }.data
                 .size
         )
         val personResult =
@@ -199,7 +201,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then person 2 threads are not affected
         assertEquals(
             0,
-            db.read { it.getThreads(accounts.person2.id, 10, 1, "Espoo", "Espoon palveluohjaus") }
+            db
+                .read { it.getThreads(accounts.person2.id, 10, 1, "Espoo", "Espoon palveluohjaus") }
                 .data
                 .flatMap { it.messages.mapNotNull { m -> m.readAt } }
                 .size
@@ -251,7 +254,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read { it.getThreads(accounts.person2.id, 10, 1, "Espoo", "Espoon palveluohjaus") }
         assertEquals(1, person2Result.data.size)
         assertEquals(oldestThread.id, person2Result.data[0].id)
-        assertEquals(0, person2Result.data.flatMap { it.messages }.mapNotNull { it.readAt }.size)
+        assertEquals(
+            0,
+            person2Result.data
+                .flatMap { it.messages }
+                .mapNotNull { it.readAt }
+                .size
+        )
 
         // employee 2 is participating with himself
         val employee2Result =
@@ -353,7 +362,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read {
                 val messageId =
                     @Suppress("DEPRECATION")
-                    it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
+                    it
+                        .createQuery("SELECT id FROM message WHERE thread_id = :threadId")
                         .bind("threadId", threadId)
                         .exactlyOne<MessageId>()
                 it.getThreadByMessageId(messageId)
@@ -481,7 +491,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // when we get the receivers for the citizen person1
         val receivers =
-            db.read { it.getCitizenReceivers(today, accounts.person1.id).values.flatten().toSet() }
+            db.read {
+                it
+                    .getCitizenReceivers(today, accounts.person1.id)
+                    .values
+                    .flatten()
+                    .toSet()
+            }
 
         assertEquals(setOf(group1Account, accounts.employee1), receivers)
     }
@@ -549,7 +565,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // when we get the receivers for the citizen person1
         val receivers =
             db.read {
-                it.getCitizenReceivers(LocalDate.now(), accounts.person1.id)
+                it
+                    .getCitizenReceivers(LocalDate.now(), accounts.person1.id)
                     .values
                     .flatten()
                     .toSet()
@@ -620,8 +637,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
         }
+
         fun receiversOf(account: MessageAccount) =
-            db.read { it.getCitizenReceivers(now.toLocalDate(), account.id) }
+            db
+                .read { it.getCitizenReceivers(now.toLocalDate(), account.id) }
                 .mapValues { (_, accounts) -> accounts.toSet() }
 
         assertEquals(
@@ -634,7 +653,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         deletePlacement(child2Placement)
         assertEquals(
             mapOf(
-                child1Id to setOf(accounts.employee1, groupAccount, accounts.person2),
+                child1Id to setOf(accounts.employee1, groupAccount, accounts.person2)
             ),
             receiversOf(accounts.person1)
         )
@@ -656,15 +675,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             1,
             db.read {
                 val archiveFolderId = it.getArchiveFolderId(accounts.person1.id)
-                it.getReceivedThreads(
+                it
+                    .getReceivedThreads(
                         accounts.person1.id,
                         50,
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
                         archiveFolderId
-                    )
-                    .total
+                    ).total
             }
         )
     }
@@ -679,15 +698,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             1,
             db.read {
                 val archiveFolderId = it.getArchiveFolderId(accounts.person1.id)
-                it.getReceivedThreads(
+                it
+                    .getReceivedThreads(
                         accounts.person1.id,
                         50,
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
                         archiveFolderId
-                    )
-                    .total
+                    ).total
             }
         )
 
@@ -696,30 +715,30 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             1,
             db.read {
-                it.getReceivedThreads(
+                it
+                    .getReceivedThreads(
                         accounts.person1.id,
                         50,
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
                         null
-                    )
-                    .total
+                    ).total
             }
         )
         assertEquals(
             0,
             db.read {
                 val archiveFolderId = it.getArchiveFolderId(accounts.person1.id)
-                it.getReceivedThreads(
+                it
+                    .getReceivedThreads(
                         accounts.person1.id,
                         50,
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
                         archiveFolderId
-                    )
-                    .total
+                    ).total
             }
         )
     }
@@ -778,38 +797,37 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         content: String,
         repliesToMessageId: MessageId? = null,
         now: HelsinkiDateTime = sendTime
-    ) =
-        db.transaction { tx ->
-            val recipientIds = recipients.map { it.id }.toSet()
-            val contentId = tx.insertMessageContent(content = content, sender = sender.id)
-            val messageId =
-                tx.insertMessage(
-                    now = now,
-                    contentId = contentId,
-                    threadId = threadId,
-                    sender = sender.id,
-                    sentAt = now,
-                    repliesToMessageId = repliesToMessageId,
-                    recipientNames = listOf(),
-                    municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoon palveluohjaus"
-                )
-            tx.insertRecipients(listOf(messageId to recipientIds))
-            tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
-            tx.upsertReceiverThreadParticipants(contentId, now)
-        }
+    ) = db.transaction { tx ->
+        val recipientIds = recipients.map { it.id }.toSet()
+        val contentId = tx.insertMessageContent(content = content, sender = sender.id)
+        val messageId =
+            tx.insertMessage(
+                now = now,
+                contentId = contentId,
+                threadId = threadId,
+                sender = sender.id,
+                sentAt = now,
+                repliesToMessageId = repliesToMessageId,
+                recipientNames = listOf(),
+                municipalAccountName = "Espoo",
+                serviceWorkerAccountName = "Espoon palveluohjaus"
+            )
+        tx.insertRecipients(listOf(messageId to recipientIds))
+        tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
+        tx.upsertReceiverThreadParticipants(contentId, now)
+    }
 
     private fun unreadMessagesCount(personId: PersonId) =
         db.read { tx ->
-            tx.getUnreadMessagesCounts(
+            tx
+                .getUnreadMessagesCounts(
                     accessControl.requireAuthorizationFilter(
                         tx,
                         AuthenticatedUser.Citizen(personId, CitizenAuthLevel.WEAK),
                         clock,
                         Action.MessageAccount.ACCESS
                     )
-                )
-                .first()
+                ).first()
                 .unreadCount
         }
 

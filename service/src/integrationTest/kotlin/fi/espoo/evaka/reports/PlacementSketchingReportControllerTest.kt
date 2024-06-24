@@ -63,15 +63,16 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
         val clock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 8), LocalTime.of(12, 15)))
 
-        val thrown = catchThrowable {
-            placementSketchingReportController.getPlacementSketchingReport(
-                dbInstance(),
-                financeAdmin,
-                clock,
-                LocalDate.of(2022, 1, 1),
-                LocalDate.of(2022, 8, 1)
-            )
-        }
+        val thrown =
+            catchThrowable {
+                placementSketchingReportController.getPlacementSketchingReport(
+                    dbInstance(),
+                    financeAdmin,
+                    clock,
+                    LocalDate.of(2022, 1, 1),
+                    LocalDate.of(2022, 8, 1)
+                )
+            }
 
         assertThat(thrown).isInstanceOf(Forbidden::class.java)
     }
@@ -99,7 +100,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                         guardian = Adult(),
                         preferredStartDate = LocalDate.of(2022, 12, 1),
                         apply = Apply(preferredUnits = listOf(unitId)),
-                        serviceNeedOption = serviceNeedOption,
+                        serviceNeedOption = serviceNeedOption
                     )
             )
         }
@@ -142,7 +143,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                         guardian = Adult(),
                         preferredStartDate = LocalDate.of(2022, 12, 1),
                         apply = Apply(preferredUnits = listOf(unitId)),
-                        serviceNeedOption = serviceNeedOption,
+                        serviceNeedOption = serviceNeedOption
                     )
             )
         }

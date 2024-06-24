@@ -98,8 +98,11 @@ class VardaClient(
         return Pair(codes, descriptions)
     }
 
-    private fun parseVardaError(request: Request, error: FuelError): VardaRequestError {
-        return try {
+    private fun parseVardaError(
+        request: Request,
+        error: FuelError
+    ): VardaRequestError =
+        try {
             val errorString = error.errorData.decodeToString()
             val (errorCodes, descriptions) = parseVardaErrorBody(errorString)
             VardaRequestError(
@@ -122,7 +125,6 @@ class VardaClient(
                 statusCode = error.response.statusCode.toString()
             )
         }
-    }
 
     private fun vardaError(
         request: Request,
@@ -373,9 +375,8 @@ class VardaClient(
     override fun findToimipaikkaByOid(oid: String): VardaEntity {
         val escapedOid = URLEncoder.encode(oid, Charsets.UTF_8)
         return getAllPages("$unitUrl?organisaatio_oid=$escapedOid") {
-                jsonMapper.readValue<PaginatedResponse<VardaEntity>>(it)
-            }
-            .single()
+            jsonMapper.readValue<PaginatedResponse<VardaEntity>>(it)
+        }.single()
     }
 
     override fun createToimipaikka(unit: VardaUnitRequest): VardaUnitClient.ToimipaikkaResponse {
@@ -424,17 +425,25 @@ class VardaClient(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class ChildErrorReport(val lapsi_id: Long, val errors: List<ChildErrorReportError>)
+    data class ChildErrorReport(
+        val lapsi_id: Long,
+        val errors: List<ChildErrorReportError>
+    )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class ChildErrorReportError(val error_code: String, val description: String)
+    data class ChildErrorReportError(
+        val error_code: String,
+        val description: String
+    )
 
     fun getVardaChildrenErrorReport(organizerId: Long): List<ChildErrorReport> {
         logger.info("VardaUpdate: client reading children error report")
         return getAllPages(getChildErrorUrl(organizerId)) { jsonMapper.readValue(it) }
     }
 
-    data class VardaResultId(val id: Long)
+    data class VardaResultId(
+        val id: Long
+    )
 
     data class PaginatedResponse<T>(
         val count: Int,
@@ -448,8 +457,12 @@ class VardaClient(
         parseJson: (String) -> PaginatedResponse<T>
     ): List<T> {
         logger.info("VardaUpdate: client getting paginated result from $initialUrl")
-        fun fetchNext(acc: List<T>, next: String?): List<T> {
-            return if (next == null) {
+
+        fun fetchNext(
+            acc: List<T>,
+            next: String?
+        ): List<T> =
+            if (next == null) {
                 acc
             } else {
                 val (request, _, result) = fuel.get(next).authenticatedResponseStringWithRetries()
@@ -465,7 +478,6 @@ class VardaClient(
                     }
                 }
             }
-        }
 
         return fetchNext(listOf(), initialUrl)
     }
@@ -479,11 +491,10 @@ class VardaClient(
      * TODO: Make API token usage thread-safe. Now nothing prevents another thread from invalidating
      *   the token about to be used by another thread.
      */
-    private fun Request.authenticatedResponseStringWithRetries(
-        maxTries: Int = 3
-    ): ResponseResultOf<String> =
+    private fun Request.authenticatedResponseStringWithRetries(maxTries: Int = 3): ResponseResultOf<String> =
         tokenProvider.withToken { token, refreshToken ->
-            this.authentication()
+            this
+                .authentication()
                 .token(token)
                 .header(Headers.ACCEPT, "application/json")
                 .responseStringWithRetries(maxTries, 300L) { r, remainingTries ->
@@ -500,7 +511,8 @@ class VardaClient(
                                     // API token refresh should only be attempted once -> don't pass
                                     // an error handler to let
                                     // any subsequent errors fall through.
-                                    this.authentication()
+                                    this
+                                        .authentication()
                                         .token(newToken)
                                         .responseStringWithRetries(remainingTries, 300L)
                                 }

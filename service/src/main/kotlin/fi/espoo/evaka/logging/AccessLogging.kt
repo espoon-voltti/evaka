@@ -55,7 +55,7 @@ fun defaultAccessLoggingValve(env: Environment) =
                         "statusCode" to event.statusCode,
                         "traceId" to event.getRequestHeader("X-Request-ID"),
                         "userIdHash" to user?.rawIdHash?.toString(),
-                        "userId" to user?.rawId().toString(),
+                        "userId" to user?.rawId().toString()
                     )
                 }
             } else {
@@ -85,16 +85,17 @@ fun Context.createPatternLayoutEncoder(pattern: String) =
         start()
     }
 
-fun Context.createJsonEncoder(
-    collectFields: (event: IAccessEvent) -> Sequence<Pair<String, Any?>>
-) =
+fun Context.createJsonEncoder(collectFields: (event: IAccessEvent) -> Sequence<Pair<String, Any?>>) =
     AccessEventCompositeJsonEncoder().apply {
         this.jsonFactoryDecorator = JsonLoggingConfig()
         this.providers =
             JsonProviders<IAccessEvent>().apply {
                 addProvider(
                     object : AbstractJsonProvider<IAccessEvent>() {
-                        override fun writeTo(generator: JsonGenerator, event: IAccessEvent) {
+                        override fun writeTo(
+                            generator: JsonGenerator,
+                            event: IAccessEvent
+                        ) {
                             collectFields(event).forEach { (name, value) ->
                                 generator.writeObjectField(name, value)
                             }

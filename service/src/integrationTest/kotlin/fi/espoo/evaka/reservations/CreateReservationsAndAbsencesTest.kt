@@ -117,12 +117,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = tuesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -169,18 +169,18 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         // Only tuesday has a placement that requires reservations
                         date = tuesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = wednesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -221,12 +221,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = tuesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -263,12 +263,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = saturday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -308,12 +308,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = tuesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -370,8 +370,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
-                    ),
+                        TimeRange(startTime, endTime)
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -423,8 +423,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = child.id,
-                        date = monday,
-                    ),
+                        date = monday
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -476,8 +476,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = child.id,
-                        date = monday,
-                    ),
+                        date = monday
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -540,7 +540,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = monday,
                         reservation = reservation3,
                         secondReservation = null
-                    ),
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -598,11 +598,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Nothing(
                         childId = child.id,
-                        date = monday,
+                        date = monday
                     ),
                     DailyReservationRequest.Nothing(
                         childId = child.id,
-                        date = tuesday,
+                        date = tuesday
                     )
                 ),
                 citizenReservationThresholdHours
@@ -632,15 +632,15 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             // monday: no service need
             // tuesday: contract days
             // wednesday: hour based service need
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = monday,
                         endDate = unlockedDate.plusDays(1)
                     )
-                )
-                .let { placementId ->
+                ).let { placementId ->
                     val period = FiniteDateRange(tuesday, unlockedDate)
                     tx.insert(
                         DevServiceNeed(
@@ -677,19 +677,19 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Absent(
                         childId = child.id,
-                        date = monday,
+                        date = monday
                     ),
                     DailyReservationRequest.Absent(
                         childId = child.id,
-                        date = tuesday,
+                        date = tuesday
                     ),
                     DailyReservationRequest.Absent(
                         childId = child.id,
-                        date = unlockedDate,
+                        date = unlockedDate
                     ),
                     DailyReservationRequest.Absent(
                         childId = child.id,
-                        date = unlockedDate.plusDays(1),
+                        date = unlockedDate.plusDays(1)
                     )
                 ),
                 citizenReservationThresholdHours,
@@ -699,14 +699,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then 3 absences with correct types are added
         val absences =
-            db.read {
+            db
+                .read {
                     it.getAbsencesCitizen(
                         monday,
                         adult.id,
                         queryRange.copy(end = unlockedDate.plusDays(2))
                     )
-                }
-                .map { absence -> absence.date to absence.absenceType }
+                }.map { absence -> absence.date to absence.absenceType }
 
         assertEquals(
             listOf(
@@ -771,16 +771,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = tuesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Nothing(
                         childId = child.id,
-                        date = wednesday,
+                        date = wednesday
                     )
                 ),
                 citizenReservationThresholdHours
@@ -837,7 +837,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 thursday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 friday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 saturday = null,
-                sunday = null,
+                sunday = null
             )
         )
 
@@ -851,16 +851,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Absent(
                         childId = child.id,
-                        date = tuesday,
+                        date = tuesday
                     ),
                     DailyReservationRequest.Nothing(
                         childId = child.id,
-                        date = wednesday,
-                    ),
+                        date = wednesday
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -868,21 +868,21 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
 
         // then 3 non-editable absences are left
         val absences =
-            db.read {
+            db
+                .read {
                     it.getAbsencesCitizen(
                         monday,
                         adult.id,
-                        queryRange,
+                        queryRange
                     )
-                }
-                .map { absence ->
+                }.map { absence ->
                     Triple(absence.date, absence.absenceType, absence.editableByCitizen())
                 }
         assertEquals(
             listOf(
                 Triple(monday, AbsenceType.OTHER_ABSENCE, false),
                 Triple(tuesday, AbsenceType.OTHER_ABSENCE, false),
-                Triple(wednesday, AbsenceType.OTHER_ABSENCE, false),
+                Triple(wednesday, AbsenceType.OTHER_ABSENCE, false)
             ),
             absences
         )
@@ -909,12 +909,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = tuesday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -931,7 +931,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(LocalTime.of(12, 0), endTime),
+                        TimeRange(LocalTime.of(12, 0), endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -988,7 +988,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Present(
                         childId = child.id,
-                        date = monday,
+                        date = monday
                     )
                 ),
                 citizenReservationThresholdHours
@@ -1033,7 +1033,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Present(
                         childId = child.id,
-                        date = holidayPeriodStart,
+                        date = holidayPeriodStart
                     )
                 ),
                 citizenReservationThresholdHours
@@ -1082,7 +1082,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     listOf(
                         DailyReservationRequest.Present(
                             childId = child.id,
-                            date = holidayPeriodStart,
+                            date = holidayPeriodStart
                         )
                     ),
                     citizenReservationThresholdHours
@@ -1100,7 +1100,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     listOf(
                         DailyReservationRequest.Present(
                             childId = child.id,
-                            date = holidayPeriodEnd.plusDays(1),
+                            date = holidayPeriodEnd.plusDays(1)
                         )
                     ),
                     citizenReservationThresholdHours
@@ -1134,12 +1134,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceType = AbsenceType.OTHER_ABSENCE
                     ),
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart.plusDays(1),
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceType = AbsenceType.OTHER_ABSENCE
                     )
                 )
             )
@@ -1155,16 +1155,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Nothing(
                         childId = child.id,
-                        date = holidayPeriodStart.plusDays(1),
+                        date = holidayPeriodStart.plusDays(1)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = holidayPeriodStart.plusDays(2),
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -1205,7 +1205,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceType = AbsenceType.OTHER_ABSENCE
                     )
                 )
             )
@@ -1220,8 +1220,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Present(
                         childId = child.id,
-                        date = holidayPeriodStart,
-                    ),
+                        date = holidayPeriodStart
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -1260,7 +1260,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = holidayPeriodStart,
                     startTime = null,
                     endTime = null,
-                    createdBy = adult.user(CitizenAuthLevel.STRONG).evakaUserId,
+                    createdBy = adult.user(CitizenAuthLevel.STRONG).evakaUserId
                 )
             )
         }
@@ -1274,8 +1274,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 listOf(
                     DailyReservationRequest.Nothing(
                         childId = child.id,
-                        date = holidayPeriodStart,
-                    ),
+                        date = holidayPeriodStart
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -1317,7 +1317,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     FullDayAbsenseUpsert(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        absenceType = AbsenceType.OTHER_ABSENCE,
+                        absenceType = AbsenceType.OTHER_ABSENCE
                     )
                 )
             )
@@ -1333,7 +1333,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -1393,7 +1393,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     )
                 ),
                 citizenReservationThresholdHours
@@ -1453,13 +1453,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = tuesday,
-                        TimeRange(startTime, endTime),
-                    ),
+                        TimeRange(startTime, endTime)
+                    )
                 ),
                 citizenReservationThresholdHours
             )
@@ -1518,13 +1518,13 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = monday,
-                        TimeRange(startTime, endTime),
+                        TimeRange(startTime, endTime)
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = tuesday,
-                        TimeRange(startTime, endTime),
-                    ),
+                        TimeRange(startTime, endTime)
+                    )
                 ),
                 citizenReservationThresholdHours
             )

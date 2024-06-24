@@ -21,15 +21,17 @@ import org.springframework.web.bind.annotation.RestController
     "/settings", // deprecated
     "/employee/settings"
 )
-class SettingController(private val accessControl: AccessControl) {
-
+class SettingController(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getSettings(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): Map<SettingType, String> {
-        return db.connect { dbc ->
+    ): Map<SettingType, String> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -39,9 +41,7 @@ class SettingController(private val accessControl: AccessControl) {
                     )
                     tx.getSettings()
                 }
-            }
-            .also { Audit.SettingsRead.log() }
-    }
+            }.also { Audit.SettingsRead.log() }
 
     @PutMapping
     fun putSettings(

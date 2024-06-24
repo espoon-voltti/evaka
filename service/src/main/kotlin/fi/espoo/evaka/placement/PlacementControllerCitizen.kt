@@ -34,8 +34,9 @@ class PlacementControllerCitizen(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
-
-    data class ChildPlacementResponse(val placements: List<TerminatablePlacementGroup>)
+    data class ChildPlacementResponse(
+        val placements: List<TerminatablePlacementGroup>
+    )
 
     @GetMapping("/citizen/children/{childId}/placements")
     fun getPlacements(
@@ -43,8 +44,9 @@ class PlacementControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): ChildPlacementResponse {
-        return db.connect { dbc ->
+    ): ChildPlacementResponse =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -61,14 +63,12 @@ class PlacementControllerCitizen(
                             )
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.PlacementSearch.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.placements.size)
                 )
             }
-    }
 
     data class PlacementTerminationRequestBody(
         val type: TerminatablePlacementType,
@@ -90,11 +90,13 @@ class PlacementControllerCitizen(
                 if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate")
             }
 
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 val terminatablePlacementGroup =
                     dbc.read { tx ->
                         if (
-                            tx.getUnitFeatures(body.unitId)
+                            tx
+                                .getUnitFeatures(body.unitId)
                                 ?.features
                                 ?.contains(PilotFeature.PLACEMENT_TERMINATION) != true
                         ) {
@@ -103,7 +105,8 @@ class PlacementControllerCitizen(
                                 "PLACEMENT_TERMINATION_DISABLED"
                             )
                         }
-                        tx.getCitizenChildPlacements(clock.today(), childId)
+                        tx
+                            .getCitizenChildPlacements(clock.today(), childId)
                             .also { placements ->
                                 accessControl.requirePermissionFor(
                                     tx,
@@ -112,8 +115,7 @@ class PlacementControllerCitizen(
                                     Action.Citizen.Placement.TERMINATE,
                                     placements.map { it.id }
                                 )
-                            }
-                            .let { mapToTerminatablePlacements(it, clock.today()) }
+                            }.let { mapToTerminatablePlacements(it, clock.today()) }
                             .find { it.unitId == body.unitId && it.type == body.type }
                             ?: throw NotFound("Matching placement type not found")
                     }
@@ -163,8 +165,7 @@ class PlacementControllerCitizen(
                         cancelableTransferApplicationIds
                     }
                 Pair(terminatablePlacementGroup, cancelableTransferApplicationIds)
-            }
-            .also { (terminatablePlacementGroup, cancelableTransferApplicationIds) ->
+            }.also { (terminatablePlacementGroup, cancelableTransferApplicationIds) ->
                 val placements =
                     terminatablePlacementGroup.placements +
                         terminatablePlacementGroup.additionalPlacements

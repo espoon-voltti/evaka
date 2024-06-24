@@ -132,7 +132,10 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
          * First range is strictly left to the second range (= the first range ends before the
          * second range)
          */
-        data class LeftTo<Range>(val gap: Range?) : Relation<Range>()
+        data class LeftTo<Range>(
+            val gap: Range?
+        ) : Relation<Range>()
+
         /** Ranges overlap at least partially */
         data class Overlap<Range>(
             /** A possible remainder extending to the left of the overlap */
@@ -142,11 +145,14 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
             /** A possible remainder extending to the right of the overlap */
             val right: Remainder<Range>?
         ) : Relation<Range>()
+
         /**
          * First range is strictly right to the second range (= the second range ends before the
          * first range)
          */
-        data class RightTo<Range>(val gap: Range?) : Relation<Range>()
+        data class RightTo<Range>(
+            val gap: Range?
+        ) : Relation<Range>()
 
         /**
          * Describes the remainder extending to the left or right of an overlap between two ranges
@@ -172,24 +178,32 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
             override fun iterator(): Iterator<Nothing> = sequenceOf<Nothing>().iterator()
         }
 
-        data class LeftRemainder<This>(override val left: This) : SubtractResult<This>() {
+        data class LeftRemainder<This>(
+            override val left: This
+        ) : SubtractResult<This>() {
             override val right: Nothing? = null
 
             override fun iterator(): Iterator<This> = sequenceOf(left).iterator()
         }
 
-        data class RightRemainder<This>(override val right: This) : SubtractResult<This>() {
+        data class RightRemainder<This>(
+            override val right: This
+        ) : SubtractResult<This>() {
             override val left: Nothing? = null
 
             override fun iterator(): Iterator<This> = sequenceOf(right).iterator()
         }
 
-        data class Split<This>(override val left: This, override val right: This) :
-            SubtractResult<This>() {
+        data class Split<This>(
+            override val left: This,
+            override val right: This
+        ) : SubtractResult<This>() {
             override fun iterator(): Iterator<This> = sequenceOf(left, right).iterator()
         }
 
-        data class Original<This>(val range: This) : SubtractResult<This>() {
+        data class Original<This>(
+            val range: This
+        ) : SubtractResult<This>() {
             override val left: This? = null
             override val right: This? = null
 

@@ -18,13 +18,18 @@ data class OphQuestion(
     val options: List<OphQuestionOption>
 )
 
-data class OphQuestionOption(val key: String, val name: Map<OfficialLanguage, String>)
+data class OphQuestionOption(
+    val key: String,
+    val name: Map<OfficialLanguage, String>
+)
 
-fun getDefaultTemplateContent(type: CurriculumType, lang: OfficialLanguage) =
-    when (type) {
-        DAYCARE -> getDefaultVasuContent(lang)
-        PRESCHOOL -> getDefaultLeopsContent(lang)
-    }
+fun getDefaultTemplateContent(
+    type: CurriculumType,
+    lang: OfficialLanguage
+) = when (type) {
+    DAYCARE -> getDefaultVasuContent(lang)
+    PRESCHOOL -> getDefaultLeopsContent(lang)
+}
 
 fun getDefaultVasuContent(lang: OfficialLanguage) =
     VasuContent(
@@ -498,7 +503,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                     ),
                                 minSelections = 0,
                                 maxSelections = null,
-                                value = listOf(),
+                                value = listOf()
                             ),
                             VasuQuestion.TextQuestion(
                                 name =

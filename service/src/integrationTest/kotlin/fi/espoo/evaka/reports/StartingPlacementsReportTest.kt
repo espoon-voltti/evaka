@@ -120,14 +120,16 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
     private val testUser =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
-    private fun getAndAssert(date: LocalDate, expected: List<StartingPlacementsRow>) {
+    private fun getAndAssert(
+        date: LocalDate,
+        expected: List<StartingPlacementsRow>
+    ) {
         val (_, response, result) =
             http
                 .get(
                     "/reports/starting-placements",
                     listOf("year" to date.year, "month" to date.monthValue)
-                )
-                .asUser(testUser)
+                ).asUser(testUser)
                 .responseObject<List<StartingPlacementsRow>>(jsonMapper)
 
         assertEquals(200, response.statusCode)
@@ -139,30 +141,28 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         startDate: LocalDate,
         endDate: LocalDate = startDate.plusYears(1),
         daycare: DevDaycare = testDaycare
-    ) =
-        db.transaction { tx ->
-            tx.insert(
-                DevPlacement(
-                    childId = childId,
-                    unitId = daycare.id,
-                    startDate = startDate,
-                    endDate = endDate
-                )
+    ) = db.transaction { tx ->
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = daycare.id,
+                startDate = startDate,
+                endDate = endDate
             )
-        }
+        )
+    }
 
     private fun toReportRow(
         child: DevPerson,
         startDate: LocalDate,
         careAreaName: String = testArea.name
-    ) =
-        StartingPlacementsRow(
-            childId = child.id,
-            firstName = child.firstName,
-            lastName = child.lastName,
-            dateOfBirth = child.dateOfBirth,
-            ssn = child.ssn,
-            placementStart = startDate,
-            careAreaName = careAreaName
-        )
+    ) = StartingPlacementsRow(
+        childId = child.id,
+        firstName = child.firstName,
+        lastName = child.lastName,
+        dateOfBirth = child.dateOfBirth,
+        ssn = child.ssn,
+        placementStart = startDate,
+        careAreaName = careAreaName
+    )
 }

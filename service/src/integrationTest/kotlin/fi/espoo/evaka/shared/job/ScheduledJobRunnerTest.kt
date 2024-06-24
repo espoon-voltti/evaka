@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 
 class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     enum class TestScheduledJob {
-        TestJob,
+        TestJob
     }
 
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>

@@ -26,7 +26,9 @@ import fi.espoo.evaka.shared.security.ChildAclConfig
 private typealias FilterByMobile =
     QuerySql.Builder.(user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime) -> QuerySql
 
-data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
+data class IsMobile(
+    val requirePinLogin: Boolean
+) : DatabaseActionRule.Params {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) =
         when (authLevel) {
             MobileAuthLevel.PIN_LOGIN -> true
@@ -50,10 +52,10 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
      */
     private fun <T : Id<*>> ruleViaChildAcl(
         cfg: ChildAclConfig,
-        idChildQuery:
-            QuerySql.Builder.(
-                user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime
-            ) -> QuerySql
+        idChildQuery: QuerySql.Builder.(
+            user: AuthenticatedUser.MobileDevice,
+            now: HelsinkiDateTime
+        ) -> QuerySql
     ): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(
             this,
@@ -76,9 +78,13 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
             }
         )
 
-    private data class Query<T : Id<*>>(private val filter: FilterByMobile) :
-        DatabaseActionRule.Scoped.Query<T, IsMobile> {
-        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+    private data class Query<T : Id<*>>(
+        private val filter: FilterByMobile
+    ) : DatabaseActionRule.Scoped.Query<T, IsMobile> {
+        override fun cacheKey(
+            user: AuthenticatedUser,
+            now: HelsinkiDateTime
+        ): Any =
             when (user) {
                 is AuthenticatedUser.MobileDevice -> QuerySql { filter(user, now) }
                 else -> Pair(user, now)
@@ -95,14 +101,12 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                         .createQuery {
                             sql(
                                 """
-                    SELECT id
-                    FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
-                    WHERE ${predicate(targetCheck.forTable("fragment"))}
-                    """
-                                    .trimIndent()
+                                SELECT id
+                                FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
+                                WHERE ${predicate(targetCheck.forTable("fragment"))}
+                                """.trimIndent()
                             )
-                        }
-                        .toSet<Id<DatabaseTable>>()
+                        }.toSet<Id<DatabaseTable>>()
                         .let { matched ->
                             targets
                                 .filter { matched.contains(it) }
@@ -127,8 +131,9 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
             }
     }
 
-    private data class Deferred(private val authLevel: MobileAuthLevel) :
-        DatabaseActionRule.Deferred<IsMobile> {
+    private data class Deferred(
+        private val authLevel: MobileAuthLevel
+    ) : DatabaseActionRule.Deferred<IsMobile> {
         private data object PinLoginRequired : AccessControlDecision {
             override fun isPermitted(): Boolean = false
 
@@ -163,10 +168,12 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                 all = true,
                 cfg.aclQueries(user, now).map { aclQuery ->
                     QuerySql {
-                        sql("""
+                        sql(
+                            """
 SELECT acl.child_id AS id
 FROM (${subquery(aclQuery)}) acl
-""")
+"""
+                        )
                     }
                 }
             )
@@ -174,26 +181,32 @@ FROM (${subquery(aclQuery)}) acl
 
     fun inPlacementUnitOfChildOfChildDailyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildDailyNoteId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT cdn.id, cdn.child_id
 FROM child_daily_note cdn
-""")
+"""
+            )
         }
 
     fun inPlacementUnitOfChildOfChildStickyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildStickyNoteId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT csn.id, csn.child_id
 FROM child_sticky_note csn
-""")
+"""
+            )
         }
 
     fun inPlacementUnitOfChildOfChildImage(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildImageId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT img.id, img.child_id
 FROM child_images img
-""")
+"""
+            )
         }
 
     fun inUnitOfGroup() =
@@ -250,8 +263,7 @@ SELECT acc.id
 FROM message_account acc
 JOIN employee ON acc.employee_id = employee.id
 WHERE employee.id = ${bind(user.employeeId)} AND acc.active = TRUE
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -264,8 +276,7 @@ FROM message_account acc
 JOIN daycare_group dg ON acc.daycare_group_id = dg.id
 JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id AND acl.role = ANY(${bind(roles.asList())})
 WHERE acl.employee_id = ${bind(user.employeeId)} AND acc.active = TRUE
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -277,8 +288,7 @@ SELECT acc.id
 FROM message_account acc
 JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
 WHERE gacl.employee_id = ${bind(user.employeeId)} AND acc.active = TRUE
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
 }

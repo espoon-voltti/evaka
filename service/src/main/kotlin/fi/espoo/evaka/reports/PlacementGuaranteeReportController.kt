@@ -20,8 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PlacementGuaranteeReportController(private val accessControl: AccessControl) {
-
+class PlacementGuaranteeReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/placement-guarantee", // deprecated
         "/employee/reports/placement-guarantee"
@@ -32,8 +33,8 @@ class PlacementGuaranteeReportController(private val accessControl: AccessContro
         clock: EvakaClock,
         @RequestParam date: LocalDate,
         @RequestParam unitId: DaycareId? = null
-    ): List<PlacementGuaranteeReportRow> {
-        return db.connect { dbc ->
+    ): List<PlacementGuaranteeReportRow> =
+        db.connect { dbc ->
             dbc.read { tx ->
                 val filter =
                     accessControl.requireAuthorizationFilter(
@@ -46,7 +47,6 @@ class PlacementGuaranteeReportController(private val accessControl: AccessContro
                 tx.getPlacementGuaranteeRows(filter, date, unitId)
             }
         }
-    }
 }
 
 private fun Database.Read.getPlacementGuaranteeRows(
@@ -55,8 +55,8 @@ private fun Database.Read.getPlacementGuaranteeRows(
     unitId: DaycareId?
 ): List<PlacementGuaranteeReportRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
   child.id AS child_id,
   child.last_name AS child_last_name,
@@ -76,11 +76,9 @@ WHERE placement.place_guarantee = TRUE
   AND placement.start_date > ${bind(date)}
   AND (${bind(unitId)} IS NULL OR ${bind(unitId)} = placement.unit_id)
   AND NOT EXISTS (SELECT FROM placement WHERE child_id = child.id AND ${bind(date)} BETWEEN start_date AND end_date)
-    """
-                    .trimIndent()
-            )
-        }
-        .toList<PlacementGuaranteeReportRow>()
+            """.trimIndent()
+        )
+    }.toList<PlacementGuaranteeReportRow>()
 
 data class PlacementGuaranteeReportRow(
     val childId: ChildId,

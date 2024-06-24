@@ -142,7 +142,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     period,
                     OccupancyType.CONFIRMED,
                     AccessControlFilter.PermitAll,
-                    areaId = careArea1,
+                    areaId = careArea1
                 )
 
             assertEquals(1, occupancyValues.size)
@@ -217,31 +217,28 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         employeeId: EmployeeId,
         minusDaysFromNow: Long = 0,
         type: StaffAttendanceType = StaffAttendanceType.PRESENT
-    ) =
-        DevStaffAttendance(
-            employeeId = employeeId,
-            groupId = daycareGroup1,
-            type = type,
-            arrived = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)),
-            departed = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 39)),
-        )
+    ) = DevStaffAttendance(
+        employeeId = employeeId,
+        groupId = daycareGroup1,
+        type = type,
+        arrived = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(8, 0)),
+        departed = HelsinkiDateTime.of(today.minusDays(minusDaysFromNow), LocalTime.of(15, 39))
+    )
 
-    private fun assertRealtimeAttendances(
-        expectedCaretakers: List<Pair<LocalDate, OccupancyValues>>
-    ) {
+    private fun assertRealtimeAttendances(expectedCaretakers: List<Pair<LocalDate, OccupancyValues>>) {
         val (rangeStart, rangeEnd) =
             expectedCaretakers.map { it.first }.let { it.minOrNull()!! to it.maxOrNull()!! }
 
         val occupancies =
             db.read { tx ->
-                tx.calculateDailyGroupOccupancyValues(
+                tx
+                    .calculateDailyGroupOccupancyValues(
                         today,
                         FiniteDateRange(rangeStart, rangeEnd),
                         OccupancyType.REALIZED,
                         AccessControlFilter.PermitAll,
                         unitId = daycareInArea1
-                    )
-                    .find { it.key.groupId == daycareGroup1 }!!
+                    ).find { it.key.groupId == daycareGroup1 }!!
                     .occupancies
             }
 
@@ -477,7 +474,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     HelsinkiDateTime.of(
                         today.plusDays(1),
                         LocalTime.of(0, 0)
-                    ), // At work for 7 hours 39 minutes
+                    ) // At work for 7 hours 39 minutes
             )
 
         db.transaction { tx ->
@@ -516,7 +513,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 groupId = daycareGroup1,
                 occupancyCoefficient = BigDecimal(3.5),
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 15)),
-                departed = null,
+                departed = null
             )
 
         db.transaction { tx ->
@@ -553,14 +550,13 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         val attendances =
             listOf(
                 realtimeAttendanceToday(employee1.id),
-
                 // not included because of no departure time
                 DevStaffAttendance(
                     employeeId = employee2.id,
                     groupId = daycareGroup1,
                     arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                     departed = null
-                ),
+                )
             )
 
         db.transaction { tx ->
@@ -621,9 +617,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @ParameterizedTest(name = "Realized occupancy with realtime staff attendance type {0}")
     @EnumSource(names = ["PRESENT", "OVERTIME", "JUSTIFIED_CHANGE", "TRAINING", "OTHER_WORK"])
-    fun `calculateDailyGroupOccupancyValues with different realtime staff attendance types`(
-        type: StaffAttendanceType
-    ) {
+    fun `calculateDailyGroupOccupancyValues with different realtime staff attendance types`(type: StaffAttendanceType) {
         val child = DevPerson(dateOfBirth = today.minusYears(4))
         val placement =
             DevPlacement(
@@ -698,7 +692,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 daycareInArea1,
                 OccupancyType.REALIZED,
                 today.minusDays(1L),
-                1.25,
+                1.25
             )
         }
     }
@@ -735,7 +729,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 daycareInArea1,
                 OccupancyType.REALIZED,
                 today.minusDays(1L),
-                0.5,
+                0.5
             )
         }
     }
@@ -931,14 +925,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 daycareInArea1,
                 OccupancyType.CONFIRMED,
                 today,
-                1.0,
+                1.0
             )
             getAndAssertOccupancyInUnit(
                 tx,
                 daycareInArea1,
                 OccupancyType.CONFIRMED,
                 today.plusDays(1),
-                2.0,
+                2.0
             )
         }
     }
@@ -950,19 +944,19 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val child = DevPerson(dateOfBirth = today.minusYears(3))
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestApplication(
+            tx
+                .insertTestApplication(
                     guardianId = guardian.id,
                     childId = child.id,
                     status = ApplicationStatus.WAITING_DECISION,
                     type = ApplicationType.DAYCARE,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
-                )
-                .also { applicationId ->
+                ).also { applicationId ->
                     tx.insertTestPlacementPlan(
                         applicationId = applicationId,
                         unitId = daycareInArea1,
                         startDate = today,
-                        endDate = today,
+                        endDate = today
                     )
                 }
         }
@@ -983,14 +977,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val child = DevPerson(dateOfBirth = today.minusYears(6))
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestApplication(
+            tx
+                .insertTestApplication(
                     guardianId = guardian.id,
                     childId = child.id,
                     status = ApplicationStatus.WAITING_DECISION,
                     type = ApplicationType.PRESCHOOL,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
-                )
-                .also { applicationId ->
+                ).also { applicationId ->
                     tx.insertTestPlacementPlan(
                         applicationId = applicationId,
                         unitId = daycareInArea1,
@@ -998,7 +992,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         startDate = today.plusDays(preschool.first.toLong()),
                         endDate = today.plusDays(preschool.last.toLong()),
                         preschoolDaycareStartDate = today.plusDays(preschoolDaycare.first.toLong()),
-                        preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong()),
+                        preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong())
                     )
                 }
         }
@@ -1095,14 +1089,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val child = DevPerson(dateOfBirth = today.minusYears(3))
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestApplication(
+            tx
+                .insertTestApplication(
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
-                )
-                .also { applicationId ->
+                ).also { applicationId ->
                     tx.insertTestPlacementPlan(
                         applicationId = applicationId,
                         unitId = daycareInArea1,
@@ -1126,19 +1120,19 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val child = DevPerson(dateOfBirth = today.minusYears(3))
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestApplication(
+            tx
+                .insertTestApplication(
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
-                )
-                .also { applicationId ->
+                ).also { applicationId ->
                     tx.insertTestPlacementPlan(
                         applicationId = applicationId,
                         unitId = daycareInArea1,
                         startDate = today,
-                        endDate = today,
+                        endDate = today
                     )
                 }
             tx.insert(
@@ -1164,19 +1158,19 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val child = DevPerson(dateOfBirth = today.minusYears(3))
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestApplication(
+            tx
+                .insertTestApplication(
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
-                )
-                .also { applicationId ->
+                ).also { applicationId ->
                     tx.insertTestPlacementPlan(
                         applicationId = applicationId,
                         unitId = daycareInArea1,
                         startDate = today,
-                        endDate = today,
+                        endDate = today
                     )
                 }
             tx.insert(
@@ -1203,20 +1197,20 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val child = DevPerson(dateOfBirth = today.minusYears(3))
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestApplication(
+            tx
+                .insertTestApplication(
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.DAYCARE,
                     status = ApplicationStatus.WAITING_DECISION,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
-                )
-                .also { applicationId ->
+                ).also { applicationId ->
                     tx.insertTestPlacementPlan(
                         applicationId = applicationId,
                         unitId = daycareInArea1,
                         type = PlacementType.DAYCARE_PART_TIME,
                         startDate = today,
-                        endDate = today,
+                        endDate = today
                     )
                 }
             tx.insert(
@@ -1242,14 +1236,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             val child = DevPerson(dateOfBirth = today.minusYears(6))
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
-            tx.insertTestApplication(
+            tx
+                .insertTestApplication(
                     childId = child.id,
                     guardianId = guardian.id,
                     type = ApplicationType.PRESCHOOL,
                     status = ApplicationStatus.WAITING_DECISION,
                     document = DaycareFormV0.fromApplication2(validDaycareApplication)
-                )
-                .also { applicationId ->
+                ).also { applicationId ->
                     tx.insertTestPlacementPlan(
                         applicationId = applicationId,
                         unitId = daycareInArea1,
@@ -1314,14 +1308,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.read { tx ->
             val dailyOccupancyValues =
-                tx.calculateDailyGroupOccupancyValues(
+                tx
+                    .calculateDailyGroupOccupancyValues(
                         today = today,
                         queryPeriod = FiniteDateRange(today.minusDays(2), today.plusDays(1)),
                         type = OccupancyType.REALIZED,
                         unitFilter = AccessControlFilter.PermitAll,
                         unitId = daycareInArea1
-                    )
-                    .first { it.key.groupId == daycareGroup1 }
+                    ).first { it.key.groupId == daycareGroup1 }
                     .occupancies
 
             dailyOccupancyValues[today.minusDays(2)]!!.let { values ->
@@ -1356,7 +1350,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     queryPeriod = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
                     type = OccupancyType.REALIZED,
                     unitFilter = AccessControlFilter.PermitAll,
-                    unitId = daycareInArea1,
+                    unitId = daycareInArea1
                 )
             assertTrue(values.isEmpty())
         }
@@ -1576,14 +1570,14 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.read { tx ->
             val map =
-                tx.calculateDailyUnitOccupancyValues(
+                tx
+                    .calculateDailyUnitOccupancyValues(
                         today = today,
                         queryPeriod = FiniteDateRange(today.minusDays(3), today.plusDays(10)),
                         type = OccupancyType.CONFIRMED,
                         unitFilter = AccessControlFilter.PermitAll,
                         unitId = daycareInArea1
-                    )
-                    .let { reduceDailyOccupancyValues(it) }
+                    ).let { reduceDailyOccupancyValues(it) }
 
             assertEquals(1, map.entries.size)
             assertEquals(daycareInArea1, map.keys.first().unitId)
@@ -1692,11 +1686,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .extracting<DaycareId> { value -> value.key.unitId }
                 .containsExactlyInAnyOrder(familyUnitInArea2)
             assertThat(
-                    calculateDailyUnitOccupancyValuesByProviderType(
-                        ProviderType.PRIVATE_SERVICE_VOUCHER
-                    )
+                calculateDailyUnitOccupancyValuesByProviderType(
+                    ProviderType.PRIVATE_SERVICE_VOUCHER
                 )
-                .isEmpty()
+            ).isEmpty()
         }
     }
 
@@ -1767,11 +1760,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .extracting<DaycareId> { value -> value.key.unitId }
                 .containsExactlyInAnyOrder(familyUnitInArea2)
             assertThat(
-                    calculateDailyUnitOccupancyValuesByUnitTypes(
-                        setOf(CareType.CENTRE, CareType.FAMILY)
-                    )
+                calculateDailyUnitOccupancyValuesByUnitTypes(
+                    setOf(CareType.CENTRE, CareType.FAMILY)
                 )
-                .extracting<DaycareId> { value -> value.key.unitId }
+            ).extracting<DaycareId> { value -> value.key.unitId }
                 .containsExactlyInAnyOrder(daycareInArea1, familyUnitInArea2)
             assertThat(calculateDailyUnitOccupancyValuesByUnitTypes(setOf(CareType.CLUB))).isEmpty()
         }
@@ -1843,11 +1835,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .extracting<GroupId> { value -> value.key.groupId }
                 .containsExactlyInAnyOrder(familyGroup1, familyGroup2)
             assertThat(
-                    calculateDailyGroupOccupancyValuesByProviderType(
-                        ProviderType.PRIVATE_SERVICE_VOUCHER
-                    )
+                calculateDailyGroupOccupancyValuesByProviderType(
+                    ProviderType.PRIVATE_SERVICE_VOUCHER
                 )
-                .isEmpty()
+            ).isEmpty()
         }
     }
 
@@ -1917,11 +1908,10 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .extracting<GroupId> { value -> value.key.groupId }
                 .containsExactlyInAnyOrder(familyGroup1, familyGroup2)
             assertThat(
-                    calculateDailyGroupOccupancyValuesByUnitTypes(
-                        setOf(CareType.CENTRE, CareType.FAMILY)
-                    )
+                calculateDailyGroupOccupancyValuesByUnitTypes(
+                    setOf(CareType.CENTRE, CareType.FAMILY)
                 )
-                .extracting<GroupId> { value -> value.key.groupId }
+            ).extracting<GroupId> { value -> value.key.groupId }
                 .containsExactlyInAnyOrder(daycareGroup1, daycareGroup2, familyGroup1, familyGroup2)
             assertThat(calculateDailyGroupOccupancyValuesByUnitTypes(setOf(CareType.CLUB)))
                 .isEmpty()
@@ -1952,7 +1942,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                 employeeId = employee.id,
                 groupId = daycareGroup1,
                 arrived = HelsinkiDateTime.of(today.minusDays(1), LocalTime.of(21, 0)),
-                departed = HelsinkiDateTime.of(today, LocalTime.of(4, 45)),
+                departed = HelsinkiDateTime.of(today, LocalTime.of(4, 45))
             )
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
@@ -1975,7 +1965,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         unitId: DaycareId,
         type: OccupancyType,
         date: LocalDate,
-        expectedSum: Double,
+        expectedSum: Double
     ) {
         assertOccupancySum(
             expectedSum = expectedSum,
@@ -2023,7 +2013,11 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     ) {
         assertEquals(
             expectedSum,
-            occupancyValues.find { it.key.groupingId == groupingId }?.occupancies?.get(date)?.sum
+            occupancyValues
+                .find { it.key.groupingId == groupingId }
+                ?.occupancies
+                ?.get(date)
+                ?.sum
                 ?: 0.0
         )
     }

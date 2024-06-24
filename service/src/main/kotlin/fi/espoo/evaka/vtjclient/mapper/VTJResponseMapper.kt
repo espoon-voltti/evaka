@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class VTJResponseMapper {
-    fun mapResponseToHenkilo(
-        response: JAXBElement<HenkiloTunnusKyselyResBody>
-    ): VTJHenkiloVastaussanoma.Henkilo? =
+    fun mapResponseToHenkilo(response: JAXBElement<HenkiloTunnusKyselyResBody>): VTJHenkiloVastaussanoma.Henkilo? =
         response.value.response
             .let(HenkiloTunnusKyselyResType::mapResponse)
             .let(VTJResponse::mapToHenkiloOrLogError)
@@ -26,7 +24,6 @@ data class VTJResponse(
     val faultString: String? = null,
     val faultCode: String? = null
 ) {
-
     fun mapToHenkiloOrLogError(): VTJHenkiloVastaussanoma.Henkilo? =
         if (henkiloSanoma == null) {
             if (faultString != "0001") {
@@ -45,8 +42,9 @@ private val faultCodeName = ObjectFactory().createHenkiloTunnusKyselyResTypeFaul
 
 private fun HenkiloTunnusKyselyResType.mapResponse(): VTJResponse =
     this.vtjHenkiloVastaussanomaAndFaultCodeAndFaultString.fold(VTJResponse()) {
-        result: VTJResponse,
-        field: Any? ->
+            result: VTJResponse,
+            field: Any?
+        ->
         when (field) {
             is JAXBElement<*> ->
                 if (field.name == faultCodeName) {

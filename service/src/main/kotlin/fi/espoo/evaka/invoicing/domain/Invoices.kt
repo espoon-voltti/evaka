@@ -75,7 +75,10 @@ data class InvoiceRow(
         get() = amount * unitPrice
 }
 
-data class RelatedFeeDecision(val id: FeeDecisionId, val decisionNumber: Long)
+data class RelatedFeeDecision(
+    val id: FeeDecisionId,
+    val decisionNumber: Long
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceDetailed(

@@ -20,16 +20,18 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildRecipientsController(private val accessControl: AccessControl) {
-
+class ChildRecipientsController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/child/{childId}/recipients")
     fun getRecipients(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<Recipient> {
-        return db.connect { dbc ->
+    ): List<Recipient> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -40,16 +42,16 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
                     )
                     it.fetchRecipients(childId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.MessagingBlocklistRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
-    data class EditRecipientRequest(val blocklisted: Boolean)
+    data class EditRecipientRequest(
+        val blocklisted: Boolean
+    )
 
     @PutMapping("/child/{childId}/recipients/{personId}")
     fun editRecipient(

@@ -78,17 +78,16 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
         startDate: LocalDate,
         endDate: LocalDate = startDate.plusYears(1),
         daycare: DevDaycare
-    ) =
-        db.transaction { tx ->
-            tx.insert(
-                DevPlacement(
-                    childId = childId,
-                    unitId = daycare.id,
-                    startDate = startDate,
-                    endDate = endDate
-                )
+    ) = db.transaction { tx ->
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = daycare.id,
+                startDate = startDate,
+                endDate = endDate
             )
-        }
+        )
+    }
 
     private val testUser =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))

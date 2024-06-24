@@ -47,23 +47,29 @@ class KoskiClient(
         }
     }
 
-    data class Error(val key: String, val message: String) {
+    data class Error(
+        val key: String,
+        val message: String
+    ) {
         fun isNotFound() = key == "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia"
     }
 
-    fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) =
-        try {
-            db.transaction { tx -> uploadToKoski(tx, msg, today) }
-        } catch (error: FuelError) {
-            if (error.response.isClientError) {
-                // No need to trigger alerts since this error will be visible in the Koski UI, and
-                // we'll automatically retry again tomorrow.
-                // The transaction has been rolled back, and since we don't propagate the exception,
-                // the async job will be marked completed.
-            } else {
-                throw error
-            }
+    fun uploadToKoski(
+        db: Database.Connection,
+        msg: AsyncJob.UploadToKoski,
+        today: LocalDate
+    ) = try {
+        db.transaction { tx -> uploadToKoski(tx, msg, today) }
+    } catch (error: FuelError) {
+        if (error.response.isClientError) {
+            // No need to trigger alerts since this error will be visible in the Koski UI, and
+            // we'll automatically retry again tomorrow.
+            // The transaction has been rolled back, and since we don't propagate the exception,
+            // the async job will be marked completed.
+        } else {
+            throw error
         }
+    }
 
     private fun uploadToKoski(
         tx: Database.Transaction,
@@ -93,11 +99,13 @@ class KoskiClient(
                 fuel
                     .request(
                         method =
-                            if (data.operation == KoskiOperation.CREATE) Method.POST
-                            else Method.PUT,
+                            if (data.operation == KoskiOperation.CREATE) {
+                                Method.POST
+                            } else {
+                                Method.PUT
+                            },
                         path = "${env.url}/oppija"
-                    )
-                    .authentication()
+                    ).authentication()
                     .basic(env.user, env.secret.value)
                     .header(Headers.ACCEPT, "application/json")
                     .header("Caller-Id", "${data.organizationOid}.${env.municipalityCallerId}")
@@ -116,7 +124,7 @@ class KoskiClient(
                         }
                     if (
                         data.operation == KoskiOperation.VOID &&
-                            errors?.any { it.isNotFound() } == true
+                        errors?.any { it.isNotFound() } == true
                     ) {
                         logger.warn(
                             "Koski upload ${msg.key} ${data.operation}: 404 not found -> assuming study right is already voided and nothing needs to be done"

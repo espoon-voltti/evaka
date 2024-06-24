@@ -78,15 +78,24 @@ fun Database.Transaction.insertApplication(
     document: DatabaseForm
 ): ApplicationId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO application (type, status, guardian_id, child_id, origin, created_by, hidefromguardian, sentdate, allow_other_guardian_access, document, form_modified)
-VALUES (${bind(type)}, 'CREATED', ${bind(guardianId)}, ${bind(childId)}, ${bind(origin)}, ${bind(createdBy)}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)})
+VALUES (${bind(
+                type
+            )}, 'CREATED', ${bind(
+                guardianId
+            )}, ${bind(
+                childId
+            )}, ${bind(
+                origin
+            )}, ${bind(
+                createdBy
+            )}, ${bind(hideFromGuardian)}, ${bind(sentDate)}, ${bind(allowOtherGuardianAccess)}, ${bindJson(document)}, ${bind(now)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<ApplicationId>()
 
 fun Database.Read.duplicateApplicationExists(
@@ -95,8 +104,8 @@ fun Database.Read.duplicateApplicationExists(
     type: ApplicationType
 ): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS(
     SELECT
     FROM application
@@ -108,9 +117,8 @@ SELECT EXISTS(
         status = ANY ('{CREATED,SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
 )
                 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
 fun Database.Read.activePlacementExists(
     childId: ChildId,
@@ -134,8 +142,8 @@ fun Database.Read.activePlacementExists(
     if (placementTypes.isEmpty()) return false
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT 1
                 FROM placement
                 WHERE
@@ -143,16 +151,15 @@ fun Database.Read.activePlacementExists(
                     type = ANY(${bind(placementTypes)}) AND
                     ${bind(today)} <= end_date
                 """
-            )
-        }
-        .toList<Int>()
+        )
+    }.toList<Int>()
         .isNotEmpty()
 }
 
 data class PagedApplicationSummaries(
     val data: List<ApplicationSummary>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 fun Database.Read.fetchApplicationSummaries(
@@ -192,14 +199,20 @@ fun Database.Read.fetchApplicationSummaries(
     val predicates =
         PredicateSql.allNotNull(
             PredicateSql { where("a.status = ANY(${bind(statuses)})") },
-            if (areas.isEmpty()) null
-            else if (distinctions.contains(ApplicationDistinctions.SECONDARY))
+            if (areas.isEmpty()) {
+                null
+            } else if (distinctions.contains(ApplicationDistinctions.SECONDARY)) {
                 PredicateSql { where("pua.preferredUnitAreas && ${bind(areas)}") }
-            else PredicateSql { where("ca.id = ANY(${bind(areas)})") },
-            if (units.isEmpty()) null
-            else if (distinctions.contains(ApplicationDistinctions.SECONDARY))
+            } else {
+                PredicateSql { where("ca.id = ANY(${bind(areas)})") }
+            },
+            if (units.isEmpty()) {
+                null
+            } else if (distinctions.contains(ApplicationDistinctions.SECONDARY)) {
                 PredicateSql { where("pu.preferredUnits && ${bind(units)}") }
-            else PredicateSql { where("d.id = ANY(${bind(units)})") },
+            } else {
+                PredicateSql { where("d.id = ANY(${bind(units)})") }
+            },
             PredicateSql.all(
                 basis.map { applicationBasis ->
                     when (applicationBasis) {
@@ -240,8 +253,11 @@ fun Database.Read.fetchApplicationSummaries(
                     }
                 }
             ),
-            if (type != ApplicationTypeToggle.ALL) PredicateSql { where("a.type = ${bind(type)}") }
-            else null,
+            if (type != ApplicationTypeToggle.ALL) {
+                PredicateSql { where("a.type = ${bind(type)}") }
+            } else {
+                null
+            },
             if (type == ApplicationTypeToggle.PRESCHOOL) {
                 data class PreschoolFlags(
                     val preparatory: Boolean?,
@@ -333,45 +349,58 @@ fun Database.Read.fetchApplicationSummaries(
                         }
                     }
                 )
-            } else null,
+            } else {
+                null
+            },
             PredicateSql.any(
                 assistanceNeeded(true)
                     .and(readWithAssistanceNeed?.forTable("a") ?: PredicateSql.alwaysFalse()),
                 assistanceNeeded(false)
-                    .and(readWithoutAssistanceNeed?.forTable("a") ?: PredicateSql.alwaysFalse()),
+                    .and(readWithoutAssistanceNeed?.forTable("a") ?: PredicateSql.alwaysFalse())
             ),
             if (
                 (periodStart != null || periodEnd != null) &&
-                    dateType.contains(ApplicationDateType.DUE)
-            )
+                dateType.contains(ApplicationDateType.DUE)
+            ) {
                 PredicateSql {
                     where(
                         "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.dueDate)"
                     )
                 }
-            else null,
+            } else {
+                null
+            },
             if (
                 (periodStart != null || periodEnd != null) &&
-                    dateType.contains(ApplicationDateType.START)
-            )
+                dateType.contains(ApplicationDateType.START)
+            ) {
                 PredicateSql {
                     where(
-                        "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), (a.document ->> 'preferredStartDate')::date)"
+                        "between_start_and_end(daterange(${bind(
+                            periodStart
+                        )}, ${bind(periodEnd)}, '[]'), (a.document ->> 'preferredStartDate')::date)"
                     )
                 }
-            else null,
+            } else {
+                null
+            },
             if (
                 (periodStart != null || periodEnd != null) &&
-                    dateType.contains(ApplicationDateType.ARRIVAL)
-            )
+                dateType.contains(ApplicationDateType.ARRIVAL)
+            ) {
                 PredicateSql {
                     where(
                         "between_start_and_end(daterange(${bind(periodStart)}, ${bind(periodEnd)}, '[]'), a.sentdate)"
                     )
                 }
-            else null,
-            if (searchTerms.isNotBlank()) freeTextSearchPredicate(listOf("child"), searchTerms)
-            else null,
+            } else {
+                null
+            },
+            if (searchTerms.isNotBlank()) {
+                freeTextSearchPredicate(listOf("child"), searchTerms)
+            } else {
+                null
+            },
             when (transferApplications) {
                 TransferApplicationFilter.TRANSFER_ONLY ->
                     PredicateSql { where("a.transferApplication") }
@@ -413,8 +442,8 @@ fun Database.Read.fetchApplicationSummaries(
 
     val applicationSummaries =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT
             a.id,
             child.first_name,
@@ -507,71 +536,70 @@ fun Database.Read.fetchApplicationSummaries(
         WHERE a.status != 'CREATED'::application_status_type AND ${predicate(predicates)}
         $orderBy LIMIT $pageSize OFFSET ${bind((page - 1) * pageSize)}
         """
-                )
-            }
-            .mapToPaged(::PagedApplicationSummaries, pageSize, "total") {
-                val status = column<ApplicationStatus>("application_status")
-                ApplicationSummary(
-                    id = column("id"),
-                    firstName = column("first_name"),
-                    lastName = column("last_name"),
-                    socialSecurityNumber = column("social_security_number"),
-                    dateOfBirth = column("date_of_birth"),
-                    type = column("type"),
-                    placementType = mapRequestedPlacementType("document"),
-                    serviceNeed =
-                        column<ServiceNeedOptionId?>("serviceNeedId")?.let {
-                            ServiceNeedOption(
-                                it,
-                                column("serviceNeedNameFi"),
-                                column("serviceNeedNameSv"),
-                                column("serviceNeedNameEn"),
-                                column("serviceNeedValidPlacementType")
+            )
+        }.mapToPaged(::PagedApplicationSummaries, pageSize, "total") {
+            val status = column<ApplicationStatus>("application_status")
+            ApplicationSummary(
+                id = column("id"),
+                firstName = column("first_name"),
+                lastName = column("last_name"),
+                socialSecurityNumber = column("social_security_number"),
+                dateOfBirth = column("date_of_birth"),
+                type = column("type"),
+                placementType = mapRequestedPlacementType("document"),
+                serviceNeed =
+                    column<ServiceNeedOptionId?>("serviceNeedId")?.let {
+                        ServiceNeedOption(
+                            it,
+                            column("serviceNeedNameFi"),
+                            column("serviceNeedNameSv"),
+                            column("serviceNeedNameEn"),
+                            column("serviceNeedValidPlacementType")
+                        )
+                    },
+                dueDate = column("duedate"),
+                startDate = column("preferredStartDate"),
+                preferredUnits =
+                    jsonColumn<List<String>>("preferredUnits").map {
+                        PreferredUnit(
+                            id = DaycareId(UUID.fromString(it)),
+                            name = "" // filled afterwards
+                        )
+                    },
+                origin = column("origin"),
+                checkedByAdmin = column("checkedbyadmin"),
+                status = status,
+                additionalInfo = column("additionalInfo"),
+                serviceWorkerNote =
+                    if (canReadServiceWorkerNotes) column("service_worker_note") else "",
+                siblingBasis = column("siblingBasis"),
+                assistanceNeed = column("assistanceNeed"),
+                wasOnClubCare = column("was_on_club_care"),
+                wasOnDaycare = column("wasOnDaycare"),
+                extendedCare = column("extendedCare"),
+                duplicateApplication = column("has_duplicates"),
+                transferApplication = column("transferapplication"),
+                urgent = column("urgent"),
+                attachmentCount = column("attachmentCount"),
+                additionalDaycareApplication = column("additionaldaycareapplication"),
+                placementProposalStatus =
+                    column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
+                        ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
+                        ?.let {
+                            PlacementProposalStatus(
+                                unitConfirmationStatus = it,
+                                unitRejectReason = column("unit_reject_reason"),
+                                unitRejectOtherReason = column("unit_reject_other_reason")
                             )
                         },
-                    dueDate = column("duedate"),
-                    startDate = column("preferredStartDate"),
-                    preferredUnits =
-                        jsonColumn<List<String>>("preferredUnits").map {
-                            PreferredUnit(
-                                id = DaycareId(UUID.fromString(it)),
-                                name = "" // filled afterwards
-                            )
-                        },
-                    origin = column("origin"),
-                    checkedByAdmin = column("checkedbyadmin"),
-                    status = status,
-                    additionalInfo = column("additionalInfo"),
-                    serviceWorkerNote =
-                        if (canReadServiceWorkerNotes) column("service_worker_note") else "",
-                    siblingBasis = column("siblingBasis"),
-                    assistanceNeed = column("assistanceNeed"),
-                    wasOnClubCare = column("was_on_club_care"),
-                    wasOnDaycare = column("wasOnDaycare"),
-                    extendedCare = column("extendedCare"),
-                    duplicateApplication = column("has_duplicates"),
-                    transferApplication = column("transferapplication"),
-                    urgent = column("urgent"),
-                    attachmentCount = column("attachmentCount"),
-                    additionalDaycareApplication = column("additionaldaycareapplication"),
-                    placementProposalStatus =
-                        column<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
-                            ?.takeIf { status == ApplicationStatus.WAITING_UNIT_CONFIRMATION }
-                            ?.let {
-                                PlacementProposalStatus(
-                                    unitConfirmationStatus = it,
-                                    unitRejectReason = column("unit_reject_reason"),
-                                    unitRejectOtherReason = column("unit_reject_other_reason")
-                                )
-                            },
-                    placementPlanStartDate = column("placement_plan_start_date"),
-                    placementPlanUnitName = column("placement_plan_unit_name"),
-                    currentPlacementUnit =
-                        column<DaycareId?>("current_placement_unit_id")?.let {
-                            PreferredUnit(it, column("current_placement_unit_name"))
-                        }
-                )
-            }
+                placementPlanStartDate = column("placement_plan_start_date"),
+                placementPlanUnitName = column("placement_plan_unit_name"),
+                currentPlacementUnit =
+                    column<DaycareId?>("current_placement_unit_id")?.let {
+                        PreferredUnit(it, column("current_placement_unit_name"))
+                    }
+            )
+        }
 
     val unitIds =
         applicationSummaries.data.flatMap { summary ->
@@ -579,15 +607,14 @@ fun Database.Read.fetchApplicationSummaries(
         }
     val unitMap =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
                     SELECT id, name
                     FROM daycare
                     WHERE id = ANY(${bind(unitIds)})
                     """
-                )
-            }
-            .toMap { columnPair<DaycareId, String>("id", "name") }
+            )
+        }.toMap { columnPair<DaycareId, String>("id", "name") }
 
     return applicationSummaries.copy(
         data =
@@ -602,12 +629,10 @@ fun Database.Read.fetchApplicationSummaries(
     )
 }
 
-fun Database.Read.fetchApplicationSummariesForGuardian(
-    guardianId: PersonId
-): List<PersonApplicationSummary> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: PersonId): List<PersonApplicationSummary> =
+    createQuery {
+        sql(
+            """
                 SELECT
                     a.id AS applicationId,
                     a.preferredUnit AS preferredUnitId,
@@ -625,18 +650,16 @@ fun Database.Read.fetchApplicationSummariesForGuardian(
                 AND status != 'CREATED'::application_status_type
                 ORDER BY sentDate DESC
                 """
-            )
-        }
-        .toList<PersonApplicationSummary>()
-}
+        )
+    }.toList<PersonApplicationSummary>()
 
 fun Database.Read.fetchApplicationSummariesForChild(
     childId: ChildId,
     filter: AccessControlFilter<ApplicationId>
 ): List<PersonApplicationSummary> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT
                     a.id AS applicationId,
                     a.preferredUnit AS preferredUnitId,
@@ -655,21 +678,18 @@ fun Database.Read.fetchApplicationSummariesForChild(
                 AND status != 'CREATED'::application_status_type
                 ORDER BY sentDate DESC
                 """
-            )
-        }
-        .toList<PersonApplicationSummary>()
+        )
+    }.toList<PersonApplicationSummary>()
 
-fun Database.Read.fetchApplicationSummariesForCitizen(
-    citizenId: PersonId
-): List<CitizenApplicationSummary> =
+fun Database.Read.fetchApplicationSummariesForCitizen(citizenId: PersonId): List<CitizenApplicationSummary> =
     createQuery {
-            val useDecisionDateAsStartDate =
-                listOf(
-                    ApplicationStatus.ACTIVE,
-                    ApplicationStatus.WAITING_CONFIRMATION,
-                )
-            sql(
-                """
+        val useDecisionDateAsStartDate =
+            listOf(
+                ApplicationStatus.ACTIVE,
+                ApplicationStatus.WAITING_CONFIRMATION
+            )
+        sql(
+            """
 SELECT
     a.id AS application_id,
     a.type,
@@ -705,9 +725,8 @@ WHERE (a.guardian_id = ${bind(citizenId)} OR EXISTS (
 AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
 ORDER BY sentDate DESC
                 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 data class CitizenChildren(
     val id: ChildId,
@@ -715,13 +734,16 @@ data class CitizenChildren(
     val lastName: String,
     val dateOfBirth: LocalDate,
     val socialSecurityNumber: String?,
-    val duplicateOf: PersonId?,
+    val duplicateOf: PersonId?
 )
 
-fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): List<CitizenChildren> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getCitizenChildren(
+    today: LocalDate,
+    citizenId: PersonId
+): List<CitizenChildren> =
+    createQuery {
+        sql(
+            """
                 SELECT child.id, first_name, last_name, date_of_birth, social_security_number, duplicate_of
                 FROM guardian LEFT JOIN person child ON guardian.child_id = child.id
                 WHERE guardian_id = ${bind(citizenId)}
@@ -732,10 +754,8 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
                 FROM foster_parent JOIN person child ON foster_parent.child_id = child.id
                 WHERE parent_id = ${bind(citizenId)} AND valid_during @> ${bind(today)}
                 """
-            )
-        }
-        .toList<CitizenChildren>()
-}
+        )
+    }.toList<CitizenChildren>()
 
 fun Database.Read.fetchApplicationDetails(
     applicationId: ApplicationId,
@@ -746,8 +766,8 @@ fun Database.Read.fetchApplicationDetails(
 
     val application =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
                     SELECT
                         a.id,
                         a.type,
@@ -793,61 +813,61 @@ fun Database.Read.fetchApplicationDetails(
                     ) att ON a.id = att.application_id
                     WHERE a.id = ${bind(applicationId)}
                     """
-                )
-            }
-            .exactlyOneOrNull {
-                val childRestricted = column("child_restricted") ?: false
-                val guardianRestricted = column("guardian_restricted") ?: false
-                val deserializedForm =
-                    if (jsonColumn<FormWithType>("document").type == "CLUB") {
-                        jsonColumn<ClubFormV0>("document")
-                    } else {
-                        jsonColumn<DaycareFormV0>("document")
-                    }
+            )
+        }.exactlyOneOrNull {
+            val childRestricted = column("child_restricted") ?: false
+            val guardianRestricted = column("guardian_restricted") ?: false
+            val deserializedForm =
+                if (jsonColumn<FormWithType>("document").type == "CLUB") {
+                    jsonColumn<ClubFormV0>("document")
+                } else {
+                    jsonColumn<DaycareFormV0>("document")
+                }
 
-                ApplicationDetails(
-                    id = column("id"),
-                    type = column("type"),
-                    form =
-                        deserializedForm.let {
-                            ApplicationForm.fromV0(it, childRestricted, guardianRestricted)
-                        },
-                    status = column("status"),
-                    origin = column("origin"),
-                    childId = column("child_id"),
-                    guardianId = column("guardian_id"),
-                    otherGuardianLivesInSameAddress = null,
-                    childRestricted = childRestricted,
-                    guardianRestricted = guardianRestricted,
-                    guardianDateOfDeath = column("guardian_date_of_death"),
-                    transferApplication = column("transferapplication"),
-                    additionalDaycareApplication = column("additionaldaycareapplication"),
-                    createdDate = column("created"),
-                    modifiedDate = column("form_modified"),
-                    sentDate = column("sentdate"),
-                    dueDate = column("duedate"),
-                    dueDateSetManuallyAt = column("duedate_set_manually_at"),
-                    checkedByAdmin = column("checkedbyadmin"),
-                    hideFromGuardian = column("hidefromguardian"),
-                    allowOtherGuardianAccess = column("allow_other_guardian_access"),
-                    attachments = jsonColumn("attachments"),
-                    hasOtherGuardian = column("has_other_guardian")
-                )
-            }
+            ApplicationDetails(
+                id = column("id"),
+                type = column("type"),
+                form =
+                    deserializedForm.let {
+                        ApplicationForm.fromV0(it, childRestricted, guardianRestricted)
+                    },
+                status = column("status"),
+                origin = column("origin"),
+                childId = column("child_id"),
+                guardianId = column("guardian_id"),
+                otherGuardianLivesInSameAddress = null,
+                childRestricted = childRestricted,
+                guardianRestricted = guardianRestricted,
+                guardianDateOfDeath = column("guardian_date_of_death"),
+                transferApplication = column("transferapplication"),
+                additionalDaycareApplication = column("additionaldaycareapplication"),
+                createdDate = column("created"),
+                modifiedDate = column("form_modified"),
+                sentDate = column("sentdate"),
+                dueDate = column("duedate"),
+                dueDateSetManuallyAt = column("duedate_set_manually_at"),
+                checkedByAdmin = column("checkedbyadmin"),
+                hideFromGuardian = column("hidefromguardian"),
+                allowOtherGuardianAccess = column("allow_other_guardian_access"),
+                attachments = jsonColumn("attachments"),
+                hasOtherGuardian = column("has_other_guardian")
+            )
+        }
 
     if (application != null) {
-        val unitIds = application.form.preferences.preferredUnits.map { it.id }
+        val unitIds =
+            application.form.preferences.preferredUnits
+                .map { it.id }
         val unitMap =
             createQuery {
-                    sql(
-                        """
+                sql(
+                    """
                         SELECT id, name
                         FROM daycare
                         WHERE id = ANY(${bind(unitIds)})
                         """
-                    )
-                }
-                .toMap { columnPair<DaycareId, String>("id", "name") }
+                )
+            }.toMap { columnPair<DaycareId, String>("id", "name") }
 
         return application.copy(
             form =
@@ -869,10 +889,10 @@ fun Database.Read.fetchApplicationDetails(
     }
 }
 
-fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<ApplicationUnitSummary> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<ApplicationUnitSummary> =
+    createQuery {
+        sql(
+            """
                 SELECT
                     a.id,
                     a.type,
@@ -906,38 +926,39 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                 ) AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[])
                 ORDER BY c.last_name, c.first_name
                 """
-            )
-        }
-        .toList {
-            ApplicationUnitSummary(
-                applicationId = column("id"),
-                firstName = column("first_name"),
-                lastName = column("last_name"),
-                dateOfBirth = column("date_of_birth"),
-                guardianFirstName = column("guardian_first_name"),
-                guardianLastName = column("guardian_last_name"),
-                guardianPhone = column("guardian_phone"),
-                guardianEmail = column("guardian_email"),
-                requestedPlacementType = mapRequestedPlacementType("document"),
-                serviceNeed =
-                    column<ServiceNeedOptionId?>("serviceNeedId")?.let {
-                        ServiceNeedOption(
-                            it,
-                            column("serviceNeedNameFi"),
-                            column("serviceNeedNameSv"),
-                            column("serviceNeedNameEn"),
-                            column("serviceNeedValidPlacementType")
-                        )
-                    },
-                preferredStartDate = column("preferred_start_date"),
-                extendedCare = column("extended_care"),
-                preferenceOrder = column("preference_order"),
-                status = column("status")
-            )
-        }
-}
+        )
+    }.toList {
+        ApplicationUnitSummary(
+            applicationId = column("id"),
+            firstName = column("first_name"),
+            lastName = column("last_name"),
+            dateOfBirth = column("date_of_birth"),
+            guardianFirstName = column("guardian_first_name"),
+            guardianLastName = column("guardian_last_name"),
+            guardianPhone = column("guardian_phone"),
+            guardianEmail = column("guardian_email"),
+            requestedPlacementType = mapRequestedPlacementType("document"),
+            serviceNeed =
+                column<ServiceNeedOptionId?>("serviceNeedId")?.let {
+                    ServiceNeedOption(
+                        it,
+                        column("serviceNeedNameFi"),
+                        column("serviceNeedNameSv"),
+                        column("serviceNeedNameEn"),
+                        column("serviceNeedValidPlacementType")
+                    )
+                },
+            preferredStartDate = column("preferred_start_date"),
+            extendedCare = column("extended_care"),
+            preferenceOrder = column("preference_order"),
+            status = column("status")
+        )
+    }
 
-@JsonIgnoreProperties(ignoreUnknown = true) data class FormWithType(val type: String)
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class FormWithType(
+    val type: String
+)
 
 fun Row.mapRequestedPlacementType(colName: String): PlacementType =
     when (jsonColumn<FormWithType>(colName).type) {
@@ -996,7 +1017,10 @@ fun Database.Transaction.updateForm(
     }
 }
 
-fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {
+fun Database.Transaction.setCheckedByAdminToDefault(
+    id: ApplicationId,
+    form: ApplicationForm
+) {
     val default =
         !form.child.assistanceNeeded &&
             form.child.allergies.isBlank() &&
@@ -1008,7 +1032,10 @@ fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: App
     }
 }
 
-fun Database.Transaction.updateApplicationStatus(id: ApplicationId, status: ApplicationStatus) {
+fun Database.Transaction.updateApplicationStatus(
+    id: ApplicationId,
+    status: ApplicationStatus
+) {
     execute { sql("UPDATE application SET status = ${bind(status)} WHERE id = ${bind(id)}") }
 }
 
@@ -1054,17 +1081,19 @@ fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
 
 fun Database.Read.getApplicationOtherGuardians(id: ApplicationId): Set<PersonId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT guardian_id
 FROM application_other_guardian
 WHERE application_id = ${bind(id)}
 """
-            )
-        }
-        .toSet()
+        )
+    }.toSet()
 
-fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId, today: LocalDate) {
+fun Database.Transaction.syncApplicationOtherGuardians(
+    id: ApplicationId,
+    today: LocalDate
+) {
     execute { sql("DELETE FROM application_other_guardian WHERE application_id = ${bind(id)}") }
 
     execute {
@@ -1091,19 +1120,26 @@ AND other_citizen.id != application.guardian_id
     }
 }
 
-fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boolean) {
+fun Database.Transaction.setApplicationVerified(
+    id: ApplicationId,
+    verified: Boolean
+) {
     execute {
         sql("UPDATE application SET checkedByAdmin = ${bind(verified)} WHERE id = ${bind(id)}")
     }
 }
 
-fun Database.Transaction.setApplicationProcessId(id: ApplicationId, processId: ArchivedProcessId) {
+fun Database.Transaction.setApplicationProcessId(
+    id: ApplicationId,
+    processId: ArchivedProcessId
+) {
     execute { sql("UPDATE application SET process_id = ${bind(processId)} WHERE id = ${bind(id)}") }
 }
 
-fun Database.Transaction.deleteApplication(id: ApplicationId) = execute {
-    sql("DELETE FROM application WHERE id = ${bind(id)}")
-}
+fun Database.Transaction.deleteApplication(id: ApplicationId) =
+    execute {
+        sql("DELETE FROM application WHERE id = ${bind(id)}")
+    }
 
 fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
     // ~2 months
@@ -1111,11 +1147,10 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
 
     val applicationIds =
         createQuery {
-                sql(
-                    "SELECT id FROM application WHERE status = 'CREATED' AND created < ${bind(clock.today())} - ${bind(thresholdDays)}"
-                )
-            }
-            .toList<ApplicationId>()
+            sql(
+                "SELECT id FROM application WHERE status = 'CREATED' AND created < ${bind(clock.today())} - ${bind(thresholdDays)}"
+            )
+        }.toList<ApplicationId>()
 
     if (applicationIds.isNotEmpty()) {
         logger.info(
@@ -1132,9 +1167,7 @@ fun Database.Transaction.removeOldDrafts(clock: EvakaClock) {
     }
 }
 
-fun Database.Transaction.cancelOutdatedSentTransferApplications(
-    clock: EvakaClock
-): List<ApplicationId> {
+fun Database.Transaction.cancelOutdatedSentTransferApplications(clock: EvakaClock): List<ApplicationId> {
     val yesterday = clock.today().minusDays(1)
     val notDaycarePlacements =
         arrayOf(
@@ -1174,12 +1207,13 @@ fun Database.Transaction.cancelOutdatedSentTransferApplications(
             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             PlacementType.SCHOOL_SHIFT_CARE
         )
-    return createUpdate { // only include applications that don't have decisions
-            // placement type checks are doing in inverse so that the addition and accidental
-            // omission of new placement types
-            // does not cause the cancellation of applications that shouldn't be cancelled
-            sql(
-                """
+    return createUpdate {
+        // only include applications that don't have decisions
+        // placement type checks are doing in inverse so that the addition and accidental
+        // omission of new placement types
+        // does not cause the cancellation of applications that shouldn't be cancelled
+        sql(
+            """
 UPDATE application SET status = ${bind(ApplicationStatus.CANCELLED)}
 WHERE transferapplication
 AND status = ANY('{SENT}')
@@ -1197,18 +1231,15 @@ AND NOT EXISTS (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .toList<ApplicationId>()
 }
 
-fun Database.Read.getApplicationAttachments(
-    applicationId: ApplicationId
-): List<ApplicationAttachment> =
+fun Database.Read.getApplicationAttachments(applicationId: ApplicationId): List<ApplicationAttachment> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     attachment.id, attachment.name, content_type, updated, received_at, attachment.type,
     (CASE evaka_user.type WHEN 'EMPLOYEE' THEN evaka_user.id END) AS uploaded_by_employee,
@@ -1217,16 +1248,13 @@ FROM attachment
 JOIN evaka_user ON attachment.uploaded_by = evaka_user.id
 WHERE application_id = ${bind(applicationId)}
 """
-            )
-        }
-        .toList<ApplicationAttachment>()
+        )
+    }.toList<ApplicationAttachment>()
 
-fun Database.Transaction.cancelAllActiveTransferApplications(
-    childId: ChildId
-): List<ApplicationId> =
+fun Database.Transaction.cancelAllActiveTransferApplications(childId: ChildId): List<ApplicationId> =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE application
 SET status = 'CANCELLED'
 WHERE transferapplication
@@ -1234,15 +1262,14 @@ AND child_id = ${bind(childId)}
 AND status = ANY(${bind(arrayOf(ApplicationStatus.SENT))}::application_status_type[])
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .toList<ApplicationId>()
 
 fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonId): Int =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT COUNT(*)
 FROM application a
 WHERE guardian_id = ${bind(citizenId)}
@@ -1254,17 +1281,16 @@ AND NOT EXISTS (
 )
 AND a.status = 'WAITING_CONFIRMATION'
                 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
 fun Database.Read.personHasSentApplicationWithId(
     citizenId: PersonId,
     applicationId: ApplicationId
 ): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT EXISTS (
                     SELECT 1
                     FROM application app
@@ -1272,6 +1298,5 @@ fun Database.Read.personHasSentApplicationWithId(
                           AND app.id = ${bind(applicationId)}
                 )
                 """
-            )
-        }
-        .exactlyOne<Boolean>()
+        )
+    }.exactlyOne<Boolean>()

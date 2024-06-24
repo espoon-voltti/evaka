@@ -27,7 +27,10 @@ enum class IncomeStatementType : DatabaseEnum {
     override val sqlType: String = "income_statement_type"
 }
 
-private fun selectQuery(single: Boolean, excludeEmployeeAttachments: Boolean): String {
+private fun selectQuery(
+    single: Boolean,
+    excludeEmployeeAttachments: Boolean
+): String {
     // language=SQL
     return """
 SELECT
@@ -149,8 +152,11 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
 
             val limitedCompanyIncomeSource = column<IncomeSource?>("limited_company_income_source")
             val limitedCompany =
-                if (limitedCompanyIncomeSource != null) LimitedCompany(limitedCompanyIncomeSource)
-                else null
+                if (limitedCompanyIncomeSource != null) {
+                    LimitedCompany(limitedCompanyIncomeSource)
+                } else {
+                    null
+                }
 
             val accountantName = column<String>("accountant_name")
             val accountant =
@@ -226,7 +232,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
 data class PagedIncomeStatements(
     val data: List<IncomeStatement>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 fun Database.Read.readIncomeStatementsForPerson(
@@ -320,8 +326,9 @@ private fun Database.SqlStatement<*>.bindEntrepreneur(entrepreneur: Entrepreneur
 
 private fun Database.SqlStatement<*>.bindSelfEmployed(selfEmployed: SelfEmployed) {
     this.bind("selfEmployedAttachments", selfEmployed.attachments)
-    if (selfEmployed.estimatedIncome != null)
+    if (selfEmployed.estimatedIncome != null) {
         bindSelfEmployedEstimation(selfEmployed.estimatedIncome)
+    }
 }
 
 private fun Database.SqlStatement<*>.bindSelfEmployedEstimation(estimation: EstimatedIncome) {
@@ -347,7 +354,7 @@ fun Database.Transaction.createIncomeStatement(
 ): IncomeStatementId {
     @Suppress("DEPRECATION")
     return createQuery(
-            """
+        """
 INSERT INTO income_statement (
     person_id,
     start_date, 
@@ -406,10 +413,8 @@ INSERT INTO income_statement (
     :otherInfo
 )
 RETURNING id
-        """
-                .trimIndent()
-        )
-        .bind("personId", personId)
+        """.trimIndent()
+    ).bind("personId", personId)
         .also { it.bindIncomeStatementBody(body) }
         .exactlyOne<IncomeStatementId>()
 }
@@ -421,7 +426,7 @@ fun Database.Transaction.updateIncomeStatement(
     val rowCount =
         @Suppress("DEPRECATION")
         createUpdate(
-                """
+            """
 UPDATE income_statement SET
     start_date = :startDate,
     end_date = :endDate,
@@ -450,10 +455,8 @@ UPDATE income_statement SET
     alimony_payer = :alimonyPayer,
     other_info = :otherInfo
 WHERE id = :id
-        """
-                    .trimIndent()
-            )
-            .bind("id", incomeStatementId)
+            """.trimIndent()
+        ).bind("id", incomeStatementId)
             .also { it.bindIncomeStatementBody(body) }
             .execute()
 
@@ -467,9 +470,8 @@ fun Database.Transaction.updateIncomeStatementHandled(
 ) {
     @Suppress("DEPRECATION")
     createUpdate(
-            "UPDATE income_statement SET handler_id = :handlerId, handler_note = :note WHERE id = :id"
-        )
-        .bind("id", incomeStatementId)
+        "UPDATE income_statement SET handler_id = :handlerId, handler_note = :note WHERE id = :id"
+    ).bind("id", incomeStatementId)
         .bind("note", note)
         .bind("handlerId", handlerId)
         .execute()
@@ -561,7 +563,7 @@ AND (:placementValidDate IS NULL OR (p.start_date IS NOT NULL AND p.end_date IS 
 data class PagedIncomeStatementsAwaitingHandler(
     val data: List<IncomeStatementAwaitingHandler>,
     val total: Int,
-    val pages: Int,
+    val pages: Int
 )
 
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
@@ -594,14 +596,12 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     val rows =
         @Suppress("DEPRECATION")
         createQuery(
-                """
+            """
 $awaitingHandlerQuery
 ORDER BY $sortColumn, i.id, ca.id, person.last_name, person.first_name  -- order by area to get the same result each time
 LIMIT :pageSize OFFSET :offset
-        """
-                    .trimIndent()
-            )
-            .bind("today", today)
+            """.trimIndent()
+        ).bind("today", today)
             .bind("areas", areas)
             .bind("providerTypes", providerTypes)
             .bind("sentStartDate", sentStartDate)
@@ -630,20 +630,24 @@ fun Database.Read.incomeStatementExistsForStartDate(
 ): Boolean =
     @Suppress("DEPRECATION")
     createQuery(
-            "SELECT EXISTS (SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate)"
-        )
-        .bind("personId", personId)
+        "SELECT EXISTS (SELECT 1 FROM income_statement WHERE person_id = :personId AND start_date = :startDate)"
+    ).bind("personId", personId)
         .bind("startDate", startDate)
         .exactlyOne<Boolean>()
 
-data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: String)
+data class ChildBasicInfo(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String
+)
 
 fun Database.Read.getIncomeStatementChildrenByGuardian(
     guardianId: PersonId,
     today: LocalDate
 ): List<ChildBasicInfo> =
     @Suppress("DEPRECATION")
-    this.createQuery(
+    this
+        .createQuery(
             """
 SELECT
     DISTINCT p.id, p.first_name, p.last_name, p.date_of_birth
@@ -653,10 +657,8 @@ FROM guardian g
 WHERE g.guardian_id = :guardianId
     AND pl.type = ANY(:invoicedPlacementTypes::placement_type[])
 ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
-        """
-                .trimIndent()
-        )
-        .bind("today", today)
+            """.trimIndent()
+        ).bind("today", today)
         .bind("guardianId", guardianId)
         .bind("invoicedPlacementTypes", PlacementType.invoiced)
         .toList<ChildBasicInfo>()

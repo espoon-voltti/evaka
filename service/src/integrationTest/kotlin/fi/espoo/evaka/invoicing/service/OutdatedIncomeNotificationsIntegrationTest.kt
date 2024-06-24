@@ -57,9 +57,13 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var scheduledJobs: ScheduledJobs
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired lateinit var mapper: JsonMapper
+
     @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
+
     @Autowired lateinit var coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
 
     private val clock =
@@ -398,10 +402,10 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             // afterwards,
             // so no notification should be sent
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "UPDATE placement SET end_date = :expirationDate WHERE child_id = :personId"
-                )
-                .bind("expirationDate", expirationDate)
+                ).bind("expirationDate", expirationDate)
                 .bind("personId", childId)
                 .execute()
         }
@@ -412,10 +416,10 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // should be sent
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate(
+            it
+                .createUpdate(
                     "UPDATE placement SET end_date = :expirationDate + INTERVAL '1 day' WHERE child_id = :personId"
-                )
-                .bind("expirationDate", expirationDate)
+                ).bind("expirationDate", expirationDate)
                 .bind("personId", childId)
                 .execute()
         }
@@ -436,7 +440,8 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             )
 
             @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE service_need_option SET fee_coefficient = 0 WHERE id = :snoId")
+            it
+                .createUpdate("UPDATE service_need_option SET fee_coefficient = 0 WHERE id = :snoId")
                 .bind("snoId", snDaycareContractDays15.id)
                 .execute()
         }
@@ -472,15 +477,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // email)
         assertEquals(
             1,
-            db.read {
+            db
+                .read {
                     it.getIncomesForPerson(
                         mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
                         fridgeHeadOfChildId
                     )
-                }
-                .size
+                }.size
         )
 
         assertEquals(0, getEmails().size)
@@ -525,15 +530,15 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         // email)
         assertEquals(
             1,
-            db.read {
+            db
+                .read {
                     it.getIncomesForPerson(
                         mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
                         fridgeHeadOfChildId
                     )
-                }
-                .size
+                }.size
         )
     }
 
@@ -625,8 +630,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     it.status == FeeDecisionStatus.DRAFT &&
                         it.validFrom == firstDayAfterExpiration &&
                         it.headOfFamilyIncome!!.effect == IncomeEffect.INCOMPLETE
-                }
-                .size
+                }.size
         )
     }
 
@@ -696,6 +700,5 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         return emails
     }
 
-    private fun getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
-        db.read { it.getIncomeNotifications(receiverId) }
+    private fun getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> = db.read { it.getIncomeNotifications(receiverId) }
 }

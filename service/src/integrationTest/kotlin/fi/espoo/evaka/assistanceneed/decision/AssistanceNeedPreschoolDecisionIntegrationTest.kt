@@ -65,13 +65,15 @@ import org.springframework.beans.factory.annotation.Autowired
 
 private val logger = KotlinLogging.logger {}
 
-class AssistanceNeedPreschoolDecisionIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class AssistanceNeedPreschoolDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     private lateinit var assistanceNeedDecisionController: AssistanceNeedPreschoolDecisionController
+
     @Autowired
     private lateinit var assistanceNeedDecisionService: AssistanceNeedPreschoolDecisionService
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
     @Autowired private lateinit var processMetadataController: ProcessMetadataController
 
     private val assistanceWorker =
@@ -166,7 +168,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     setOf(
                         testForm.guardianInfo
                             .first()
-                            .copy(id = assistanceNeedDecision.form.guardianInfo.first().id)
+                            .copy(
+                                id =
+                                    assistanceNeedDecision.form.guardianInfo
+                                        .first()
+                                        .id
+                            )
                     )
             ),
             assistanceNeedDecision.form
@@ -188,8 +195,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                                             (UUID.randomUUID())
                                         )
                                 )
-                            }
-                            .toSet()
+                            }.toSet()
                 )
             )
 
@@ -259,7 +265,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             decideDecision(
                 assistanceNeedDecision.id,
                 AssistanceNeedDecisionStatus.ACCEPTED,
-                decisionMaker,
+                decisionMaker
             )
         }
         sendAssistanceNeedDecision(assistanceNeedDecision.id)
@@ -268,7 +274,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             decideDecision(
                 assistanceNeedDecision.id,
                 AssistanceNeedDecisionStatus.ACCEPTED,
-                assistanceWorker,
+                assistanceWorker
             )
         }
         // the decision cannot be DRAFT
@@ -276,13 +282,13 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             decideDecision(
                 assistanceNeedDecision.id,
                 AssistanceNeedDecisionStatus.DRAFT,
-                decisionMaker,
+                decisionMaker
             )
         }
         decideDecision(
             assistanceNeedDecision.id,
             AssistanceNeedDecisionStatus.ACCEPTED,
-            decisionMaker,
+            decisionMaker
         )
         val decision = getDecision(assistanceNeedDecision.id)
         assertEquals(clock.today(), decision.decisionMade)
@@ -291,7 +297,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             decideDecision(
                 assistanceNeedDecision.id,
                 AssistanceNeedDecisionStatus.REJECTED,
-                decisionMaker,
+                decisionMaker
             )
         }
 
@@ -318,7 +324,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         decideDecision(
             assistanceNeedDecision.id,
             AssistanceNeedDecisionStatus.ACCEPTED,
-            decisionMaker,
+            decisionMaker
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -329,23 +335,35 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     admin.user,
                     clock,
                     assistanceNeedDecision.id
-                )
-                .data
+                ).data
         assertNotNull(metadata)
         assertEquals("1/123.456.b/2024", metadata.process.processNumber)
         assertEquals(1440, metadata.process.archiveDurationMonths)
         assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", metadata.process.organization)
         assertEquals(4, metadata.process.history.size)
         assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
-        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[0].enteredBy.id)
+        assertEquals(
+            assistanceWorker.evakaUserId,
+            metadata.process.history[0]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
-        assertEquals(assistanceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
+        assertEquals(
+            assistanceWorker.evakaUserId,
+            metadata.process.history[1]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
-        assertEquals(decisionMaker.evakaUserId, metadata.process.history[2].enteredBy.id)
+        assertEquals(
+            decisionMaker.evakaUserId,
+            metadata.process.history[2]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
         assertEquals(
             AuthenticatedUser.SystemInternalUser.evakaUserId,
-            metadata.process.history[3].enteredBy.id
+            metadata.process.history[3]
+                .enteredBy.id
         )
         assertEquals("Päätös tuesta esiopetuksessa", metadata.primaryDocument.name)
         assertEquals(assistanceWorker.evakaUserId, metadata.primaryDocument.createdBy?.id)
@@ -395,7 +413,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertThrows<NotFound> {
             getDecisionMakerOptions(
                 AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
-                assistanceWorker,
+                assistanceWorker
             )
         }
     }
@@ -405,7 +423,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertThrows<Forbidden> {
             getDecisionMakerOptions(
                 AssistanceNeedPreschoolDecisionId(UUID.randomUUID()),
-                decisionMaker,
+                decisionMaker
             )
         }
     }
@@ -418,7 +436,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         decideDecision(
             assistanceNeedDecision.id,
             AssistanceNeedDecisionStatus.ACCEPTED,
-            decisionMaker,
+            decisionMaker
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -486,7 +504,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     LocalDate.of(2022, 1, 1),
                     LocalDate.of(2022, 12, 31)
                 ),
-                Tuple(AssistanceNeedDecisionStatus.ACCEPTED, LocalDate.of(2023, 1, 1), null),
+                Tuple(AssistanceNeedDecisionStatus.ACCEPTED, LocalDate.of(2023, 1, 1), null)
             )
     }
 
@@ -503,19 +521,18 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = startDate,
-                        endDate = endDate,
+                        endDate = endDate
                     )
                 )
             }
         val decision =
             createAndFillDecision(
-                    testForm.copy(
-                        validFrom = startDate,
-                        validTo = null,
-                        selectedUnit = testDaycare.id
-                    )
+                testForm.copy(
+                    validFrom = startDate,
+                    validTo = null,
+                    selectedUnit = testDaycare.id
                 )
-                .id
+            ).id
                 .also { sendAssistanceNeedDecision(it) }
                 .also { decideDecision(it, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker) }
                 .let { getDecision(it) }
@@ -535,7 +552,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = LocalDate.of(2022, 12, 31),
+                    endDate = LocalDate.of(2022, 12, 31)
                 )
             )
         }
@@ -560,7 +577,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
             tx.insert(
@@ -569,19 +586,18 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
                     startDate = LocalDate.of(2023, 1, 1),
-                    endDate = LocalDate.of(2023, 12, 31),
+                    endDate = LocalDate.of(2023, 12, 31)
                 )
             )
         }
         val decision =
             createAndFillDecision(
-                    testForm.copy(
-                        validFrom = startDate,
-                        validTo = null,
-                        selectedUnit = testDaycare.id
-                    )
+                testForm.copy(
+                    validFrom = startDate,
+                    validTo = null,
+                    selectedUnit = testDaycare.id
                 )
-                .id
+            ).id
                 .also { sendAssistanceNeedDecision(it) }
                 .also { decideDecision(it, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker) }
                 .let { getDecision(it) }
@@ -606,19 +622,18 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
         val decision =
             createAndFillDecision(
-                    testForm.copy(
-                        validFrom = startDate,
-                        validTo = null,
-                        selectedUnit = testDaycare.id
-                    )
+                testForm.copy(
+                    validFrom = startDate,
+                    validTo = null,
+                    selectedUnit = testDaycare.id
                 )
-                .id
+            ).id
                 .also { sendAssistanceNeedDecision(it) }
                 .also { decideDecision(it, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker) }
                 .let { getDecision(it) }
@@ -643,19 +658,18 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
         val decision =
             createAndFillDecision(
-                    testForm.copy(
-                        validFrom = startDate,
-                        validTo = null,
-                        selectedUnit = testDaycare.id
-                    )
+                testForm.copy(
+                    validFrom = startDate,
+                    validTo = null,
+                    selectedUnit = testDaycare.id
                 )
-                .id
+            ).id
                 .also { sendAssistanceNeedDecision(it) }
                 .also { decideDecision(it, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker) }
                 .let { getDecision(it) }
@@ -680,7 +694,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = LocalDate.of(2022, 6, 30),
+                    endDate = LocalDate.of(2022, 6, 30)
                 )
             )
             tx.insert(
@@ -689,19 +703,18 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2022, 7, 1),
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
         val decision =
             createAndFillDecision(
-                    testForm.copy(
-                        validFrom = startDate,
-                        validTo = null,
-                        selectedUnit = testDaycare.id
-                    )
+                testForm.copy(
+                    validFrom = startDate,
+                    validTo = null,
+                    selectedUnit = testDaycare.id
                 )
-                .id
+            ).id
                 .also { sendAssistanceNeedDecision(it) }
                 .also { decideDecision(it, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker) }
                 .let { getDecision(it) }
@@ -726,19 +739,18 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate,
+                    endDate = endDate
                 )
             )
         }
         val decision =
             createAndFillDecision(
-                    testForm.copy(
-                        validFrom = endDate.plusDays(1),
-                        validTo = null,
-                        selectedUnit = testDaycare.id
-                    )
+                testForm.copy(
+                    validFrom = endDate.plusDays(1),
+                    validTo = null,
+                    selectedUnit = testDaycare.id
                 )
-                .id
+            ).id
                 .also { sendAssistanceNeedDecision(it) }
                 .also { decideDecision(it, AssistanceNeedDecisionStatus.ACCEPTED, decisionMaker) }
                 .let { getDecision(it) }
@@ -756,14 +768,13 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
-    private fun createEmptyDraft(): AssistanceNeedPreschoolDecision {
-        return assistanceNeedDecisionController.createAssistanceNeedPreschoolDecision(
+    private fun createEmptyDraft(): AssistanceNeedPreschoolDecision =
+        assistanceNeedDecisionController.createAssistanceNeedPreschoolDecision(
             dbInstance(),
             assistanceWorker,
             clock,
             testChild_1.id
         )
-    }
 
     private fun updateDecision(
         form: AssistanceNeedPreschoolDecisionForm,
@@ -777,31 +788,29 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             form.copy(
                 guardianInfo =
                     setOf(
-                        form.guardianInfo.first().copy(id = decision.form.guardianInfo.first().id)
+                        form.guardianInfo.first().copy(
+                            id =
+                                decision.form.guardianInfo
+                                    .first()
+                                    .id
+                        )
                     )
             )
         )
     }
 
-    private fun getDecision(
-        id: AssistanceNeedPreschoolDecisionId
-    ): AssistanceNeedPreschoolDecision {
-        return assistanceNeedDecisionController
+    private fun getDecision(id: AssistanceNeedPreschoolDecisionId): AssistanceNeedPreschoolDecision =
+        assistanceNeedDecisionController
             .getAssistanceNeedPreschoolDecision(dbInstance(), assistanceWorker, clock, id)
             .decision
-    }
 
-    private fun getDecisionsByChild(childId: ChildId): List<AssistanceNeedPreschoolDecisionBasics> {
-        return assistanceNeedDecisionController
+    private fun getDecisionsByChild(childId: ChildId): List<AssistanceNeedPreschoolDecisionBasics> =
+        assistanceNeedDecisionController
             .getAssistanceNeedPreschoolDecisions(dbInstance(), assistanceWorker, clock, childId)
             .map { it.decision }
-    }
 
-    private fun createAndFillDecision(
-        form: AssistanceNeedPreschoolDecisionForm
-    ): AssistanceNeedPreschoolDecision {
-        return createEmptyDraft().also { updateDecision(form, it) }.let { getDecision(it.id) }
-    }
+    private fun createAndFillDecision(form: AssistanceNeedPreschoolDecisionForm): AssistanceNeedPreschoolDecision =
+        createEmptyDraft().also { updateDecision(form, it) }.let { getDecision(it.id) }
 
     private fun deleteDecision(id: AssistanceNeedPreschoolDecisionId) {
         assistanceNeedDecisionController.deleteAssistanceNeedPreschoolDecision(
@@ -812,9 +821,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         )
     }
 
-    private fun sendAssistanceNeedDecision(
-        id: AssistanceNeedPreschoolDecisionId,
-    ) {
+    private fun sendAssistanceNeedDecision(id: AssistanceNeedPreschoolDecisionId) {
         assistanceNeedDecisionController.sendAssistanceNeedPreschoolDecisionForDecision(
             dbInstance(),
             assistanceWorker,
@@ -838,7 +845,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     private fun decideDecision(
         id: AssistanceNeedPreschoolDecisionId,
         status: AssistanceNeedDecisionStatus,
-        user: AuthenticatedUser.Employee,
+        user: AuthenticatedUser.Employee
     ) {
         assistanceNeedDecisionController.decideAssistanceNeedPreschoolDecision(
             dbInstance(),
@@ -854,7 +861,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     private fun annulDecision(
         id: AssistanceNeedPreschoolDecisionId,
         reason: String,
-        user: AuthenticatedUser.Employee,
+        user: AuthenticatedUser.Employee
     ) {
         assistanceNeedDecisionController.annulAssistanceNeedPreschoolDecision(
             dbInstance(),
@@ -869,13 +876,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     private fun getDecisionMakerOptions(
         id: AssistanceNeedPreschoolDecisionId,
-        user: AuthenticatedUser.Employee = assistanceWorker,
-    ): List<Employee> {
-        return assistanceNeedDecisionController.getAssistancePreschoolDecisionMakerOptions(
+        user: AuthenticatedUser.Employee = assistanceWorker
+    ): List<Employee> =
+        assistanceNeedDecisionController.getAssistancePreschoolDecisionMakerOptions(
             dbInstance(),
             user,
             clock,
             id
         )
-    }
 }

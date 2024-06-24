@@ -166,7 +166,10 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         getAndAssertDaycareFields(testDaycare.id, preschoolFields)
     }
 
-    private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
+    private fun getAndAssertDaycareFields(
+        daycareId: DaycareId,
+        fields: DaycareFields
+    ) {
         val body = daycareController.getDaycare(dbInstance(), admin, RealEvakaClock(), daycareId)
         val daycare = body.daycare
 

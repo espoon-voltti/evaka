@@ -29,13 +29,18 @@ class ScheduledJobRunner(
     private val tracer: Tracer,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val schedules: List<JobSchedule>,
-    dataSource: DataSource,
+    dataSource: DataSource
 ) : AutoCloseable {
     private val logger = KotlinLogging.logger {}
 
     init {
         val jobsByName =
-            schedules.asSequence().flatMap { it.jobs }.map { it.job }.groupBy { it.name }.values
+            schedules
+                .asSequence()
+                .flatMap { it.jobs }
+                .map { it.job }
+                .groupBy { it.name }
+                .values
         val notUnique = jobsByName.filterNot { it.count() == 1 }
         require(notUnique.isEmpty()) {
             val jobNames =
@@ -50,7 +55,8 @@ class ScheduledJobRunner(
     }
 
     val scheduler: Scheduler =
-        Scheduler.create(dataSource)
+        Scheduler
+            .create(dataSource)
             .startTasks(
                 schedules
                     .asSequence()
@@ -65,7 +71,8 @@ class ScheduledJobRunner(
                             logger.info(logMeta) {
                                 "Scheduling job ${definition.job.name}: ${definition.settings.schedule}"
                             }
-                            Tasks.recurring(definition.job.name, definition.settings.schedule)
+                            Tasks
+                                .recurring(definition.job.name, definition.settings.schedule)
                                 .execute { _, _ ->
                                     Database(jdbi, tracer).connect {
                                         this.planAsyncJob(it, definition)
@@ -73,14 +80,16 @@ class ScheduledJobRunner(
                                 }
                         }
                     }
-            )
-            .threads(SCHEDULER_THREADS)
+            ).threads(SCHEDULER_THREADS)
             .pollingInterval(POLLING_INTERVAL)
             .pollUsingLockAndFetch(0.5, 1.0)
             .deleteUnresolvedAfter(Duration.ofHours(1))
             .build()
 
-    private fun planAsyncJob(db: Database.Connection, definition: ScheduledJobDefinition) {
+    private fun planAsyncJob(
+        db: Database.Connection,
+        definition: ScheduledJobDefinition
+    ) {
         val (job, settings) = definition
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
@@ -94,7 +103,11 @@ class ScheduledJobRunner(
         }
     }
 
-    private fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.RunScheduledJob) {
+    private fun runJob(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.RunScheduledJob
+    ) {
         val definition =
             schedules.firstNotNullOfOrNull { schedule ->
                 schedule.jobs.find { it.job.name == msg.job }

@@ -63,14 +63,14 @@ class ApplicationControllerCitizen(
     private val feeDecisionService: FeeDecisionService,
     private val voucherValueDecisionService: VoucherValueDecisionService
 ) {
-
     @GetMapping("/applications/by-guardian")
     fun getGuardianApplications(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<ApplicationsOfChild> {
-        return db.connect { dbc ->
+    ): List<ApplicationsOfChild> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -116,22 +116,20 @@ class ApplicationControllerCitizen(
                                         application.applicationId.takeIf {
                                             allDecidableApplications.contains(it)
                                         }
-                                    }
-                                    .toSet()
+                                    }.toSet()
                         )
                     }
                 }
-            }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
-    }
+            }.also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
 
     @GetMapping("/applications/children")
     fun getApplicationChildren(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<CitizenChildren> {
-        return db.connect { dbc ->
+    ): List<CitizenChildren> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -142,9 +140,7 @@ class ApplicationControllerCitizen(
                     )
                     tx.getCitizenChildren(clock.today(), user.id)
                 }
-            }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
-    }
+            }.also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
 
     @GetMapping("/applications/{applicationId}")
     fun getApplication(
@@ -191,8 +187,9 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestBody body: CreateApplicationBody
-    ): ApplicationId {
-        return db.connect { dbc ->
+    ): ApplicationId =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -203,11 +200,11 @@ class ApplicationControllerCitizen(
                     )
                     if (
                         body.type != ApplicationType.CLUB &&
-                            tx.duplicateApplicationExists(
-                                guardianId = user.id,
-                                childId = body.childId,
-                                type = body.type
-                            )
+                        tx.duplicateApplicationExists(
+                            guardianId = user.id,
+                            childId = body.childId,
+                            type = body.type
+                        )
                     ) {
                         throw BadRequest("Duplicate application")
                     }
@@ -234,15 +231,13 @@ class ApplicationControllerCitizen(
                         child = child
                     )
                 }
-            }
-            .also { applicationId ->
+            }.also { applicationId ->
                 Audit.ApplicationCreate.log(
                     targetId = AuditId(body.childId),
                     objectId = AuditId(applicationId),
                     meta = mapOf("guardianId" to user.id, "applicationType" to body.type)
                 )
             }
-    }
 
     @GetMapping("/applications/duplicates/{childId}")
     fun getChildDuplicateApplications(
@@ -250,8 +245,9 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): Map<ApplicationType, Boolean> {
-        return db.connect { dbc ->
+    ): Map<ApplicationType, Boolean> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -260,26 +256,26 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS,
                         childId
                     )
-                    ApplicationType.values()
+                    ApplicationType
+                        .values()
                         .map { type ->
                             type to
-                                (type != ApplicationType.CLUB &&
-                                    tx.duplicateApplicationExists(
-                                        guardianId = user.id,
-                                        childId = childId,
-                                        type = type
-                                    ))
-                        }
-                        .toMap()
+                                (
+                                    type != ApplicationType.CLUB &&
+                                        tx.duplicateApplicationExists(
+                                            guardianId = user.id,
+                                            childId = childId,
+                                            type = type
+                                        )
+                                )
+                        }.toMap()
                 }
-            }
-            .also {
+            }.also {
                 Audit.ApplicationReadDuplicates.log(
                     targetId = AuditId(user.id),
                     objectId = AuditId(childId)
                 )
             }
-    }
 
     @GetMapping("/applications/active-placements/{childId}")
     fun getChildPlacementStatusByApplicationType(
@@ -287,8 +283,9 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): Map<ApplicationType, Boolean> {
-        return db.connect { dbc ->
+    ): Map<ApplicationType, Boolean> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -297,7 +294,8 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE,
                         childId
                     )
-                    ApplicationType.values()
+                    ApplicationType
+                        .values()
                         .map { type ->
                             type to
                                 tx.activePlacementExists(
@@ -305,12 +303,9 @@ class ApplicationControllerCitizen(
                                     type = type,
                                     today = clock.today()
                                 )
-                        }
-                        .toMap()
+                        }.toMap()
                 }
-            }
-            .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.ApplicationReadActivePlacementsByType.log(targetId = AuditId(childId)) }
 
     @PutMapping("/applications/{applicationId}")
     fun updateApplication(
@@ -428,8 +423,9 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): ApplicationDecisions {
-        return db.connect { dbc ->
+    ): ApplicationDecisions =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -458,14 +454,12 @@ class ApplicationControllerCitizen(
                             )
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.DecisionRead.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("count" to it.decisions.size)
                 )
             }
-    }
 
     data class DecisionWithValidStartDatePeriod(
         val decision: Decision,
@@ -480,8 +474,9 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
-    ): List<DecisionWithValidStartDatePeriod> {
-        return db.connect { dbc ->
+    ): List<DecisionWithValidStartDatePeriod> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -521,14 +516,12 @@ class ApplicationControllerCitizen(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @PostMapping("/applications/{applicationId}/actions/accept-decision")
     fun acceptDecision(
@@ -581,8 +574,9 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: DecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 val decision =
                     dbc.transaction { tx ->
                         accessControl.requirePermissionFor(
@@ -595,17 +589,16 @@ class ApplicationControllerCitizen(
                         tx.getSentDecision(id)
                     } ?: throw NotFound("Decision $id does not exist")
                 decisionService.getDecisionPdf(dbc, decision)
-            }
-            .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
 
     @GetMapping("/applications/by-guardian/notifications")
     fun getGuardianApplicationNotifications(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): Int {
-        return db.connect { dbc ->
+    ): Int =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -616,17 +609,16 @@ class ApplicationControllerCitizen(
                     )
                     tx.fetchApplicationNotificationCountForCitizen(user.id)
                 }
-            }
-            .also { Audit.ApplicationReadNotifications.log(targetId = AuditId(user.id)) }
-    }
+            }.also { Audit.ApplicationReadNotifications.log(targetId = AuditId(user.id)) }
 
     @GetMapping("/finance-decisions/by-liable-citizen")
     fun getLiableCitizenFinanceDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-    ): List<FinanceDecisionCitizenInfo> {
-        return db.connect { dbc ->
+        clock: EvakaClock
+    ): List<FinanceDecisionCitizenInfo> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -673,16 +665,15 @@ class ApplicationControllerCitizen(
                                 sentAt = row.sentAt,
                                 coDebtors =
                                     listOfNotNull(
-                                            personMap[row.headOfFamilyId],
-                                            personMap[row.partnerId]
+                                        personMap[row.headOfFamilyId],
+                                        personMap[row.partnerId]
+                                    ).map {
+                                        LiableCitizenInfo(
+                                            id = it.id,
+                                            firstName = it.firstName,
+                                            lastName = it.lastName
                                         )
-                                        .map {
-                                            LiableCitizenInfo(
-                                                id = it.id,
-                                                firstName = it.firstName,
-                                                lastName = it.lastName
-                                            )
-                                        }
+                                    }
                             )
                         }
                     val feeDecisionInfos =
@@ -696,28 +687,25 @@ class ApplicationControllerCitizen(
                                 sentAt = row.sentAt,
                                 coDebtors =
                                     listOfNotNull(
-                                            personMap[row.headOfFamilyId],
-                                            personMap[row.partnerId]
+                                        personMap[row.headOfFamilyId],
+                                        personMap[row.partnerId]
+                                    ).map {
+                                        LiableCitizenInfo(
+                                            id = it.id,
+                                            firstName = it.firstName,
+                                            lastName = it.lastName
                                         )
-                                        .map {
-                                            LiableCitizenInfo(
-                                                id = it.id,
-                                                firstName = it.firstName,
-                                                lastName = it.lastName
-                                            )
-                                        }
+                                    }
                             )
                         }
                     voucherValueDecisionInfos + feeDecisionInfos
                 }
-            }
-            .also {
+            }.also {
                 Audit.FinanceDecisionCitizenRead.log(
                     targetId = AuditId(user.id),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     @GetMapping("/fee-decisions/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadFeeDecisionPdf(
@@ -725,8 +713,9 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: FeeDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -737,9 +726,7 @@ class ApplicationControllerCitizen(
                     )
                 }
                 feeDecisionService.getFeeDecisionPdfResponse(dbc, id)
-            }
-            .also { Audit.CitizenFeeDecisionDownloadPdf.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.CitizenFeeDecisionDownloadPdf.log(targetId = AuditId(id)) }
 
     @GetMapping(
         "/voucher-value-decisions/{id}/download",
@@ -750,8 +737,9 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -762,9 +750,7 @@ class ApplicationControllerCitizen(
                     )
                 }
                 voucherValueDecisionService.getDecisionPdfResponse(dbc, id)
-            }
-            .also { Audit.CitizenVoucherValueDecisionDownloadPdf.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.CitizenVoucherValueDecisionDownloadPdf.log(targetId = AuditId(id)) }
 
     private fun getDecidableApplications(
         tx: Database.Read,
@@ -780,8 +766,7 @@ class ApplicationControllerCitizen(
                     clock,
                     Action.Application.ACCEPT_DECISION,
                     applications
-                )
-                .filter { it.value.isPermitted() }
+                ).filter { it.value.isPermitted() }
                 .keys
         val canReject =
             accessControl
@@ -791,8 +776,7 @@ class ApplicationControllerCitizen(
                     clock,
                     Action.Application.REJECT_DECISION,
                     applications
-                )
-                .filter { it.value.isPermitted() }
+                ).filter { it.value.isPermitted() }
                 .keys
         return canAccept.intersect(canReject)
     }
@@ -804,15 +788,18 @@ data class ApplicationsOfChild(
     val applicationSummaries: List<CitizenApplicationSummary>,
     val permittedActions: Map<ApplicationId, Set<Action.Citizen.Application>>,
     val decidableApplications: Set<ApplicationId>,
-    val duplicateOf: PersonId?,
+    val duplicateOf: PersonId?
 )
 
-data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType)
+data class CreateApplicationBody(
+    val childId: ChildId,
+    val type: ApplicationType
+)
 
 data class ApplicationDecisions(
     val decisions: List<DecisionSummary>,
     val permittedActions: Map<DecisionId, Set<Action.Citizen.Decision>>,
-    val decidableApplications: Set<ApplicationId>,
+    val decidableApplications: Set<ApplicationId>
 )
 
 data class DecisionSummary(
@@ -828,13 +815,13 @@ data class DecisionSummary(
 data class LiableCitizenInfo(
     val id: PersonId,
     val firstName: String,
-    val lastName: String,
+    val lastName: String
 )
 
 data class FinanceDecisionChildInfo(
     val id: PersonId,
     val firstName: String,
-    val lastName: String,
+    val lastName: String
 )
 
 data class FinanceDecisionCitizenInfo(
@@ -847,22 +834,24 @@ data class FinanceDecisionCitizenInfo(
     val decisionChildren: List<FinanceDecisionChildInfo>
 )
 
-private fun hideCriticalApplicationInfoFromOtherGuardian(
-    application: ApplicationDetails
-): ApplicationDetails =
+private fun hideCriticalApplicationInfoFromOtherGuardian(application: ApplicationDetails): ApplicationDetails =
     application.copy(
         form =
             application.form.copy(
                 child =
                     application.form.child.copy(
-                        person = application.form.child.person.copy(socialSecurityNumber = null),
+                        person =
+                            application.form.child.person
+                                .copy(socialSecurityNumber = null),
                         address = null,
                         futureAddress = null,
                         assistanceDescription = ""
                     ),
                 guardian =
                     application.form.guardian.copy(
-                        person = application.form.guardian.person.copy(socialSecurityNumber = null),
+                        person =
+                            application.form.guardian.person
+                                .copy(socialSecurityNumber = null),
                         address = null,
                         futureAddress = null,
                         phoneNumber = "",

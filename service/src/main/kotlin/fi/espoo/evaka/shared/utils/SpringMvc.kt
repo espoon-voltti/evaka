@@ -16,8 +16,7 @@ inline fun <reified T> asArgumentResolver(
     crossinline f: (parameter: MethodParameter, webRequest: NativeWebRequest) -> T
 ): HandlerMethodArgumentResolver =
     object : HandlerMethodArgumentResolver {
-        override fun supportsParameter(parameter: MethodParameter): Boolean =
-            T::class.java.isAssignableFrom(parameter.parameterType)
+        override fun supportsParameter(parameter: MethodParameter): Boolean = T::class.java.isAssignableFrom(parameter.parameterType)
 
         override fun resolveArgument(
             parameter: MethodParameter,

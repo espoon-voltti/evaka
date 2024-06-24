@@ -42,4 +42,8 @@ enum class FeeAlterationType : DatabaseEnum {
     override val sqlType: String = "fee_alteration_type"
 }
 
-data class FeeAlterationAttachment(val id: AttachmentId, val name: String, val contentType: String)
+data class FeeAlterationAttachment(
+    val id: AttachmentId,
+    val name: String,
+    val contentType: String
+)

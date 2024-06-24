@@ -13,15 +13,14 @@ import java.time.LocalDate
 fun Database.Read.applicationFlags(
     application: ApplicationDetails,
     today: LocalDate
-): ApplicationFlags {
-    return applicationFlags(
+): ApplicationFlags =
+    applicationFlags(
         childId = application.childId,
         formType = application.type,
         startDate = application.form.preferences.preferredStartDate ?: today,
         preparatory = application.form.preferences.preparatory,
         connectedDaycare = application.form.preferences.serviceNeed != null
     )
-}
 
 fun Database.Read.applicationFlags(
     childId: ChildId,
@@ -29,8 +28,8 @@ fun Database.Read.applicationFlags(
     startDate: LocalDate,
     preparatory: Boolean,
     connectedDaycare: Boolean
-): ApplicationFlags {
-    return when (formType) {
+): ApplicationFlags =
+    when (formType) {
         ApplicationType.CLUB ->
             ApplicationFlags(
                 isTransferApplication =
@@ -43,25 +42,23 @@ fun Database.Read.applicationFlags(
                 isTransferApplication =
                     getPlacementsForChildDuring(childId, startDate, null).any {
                         listOf(
-                                PlacementType.DAYCARE,
-                                PlacementType.DAYCARE_PART_TIME,
-                                PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
-                            )
-                            .contains(it.type)
+                            PlacementType.DAYCARE,
+                            PlacementType.DAYCARE_PART_TIME,
+                            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+                        ).contains(it.type)
                     }
             )
         ApplicationType.PRESCHOOL -> {
             val existingPlacements =
                 getPlacementsForChildDuring(childId, startDate, null).filter {
                     listOf(
-                            PlacementType.PRESCHOOL,
-                            PlacementType.PRESCHOOL_DAYCARE,
-                            PlacementType.PRESCHOOL_CLUB,
-                            PlacementType.PREPARATORY,
-                            PlacementType.PREPARATORY_DAYCARE
-                        )
-                        .contains(it.type)
+                        PlacementType.PRESCHOOL,
+                        PlacementType.PRESCHOOL_DAYCARE,
+                        PlacementType.PRESCHOOL_CLUB,
+                        PlacementType.PREPARATORY,
+                        PlacementType.PREPARATORY_DAYCARE
+                    ).contains(it.type)
                 }
 
             // True if the application is for connected daycare only, i.e. there already is a
@@ -71,8 +68,10 @@ fun Database.Read.applicationFlags(
                 connectedDaycare &&
                     existingPlacements.isNotEmpty() &&
                     existingPlacements.all {
-                        !preparatory && it.type == PlacementType.PRESCHOOL ||
-                            preparatory && it.type == PlacementType.PREPARATORY
+                        !preparatory &&
+                            it.type == PlacementType.PRESCHOOL ||
+                            preparatory &&
+                            it.type == PlacementType.PREPARATORY
                     }
 
             val isTransferApplication =
@@ -84,9 +83,8 @@ fun Database.Read.applicationFlags(
             )
         }
     }
-}
 
 data class ApplicationFlags(
     val isTransferApplication: Boolean = false,
-    val isAdditionalDaycareApplication: Boolean = false,
+    val isAdditionalDaycareApplication: Boolean = false
 )

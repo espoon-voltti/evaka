@@ -23,7 +23,7 @@ import java.time.LocalDate
 
 private fun Database.Read.createDecisionQuery(
     decision: Predicate = Predicate.alwaysTrue(),
-    application: Predicate = Predicate.alwaysTrue(),
+    application: Predicate = Predicate.alwaysTrue()
 ) = createQuery {
     sql(
         """
@@ -80,7 +80,7 @@ private fun Row.decisionFromResultSet(): Decision =
         applicationId = column("application_id"),
         childId = column("child_id"),
         childName = "${column<String>("child_last_name")} ${column<String>("child_first_name")}",
-        documentContainsContactInfo = column("document_contains_contact_info"),
+        documentContainsContactInfo = column("document_contains_contact_info")
     )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
@@ -89,69 +89,65 @@ fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
 
 fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
     createDecisionQuery(
-            decision =
-                Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
-        )
-        .exactlyOneOrNull(Row::decisionFromResultSet)
+        decision =
+            Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
+    ).exactlyOneOrNull(Row::decisionFromResultSet)
 
 fun Database.Read.getDecisionsByChild(
     childId: ChildId,
     filter: AccessControlFilter<DecisionId>
 ): List<Decision> =
     createDecisionQuery(
-            decision =
-                Predicate {
-                    where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
-                },
-            application = Predicate { where("$it.child_id = ${bind(childId)}") }
-        )
-        .toList(Row::decisionFromResultSet)
+        decision =
+            Predicate {
+                where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
+            },
+        application = Predicate { where("$it.child_id = ${bind(childId)}") }
+    ).toList(Row::decisionFromResultSet)
 
 fun Database.Read.getDecisionsByApplication(
     applicationId: ApplicationId,
     filter: AccessControlFilter<DecisionId>
 ): List<Decision> =
     createDecisionQuery(
-            decision =
-                Predicate {
-                    where(
-                        "$it.application_id = ${bind(applicationId)} AND ${predicate(filter.forTable(it))}"
-                    )
-                }
-        )
-        .toList(Row::decisionFromResultSet)
+        decision =
+            Predicate {
+                where(
+                    "$it.application_id = ${bind(applicationId)} AND ${predicate(filter.forTable(it))}"
+                )
+            }
+    ).toList(Row::decisionFromResultSet)
 
 fun Database.Read.getSentDecisionsByApplication(
     applicationId: ApplicationId,
     filter: AccessControlFilter<DecisionId>
 ): List<Decision> =
     createDecisionQuery(
-            decision =
-                Predicate {
-                    where(
-                        """
+        decision =
+            Predicate {
+                where(
+                    """
                             $it.application_id = ${bind(applicationId)}
                             AND $it.sent_date IS NOT NULL
                             AND ${predicate(filter.forTable(it))}
                         """
-                    )
-                }
-        )
-        .toList(Row::decisionFromResultSet)
+                )
+            }
+    ).toList(Row::decisionFromResultSet)
 
 fun Database.Read.getDecisionsByGuardian(
     guardianId: PersonId,
     filter: AccessControlFilter<DecisionId>
 ): List<Decision> =
     createDecisionQuery(
-            decision =
-                Predicate {
-                    where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
-                },
-            application =
-                Predicate {
-                    where(
-                        """
+        decision =
+            Predicate {
+                where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
+            },
+        application =
+            Predicate {
+                where(
+                    """
                 $it.guardian_id = ${bind(guardianId)} OR
                 ($it.allow_other_guardian_access AND EXISTS (
                     SELECT FROM application_other_guardian aog
@@ -159,10 +155,9 @@ fun Database.Read.getDecisionsByGuardian(
                     AND aog.guardian_id = ${bind(guardianId)}
                 ))
 """
-                    )
-                }
-        )
-        .toList(Row::decisionFromResultSet)
+                )
+            }
+    ).toList(Row::decisionFromResultSet)
 
 data class ApplicationDecisionRow(
     val applicationId: ApplicationId,
@@ -180,8 +175,8 @@ fun Database.Read.getOwnDecisions(
     filter: AccessControlFilter<DecisionId>
 ): List<DecisionSummary> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT
             d.application_id,
             a.child_id,
@@ -205,21 +200,19 @@ fun Database.Read.getOwnDecisions(
         AND d.sent_date IS NOT NULL
         AND a.status IN ('WAITING_CONFIRMATION', 'ACTIVE', 'REJECTED')
         """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, unit_id, type, start_date, end_date, planned
 FROM decision
 WHERE application_id = ${bind(applicationId)} AND sent_date IS NULL
 """
-            )
-        }
-        .toList()
+        )
+    }.toList()
 
 fun Database.Transaction.finalizeDecisions(
     applicationId: ApplicationId,
@@ -233,11 +226,10 @@ fun Database.Transaction.finalizeDecisions(
     }
 
     return createQuery {
-            sql(
-                "UPDATE decision SET sent_date = ${bind(today)} WHERE application_id = ${bind(applicationId)} RETURNING id"
-            )
-        }
-        .toList<DecisionId>()
+        sql(
+            "UPDATE decision SET sent_date = ${bind(today)} WHERE application_id = ${bind(applicationId)} RETURNING id"
+        )
+    }.toList<DecisionId>()
 }
 
 fun Database.Transaction.markApplicationDecisionsSent(
@@ -254,7 +246,10 @@ WHERE sent_date IS NULL AND application_id = ${bind(applicationId)} AND planned 
     }
 }
 
-fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentDate: LocalDate) {
+fun Database.Transaction.markDecisionSent(
+    decisionId: DecisionId,
+    sentDate: LocalDate
+) {
     execute {
         sql(
             """
@@ -278,29 +273,27 @@ fun Database.Transaction.updateDecisionGuardianDocumentKey(
 
 fun Database.Read.isDecisionBlocked(decisionId: DecisionId): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT count(*) > 0 AS blocked
 FROM decision
 WHERE status = 'PENDING' AND type = 'PRESCHOOL' AND id != ${bind(decisionId)}
 AND application_id = (SELECT application_id FROM decision WHERE id = ${bind(decisionId)})
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }.exactlyOne()
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): OfficialLanguage =
     createQuery {
-            sql(
-                """
+        sql(
+            """
             SELECT daycare.language
             FROM decision
                 INNER JOIN daycare ON unit_id = daycare.id
             WHERE decision.id = ${bind(decisionId)}
         """
-            )
-        }
-        .exactlyOne<OfficialLanguage>()
+        )
+    }.exactlyOne<OfficialLanguage>()
 
 fun Database.Transaction.markDecisionAccepted(
     user: AuthenticatedUser,

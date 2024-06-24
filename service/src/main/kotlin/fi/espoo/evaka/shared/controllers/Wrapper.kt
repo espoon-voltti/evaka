@@ -4,4 +4,6 @@
 
 package fi.espoo.evaka.shared.controllers
 
-data class Wrapper<T>(val data: T)
+data class Wrapper<T>(
+    val data: T
+)

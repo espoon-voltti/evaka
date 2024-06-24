@@ -18,18 +18,17 @@ class RuleCacheTest : AccessControlTest() {
         params: P,
         cacheKey: Any,
         deferred: () -> DatabaseActionRule.Deferred<P>
-    ) =
-        DatabaseActionRule.Unscoped(
-            params,
-            object : DatabaseActionRule.Unscoped.Query<P> {
-                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
-                    Triple(user, now, cacheKey)
+    ) = DatabaseActionRule.Unscoped(
+        params,
+        object : DatabaseActionRule.Unscoped.Query<P> {
+            override fun cacheKey(
+                user: AuthenticatedUser,
+                now: HelsinkiDateTime
+            ): Any = Triple(user, now, cacheKey)
 
-                override fun execute(
-                    ctx: DatabaseActionRule.QueryContext
-                ): DatabaseActionRule.Deferred<P> = deferred()
-            }
-        )
+            override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<P> = deferred()
+        }
+    )
 
     @Test
     fun `unscoped rules with same type and same cache keys use cache in a single permission check`() {
@@ -48,8 +47,11 @@ class RuleCacheTest : AccessControlTest() {
         val deferred =
             object : DatabaseActionRule.Deferred<Int> {
                 override fun evaluate(params: Int): AccessControlDecision =
-                    if (params == 0) AccessControlDecision.Permitted(params)
-                    else AccessControlDecision.None
+                    if (params == 0) {
+                        AccessControlDecision.Permitted(params)
+                    } else {
+                        AccessControlDecision.None
+                    }
             }
         actions.withIndex().forEach { (idx, action) ->
             rules.add(

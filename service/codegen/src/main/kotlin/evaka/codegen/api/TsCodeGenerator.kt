@@ -8,14 +8,14 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
 
-abstract class TsCodeGenerator(val metadata: TypeMetadata) {
-    fun namedTypes(): List<TsNamedType<*>> =
-        metadata.tsRepresentationMap.values.mapNotNull { it as? TsNamedType }
+abstract class TsCodeGenerator(
+    val metadata: TypeMetadata
+) {
+    fun namedTypes(): List<TsNamedType<*>> = metadata.tsRepresentationMap.values.mapNotNull { it as? TsNamedType }
 
     abstract fun locateNamedType(namedType: TsNamedType<*>): TsFile
 
-    private fun typeRef(namedType: TsNamedType<*>): TsImport =
-        TsImport.Named(locateNamedType(namedType), namedType.name)
+    private fun typeRef(namedType: TsNamedType<*>): TsImport = TsImport.Named(locateNamedType(namedType), namedType.name)
 
     private fun typeRef(sealedVariant: TsSealedVariant): TsImport =
         TsImport.Named(locateNamedType(sealedVariant.parent), sealedVariant.name)
@@ -29,26 +29,40 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             "deserializeJson${sealedVariant.parent.name}${sealedVariant.obj.name}"
         )
 
-    fun arrayType(elementType: KType?, compact: Boolean): TsCode {
+    fun arrayType(
+        elementType: KType?,
+        compact: Boolean
+    ): TsCode {
         val elementTs =
-            if (elementType == null) TsCode("never")
-            else
+            if (elementType == null) {
+                TsCode("never")
+            } else {
                 tsType(elementType, compact).let {
                     if (elementType.isMarkedNullable) it.copy(text = "(${it.text})") else it
                 }
+            }
         return elementTs + "[]"
     }
 
-    fun tsProperty(name: String, prop: TsProperty, value: TsCode): TsCode =
-        TsCode("$name${if (prop.isOptional) "?" else ""}: ") + value
+    fun tsProperty(
+        name: String,
+        prop: TsProperty,
+        value: TsCode
+    ): TsCode = TsCode("$name${if (prop.isOptional) "?" else ""}: ") + value
 
-    fun recordType(type: Pair<KType?, KType?>, compact: Boolean): TsCode {
+    fun recordType(
+        type: Pair<KType?, KType?>,
+        compact: Boolean
+    ): TsCode {
         val keyTs = type.first?.let { keyType(it) } ?: TsCode("never")
         val valueTs = type.second?.let { tsType(it, compact) } ?: TsCode("never")
         return TsCode { "Record<${inline(keyTs)}, ${inline(valueTs)}>" }
     }
 
-    fun tupleType(elementTypes: List<KType?>, compact: Boolean): TsCode =
+    fun tupleType(
+        elementTypes: List<KType?>,
+        compact: Boolean
+    ): TsCode =
         TsCode.join(
             elementTypes.map { type -> type?.let { tsType(it, compact) } ?: TsCode("never") },
             separator = ", ",
@@ -56,7 +70,10 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             postfix = "]"
         )
 
-    private fun typeToTsCode(type: KType, f: (tsType: TsType) -> TsCode): TsCode =
+    private fun typeToTsCode(
+        type: KType,
+        f: (tsType: TsType) -> TsCode
+    ): TsCode =
         when (val clazz = type.classifier) {
             is KClass<*> ->
                 f(
@@ -89,9 +106,15 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is TsSealedVariant -> null
         }?.takeUnless { tsType.isNullable } ?: error("$tsType is not supported as a key type")
 
-    fun tsType(type: KType, compact: Boolean): TsCode = typeToTsCode(type) { tsType(it, compact) }
+    fun tsType(
+        type: KType,
+        compact: Boolean
+    ): TsCode = typeToTsCode(type) { tsType(it, compact) }
 
-    fun tsType(tsType: TsType, compact: Boolean): TsCode =
+    fun tsType(
+        tsType: TsType,
+        compact: Boolean
+    ): TsCode =
         when (val tsRepr = tsType.representation) {
             is TsPlain -> TsCode(tsRepr.type)
             is TsArray -> arrayType(tsRepr.getTypeArgs(tsType.typeArguments), compact)
@@ -103,8 +126,11 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
                         if (typeArg != null) tsType(typeArg, compact) else TsCode("never")
                     }
                 TsCode(typeRef(tsRepr)) +
-                    if (typeArguments.isEmpty()) TsCode("")
-                    else TsCode.join(typeArguments, separator = ", ", prefix = "<", postfix = ">")
+                    if (typeArguments.isEmpty()) {
+                        TsCode("")
+                    } else {
+                        TsCode.join(typeArguments, separator = ", ", prefix = "<", postfix = ">")
+                    }
             }
             is TsObjectLiteral ->
                 TsCode.join(
@@ -115,7 +141,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
                     },
                     separator = if (compact) ", " else ",\n",
                     prefix = if (compact) "{ " else "{\n",
-                    postfix = if (compact) " }" else "\n}",
+                    postfix = if (compact) " }" else "\n}"
                 )
             is TsSealedClass -> TsCode(typeRef(tsRepr))
             is TsStringEnum -> TsCode(typeRef(tsRepr))
@@ -124,25 +150,29 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             is Excluded -> TsCode("never")
         }.let { if (tsType.isNullable) it + " | null" else it }
 
-    fun stringEnum(enum: TsStringEnum): TsCode = TsCode {
-        if (enum.constList != null)
-            """${enum.docHeader()}
+    fun stringEnum(enum: TsStringEnum): TsCode =
+        TsCode {
+            if (enum.constList != null) {
+                """${enum.docHeader()}
 export const ${enum.constList.name} = [
 ${enum.values.joinToString(",\n") { "'$it'" }.prependIndent("  ")}
 ] as const
 
 export type ${enum.name} = typeof ${enum.constList.name}[number]"""
-        else
-            """${enum.docHeader()}
+            } else {
+                """${enum.docHeader()}
 export type ${enum.name} =
 ${enum.values.joinToString("\n") { "| '$it'" }.prependIndent("  ")}"""
-    }
+            }
+        }
 
     fun tsPlainObject(obj: TsPlainObject): TsCode {
         val typeParams =
-            if (obj.clazz.typeParameters.isNotEmpty())
+            if (obj.clazz.typeParameters.isNotEmpty()) {
                 obj.clazz.typeParameters.joinToString(",", prefix = "<", postfix = ">")
-            else ""
+            } else {
+                ""
+            }
         val props =
             obj.properties.entries
                 .sortedBy { it.key }
@@ -221,14 +251,20 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                             }
                         }
                     is TsSealedVariant ->
-                        tsRepr.obj.applyTypeArguments(type.arguments).values.any { check(it) }
+                        tsRepr.obj
+                            .applyTypeArguments(type.arguments)
+                            .values
+                            .any { check(it) }
                     is TsExternalTypeRef -> tsRepr.deserializeJson != null
                     is Excluded,
                     is TsStringEnum,
                     is TsPlain -> false
                     null ->
-                        if (type.classifier is KTypeParameter) true
-                        else error("No TS type found for $type")
+                        if (type.classifier is KTypeParameter) {
+                            true
+                        } else {
+                            error("No TS type found for $type")
+                        }
                 }
             }
 
@@ -248,15 +284,14 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                                     TsCode(typeRef(variant)),
                                     TsCode(deserializerRef(variant)),
                                     extraArguments = emptyList(),
-                                    variant.obj.properties,
+                                    variant.obj.properties
                                 )
                             if (deserializer != null) variant to deserializer else null
-                        }
-                        .toMap()
+                        }.toMap()
                 val discriminantProp = namedType.jacksonSerializer.propertyName
-                if (discriminantProp == null || variants.isEmpty())
+                if (discriminantProp == null || variants.isEmpty()) {
                     null // TODO: how can we deserialize without a discriminant?
-                else {
+                } else {
                     val cases =
                         variants.keys.joinToString("\n") { variant ->
                             val discriminant =
@@ -277,13 +312,15 @@ ${cases.prependIndent("    ")}
             }
             is TsPlainObject -> {
                 val typeParams =
-                    if (namedType.clazz.typeParameters.isNotEmpty())
+                    if (namedType.clazz.typeParameters.isNotEmpty()) {
                         namedType.clazz.typeParameters.joinToString(
                             prefix = "<",
                             separator = ", ",
                             postfix = ">"
                         )
-                    else ""
+                    } else {
+                        ""
+                    }
                 jsonObjectDeserializer(
                     TsCode(typeRef(namedType)) + typeParams,
                     TsCode(deserializerRef(namedType)) + typeParams,
@@ -293,7 +330,7 @@ ${cases.prependIndent("    ")}
                                 "deserialize${it.name}: (value: ${ref(Imports.jsonOf)}<${it.name}>) => ${it.name}"
                             }
                         },
-                    namedType.properties,
+                    namedType.properties
                 )
             }
         }
@@ -323,16 +360,19 @@ ${join(propCodes, ",\n").prependIndent("    ")}
         }
     }
 
-    fun jsonDeserializerExpression(type: KType, jsonExpression: TsCode): TsCode? =
-        if (!needsJsonDeserializer(type)) null
-        else
+    fun jsonDeserializerExpression(
+        type: KType,
+        jsonExpression: TsCode
+    ): TsCode? =
+        if (!needsJsonDeserializer(type)) {
+            null
+        } else {
             when (val tsRepr = metadata[type]) {
                 is TsArray -> {
                     jsonDeserializerExpression(
-                            requireNotNull(tsRepr.getTypeArgs(type.arguments)),
-                            TsCode("e")
-                        )
-                        ?.let { TsCode { "${inline(jsonExpression)}.map(e => ${inline(it)})" } }
+                        requireNotNull(tsRepr.getTypeArgs(type.arguments)),
+                        TsCode("e")
+                    )?.let { TsCode { "${inline(jsonExpression)}.map(e => ${inline(it)})" } }
                 }
                 is TsRecord -> {
                     val valueDeser =
@@ -340,18 +380,19 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                             requireNotNull(tsRepr.getTypeArgs(type.arguments).second),
                             TsCode("v")
                         )
-                    if (valueDeser == null) null
-                    else
+                    if (valueDeser == null) {
+                        null
+                    } else {
                         TsCode {
                             """Object.fromEntries(Object.entries(${inline(jsonExpression)}).map(
   ([k, v]) => [k, ${inline(valueDeser)}]
 ))"""
                         }
+                    }
                 }
                 is TsTuple -> {
                     TsCode.join(
-                        tsRepr.getTypeArgs(type.arguments).withIndex().map {
-                            (elementIndex, elementType) ->
+                        tsRepr.getTypeArgs(type.arguments).withIndex().map { (elementIndex, elementType) ->
                             val elementExpression = jsonExpression + "[$elementIndex]"
                             jsonDeserializerExpression(
                                 requireNotNull(elementType),
@@ -393,12 +434,18 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                         else -> error("No TS type found for $type")
                     }
             }?.let {
-                if (type.isMarkedNullable)
+                if (type.isMarkedNullable) {
                     TsCode { "(${inline(jsonExpression)} != null) ? ${inline(it)} : null" }
-                else it
+                } else {
+                    it
+                }
             }
+        }
 
-    fun serializePathVariable(type: KType, valueExpression: TsCode): TsCode =
+    fun serializePathVariable(
+        type: KType,
+        valueExpression: TsCode
+    ): TsCode =
         when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
             is TsPlain,
             is TsArray,
@@ -414,31 +461,49 @@ ${join(propCodes, ",\n").prependIndent("    ")}
         }?.takeUnless { type.isMarkedNullable }
             ?: error("$type is not supported as a path variable parameter type")
 
-    fun toRequestParamPairs(type: KType, name: String, valueExpression: TsCode): TsCode =
+    fun toRequestParamPairs(
+        type: KType,
+        name: String,
+        valueExpression: TsCode
+    ): TsCode =
         when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
             is TsArray -> {
                 val elementType = requireNotNull(tsRepr.getTypeArgs(type.arguments))
                 val serializeElement = serializeRequestParam(elementType, TsCode("e"))
                 TsCode {
-                    if (type.isMarkedNullable)
-                        "...(${inline(valueExpression)}?.map((e): [string, string | null | undefined] => ['$name', ${inline(serializeElement)}]) ?? [])"
-                    else
-                        "...(${inline(valueExpression)}.map((e): [string, string | null | undefined] => ['$name', ${inline(serializeElement)}]))"
+                    if (type.isMarkedNullable) {
+                        "...(${inline(
+                            valueExpression
+                        )}?.map((e): [string, string | null | undefined] => ['$name', ${inline(serializeElement)}]) ?? [])"
+                    } else {
+                        "...(${inline(
+                            valueExpression
+                        )}.map((e): [string, string | null | undefined] => ['$name', ${inline(serializeElement)}]))"
+                    }
                 }
             }
             else -> TsCode { "['$name', ${inline(serializeRequestParam(type, valueExpression))}]" }
         }
 
-    fun serializeRequestParam(type: KType, valueExpression: TsCode): TsCode =
+    fun serializeRequestParam(
+        type: KType,
+        valueExpression: TsCode
+    ): TsCode =
         when (val tsRepr = metadata[type] ?: error("No TS type found for $type")) {
             is TsPlain,
             is TsStringEnum ->
-                if (type.isMarkedNullable) valueExpression + "?.toString()"
-                else valueExpression + ".toString()"
+                if (type.isMarkedNullable) {
+                    valueExpression + "?.toString()"
+                } else {
+                    valueExpression + ".toString()"
+                }
             is TsExternalTypeRef ->
                 tsRepr.serializeRequestParam?.invoke(valueExpression, type.isMarkedNullable)
-                    ?: if (type.isMarkedNullable) valueExpression + "?.toString()"
-                    else valueExpression + ".toString()"
+                    ?: if (type.isMarkedNullable) {
+                        valueExpression + "?.toString()"
+                    } else {
+                        valueExpression + ".toString()"
+                    }
             is TsArray,
             is TsPlainObject,
             is TsSealedClass,
@@ -450,6 +515,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
         } ?: error("$type is not supported as an API request parameter type")
 }
 
-private fun TsNamedType<*>.docHeader() = """/**
+private fun TsNamedType<*>.docHeader() =
+    """/**
 * Generated from $source
 */"""

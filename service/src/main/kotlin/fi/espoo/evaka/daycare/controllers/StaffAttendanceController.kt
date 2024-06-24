@@ -38,8 +38,9 @@ class StaffAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): UnitStaffAttendance {
-        return db.connect { dbc ->
+    ): UnitStaffAttendance =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -50,9 +51,7 @@ class StaffAttendanceController(
                     )
                 }
                 staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today())
-            }
-            .also { Audit.UnitStaffAttendanceRead.log(targetId = AuditId(unitId)) }
-    }
+            }.also { Audit.UnitStaffAttendanceRead.log(targetId = AuditId(unitId)) }
 
     @GetMapping("/group/{groupId}")
     fun getStaffAttendancesByGroup(
@@ -62,8 +61,9 @@ class StaffAttendanceController(
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
-    ): StaffAttendanceForDates {
-        return db.connect { dbc ->
+    ): StaffAttendanceForDates =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -74,9 +74,7 @@ class StaffAttendanceController(
                     )
                 }
                 staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId)
-            }
-            .also { Audit.StaffAttendanceRead.log(targetId = AuditId(groupId)) }
-    }
+            }.also { Audit.StaffAttendanceRead.log(targetId = AuditId(groupId)) }
 
     @PostMapping("/group/{groupId}")
     fun upsertStaffAttendance(

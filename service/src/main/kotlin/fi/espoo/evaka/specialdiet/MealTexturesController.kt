@@ -16,15 +16,17 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/meal-textures")
-class MealTexturesController(private val accessControl: AccessControl) {
-
+class MealTexturesController(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getMealTextures(
         db: Database,
         authenticatedUser: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<MealTexture> {
-        return db.connect { dbc ->
+    ): List<MealTexture> =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -34,7 +36,5 @@ class MealTexturesController(private val accessControl: AccessControl) {
                     )
                     tx.getMealTextures()
                 }
-            }
-            .also { Audit.MealTexturesRead.log() }
-    }
+            }.also { Audit.MealTexturesRead.log() }
 }

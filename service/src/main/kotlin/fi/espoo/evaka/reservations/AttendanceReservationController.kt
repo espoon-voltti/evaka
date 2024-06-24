@@ -83,7 +83,8 @@ class AttendanceReservationController(
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val period = FiniteDateRange(from, to)
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -97,7 +98,8 @@ class AttendanceReservationController(
 
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
                     val groups =
-                        tx.getDaycareGroupSummaries(unitId)
+                        tx
+                            .getDaycareGroupSummaries(unitId)
                             .filter { it.endDate == null || it.endDate.isAfter(clock.today()) }
                             .map {
                                 UnitAttendanceReservations.ReservationGroup(
@@ -139,7 +141,7 @@ class AttendanceReservationController(
                                                 }
                                             if (
                                                 !intermittentShiftCare &&
-                                                    !childData.operationalDays.contains(date)
+                                                !childData.operationalDays.contains(date)
                                             ) {
                                                 return@mapNotNull null
                                             }
@@ -154,14 +156,12 @@ class AttendanceReservationController(
                                                     childData.reservations[date]
                                                         ?.takeIf {
                                                             !placementStatus.backupOtherUnit
-                                                        }
-                                                        ?.sorted() ?: emptyList(),
+                                                        }?.sorted() ?: emptyList(),
                                                 attendances =
                                                     childData.attendances[date]
                                                         ?.takeIf {
                                                             !placementStatus.backupOtherUnit
-                                                        }
-                                                        ?.sortedBy { it.start } ?: emptyList(),
+                                                        }?.sortedBy { it.start } ?: emptyList(),
                                                 absenceBillable =
                                                     childData.absences[date]
                                                         ?.get(AbsenceCategory.BILLABLE)
@@ -199,8 +199,7 @@ class AttendanceReservationController(
                             }
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.UnitAttendanceReservationsRead.log(
                     targetId = AuditId(unitId),
                     meta = mapOf("from" to from, "to" to to)
@@ -262,7 +261,8 @@ class AttendanceReservationController(
         clock: EvakaClock,
         @RequestBody body: ChildDatePresence
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -274,8 +274,7 @@ class AttendanceReservationController(
 
                     upsertChildDatePresence(tx, user.evakaUserId, clock.now(), body)
                 }
-            }
-            .also { result ->
+            }.also { result ->
                 Audit.ChildDatePresenceUpsert.log(
                     targetId = AuditId(body.childId),
                     meta =
@@ -284,7 +283,7 @@ class AttendanceReservationController(
                             "insertedReservations" to result.insertedReservations,
                             "deletedReservations" to result.deletedReservations,
                             "insertedAttendances" to result.insertedAttendances,
-                            "deletedAttendances" to result.deletedAttendances,
+                            "deletedAttendances" to result.deletedAttendances
                         )
                 )
             }
@@ -310,7 +309,8 @@ class AttendanceReservationController(
             return null
         }
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -327,8 +327,7 @@ class AttendanceReservationController(
                         attendanceTimes = body.attendances
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildDatePresenceExpectedAbsencesCheck.log(
                     targetId = AuditId(body.childId),
                     meta = mapOf("date" to body.date)
@@ -346,7 +345,8 @@ class AttendanceReservationController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<ConfirmedRangeDate> {
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -388,11 +388,9 @@ class AttendanceReservationController(
                                 absenceType = absence?.absenceType,
                                 dailyServiceTimes = dailyServiceTime?.times
                             )
-                        }
-                        .toList()
+                        }.toList()
                 }
-            }
-            .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = AuditId(childId)) }
+            }.also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = AuditId(childId)) }
     }
 
     @PutMapping(
@@ -406,7 +404,8 @@ class AttendanceReservationController(
         @PathVariable childId: ChildId,
         @RequestBody body: List<ConfirmedRangeDateUpdate>
     ) {
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -446,8 +445,7 @@ class AttendanceReservationController(
                         }
                     )
                 }
-            }
-            .also { Audit.ChildConfirmedRangeReservationsUpdate.log(targetId = AuditId(childId)) }
+            }.also { Audit.ChildConfirmedRangeReservationsUpdate.log(targetId = AuditId(childId)) }
     }
 
     data class ReservationChildInfo(
@@ -476,7 +474,7 @@ class AttendanceReservationController(
 
     @GetMapping(
         "/attendance-reservations/confirmed-days/daily", // deprecated
-        "/employee-mobile/attendance-reservations/confirmed-days/daily",
+        "/employee-mobile/attendance-reservations/confirmed-days/daily"
     )
     fun getChildReservationsForDay(
         db: Database,
@@ -484,8 +482,9 @@ class AttendanceReservationController(
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) examinationDate: LocalDate
-    ): DailyChildReservationResult {
-        return db.connect { dbc ->
+    ): DailyChildReservationResult =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -534,15 +533,17 @@ class AttendanceReservationController(
                                     .sortedBy { it.start }
                                     .map {
                                         ReservationTimesForDate(
-                                                startTime = it.start,
-                                                endTime = it.end,
-                                                date = examinationDate,
-                                                staffCreated = it.staffCreated
-                                            )
-                                            .toReservationTimes()
+                                            startTime = it.start,
+                                            endTime = it.end,
+                                            date = examinationDate,
+                                            staffCreated = it.staffCreated
+                                        ).toReservationTimes()
                                     }
 
-                            val absences = row.value.absences.map { it.category }.toSet()
+                            val absences =
+                                row.value.absences
+                                    .map { it.category }
+                                    .toSet()
                             // TODO relay absence's staff created info to ChildReservationInfo
 
                             ChildReservationInfo(
@@ -568,14 +569,12 @@ class AttendanceReservationController(
                         childReservations = childReservationInfos
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildReservationStatusRead.log(
                     targetId = AuditId(unitId),
                     meta = mapOf("childCount" to it.children.size)
                 )
             }
-    }
 
     data class GroupReservationStatisticResult(
         val calculatedPresent: BigDecimal,
@@ -598,8 +597,9 @@ class AttendanceReservationController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
-    ): List<DayReservationStatisticsResult> {
-        return db.connect { dbc ->
+    ): List<DayReservationStatisticsResult> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     ac.requirePermissionFor(
                         tx,
@@ -663,14 +663,12 @@ class AttendanceReservationController(
                         )
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.UnitDailyReservationStatistics.log(
                     targetId = AuditId(unitId),
                     meta = mapOf("dayCount" to it.size)
                 )
             }
-    }
 }
 
 data class ConfirmedRangeDate(
@@ -685,9 +683,12 @@ data class UnitAttendanceReservations(
     val unit: String,
     val groups: List<ReservationGroup>,
     val children: List<Child>,
-    val days: List<OperationalDay>,
+    val days: List<OperationalDay>
 ) {
-    data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
+    data class ReservationGroup(
+        @PropagateNull val id: GroupId,
+        val name: String
+    )
 
     data class OperationalDay(
         val date: LocalDate,
@@ -730,7 +731,7 @@ data class UnitAttendanceReservations(
 data class ConfirmedRangeDateUpdate(
     val date: LocalDate,
     val reservations: List<Reservation>,
-    val absenceType: AbsenceType?,
+    val absenceType: AbsenceType?
 )
 
 private fun getUnitOperationalDayData(
@@ -751,20 +752,19 @@ private fun getUnitOperationalDayData(
                         normalOperatingTimes = unit.operationTimes[date.dayOfWeek.value - 1],
                         shiftCareOperatingTimes =
                             (unit.shiftCareOperationTimes ?: unit.operationTimes)[
-                                date.dayOfWeek.value - 1],
+                                date.dayOfWeek.value - 1
+                            ],
                         shiftCareOpenOnHoliday = unit.shiftCareOpenOnHolidays,
                         isHoliday = holidays.contains(date),
-                        isInHolidayPeriod = holidayPeriodDates.contains(date),
+                        isInHolidayPeriod = holidayPeriodDates.contains(date)
                     ),
                 children = emptyList()
             )
-        }
-        .filter {
+        }.filter {
             includeNonOperationalDays ||
                 it.dateInfo.normalOperatingTimes != null ||
                 it.dateInfo.shiftCareOperatingTimes != null
-        }
-        .toList()
+        }.toList()
 }
 
 private fun createDateMaps(
@@ -781,7 +781,7 @@ private fun createDateMaps(
             unitId = unitId,
             placements = placements[childId] ?: emptyList(),
             groupPlacements = groupPlacements[childId] ?: emptyList(),
-            backupPlacements = backupPlacements[childId] ?: emptyList(),
+            backupPlacements = backupPlacements[childId] ?: emptyList()
         )
     }
 }
@@ -791,8 +791,9 @@ private fun createDateMapForChild(
     placements: List<ChildPlacement>,
     groupPlacements: List<ChildGroupPlacement>,
     backupPlacements: List<ChildBackupPlacement>
-): DateMap<ChildPlacementStatus> {
-    return DateMap.of(
+): DateMap<ChildPlacementStatus> =
+    DateMap
+        .of(
             placements.map { p ->
                 p.period to
                     ChildPlacementStatus(
@@ -802,8 +803,7 @@ private fun createDateMapForChild(
                         backupOtherUnit = false
                     )
             }
-        )
-        .update(
+        ).update(
             entries =
                 groupPlacements.map { gp ->
                     gp.period to
@@ -815,8 +815,7 @@ private fun createDateMapForChild(
                         )
                 },
             resolve = { _, _, new -> new }
-        )
-        .update(
+        ).update(
             entries =
                 backupPlacements.map { bc ->
                     bc.period to
@@ -829,7 +828,6 @@ private fun createDateMapForChild(
                 },
             resolve = { _, old, new -> new.copy(groupId = old.groupId) }
         )
-}
 
 private data class ChildPlacementStatus(
     val placementType: PlacementType,
@@ -864,8 +862,8 @@ private fun Database.Read.getPlacements(
     dateRange: FiniteDateRange
 ): Map<ChildId, List<ChildPlacement>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     daterange(p.start_date, p.end_date, '[]') AS period,
     p.child_id,
@@ -873,9 +871,8 @@ SELECT
 FROM placement p
 WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && ${bind(dateRange)}
 """
-            )
-        }
-        .toList<ChildPlacement>()
+        )
+    }.toList<ChildPlacement>()
         .groupBy { it.childId }
 
 private fun Database.Read.getGroupPlacements(
@@ -883,8 +880,8 @@ private fun Database.Read.getGroupPlacements(
     dateRange: FiniteDateRange
 ): Map<ChildId, List<ChildGroupPlacement>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     daterange(dgp.start_date, dgp.end_date, '[]') AS period,
     p.child_id,
@@ -894,9 +891,8 @@ FROM daycare_group_placement dgp
 JOIN placement p ON p.id = dgp.daycare_placement_id
 WHERE p.unit_id = ${bind(unitId)} AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(dateRange)}
 """
-            )
-        }
-        .toList<ChildGroupPlacement>()
+        )
+    }.toList<ChildGroupPlacement>()
         .groupBy { it.childId }
 
 private fun Database.Read.getBackupPlacements(
@@ -904,8 +900,8 @@ private fun Database.Read.getBackupPlacements(
     dateRange: FiniteDateRange
 ): Map<ChildId, List<ChildBackupPlacement>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     daterange(bc.start_date, bc.end_date, '[]') AS period,
     bc.child_id,
@@ -916,9 +912,8 @@ FROM backup_care bc
 JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
 WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(dateRange)}
 """
-            )
-        }
-        .toList<ChildBackupPlacement>()
+        )
+    }.toList<ChildBackupPlacement>()
         .groupBy { it.childId }
 
 data class ChildData(
@@ -976,8 +971,8 @@ fun Database.Read.getChildData(
     val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     p.id,
     p.first_name,
@@ -1019,9 +1014,8 @@ SELECT
 FROM person p
 WHERE p.id = ANY(${bind(childIds)})
 """
-            )
-        }
-        .toList<ChildDataQueryResult>()
+        )
+    }.toList<ChildDataQueryResult>()
         .map { row ->
             ChildData(
                 child =
@@ -1051,10 +1045,8 @@ WHERE p.id = ANY(${bind(childIds)})
                         .groupBy(
                             keySelector = { it.date },
                             valueTransform = { it.category to it.absenceTypeResponse }
-                        )
-                        .mapValues { it.value.toMap() },
+                        ).mapValues { it.value.toMap() },
                 operationalDays = operationalDays.getOrDefault(row.id, emptySet())
             )
-        }
-        .associateBy { it.child.id }
+        }.associateBy { it.child.id }
 }

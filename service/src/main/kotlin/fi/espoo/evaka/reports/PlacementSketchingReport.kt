@@ -35,7 +35,9 @@ private val defaultApplicationStatuses =
     )
 
 @RestController
-class PlacementSketchingReportController(private val accessControl: AccessControl) {
+class PlacementSketchingReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/placement-sketching", // deprecated
         "/employee/reports/placement-sketching"
@@ -55,8 +57,9 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         latestApplicationSentDate: LocalDate? = null
-    ): List<PlacementSketchingReportRow> {
-        return db.connect { dbc ->
+    ): List<PlacementSketchingReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -73,8 +76,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                         latestApplicationSentDate
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.PlacementSketchingReportRead.log(
                     meta =
                         mapOf(
@@ -84,7 +86,6 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                         )
                 )
             }
-    }
 }
 
 private fun Database.Read.getPlacementSketchingReportRows(
@@ -93,10 +94,10 @@ private fun Database.Read.getPlacementSketchingReportRows(
     applicationStatuses: Set<ApplicationStatus>,
     earliestApplicationSentDate: LocalDate?,
     latestApplicationSentDate: LocalDate?
-): List<PlacementSketchingReportRow> {
-    return createQuery {
-            sql(
-                """
+): List<PlacementSketchingReportRow> =
+    createQuery {
+        sql(
+            """
 WITH active_placements AS (
 SELECT
     placement.child_id AS child_id,
@@ -166,10 +167,8 @@ WHERE
 ORDER BY
     area_name, requested_unit_name, application.childlastname, application.childfirstname
         """
-            )
-        }
-        .toList<PlacementSketchingReportRow>()
-}
+        )
+    }.toList<PlacementSketchingReportRow>()
 
 data class PlacementSketchingReportRow(
     val areaName: String,

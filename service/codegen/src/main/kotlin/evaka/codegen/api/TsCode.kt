@@ -28,16 +28,18 @@ enum class TsProject {
 }
 
 /** Path to a TS file (generated or existing) */
-data class TsFile(val project: TsProject, val path: Path) {
+data class TsFile(
+    val project: TsProject,
+    val path: Path
+) {
     fun importFrom(other: TsFile): String =
         when {
-                this.project == other.project ->
-                    path.relativeTo(other.path.parent).let {
-                        if (it.fileName == it) Path.of("./$it") else it
-                    }
-                else -> this.project.absoluteImportPath(path)
-            }
-            .toString()
+            this.project == other.project ->
+                path.relativeTo(other.path.parent).let {
+                    if (it.fileName == it) Path.of("./$it") else it
+                }
+            else -> this.project.absoluteImportPath(path)
+        }.toString()
             .removeSuffix(".d.ts")
             .removeSuffix(".tsx")
             .removeSuffix(".ts")
@@ -47,12 +49,19 @@ data class TsFile(val project: TsProject, val path: Path) {
 sealed interface TsImport {
     /** File that exports the name that is to be imported */
     val file: TsFile
+
     /** The local name for the imported thing */
     val name: String
 
-    data class Default(override val file: TsFile, override val name: String) : TsImport
+    data class Default(
+        override val file: TsFile,
+        override val name: String
+    ) : TsImport
 
-    data class Named(override val file: TsFile, override val name: String) : TsImport
+    data class Named(
+        override val file: TsFile,
+        override val name: String
+    ) : TsImport
 
     data class NamedAs(
         override val file: TsFile,
@@ -65,24 +74,24 @@ sealed interface TsImport {
  * A fragment of TS code carrying also information about names that need to be imported from other
  * modules.
  */
-data class TsCode(val text: String, val imports: Set<TsImport>) {
+data class TsCode(
+    val text: String,
+    val imports: Set<TsImport>
+) {
     constructor(text: String, vararg imports: TsImport) : this(text, imports.toSet())
 
     constructor(
-        import: TsImport,
+        import: TsImport
     ) : this(import.name, setOf(import))
 
     operator fun plus(other: String): TsCode = TsCode(this.text + other, this.imports)
 
-    operator fun plus(other: TsCode): TsCode =
-        TsCode(this.text + other.text, this.imports + other.imports)
+    operator fun plus(other: TsCode): TsCode = TsCode(this.text + other.text, this.imports + other.imports)
 
-    fun prependIndent(indent: String): TsCode =
-        if (text.isEmpty()) this else copy(text = text.prependIndent(indent))
+    fun prependIndent(indent: String): TsCode = if (text.isEmpty()) this else copy(text = text.prependIndent(indent))
 
     companion object {
-        operator fun invoke(f: Builder.() -> String): TsCode =
-            Builder().run { this.toTsCode(f(this)) }
+        operator fun invoke(f: Builder.() -> String): TsCode = Builder().run { this.toTsCode(f(this)) }
 
         fun join(
             code: Collection<TsCode>,

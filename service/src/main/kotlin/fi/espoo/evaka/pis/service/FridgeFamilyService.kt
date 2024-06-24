@@ -26,7 +26,11 @@ class FridgeFamilyService(
     private val personService: PersonService,
     private val parentshipService: ParentshipService
 ) {
-    fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh, clock: EvakaClock) {
+    fun doVTJRefresh(
+        db: Database.Connection,
+        msg: AsyncJob.VTJRefresh,
+        clock: EvakaClock
+    ) {
         updateGuardianAndFamilyFromVtj(
             db,
             AuthenticatedUser.SystemInternalUser,
@@ -49,10 +53,10 @@ class FridgeFamilyService(
             val currentGuardians =
                 db.read { tx -> tx.getDependantGuardians(personId) }.map { it.id }.toSet()
             val updatedGuardians =
-                db.transaction { tx ->
+                db
+                    .transaction { tx ->
                         personService.getGuardians(tx, user, personId, forceRefresh = true)
-                    }
-                    .map { it.id }
+                    }.map { it.id }
                     .toSet()
             (currentGuardians + updatedGuardians).forEach { guardianId ->
                 updateGuardianAndFamilyFromVtj(db, user, clock, guardianId)
@@ -80,7 +84,8 @@ class FridgeFamilyService(
             logger.info("Person to refresh has ${targetPerson.children.size} children")
 
             val partner =
-                db.read { getPartnerId(it, clock, personId) }
+                db
+                    .read { getPartnerId(it, clock, personId) }
                     ?.also { logger.info("Person has fridge partner $it") }
                     ?.let { partnerId ->
                         db.transaction {
@@ -91,16 +96,17 @@ class FridgeFamilyService(
                                 forceRefresh = true
                             )
                         }
-                    }
-                    ?.takeIf { livesInSameAddress(it.address, targetPerson.address) }
+                    }?.takeIf { livesInSameAddress(it.address, targetPerson.address) }
 
             val head =
                 if (
                     partner != null &&
-                        db.read { it.personIsHeadOfFamily(partner.id, clock.today()) }
-                )
+                    db.read { it.personIsHeadOfFamily(partner.id, clock.today()) }
+                ) {
                     partner
-                else targetPerson
+                } else {
+                    targetPerson
+                }
 
             if (partner != null) {
                 logger.info(
@@ -158,35 +164,41 @@ class FridgeFamilyService(
         }
     }
 
-    fun getPartnerId(tx: Database.Read, clock: EvakaClock, personId: PersonId): PersonId? {
-        return tx.createQuery {
+    fun getPartnerId(
+        tx: Database.Read,
+        clock: EvakaClock,
+        personId: PersonId
+    ): PersonId? =
+        tx
+            .createQuery {
                 sql(
                     """
 SELECT p2.person_id AS partner_id
 FROM fridge_partner p1
 LEFT OUTER JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.person_id != p2.person_id
-WHERE p1.person_id = ${bind(personId)} AND daterange(p1.start_date, p1.end_date, '[]') @> ${bind(clock.today())} AND p1.conflict = false AND p2.conflict = false
+WHERE p1.person_id = ${bind(
+                        personId
+                    )} AND daterange(p1.start_date, p1.end_date, '[]') @> ${bind(
+                        clock.today()
+                    )} AND p1.conflict = false AND p2.conflict = false
 """
                 )
-            }
-            .exactlyOneOrNull<PersonId>()
-    }
+            }.exactlyOneOrNull<PersonId>()
 
     private fun getCurrentFridgeChildren(
         tx: Database.Read,
         clock: EvakaClock,
         personId: PersonId
-    ): Set<ChildId> {
-        return tx.createQuery {
+    ): Set<ChildId> =
+        tx
+            .createQuery {
                 sql(
                     """
 SELECT child_id FROM fridge_child
 WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]') @> ${bind(clock.today())} AND conflict = false
 """
                 )
-            }
-            .toSet<ChildId>()
-    }
+            }.toSet<ChildId>()
 
     private fun livesInSameAddress(
         address1: PersonAddressDTO,

@@ -93,9 +93,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(true, report.filterNot { it.date == reportStart }.all { it.present == true })
     }
 
-    private fun getReport(): List<PresenceReportRow> {
-        return db.read { it.getPresenceRows(reportStart, reportEnd) }
-    }
+    private fun getReport(): List<PresenceReportRow> = db.read { it.getPresenceRows(reportStart, reportEnd) }
 
     private fun createPlacement(type: PlacementType) {
         db.transaction {
@@ -120,7 +118,10 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun addAbsence(date: LocalDate, category: AbsenceCategory) {
+    private fun addAbsence(
+        date: LocalDate,
+        category: AbsenceCategory
+    ) {
         db.transaction {
             it.insert(
                 DevAbsence(

@@ -24,8 +24,8 @@ fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId
 
 fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: ApplicationId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE placement_plan
 SET deleted = true
 WHERE application_id = ${bind(applicationId)}
@@ -36,9 +36,8 @@ AND NOT EXISTS (
   AND status = 'PENDING'
 )
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
 fun Database.Transaction.createPlacementPlan(
@@ -47,8 +46,8 @@ fun Database.Transaction.createPlacementPlan(
     plan: DaycarePlacementPlan
 ): PlacementPlanId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO placement_plan (type, unit_id, application_id, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date)
 VALUES (
     ${bind(type)},
@@ -60,9 +59,8 @@ VALUES (
     ${bind(plan.preschoolDaycarePeriod?.end)}
 )
 RETURNING id"""
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<PlacementPlanId>()
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
@@ -77,15 +75,14 @@ fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan?
         val preschoolDaycareEndDate: LocalDate?
     )
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date
 FROM placement_plan
 WHERE application_id = ${bind(applicationId)} AND deleted = false
     """
-            )
-        }
-        .exactlyOneOrNull<QueryResult>()
+        )
+    }.exactlyOneOrNull<QueryResult>()
         ?.let {
             PlacementPlan(
                 id = it.id,
@@ -105,20 +102,18 @@ WHERE application_id = ${bind(applicationId)} AND deleted = false
         }
 }
 
-fun Database.Read.getPlacementPlanUnitName(applicationId: ApplicationId): String {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getPlacementPlanUnitName(applicationId: ApplicationId): String =
+    createQuery {
+        sql(
+            """
 SELECT d.name
 FROM placement_plan
 JOIN daycare d ON d.id = placement_plan.unit_id
 WHERE application_id = ${bind(applicationId)} AND deleted = false
 """
-            )
-        }
-        .exactlyOneOrNull<String>()
+        )
+    }.exactlyOneOrNull<String>()
         ?: throw NotFound("Placement plan for application $applicationId not found")
-}
 
 fun Database.Read.getPlacementPlans(
     today: LocalDate,
@@ -147,8 +142,8 @@ fun Database.Read.getPlacementPlans(
     )
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     pp.id, pp.unit_id, pp.application_id, pp.type, pp.start_date, pp.end_date, pp.preschool_daycare_start_date, pp.preschool_daycare_end_date,
     pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
@@ -174,9 +169,8 @@ WHERE
     ${if (to != null) " AND (start_date <= ${bind(to)} OR preschool_daycare_start_date <= ${bind(to)})" else ""}
     ${if (from != null) " AND (end_date >= ${bind(from)} OR preschool_daycare_end_date >= ${bind(from)})" else ""}
 """
-            )
-        }
-        .toList<QueryResult>()
+        )
+    }.toList<QueryResult>()
         .map {
             PlacementPlanDetails(
                 id = it.id,
@@ -214,42 +208,39 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
     rejectOtherReason: String?
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE placement_plan
-SET unit_confirmation_status = ${bind(status)}, unit_reject_reason = ${bind(rejectReason)}, unit_reject_other_reason = ${bind(rejectOtherReason)}
+SET unit_confirmation_status = ${bind(
+                status
+            )}, unit_reject_reason = ${bind(rejectReason)}, unit_reject_other_reason = ${bind(rejectOtherReason)}
 WHERE application_id = ${bind(applicationId)} AND deleted = false
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
-fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild? =
+    createQuery {
+        sql(
+            """
 SELECT id, first_name, last_name, date_of_birth AS dob
 FROM person
 WHERE id = ${bind(childId)}
 """
-            )
-        }
-        .exactlyOneOrNull<PlacementDraftChild>()
-}
+        )
+    }.exactlyOneOrNull<PlacementDraftChild>()
 
-fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? =
+    createQuery {
+        sql(
+            """
 SELECT restricted_details_enabled
 FROM person
 WHERE id = ${bind(guardianId)}
 """
-            )
-        }
-        .exactlyOneOrNull<Boolean>()
-}
+        )
+    }.exactlyOneOrNull<Boolean>()
 
 fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int {
     val applicationStatus =
@@ -261,15 +252,14 @@ fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int {
     val unitConfirmationStatus = PlacementPlanConfirmationStatus.REJECTED
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT COUNT(*)
 FROM placement_plan pp
 JOIN application a ON pp.application_id = a.id
 WHERE unit_id = ${bind(unitId)} AND a.status = ANY(${bind(applicationStatus)}::application_status_type[])
 AND pp.unit_confirmation_status != ${bind(unitConfirmationStatus)}::confirmation_status
 """
-            )
-        }
-        .exactlyOne<Int>()
+        )
+    }.exactlyOne<Int>()
 }

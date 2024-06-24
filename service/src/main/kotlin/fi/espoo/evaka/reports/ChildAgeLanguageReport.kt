@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildAgeLanguageReportController(private val accessControl: AccessControl) {
+class ChildAgeLanguageReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/child-age-language", // deprecated
         "/employee/reports/child-age-language"
@@ -31,8 +33,9 @@ class ChildAgeLanguageReportController(private val accessControl: AccessControl)
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): List<ChildAgeLanguageReportRow> {
-        return db.connect { dbc ->
+    ): List<ChildAgeLanguageReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -44,13 +47,11 @@ class ChildAgeLanguageReportController(private val accessControl: AccessControl)
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getChildAgeLanguageRows(date, filter)
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildAgeLanguageReportRead.log(
                     meta = mapOf("date" to date, "count" to it.size)
                 )
             }
-    }
 }
 
 private fun Database.Read.getChildAgeLanguageRows(
@@ -58,58 +59,56 @@ private fun Database.Read.getChildAgeLanguageRows(
     unitFilter: AccessControlFilter<DaycareId>
 ): List<ChildAgeLanguageReportRow> =
     createQuery {
-            sql(
-                """
-        WITH children AS (
-            SELECT id, extract(year from age(${bind(date)}, date_of_birth)) age, language
-            FROM person
-        )
-        SELECT
-            ca.name AS care_area_name,
-            u.id AS unit_id,
-            u.name as unit_name,
-            u.type as unit_type,
-            u.provider_type as unit_provider_type,
-        
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 0 AND ch.language IN ('fi', 'se')) as fi_0y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 1 AND ch.language IN ('fi', 'se')) as fi_1y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 2 AND ch.language IN ('fi', 'se')) as fi_2y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 3 AND ch.language IN ('fi', 'se')) as fi_3y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 4 AND ch.language IN ('fi', 'se')) as fi_4y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 5 AND ch.language IN ('fi', 'se')) as fi_5y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 6 AND ch.language IN ('fi', 'se')) as fi_6y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 7 AND ch.language IN ('fi', 'se')) as fi_7y,
-        
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 0 AND ch.language = 'sv') as sv_0y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 1 AND ch.language = 'sv') as sv_1y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 2 AND ch.language = 'sv') as sv_2y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 3 AND ch.language = 'sv') as sv_3y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 4 AND ch.language = 'sv') as sv_4y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 5 AND ch.language = 'sv') as sv_5y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 6 AND ch.language = 'sv') as sv_6y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 7 AND ch.language = 'sv') as sv_7y,
-        
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 0 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_0y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 1 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_1y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 2 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_2y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 3 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_3y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 4 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_4y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 5 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_5y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 6 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_6y,
-            count(DISTINCT ch.id) FILTER (WHERE ch.age = 7 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_7y
-        
-        FROM daycare u
-        JOIN care_area ca ON u.care_area_id = ca.id
-        LEFT JOIN placement pl ON pl.unit_id = u.id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-        LEFT JOIN children ch ON ch.id = pl.child_id
-        WHERE ${predicate(unitFilter.forTable("u"))}
-        GROUP BY ca.name, u.id, u.name, u.type, u.provider_type
-        ORDER BY ca.name, u.name;
+        sql(
             """
-                    .trimIndent()
+            WITH children AS (
+                SELECT id, extract(year from age(${bind(date)}, date_of_birth)) age, language
+                FROM person
             )
-        }
-        .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
+            SELECT
+                ca.name AS care_area_name,
+                u.id AS unit_id,
+                u.name as unit_name,
+                u.type as unit_type,
+                u.provider_type as unit_provider_type,
+            
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 0 AND ch.language IN ('fi', 'se')) as fi_0y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 1 AND ch.language IN ('fi', 'se')) as fi_1y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 2 AND ch.language IN ('fi', 'se')) as fi_2y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 3 AND ch.language IN ('fi', 'se')) as fi_3y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 4 AND ch.language IN ('fi', 'se')) as fi_4y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 5 AND ch.language IN ('fi', 'se')) as fi_5y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 6 AND ch.language IN ('fi', 'se')) as fi_6y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 7 AND ch.language IN ('fi', 'se')) as fi_7y,
+            
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 0 AND ch.language = 'sv') as sv_0y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 1 AND ch.language = 'sv') as sv_1y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 2 AND ch.language = 'sv') as sv_2y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 3 AND ch.language = 'sv') as sv_3y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 4 AND ch.language = 'sv') as sv_4y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 5 AND ch.language = 'sv') as sv_5y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 6 AND ch.language = 'sv') as sv_6y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 7 AND ch.language = 'sv') as sv_7y,
+            
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 0 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_0y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 1 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_1y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 2 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_2y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 3 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_3y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 4 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_4y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 5 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_5y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 6 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_6y,
+                count(DISTINCT ch.id) FILTER (WHERE ch.age = 7 AND ch.language NOT IN ('fi', 'se', 'sv')) as other_7y
+            
+            FROM daycare u
+            JOIN care_area ca ON u.care_area_id = ca.id
+            LEFT JOIN placement pl ON pl.unit_id = u.id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+            LEFT JOIN children ch ON ch.id = pl.child_id
+            WHERE ${predicate(unitFilter.forTable("u"))}
+            GROUP BY ca.name, u.id, u.name, u.type, u.provider_type
+            ORDER BY ca.name, u.name;
+            """.trimIndent()
+        )
+    }.registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .toList<ChildAgeLanguageReportRow>()
 
 data class ChildAgeLanguageReportRow(

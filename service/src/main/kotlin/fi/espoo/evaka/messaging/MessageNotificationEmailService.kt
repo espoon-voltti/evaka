@@ -33,8 +33,9 @@ class MessageNotificationEmailService(
     fun getMessageNotifications(
         tx: Database.Transaction,
         messageIds: List<MessageId>
-    ): List<AsyncJob.SendMessageNotificationEmail> {
-        return tx.createQuery {
+    ): List<AsyncJob.SendMessageNotificationEmail> =
+        tx
+            .createQuery {
                 sql(
                     """
 SELECT DISTINCT
@@ -61,9 +62,7 @@ WHERE m.id = ANY(${bind(messageIds)})
   AND p.email IS NOT NULL
 """
                 )
-            }
-            .toList<AsyncJob.SendMessageNotificationEmail>()
-    }
+            }.toList<AsyncJob.SendMessageNotificationEmail>()
 
     fun scheduleSendingMessageNotifications(
         tx: Database.Transaction,
@@ -79,13 +78,12 @@ WHERE m.id = ANY(${bind(messageIds)})
         )
     }
 
-    private fun getLanguage(languageStr: String?): Language {
-        return when (languageStr?.lowercase()) {
+    private fun getLanguage(languageStr: String?): Language =
+        when (languageStr?.lowercase()) {
             "sv" -> Language.sv
             "en" -> Language.en
             else -> Language.fi
         }
-    }
 
     fun sendMessageNotification(
         db: Database.Connection,
@@ -103,7 +101,8 @@ WHERE m.id = ANY(${bind(messageIds)})
                 }
             } ?: return
 
-        Email.create(
+        Email
+            .create(
                 dbc = db,
                 personId = msg.personId,
                 emailType =
@@ -113,9 +112,8 @@ WHERE m.id = ANY(${bind(messageIds)})
                     },
                 fromAddress = emailEnv.sender(msg.language),
                 content = emailMessageProvider.messageNotification(msg.language, thread),
-                traceId = msg.messageRecipientId.toString(),
-            )
-            ?.also {
+                traceId = msg.messageRecipientId.toString()
+            )?.also {
                 emailClient.send(it)
                 db.transaction { tx ->
                     tx.markEmailNotificationAsSent(msg.messageRecipientId, clock.now())

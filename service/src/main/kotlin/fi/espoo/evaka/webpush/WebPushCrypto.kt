@@ -30,7 +30,10 @@ import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util
 import org.bouncycastle.math.ec.ECPoint
 import org.bouncycastle.util.BigIntegers
 
-data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateKey) {
+data class WebPushKeyPair(
+    val publicKey: ECPublicKey,
+    val privateKey: ECPrivateKey
+) {
     fun privateKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(privateKey))
 
     fun publicKeyBase64(): String = WebPushCrypto.base64Encode(WebPushCrypto.encode(publicKey))
@@ -44,7 +47,7 @@ data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateK
         fun fromPrivateKey(privateKey: ECPrivateKey): WebPushKeyPair =
             WebPushKeyPair(
                 WebPushCrypto.derivePublicKey(privateKey),
-                privateKey,
+                privateKey
             )
     }
 }
@@ -57,7 +60,6 @@ data class VapidJwt(
     val jwt: String,
     val expiresAt: HelsinkiDateTime
 ) {
-
     // 3. VAPID Authentication Scheme
     // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-3
     fun toAuthorizationHeader(): String = "vapid t=$jwt, k=${WebPushCrypto.base64Encode(publicKey)}"
@@ -78,20 +80,24 @@ data class VapidJwt(
             return "$scheme://$host$port"
         }
 
-        fun create(keyPair: WebPushKeyPair, expiresAt: HelsinkiDateTime, uri: URI) =
-            VapidJwt(
-                origin = uri.origin(),
-                publicKey = WebPushCrypto.encode(keyPair.publicKey),
-                // 2. Application Server Self-Identification
-                // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-2
-                jwt =
-                    JWT.create()
-                        .withAudience(uri.origin())
-                        .withExpiresAt(expiresAt.toInstant())
-                        .withSubject("https://github.com/espoon-voltti/evaka")
-                        .sign(Algorithm.ECDSA256(keyPair.privateKey)),
-                expiresAt = expiresAt
-            )
+        fun create(
+            keyPair: WebPushKeyPair,
+            expiresAt: HelsinkiDateTime,
+            uri: URI
+        ) = VapidJwt(
+            origin = uri.origin(),
+            publicKey = WebPushCrypto.encode(keyPair.publicKey),
+            // 2. Application Server Self-Identification
+            // Reference: https://datatracker.ietf.org/doc/html/rfc8292#section-2
+            jwt =
+                JWT
+                    .create()
+                    .withAudience(uri.origin())
+                    .withExpiresAt(expiresAt.toInstant())
+                    .withSubject("https://github.com/espoon-voltti/evaka")
+                    .sign(Algorithm.ECDSA256(keyPair.privateKey)),
+            expiresAt = expiresAt
+        )
     }
 }
 
@@ -124,36 +130,36 @@ fun httpEncryptedContentEncoding(
             *salt,
             *toNetworkByteOrder(recordSize),
             keyId.size.toUByte().toByte(),
-            *keyId,
+            *keyId
         )
     // 2.2. Content-Encryption Key Derivation
     // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2.2
     val prk = WebPushCrypto.hmacSha256(salt, ikm)
     val cek =
-        WebPushCrypto.hmacSha256(
+        WebPushCrypto
+            .hmacSha256(
                 prk,
                 byteArrayOf(*"Content-Encoding: aes128gcm".toByteArray(), 0x00, 0x01)
-            )
-            .sliceArray(0..15)
+            ).sliceArray(0..15)
     // 2.3. Nonce Derivation
     // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2.3
     val nonce =
-        WebPushCrypto.hmacSha256(
+        WebPushCrypto
+            .hmacSha256(
                 prk,
                 byteArrayOf(*"Content-Encoding: nonce".toByteArray(), 0x00, 0x01)
-            )
-            .sliceArray(0..11)
+            ).sliceArray(0..11)
 
     // 2. The "aes128gcm" HTTP Content Coding
     // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2
     val paddingDelimiter: Byte =
         0x02 // we're doing a single record, so this is the "last record delimiter"
     val cipherText =
-        Cipher.getInstance("AES/GCM/NoPadding")
+        Cipher
+            .getInstance("AES/GCM/NoPadding")
             .apply {
                 init(Cipher.ENCRYPT_MODE, SecretKeySpec(cek, "AES"), GCMParameterSpec(128, nonce))
-            }
-            .doFinal(byteArrayOf(*data, paddingDelimiter))
+            }.doFinal(byteArrayOf(*data, paddingDelimiter))
     return byteArrayOf(*header, *cipherText)
 }
 
@@ -187,25 +193,21 @@ object WebPushCrypto {
     //     3.2. Public Key Parameter ("k")
     //   - RFC7515 (JWS): https://datatracker.ietf.org/doc/html/rfc7515#section-2
     //     2. Terminology - Base64url Encoding
-    fun base64Encode(bytes: ByteArray): String =
-        Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+    fun base64Encode(bytes: ByteArray): String = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
 
     fun base64Decode(base64: String): ByteArray = Base64.getUrlDecoder().decode(base64)
 
-    fun encode(key: ECPublicKey): ByteArray =
-        EC5Util.convertPoint(parameterSpec, key.w).getEncoded(false)
+    fun encode(key: ECPublicKey): ByteArray = EC5Util.convertPoint(parameterSpec, key.w).getEncoded(false)
 
     fun encode(key: ECPrivateKey): ByteArray = domainParams.curve.fromBigInteger(key.s).encoded
 
     fun decodePublicKey(base64: String) = decodePublicKey(base64Decode(base64))
 
-    fun decodePublicKey(bytes: ByteArray): ECPublicKey =
-        domainParams.curve.decodePoint(bytes).toPublicKey()
+    fun decodePublicKey(bytes: ByteArray): ECPublicKey = domainParams.curve.decodePoint(bytes).toPublicKey()
 
     fun decodePrivateKey(base64: String) = decodePrivateKey(base64Decode(base64))
 
-    fun decodePrivateKey(bytes: ByteArray): ECPrivateKey =
-        BigIntegers.fromUnsignedByteArray(bytes).toPrivateKey()
+    fun decodePrivateKey(bytes: ByteArray): ECPrivateKey = BigIntegers.fromUnsignedByteArray(bytes).toPrivateKey()
 
     fun derivePublicKey(privateKey: ECPrivateKey): ECPublicKey =
         // Derive public key point from private key value "s"
@@ -221,14 +223,20 @@ object WebPushCrypto {
         domainParams.validatePrivateScalar(key.s)
     }
 
-    private fun generateEcdhSecret(privateKey: ECPrivateKey, publicKey: ECPublicKey): ByteArray {
+    private fun generateEcdhSecret(
+        privateKey: ECPrivateKey,
+        publicKey: ECPublicKey
+    ): ByteArray {
         val ecdh = ecdhKeyAgreement()
         ecdh.init(privateKey)
         ecdh.doPhase(publicKey, true)
         return ecdh.generateSecret()
     }
 
-    fun hmacSha256(key: ByteArray, data: ByteArray): ByteArray {
+    fun hmacSha256(
+        key: ByteArray,
+        data: ByteArray
+    ): ByteArray {
         val algorithm = "HmacSHA256"
         val hmac = Mac.getInstance(algorithm)
         hmac.init(SecretKeySpec(key, algorithm))
@@ -240,7 +248,7 @@ object WebPushCrypto {
     fun generateInputKeyingMaterial(
         userAgentPublicKey: ECPublicKey,
         authSecret: ByteArray,
-        applicationServerKeyPair: WebPushKeyPair,
+        applicationServerKeyPair: WebPushKeyPair
     ): ByteArray {
         val ecdhSecret = generateEcdhSecret(applicationServerKeyPair.privateKey, userAgentPublicKey)
         val prkKey = hmacSha256(authSecret, ecdhSecret)

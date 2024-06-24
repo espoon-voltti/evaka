@@ -12,11 +12,15 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
 
-fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: FeeAlteration) {
+fun Database.Transaction.upsertFeeAlteration(
+    clock: EvakaClock,
+    feeAlteration: FeeAlteration
+) {
     val now = clock.now()
-    val update = createUpdate {
-        sql(
-            """
+    val update =
+        createUpdate {
+            sql(
+                """
             INSERT INTO fee_alteration (
                 id,
                 person_id,
@@ -49,16 +53,16 @@ fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: F
                 updated_by = ${bind(feeAlteration.updatedBy)},
                 updated_at = ${bind(now)}
             """
-        )
-    }
+            )
+        }
 
     handlingExceptions { update.execute() }
 }
 
-fun Database.Read.getFeeAlteration(id: FeeAlterationId): FeeAlteration? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getFeeAlteration(id: FeeAlterationId): FeeAlteration? =
+    createQuery {
+        sql(
+            """
 SELECT
     id,
     person_id,
@@ -83,15 +87,13 @@ SELECT
 FROM fee_alteration
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull<FeeAlteration>()
-}
+        )
+    }.exactlyOneOrNull<FeeAlteration>()
 
-fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> =
+    createQuery {
+        sql(
+            """
 SELECT
     id,
     person_id,
@@ -117,10 +119,8 @@ FROM fee_alteration
 WHERE person_id = ${bind(personId)}
 ORDER BY valid_from DESC, valid_to DESC
 """
-            )
-        }
-        .toList<FeeAlteration>()
-}
+        )
+    }.toList<FeeAlteration>()
 
 fun Database.Read.getFeeAlterationsFrom(
     personIds: List<ChildId>,
@@ -129,8 +129,8 @@ fun Database.Read.getFeeAlterationsFrom(
     if (personIds.isEmpty()) return emptyList()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     person_id,
@@ -148,9 +148,8 @@ WHERE
     person_id = ANY(${bind(personIds)})
     AND (valid_to IS NULL OR valid_to >= ${bind(from)})
 """
-            )
-        }
-        .toList<FeeAlteration>()
+        )
+    }.toList<FeeAlteration>()
 }
 
 fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {

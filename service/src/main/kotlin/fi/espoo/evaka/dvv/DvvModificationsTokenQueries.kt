@@ -13,40 +13,37 @@ fun Database.Transaction.storeDvvModificationToken(
     modificationsReceived: Int
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
 VALUES (${bind(token)}, ${bind(nextToken)}, ${bind(ssnsSent)}, ${bind(modificationsReceived)})
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
-fun Database.Read.getNextDvvModificationToken(): String {
-    return createQuery {
-            sql("""
+fun Database.Read.getNextDvvModificationToken(): String =
+    createQuery {
+        sql(
+            """
 SELECT next_token
 FROM dvv_modification_token
 ORDER BY created DESC
 LIMIT 1
-""")
-        }
-        .exactlyOne<String>()
-}
+"""
+        )
+    }.exactlyOne<String>()
 
-fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? =
+    createQuery {
+        sql(
+            """
 SELECT token, next_token, ssns_sent, modifications_received
 FROM dvv_modification_token
 WHERE token = ${bind(token)}
 """
-            )
-        }
-        .exactlyOne<DvvModificationToken>()
-}
+        )
+    }.exactlyOne<DvvModificationToken>()
 
 fun Database.Transaction.deleteDvvModificationToken(token: String) {
     createUpdate { sql("DELETE FROM dvv_modification_token WHERE token = ${bind(token)}") }

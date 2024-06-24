@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class DecisionsReportController(private val accessControl: AccessControl) {
+class DecisionsReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/decisions", // deprecated
         "/employee/reports/decisions"
@@ -38,7 +40,8 @@ class DecisionsReportController(private val accessControl: AccessControl) {
     ): List<DecisionsReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -49,8 +52,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getDecisionsRows(FiniteDateRange(from, to))
                 }
-            }
-            .also {
+            }.also {
                 Audit.DecisionsReportRead.log(
                     meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
@@ -61,8 +63,8 @@ class DecisionsReportController(private val accessControl: AccessControl) {
 private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<DecisionsReportRow> {
     val queryResult =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT 
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -83,9 +85,8 @@ JOIN care_area ca ON ca.id = u.care_area_id
 JOIN person ch ON ch.id = a.child_id
 WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND ${bind(range.end)}
 """
-                )
-            }
-            .toList<DecisionsReportQueryRow>()
+            )
+        }.toList<DecisionsReportQueryRow>()
 
     return queryResult
         .groupBy { it.unitId }
@@ -97,13 +98,13 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND
                 rows.filter {
                     it.age < 3 &&
                         it.decisionType in
-                            setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
+                        setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
                 }
             val daycareOver3 =
                 rows.filter {
                     it.age >= 3 &&
                         it.decisionType in
-                            setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
+                        setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
                 }
             val preschool =
                 rows.filter {
@@ -166,10 +167,9 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND
                 preference2 = preference2.count(),
                 preference3 = preference3.count(),
                 preferenceNone = preferenceNone.count(),
-                total = applicationDecisionCount.size, // Number of applications
+                total = applicationDecisionCount.size // Number of applications
             )
-        }
-        .sortedWith(compareBy({ it.careAreaName }, { it.unitName }))
+        }.sortedWith(compareBy({ it.careAreaName }, { it.unitName }))
 }
 
 private data class DecisionsReportQueryRow(

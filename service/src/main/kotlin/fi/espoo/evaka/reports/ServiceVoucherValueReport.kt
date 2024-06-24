@@ -34,8 +34,9 @@ import org.springframework.web.bind.annotation.RestController
     "/reports/service-voucher-value", // deprecated
     "/employee/reports/service-voucher-value"
 )
-class ServiceVoucherValueReportController(private val accessControl: AccessControl) {
-
+class ServiceVoucherValueReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping("/units")
     fun getServiceVoucherReportForAllUnits(
         db: Database,
@@ -44,8 +45,8 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
         @RequestParam year: Int,
         @RequestParam month: Int,
         @RequestParam areaId: AreaId?
-    ): ServiceVoucherReport {
-        return db.connect { dbc ->
+    ): ServiceVoucherReport =
+        db.connect { dbc ->
             dbc.read { tx ->
                 val filter =
                     accessControl.requireAuthorizationFilter(
@@ -57,7 +58,6 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
                 getServiceVoucherReport(tx, year, month, areaId, filter)
             }
         }
-    }
 
     data class ServiceVoucherUnitReport(
         val locked: LocalDate?,
@@ -73,8 +73,8 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
         @PathVariable unitId: DaycareId,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): ServiceVoucherUnitReport {
-        return db.connect { dbc ->
+    ): ServiceVoucherUnitReport =
+        db.connect { dbc ->
             dbc.read { tx ->
                 accessControl.requirePermissionFor(
                     tx,
@@ -99,7 +99,6 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
                 )
             }
         }
-    }
 }
 
 fun freezeVoucherValueReportRows(
@@ -111,19 +110,23 @@ fun freezeVoucherValueReportRows(
     val rows = tx.getServiceVoucherValues(year, month)
 
     val voucherValueReportSnapshotId =
-        tx.createUpdate {
+        tx
+            .createUpdate {
                 sql(
-                    "INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (${bind(month)}, ${bind(year)}, ${bind(takenAt)}) RETURNING id"
+                    "INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (${bind(
+                        month
+                    )}, ${bind(year)}, ${bind(takenAt)}) RETURNING id"
                 )
-            }
-            .executeAndReturnGeneratedKeys()
+            }.executeAndReturnGeneratedKeys()
             .exactlyOne<UUID>()
 
     tx.executeBatch(rows) {
         sql(
             """
 INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
-VALUES (${bind(voucherValueReportSnapshotId)}, ${bind { it.serviceVoucherDecisionId }}, ${bind { it.realizedAmount }}, ${bind { it.realizedPeriod }}, ${bind { it.type }})
+VALUES (${bind(
+                voucherValueReportSnapshotId
+            )}, ${bind { it.serviceVoucherDecisionId }}, ${bind { it.realizedAmount }}, ${bind { it.realizedPeriod }}, ${bind { it.type }})
 """
         )
     }
@@ -147,12 +150,12 @@ fun getServiceVoucherReport(
         when (unitFilter) {
             AccessControlFilter.PermitAll -> null
             is AccessControlFilter.Some ->
-                tx.createQuery {
+                tx
+                    .createQuery {
                         sql(
                             "SELECT id FROM daycare WHERE ${predicate(unitFilter.forTable("daycare"))}"
                         )
-                    }
-                    .toSet<DaycareId>()
+                    }.toSet<DaycareId>()
         }
     val snapshotTime = tx.getSnapshotDate(year, month)
     val rows =
@@ -171,8 +174,7 @@ fun getServiceVoucherReport(
                     it.areaId,
                     it.areaName
                 )
-            }
-            .map { (unit, rows) ->
+            }.map { (unit, rows) ->
                 ServiceVoucherValueUnitAggregate(
                     unit = unit,
                     childCount = rows.map { it.childId }.distinct().size,
@@ -234,18 +236,15 @@ private data class RowGrouping(
     val realizedPeriod: FiniteDateRange
 )
 
-fun removeRefundsAndCorrectionsThatCancelEachOthersOut(
-    rows: List<ServiceVoucherValueRow>
-): List<ServiceVoucherValueRow> {
-    return rows
+fun removeRefundsAndCorrectionsThatCancelEachOthersOut(rows: List<ServiceVoucherValueRow>): List<ServiceVoucherValueRow> =
+    rows
         .groupBy {
             RowGrouping(
                 childId = it.childId,
                 unitId = it.unitId,
                 realizedPeriod = it.realizedPeriod
             )
-        }
-        .values
+        }.values
         .flatMap { groupedRows ->
             // groupedRows all have same child, unit and period
             // from those try to find pairs of non-original rows which cancel each other out and can
@@ -268,14 +267,12 @@ fun removeRefundsAndCorrectionsThatCancelEachOthersOut(
                                 !rowIndexesToSkip.contains(j) &&
                                 skipCandidate.type != VoucherReportRowType.ORIGINAL &&
                                 skipCandidate.realizedAmount == -row.realizedAmount
-                        }
-                        .takeIf { it >= 0 } // not found = -1
+                        }.takeIf { it >= 0 } // not found = -1
                         ?.also { indexToSkip -> rowIndexesToSkip.add(indexToSkip) }
                         .let { indexToSkip -> indexToSkip == null }
                 }
             }
         }
-}
 
 private fun Database.Read.getServiceVoucherValues(
     year: Int,
@@ -285,10 +282,12 @@ private fun Database.Read.getServiceVoucherValues(
 ): List<ServiceVoucherValueRow> {
     val reportDate = LocalDate.of(year, month, 1)
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH min_voucher_decision_date AS (
-    SELECT coalesce(min(valid_from), ${bind(reportDate)}) AS min_date FROM voucher_value_decision WHERE status != 'DRAFT'::voucher_value_decision_status
+    SELECT coalesce(min(valid_from), ${bind(
+                reportDate
+            )}) AS min_date FROM voucher_value_decision WHERE status != 'DRAFT'::voucher_value_decision_status
 ), min_change_month AS (
     SELECT make_date(extract(year from min_date)::int, extract(month from min_date)::int, 1) AS month FROM min_voucher_decision_date
 ), include_corrections AS (
@@ -333,7 +332,9 @@ WITH min_voucher_decision_date AS (
         decision.id AS decision_id
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
-    WHERE decision.status = ANY(${bind(VoucherValueDecisionStatus.effective)}::voucher_value_decision_status[]) AND lower(p.period) = ${bind(reportDate)}
+    WHERE decision.status = ANY(${bind(
+                VoucherValueDecisionStatus.effective
+            )}::voucher_value_decision_status[]) AND lower(p.period) = ${bind(reportDate)}
 ), correction_targets AS (
     -- child-month pairs where there is some retroactive change.
     -- these should be refunded and paid again with new info
@@ -485,9 +486,8 @@ LEFT JOIN LATERAL (
 ) child_group ON true
 WHERE (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)}) AND (${bind(unitIds)}::uuid[] IS NULL OR unit.id = ANY(${bind(unitIds)}))
 """
-            )
-        }
-        .toList<ServiceVoucherValueRow>()
+        )
+    }.toList<ServiceVoucherValueRow>()
         .let(::removeRefundsAndCorrectionsThatCancelEachOthersOut)
         .sortedWith(
             compareBy(
@@ -501,36 +501,38 @@ WHERE (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)}) AND (${bind(u
         )
 }
 
-private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
-    return createQuery {
-            sql(
-                "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= ${bind(year)} AND month >= ${bind(month)} LIMIT 1"
-            )
-        }
-        .exactlyOneOrNull<HelsinkiDateTime>()
+private fun Database.Read.getSnapshotDate(
+    year: Int,
+    month: Int
+): LocalDate? =
+    createQuery {
+        sql(
+            "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= ${bind(year)} AND month >= ${bind(month)} LIMIT 1"
+        )
+    }.exactlyOneOrNull<HelsinkiDateTime>()
         ?.toLocalDate()
-}
 
-data class MonthOfYear(val year: Int, val month: Int)
+data class MonthOfYear(
+    val year: Int,
+    val month: Int
+)
 
-fun Database.Read.getLastSnapshotMonth(): MonthOfYear? {
-    return createQuery {
-            sql(
-                "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
-            )
-        }
-        .exactlyOneOrNull<MonthOfYear>()
-}
+fun Database.Read.getLastSnapshotMonth(): MonthOfYear? =
+    createQuery {
+        sql(
+            "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
+        )
+    }.exactlyOneOrNull<MonthOfYear>()
 
 private fun Database.Read.getSnapshotVoucherValues(
     year: Int,
     month: Int,
     areaId: AreaId? = null,
     unitIds: Set<DaycareId>? = null
-): List<ServiceVoucherValueRow> {
-    return createQuery {
-            sql(
-                """
+): List<ServiceVoucherValueRow> =
+    createQuery {
+        sql(
+            """
 SELECT
     child.id AS child_id,
     child.first_name AS child_first_name,
@@ -577,7 +579,5 @@ WHERE sn.year = ${bind(year)} AND sn.month = ${bind(month)}
 AND (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)})
 AND (${bind(unitIds)}::uuid[] IS NULL OR unit.id = ANY(${bind(unitIds)}))
 """
-            )
-        }
-        .toList<ServiceVoucherValueRow>()
-}
+        )
+    }.toList<ServiceVoucherValueRow>()

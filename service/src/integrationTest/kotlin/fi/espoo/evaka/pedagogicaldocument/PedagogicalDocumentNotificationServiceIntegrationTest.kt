@@ -47,8 +47,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class PedagogicalDocumentNotificationServiceIntegrationTest :
-    FullApplicationTest(resetDbBeforeEach = true) {
+class PedagogicalDocumentNotificationServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val testGuardianFi = DevPerson(email = "fi@example.com", language = "fi")
@@ -142,10 +141,10 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         db.read {
             val emailJobCreatedAt =
                 @Suppress("DEPRECATION")
-                it.createQuery(
+                it
+                    .createQuery(
                         "SELECT email_job_created_at FROM pedagogical_document WHERE id = :id"
-                    )
-                    .bind("id", doc.id)
+                    ).bind("id", doc.id)
                     .exactlyOne<HelsinkiDateTime>()
             assertTrue(
                 HelsinkiDateTime.now().durationSince(emailJobCreatedAt) < Duration.ofSeconds(1)
@@ -190,12 +189,16 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEmailSent(doc.id, true)
     }
 
-    private fun assertEmailSent(id: PedagogicalDocumentId, sent: Boolean? = true) {
+    private fun assertEmailSent(
+        id: PedagogicalDocumentId,
+        sent: Boolean? = true
+    ) {
         assertEquals(
             sent,
             db.read {
                 @Suppress("DEPRECATION")
-                it.createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :id")
+                it
+                    .createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :id")
                     .bind("id", id)
                     .exactlyOne<Boolean>()
             }
@@ -223,33 +226,34 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
     private fun postNewDocument(
         user: AuthenticatedUser.Employee,
         body: PedagogicalDocumentPostBody
-    ) =
-        jsonMapper.readValue<PedagogicalDocument>(
-            http
-                .post("/pedagogical-document")
-                .jsonBody(jsonMapper.writeValueAsString(body))
-                .asUser(user)
-                .responseString()
-                .third
-                .get()
-        )
+    ) = jsonMapper.readValue<PedagogicalDocument>(
+        http
+            .post("/pedagogical-document")
+            .jsonBody(jsonMapper.writeValueAsString(body))
+            .asUser(user)
+            .responseString()
+            .third
+            .get()
+    )
 
     private fun updateDocument(
         user: AuthenticatedUser.Employee,
         id: PedagogicalDocumentId,
         body: PedagogicalDocumentPostBody
-    ) =
-        jsonMapper.readValue<PedagogicalDocument>(
-            http
-                .put("/pedagogical-document/$id")
-                .jsonBody(jsonMapper.writeValueAsString(body))
-                .asUser(user)
-                .responseString()
-                .third
-                .get()
-        )
+    ) = jsonMapper.readValue<PedagogicalDocument>(
+        http
+            .put("/pedagogical-document/$id")
+            .jsonBody(jsonMapper.writeValueAsString(body))
+            .asUser(user)
+            .responseString()
+            .third
+            .get()
+    )
 
-    private fun uploadDocumentAttachment(user: AuthenticatedUser, id: PedagogicalDocumentId) {
+    private fun uploadDocumentAttachment(
+        user: AuthenticatedUser,
+        id: PedagogicalDocumentId
+    ) {
         http
             .upload("/attachments/pedagogical-documents/$id")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))

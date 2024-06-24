@@ -162,6 +162,8 @@ class TimeIntervalTest {
 
     private fun testTime(hour: Int) = LocalTime.of(hour, 0)
 
-    private fun testRange(from: Int, to: Int?) =
-        TimeInterval(testTime(from), to?.let { testTime(it) })
+    private fun testRange(
+        from: Int,
+        to: Int?
+    ) = TimeInterval(testTime(from), to?.let { testTime(it) })
 }

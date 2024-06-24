@@ -76,8 +76,7 @@ data class OccupancyValues(
 ) {
     val sum = sumUnder3y + sumOver3y
 
-    fun withPeriod(period: FiniteDateRange) =
-        OccupancyPeriod(period, sum, headcount, caretakers, percentage)
+    fun withPeriod(period: FiniteDateRange) = OccupancyPeriod(period, sum, headcount, caretakers, percentage)
 }
 
 data class OccupancyPeriod(
@@ -155,20 +154,15 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     return calculateDailyOccupancies(caretakerCounts, placements, period, type)
 }
 
-fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(
-    dailyOccupancies: List<DailyOccupancyValues<K>>
-): Map<K, List<OccupancyPeriod>> {
-    return dailyOccupancies.associateByTo(
+fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(dailyOccupancies: List<DailyOccupancyValues<K>>): Map<K, List<OccupancyPeriod>> =
+    dailyOccupancies.associateByTo(
         destination = mutableMapOf(),
         keySelector = { it.key },
         valueTransform = { reduceDailyOccupancyValues(it.occupancies) }
     )
-}
 
-private fun reduceDailyOccupancyValues(
-    dailyOccupancies: Map<LocalDate, OccupancyValues>
-): List<OccupancyPeriod> {
-    return dailyOccupancies.entries
+private fun reduceDailyOccupancyValues(dailyOccupancies: Map<LocalDate, OccupancyValues>): List<OccupancyPeriod> =
+    dailyOccupancies.entries
         .sortedBy { it.key }
         .fold(listOf<Pair<FiniteDateRange, OccupancyValues>>()) { acc, (date, values) ->
             when {
@@ -183,9 +177,7 @@ private fun reduceDailyOccupancyValues(
                         }
                     }
             }
-        }
-        .map { (period, values) -> values.withPeriod(period) }
-}
+        }.map { (period, values) -> values.withPeriod(period) }
 
 private fun getAndValidatePeriod(
     today: LocalDate,
@@ -272,8 +264,8 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
         }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT $keyColumns, t::date AS date,
 coalesce(
     $caretakersSum,
@@ -294,9 +286,8 @@ AND (${bind(providerType)} IS NULL OR u.provider_type = ${bind(providerType)})
 AND (${bind(unitTypes?.ifEmpty { null })}::care_types[] IS NULL OR u.type && ${bind(unitTypes)}::care_types[])
 GROUP BY $groupBy, t
             """
-            )
-        }
-        .toList(mapper)
+        )
+    }.toList(mapper)
         .groupBy { it.key }
 }
 
@@ -316,7 +307,8 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacement
             else -> error("Unsupported placement query class parameter (${K::class})")
         }
 
-    return this.createQuery {
+    return this
+        .createQuery {
             sql(
                 """
 SELECT
@@ -333,8 +325,7 @@ $additionalJoin
 WHERE $daterange && ${bind(period)} AND $groupingId = ANY(${bind(keys.map { it.groupingId })})
 """
             )
-        }
-        .toList<Placement>()
+        }.toList<Placement>()
 }
 
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getRealizedPlacements(
@@ -361,9 +352,14 @@ private fun Database.Read.getPeriodsAwayInBackupCareByChildId(
     period: FiniteDateRange,
     childIds: Set<ChildId>
 ): Map<ChildId, List<FiniteDateRange>> {
-    data class QueryResult(val childId: ChildId, val startDate: LocalDate, val endDate: LocalDate)
+    data class QueryResult(
+        val childId: ChildId,
+        val startDate: LocalDate,
+        val endDate: LocalDate
+    )
 
-    return this.createQuery {
+    return this
+        .createQuery {
             sql(
                 """
 SELECT bc.child_id, bc.start_date, bc.end_date
@@ -371,8 +367,7 @@ FROM backup_care bc
 WHERE daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)} AND bc.child_id = ANY(${bind(childIds)})
 """
             )
-        }
-        .toList<QueryResult>()
+        }.toList<QueryResult>()
         .groupBy { it.childId }
         .mapValues { entry -> entry.value.map { FiniteDateRange(it.startDate, it.endDate) } }
 }
@@ -388,7 +383,8 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getBackupCar
             else -> error("Unsupported placement query class parameter (${K::class})")
         }
 
-    return this.createQuery {
+    return this
+        .createQuery {
             sql(
                 """
 SELECT
@@ -402,11 +398,12 @@ SELECT
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
 JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && ${bind(period)} AND $groupingId = ANY(${bind(keys.map { it.groupingId })})
+WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && ${bind(
+                    period
+                )} AND $groupingId = ANY(${bind(keys.map { it.groupingId })})
 """
             )
-        }
-        .toList<Placement>()
+        }.toList<Placement>()
 }
 
 private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
@@ -425,13 +422,14 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
 
     val childBirthdays =
-        this.createQuery {
+        this
+            .createQuery {
                 sql("SELECT id, date_of_birth FROM person WHERE id = ANY(${bind(childIds)})")
-            }
-            .toMap { columnPair<ChildId, LocalDate>("id", "date_of_birth") }
+            }.toMap { columnPair<ChildId, LocalDate>("id", "date_of_birth") }
 
     val serviceNeeds =
-        this.createQuery {
+        this
+            .createQuery {
                 sql(
                     """
 SELECT
@@ -461,12 +459,12 @@ JOIN daycare u ON pl.unit_id = u.id
 WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
 """
                 )
-            }
-            .toList<ServiceNeed>()
+            }.toList<ServiceNeed>()
             .groupBy { it.placementId }
 
     val defaultServiceNeedCoefficients =
-        this.createQuery {
+        this
+            .createQuery {
                 sql(
                     """
                     SELECT 
@@ -478,34 +476,39 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                     FROM service_need_option WHERE default_option
                     """
                 )
-            }
-            .toMap {
+            }.toMap {
                 column<PlacementType>("valid_placement_type") to row<ServiceNeedCoefficients>()
             }
 
     val assistanceFactors =
         createQuery {
-                sql(
-                    "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
-                )
-            }
-            .toList<AssistanceFactor>()
+            sql(
+                "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(
+                    childIds
+                )})"
+            )
+        }.toList<AssistanceFactor>()
             .groupBy { it.childId }
 
     val absences =
         if (type == OccupancyType.REALIZED) {
-            this.createQuery {
+            this
+                .createQuery {
                     sql(
-                        "SELECT child_id, date, category FROM absence WHERE child_id = ANY(${bind(childIds)}) AND between_start_and_end(${bind(range)}, date)"
+                        "SELECT child_id, date, category FROM absence WHERE child_id = ANY(${bind(
+                            childIds
+                        )}) AND between_start_and_end(${bind(range)}, date)"
                     )
-                }
-                .toList<Absence>()
+                }.toList<Absence>()
                 .groupBy { it.childId }
         } else {
             mapOf()
         }
 
-    fun getCoefficient(date: LocalDate, placement: Placement): Pair<BigDecimal, Boolean> {
+    fun getCoefficient(
+        date: LocalDate,
+        placement: Placement
+    ): Pair<BigDecimal, Boolean> {
         val assistanceCoefficient =
             assistanceFactors[placement.childId]?.find { it.period.includes(date) }?.capacityFactor
                 ?: BigDecimal.ONE
@@ -515,36 +518,37 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                 ?: error("No date of birth found for child ${placement.childId}")
         val under3y = date < dateOfBirth.plusYears(3)
 
-        val serviceNeedCoefficient = run {
-            val coefficients =
-                serviceNeeds[placement.placementId]
-                    ?.let { it.find { sn -> sn.period.includes(date) } }
-                    ?.let {
-                        ServiceNeedCoefficients(
-                            it.occupancyCoefficient,
-                            it.occupancyCoefficientUnder3y,
-                            it.realizedOccupancyCoefficient,
-                            it.realizedOccupancyCoefficientUnder3y
-                        )
-                    }
-                    ?: defaultServiceNeedCoefficients[placement.type]
-                    ?: error("No occupancy coefficients found for placement type ${placement.type}")
+        val serviceNeedCoefficient =
+            run {
+                val coefficients =
+                    serviceNeeds[placement.placementId]
+                        ?.let { it.find { sn -> sn.period.includes(date) } }
+                        ?.let {
+                            ServiceNeedCoefficients(
+                                it.occupancyCoefficient,
+                                it.occupancyCoefficientUnder3y,
+                                it.realizedOccupancyCoefficient,
+                                it.realizedOccupancyCoefficientUnder3y
+                            )
+                        }
+                        ?: defaultServiceNeedCoefficients[placement.type]
+                        ?: error("No occupancy coefficients found for placement type ${placement.type}")
 
-            when (type) {
-                OccupancyType.REALIZED ->
-                    when {
-                        placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
-                        under3y -> coefficients.realizedOccupancyCoefficientUnder3y
-                        else -> coefficients.realizedOccupancyCoefficient
-                    }
-                else ->
-                    when {
-                        placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
-                        under3y -> coefficients.occupancyCoefficientUnder3y
-                        else -> coefficients.occupancyCoefficient
-                    }
+                when (type) {
+                    OccupancyType.REALIZED ->
+                        when {
+                            placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
+                            under3y -> coefficients.realizedOccupancyCoefficientUnder3y
+                            else -> coefficients.realizedOccupancyCoefficient
+                        }
+                    else ->
+                        when {
+                            placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
+                            under3y -> coefficients.occupancyCoefficientUnder3y
+                            else -> coefficients.occupancyCoefficient
+                        }
+                }
             }
-        }
 
         return assistanceCoefficient * serviceNeedCoefficient to under3y
     }
@@ -572,10 +576,12 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                             childPlacements
                                 .map { getCoefficient(caretakers.date, it) }
                                 .maxByOrNull { it.first }
-                        }
-                        .fold(CoefficientSum.ZERO) { sum, (coefficient, under3y) ->
-                            if (under3y) sum.copy(under3y = sum.under3y + coefficient)
-                            else sum.copy(over3y = sum.over3y + coefficient)
+                        }.fold(CoefficientSum.ZERO) { sum, (coefficient, under3y) ->
+                            if (under3y) {
+                                sum.copy(under3y = sum.under3y + coefficient)
+                            } else {
+                                sum.copy(over3y = sum.over3y + coefficient)
+                            }
                         }
 
                 val percentage =
@@ -587,8 +593,7 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                                 caretakers.caretakerCount * occupancyCoefficientSeven,
                                 4,
                                 RoundingMode.HALF_EVEN
-                            )
-                            .times(BigDecimal(100))
+                            ).times(BigDecimal(100))
                             .setScale(1, RoundingMode.HALF_EVEN)
                     }
 
@@ -613,7 +618,10 @@ private data class ServiceNeedCoefficients(
     val realizedOccupancyCoefficientUnder3y: BigDecimal
 )
 
-private data class CoefficientSum(val under3y: BigDecimal, val over3y: BigDecimal) {
+private data class CoefficientSum(
+    val under3y: BigDecimal,
+    val over3y: BigDecimal
+) {
     val sum = under3y + over3y
 
     companion object {
@@ -624,8 +632,9 @@ private data class CoefficientSum(val under3y: BigDecimal, val over3y: BigDecima
 private fun Database.Read.getPlacementPlans(
     period: FiniteDateRange,
     unitIds: Collection<DaycareId>
-): List<Placement> {
-    return this.createQuery {
+): List<Placement> =
+    this
+        .createQuery {
             sql(
                 """
 SELECT
@@ -651,15 +660,14 @@ WHERE NOT p.deleted AND (
 )
 """
             )
-        }
-        .toList<PlacementPlan>()
+        }.toList<PlacementPlan>()
         .flatMap { placementPlan ->
             // If the placement plan has preschool daycare dates set it means that the placement
             // plan could in reality
             // be split into parts with and without preschool daycare, so take that into account.
             if (
                 placementPlan.preschoolDaycareStartDate == null ||
-                    placementPlan.preschoolDaycareEndDate == null
+                placementPlan.preschoolDaycareEndDate == null
             ) {
                 listOf(placementPlan.placement)
             } else {
@@ -685,7 +693,6 @@ WHERE NOT p.deleted AND (
                 } + placementPlan.placement.copy(period = preschoolDaycarePeriod)
             }
         }
-}
 
 private fun childWasAbsentWholeDay(
     date: LocalDate,
@@ -733,4 +740,8 @@ data class AssistanceFactor(
     val period: FiniteDateRange
 )
 
-data class Absence(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)
+data class Absence(
+    val childId: ChildId,
+    val date: LocalDate,
+    val category: AbsenceCategory
+)

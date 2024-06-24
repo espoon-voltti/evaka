@@ -42,8 +42,9 @@ class VasuController(
     private val accessControl: AccessControl,
     private val vasuNotificationService: VasuNotificationService
 ) {
-
-    data class CreateDocumentRequest(val templateId: VasuTemplateId)
+    data class CreateDocumentRequest(
+        val templateId: VasuTemplateId
+    )
 
     @PostMapping(
         "/children/{childId}/vasu", // deprecated
@@ -55,8 +56,9 @@ class VasuController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: CreateDocumentRequest
-    ): VasuDocumentId {
-        return db.connect { dbc ->
+    ): VasuDocumentId =
+        db
+            .connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -85,14 +87,12 @@ class VasuController(
 
                     tx.insertVasuDocument(clock.now(), childId, template)
                 }
-            }
-            .also { documentId ->
+            }.also { documentId ->
                 Audit.VasuDocumentCreate.log(
                     targetId = AuditId(childId),
                     objectId = AuditId(documentId)
                 )
             }
-    }
 
     @GetMapping(
         "/children/{childId}/vasu-summaries", // deprecated
@@ -103,8 +103,9 @@ class VasuController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<VasuDocumentSummaryWithPermittedActions> {
-        return db.connect { dbc ->
+    ): List<VasuDocumentSummaryWithPermittedActions> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -115,9 +116,11 @@ class VasuController(
                     )
                     val documents =
                         tx.getVasuDocumentSummaries(childId) +
-                            (tx.getPersonDuplicateOf(childId)?.let { duplicateId ->
-                                tx.getVasuDocumentSummaries(duplicateId)
-                            } ?: emptyList()) +
+                            (
+                                tx.getPersonDuplicateOf(childId)?.let { duplicateId ->
+                                    tx.getVasuDocumentSummaries(duplicateId)
+                                } ?: emptyList()
+                            ) +
                             tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
                                 tx.getVasuDocumentSummaries(duplicate.id)
                             }
@@ -134,21 +137,21 @@ class VasuController(
                             ?.let { VasuDocumentSummaryWithPermittedActions(document, it) }
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildVasuDocumentsRead.log(
                     targetId = AuditId(childId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     data class VasuDocumentSummaryWithPermittedActions(
         val data: VasuDocumentSummary,
         val permittedActions: Set<Action.VasuDocument>
     )
 
-    data class ChangeDocumentStateRequest(val eventType: VasuDocumentEventType)
+    data class ChangeDocumentStateRequest(
+        val eventType: VasuDocumentEventType
+    )
 
     @GetMapping(
         "/vasu/{id}", // deprecated
@@ -159,8 +162,9 @@ class VasuController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
-    ): VasuDocumentWithPermittedActions {
-        return db.connect { dbc ->
+    ): VasuDocumentWithPermittedActions =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -188,8 +192,11 @@ class VasuController(
                         }
 
                     val employeeNames =
-                        if (employeeIds.isEmpty()) emptyMap()
-                        else tx.getEmployeeNamesByIds(employeeIds)
+                        if (employeeIds.isEmpty()) {
+                            emptyMap()
+                        } else {
+                            tx.getEmployeeNamesByIds(employeeIds)
+                        }
 
                     VasuDocumentWithPermittedActions(
                         data =
@@ -209,16 +216,17 @@ class VasuController(
                             accessControl.getPermittedActions(tx, user, clock, doc.id)
                     )
                 }
-            }
-            .also { Audit.VasuDocumentRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.VasuDocumentRead.log(targetId = AuditId(id)) }
 
     data class VasuDocumentWithPermittedActions(
         val data: VasuDocument,
         val permittedActions: Set<Action.VasuDocument>
     )
 
-    data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
+    data class UpdateDocumentRequest(
+        val content: VasuContent,
+        val childLanguage: ChildLanguage?
+    )
 
     @PutMapping(
         "/vasu/{id}", // deprecated
@@ -265,7 +273,8 @@ class VasuController(
                                                     storedEntry.authorId ==
                                                         EmployeeId(user.rawId()) &&
                                                         storedEntry.createdDate?.let {
-                                                            HelsinkiDateTime.now()
+                                                            HelsinkiDateTime
+                                                                .now()
                                                                 .durationSince(it)
                                                                 .toMinutes() < 15
                                                         } == true
@@ -279,7 +288,7 @@ class VasuController(
                                                     edited =
                                                         if (
                                                             authorEditingInGracePeriod ||
-                                                                identicalContent
+                                                            identicalContent
                                                         ) {
                                                             storedEntry.edited
                                                         } else {
@@ -312,7 +321,10 @@ class VasuController(
         Audit.VasuDocumentUpdate.log(targetId = AuditId(id))
     }
 
-    private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
+    private fun validateVasuDocumentUpdate(
+        vasu: VasuDocument,
+        body: UpdateDocumentRequest
+    ) {
         if (vasu.documentState == VasuDocumentState.CLOSED) {
             throw BadRequest("Closed vasu document cannot be edited", "CANNOT_EDIT_CLOSED_DOCUMENT")
         }
@@ -378,7 +390,7 @@ class VasuController(
         dbc: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: VasuDocumentId,
+        @PathVariable id: VasuDocumentId
     ) {
         dbc.connect { db ->
             db.transaction { tx ->

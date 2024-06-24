@@ -67,7 +67,8 @@ class SfiMessagesSoapClient(
             setMessageSender(
                 HttpsUrlConnectionMessageSender().apply {
                     setTrustManagers(
-                        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+                        TrustManagerFactory
+                            .getInstance(TrustManagerFactory.getDefaultAlgorithm())
                             .apply { init(sfiEnv.trustStore.load()) }
                             .trustManagers
                     )
@@ -248,9 +249,9 @@ class SfiMessagesSoapClient(
             }
         } else if (
             response.code == SfiResponseCode.ValidationError &&
-                response.text.startsWith(
-                    "Asian tietosisällössä virheitä. Viranomaistunnisteella löytyy jo asia, joka on tallennettu asiakkaan tilille Viestit-palveluun"
-                )
+            response.text.startsWith(
+                "Asian tietosisällössä virheitä. Viranomaistunnisteella löytyy jo asia, joka on tallennettu asiakkaan tilille Viestit-palveluun"
+            )
         ) {
             logger.info {
                 "SFI message delivery failed with ${response.code}: ${response.text}. Skipping duplicate message"
@@ -274,12 +275,17 @@ class SfiMessagesSoapClient(
         }
 }
 
-private enum class SignatureKeyIdentifier(val value: String) {
+private enum class SignatureKeyIdentifier(
+    val value: String
+) {
     ISSUER_SERIAL("IssuerSerial"),
     DIRECT_REFERENCE("DirectReference")
 }
 
-private enum class SignatureParts(namespace: String, element: String) {
+private enum class SignatureParts(
+    namespace: String,
+    element: String
+) {
     SOAP_BODY(namespace = WSConstants.URI_SOAP11_ENV, element = WSConstants.ELEM_BODY),
     TIMESTAMP(namespace = WSConstants.WSU_NS, element = WSConstants.TIMESTAMP_TOKEN_LN),
     BINARY_TOKEN(namespace = WSConstants.WSSE_NS, element = WSConstants.BINARY_TOKEN_LN);
@@ -287,8 +293,7 @@ private enum class SignatureParts(namespace: String, element: String) {
     val part: String = "{}{$namespace}$element"
 }
 
-private fun List<SignatureParts>.toPartsExpression(): String =
-    this.map(SignatureParts::part).joinToString(separator = ";")
+private fun List<SignatureParts>.toPartsExpression(): String = this.map(SignatureParts::part).joinToString(separator = ";")
 
 private class SfiFaultMessageResolver : FaultMessageResolver {
     private val logger = KotlinLogging.logger {}
@@ -333,7 +338,9 @@ private sealed class SfiResponseCode {
 
     object ValidationError : SfiResponseCode()
 
-    data class Other(val code: Int) : SfiResponseCode()
+    data class Other(
+        val code: Int
+    ) : SfiResponseCode()
 
     companion object {
         // https://palveluhallinta.suomi.fi/fi/tuki/artikkelit/5c69b9e445a7231c486dbfe6
@@ -348,7 +355,10 @@ private sealed class SfiResponseCode {
     }
 }
 
-private data class SfiResponse(val code: SfiResponseCode, val text: String) {
+private data class SfiResponse(
+    val code: SfiResponseCode,
+    val text: String
+) {
     companion object {
         fun from(soapResponse: LahetaViestiResponse) =
             soapResponse.lahetaViestiResult.tilaKoodi.let {

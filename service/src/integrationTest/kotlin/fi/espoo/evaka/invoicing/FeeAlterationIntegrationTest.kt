@@ -37,9 +37,13 @@ import org.springframework.mock.web.MockMultipartFile
 
 class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var feeAlterationController: FeeAlterationController
+
     @Autowired private lateinit var attachmentsController: AttachmentsController
 
-    private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
+    private fun assertEqualEnough(
+        expected: List<FeeAlteration>,
+        actual: List<FeeAlteration>
+    ) {
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
             expected.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
@@ -210,27 +214,26 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         feeAlterationController.createFeeAlteration(dbInstance(), user, RealEvakaClock(), body)
     }
 
-    private fun updateFeeAlteration(id: FeeAlterationId, body: FeeAlteration) {
+    private fun updateFeeAlteration(
+        id: FeeAlterationId,
+        body: FeeAlteration
+    ) {
         feeAlterationController.updateFeeAlteration(dbInstance(), user, RealEvakaClock(), id, body)
     }
 
-    private fun getFeeAlterations(
-        personId: PersonId
-    ): List<FeeAlterationController.FeeAlterationWithPermittedActions> {
-        return feeAlterationController.getFeeAlterations(dbInstance(), user, clock, personId)
-    }
+    private fun getFeeAlterations(personId: PersonId): List<FeeAlterationController.FeeAlterationWithPermittedActions> =
+        feeAlterationController.getFeeAlterations(dbInstance(), user, clock, personId)
 
     private fun deleteFeeAlteration(id: FeeAlterationId) {
         feeAlterationController.deleteFeeAlteration(dbInstance(), user, RealEvakaClock(), id)
     }
 
-    private fun uploadAttachment(id: FeeAlterationId): AttachmentId {
-        return attachmentsController.uploadFeeAlterationAttachment(
+    private fun uploadAttachment(id: FeeAlterationId): AttachmentId =
+        attachmentsController.uploadFeeAlterationAttachment(
             dbInstance(),
             user,
             clock,
             id,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
         )
-    }
 }

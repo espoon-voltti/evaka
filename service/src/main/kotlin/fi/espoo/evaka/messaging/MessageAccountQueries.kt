@@ -14,41 +14,35 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 
-fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId =
+    createQuery {
+        sql(
+            """
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = ${bind(personId)} AND acc.active = true
 """
-            )
-        }
-        .exactlyOne<MessageAccountId>()
-}
+        )
+    }.exactlyOne<MessageAccountId>()
 
-fun Database.Read.getEmployeeMessageAccountIds(
-    idFilter: AccessControlFilter<MessageAccountId>
-): Set<MessageAccountId> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getEmployeeMessageAccountIds(idFilter: AccessControlFilter<MessageAccountId>): Set<MessageAccountId> =
+    createQuery {
+        sql(
+            """
 SELECT id
 FROM message_account
 WHERE (${predicate(idFilter.forTable("message_account"))})
         """
-            )
-        }
-        .toSet<MessageAccountId>()
-}
+        )
+    }.toSet<MessageAccountId>()
 
 fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     idFilter: AccessControlFilter<MessageAccountId>,
     municipalAccountName: String,
     serviceWorkerAccountName: String
-): List<AuthorizedMessageAccount> {
-    return createQuery {
-            sql(
-                """
+): List<AuthorizedMessageAccount> =
+    createQuery {
+        sql(
+            """
 SELECT DISTINCT ON (acc.id)
     acc.id AS account_id,
     (CASE
@@ -75,105 +69,87 @@ AND (
     OR acc.type = 'SERVICE_WORKER'
 )
 """
-            )
-        }
-        .toList()
-}
+        )
+    }.toList()
 
 fun Database.Read.getAccountNames(
     accountIds: Set<MessageAccountId>,
     serviceWorkerAccountName: String
-): List<String> {
-
-    return createQuery {
-            sql(
-                """
+): List<String> =
+    createQuery {
+        sql(
+            """
 SELECT CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} ELSE mav.name END as name
 FROM message_account_view mav
 WHERE mav.id = ANY(${bind(accountIds)})
 """
-            )
-        }
-        .toList<String>()
-}
+        )
+    }.toList<String>()
 
-fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId {
-    return createUpdate {
-            sql("INSERT INTO message_account (type) VALUES (${bind(AccountType.MUNICIPAL)})")
-        }
-        .executeAndReturnGeneratedKeys()
+fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId =
+    createUpdate {
+        sql("INSERT INTO message_account (type) VALUES (${bind(AccountType.MUNICIPAL)})")
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne()
-}
 
-fun Database.Transaction.createDaycareGroupMessageAccount(
-    daycareGroupId: GroupId
-): MessageAccountId {
-    return createQuery {
-            sql(
-                """
+fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId =
+    createQuery {
+        sql(
+            """
 INSERT INTO message_account (daycare_group_id, type) VALUES (${bind(daycareGroupId)}, 'GROUP')
 RETURNING id
 """
-            )
-        }
-        .exactlyOne<MessageAccountId>()
-}
+        )
+    }.exactlyOne<MessageAccountId>()
 
 fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM message_account WHERE daycare_group_id = ${bind(daycareGroupId)}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
-fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
-    return createQuery {
-            sql(
-                """
+fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId =
+    createQuery {
+        sql(
+            """
 INSERT INTO message_account (person_id, type) VALUES (${bind(personId)}, 'CITIZEN')
 RETURNING id
 """
-            )
-        }
-        .exactlyOne<MessageAccountId>()
-}
+        )
+    }.exactlyOne<MessageAccountId>()
 
 fun Database.Transaction.upsertEmployeeMessageAccount(
     employeeId: EmployeeId,
     accountType: AccountType = AccountType.PERSONAL
-): MessageAccountId {
-    return createQuery {
-            sql(
-                """
+): MessageAccountId =
+    createQuery {
+        sql(
+            """
 INSERT INTO message_account (employee_id, type) VALUES (${bind(employeeId)}, ${bind(accountType)})
 ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
 RETURNING id
 """
-            )
-        }
-        .exactlyOne<MessageAccountId>()
-}
+        )
+    }.exactlyOne<MessageAccountId>()
 
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE message_account SET active = false
 WHERE employee_id = ${bind(employeeId)}
 """
-            )
-        }
-        .execute()
+        )
+    }.execute()
 }
 
-fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountType {
-    return createQuery { sql("SELECT type FROM message_account WHERE id = ${bind(accountId)}") }
+fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountType =
+    createQuery { sql("SELECT type FROM message_account WHERE id = ${bind(accountId)}") }
         .exactlyOne<AccountType>()
-}
 
 fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =
     createQuery { sql("SELECT account_id FROM message_draft WHERE id = ${bind(id)}") }
@@ -181,8 +157,8 @@ fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAcco
 
 fun Database.Read.getMessageAccountIdsByContentId(id: MessageContentId): List<MessageAccountId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT msg.sender_id
 FROM message_content content
 JOIN message msg ON content.id = msg.content_id
@@ -194,9 +170,8 @@ JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 WHERE content.id = ${bind(id)}
 """
-            )
-        }
-        .toList<MessageAccountId>()
+        )
+    }.toList<MessageAccountId>()
 
 fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
     createQuery { sql("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'") }

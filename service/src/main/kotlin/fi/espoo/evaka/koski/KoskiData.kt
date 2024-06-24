@@ -67,33 +67,32 @@ data class KoskiUnitRaw(
         type: OpiskeluoikeudenTyyppiKoodi,
         vahvistus: Vahvistus?,
         osasuoritus: Osasuoritus?
-    ) =
-        Suoritus(
+    ) = Suoritus(
+        when (type) {
+            OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
+                Koulutusmoduuli(
+                    tunniste =
+                        KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PRESCHOOL),
+                    perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL
+                )
+            OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
+                Koulutusmoduuli(
+                    tunniste =
+                        KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PREPARATORY),
+                    perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY
+                )
+        },
+        Toimipiste(ophUnitOid),
+        Suorituskieli(unitLanguage.uppercase()),
+        SuorituksenTyyppi(
             when (type) {
-                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL ->
-                    Koulutusmoduuli(
-                        tunniste =
-                            KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PRESCHOOL),
-                        perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL
-                    )
-                OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
-                    Koulutusmoduuli(
-                        tunniste =
-                            KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PREPARATORY),
-                        perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY
-                    )
-            },
-            Toimipiste(ophUnitOid),
-            Suorituskieli(unitLanguage.uppercase()),
-            SuorituksenTyyppi(
-                when (type) {
-                    OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> SuorituksenTyyppiKoodi.PRESCHOOL
-                    OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> SuorituksenTyyppiKoodi.PREPARATORY
-                }
-            ),
-            vahvistus,
-            osasuoritus?.let { listOf(it) }
-        )
+                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> SuorituksenTyyppiKoodi.PRESCHOOL
+                OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> SuorituksenTyyppiKoodi.PREPARATORY
+            }
+        ),
+        vahvistus,
+        osasuoritus?.let { listOf(it) }
+    )
 
     fun haeJärjestämisMuoto(type: OpiskeluoikeudenTyyppiKoodi) =
         when (type) {
@@ -119,16 +118,18 @@ data class KoskiVoidedDataRaw(
     val studyRightId: KoskiStudyRightId,
     val studyRightOid: String
 ) {
-    fun toKoskiData(sourceSystem: String, ophOrganizationOid: String) =
-        KoskiData(
-            oppija =
-                Oppija(
-                    henkilö = child.toHenkilö(),
-                    opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem))
-                ),
-            organizationOid = ophOrganizationOid,
-            operation = KoskiOperation.VOID
-        )
+    fun toKoskiData(
+        sourceSystem: String,
+        ophOrganizationOid: String
+    ) = KoskiData(
+        oppija =
+            Oppija(
+                henkilö = child.toHenkilö(),
+                opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem))
+            ),
+        organizationOid = ophOrganizationOid,
+        operation = KoskiOperation.VOID
+    )
 
     private fun haeOpiskeluOikeus(sourceSystem: String) =
         Opiskeluoikeus(
@@ -146,7 +147,9 @@ data class KoskiVoidedDataRaw(
         )
 }
 
-sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
+sealed class KoskiActiveDataRaw(
+    val type: OpiskeluoikeudenTyyppiKoodi
+) {
     abstract val child: KoskiChildRaw
     abstract val unit: KoskiUnitRaw
     abstract val studyRightId: KoskiStudyRightId
@@ -236,10 +239,9 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
         )
     }
 
-    private fun haeOpiskeluoikeusjaksot(
-        termination: StudyRightTermination?
-    ): List<Opiskeluoikeusjakso> =
-        DateMap.of(placements.ranges(), OpiskeluoikeusjaksonTilaKoodi.PRESENT)
+    private fun haeOpiskeluoikeusjaksot(termination: StudyRightTermination?): List<Opiskeluoikeusjakso> =
+        DateMap
+            .of(placements.ranges(), OpiskeluoikeusjaksonTilaKoodi.PRESENT)
             .set(placements.gaps(), OpiskeluoikeusjaksonTilaKoodi.INTERRUPTED)
             .set(getHolidayDates().ranges(), OpiskeluoikeusjaksonTilaKoodi.HOLIDAY)
             .set(getInterruptedDates().ranges(), OpiskeluoikeusjaksonTilaKoodi.INTERRUPTED)
@@ -257,12 +259,10 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
                         )
                     null -> it // still ongoing
                 }
-            }
-            .entries()
+            }.entries()
             .map { (range, state) ->
                 Opiskeluoikeusjakso(alku = range.start, OpiskeluoikeusjaksonTila(state))
-            }
-            .toList()
+            }.toList()
 }
 
 data class KoskiActivePreschoolDataRaw(
@@ -275,14 +275,13 @@ data class KoskiActivePreschoolDataRaw(
     val specialSupport: DateSet,
     val specialSupportWithDecisionLevel1: DateSet,
     val specialSupportWithDecisionLevel2: DateSet,
-    val transportBenefit: DateSet,
+    val transportBenefit: DateSet
 ) : KoskiActiveDataRaw(OpiskeluoikeudenTyyppiKoodi.PRESCHOOL) {
     override fun getHolidayDates(): DateSet = DateSet.of()
 
     override fun getInterruptedDates(): DateSet = DateSet.of()
 
-    override fun haeSuoritus(vahvistus: Vahvistus?): Suoritus =
-        unit.haeSuoritus(type, vahvistus = vahvistus, osasuoritus = null)
+    override fun haeSuoritus(vahvistus: Vahvistus?): Suoritus = unit.haeSuoritus(type, vahvistus = vahvistus, osasuoritus = null)
 
     override fun getTermination(lastPlacementEnd: LocalDate): StudyRightTermination {
         val isQualified =
@@ -323,26 +322,35 @@ data class KoskiActivePreschoolDataRaw(
                 .maxByOrNull { it.durationInDays() }
 
         return Lisätiedot(
-                vammainen =
-                    level1.ranges().map { Aikajakso.from(it) }.toList().takeIf { it.isNotEmpty() },
-                vaikeastiVammainen =
-                    level2.ranges().map { Aikajakso.from(it) }.toList().takeIf { it.isNotEmpty() },
-                pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
-                kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
-                erityisenTuenPäätökset =
-                    (allSpecialSupport
+            vammainen =
+                level1
+                    .ranges()
+                    .map { Aikajakso.from(it) }
+                    .toList()
+                    .takeIf { it.isNotEmpty() },
+            vaikeastiVammainen =
+                level2
+                    .ranges()
+                    .map { Aikajakso.from(it) }
+                    .toList()
+                    .takeIf { it.isNotEmpty() },
+            pidennettyOppivelvollisuus = longestEce?.let { Aikajakso.from(it) },
+            kuljetusetu = longestTransportBenefit?.let { Aikajakso.from(it) },
+            erityisenTuenPäätökset =
+                (
+                    allSpecialSupport
                         .ranges()
                         .map { ErityisenTuenPäätös.from(it) }
                         .toList()
-                        .takeIf { it.isNotEmpty() })
-            )
-            .takeIf {
-                it.vammainen != null ||
-                    it.vaikeastiVammainen != null ||
-                    it.pidennettyOppivelvollisuus != null ||
-                    it.kuljetusetu != null ||
-                    it.erityisenTuenPäätökset != null
-            }
+                        .takeIf { it.isNotEmpty() }
+                )
+        ).takeIf {
+            it.vammainen != null ||
+                it.vaikeastiVammainen != null ||
+                it.pidennettyOppivelvollisuus != null ||
+                it.kuljetusetu != null ||
+                it.erityisenTuenPäätökset != null
+        }
     }
 }
 
@@ -361,8 +369,7 @@ data class KoskiActivePreparatoryDataRaw(
 
     override fun getHolidayDates(): DateSet = effectiveAbsences.plannedAbsence
 
-    override fun getInterruptedDates(): DateSet =
-        effectiveAbsences.unknownAbsence + effectiveAbsences.sickLeaveAbsence
+    override fun getInterruptedDates(): DateSet = effectiveAbsences.unknownAbsence + effectiveAbsences.sickLeaveAbsence
 
     override fun haeSuoritus(vahvistus: Vahvistus?): Suoritus =
         unit.haeSuoritus(
@@ -388,20 +395,22 @@ data class KoskiActivePreparatoryDataRaw(
                                 )
                         )
                     ),
-                    SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY_SUBJECT),
+                    SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY_SUBJECT)
                 )
         )
 
     override fun getTermination(lastPlacementEnd: LocalDate): StudyRightTermination {
         val canBeQualified =
-            if (lastOfChild)
+            if (lastOfChild) {
                 when (lastPlacementEnd.month) {
                     Month.MAY,
                     Month.JUNE -> true
                     else -> false
                 }
-            // changing from PREPARATORY to PRESCHOOL is considered qualified
-            else lastOfType
+            } // changing from PREPARATORY to PRESCHOOL is considered qualified
+            else {
+                lastOfType
+            }
 
         // We intentionally only include here absence ranges longer than one
         // week, so it doesn't matter even if the child is randomly absent for
@@ -427,9 +436,13 @@ data class KoskiActivePreparatoryDataRaw(
 sealed class StudyRightTermination {
     abstract val date: LocalDate
 
-    data class Resigned(override val date: LocalDate) : StudyRightTermination()
+    data class Resigned(
+        override val date: LocalDate
+    ) : StudyRightTermination()
 
-    data class Qualified(override val date: LocalDate) : StudyRightTermination()
+    data class Qualified(
+        override val date: LocalDate
+    ) : StudyRightTermination()
 }
 
 /** Fill gaps between periods if those gaps contain only holidays or weekend days */
@@ -447,40 +460,41 @@ internal data class PreparatoryAbsences(
 internal fun calculatePreparatoryAbsences(
     placements: DateSet,
     holidays: Set<LocalDate>,
-    absences: Map<AbsenceType, Set<LocalDate>>,
+    absences: Map<AbsenceType, Set<LocalDate>>
 ): PreparatoryAbsences {
     val plannedAbsence =
         DateSet.of(
-            DateSet.of(
-                    (absences[AbsenceType.PLANNED_ABSENCE]?.map { it.toFiniteDateRange() }
-                        ?: emptyList())
-                )
-                .addAll(
+            DateSet
+                .of(
+                    (
+                        absences[AbsenceType.PLANNED_ABSENCE]?.map { it.toFiniteDateRange() }
+                            ?: emptyList()
+                    )
+                ).addAll(
                     absences[AbsenceType.OTHER_ABSENCE]?.map { it.toFiniteDateRange() }
                         ?: emptyList()
-                )
-                .fillWeekendAndHolidayGaps(holidays)
+                ).fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
                 .ranges()
                 .filter { it.durationInDays() > 7 }
         )
     val sickLeaveAbsence =
         DateSet.of(
-            DateSet.of(
+            DateSet
+                .of(
                     absences[AbsenceType.SICKLEAVE]?.map { it.toFiniteDateRange() } ?: emptyList()
-                )
-                .fillWeekendAndHolidayGaps(holidays)
+                ).fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
                 .ranges()
                 .filter { it.durationInDays() > 7 }
         )
     val unknownAbsence =
         DateSet.of(
-            DateSet.of(
+            DateSet
+                .of(
                     absences[AbsenceType.UNKNOWN_ABSENCE]?.map { it.toFiniteDateRange() }
                         ?: emptyList()
-                )
-                .fillWeekendAndHolidayGaps(holidays)
+                ).fillWeekendAndHolidayGaps(holidays)
                 .intersection(placements)
                 .ranges()
                 .filter { it.durationInDays() > 7 }

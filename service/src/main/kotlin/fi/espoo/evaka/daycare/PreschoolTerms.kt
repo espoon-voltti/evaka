@@ -14,9 +14,9 @@ import java.time.LocalDate
 
 data class PreschoolTerm(
     val id: PreschoolTermId,
-    /*The period during which finnish speaking preschool is arranged.*/
+    // The period during which finnish speaking preschool is arranged.
     val finnishPreschool: FiniteDateRange,
-    /*The period during which swedish speaking preschool is arranged.*/
+    // The period during which swedish speaking preschool is arranged.
     val swedishPreschool: FiniteDateRange,
     /*Children going to preschool may apply for connected daycare slightly outside the actual preschool term,
     usually starting few weeks earlier. That is then essentially normal daycare with discounted price.
@@ -25,26 +25,28 @@ data class PreschoolTerm(
     /*The official application period. The end date is not enforced though, but applications are accepted
     until end of term.*/
     val applicationPeriod: FiniteDateRange,
-    /*Preschool is not arranged during term breaks (e.g. Christmas holiday).*/
+    // Preschool is not arranged during term breaks (e.g. Christmas holiday).
     val termBreaks: DateSet
 ) {
-    fun isApplicationAccepted(date: LocalDate) =
-        FiniteDateRange(applicationPeriod.start, extendedTerm.end).includes(date)
+    fun isApplicationAccepted(date: LocalDate) = FiniteDateRange(applicationPeriod.start, extendedTerm.end).includes(date)
 
     fun scheduleType(date: LocalDate): ScheduleType? =
         when {
             finnishPreschool.includes(date) -> {
-                if (termBreaks.includes(date)) ScheduleType.TERM_BREAK
-                else ScheduleType.FIXED_SCHEDULE
+                if (termBreaks.includes(date)) {
+                    ScheduleType.TERM_BREAK
+                } else {
+                    ScheduleType.FIXED_SCHEDULE
+                }
             }
             else -> null
         }
 }
 
-fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> =
+    createQuery {
+        sql(
+            """
         SELECT
             id,
             finnish_preschool,
@@ -55,15 +57,13 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
         FROM preschool_term
         ORDER BY extended_term
         """
-            )
-        }
-        .toList()
-}
+        )
+    }.toList()
 
 fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT
             id,
             finnish_preschool,
@@ -74,13 +74,13 @@ fun Database.Read.getPreschoolTerm(id: PreschoolTermId): PreschoolTerm? =
         FROM preschool_term 
         WHERE id = ${bind(id)}
         """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }.exactlyOneOrNull()
 
-fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
-    return getPreschoolTerms().firstOrNull { it.extendedTerm.includes(date) }
-}
+fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? =
+    getPreschoolTerms().firstOrNull {
+        it.extendedTerm.includes(date)
+    }
 
 fun Database.Transaction.insertPreschoolTerm(
     finnishPreschool: FiniteDateRange,
@@ -88,10 +88,10 @@ fun Database.Transaction.insertPreschoolTerm(
     extendedTerm: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
-): PreschoolTermId {
-    return createUpdate {
-            sql(
-                """
+): PreschoolTermId =
+    createUpdate {
+        sql(
+            """
         INSERT INTO preschool_term (
             finnish_preschool,
             swedish_preschool,
@@ -107,11 +107,9 @@ fun Database.Transaction.insertPreschoolTerm(
         )
         RETURNING id
         """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne()
-}
 
 fun Database.Transaction.updatePreschoolTerm(
     id: PreschoolTermId,
@@ -120,10 +118,9 @@ fun Database.Transaction.updatePreschoolTerm(
     extendedTerm: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
         UPDATE preschool_term 
         SET 
             finnish_preschool = ${bind(finnishPreschool)},
@@ -133,18 +130,21 @@ fun Database.Transaction.updatePreschoolTerm(
             term_breaks =  ${bind(termBreaks)}
         WHERE id = ${bind(id)}
         """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
-fun Database.Transaction.deleteFuturePreschoolTerm(clock: EvakaClock, termId: PreschoolTermId) {
+fun Database.Transaction.deleteFuturePreschoolTerm(
+    clock: EvakaClock,
+    termId: PreschoolTermId
+) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
            DELETE FROM preschool_term
-           WHERE id = ${bind(termId)} AND (lower(finnish_preschool) > ${bind(clock.today())} AND lower(swedish_preschool) > ${bind(clock.today())})
+           WHERE id = ${bind(
+                termId
+            )} AND (lower(finnish_preschool) > ${bind(clock.today())} AND lower(swedish_preschool) > ${bind(clock.today())})
         """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }.updateExactlyOne()
 }

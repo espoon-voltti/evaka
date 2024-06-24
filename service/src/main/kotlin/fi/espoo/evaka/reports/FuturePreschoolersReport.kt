@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class FuturePreschoolersReport(private val accessControl: AccessControl) {
+class FuturePreschoolersReport(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/future-preschoolers", // deprecated
         "/employee/reports/future-preschoolers"
@@ -26,8 +28,9 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<FuturePreschoolersReportRow> {
-        return db.connect { dbc ->
+    ): List<FuturePreschoolersReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -38,17 +41,16 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFuturePreschoolerRows(clock.today())
                 }
-            }
-            .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping("/employee/reports/future-preschoolers/units")
     fun getFuturePreschoolersUnitsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-    ): List<PreschoolUnitsReportRow> {
-        return db.connect { dbc ->
+        clock: EvakaClock
+    ): List<PreschoolUnitsReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -59,17 +61,16 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPreschoolUnitsRows(clock.today())
                 }
-            }
-            .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping("/employee/reports/future-preschoolers/source-units")
     fun getFuturePreschoolersSourceUnitsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<SourceUnitsReportRow> {
-        return db.connect { dbc ->
+    ): List<SourceUnitsReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -80,17 +81,15 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getSourceUnitsRows(clock.today())
                 }
-            }
-            .also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.FuturePreschoolers.log(meta = mapOf("count" to it.size)) }
 }
 
 const val preschoolSelectionAge = 5
 
 fun Database.Read.getFuturePreschoolerRows(today: LocalDate): List<FuturePreschoolersReportRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.id, 
     p.last_name AS child_last_name,
     p.first_name AS child_first_name,
@@ -116,19 +115,15 @@ WHERE CASE WHEN sno.name_fi like 'Kaksivuotinen%' THEN
 ELSE
     extract(year from :today) -  extract(year from p.date_of_birth) = $preschoolSelectionAge
 END
-            """
-                    .trimIndent()
-            )
-        }
-        .bind("today", today)
+            """.trimIndent()
+        )
+    }.bind("today", today)
         .toList<FuturePreschoolersReportRow>()
 
-fun Database.Read.getPreschoolUnitsRows(
-    today: LocalDate,
-): List<PreschoolUnitsReportRow> =
+fun Database.Read.getPreschoolUnitsRows(today: LocalDate): List<PreschoolUnitsReportRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT d.id, 
     d.name AS unit_name,
     d.street_address AS address,
@@ -152,17 +147,15 @@ SELECT d.id,
 FROM daycare d
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND
 d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
-            """
-                    .trimIndent()
-            )
-        }
-        .bind("today", today)
+            """.trimIndent()
+        )
+    }.bind("today", today)
         .toList<PreschoolUnitsReportRow>()
 
 fun Database.Read.getSourceUnitsRows(today: LocalDate): List<SourceUnitsReportRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT d.id,
     d.name AS unit_name,
     d.street_address AS address,
@@ -170,11 +163,9 @@ SELECT d.id,
     d.post_office as post_office
 FROM daycare d
 WHERE d.opening_date <= :today AND (d.closing_date IS NULL OR d.closing_date >= :today)
-            """
-                    .trimIndent()
-            )
-        }
-        .bind("today", today)
+            """.trimIndent()
+        )
+    }.bind("today", today)
         .toList<SourceUnitsReportRow>()
 
 data class FuturePreschoolersReportRow(

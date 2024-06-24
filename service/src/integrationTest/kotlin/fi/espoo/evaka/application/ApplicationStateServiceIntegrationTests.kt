@@ -87,6 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var service: ApplicationStateService
+
     @Autowired private lateinit var metadataController: ProcessMetadataController
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -127,7 +128,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
-            assertNull(application.form.preferences.serviceNeed?.serviceNeedOption)
+            assertNull(
+                application.form.preferences.serviceNeed
+                    ?.serviceNeedOption
+            )
         }
     }
 
@@ -255,7 +259,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
     }
 
-    private fun assertDueDate(applicationId: ApplicationId, expected: LocalDate?) {
+    private fun assertDueDate(
+        applicationId: ApplicationId,
+        expected: LocalDate?
+    ) {
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
             if (expected != null) {
@@ -294,10 +301,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         )
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     "UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId"
-                )
-                .bind("applicationId", applicationId)
+                ).bind("applicationId", applicationId)
                 .bind("receivedAt", now.minusWeeks(1))
                 .execute()
         }
@@ -348,18 +355,18 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         // when
         db.transaction { tx ->
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
-                )
-                .bind("type", AttachmentType.EXTENDED_CARE)
+                ).bind("type", AttachmentType.EXTENDED_CARE)
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.plusWeeks(1))
                 .execute()
             @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx
+                .createUpdate(
                     "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
-                )
-                .bind("type", AttachmentType.URGENCY)
+                ).bind("type", AttachmentType.URGENCY)
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.plusDays(3))
                 .execute()
@@ -391,7 +398,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     childId = draft.childId,
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
-                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                    endDate =
+                        draft.form.preferences.preferredStartDate!!
+                            .plusYears(1)
                 )
             )
         }
@@ -423,7 +432,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     childId = draft.childId,
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
-                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1),
+                    endDate =
+                        draft.form.preferences.preferredStartDate!!
+                            .plusYears(1),
                     type = PlacementType.DAYCARE_FIVE_YEAR_OLDS
                 )
             )
@@ -455,7 +466,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     childId = draft.childId,
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
-                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                    endDate =
+                        draft.form.preferences.preferredStartDate!!
+                            .plusYears(1)
                 )
             )
         }
@@ -489,7 +502,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     childId = draft.childId,
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
-                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                    endDate =
+                        draft.form.preferences.preferredStartDate!!
+                            .plusYears(1)
                 )
             )
         }
@@ -1393,7 +1408,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-            tx.fetchDecisionDrafts(applicationId)
+            tx
+                .fetchDecisionDrafts(applicationId)
                 .map { draft ->
                     DecisionDraftUpdate(
                         id = draft.id,
@@ -1402,8 +1418,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         endDate = draft.endDate,
                         planned = false
                     )
-                }
-                .let { updates -> updateDecisionDrafts(tx, applicationId, updates) }
+                }.let { updates -> updateDecisionDrafts(tx, applicationId, updates) }
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
@@ -1738,7 +1753,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(
                 serviceNeedOption,
-                application.form.preferences.serviceNeed?.serviceNeedOption
+                application.form.preferences.serviceNeed
+                    ?.serviceNeedOption
             )
             val serviceNeeds = it.getServiceNeedsByChild(application.childId)
             assertThat(serviceNeeds).isEmpty()
@@ -1782,7 +1798,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(
                 serviceNeedOption,
-                application.form.preferences.serviceNeed?.serviceNeedOption
+                application.form.preferences.serviceNeed
+                    ?.serviceNeedOption
             )
             val serviceNeeds = it.getServiceNeedsByChild(application.childId)
             assertEquals(listOf(serviceNeedOption.id), serviceNeeds.map { sn -> sn.option.id })
@@ -2021,12 +2038,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, testApplicationId)
                 service.confirmDecisionMailed(tx, serviceWorker, clock, testApplicationId)
                 val decisionId =
-                    tx.createQuery {
+                    tx
+                        .createQuery {
                             sql(
                                 "SELECT id FROM decision WHERE application_id = ${bind(testApplicationId)}"
                             )
-                        }
-                        .exactlyOne<DecisionId>()
+                        }.exactlyOne<DecisionId>()
                 service.acceptDecision(
                     tx = tx,
                     user = guardian.user(CitizenAuthLevel.STRONG),
@@ -2048,13 +2065,29 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertEquals(120, metadata.process.archiveDurationMonths)
         assertEquals(4, metadata.process.history.size)
         assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
-        assertEquals(guardian.evakaUserId, metadata.process.history[0].enteredBy.id)
+        assertEquals(
+            guardian.evakaUserId,
+            metadata.process.history[0]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
-        assertEquals(serviceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
+        assertEquals(
+            serviceWorker.evakaUserId,
+            metadata.process.history[1]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
-        assertEquals(serviceWorker.evakaUserId, metadata.process.history[2].enteredBy.id)
+        assertEquals(
+            serviceWorker.evakaUserId,
+            metadata.process.history[2]
+                .enteredBy.id
+        )
         assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
-        assertEquals(guardian.evakaUserId, metadata.process.history[3].enteredBy.id)
+        assertEquals(
+            guardian.evakaUserId,
+            metadata.process.history[3]
+                .enteredBy.id
+        )
         assertEquals("Varhaiskasvatus- ja palvelusetelihakemus", metadata.primaryDocument.name)
         assertEquals(guardian.evakaUserId, metadata.primaryDocument.createdBy?.id)
         assertEquals(
@@ -2070,7 +2103,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
     }
 
-    private fun getDecision(r: Database.Read, type: DecisionType): Decision =
+    private fun getDecision(
+        r: Database.Read,
+        type: DecisionType
+    ): Decision =
         r.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll).first {
             it.type == type
         }

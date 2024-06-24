@@ -29,7 +29,6 @@ import org.springframework.ws.transport.http.HttpsUrlConnectionMessageSender
 
 @ExtendWith(MockitoExtension::class)
 class XroadSoapClientConfigTest {
-
     private val contextRunner =
         ApplicationContextRunner()
             .withConfiguration(of(CommonSoapClientTestConfig::class.java))
@@ -129,7 +128,6 @@ class XroadSoapClientConfigTest {
     @Configuration
     @Import(CommonSoapClientTestConfig::class)
     class PrivateKeyBeansProvidingTestConfig {
-
         lateinit var keyBean: KeyManagersFactoryBean
 
         @Bean
@@ -143,7 +141,6 @@ class XroadSoapClientConfigTest {
     @Configuration
     @Import(XroadSoapClientConfig::class)
     class CommonSoapClientTestConfig {
-
         lateinit var trustBean: TrustManagersFactoryBean
 
         @Bean

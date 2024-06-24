@@ -6,7 +6,9 @@ package fi.espoo.evaka.identity
 
 /** Persons identifier in external system. e.g. the system used to log in with */
 sealed class ExternalIdentifier {
-    data class SSN private constructor(val ssn: String) : ExternalIdentifier() {
+    data class SSN private constructor(
+        val ssn: String
+    ) : ExternalIdentifier() {
         companion object {
             fun getInstance(ssn: String): SSN {
                 require(isValidSSN(ssn)) { "Invalid Social Security Number: $ssn." }

@@ -12,9 +12,15 @@ data class PersonAddress(
     val postOfficeSe: String? = null
 )
 
-data class Nationality(val countryName: String = "", val countryCode: String)
+data class Nationality(
+    val countryName: String = "",
+    val countryCode: String
+)
 
-data class NativeLanguage(val languageName: String = "", val code: String) {
+data class NativeLanguage(
+    val languageName: String = "",
+    val code: String
+) {
     companion object {
         val FI = NativeLanguage(languageName = "suomi", code = "fi")
     }

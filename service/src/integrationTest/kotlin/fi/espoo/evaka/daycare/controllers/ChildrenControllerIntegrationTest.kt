@@ -96,7 +96,8 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             )
         val result = childController.getChild(dbInstance(), user, RealEvakaClock(), childId)
 
-        Assertions.assertThat(result.permittedActions)
+        Assertions
+            .assertThat(result.permittedActions)
             .doesNotContain(Action.Child.READ_DAILY_SERVICE_TIMES)
     }
 
@@ -116,7 +117,8 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             )
         val result = espooChildController.getChild(dbInstance(), user, RealEvakaClock(), childId)
 
-        Assertions.assertThat(result.permittedActions)
+        Assertions
+            .assertThat(result.permittedActions)
             .contains(Action.Child.READ_DAILY_SERVICE_TIMES)
     }
 }

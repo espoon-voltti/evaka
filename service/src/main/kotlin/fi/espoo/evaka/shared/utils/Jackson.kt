@@ -10,7 +10,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 
 @JvmInline
-value class JsonWriter<T> private constructor(private val writer: ObjectWriter) {
+value class JsonWriter<T> private constructor(
+    private val writer: ObjectWriter
+) {
     constructor(
         jsonMapper: JsonMapper,
         rootType: TypeReference<T>

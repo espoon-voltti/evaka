@@ -45,7 +45,9 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
     private val keyPair = WebPushCrypto.generateKeyPair(SecureRandom())
 
     @Autowired private lateinit var mockEndpoint: MockWebPushEndpoint
+
     @Autowired private lateinit var messageService: MessageService
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val area = DevCareArea()
@@ -166,25 +168,27 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
         asyncJobRunner.runPendingJobsSync(clock)
 
         val copy =
-            db.read { tx ->
+            db
+                .read { tx ->
                     tx.getMessageCopiesByAccount(groupAccount, pageSize = 20, page = 1).data
-                }
-                .single()
+                }.single()
         assertEquals(municipalAccount, copy.senderId)
         assertEquals(testMessage.title, copy.title)
         assertEquals(0, mockEndpoint.getCapturedRequests("1234").size)
     }
 
-    private fun upsertSubscription(device: MobileDeviceId, endpoint: URI) =
-        db.transaction { tx ->
-            tx.upsertPushSubscription(
-                device,
-                WebPushSubscription(
-                    endpoint = endpoint,
-                    expires = null,
-                    ecdhKey = WebPushCrypto.encode(keyPair.publicKey).toList(),
-                    authSecret = listOf(0x00, 0x11, 0x22, 0x33)
-                )
+    private fun upsertSubscription(
+        device: MobileDeviceId,
+        endpoint: URI
+    ) = db.transaction { tx ->
+        tx.upsertPushSubscription(
+            device,
+            WebPushSubscription(
+                endpoint = endpoint,
+                expires = null,
+                ecdhKey = WebPushCrypto.encode(keyPair.publicKey).toList(),
+                authSecret = listOf(0x00, 0x11, 0x22, 0x33)
             )
-        }
+        )
+    }
 }

@@ -174,24 +174,23 @@ class EspooInvoiceIntegrationClientTest {
         headOfFamily: PersonDetailed = testPerson(),
         codebtor: PersonDetailed? = null,
         rows: List<InvoiceRowDetailed> = listOf(testInvoiceRow())
-    ) =
-        InvoiceDetailed(
-            id = InvoiceId(UUID.randomUUID()),
-            status = InvoiceStatus.DRAFT,
-            periodStart = LocalDate.of(2020, 1, 1),
-            periodEnd = LocalDate.of(2020, 1, 31),
-            dueDate = LocalDate.of(2020, 2, 28),
-            invoiceDate = LocalDate.of(2020, 2, 14),
-            agreementType = agreementType,
-            areaId = AreaId(UUID.randomUUID()),
-            headOfFamily = headOfFamily,
-            codebtor = codebtor,
-            number = 1L,
-            sentBy = null,
-            sentAt = null,
-            rows = rows,
-            relatedFeeDecisions = emptyList()
-        )
+    ) = InvoiceDetailed(
+        id = InvoiceId(UUID.randomUUID()),
+        status = InvoiceStatus.DRAFT,
+        periodStart = LocalDate.of(2020, 1, 1),
+        periodEnd = LocalDate.of(2020, 1, 31),
+        dueDate = LocalDate.of(2020, 2, 28),
+        invoiceDate = LocalDate.of(2020, 2, 14),
+        agreementType = agreementType,
+        areaId = AreaId(UUID.randomUUID()),
+        headOfFamily = headOfFamily,
+        codebtor = codebtor,
+        number = 1L,
+        sentBy = null,
+        sentAt = null,
+        rows = rows,
+        relatedFeeDecisions = emptyList()
+    )
 
     private fun testInvoiceRow(child: PersonDetailed = testPerson()) =
         InvoiceRowDetailed(
@@ -224,26 +223,25 @@ class EspooInvoiceIntegrationClientTest {
         invoicingStreetAddress: String = "",
         invoicingPostalCode: String = "",
         invoicingPostOffice: String = ""
-    ) =
-        PersonDetailed(
-            id = PersonId(UUID.randomUUID()),
-            dateOfBirth = dateOfBirth,
-            dateOfDeath = null,
-            firstName = firstName,
-            lastName = lastName,
-            ssn = "ssn",
-            streetAddress = streetAddress,
-            postalCode = postalCode,
-            postOffice = postOffice,
-            residenceCode = "address_123",
-            email = "email@evaka.test",
-            phone = "123456",
-            language = "fi",
-            invoiceRecipientName = "",
-            invoicingStreetAddress = invoicingStreetAddress,
-            invoicingPostalCode = invoicingPostalCode,
-            invoicingPostOffice = invoicingPostOffice,
-            restrictedDetailsEnabled = false,
-            forceManualFeeDecisions = false
-        )
+    ) = PersonDetailed(
+        id = PersonId(UUID.randomUUID()),
+        dateOfBirth = dateOfBirth,
+        dateOfDeath = null,
+        firstName = firstName,
+        lastName = lastName,
+        ssn = "ssn",
+        streetAddress = streetAddress,
+        postalCode = postalCode,
+        postOffice = postOffice,
+        residenceCode = "address_123",
+        email = "email@evaka.test",
+        phone = "123456",
+        language = "fi",
+        invoiceRecipientName = "",
+        invoicingStreetAddress = invoicingStreetAddress,
+        invoicingPostalCode = invoicingPostalCode,
+        invoicingPostOffice = invoicingPostOffice,
+        restrictedDetailsEnabled = false,
+        forceManualFeeDecisions = false
+    )
 }

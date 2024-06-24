@@ -30,9 +30,16 @@ import java.time.LocalDate
 import java.util.UUID
 import org.springframework.stereotype.Component
 
-data class InvoiceDaycare(val id: DaycareId, val name: String, val costCenter: String?)
+data class InvoiceDaycare(
+    val id: DaycareId,
+    val name: String,
+    val costCenter: String?
+)
 
-data class InvoiceCodes(val products: List<ProductWithName>, val units: List<InvoiceDaycare>)
+data class InvoiceCodes(
+    val products: List<ProductWithName>,
+    val units: List<InvoiceDaycare>
+)
 
 @Component
 class InvoiceService(
@@ -79,7 +86,11 @@ class InvoiceService(
         tx.markInvoicedCorrectionsAsComplete()
     }
 
-    fun updateDraftInvoiceRows(tx: Database.Transaction, uuid: InvoiceId, invoice: Invoice) {
+    fun updateDraftInvoiceRows(
+        tx: Database.Transaction,
+        uuid: InvoiceId,
+        invoice: Invoice
+    ) {
         if (invoice.rows.any { it.amount <= 0 }) {
             throw BadRequest("Invoice rows amounts must be positive")
         }
@@ -102,13 +113,12 @@ class InvoiceService(
         from: LocalDate,
         to: LocalDate,
         areas: List<String>
-    ): List<InvoiceId> {
-        return tx.getInvoiceIdsByDates(FiniteDateRange(from, to), areas)
-    }
+    ): List<InvoiceId> = tx.getInvoiceIdsByDates(FiniteDateRange(from, to), areas)
 
     fun getInvoiceCodes(tx: Database.Read): InvoiceCodes {
         val units =
-            tx.createQuery {
+            tx
+                .createQuery {
                     sql(
                         """
                         SELECT daycare.id, daycare.name, cost_center
@@ -117,8 +127,7 @@ class InvoiceService(
                         ORDER BY name
                         """
                     )
-                }
-                .toList<InvoiceDaycare>()
+                }.toList<InvoiceDaycare>()
         return InvoiceCodes(productProvider.products, units)
     }
 }
@@ -128,21 +137,20 @@ fun Database.Transaction.markManuallySent(
     now: HelsinkiDateTime,
     invoiceIds: List<InvoiceId>
 ) {
-
     val updatedIds =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 UPDATE invoice SET status = ${bind(InvoiceStatus.SENT)}, sent_at = ${bind(now)}, sent_by = ${bind(user.evakaUserId)}
 WHERE id = ANY(${bind(invoiceIds)}) AND status = ${bind(InvoiceStatus.WAITING_FOR_SENDING)}
 RETURNING id
 """
-                )
-            }
-            .toList<InvoiceId>()
+            )
+        }.toList<InvoiceId>()
 
-    if (updatedIds.toSet() != invoiceIds.toSet())
+    if (updatedIds.toSet() != invoiceIds.toSet()) {
         throw BadRequest("Some invoices have incorrect status")
+    }
 }
 
 fun Database.Transaction.markInvoicedCorrectionsAsComplete() {

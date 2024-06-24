@@ -52,8 +52,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class UnitAclController(private val accessControl: AccessControl) {
-
+class UnitAclController(
+    private val accessControl: AccessControl
+) {
     val coefficientPositiveValue = BigDecimal("7.00")
     val coefficientNegativeValue = BigDecimal("0.00")
 
@@ -63,8 +64,8 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId
-    ): List<DaycareAclRow> {
-        return db.connect { dbc ->
+    ): List<DaycareAclRow> =
+        db.connect { dbc ->
             dbc.read { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Unit.READ_ACL, daycareId)
                 val hasOccupancyPermission =
@@ -78,14 +79,16 @@ class UnitAclController(private val accessControl: AccessControl) {
 
                 val aclRows =
                     tx.getDaycareAclRows(daycareId, hasOccupancyPermission).map {
-                        if (it.employee.active) it
-                        else
+                        if (it.employee.active) {
+                            it
+                        } else {
                             it.copy(
                                 employee =
                                     it.employee.copy(
                                         lastName = "${it.employee.lastName} (deaktivoitu)"
                                     )
                             )
+                        }
                     }
 
                 Audit.UnitAclRead.log(
@@ -101,7 +104,6 @@ class UnitAclController(private val accessControl: AccessControl) {
                 aclRows
             }
         }
-    }
 
     @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun deleteUnitSupervisor(
@@ -335,9 +337,15 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
     }
 
-    data class FullAclInfo(val role: UserRole, val update: AclUpdate)
+    data class FullAclInfo(
+        val role: UserRole,
+        val update: AclUpdate
+    )
 
-    data class AclUpdate(val groupIds: List<GroupId>?, val hasStaffOccupancyEffect: Boolean?)
+    data class AclUpdate(
+        val groupIds: List<GroupId>?,
+        val hasStaffOccupancyEffect: Boolean?
+    )
 
     fun getRoleAddAction(role: UserRole): Action.Unit =
         when (role) {
@@ -434,7 +442,8 @@ class UnitAclController(private val accessControl: AccessControl) {
                         unitId
                     )
                     val groupIds =
-                        tx.getDaycareAclRows(daycareId = unitId, false)
+                        tx
+                            .getDaycareAclRows(daycareId = unitId, false)
                             .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
                             .flatMap { it.groupIds }
                             .toSet()
@@ -556,7 +565,7 @@ class UnitAclController(private val accessControl: AccessControl) {
     ) {
         if (
             input.groupIds.isNotEmpty() &&
-                input.groupIds.any { groupId -> tx.getDaycareIdByGroup(groupId) != unitId }
+            input.groupIds.any { groupId -> tx.getDaycareIdByGroup(groupId) != unitId }
         ) {
             throw Forbidden("All groups must be in unit")
         }
@@ -578,7 +587,10 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
     }
 
-    private fun validateIsPermanentEmployee(tx: Database.Read, employeeId: EmployeeId) {
+    private fun validateIsPermanentEmployee(
+        tx: Database.Read,
+        employeeId: EmployeeId
+    ) {
         val employee = tx.getEmployee(employeeId)
         if (employee == null || employee.temporaryInUnitId != null) {
             throw NotFound()
@@ -605,6 +617,5 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
     }
 
-    fun parseCoefficientValue(bool: Boolean) =
-        if (bool) coefficientPositiveValue else coefficientNegativeValue
+    fun parseCoefficientValue(bool: Boolean) = if (bool) coefficientPositiveValue else coefficientNegativeValue
 }

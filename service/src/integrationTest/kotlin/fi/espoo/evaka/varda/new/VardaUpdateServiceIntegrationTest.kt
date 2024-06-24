@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var vardaUpdateService: VardaUpdateServiceNew
+
     @Autowired lateinit var ophEnv: OphEnv
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0))
@@ -86,15 +87,15 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(employee)
 
             tx.insert(child, DevPersonType.CHILD)
-            tx.insert(
+            tx
+                .insert(
                     DevPlacement(
                         childId = child.id,
                         unitId = unit.id,
                         startDate = LocalDate.of(2021, 1, 1),
                         endDate = LocalDate.of(2021, 2, 28)
                     )
-                )
-                .let { placementId ->
+                ).let { placementId ->
                     val period =
                         FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 2, 28))
                     tx.insert(
@@ -112,11 +113,10 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             // Compute the state that would be created by the updater
             val state =
                 VardaUpdater(
-                        DateRange(LocalDate.of(2019, 1, 1), null),
-                        ophEnv.organizerOid,
-                        "sourceSystem"
-                    )
-                    .getEvakaState(tx, LocalDate.of(2024, 1, 1), child.id)
+                    DateRange(LocalDate.of(2019, 1, 1), null),
+                    ophEnv.organizerOid,
+                    "sourceSystem"
+                ).getEvakaState(tx, LocalDate.of(2024, 1, 1), child.id)
             tx.execute {
                 sql(
                     "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, ${bindJson(state)})"
@@ -228,27 +228,28 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         // OPH person OID should have been copied from varda_organizer_child
         val ophPersonOid =
             db.read {
-                it.createQuery {
+                it
+                    .createQuery {
                         sql("SELECT oph_person_oid FROM person WHERE id = ${bind(plannedChildId)}")
-                    }
-                    .exactlyOne<String>()
+                    }.exactlyOne<String>()
             }
         assertEquals(children[plannedChildId], ophPersonOid)
     }
 
-    private fun getVardaStateChildIds(): Set<ChildId> =
-        db.read { tx -> tx.getVardaUpdateChildIds() }.toSet()
+    private fun getVardaStateChildIds(): Set<ChildId> = db.read { tx -> tx.getVardaUpdateChildIds() }.toSet()
 
     private fun getPlannedChildIds(): Set<ChildId> =
         db.read { tx ->
-            tx.createQuery { sql("SELECT (payload->>'childId')::uuid FROM async_job") }
+            tx
+                .createQuery { sql("SELECT (payload->>'childId')::uuid FROM async_job") }
                 .mapTo<ChildId>()
                 .toSet()
         }
 
     private fun getVardaResetChildIds(): Set<ChildId> =
         db.read { tx ->
-            tx.createQuery { sql("SELECT evaka_child_id FROM varda_reset_child") }
+            tx
+                .createQuery { sql("SELECT evaka_child_id FROM varda_reset_child") }
                 .mapTo<ChildId>()
                 .toSet()
         }

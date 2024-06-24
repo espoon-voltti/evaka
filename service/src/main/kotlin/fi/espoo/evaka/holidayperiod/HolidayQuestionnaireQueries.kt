@@ -12,9 +12,10 @@ import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
-private fun Database.Read.questionnaireQuery(where: Predicate): Database.Query = createQuery {
-    sql(
-        """
+private fun Database.Read.questionnaireQuery(where: Predicate): Database.Query =
+    createQuery {
+        sql(
+            """
 SELECT q.id,
        q.type,
        q.absence_type,
@@ -29,8 +30,8 @@ SELECT q.id,
 FROM holiday_period_questionnaire q
 WHERE ${predicate(where.forTable("q"))}
 """
-    )
-}
+        )
+    }
 
 fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
     questionnaireQuery(Predicate { where("$it.active @> ${bind(date)}") })
@@ -40,10 +41,10 @@ fun Database.Read.getChildrenWithContinuousPlacement(
     today: LocalDate,
     userId: PersonId,
     period: FiniteDateRange
-): List<ChildId> {
-    return createQuery {
-            sql(
-                """
+): List<ChildId> =
+    createQuery {
+        sql(
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
@@ -58,39 +59,34 @@ HAVING bool_and(d::date <@ ANY (
     WHERE p.child_id = c.child_id
 ))
 """
-            )
-        }
-        .toList<ChildId>()
-}
+        )
+    }.toList<ChildId>()
 
-fun Database.Read.getUserChildIds(today: LocalDate, userId: PersonId): List<ChildId> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getUserChildIds(
+    today: LocalDate,
+    userId: PersonId
+): List<ChildId> =
+    createQuery {
+        sql(
+            """
 SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
 UNION
 SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 """
-            )
-        }
-        .toList<ChildId>()
-}
+        )
+    }.toList<ChildId>()
 
-fun Database.Read.getFixedPeriodQuestionnaire(
-    id: HolidayQuestionnaireId
-): FixedPeriodQuestionnaire? =
+fun Database.Read.getFixedPeriodQuestionnaire(id: HolidayQuestionnaireId): FixedPeriodQuestionnaire? =
     questionnaireQuery(Predicate { where("$it.id = ${bind(id)}") })
         .exactlyOneOrNull<FixedPeriodQuestionnaire>()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
     questionnaireQuery(Predicate.alwaysTrue()).toList<FixedPeriodQuestionnaire>()
 
-fun Database.Transaction.createFixedPeriodQuestionnaire(
-    data: FixedPeriodQuestionnaireBody
-): HolidayQuestionnaireId =
+fun Database.Transaction.createFixedPeriodQuestionnaire(data: FixedPeriodQuestionnaireBody): HolidayQuestionnaireId =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO holiday_period_questionnaire (
     type,
     absence_type,
@@ -117,17 +113,15 @@ VALUES (
 )
 RETURNING id
 """
-            )
-        }
-        .exactlyOne<HolidayQuestionnaireId>()
+        )
+    }.exactlyOne<HolidayQuestionnaireId>()
 
 fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,
     data: FixedPeriodQuestionnaireBody
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE holiday_period_questionnaire
 SET
     type = ${bind(QuestionnaireType.FIXED_PERIOD)},
@@ -142,9 +136,8 @@ SET
     condition_continuous_placement = ${bind(data.conditions.continuousPlacement)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}.updateExactlyOne()
 
 fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) =
     createUpdate { sql("DELETE FROM holiday_period_questionnaire WHERE id = ${bind(id)}") }
@@ -182,12 +175,11 @@ fun Database.Read.getQuestionnaireAnswers(
     childIds: List<ChildId>
 ): List<HolidayQuestionnaireAnswer> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT questionnaire_id, child_id, fixed_period
 FROM holiday_questionnaire_answer
 WHERE questionnaire_id = ${bind(id)} AND child_id = ANY(${bind(childIds)})
         """
-            )
-        }
-        .toList<HolidayQuestionnaireAnswer>()
+        )
+    }.toList<HolidayQuestionnaireAnswer>()

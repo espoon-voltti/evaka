@@ -86,7 +86,8 @@ class VoucherValueDecisionController(
     ): PagedVoucherValueDecisionSummaries {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -113,8 +114,7 @@ class VoucherValueDecisionController(
                         body.distinctions ?: emptyList()
                     )
                 }
-            }
-            .also { Audit.VoucherValueDecisionSearch.log(meta = mapOf("total" to it.total)) }
+            }.also { Audit.VoucherValueDecisionSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     @GetMapping("/{id}")
@@ -123,8 +123,8 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId
-    ): VoucherValueDecisionDetailed {
-        return db.connect { dbc ->
+    ): VoucherValueDecisionDetailed =
+        db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(
                     it,
@@ -139,7 +139,6 @@ class VoucherValueDecisionController(
             ?: throw NotFound("No voucher value decision found with given ID ($id)").also {
                 Audit.VoucherValueDecisionRead.log(targetId = AuditId(id))
             }
-    }
 
     @GetMapping("/head-of-family/{headOfFamilyId}")
     fun getHeadOfFamilyVoucherValueDecisions(
@@ -147,8 +146,9 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId
-    ): List<VoucherValueDecisionSummary> {
-        return db.connect { dbc ->
+    ): List<VoucherValueDecisionSummary> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -159,11 +159,9 @@ class VoucherValueDecisionController(
                     )
                     it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
                 }
-            }
-            .also {
+            }.also {
                 Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = AuditId(headOfFamilyId))
             }
-    }
 
     @PostMapping("/send")
     fun sendVoucherValueDecisionDrafts(
@@ -234,8 +232,9 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId
-    ): ResponseEntity<Any> {
-        return db.connect { dbc ->
+    ): ResponseEntity<Any> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -268,9 +267,7 @@ class VoucherValueDecisionController(
                 }
 
                 valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
-            }
-            .also { Audit.VoucherValueDecisionPdfRead.log(targetId = AuditId(decisionId)) }
-    }
+            }.also { Audit.VoucherValueDecisionPdfRead.log(targetId = AuditId(decisionId)) }
 
     @PostMapping("/ignore")
     fun ignoreVoucherValueDecisionDrafts(
@@ -413,8 +410,7 @@ fun sendVoucherValueDecisions(
                     DateRange(it.validFrom, it.validTo),
                     listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                 )
-            }
-            .distinctBy { it.id }
+            }.distinctBy { it.id }
             .filter { !ids.contains(it.id) }
 
     if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) {
@@ -424,8 +420,9 @@ fun sendVoucherValueDecisions(
         )
     }
 
-    if (conflicts.any { it.status == WAITING_FOR_SENDING })
+    if (conflicts.any { it.status == WAITING_FOR_SENDING }) {
         error("Some children have overlapping value decisions still waiting for sending")
+    }
 
     val (annulled, updatedDates) =
         updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts).partition {
@@ -489,4 +486,6 @@ data class SearchVoucherValueDecisionRequest(
     val searchByStartDate: Boolean = false
 )
 
-data class VoucherValueDecisionTypeRequest(val type: VoucherValueDecisionType)
+data class VoucherValueDecisionTypeRequest(
+    val type: VoucherValueDecisionType
+)

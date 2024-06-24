@@ -33,10 +33,18 @@ interface PaymentIntegrationClient {
         val failed: List<Payment> = listOf()
     )
 
-    fun send(payments: List<Payment>, tx: Database.Read): SendResult
+    fun send(
+        payments: List<Payment>,
+        tx: Database.Read
+    ): SendResult
 
-    class MockClient(private val jsonMapper: JsonMapper) : PaymentIntegrationClient {
-        override fun send(payments: List<Payment>, tx: Database.Read): SendResult {
+    class MockClient(
+        private val jsonMapper: JsonMapper
+    ) : PaymentIntegrationClient {
+        override fun send(
+            payments: List<Payment>,
+            tx: Database.Read
+        ): SendResult {
             logger.info(
                 "Mock payment integration client got payments ${jsonMapper.writeValueAsString(payments)}"
             )
@@ -44,10 +52,11 @@ interface PaymentIntegrationClient {
         }
     }
 
-    class FailingClient() : PaymentIntegrationClient {
-        override fun send(payments: List<Payment>, tx: Database.Read): SendResult {
-            throw RuntimeException("Payments are not in use")
-        }
+    class FailingClient : PaymentIntegrationClient {
+        override fun send(
+            payments: List<Payment>,
+            tx: Database.Read
+        ): SendResult = throw RuntimeException("Payments are not in use")
     }
 }
 
@@ -59,7 +68,11 @@ enum class PaymentStatus : DatabaseEnum {
     override val sqlType = "payment_status"
 }
 
-data class PaymentDraft(val unitId: DaycareId, val period: DateRange, val amount: Int)
+data class PaymentDraft(
+    val unitId: DaycareId,
+    val period: DateRange,
+    val amount: Int
+)
 
 fun createPaymentDrafts(tx: Database.Transaction) {
     val lastSnapshot =

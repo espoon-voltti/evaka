@@ -73,7 +73,8 @@ class InvoiceController(
     ): PagedInvoiceSummaryResponses {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -111,8 +112,7 @@ class InvoiceController(
                         pages = paged.pages
                     )
                 }
-            }
-            .also { Audit.InvoicesSearch.log(meta = mapOf("total" to it.total)) }
+            }.also { Audit.InvoicesSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     data class InvoiceSummaryResponse(
@@ -123,11 +123,15 @@ class InvoiceController(
     data class PagedInvoiceSummaryResponses(
         val data: List<InvoiceSummaryResponse>,
         val total: Int,
-        val pages: Int,
+        val pages: Int
     )
 
     @PostMapping("/create-drafts")
-    fun createDraftInvoices(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
+    fun createDraftInvoices(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -248,8 +252,9 @@ class InvoiceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: InvoiceId
-    ): InvoiceDetailedResponse {
-        return db.connect { dbc ->
+    ): InvoiceDetailedResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.Invoice.READ, id)
                     val invoice =
@@ -264,9 +269,7 @@ class InvoiceController(
                         )
                     InvoiceDetailedResponse(invoice, permittedActions)
                 }
-            }
-            .also { Audit.InvoicesRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.InvoicesRead.log(targetId = AuditId(id)) }
 
     data class InvoiceDetailedResponse(
         val data: InvoiceDetailed,
@@ -279,8 +282,9 @@ class InvoiceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId
-    ): List<Invoice> {
-        return db.connect { dbc ->
+    ): List<Invoice> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -291,11 +295,9 @@ class InvoiceController(
                     )
                     it.getHeadOfFamilyInvoices(id)
                 }
-            }
-            .also {
+            }.also {
                 Audit.InvoicesRead.log(targetId = AuditId(id), meta = mapOf("count" to it.size))
             }
-    }
 
     @PutMapping("/{id}")
     fun putInvoice(
@@ -319,8 +321,8 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): InvoiceCodes {
-        return db.connect { dbc ->
+    ): InvoiceCodes =
+        db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(
                     it,
@@ -331,7 +333,6 @@ class InvoiceController(
                 service.getInvoiceCodes(it)
             }
         }
-    }
 }
 
 data class InvoicePayload(
@@ -353,5 +354,5 @@ data class SearchInvoicesRequest(
     val distinctions: List<InvoiceDistinctiveParams>? = null,
     val searchTerms: String? = null,
     val periodStart: LocalDate? = null,
-    val periodEnd: LocalDate? = null,
+    val periodEnd: LocalDate? = null
 )

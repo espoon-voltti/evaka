@@ -17,11 +17,12 @@ private fun KtOperationReferenceExpression.replaceOperator(token: KtSingleValueT
         LeafPsiElement(token, token.value)
     )
 
-class NoTripleEquals : EvakaRule("no-triple-equals"), RuleAutocorrectApproveHandler {
+class NoTripleEquals :
+    EvakaRule("no-triple-equals"),
+    RuleAutocorrectApproveHandler {
     override fun beforeVisitChildNodes(
         node: ASTNode,
-        emit:
-            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
+        emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
     ) {
         val expression = node.psi as? KtOperationReferenceExpression ?: return
         val correctOperator =

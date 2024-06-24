@@ -12,9 +12,14 @@ import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.time.Duration
 
-class EspooBiJob(private val client: EspooBiClient) {
-    fun sendBiTable(db: Database.Connection, clock: EvakaClock, msg: EspooAsyncJob.SendBiTable) =
-        sendBiTable(db, clock, msg.table.fileName, msg.table.query)
+class EspooBiJob(
+    private val client: EspooBiClient
+) {
+    fun sendBiTable(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: EspooAsyncJob.SendBiTable
+    ) = sendBiTable(db, clock, msg.table.fileName, msg.table.query)
 
     fun sendBiTable(
         db: Database.Connection,
@@ -33,7 +38,10 @@ class EspooBiJob(private val client: EspooBiClient) {
         }
     }
 
-    class CsvInputStream(private val charset: Charset, records: Sequence<String>) : InputStream() {
+    class CsvInputStream(
+        private val charset: Charset,
+        records: Sequence<String>
+    ) : InputStream() {
         var totalBytes: Int = 0
             private set
 

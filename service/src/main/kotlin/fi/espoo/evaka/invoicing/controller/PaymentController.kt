@@ -34,12 +34,14 @@ class PaymentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         @RequestBody params: SearchPaymentsRequest
-    ): PagedPayments {
-        return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
-    }
+    ): PagedPayments = db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
 
     @PostMapping(path = ["/payments/create-drafts", "/employee/payments/create-drafts"])
-    fun createPaymentDrafts(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
+    fun createPaymentDrafts(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(

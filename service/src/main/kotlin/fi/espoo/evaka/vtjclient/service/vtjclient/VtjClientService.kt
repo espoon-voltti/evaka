@@ -34,7 +34,6 @@ class VtjClientService(
     private val requestAdapter: SoapRequestAdapter,
     private val responseMapper: VTJResponseMapper
 ) : IVtjClientService {
-
     private val logger = KotlinLogging.logger {}
 
     override fun query(query: VTJQuery): Henkilo? {
@@ -77,8 +76,7 @@ class VtjClientService(
             .let {
                 it as? JAXBElement<*>
                     ?: throw IllegalStateException("Unexpected VTJ response : $it")
-            }
-            .let {
+            }.let {
                 if (it.declaredType == T::class.java) {
                     @Suppress("UNCHECKED_CAST")
                     it as JAXBElement<T>
@@ -103,14 +101,18 @@ class VtjClientService(
     }
 }
 
-fun toLogParamsMap(query: VTJQuery, status: QueryStatus) =
-    mapOf(
-        "meta" to mapOf("queryName" to query.type.queryName),
-        "status" to status.value,
-        "targetId" to if (query.ssn.length >= 6) query.ssn.subSequence(0, 6) else query.ssn
-    )
+fun toLogParamsMap(
+    query: VTJQuery,
+    status: QueryStatus
+) = mapOf(
+    "meta" to mapOf("queryName" to query.type.queryName),
+    "status" to status.value,
+    "targetId" to if (query.ssn.length >= 6) query.ssn.subSequence(0, 6) else query.ssn
+)
 
-enum class QueryStatus(val value: String) {
+enum class QueryStatus(
+    val value: String
+) {
     CREATING_REQUEST("creating request"),
     RESPONSE_RECEIVED("response received"),
     RESPONSE_PARSING_FAILURE("response parsing failure"),

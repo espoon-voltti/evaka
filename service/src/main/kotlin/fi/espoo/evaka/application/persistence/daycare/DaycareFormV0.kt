@@ -57,8 +57,8 @@ data class DaycareFormV0(
         }
     }
 
-    override fun hideGuardianAddress(): DaycareFormV0 {
-        return this.copy(
+    override fun hideGuardianAddress(): DaycareFormV0 =
+        this.copy(
             guardian =
                 this.guardian.copy(
                     address = Address(),
@@ -66,10 +66,9 @@ data class DaycareFormV0(
                     restricted = true
                 )
         )
-    }
 
-    override fun hideChildAddress(): DaycareFormV0 {
-        return this.copy(
+    override fun hideChildAddress(): DaycareFormV0 =
+        this.copy(
             child =
                 this.child.copy(
                     address = Address(),
@@ -77,7 +76,6 @@ data class DaycareFormV0(
                     restricted = true
                 )
         )
-    }
 
     companion object {
         fun fromApplication2(application: ApplicationDetails) =
@@ -93,133 +91,132 @@ data class DaycareFormV0(
             type: ApplicationType,
             childRestricted: Boolean,
             guardianRestricted: Boolean
-        ) =
-            DaycareFormV0(
-                type = type,
-                child =
-                    Child(
-                        firstName = form.child.person.firstName,
-                        lastName = form.child.person.lastName,
-                        socialSecurityNumber = form.child.person.socialSecurityNumber ?: "",
-                        dateOfBirth = form.child.dateOfBirth,
-                        address =
-                            form.child.address?.let {
-                                Address(
-                                    street = it.street,
-                                    postalCode = it.postalCode,
-                                    city = it.postOffice,
-                                    editable = false
-                                )
-                            } ?: Address(),
-                        nationality = form.child.nationality,
-                        language = form.child.language,
-                        hasCorrectingAddress = form.child.futureAddress != null,
-                        correctingAddress =
-                            form.child.futureAddress?.let {
-                                Address(
-                                    street = it.street,
-                                    postalCode = it.postalCode,
-                                    city = it.postOffice,
-                                    editable = true
-                                )
-                            } ?: Address(editable = true),
-                        childMovingDate = form.child.futureAddress?.movingDate,
-                        restricted = childRestricted
-                    ),
-                guardian =
-                    Adult(
-                        firstName = form.guardian.person.firstName,
-                        lastName = form.guardian.person.lastName,
-                        socialSecurityNumber = form.guardian.person.socialSecurityNumber ?: "",
-                        address =
-                            form.guardian.address?.let {
-                                Address(
-                                    street = it.street,
-                                    postalCode = it.postalCode,
-                                    city = it.postOffice,
-                                    editable = false
-                                )
-                            } ?: Address(),
-                        phoneNumber = form.guardian.phoneNumber,
-                        email = form.guardian.email,
-                        hasCorrectingAddress = form.guardian.futureAddress != null,
-                        correctingAddress =
-                            form.guardian.futureAddress?.let {
-                                Address(
-                                    street = it.street,
-                                    postalCode = it.postalCode,
-                                    city = it.postOffice,
-                                    editable = true
-                                )
-                            } ?: Address(editable = true),
-                        guardianMovingDate = form.guardian.futureAddress?.movingDate,
-                        restricted = guardianRestricted
-                    ),
-                otherGuardianAgreementStatus = form.secondGuardian?.agreementStatus,
-                apply =
-                    Apply(
-                        preferredUnits = form.preferences.preferredUnits.map { it.id },
-                        siblingBasis = form.preferences.siblingBasis != null,
-                        siblingName = form.preferences.siblingBasis?.siblingName ?: "",
-                        siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: ""
-                    ),
-                urgent = form.preferences.urgent,
-                partTime = form.preferences.serviceNeed?.partTime ?: false,
-                serviceNeedOption = form.preferences.serviceNeed?.serviceNeedOption,
-                connectedDaycare =
-                    (form.preferences.serviceNeed != null).takeIf {
-                        type == ApplicationType.PRESCHOOL
-                    },
-                connectedDaycarePreferredStartDate =
-                    form.preferences.connectedDaycarePreferredStartDate,
-                preferredStartDate = form.preferences.preferredStartDate,
-                serviceStart = form.preferences.serviceNeed?.startTime,
-                serviceEnd = form.preferences.serviceNeed?.endTime,
-                extendedCare = form.preferences.serviceNeed?.shiftCare ?: false,
-                careDetails =
-                    CareDetails(
-                        preparatory =
-                            form.preferences.preparatory.takeIf {
-                                type == ApplicationType.PRESCHOOL
-                            },
-                        assistanceNeeded = form.child.assistanceNeeded,
-                        assistanceDescription = form.child.assistanceDescription
-                    ),
-                guardian2 =
-                    form.secondGuardian?.let { secondGuardian ->
-                        Adult(
-                            phoneNumber = secondGuardian.phoneNumber,
-                            email = secondGuardian.email
-                        )
-                    },
-                hasOtherAdults = form.otherPartner != null,
-                otherAdults =
-                    form.otherPartner?.let {
-                        listOf(
-                            OtherPerson(
-                                firstName = it.firstName,
-                                lastName = it.lastName,
-                                socialSecurityNumber = it.socialSecurityNumber ?: ""
+        ) = DaycareFormV0(
+            type = type,
+            child =
+                Child(
+                    firstName = form.child.person.firstName,
+                    lastName = form.child.person.lastName,
+                    socialSecurityNumber = form.child.person.socialSecurityNumber ?: "",
+                    dateOfBirth = form.child.dateOfBirth,
+                    address =
+                        form.child.address?.let {
+                            Address(
+                                street = it.street,
+                                postalCode = it.postalCode,
+                                city = it.postOffice,
+                                editable = false
                             )
-                        )
-                    } ?: listOf(),
-                hasOtherChildren = form.otherChildren.isNotEmpty(),
-                otherChildren =
-                    form.otherChildren.map {
+                        } ?: Address(),
+                    nationality = form.child.nationality,
+                    language = form.child.language,
+                    hasCorrectingAddress = form.child.futureAddress != null,
+                    correctingAddress =
+                        form.child.futureAddress?.let {
+                            Address(
+                                street = it.street,
+                                postalCode = it.postalCode,
+                                city = it.postOffice,
+                                editable = true
+                            )
+                        } ?: Address(editable = true),
+                    childMovingDate = form.child.futureAddress?.movingDate,
+                    restricted = childRestricted
+                ),
+            guardian =
+                Adult(
+                    firstName = form.guardian.person.firstName,
+                    lastName = form.guardian.person.lastName,
+                    socialSecurityNumber = form.guardian.person.socialSecurityNumber ?: "",
+                    address =
+                        form.guardian.address?.let {
+                            Address(
+                                street = it.street,
+                                postalCode = it.postalCode,
+                                city = it.postOffice,
+                                editable = false
+                            )
+                        } ?: Address(),
+                    phoneNumber = form.guardian.phoneNumber,
+                    email = form.guardian.email,
+                    hasCorrectingAddress = form.guardian.futureAddress != null,
+                    correctingAddress =
+                        form.guardian.futureAddress?.let {
+                            Address(
+                                street = it.street,
+                                postalCode = it.postalCode,
+                                city = it.postOffice,
+                                editable = true
+                            )
+                        } ?: Address(editable = true),
+                    guardianMovingDate = form.guardian.futureAddress?.movingDate,
+                    restricted = guardianRestricted
+                ),
+            otherGuardianAgreementStatus = form.secondGuardian?.agreementStatus,
+            apply =
+                Apply(
+                    preferredUnits = form.preferences.preferredUnits.map { it.id },
+                    siblingBasis = form.preferences.siblingBasis != null,
+                    siblingName = form.preferences.siblingBasis?.siblingName ?: "",
+                    siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: ""
+                ),
+            urgent = form.preferences.urgent,
+            partTime = form.preferences.serviceNeed?.partTime ?: false,
+            serviceNeedOption = form.preferences.serviceNeed?.serviceNeedOption,
+            connectedDaycare =
+                (form.preferences.serviceNeed != null).takeIf {
+                    type == ApplicationType.PRESCHOOL
+                },
+            connectedDaycarePreferredStartDate =
+                form.preferences.connectedDaycarePreferredStartDate,
+            preferredStartDate = form.preferences.preferredStartDate,
+            serviceStart = form.preferences.serviceNeed?.startTime,
+            serviceEnd = form.preferences.serviceNeed?.endTime,
+            extendedCare = form.preferences.serviceNeed?.shiftCare ?: false,
+            careDetails =
+                CareDetails(
+                    preparatory =
+                        form.preferences.preparatory.takeIf {
+                            type == ApplicationType.PRESCHOOL
+                        },
+                    assistanceNeeded = form.child.assistanceNeeded,
+                    assistanceDescription = form.child.assistanceDescription
+                ),
+            guardian2 =
+                form.secondGuardian?.let { secondGuardian ->
+                    Adult(
+                        phoneNumber = secondGuardian.phoneNumber,
+                        email = secondGuardian.email
+                    )
+                },
+            hasOtherAdults = form.otherPartner != null,
+            otherAdults =
+                form.otherPartner?.let {
+                    listOf(
                         OtherPerson(
                             firstName = it.firstName,
                             lastName = it.lastName,
                             socialSecurityNumber = it.socialSecurityNumber ?: ""
                         )
-                    },
-                additionalDetails =
-                    DaycareAdditionalDetails(
-                        allergyType = form.child.allergies,
-                        dietType = form.child.diet,
-                        otherInfo = form.otherInfo
-                    ),
-                maxFeeAccepted = form.maxFeeAccepted
-            )
+                    )
+                } ?: listOf(),
+            hasOtherChildren = form.otherChildren.isNotEmpty(),
+            otherChildren =
+                form.otherChildren.map {
+                    OtherPerson(
+                        firstName = it.firstName,
+                        lastName = it.lastName,
+                        socialSecurityNumber = it.socialSecurityNumber ?: ""
+                    )
+                },
+            additionalDetails =
+                DaycareAdditionalDetails(
+                    allergyType = form.child.allergies,
+                    dietType = form.child.diet,
+                    otherInfo = form.otherInfo
+                ),
+            maxFeeAccepted = form.maxFeeAccepted
+        )
     }
 }
 
@@ -277,16 +274,30 @@ data class OtherPerson(
     val socialSecurityNumber: String = ""
 )
 
-enum class CareType(val id: Long) {
-    @JsonProperty("centre") CENTRE(1L),
-    @JsonProperty("family") FAMILY(2L),
-    @JsonProperty("group_family") GROUP_FAMILY(3L)
+enum class CareType(
+    val id: Long
+) {
+    @JsonProperty("centre")
+    CENTRE(1L),
+
+    @JsonProperty("family")
+    FAMILY(2L),
+
+    @JsonProperty("group_family")
+    GROUP_FAMILY(3L)
 }
 
-enum class WeeklyHours(val id: Long) {
-    @JsonProperty("over_35") OVER_35(1L),
-    @JsonProperty("between_25_and_35") BETWEEN_25_AND_35(2L),
-    @JsonProperty("under_25") UNDER_25(3L)
+enum class WeeklyHours(
+    val id: Long
+) {
+    @JsonProperty("over_35")
+    OVER_35(1L),
+
+    @JsonProperty("between_25_and_35")
+    BETWEEN_25_AND_35(2L),
+
+    @JsonProperty("under_25")
+    UNDER_25(3L)
 }
 
 @JsonIgnoreProperties(

@@ -22,7 +22,7 @@ class KoskiUpdateService(
 ) {
     fun scheduleKoskiUploads(
         db: Database.Connection,
-        clock: EvakaClock,
+        clock: EvakaClock
     ) {
         if (env.koskiEnabled) {
             db.transaction { tx ->

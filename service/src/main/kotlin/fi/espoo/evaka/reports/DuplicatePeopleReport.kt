@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class DuplicatePeopleReportController(private val accessControl: AccessControl) {
+class DuplicatePeopleReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/duplicate-people", // deprecated
         "/employee/reports/duplicate-people"
@@ -28,9 +30,10 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam showIntentionalDuplicates: Boolean?,
-    ): List<DuplicatePeopleReportRow> {
-        return db.connect { dbc ->
+        @RequestParam showIntentionalDuplicates: Boolean?
+    ): List<DuplicatePeopleReportRow> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -41,20 +44,16 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getDuplicatePeople(showIntentionalDuplicates ?: false)
                 }
-            }
-            .also { Audit.DuplicatePeopleReportRead.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.DuplicatePeopleReportRead.log(meta = mapOf("count" to it.size)) }
 }
 
-private fun Database.Read.getDuplicatePeople(
-    showIntentionalDuplicates: Boolean
-): List<DuplicatePeopleReportRow> {
+private fun Database.Read.getDuplicatePeople(showIntentionalDuplicates: Boolean): List<DuplicatePeopleReportRow> {
     val personReferences = getTransferablePersonReferences()
     val intentionalDuplicateFilterClause =
         if (showIntentionalDuplicates) "" else "AND p.duplicate_of IS NULL"
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         WITH people AS (
             SELECT
                 p.id,
@@ -92,14 +91,14 @@ private fun Database.Read.getDuplicatePeople(
         
             jsonb_build_array(
                 ${personReferences.joinToString(separator = ", ") { (table, column) ->
-                    """
+                """
                     json_build_object(
                         'table', '$table',
                         'column', '$column',
                         'count', (SELECT count(*) FROM $table WHERE $column = p.id)
                     )
                     """
-                }},
+            }},
                 json_build_object(
                     'table', 'message',
                     'column', 'sender_id',
@@ -125,12 +124,15 @@ private fun Database.Read.getDuplicatePeople(
         JOIN person p ON p.id = dups.id
         ORDER BY key, social_security_number, p.id
         """
-            )
-        }
-        .toList<DuplicatePeopleReportRow>()
+        )
+    }.toList<DuplicatePeopleReportRow>()
 }
 
-data class ReferenceCount(val table: String, val column: String, val count: Int)
+data class ReferenceCount(
+    val table: String,
+    val column: String,
+    val count: Int
+)
 
 data class DuplicatePeopleReportRow(
     val groupIndex: Int,

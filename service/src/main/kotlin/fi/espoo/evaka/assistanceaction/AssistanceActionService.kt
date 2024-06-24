@@ -48,15 +48,20 @@ class AssistanceActionService {
         }
     }
 
-    fun deleteAssistanceAction(db: Database.Connection, id: AssistanceActionId) {
+    fun deleteAssistanceAction(
+        db: Database.Connection,
+        id: AssistanceActionId
+    ) {
         db.transaction { it.deleteAssistanceAction(id) }
     }
 
-    fun getAssistanceActionOptions(db: Database.Connection): List<AssistanceActionOption> {
-        return db.transaction { it.getAssistanceActionOptions() }
-    }
+    fun getAssistanceActionOptions(db: Database.Connection): List<AssistanceActionOption> =
+        db.transaction { it.getAssistanceActionOptions() }
 
-    private fun validateActions(data: AssistanceActionRequest, options: List<String>) {
+    private fun validateActions(
+        data: AssistanceActionRequest,
+        options: List<String>
+    ) {
         data.actions.forEach { action ->
             if (!options.contains(action)) {
                 throw BadRequest("Action $action is not valid option, all options: $options")

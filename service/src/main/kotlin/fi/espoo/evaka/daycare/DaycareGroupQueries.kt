@@ -36,15 +36,14 @@ fun Database.Transaction.createDaycareGroup(
     startDate: LocalDate
 ): DaycareGroup =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO daycare_group (daycare_id, name, start_date, end_date)
 VALUES (${bind(daycareId)}, ${bind(name)}, ${bind(startDate)}, NULL)
 RETURNING id, daycare_id, name, start_date, end_date, true AS deletable, jamix_customer_number
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
+        )
+    }.executeAndReturnGeneratedKeys()
         .exactlyOne<DaycareGroup>()
 
 fun Database.Transaction.updateGroup(
@@ -55,15 +54,14 @@ fun Database.Transaction.updateGroup(
     jamixCustomerNumber: Int?
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE daycare_group
 SET name = ${bind(name)}, start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, jamix_customer_number = ${bind(jamixCustomerNumber)}
 WHERE id = ${bind(groupId)}
         """
-            )
-        }
-        .updateExactlyOne(notFoundMsg = "Group $groupId not found")
+        )
+    }.updateExactlyOne(notFoundMsg = "Group $groupId not found")
 }
 
 fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
@@ -76,17 +74,17 @@ fun Database.Read.getDaycareGroups(
     endDate: LocalDate?
 ): List<DaycareGroup> =
     createDaycareGroupQuery(
-            groupId = null,
-            daycareId = daycareId,
-            period = DateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate)
-        )
-        .toList<DaycareGroup>()
+        groupId = null,
+        daycareId = daycareId,
+        period = DateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate)
+    ).toList<DaycareGroup>()
 
-fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) = execute {
-    sql(
-        """
+fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) =
+    execute {
+        sql(
+            """
 DELETE FROM group_note WHERE group_id = ${bind(groupId)};        
 DELETE FROM daycare_group WHERE id = ${bind(groupId)}
 """
-    )
-}
+        )
+    }

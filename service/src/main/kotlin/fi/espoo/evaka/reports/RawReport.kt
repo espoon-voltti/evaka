@@ -27,7 +27,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class RawReportController(private val accessControl: AccessControl) {
+class RawReportController(
+    private val accessControl: AccessControl
+) {
     @GetMapping(
         "/reports/raw", // deprecated
         "/employee/reports/raw"
@@ -42,7 +44,8 @@ class RawReportController(private val accessControl: AccessControl) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 
-        return db.connect { dbc ->
+        return db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -53,8 +56,7 @@ class RawReportController(private val accessControl: AccessControl) {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getRawRows(from, to)
                 }
-            }
-            .also {
+            }.also {
                 Audit.RawReportRead.log(
                     meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
@@ -62,10 +64,13 @@ class RawReportController(private val accessControl: AccessControl) {
     }
 }
 
-fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
-    return createQuery {
-            sql(
-                """
+fun Database.Read.getRawRows(
+    from: LocalDate,
+    to: LocalDate
+): List<RawReportRow> =
+    createQuery {
+        sql(
+            """
 WITH realtime_attendances AS (
     SELECT sar.group_id, ROUND(SUM(EXTRACT(EPOCH FROM (
             LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
@@ -167,11 +172,9 @@ LEFT JOIN holiday ON t = holiday.date AND NOT (u.shift_care_open_on_holidays OR 
 WHERE (date_part('isodow', t) = ANY(coalesce(u.shift_care_operation_days, u.operation_days)) OR date_part('isodow', t) = ANY(coalesce(bcu.shift_care_operation_days, bcu.operation_days))) AND holiday.date IS NULL
 ORDER BY p.id, t
 """
-            )
-        }
-        .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
+        )
+    }.registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .toList<RawReportRow>()
-}
 
 data class RawReportRow(
     val day: LocalDate,

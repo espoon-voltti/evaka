@@ -38,7 +38,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             KoskiTester(
                 db,
                 KoskiClient(
-                    KoskiEnv.fromEnvironment(env)
+                    KoskiEnv
+                        .fromEnvironment(env)
                         .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env),
                     asyncJobRunner = null
@@ -149,8 +150,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     }
                 ]
             }
-            """
-                .trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(expected, stored.payload, JSONCompareMode.STRICT)
     }
 
@@ -179,7 +179,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         val stored =
-            db.read { it.getStoredResults() }
+            db
+                .read { it.getStoredResults() }
                 .let { studyRights ->
                     Pair(
                         studyRights.single { it.unitId == testDaycare.id },
@@ -343,34 +344,34 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `two children with placements in the past`() {
         db.transaction { tx ->
             listOf(
-                    DevPlacement(
-                        childId = testChild_2.id,
-                        unitId = testDaycare.id,
-                        startDate = LocalDate.of(2018, 8, 1),
-                        endDate = LocalDate.of(2019, 5, 31),
-                        type = PlacementType.PRESCHOOL
-                    ),
-                    DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
-                        startDate = LocalDate.of(2018, 8, 2),
-                        endDate = LocalDate.of(2018, 12, 31),
-                        type = PlacementType.PRESCHOOL
-                    ),
-                    DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare2.id,
-                        startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2019, 5, 31),
-                        type = PlacementType.PRESCHOOL
-                    )
+                DevPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2018, 8, 1),
+                    endDate = LocalDate.of(2019, 5, 31),
+                    type = PlacementType.PRESCHOOL
+                ),
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2018, 8, 2),
+                    endDate = LocalDate.of(2018, 12, 31),
+                    type = PlacementType.PRESCHOOL
+                ),
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare2.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 5, 31),
+                    type = PlacementType.PRESCHOOL
                 )
-                .forEach { tx.insert(it) }
+            ).forEach { tx.insert(it) }
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         val stored =
-            db.read { it.getStoredResults() }
+            db
+                .read { it.getStoredResults() }
                 .let { studyRights ->
                     Triple(
                         studyRights.single { it.childId == testChild_2.id },
@@ -775,7 +776,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         db.transaction {
             @Suppress("DEPRECATION")
-            it.createUpdate("DELETE FROM placement WHERE id = :placementId")
+            it
+                .createUpdate("DELETE FROM placement WHERE id = :placementId")
                 .bind("placementId", placementId)
                 .execute()
         }

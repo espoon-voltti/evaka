@@ -18,8 +18,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildSensitiveInfoController(private val ac: AccessControl) {
-
+class ChildSensitiveInfoController(
+    private val ac: AccessControl
+) {
     @GetMapping(
         "/children/{childId}/sensitive-info", // deprecated
         "/employee-mobile/children/{childId}/sensitive-info"
@@ -29,8 +30,9 @@ class ChildSensitiveInfoController(private val ac: AccessControl) {
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): ChildSensitiveInformation {
-        return db.connect { dbc ->
+    ): ChildSensitiveInformation =
+        db
+            .connect { dbc ->
                 dbc.read {
                     ac.requirePermissionFor(
                         it,
@@ -42,7 +44,5 @@ class ChildSensitiveInfoController(private val ac: AccessControl) {
 
                     it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found")
                 }
-            }
-            .also { Audit.ChildSensitiveInfoRead.log(targetId = AuditId(childId)) }
-    }
+            }.also { Audit.ChildSensitiveInfoRead.log(targetId = AuditId(childId)) }
 }

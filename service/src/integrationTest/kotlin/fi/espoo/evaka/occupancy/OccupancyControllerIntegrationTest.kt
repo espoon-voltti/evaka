@@ -509,7 +509,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 guardianId = testAdult_1.id,
                 type = type,
                 document =
-                    DaycareFormV0.fromApplication2(validDaycareApplication)
+                    DaycareFormV0
+                        .fromApplication2(validDaycareApplication)
                         .copy(type = type, connectedDaycare = connectedDaycare)
             )
         }
@@ -531,7 +532,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             from = period.start,
             to = period.end,
             preschoolDaycareFrom = preschoolDaycarePeriod?.start,
-            preschoolDaycareTo = preschoolDaycarePeriod?.end,
+            preschoolDaycareTo = preschoolDaycarePeriod?.end
         )
     }
 }

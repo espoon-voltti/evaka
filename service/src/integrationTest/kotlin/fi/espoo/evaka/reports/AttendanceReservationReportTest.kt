@@ -507,8 +507,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3
                     )
-                }
-                .toList()
+                }.toList()
         val expected =
             createEmptyReport(date, date).also { addExpectedRow(it, *changedRows.toTypedArray()) }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -552,8 +551,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         capacityFactor = 1.75,
                         staffCountRequired = 0.3
                     )
-                }
-                .toList()
+                }.toList()
         val expected =
             createEmptyReport(date, date).also { addExpectedRow(it, *changedRows.toTypedArray()) }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -645,34 +643,33 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
             listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                    testChild_8
+                testChild_1,
+                testChild_2,
+                testChild_3,
+                testChild_4,
+                testChild_5,
+                testChild_6,
+                testChild_7,
+                testChild_8
+            ).forEach { testChild ->
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    )
                 )
-                .forEach { testChild ->
-                    tx.insert(
-                        DevPlacement(
-                            childId = testChild.id,
-                            unitId = testDaycare.id,
-                            startDate = date,
-                            endDate = date
-                        )
+                tx.insert(
+                    DevReservation(
+                        childId = testChild.id,
+                        date = date,
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(8, 15),
+                        createdBy = admin.evakaUserId
                     )
-                    tx.insert(
-                        DevReservation(
-                            childId = testChild.id,
-                            date = date,
-                            startTime = LocalTime.of(8, 0),
-                            endTime = LocalTime.of(8, 15),
-                            createdBy = admin.evakaUserId
-                        )
-                    )
-                }
+                )
+            }
         }
 
         val result = getReport(date, date)
@@ -1121,20 +1118,19 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         staffCountRequired = 0.3
                     ),
                     *createRowsForTimespan(
-                            AttendanceReservationReportRow(
-                                groupId = null,
-                                groupName = null,
-                                HelsinkiDateTime.of(startDate, LocalTime.of(8, 30)),
-                                childCountUnder3 = 1,
-                                childCountOver3 = 0,
-                                childCount = 1,
-                                capacityFactor = 1.75,
-                                staffCountRequired = 0.3
-                            ),
-                            HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(8, 0)),
-                            HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(16, 0))
-                        )
-                        .toTypedArray()
+                        AttendanceReservationReportRow(
+                            groupId = null,
+                            groupName = null,
+                            HelsinkiDateTime.of(startDate, LocalTime.of(8, 30)),
+                            childCountUnder3 = 1,
+                            childCountOver3 = 0,
+                            childCount = 1,
+                            capacityFactor = 1.75,
+                            staffCountRequired = 0.3
+                        ),
+                        HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(8, 0)),
+                        HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(16, 0))
+                    ).toTypedArray()
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -1144,8 +1140,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         startDate: LocalDate,
         endDate: LocalDate,
         groupIds: List<GroupId>? = null
-    ): List<AttendanceReservationReportRow> {
-        return attendanceReservationReportController.getAttendanceReservationReportByUnit(
+    ): List<AttendanceReservationReportRow> =
+        attendanceReservationReportController.getAttendanceReservationReportByUnit(
             dbInstance(),
             RealEvakaClock(),
             admin,
@@ -1154,10 +1150,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             endDate,
             groupIds
         )
-    }
 }
 
-data class RowKey(val group: Group?, val dateTime: HelsinkiDateTime)
+data class RowKey(
+    val group: Group?,
+    val dateTime: HelsinkiDateTime
+)
 
 private fun createEmptyReport(
     start: LocalDate,
@@ -1208,9 +1206,8 @@ private fun createRowsForTimespan(
     row: AttendanceReservationReportRow,
     startTime: HelsinkiDateTime,
     endTime: HelsinkiDateTime
-): List<AttendanceReservationReportRow> {
-    return generateSequence(startTime) { it.plusMinutes(15) }
+): List<AttendanceReservationReportRow> =
+    generateSequence(startTime) { it.plusMinutes(15) }
         .takeWhile { it <= endTime }
         .map { row.copy(dateTime = it) }
         .toList()
-}

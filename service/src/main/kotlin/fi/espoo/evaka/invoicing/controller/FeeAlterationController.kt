@@ -50,8 +50,9 @@ class FeeAlterationController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam personId: PersonId
-    ): List<FeeAlterationWithPermittedActions> {
-        return db.connect { dbc ->
+    ): List<FeeAlterationWithPermittedActions> =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -72,14 +73,12 @@ class FeeAlterationController(
                         FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
                     }
                 }
-            }
-            .also {
+            }.also {
                 Audit.ChildFeeAlterationsRead.log(
                     targetId = AuditId(personId),
                     meta = mapOf("count" to it.size)
                 )
             }
-    }
 
     data class FeeAlterationWithPermittedActions(
         val data: FeeAlteration,

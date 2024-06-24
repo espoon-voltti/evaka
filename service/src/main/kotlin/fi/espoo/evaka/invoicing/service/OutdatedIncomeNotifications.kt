@@ -40,35 +40,38 @@ class OutdatedIncomeNotifications(
         asyncJobRunner.registerHandler(::sendEmail)
     }
 
-    fun scheduleNotifications(tx: Database.Transaction, clock: EvakaClock): Int {
+    fun scheduleNotifications(
+        tx: Database.Transaction,
+        clock: EvakaClock
+    ): Int {
         tx.removeUnclaimedJobs(
             setOf(AsyncJobType(AsyncJob.SendOutdatedIncomeNotificationEmail::class))
         )
 
         val guardiansForInitialNotification =
-            tx.expiringIncomes(
+            tx
+                .expiringIncomes(
                     clock.now().toLocalDate(),
                     FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
                     IncomeNotificationType.INITIAL_EMAIL
-                )
-                .map { it.personId }
+                ).map { it.personId }
 
         val guardiansForReminderNotification =
-            tx.expiringIncomes(
+            tx
+                .expiringIncomes(
                     clock.now().toLocalDate(),
                     FiniteDateRange(clock.today(), clock.today().plusWeeks(2)),
                     IncomeNotificationType.REMINDER_EMAIL
-                )
-                .filter { !guardiansForInitialNotification.contains(it.personId) }
+                ).filter { !guardiansForInitialNotification.contains(it.personId) }
                 .map { it.personId }
 
         val guardiansForExpirationNotification =
-            tx.expiringIncomes(
+            tx
+                .expiringIncomes(
                     clock.now().toLocalDate(),
                     FiniteDateRange(clock.today(), clock.today()),
                     IncomeNotificationType.EXPIRED_EMAIL
-                )
-                .filter { !guardiansForInitialNotification.contains(it.personId) }
+                ).filter { !guardiansForInitialNotification.contains(it.personId) }
                 .filter { !guardiansForReminderNotification.contains(it.personId) }
                 .map { it.personId }
 
@@ -81,16 +84,14 @@ class OutdatedIncomeNotifications(
                             it,
                             IncomeNotificationType.INITIAL_EMAIL
                         )
-                    }
-                    .plus(
+                    }.plus(
                         guardiansForReminderNotification.map {
                             AsyncJob.SendOutdatedIncomeNotificationEmail(
                                 it,
                                 IncomeNotificationType.REMINDER_EMAIL
                             )
                         }
-                    )
-                    .plus(
+                    ).plus(
                         guardiansForExpirationNotification.map {
                             AsyncJob.SendOutdatedIncomeNotificationEmail(
                                 it,
@@ -117,7 +118,8 @@ class OutdatedIncomeNotifications(
     ) {
         val language =
             db.read { tx ->
-                tx.createQuery {
+                tx
+                    .createQuery {
                         sql(
                             """
                             SELECT language
@@ -126,8 +128,7 @@ class OutdatedIncomeNotifications(
                             AND email IS NOT NULL
                             """
                         )
-                    }
-                    .bind("guardianId", msg.guardianId)
+                    }.bind("guardianId", msg.guardianId)
                     .exactlyOneOrNull {
                         column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
                             ?: Language.fi
@@ -136,15 +137,15 @@ class OutdatedIncomeNotifications(
 
         logger.info("OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}")
 
-        Email.create(
+        Email
+            .create(
                 dbc = db,
                 emailType = EmailMessageType.OUTDATED_INCOME_NOTIFICATION,
                 personId = msg.guardianId,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.incomeNotification(msg.type, language),
                 traceId = msg.guardianId.toString()
-            )
-            ?.also { emailClient.send(it) }
+            )?.also { emailClient.send(it) }
 
         db.transaction {
             it.createIncomeNotification(msg.guardianId, msg.type)
@@ -152,7 +153,7 @@ class OutdatedIncomeNotifications(
             val firstDayAfterExpiration = clock.today().plusDays(1)
             if (
                 msg.type == IncomeNotificationType.EXPIRED_EMAIL &&
-                    !it.personHasActiveIncomeOnDate(msg.guardianId, firstDayAfterExpiration)
+                !it.personHasActiveIncomeOnDate(msg.guardianId, firstDayAfterExpiration)
             ) {
                 it.insertIncome(
                     clock = clock,

@@ -352,7 +352,9 @@ typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 
 @JsonSerialize(converter = Id.ToJson::class)
 @JsonDeserialize(converter = Id.FromJson::class, keyUsing = Id.KeyFromJson::class)
-data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
+data class Id<out T : DatabaseTable>(
+    val raw: UUID
+) : Comparable<Id<*>> {
     override fun toString(): String = raw.toString()
 
     override fun compareTo(other: Id<*>): Int = this.raw.compareTo(other.raw)
@@ -366,7 +368,9 @@ data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
     }
 
     class KeyFromJson : KeyDeserializer() {
-        override fun deserializeKey(key: String, ctxt: DeserializationContext): Any =
-            Id<DatabaseTable>(UUID.fromString(key))
+        override fun deserializeKey(
+            key: String,
+            ctxt: DeserializationContext
+        ): Any = Id<DatabaseTable>(UUID.fromString(key))
     }
 }

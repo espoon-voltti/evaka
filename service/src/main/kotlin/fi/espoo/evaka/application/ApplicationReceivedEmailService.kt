@@ -42,14 +42,14 @@ class ApplicationReceivedEmailService(
                     )
             }
         logger.info { "Sending application email (personId: $personId)" }
-        Email.create(
+        Email
+            .create(
                 dbc = dbc,
                 personId = personId,
                 emailType = EmailMessageType.TRANSACTIONAL,
                 fromAddress = fromAddress,
                 content = content,
                 traceId = personId.toString()
-            )
-            ?.also { emailClient.send(it) }
+            )?.also { emailClient.send(it) }
     }
 }

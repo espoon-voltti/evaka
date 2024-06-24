@@ -420,18 +420,17 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         val modifiedAt: HelsinkiDateTime
     )
 
-    private fun getAllAbsences(): List<Absence> {
-        return db.read {
+    private fun getAllAbsences(): List<Absence> =
+        db.read {
             @Suppress("DEPRECATION")
-            it.createQuery(
+            it
+                .createQuery(
                     """
 SELECT a.id, a.child_id, a.date, a.category, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
 FROM absence a
 LEFT JOIN evaka_user eu ON eu.id = a.modified_by
 ORDER BY a.date, a.category
 """
-                )
-                .toList<Absence>()
+                ).toList<Absence>()
         }
-    }
 }

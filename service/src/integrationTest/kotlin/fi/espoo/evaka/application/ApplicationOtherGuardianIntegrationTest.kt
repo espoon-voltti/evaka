@@ -49,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var applicationStateService: ApplicationStateService
+
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val guardian = testAdult_5
@@ -109,12 +110,12 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         sendDecisionsWithoutProposal(clock)
         asyncJobRunner.runPendingJobsSync(clock, maxCount = 1) // create, but don't send yet
         db.transaction { tx ->
-            tx.createUpdate {
+            tx
+                .createUpdate {
                     sql(
                         "UPDATE decision SET document_contains_contact_info = TRUE WHERE application_id = ${bind(application)}"
                     )
-                }
-                .execute()
+                }.execute()
         }
         asyncJobRunner.runPendingJobsSync(clock) // send
         acceptDecisions(clock)
@@ -128,9 +129,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             "sfi messages are sent to all guardians and foster parents - foster parent added during the process {0}"
     )
     @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
-    fun `sfi messages are sent to guardians and foster parents - foster parent added during the process`(
-        addDuring: ApplicationStatus
-    ) {
+    fun `sfi messages are sent to guardians and foster parents - foster parent added during the process`(addDuring: ApplicationStatus) {
         val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id)
         val clock = MockEvakaClock(2024, 1, 1, 12, 0)
 
@@ -164,9 +163,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             "sfi messages are sent to all guardians and foster parents - guardian blocked during the process {0}"
     )
     @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
-    fun `sfi messages are sent to guardians - guardian blocked during the process`(
-        blockDuring: ApplicationStatus
-    ) {
+    fun `sfi messages are sent to guardians - guardian blocked during the process`(blockDuring: ApplicationStatus) {
         val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id, fosterParent.id)
         val clock = MockEvakaClock(2024, 1, 1, 12, 0)
 
@@ -187,9 +184,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             "sfi messages are sent to all guardians and foster parents - foster parent relationship expired during the process {0}"
     )
     @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
-    fun `sfi messages are sent to guardians - foster parent relationship expired during the process`(
-        expireDuring: ApplicationStatus
-    ) {
+    fun `sfi messages are sent to guardians - foster parent relationship expired during the process`(expireDuring: ApplicationStatus) {
         val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id, fosterParent.id)
         val clock = MockEvakaClock(2024, 1, 1, 12, 0)
 
@@ -225,7 +220,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                         guardian = guardian.toDaycareFormAdult(),
                         child = child.toDaycareFormChild(),
                         apply = Apply(preferredUnits = listOf(daycare.id)),
-                        preferredStartDate = preferredStartDate,
+                        preferredStartDate = preferredStartDate
                     )
             )
         }
@@ -241,8 +236,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             )
         }
 
-    private fun getOtherGuardians(): Set<PersonId> =
-        db.read { it.getApplicationOtherGuardians(application) }
+    private fun getOtherGuardians(): Set<PersonId> = db.read { it.getApplicationOtherGuardians(application) }
 
     private fun sendApplication(clock: EvakaClock) =
         db.transaction { tx ->
@@ -264,16 +258,18 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             )
         }
 
-    private fun createPlacementPlan(clock: EvakaClock, period: FiniteDateRange) =
-        db.transaction { tx ->
-            applicationStateService.createPlacementPlan(
-                tx,
-                serviceWorker.user,
-                clock,
-                application,
-                DaycarePlacementPlan(daycare.id, period)
-            )
-        }
+    private fun createPlacementPlan(
+        clock: EvakaClock,
+        period: FiniteDateRange
+    ) = db.transaction { tx ->
+        applicationStateService.createPlacementPlan(
+            tx,
+            serviceWorker.user,
+            clock,
+            application,
+            DaycarePlacementPlan(daycare.id, period)
+        )
+    }
 
     private fun sendDecisionsWithoutProposal(clock: EvakaClock) {
         db.transaction { tx ->
@@ -288,8 +284,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
 
     private fun acceptDecisions(clock: EvakaClock) {
         db.transaction { tx ->
-            tx.getDecisionsByApplication(application, AccessControlFilter.PermitAll).forEach {
-                decision ->
+            tx.getDecisionsByApplication(application, AccessControlFilter.PermitAll).forEach { decision ->
                 applicationStateService.acceptDecision(
                     tx,
                     guardian.user(CitizenAuthLevel.STRONG),
@@ -303,7 +298,8 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     private fun getSfiMessageRecipients(): Set<PersonId> =
-        MockSfiMessagesClient.getMessages()
+        MockSfiMessagesClient
+            .getMessages()
             .map {
                 when (it.ssn) {
                     guardian.ssn -> guardian.id
@@ -311,8 +307,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     fosterParent.ssn -> fosterParent.id
                     else -> error("Unknown Suomi.fi message recipient SSN $it.ssn")
                 }
-            }
-            .toSet()
+            }.toSet()
 
     // Creates a test application and performs the following state transitions on it:
     // CREATED -> SENT -> WAITING_PLACEMENT -> WAITING_DECISION -> WAITING_CONFIRMATION -> ACTIVE

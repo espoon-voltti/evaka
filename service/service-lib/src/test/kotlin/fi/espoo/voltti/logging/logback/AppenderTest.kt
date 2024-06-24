@@ -5,6 +5,7 @@
 package fi.espoo.voltti.logging.logback
 
 import fi.espoo.voltti.logging.loggers.info
+import java.util.UUID
 import mu.KLogger
 import mu.KMarkerFactory
 import mu.KotlinLogging
@@ -13,12 +14,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.slf4j.MDC
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val auditMarker = KMarkerFactory.getMarker("AUDIT_EVENT")
-private fun KLogger.audit(msg: String, args: Map<String, Any>) =
-    info(auditMarker, msg, StructuredArguments.e(args))
+
+private fun KLogger.audit(
+    msg: String,
+    args: Map<String, Any>
+) = info(auditMarker, msg, StructuredArguments.e(args))
 
 class AppenderTest {
     private val meta = TestMeta.random()
@@ -122,7 +125,11 @@ class AppenderTest {
         assertThat(actual["meta"]).isNull()
     }
 
-    private fun defaultErrorAssertions(actual: Map<String, Any>, meta: TestMeta, exception: RuntimeException) {
+    private fun defaultErrorAssertions(
+        actual: Map<String, Any>,
+        meta: TestMeta,
+        exception: RuntimeException
+    ) {
         assertThat(actual["logLevel"]).isEqualTo("ERROR")
         assertThat(actual["@timestamp"] as String).isNotBlank
         assertThat(actual["exception"]).isEqualTo(exception::class.java.simpleName)
@@ -131,10 +138,15 @@ class AppenderTest {
     }
 }
 
-data class TestMeta(val key1: String, val key2: String) {
+data class TestMeta(
+    val key1: String,
+    val key2: String
+) {
     companion object {
         fun random() = TestMeta(UUID.randomUUID().toString(), UUID.randomUUID().toString())
     }
 }
+
 class TestException : RuntimeException("BOOM!")
+
 class TestExceptionSensitive : RuntimeException("BOOM! (social_security_number)=(${testSSNs[0]})")

@@ -195,7 +195,7 @@ class MealReportTests {
                         FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)),
                     termBreaks = DateSet.empty(),
                     applicationPeriod =
-                        FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
+                        FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
                 )
             )
 
@@ -336,7 +336,7 @@ class MealReportTests {
                     glutenFreeDiet.id,
                     glutenFreeDiet.abbreviation,
                     "Brown Mike"
-                ),
+                )
             )
         val rowsForMike = report.filter { it.additionalInfo.equals("Brown Mike") }.toSet()
 
@@ -355,7 +355,7 @@ class MealReportTests {
                     lactoseFreeDiet.id,
                     lactoseFreeDiet.abbreviation,
                     "Mallikas Mikko"
-                ),
+                )
             )
         val rowsForMikko = report.filter { it.additionalInfo.equals("Mallikas Mikko") }.toSet()
 
@@ -893,13 +893,15 @@ class MealReportTests {
     }
 }
 
-private fun createServiceNeedInfo(childId: ChildId, shiftCare: ShiftCareType) =
-    ChildServiceNeedInfo(
-        childId = childId,
-        hasContractDays = false,
-        daycareHoursPerMonth = null,
-        optionName = "",
-        validDuring = FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2050, 1, 1)),
-        shiftCare = shiftCare,
-        partWeek = false
-    )
+private fun createServiceNeedInfo(
+    childId: ChildId,
+    shiftCare: ShiftCareType
+) = ChildServiceNeedInfo(
+    childId = childId,
+    hasContractDays = false,
+    daycareHoursPerMonth = null,
+    optionName = "",
+    validDuring = FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2050, 1, 1)),
+    shiftCare = shiftCare,
+    partWeek = false
+)

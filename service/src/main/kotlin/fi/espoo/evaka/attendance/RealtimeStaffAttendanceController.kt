@@ -35,7 +35,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/staff-attendances/realtime")
-class RealtimeStaffAttendanceController(private val accessControl: AccessControl) {
+class RealtimeStaffAttendanceController(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getRealtimeStaffAttendances(
         db: Database,
@@ -44,8 +46,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
-    ): StaffAttendanceResponse {
-        return db.connect { dbc ->
+    ): StaffAttendanceResponse =
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -73,12 +76,12 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             range
                         )
                     val attendancesNotInGroups =
-                        tx.getStaffAttendancesWithoutGroup(
+                        tx
+                            .getStaffAttendancesWithoutGroup(
                                 range,
                                 attendancesByEmployee.keys +
                                     staffForAttendanceCalendar.map { it.id }
-                            )
-                            .groupBy { it.employeeId }
+                            ).groupBy { it.employeeId }
                     val staffWithAttendance =
                         attendancesByEmployee.entries.map { (employeeId, data) ->
                             EmployeeAttendance(
@@ -135,8 +138,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         extraAttendances = tx.getExternalStaffAttendancesByDateRange(unitId, range)
                     )
                 }
-            }
-            .also {
+            }.also {
                 Audit.StaffAttendanceRead.log(
                     targetId = AuditId(unitId),
                     meta =
@@ -146,7 +148,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         )
                 )
             }
-    }
 
     data class StaffAttendanceUpsert(
         val id: StaffAttendanceRealtimeId?,
@@ -206,8 +207,11 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     )
                     body.entries.map { entry ->
                         val occupancyCoefficient =
-                            if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                            else occupancyCoefficientZero
+                            if (entry.hasStaffOccupancyEffect) {
+                                occupancyCoefficientSeven
+                            } else {
+                                occupancyCoefficientZero
+                            }
                         tx.upsertStaffAttendance(
                             entry.id,
                             body.employeeId,
@@ -289,8 +293,11 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             it.groupId,
                             it.arrived,
                             it.departed,
-                            if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                            else occupancyCoefficientZero,
+                            if (it.hasStaffOccupancyEffect) {
+                                occupancyCoefficientSeven
+                            } else {
+                                occupancyCoefficientZero
+                            },
                             false
                         )
                     }

@@ -35,7 +35,9 @@ data class WebPushSubscription(
 }
 
 @RestController
-class WebPushController(private val accessControl: AccessControl) {
+class WebPushController(
+    private val accessControl: AccessControl
+) {
     @PostMapping(
         "/mobile-devices/push-subscription", // deprecated
         "/employee-mobile/push-subscription"
@@ -54,7 +56,7 @@ class WebPushController(private val accessControl: AccessControl) {
 
     data class PushSettings(
         val categories: Set<PushNotificationCategory>,
-        val groups: Set<GroupId>,
+        val groups: Set<GroupId>
     )
 
     @GetMapping(
@@ -64,9 +66,10 @@ class WebPushController(private val accessControl: AccessControl) {
     fun getPushSettings(
         db: Database,
         clock: EvakaClock,
-        user: AuthenticatedUser.MobileDevice,
+        user: AuthenticatedUser.MobileDevice
     ): PushSettings =
-        db.connect { dbc ->
+        db
+            .connect { dbc ->
                 dbc.read { tx ->
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -80,8 +83,7 @@ class WebPushController(private val accessControl: AccessControl) {
                         groups = tx.getPushGroups(filter, user.id)
                     )
                 }
-            }
-            .also { Audit.PushSettingsRead.log(targetId = AuditId(user.id)) }
+            }.also { Audit.PushSettingsRead.log(targetId = AuditId(user.id)) }
 
     @PutMapping(
         "/mobile-devices/push-settings", // deprecated
@@ -111,7 +113,7 @@ class WebPushController(private val accessControl: AccessControl) {
             meta =
                 mapOf(
                     "categories" to settings.categories,
-                    "groups" to settings.groups,
+                    "groups" to settings.groups
                 )
         )
     }

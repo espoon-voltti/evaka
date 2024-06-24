@@ -36,7 +36,6 @@ const val SOAP_PACKAGES: String = "fi.espoo.evaka.vtjclient.soap"
 @Configuration
 @Profile("production", "vtj-dev", "integration-test")
 class XroadSoapClientConfig {
-
     @Bean
     @Profile("!vtj-dev")
     fun marshaller(): Jaxb2Marshaller = Jaxb2Marshaller().apply { setPackagesToScan(SOAP_PACKAGES) }
@@ -55,21 +54,19 @@ class XroadSoapClientConfig {
         xRoadEnv: VtjXroadEnv,
         messageSender: WebServiceMessageSender,
         faultMessageResolver: FaultMessageResolver
-    ) =
-        WebServiceTemplate().apply {
-            setMarshaller(marshaller)
-            unmarshaller = marshaller
-            defaultUri = xRoadEnv.address
-            // don't rely on HTTP status to indicate fault (will not work), check the message
-            setCheckConnectionForFault(false)
-            setMessageSender(messageSender)
-            setFaultMessageResolver(faultMessageResolver)
-        }
+    ) = WebServiceTemplate().apply {
+        setMarshaller(marshaller)
+        unmarshaller = marshaller
+        defaultUri = xRoadEnv.address
+        // don't rely on HTTP status to indicate fault (will not work), check the message
+        setCheckConnectionForFault(false)
+        setMessageSender(messageSender)
+        setFaultMessageResolver(faultMessageResolver)
+    }
 
     @Bean fun soapFaultResolver(): FaultMessageResolver = XroadFaultMessageResolver()
 
     class XroadFaultMessageResolver : FaultMessageResolver {
-
         private val logger = KotlinLogging.logger {}
 
         override fun resolveFault(message: WebServiceMessage) {
@@ -111,17 +108,16 @@ class XroadSoapClientConfig {
     fun httpsClientAuthMessageSender(
         trustManagersFactoryBean: TrustManagersFactoryBean,
         keyManagersFactoryBean: KeyManagersFactoryBean
-    ) =
-        HttpsUrlConnectionMessageSender().apply {
-            setTrustManagers(trustManagersFactoryBean.`object`)
-            setKeyManagers(keyManagersFactoryBean.`object`)
-            // We skip FQDN matching to cert CN/subject alternative names and just trust the
-            // certificate.
-            // The trust store must only contain end-entity certificates (no CA certificates)
-            // TODO: Either keep using single certs or fix the certs and host names for security
-            // servers
-            setHostnameVerifier(NoopHostnameVerifier())
-        }
+    ) = HttpsUrlConnectionMessageSender().apply {
+        setTrustManagers(trustManagersFactoryBean.`object`)
+        setKeyManagers(keyManagersFactoryBean.`object`)
+        // We skip FQDN matching to cert CN/subject alternative names and just trust the
+        // certificate.
+        // The trust store must only contain end-entity certificates (no CA certificates)
+        // TODO: Either keep using single certs or fix the certs and host names for security
+        // servers
+        setHostnameVerifier(NoopHostnameVerifier())
+    }
 
     @Bean
     fun vtjSoapHeaderCallback(
@@ -130,23 +126,23 @@ class XroadSoapClientConfig {
         marshaller: Jaxb2Marshaller
     ): SoapRequestAdapter =
         object : SoapRequestAdapter {
-            override fun createCallback(query: VTJQuery) = WebServiceMessageCallback {
-                val marsh = marshaller.jaxbContext.createMarshaller()
-                val headerResult = (it as SoapMessage).soapHeader.result
+            override fun createCallback(query: VTJQuery) =
+                WebServiceMessageCallback {
+                    val marsh = marshaller.jaxbContext.createMarshaller()
+                    val headerResult = (it as SoapMessage).soapHeader.result
 
-                marsh.apply {
-                    marshal(factory.createId(MdcKey.TRACE_ID.get() ?: ""), headerResult)
-                    marshal(factory.createIssue(""), headerResult)
-                    marshal(factory.createUserId(query.requestingUserId.toString()), headerResult)
-                    marshal(factory.createProtocolVersion(xRoadEnv.protocolVersion), headerResult)
-                    marshal(xRoadEnv.client.toClientHeader(), headerResult)
-                    marshal(xRoadEnv.service.toServiceHeader(), headerResult)
+                    marsh.apply {
+                        marshal(factory.createId(MdcKey.TRACE_ID.get() ?: ""), headerResult)
+                        marshal(factory.createIssue(""), headerResult)
+                        marshal(factory.createUserId(query.requestingUserId.toString()), headerResult)
+                        marshal(factory.createProtocolVersion(xRoadEnv.protocolVersion), headerResult)
+                        marshal(xRoadEnv.client.toClientHeader(), headerResult)
+                        marshal(xRoadEnv.service.toServiceHeader(), headerResult)
+                    }
                 }
-            }
         }
 }
 
 interface SoapRequestAdapter {
-
     fun createCallback(query: VTJQuery): WebServiceMessageCallback
 }

@@ -21,7 +21,6 @@ import org.springframework.util.StreamUtils
 
 @ExtendWith(OutputCaptureExtension::class)
 internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
-
     @Test
     fun `put working time events with system user should respond 403`() {
         val (_, res, _) =
@@ -32,8 +31,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                     ClassPathResource("titania/titania-update-request-valid-example-data.json")
                         .inputStream
                         .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
-                )
-                .response()
+                ).response()
 
         assertThat(res).returns(403) { it.statusCode }
     }
@@ -48,8 +46,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                     ClassPathResource("titania/titania-update-request-without-employee-id.json")
                         .inputStream
                         .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
-                )
-                .response()
+                ).response()
 
         assertThat(res).returns(400) { it.statusCode }
     }
@@ -91,8 +88,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                     ClassPathResource("titania/titania-get-request-valid-example-data.json")
                         .inputStream
                         .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
-                )
-                .response()
+                ).response()
 
         assertThat(res).returns(403) { it.statusCode }
     }
@@ -107,8 +103,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
                     ClassPathResource("titania/titania-get-request-without-employee-id.json")
                         .inputStream
                         .use { StreamUtils.copyToString(it, StandardCharsets.UTF_8) }
-                )
-                .response()
+                ).response()
 
         assertThat(res).returns(400) { it.statusCode }
     }

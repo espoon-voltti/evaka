@@ -471,14 +471,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun getChildren(
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
-    ): List<AttendanceChild> {
-        return childAttendanceController.getChildren(
+    ): List<AttendanceChild> =
+        childAttendanceController.getChildren(
             dbInstance(),
             user,
             MockEvakaClock(now),
             unitId
         )
-    }
 
     private fun expectOneChild(
         unitId: DaycareId = testDaycare.id,
@@ -500,14 +499,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun getAttendanceStatuses(
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
-    ): Map<ChildId, ChildAttendanceController.ChildAttendanceStatusResponse> {
-        return childAttendanceController.getAttendanceStatuses(
+    ): Map<ChildId, ChildAttendanceController.ChildAttendanceStatusResponse> =
+        childAttendanceController.getAttendanceStatuses(
             dbInstance(),
             user,
             MockEvakaClock(now),
             unitId
         )
-    }
 
     private fun expectOneChildAttendance(
         unitId: DaycareId = testDaycare.id,

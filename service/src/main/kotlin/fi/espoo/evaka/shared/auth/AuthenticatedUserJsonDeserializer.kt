@@ -21,7 +21,10 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
         val employeeId: EmployeeId? = null
     )
 
-    override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
+    override fun deserialize(
+        p: JsonParser,
+        ctx: DeserializationContext
+    ): AuthenticatedUser {
         val user = p.readValueAs(AllFields::class.java)
         return when (user.type!!) {
             AuthenticatedUserType.citizen ->

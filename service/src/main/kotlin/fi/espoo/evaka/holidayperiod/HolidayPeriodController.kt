@@ -32,14 +32,17 @@ import org.springframework.web.bind.annotation.RestController
     "/holiday-period", // deprecated
     "/employee/holiday-period"
 )
-class HolidayPeriodController(private val accessControl: AccessControl) {
+class HolidayPeriodController(
+    private val accessControl: AccessControl
+) {
     @GetMapping
     fun getHolidayPeriods(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
-    ): List<HolidayPeriod> {
-        return db.connect { dbc ->
+    ): List<HolidayPeriod> =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -49,9 +52,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     )
                     it.getHolidayPeriods()
                 }
-            }
-            .also { Audit.HolidayPeriodsList.log(meta = mapOf("count" to it.size)) }
-    }
+            }.also { Audit.HolidayPeriodsList.log(meta = mapOf("count" to it.size)) }
 
     @GetMapping("/{id}")
     fun getHolidayPeriod(
@@ -59,8 +60,9 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayPeriodId
-    ): HolidayPeriod {
-        return db.connect { dbc ->
+    ): HolidayPeriod =
+        db
+            .connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
@@ -70,9 +72,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     )
                     it.getHolidayPeriod(id)
                 } ?: throw NotFound()
-            }
-            .also { Audit.HolidayPeriodRead.log(targetId = AuditId(id)) }
-    }
+            }.also { Audit.HolidayPeriodRead.log(targetId = AuditId(id)) }
 
     @PostMapping
     fun createHolidayPeriod(
@@ -80,8 +80,9 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: HolidayPeriodBody
-    ): HolidayPeriod {
-        return db.connect { dbc ->
+    ): HolidayPeriod =
+        db
+            .connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
                         it,
@@ -104,11 +105,9 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         throw mapPSQLException(e)
                     }
                 }
-            }
-            .also { holidayPeriod ->
+            }.also { holidayPeriod ->
                 Audit.HolidayPeriodCreate.log(targetId = AuditId(holidayPeriod.id))
             }
-    }
 
     @PutMapping("/{id}")
     fun updateHolidayPeriod(

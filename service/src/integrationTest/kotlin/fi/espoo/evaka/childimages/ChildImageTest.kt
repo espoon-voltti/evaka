@@ -116,8 +116,7 @@ FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 10
-"""
-                .decodeHex()
+""".decodeHex()
         )
 
     private val image2 =
@@ -133,13 +132,12 @@ FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 01
-"""
-                .decodeHex()
+""".decodeHex()
         )
 
     private fun uploadImage(
         childId: ChildId,
-        file: MultipartFile,
+        file: MultipartFile
     ) {
         childImageController.putImage(dbInstance(), admin, RealEvakaClock(), childId, file)
     }
