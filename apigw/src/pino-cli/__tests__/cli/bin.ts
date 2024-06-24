@@ -4,6 +4,8 @@
 
 import { spawnSync } from 'child_process'
 import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import {
   expected,
   validPinoAccessLogMessage,
@@ -12,7 +14,6 @@ import {
   validPinoMiscLogMessageWithError
 } from '../../test-utils/fixtures/log-messages'
 import { deepCopyObj } from '../../test-utils/utils'
-import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const cliPath = path.join(

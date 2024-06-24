@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import tracer from 'dd-trace'
+
 import {
   volttiEnv,
   serviceName,
@@ -11,7 +13,6 @@ import {
   traceAgentPort,
   profilingEnabled
 } from './shared/config.js'
-import tracer from 'dd-trace'
 
 if (tracingEnabled) {
   tracer.tracer.init({

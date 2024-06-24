@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
 import axios from 'axios'
-import { evakaServiceUrl } from './config.js'
+import express from 'express'
+
 import {
   EvakaSessionUser,
   integrationUserHeader,
   createUserHeader
 } from './auth/index.js'
 import { getJwt } from './auth/jwt.js'
+import { evakaServiceUrl } from './config.js'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl

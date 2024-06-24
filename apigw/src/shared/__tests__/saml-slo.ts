@@ -2,21 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { AxiosResponse } from 'axios'
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import zlib from 'node:zlib'
+
+import { ValidateInResponseTo } from '@node-saml/node-saml'
+import xmldom from '@xmldom/xmldom'
+import type { AxiosResponse } from 'axios'
 import { Cookie } from 'tough-cookie'
 import { SignedXml } from 'xml-crypto'
 import xml2js from 'xml2js'
-import xmldom from '@xmldom/xmldom'
-import zlib from 'node:zlib'
+
 import { Config, configFromEnv } from '../config.js'
-import { sessionCookie } from '../session.js'
-import { GatewayTester } from '../test/gateway-tester.js'
 import { DevCitizen } from '../dev-api.js'
 import { CitizenUser } from '../service-client.js'
-import { ValidateInResponseTo } from '@node-saml/node-saml'
-import { fileURLToPath } from 'node:url'
+import { sessionCookie } from '../session.js'
+import { GatewayTester } from '../test/gateway-tester.js'
 
 const mockUser: DevCitizen & CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',

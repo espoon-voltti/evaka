@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import jwt from 'jsonwebtoken'
 import { readFileSync } from 'node:fs'
+
+import jwt from 'jsonwebtoken'
+
 import { jwtKid, jwtPrivateKey, nodeEnv } from '../config.js'
 
 const privateKey = readFileSync(jwtPrivateKey)

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
+
 import { logWarn } from '../logging.js'
 
 const router = express.Router()

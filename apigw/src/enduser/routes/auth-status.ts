@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CitizenUser, getCitizenDetails } from '../../shared/service-client.js'
-import { toRequestHandler } from '../../shared/express.js'
-import { appCommit } from '../../shared/config.js'
 import { EvakaSessionUser } from '../../shared/auth/index.js'
+import { appCommit } from '../../shared/config.js'
+import { toRequestHandler } from '../../shared/express.js'
+import { CitizenUser, getCitizenDetails } from '../../shared/service-client.js'
 
 export interface AuthStatus {
   loggedIn: boolean

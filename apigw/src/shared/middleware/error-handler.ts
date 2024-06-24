@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorRequestHandler } from 'express'
-import { logError } from '../logging.js'
-import { InvalidRequest } from '../express.js'
+
 import { debug } from '../config.js'
+import { InvalidRequest } from '../express.js'
+import { logError } from '../logging.js'
+
 import { InvalidAntiCsrfToken } from './csrf.js'
 
 interface LogResponse {

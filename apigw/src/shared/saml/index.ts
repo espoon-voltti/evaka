@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { z } from 'zod'
-import _ from 'lodash'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
 import {
   CacheProvider,
   Profile,
@@ -11,15 +12,16 @@ import {
   Strategy as SamlStrategy,
   VerifyWithRequest
 } from '@node-saml/passport-saml'
-import { logError } from '../logging.js'
-import { createLogoutToken, EvakaSessionUser } from '../auth/index.js'
-import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
-import { readFileSync } from 'node:fs'
-import certificates, { TrustedCertificates } from '../certificates.js'
 import express from 'express'
-import path from 'node:path'
-import { Sessions } from '../session.js'
+import _ from 'lodash'
+import { z } from 'zod'
+
+import { createLogoutToken, EvakaSessionUser } from '../auth/index.js'
+import certificates, { TrustedCertificates } from '../certificates.js'
+import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
+import { logError } from '../logging.js'
 import { fromCallback } from '../promise-utils.js'
+import { Sessions } from '../session.js'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,

@@ -2,22 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import http from 'http'
+
 import axios, {
   AxiosInstance,
   AxiosResponse,
   InternalAxiosRequestConfig
 } from 'axios'
-import http from 'http'
 import express from 'express'
-import { Cookie, CookieJar } from 'tough-cookie'
 import nock from 'nock'
-import { Config, evakaServiceUrl } from '../config.js'
-import { sessionCookie, SessionType } from '../session.js'
-import { CitizenUser, EmployeeUser } from '../service-client.js'
-import { MockRedisClient } from './mock-redis-client.js'
+import passport from 'passport'
+import { Cookie, CookieJar } from 'tough-cookie'
+
 import { enduserGwRouter } from '../../enduser/app.js'
 import { internalGwRouter } from '../../internal/app.js'
-import passport from 'passport'
+import { Config, evakaServiceUrl } from '../config.js'
+import { CitizenUser, EmployeeUser } from '../service-client.js'
+import { sessionCookie, SessionType } from '../session.js'
+
+import { MockRedisClient } from './mock-redis-client.js'
 
 export class GatewayTester {
   public readonly client: AxiosInstance

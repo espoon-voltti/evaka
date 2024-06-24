@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInMonths } from 'date-fns'
-import certificates, { TrustedCertificates } from '../certificates'
 import * as invalidlyTypedForge from 'node-forge'
+
+import certificates, { TrustedCertificates } from '../certificates'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const forge = (invalidlyTypedForge as any)

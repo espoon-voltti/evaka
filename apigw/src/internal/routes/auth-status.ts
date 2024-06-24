@@ -4,16 +4,17 @@
 
 import express from 'express'
 import _ from 'lodash'
+
+import { logout } from '../../shared/auth/index.js'
+import { appCommit } from '../../shared/config.js'
 import { toRequestHandler } from '../../shared/express.js'
+import { fromCallback } from '../../shared/promise-utils.js'
 import {
   authenticateMobileDevice,
   getEmployeeDetails,
   UUID
 } from '../../shared/service-client.js'
 import { Sessions } from '../../shared/session.js'
-import { fromCallback } from '../../shared/promise-utils.js'
-import { appCommit } from '../../shared/config.js'
-import { logout } from '../../shared/auth/index.js'
 
 export interface AuthStatus {
   loggedIn: boolean

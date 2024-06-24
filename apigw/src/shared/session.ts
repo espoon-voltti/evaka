@@ -9,10 +9,11 @@ import { differenceInSeconds } from 'date-fns/differenceInSeconds'
 import { isDate } from 'date-fns/isDate'
 import express from 'express'
 import session from 'express-session'
+
+import { SessionConfig } from './config.js'
 import { LogoutToken, toMiddleware } from './express.js'
 import { fromCallback } from './promise-utils.js'
 import { RedisClient } from './redis-client.js'
-import { SessionConfig } from './config.js'
 
 export type SessionType = 'enduser' | 'employee'
 

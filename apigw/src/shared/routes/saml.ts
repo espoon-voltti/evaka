@@ -2,21 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
-import passport from 'passport'
 import passportSaml from '@node-saml/passport-saml'
-import { createLogoutToken, login, logout } from '../auth/index.js'
-import { toMiddleware, toRequestHandler } from '../express.js'
-import { logAuditEvent, logDebug } from '../logging.js'
-import { fromCallback } from '../promise-utils.js'
-import { Sessions } from '../session.js'
-import { parseDescriptionFromSamlError } from '../saml/error-utils.js'
 import type {
   AuthenticateOptions,
   RequestWithUser
 } from '@node-saml/passport-saml/lib/types.js'
-import { parseRelayState } from '../saml/index.js'
 import { AxiosError } from 'axios'
+import express from 'express'
+import passport from 'passport'
+
+import { createLogoutToken, login, logout } from '../auth/index.js'
+import { toMiddleware, toRequestHandler } from '../express.js'
+import { logAuditEvent, logDebug } from '../logging.js'
+import { fromCallback } from '../promise-utils.js'
+import { parseDescriptionFromSamlError } from '../saml/error-utils.js'
+import { parseRelayState } from '../saml/index.js'
+import { Sessions } from '../session.js'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 

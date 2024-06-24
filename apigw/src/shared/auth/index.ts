@@ -2,14 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { NextFunction, Request, Response } from 'express'
-import { logAuditEvent } from '../logging.js'
-import { Profile } from '@node-saml/passport-saml'
-import { UserType } from '../service-client.js'
-import passport, { AuthenticateCallback } from 'passport'
-import { fromCallback } from '../promise-utils.js'
-import { Sessions } from '../session.js'
 import { randomBytes } from 'node:crypto'
+
+import { Profile } from '@node-saml/passport-saml'
+import express, { NextFunction, Request, Response } from 'express'
+import passport, { AuthenticateCallback } from 'passport'
+
+import { logAuditEvent } from '../logging.js'
+import { fromCallback } from '../promise-utils.js'
+import { UserType } from '../service-client.js'
+import { Sessions } from '../session.js'
 
 export function requireAuthentication(
   req: Request,

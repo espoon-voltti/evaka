@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import expressHttpProxy from 'express-http-proxy'
+import { OutgoingHttpHeaders } from 'node:http'
+
 import type express from 'express'
+import expressHttpProxy from 'express-http-proxy'
 import _ from 'lodash'
+
 import { evakaServiceUrl } from './config.js'
 import { createServiceRequestHeaders } from './service-client.js'
-import { OutgoingHttpHeaders } from 'node:http'
 
 interface ProxyOptions {
   path?: string | ((req: express.Request) => string)

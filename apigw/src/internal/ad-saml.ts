@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { z } from 'zod'
 import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
-import { employeeLogin } from '../shared/service-client.js'
+import { z } from 'zod'
+
 import { Config } from '../shared/config.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
+import { employeeLogin } from '../shared/service-client.js'
 import { Sessions } from '../shared/session.js'
 
 const AD_GIVEN_NAME_KEY =

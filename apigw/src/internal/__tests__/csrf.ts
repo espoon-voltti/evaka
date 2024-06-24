@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { GatewayTester } from '../../shared/test/gateway-tester.js'
-import { EmployeeUser } from '../../shared/service-client.js'
 import { configFromEnv } from '../../shared/config.js'
+import { EmployeeUser } from '../../shared/service-client.js'
+import { GatewayTester } from '../../shared/test/gateway-tester.js'
 import { AuthStatus } from '../routes/auth-status.js'
 
 const mockUser: EmployeeUser = {
