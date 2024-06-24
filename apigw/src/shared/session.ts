@@ -43,7 +43,7 @@ export interface Sessions {
     req: express.Request,
     logoutToken?: LogoutToken['value']
   ): Promise<void>
-  logoutWithToken(token: LogoutToken['value']): Promise<unknown | undefined>
+  logoutWithToken(token: LogoutToken['value']): Promise<unknown>
   consumeLogoutToken(token: LogoutToken['value']): Promise<void>
 }
 
@@ -146,7 +146,7 @@ export function sessionSupport(
 
   async function logoutWithToken(
     logoutToken: LogoutToken['value']
-  ): Promise<unknown | undefined> {
+  ): Promise<unknown> {
     if (!logoutToken) return
     const sid = await redisClient.get(logoutKey(logoutToken))
     if (!sid) return
