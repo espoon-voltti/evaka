@@ -107,8 +107,8 @@ export function createSamlStrategy<T>(
       })
       .catch(done)
   }
-  const logoutVerify: VerifyWithRequest = (req, profile, done) =>
-    (async () => {
+  const logoutVerify: VerifyWithRequest = (req, profile, done) => {
+    ;(async () => {
       if (!profile) return undefined
       const profileId = SamlProfileId.safeParse(profile)
       if (!profileId.success) return undefined
@@ -136,6 +136,7 @@ export function createSamlStrategy<T>(
     })()
       .then((user) => done(null, user))
       .catch((err) => done(err))
+  }
   return new SamlStrategy(config, loginVerify, logoutVerify)
 }
 

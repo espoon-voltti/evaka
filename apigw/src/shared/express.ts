@@ -21,17 +21,20 @@ export type AsyncRequestHandler = (
 
 // A middleware calls next() on success, and next(err) on failure
 export function toMiddleware(f: AsyncRequestHandler): express.RequestHandler {
-  return (req, res, next) =>
+  return (req, res, next) => {
     f(req, res)
       .then(() => next())
       .catch(next)
+  }
 }
 
 // A request handler calls nothing on success, and next(err) on failure
 export function toRequestHandler(
   f: AsyncRequestHandler
 ): express.RequestHandler {
-  return (req, res, next) => f(req, res).catch(next)
+  return (req, res, next) => {
+    f(req, res).catch(next)
+  }
 }
 
 export function assertStringProp<T, K extends keyof T>(
