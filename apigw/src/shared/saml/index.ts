@@ -135,6 +135,7 @@ export function createSamlStrategy<T>(
       }
     })()
       .then((user) => done(null, user))
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       .catch((err) => done(err))
   }
   return new SamlStrategy(config, loginVerify, logoutVerify)

@@ -250,19 +250,23 @@ const transport = (obj: any, _: string, cb: through.TransformCallback) => {
       return cb()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (isPinoAccessLog(obj) && isHealthCheckRequest(obj)) {
       return cb()
     }
 
     if (isPinoAccessLog(obj)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       writeObjToStdoutAsJson(mapPinoLogToAccessLog(obj))
     }
 
     if (isPinoAppAuditLog(obj)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       writeObjToStdoutAsJson(mapPinoLogToAuditLog(obj))
     }
 
     if (isPinoMiscLog(obj)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       writeObjToStdoutAsJson(mapPinoLogToMiscLog(obj))
     }
     cb()

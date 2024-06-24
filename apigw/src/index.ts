@@ -23,9 +23,11 @@ const config = configFromEnv()
 
 const redisClient = redis.createClient(toRedisClientOpts(config))
 redisClient.on('error', (err) =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   logError('Redis error', undefined, undefined, err)
 )
 redisClient.connect().catch((err) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   logError('Unable to connect to redis', undefined, undefined, err)
 })
 // Don't prevent the app from exiting if a redis connection is alive.

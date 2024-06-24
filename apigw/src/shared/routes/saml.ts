@@ -54,6 +54,7 @@ function createLoginHandler({
       ) => {
         if (err || !user) {
           const description =
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             parseDescriptionFromSamlError(err, req) ||
             'Could not parse SAML message'
 
@@ -206,6 +207,7 @@ export default function createSamlRouter(
   router.get(
     `/logout/callback`,
     logoutCallback,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     passport.authenticate(strategyName),
     (req, res) =>
       res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)
@@ -214,6 +216,7 @@ export default function createSamlRouter(
     `/logout/callback`,
     urlencodedParser,
     logoutCallback,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     passport.authenticate(strategyName),
     (req, res) =>
       res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)

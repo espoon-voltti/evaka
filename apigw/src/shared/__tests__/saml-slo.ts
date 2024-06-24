@@ -238,6 +238,7 @@ async function callSLOEndpointAndAssertResult(
 }
 
 function getSamlMessageFromRedirectResponse(res: AxiosResponse) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const location = new URL(res.headers['location'])
   const msg =
     location.searchParams.get('SAMLRequest') ??

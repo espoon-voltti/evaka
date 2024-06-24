@@ -47,7 +47,7 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
         errorCode: error.response.data?.errorCode
       }
       if (!res.headersSent) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
         res.status(error.response.status).json(response)
       }
       return
@@ -66,6 +66,7 @@ export const fallbackErrorHandler: ErrorRequestHandler = (
     `Internal server error: ${error.message || error || 'No error object'}`,
     req,
     undefined,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     error
   )
   if (!res.headersSent) {

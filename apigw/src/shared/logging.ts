@@ -162,6 +162,7 @@ function tracingReqSerializer(req: UserPinoRequest): UserPinoRequest {
 export function userIdHashReqSerializer(req: UserPinoRequest): UserPinoRequest {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
   const userId = req.raw.user?.id || null
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   req.userIdHash = userId != null ? createSha256Hash(userId) : ''
   return req
 }
