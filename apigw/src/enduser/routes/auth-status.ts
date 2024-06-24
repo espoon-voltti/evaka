@@ -5,12 +5,15 @@
 import { EvakaSessionUser } from '../../shared/auth/index.js'
 import { appCommit } from '../../shared/config.js'
 import { toRequestHandler } from '../../shared/express.js'
-import { CitizenUser, getCitizenDetails } from '../../shared/service-client.js'
+import {
+  CitizenUserResponse,
+  getCitizenDetails
+} from '../../shared/service-client.js'
 
 export interface AuthStatus {
   loggedIn: boolean
   antiCsrfToken?: string
-  user?: CitizenUser
+  user?: CitizenUserResponse
   apiVersion: string
   authLevel?: 'STRONG' | 'WEAK'
 }

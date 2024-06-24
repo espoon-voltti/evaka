@@ -5,7 +5,7 @@
 import { client, UUID } from './service-client.js'
 
 export async function getCitizens(): Promise<DevCitizen[]> {
-  const { data } = await client.get(`/dev-api/citizen`)
+  const { data } = await client.get<DevCitizen[]>(`/dev-api/citizen`)
   return data
 }
 
@@ -25,6 +25,6 @@ interface Employee {
 }
 
 export async function getEmployees(): Promise<Employee[]> {
-  const { data } = await client.get(`/dev-api/employee`)
+  const { data } = await client.get<Employee[]>(`/dev-api/employee`)
   return data
 }

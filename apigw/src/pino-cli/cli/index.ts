@@ -186,15 +186,17 @@ const mapPinoLogToMiscLog = (obj: PinoMiscLog): MiscLog => ({
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isPinoAccessLog = (obj: any): boolean =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   obj.req &&
   obj.res &&
   (obj.message === 'request completed' || obj.message === 'request errored')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isPinoAppAuditLog = (obj: any): boolean =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   obj.type && obj.type === 'app-audit-events'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-return
 const isPinoMiscLog = (obj: any): boolean => obj.type && obj.type === 'app-misc'
 
 const stdoutStream = process.stdout
@@ -221,6 +223,7 @@ const errorPayload = (e: unknown, message?: string): ErrorLog => {
 
 const parser = (input: string) => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return JSON.parse(input)
   } catch (e) {
     if (e instanceof SyntaxError) {

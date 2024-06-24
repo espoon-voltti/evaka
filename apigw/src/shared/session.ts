@@ -155,6 +155,7 @@ export function sessionSupport(
     if (!session) return
     const user = JSON.parse(session)?.passport?.user
     if (!user) return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return user
   }
 

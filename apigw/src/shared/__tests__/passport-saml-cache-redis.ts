@@ -22,18 +22,18 @@ beforeEach(() => {
 describe('passport-saml-cache-redis', () => {
   describe('constructor', () => {
     test('throws an error if ttlSeconds is not a positive integer', () => {
-      expect(() =>
+      expect((): unknown =>
         redisCacheProvider(redisClient, {
           ttlSeconds: -1,
           keyPrefix: 'test-prefix:'
         })
-      ).toThrowError('ttlSeconds must be a positive integer')
-      expect(() =>
+      ).toThrow('ttlSeconds must be a positive integer')
+      expect((): unknown =>
         redisCacheProvider(redisClient, {
           ttlSeconds: 1.5,
           keyPrefix: 'test-prefix:'
         })
-      ).toThrowError('ttlSeconds must be a positive integer')
+      ).toThrow('ttlSeconds must be a positive integer')
     })
 
     test('using different keyPrefixes creates separate caches', async () => {
