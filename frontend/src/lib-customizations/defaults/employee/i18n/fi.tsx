@@ -335,6 +335,8 @@ export const fi = {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
       returnToSent: 'Palauta saapuneisiin',
       cancelApplication: 'Poista käsittelystä',
+      cancelApplicationConfirm:
+        'Haluatko varmasti poistaa hakemuksen käsittelystä?',
       check: 'Tarkista',
       setVerified: 'Merkitse tarkistetuksi',
       setUnverified: 'Merkitse tarkistamattomaksi',

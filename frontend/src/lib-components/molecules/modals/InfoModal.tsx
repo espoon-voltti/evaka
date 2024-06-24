@@ -54,14 +54,22 @@ export default React.memo(function InfoModal({ children, ...props }: Props) {
           <Button
             appearance="inline"
             data-qa="modal-okBtn"
-            onClick={props.resolve.action}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              props.resolve.action()
+            }}
             disabled={props.resolve.disabled}
             text={props.resolve.label}
           />
           {props.reject && (
             <Button
               appearance="inline"
-              onClick={props.reject.action}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                props.reject?.action()
+              }}
               data-qa="modal-cancelBtn"
               text={props.reject.label}
             />
