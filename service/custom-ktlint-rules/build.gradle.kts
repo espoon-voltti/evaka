@@ -5,7 +5,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jlleitschuh.gradle.ktlint")
-    id("com.ncorti.ktfmt.gradle")
 }
 
 dependencies {
@@ -23,10 +22,6 @@ dependencies {
     implementation("com.pinterest.ktlint:ktlint-rule-engine-core")
     testImplementation("org.slf4j:slf4j-simple")
     testImplementation("com.pinterest.ktlint:ktlint-test")
-}
-
-ktfmt {
-    kotlinLangStyle()
 }
 
 ktlint {

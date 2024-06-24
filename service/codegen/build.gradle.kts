@@ -5,7 +5,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jlleitschuh.gradle.ktlint")
-    id("com.ncorti.ktfmt.gradle")
 }
 
 dependencies {
@@ -40,10 +39,6 @@ tasks {
         classpath = sourceSets["main"].runtimeClasspath
         workingDir = projectDir.parentFile
     }
-}
-
-ktfmt {
-    kotlinLangStyle()
 }
 
 ktlint {

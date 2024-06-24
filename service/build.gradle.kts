@@ -24,7 +24,6 @@ plugins {
     alias(libs.plugins.flyway)
 
     alias(libs.plugins.versions)
-    alias(libs.plugins.ktfmt)
     alias(libs.plugins.ktlint.gradle)
     alias(libs.plugins.owasp)
 
@@ -286,10 +285,6 @@ tasks {
         nvd.apply { apiKey = System.getenv("NVD_API_KEY") }
         suppressionFile = "$projectDir/owasp-suppressions.xml"
     }
-}
-
-ktfmt {
-    kotlinLangStyle()
 }
 
 ktlint {
