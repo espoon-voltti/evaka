@@ -18,7 +18,7 @@ typealias ErrorResponseResultOf = Triple<Request, Response, Result.Failure<FuelE
 
 private val logger = KotlinLogging.logger {}
 
-/**
+/*
  * Collection of miscellaneous extensions to Fuel core classes. For example: extra status code
  * checks, headers.
  */
