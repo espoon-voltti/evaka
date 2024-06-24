@@ -542,7 +542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.5.0":
+"@eslint/js@npm:9.5.0, @eslint/js@npm:^9.5.0":
   version: 9.5.0
   resolution: "@eslint/js@npm:9.5.0"
   checksum: 10/206364e3a074eaaeccc2b9e1e3f129539106a81ec634f32c51bc1699e0c4a47ab3e6480a6484a198bca6406888ba8f2917c35a87296680905d146075b5ed2738
@@ -3101,6 +3101,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "evaka-api-gateways@workspace:."
   dependencies:
+    "@eslint/js": "npm:^9.5.0"
     "@node-saml/node-saml": "npm:^5.0.0"
     "@node-saml/passport-saml": "npm:^5.0.0"
     "@types/cookie-parser": "npm:^1.4.3"

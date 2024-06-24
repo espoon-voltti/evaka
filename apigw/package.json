@@ -49,6 +49,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.5.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/express-http-proxy": "^1.6.3",
     "@types/express-session": "^1.18.0",
