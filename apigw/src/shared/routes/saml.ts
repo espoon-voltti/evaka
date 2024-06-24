@@ -12,7 +12,7 @@ import express from 'express'
 import passport from 'passport'
 
 import { createLogoutToken, login, logout } from '../auth/index.js'
-import { toMiddleware, toRequestHandler } from '../express.js'
+import { toRequestHandler } from '../express.js'
 import { logAuditEvent, logDebug } from '../logging.js'
 import { fromCallback } from '../promise-utils.js'
 import { parseDescriptionFromSamlError } from '../saml/error-utils.js'
@@ -168,13 +168,14 @@ export default function createSamlRouter(
 
   const loginHandler = createLoginHandler(endpointConfig)
   const logoutHandler = createLogoutHandler(endpointConfig)
-  const logoutCallback = toMiddleware(async (req) => {
+  const logoutCallback: express.RequestHandler = (req, _, next) => {
     logAuditEvent(
       `evaka.saml.${strategyName}.sign_out`,
       req,
       'Logout callback called'
     )
-  })
+    next()
+  }
 
   const router = express.Router()
 
