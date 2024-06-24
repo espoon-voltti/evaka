@@ -70,9 +70,12 @@ fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
 fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRange) {
     createUpdate {
         sql(
-            "DELETE FROM attendance_reservation WHERE created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND between_start_and_end(${bind(
-                range
-            )}, date)"
+            """
+DELETE FROM attendance_reservation
+WHERE
+    created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND
+    between_start_and_end(${bind(range)}, date)
+"""
         )
     }.execute()
 }
@@ -111,7 +114,11 @@ INSERT INTO attendance_reservation (child_id, date, start_time, end_time, create
 SELECT ${bind(it.childId)}, ${bind(it.date)}, ${bind(it.range?.start)}, ${bind(it.range?.end)}, ${bind(userId)}
 FROM realized_placement_all(${bind(it.date)}) rp
 JOIN daycare d ON d.id = rp.unit_id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(it.date)}
+LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${
+                    bind(
+                        it.date
+                    )
+                }
 WHERE 
     rp.child_id = ${bind(it.childId)} AND (
         CASE

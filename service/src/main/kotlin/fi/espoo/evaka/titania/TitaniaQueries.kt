@@ -32,11 +32,15 @@ fun Database.Transaction.createEmployees(employees: List<NewEmployee>): Map<Stri
         sql(
             """
 INSERT INTO employee (first_name, last_name, email, external_id, employee_number, roles, active)
-VALUES (${bind {
-                it.firstName
-            }}, ${bind {
-                it.lastName
-            }}, ${bind { it.email }}, ${bind { it.externalId }}, ${bind { it.employeeNumber }}, ${bind { it.roles }}, true)
+VALUES (${
+                bind {
+                    it.firstName
+                }
+            }, ${
+                bind {
+                    it.lastName
+                }
+            }, ${bind { it.email }}, ${bind { it.externalId }}, ${bind { it.employeeNumber }}, ${bind { it.roles }}, true)
 RETURNING id, employee_number
 """
         )
@@ -133,9 +137,10 @@ fun Database.Read.findStaffAttendancesBy(
             } else {
                 Predicate {
                     where(
-                        "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(
-                            period.start
-                        )}, ${bind(period.end)}, '[]')"
+                        """
+daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') &&
+daterange(${bind(period.start)}, ${bind(period.end)}, '[]')
+"""
                     )
                 }
             }

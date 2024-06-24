@@ -8,7 +8,6 @@ ktlint_ignore_back_ticked_identifier = true
 ij_kotlin_allow_trailing_comma = false
 ij_kotlin_allow_trailing_comma_on_call_site = false
 ij_kotlin_imports_layout = *
-ktlint_standard_max-line-length = disabled
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_no-consecutive-comments = disabled
 ktlint_standard_property-naming = disabled

@@ -147,9 +147,11 @@ private val manager =
 
 @TestConfiguration
 class PdfGeneratorTestConfiguration {
-    @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+    @Bean
+    fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 
-    @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+    @Bean
+    fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 }
 
 @SpringBootTest(
@@ -157,7 +159,8 @@ class PdfGeneratorTestConfiguration {
     classes = [PdfGeneratorTestConfiguration::class, PDFConfig::class, PdfGenerator::class]
 )
 class PdfGeneratorTest {
-    @Autowired lateinit var pdfGenerator: PdfGenerator
+    @Autowired
+    lateinit var pdfGenerator: PdfGenerator
 
     @Test
     fun createFinnishPDFs() {
@@ -360,6 +363,7 @@ class PdfGeneratorTest {
                                                                 )
                                                             )
                                                     ),
+                                                    @Suppress("ktlint:standard:max-line-length")
                                                     Question.StaticTextDisplayQuestion(
                                                         id = "s2q7",
                                                         label = "Valitusoikeus",

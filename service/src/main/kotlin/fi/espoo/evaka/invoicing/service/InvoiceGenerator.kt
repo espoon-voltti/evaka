@@ -592,5 +592,6 @@ private fun placementOn(
     month: Int
 ): String {
     val firstOfMonth = "'$year-$month-01'"
+    @Suppress("ktlint:standard:max-line-length")
     return "daterange(start_date, end_date, '[]') && daterange($firstOfMonth::date, ($firstOfMonth::date + INTERVAL '1 month -1 day')::date, '[]')"
 }

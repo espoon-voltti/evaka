@@ -31,6 +31,7 @@ fun getDefaultTemplateContent(
     PRESCHOOL -> getDefaultLeopsContent(lang)
 }
 
+@Suppress("ktlint:standard:max-line-length")
 fun getDefaultVasuContent(lang: OfficialLanguage) =
     VasuContent(
         hasDynamicFirstSection = true,
@@ -757,6 +758,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
             )
     )
 
+@Suppress("ktlint:standard:max-line-length")
 fun getDefaultLeopsContent(lang: OfficialLanguage) =
     VasuContent(
         hasDynamicFirstSection = true,
