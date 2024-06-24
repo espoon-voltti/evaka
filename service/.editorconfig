@@ -4,10 +4,12 @@
 
 [*.{kt,kts}]
 ktlint_code_style = ktlint_official
+ktlint_experimental = enabled
 ktlint_ignore_back_ticked_identifier = true
 ij_kotlin_allow_trailing_comma = false
 ij_kotlin_allow_trailing_comma_on_call_site = false
 ij_kotlin_imports_layout = *
+ij_kotlin_line_break_after_multiline_when_entry = false
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_property-naming = disabled
 ktlint_standard_value-argument-comment = disabled

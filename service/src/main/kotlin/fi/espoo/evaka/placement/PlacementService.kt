@@ -332,19 +332,16 @@ private fun Database.Transaction.clearOldPlacements(
                     checkAclAuth(aclAuth, old)
                     cancelPlacement(old.id).let {}
                 }
-
                 // old placement encloses new placement
                 old.startDate.isBefore(from) && old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
                     splitPlacementWithGap(old, from, to)
                 }
-
                 // old placement overlaps with the beginning of new placement
                 old.startDate.isBefore(from) && !old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
                     movePlacementEndDateEarlier(old, from.minusDays(1))
                 }
-
                 // old placement overlaps with the ending of new placement
                 !old.startDate.isBefore(from) && old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)

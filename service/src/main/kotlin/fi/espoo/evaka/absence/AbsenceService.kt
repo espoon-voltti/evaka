@@ -449,7 +449,6 @@ private fun supplementReservationsWithDailyServiceTimes(
                                 res.reservation.range
                                     .fixMidnightEndTime()
                                     .asHelsinkiDateTimeRange(date)
-
                             // Reserved but no times -> use daily service times
                             is Reservation.NoTimes -> null
                         }
