@@ -43,7 +43,7 @@ export class GatewayTester {
     this.client.interceptors.request.use(async (config) =>
       includeCookiesInRequest(this.baseUrl, this.cookies, config)
     )
-    this.client.interceptors.request.use(async (config) => {
+    this.client.interceptors.request.use((config) => {
       if (this.antiCsrfToken) {
         config.headers.set('x-evaka-csrf', this.antiCsrfToken)
       }

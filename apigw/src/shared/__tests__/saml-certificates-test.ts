@@ -18,7 +18,7 @@ describe('SAML certificates', () => {
 
   test.each(Object.keys(certificates) as TrustedCertificates[])(
     '%s must decode successfully',
-    async (certificateName) => {
+    (certificateName) => {
       const computeHash = false
       const strict = true
       const certificate = forge.pki.certificateFromPem(
