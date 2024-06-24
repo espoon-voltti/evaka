@@ -1423,7 +1423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport-strategy@npm:^0.2.35, @types/passport-strategy@npm:^0.2.38":
+"@types/passport-strategy@npm:^0.2.38":
   version: 0.2.38
   resolution: "@types/passport-strategy@npm:0.2.38"
   dependencies:
@@ -1439,45 +1439,6 @@ __metadata:
   dependencies:
     "@types/express": "npm:*"
   checksum: 10/0ee7b9a46192cb60fb4e49038417b0c10b38e50204ed05b5204b3ea9a73e25da34ca8fe05205eaf42fe977610cdbd3a0d5f2228f8661fe0b303bc758fa2a158f
-  languageName: node
-  linkType: hard
-
-"@types/pino-http@npm:^5.8.4":
-  version: 5.8.4
-  resolution: "@types/pino-http@npm:5.8.4"
-  dependencies:
-    "@types/pino": "npm:6.3"
-  checksum: 10/9520c7ea5e2f4b6950d0635d26d3e37f70ef8199c3f6815e9f8dca887a9e967f81b4f1228b91d63b9506f4e9f3cac921170fd84b07ba62fbbe675b4d2579951a
-  languageName: node
-  linkType: hard
-
-"@types/pino-pretty@npm:*, @types/pino-pretty@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "@types/pino-pretty@npm:5.0.0"
-  dependencies:
-    pino-pretty: "npm:*"
-  checksum: 10/f394545b8fe98da93a386211ffb68e247431673e27524c447a9aa43618a32215488215bf29322d0cc3cacd193d51f4450eca9fcb3f22e64decf766c8a7aa5b34
-  languageName: node
-  linkType: hard
-
-"@types/pino-std-serializers@npm:*, @types/pino-std-serializers@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "@types/pino-std-serializers@npm:4.0.0"
-  dependencies:
-    pino-std-serializers: "npm:*"
-  checksum: 10/5ec2a45549092c445c97bfd19a3c44186e43754095a31eebdb11ac77a3f2d3dab1a81d504c696ae86dc904f8ae1c591618dbe4ce4ffe07c65c1a005c6e98a29f
-  languageName: node
-  linkType: hard
-
-"@types/pino@npm:6.3":
-  version: 6.3.12
-  resolution: "@types/pino@npm:6.3.12"
-  dependencies:
-    "@types/node": "npm:*"
-    "@types/pino-pretty": "npm:*"
-    "@types/pino-std-serializers": "npm:*"
-    sonic-boom: "npm:^2.1.0"
-  checksum: 10/c7e49c483fdf9a2ff9cc922c8246fdc54eede07b2b42ee9c8bc4ceefe7416002191f3508355968e36452d603d1c0b97db3fe709d5133434942396f19e0ec8a47
   languageName: node
   linkType: hard
 
@@ -1501,15 +1462,6 @@ __metadata:
   version: 1.2.4
   resolution: "@types/range-parser@npm:1.2.4"
   checksum: 10/b7c0dfd5080a989d6c8bb0b6750fc0933d9acabeb476da6fe71d8bdf1ab65e37c136169d84148034802f48378ab94e3c37bb4ef7656b2bec2cb9c0f8d4146a95
-  languageName: node
-  linkType: hard
-
-"@types/redis@npm:^4.0.11":
-  version: 4.0.11
-  resolution: "@types/redis@npm:4.0.11"
-  dependencies:
-    redis: "npm:*"
-  checksum: 10/4b2d252368a7dc78738a98a8bcc817f92ca097511a901427628566f24f53998a2b1b524a85dea6a19307d4a95b55bd7d5a6ad7cc944ae8f39e54ca2f28ddf893
   languageName: node
   linkType: hard
 
@@ -3433,12 +3385,7 @@ __metadata:
     "@types/node": "npm:^20.14.0"
     "@types/node-forge": "npm:^1.3.2"
     "@types/passport": "npm:^1.0.12"
-    "@types/passport-strategy": "npm:^0.2.35"
-    "@types/pino-http": "npm:^5.8.4"
-    "@types/pino-pretty": "npm:^5.0.0"
-    "@types/pino-std-serializers": "npm:^4.0.0"
     "@types/pump": "npm:^1.1.1"
-    "@types/redis": "npm:^4.0.11"
     "@types/split2": "npm:^4.2.0"
     "@types/through2": "npm:^2.0.38"
     "@types/tough-cookie": "npm:^4.0.2"
@@ -6247,7 +6194,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-pretty@npm:*, pino-pretty@npm:^11.2.0":
+"pino-pretty@npm:^11.2.0":
   version: 11.2.0
   resolution: "pino-pretty@npm:11.2.0"
   dependencies:
@@ -6271,7 +6218,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-std-serializers@npm:*, pino-std-serializers@npm:^7.0.0":
+"pino-std-serializers@npm:^7.0.0":
   version: 7.0.0
   resolution: "pino-std-serializers@npm:7.0.0"
   checksum: 10/884e08f65aa5463d820521ead3779d4472c78fc434d8582afb66f9dcb8d8c7119c69524b68106cb8caf92c0487be7794cf50e5b9c0383ae65b24bf2a03480951
@@ -6601,7 +6548,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redis@npm:*, redis@npm:^4.6.7":
+"redis@npm:^4.6.7":
   version: 4.6.7
   resolution: "redis@npm:4.6.7"
   dependencies:
@@ -7010,15 +6957,6 @@ __metadata:
     ip: "npm:^1.1.5"
     smart-buffer: "npm:^4.1.0"
   checksum: 10/6ae166bd1ac4556618cd7d4034561174eda062cfbc1a8d1a214968c1cfb7861ab51f2e651175b5a168148505a3b7250bcec67eb0110878e2258a932aa0497204
-  languageName: node
-  linkType: hard
-
-"sonic-boom@npm:^2.1.0":
-  version: 2.6.0
-  resolution: "sonic-boom@npm:2.6.0"
-  dependencies:
-    atomic-sleep: "npm:^1.0.0"
-  checksum: 10/e2d93654a98acd310d8866339fbdec6ba7326a632e425d1ff563d8367ed278e362288b52a1c57f2dc6c4a98be553b123ea88d5327d3595005652fd245f93ba05
   languageName: node
   linkType: hard
 
