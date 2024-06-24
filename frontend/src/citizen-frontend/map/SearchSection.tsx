@@ -124,7 +124,7 @@ export default React.memo(function SearchSection({
             text={t.common.unit.languagesShort.fi}
             selected={languages.includes('fi')}
             onChange={(selected) => {
-              const nextValue = languages.filter((l) => l !== 'fi')
+              const nextValue: Language[] = languages.filter((l) => l !== 'fi')
               if (selected) nextValue.push('fi')
               setLanguages(nextValue)
             }}
@@ -134,7 +134,7 @@ export default React.memo(function SearchSection({
             text={t.common.unit.languagesShort.sv}
             selected={languages.includes('sv')}
             onChange={(selected) => {
-              const nextValue = languages.filter((l) => l !== 'sv')
+              const nextValue: Language[] = languages.filter((l) => l !== 'sv')
               if (selected) nextValue.push('sv')
               setLanguages(nextValue)
             }}
