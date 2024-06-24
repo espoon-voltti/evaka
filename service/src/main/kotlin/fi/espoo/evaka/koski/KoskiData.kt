@@ -407,8 +407,8 @@ data class KoskiActivePreparatoryDataRaw(
                     Month.JUNE -> true
                     else -> false
                 }
-            } // changing from PREPARATORY to PRESCHOOL is considered qualified
-            else {
+            } else {
+                // changing from PREPARATORY to PRESCHOOL is considered qualified
                 lastOfType
             }
 
