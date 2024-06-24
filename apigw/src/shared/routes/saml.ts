@@ -43,6 +43,7 @@ function createLoginHandler({
     const options: AuthenticateOptions = {
       additionalParams: typeof locale === 'string' ? { locale } : {}
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     passport.authenticate(
       strategyName,
       options,

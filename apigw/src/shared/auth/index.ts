@@ -86,6 +86,7 @@ export const authenticate = async (
       err ? reject(err) : resolve(user || undefined)
     const next: express.NextFunction = (err) =>
       err ? reject(err) : resolve(undefined)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     passport.authenticate(strategyName, cb)(req, res, next)
   })
 

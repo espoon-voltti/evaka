@@ -4,7 +4,7 @@
 
 import type { CacheProvider } from '@node-saml/passport-saml'
 
-import redisCacheProvider from '../saml/passport-saml-cache-redis'
+import redisCacheProvider from '../saml/passport-saml-cache-redis.js'
 import { MockRedisClient } from '../test/mock-redis-client.js'
 
 const ttlSeconds = 1
