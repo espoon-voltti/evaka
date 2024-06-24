@@ -270,6 +270,7 @@ export const fi = {
   },
   validationError: {
     mandatoryField: 'Pakollinen tieto',
+    endDateIsMandatoryField: 'Päättymispäivä on pakollinen tieto',
     dateRange: 'Päivämäärä on virheellinen',
     invertedDateRange:
       'Aloituspäivämäärä ei saa olla lopetuspäivämäärän jälkeen',
