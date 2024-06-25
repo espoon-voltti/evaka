@@ -418,12 +418,13 @@ WHERE daycare_id = ${bind(daycareId)}
         }
         .toList()
 
-fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
+fun Database.Read.getUnitFeatures(today: LocalDate): List<UnitFeatures> =
     createQuery {
             sql(
                 """
 SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
+WHERE closing_date IS NULL OR closing_date > ${bind(today)}
 ORDER BY name
 """
             )
