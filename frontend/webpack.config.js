@@ -149,7 +149,7 @@ function baseConfig({ isDevelopment }, { name, publicPath, entry }) {
                   [
                     '@babel/preset-env',
                     {
-                      corejs: '3.21',
+                      corejs: '3.37',
                       useBuiltIns: 'entry'
                     }
                   ]
