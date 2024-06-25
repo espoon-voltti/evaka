@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import uniq from 'lodash/uniq'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -190,15 +192,17 @@ export default class CitizenCalendarPage {
     }
     await rows.assertCount(groups.length)
 
-    for (const [i, { childIds, text }] of groups.entries()) {
+    for (const [i, group] of groups.entries()) {
       const row = rows.nth(i)
+      const childIds = uniq(group.childIds)
 
+      await row.findAllByDataQa('child-image').assertCount(childIds.length)
       for (const childId of childIds) {
         await row
           .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
           .waitUntilVisible()
       }
-      await row.findByDataQa('reservation-text').assertTextEquals(text)
+      await row.findByDataQa('reservation-text').assertTextEquals(group.text)
     }
   }
 
