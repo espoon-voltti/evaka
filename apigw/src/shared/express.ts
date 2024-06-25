@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import passportSaml from '@node-saml/passport-saml'
 import type express from 'express'
 import { BaseError } from 'make-error-cause'
+
 import { EvakaSessionUser } from './auth/index.js'
-import passportSaml from '@node-saml/passport-saml'
 
 export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified
@@ -20,17 +21,20 @@ export type AsyncRequestHandler = (
 
 // A middleware calls next() on success, and next(err) on failure
 export function toMiddleware(f: AsyncRequestHandler): express.RequestHandler {
-  return (req, res, next) =>
+  return (req, res, next) => {
     f(req, res)
       .then(() => next())
       .catch(next)
+  }
 }
 
 // A request handler calls nothing on success, and next(err) on failure
 export function toRequestHandler(
   f: AsyncRequestHandler
 ): express.RequestHandler {
-  return (req, res, next) => f(req, res).catch(next)
+  return (req, res, next) => {
+    f(req, res).catch(next)
+  }
 }
 
 export function assertStringProp<T, K extends keyof T>(
@@ -40,7 +44,7 @@ export function assertStringProp<T, K extends keyof T>(
   const value = object[property]
   if (typeof value !== 'string') {
     throw new InvalidRequest(
-      `Expected '${String(property)}' to be string, but it is ${value}`
+      `Expected '${String(property)}' to be string, but it is ${String(value)}`
     )
   }
   return value

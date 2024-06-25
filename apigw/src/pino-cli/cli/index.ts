@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { SerializedRequest, SerializedResponse } from 'pino-std-serializers'
 import split from 'split2'
 import * as through from 'through2'
-import { SerializedRequest, SerializedResponse } from 'pino-std-serializers'
+
 import { ipv6ToIpv4 } from './utils.js'
 
 export interface BaseLog {
@@ -185,15 +186,19 @@ const mapPinoLogToMiscLog = (obj: PinoMiscLog): MiscLog => ({
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isPinoAccessLog = (obj: any): boolean =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
   obj.req &&
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   obj.res &&
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   (obj.message === 'request completed' || obj.message === 'request errored')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isPinoAppAuditLog = (obj: any): boolean =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
   obj.type && obj.type === 'app-audit-events'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
 const isPinoMiscLog = (obj: any): boolean => obj.type && obj.type === 'app-misc'
 
 const stdoutStream = process.stdout
@@ -220,6 +225,7 @@ const errorPayload = (e: unknown, message?: string): ErrorLog => {
 
 const parser = (input: string) => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return JSON.parse(input)
   } catch (e) {
     if (e instanceof SyntaxError) {
@@ -244,19 +250,23 @@ const transport = (obj: any, _: string, cb: through.TransformCallback) => {
       return cb()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (isPinoAccessLog(obj) && isHealthCheckRequest(obj)) {
       return cb()
     }
 
     if (isPinoAccessLog(obj)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       writeObjToStdoutAsJson(mapPinoLogToAccessLog(obj))
     }
 
     if (isPinoAppAuditLog(obj)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       writeObjToStdoutAsJson(mapPinoLogToAuditLog(obj))
     }
 
     if (isPinoMiscLog(obj)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       writeObjToStdoutAsJson(mapPinoLogToMiscLog(obj))
     }
     cb()

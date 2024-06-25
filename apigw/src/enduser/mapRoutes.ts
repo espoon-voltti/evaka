@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
+import expressHttpProxy from 'express-http-proxy'
+
 import {
   digitransitApiEnabled,
   digitransitApiKey,
   digitransitApiUrl
 } from '../shared/config.js'
-import expressHttpProxy from 'express-http-proxy'
-import { createProxy } from '../shared/proxy-utils.js'
 import { logError, logWarn } from '../shared/logging.js'
+import { createProxy } from '../shared/proxy-utils.js'
 
 const router = express.Router()
 
@@ -65,6 +66,7 @@ function createDigitransitProxy(path: string) {
           body: parseBody()
         })
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return proxyResData
     }
   })

@@ -4,20 +4,21 @@
 
 import express, { CookieOptions } from 'express'
 import { v4 as uuid } from 'uuid'
+
+import { login } from '../shared/auth/index.js'
 import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config.js'
 import {
   assertStringProp,
   toMiddleware,
   toRequestHandler
 } from '../shared/express.js'
+import { RedisClient } from '../shared/redis-client.js'
 import {
   employeePinLogin,
   identifyMobileDevice,
   MobileDeviceIdentity,
   validatePairing
 } from '../shared/service-client.js'
-import { login } from '../shared/auth/index.js'
-import { RedisClient } from '../shared/redis-client.js'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
@@ -53,8 +54,10 @@ async function mobileLogin(
 
 export const refreshMobileSession = toMiddleware(async (req, res) => {
   if (!req.user) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
     const token = req.signedCookies[mobileLongTermCookieName]
     if (token) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const deviceIdentity = await identifyMobileDevice(req, token)
       if (deviceIdentity) {
         await mobileLogin(req, res, deviceIdentity)

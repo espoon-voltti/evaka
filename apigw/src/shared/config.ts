@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RedisClientOptions } from 'redis'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
+import { RedisClientOptions } from 'redis'
 
 export interface Config {
   citizen: SessionConfig
@@ -100,7 +100,7 @@ function parseEnum<T extends string>(
     for (const variant of variants) {
       if (value === variant) return variant
     }
-    throw new Error(`Invalid enum (expected one of ${variants})`)
+    throw new Error(`Invalid enum (expected one of ${variants.toString()})`)
   }
 }
 

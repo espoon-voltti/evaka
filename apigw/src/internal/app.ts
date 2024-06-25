@@ -4,21 +4,29 @@
 
 import cookieParser from 'cookie-parser'
 import express from 'express'
+import expressBasicAuth from 'express-basic-auth'
 import passport from 'passport'
+
 import { requireAuthentication } from '../shared/auth/index.js'
-import { createAdSamlStrategy } from './ad-saml.js'
-import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml.js'
 import {
   appCommit,
   Config,
   enableDevApi,
   titaniaConfig
 } from '../shared/config.js'
+import { cacheControl } from '../shared/middleware/cache-control.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
 import { createProxy } from '../shared/proxy-utils.js'
+import { RedisClient } from '../shared/redis-client.js'
 import createSamlRouter from '../shared/routes/saml.js'
+import { createSamlConfig } from '../shared/saml/index.js'
+import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
 import { sessionSupport } from '../shared/session.js'
+
+import { createAdSamlStrategy } from './ad-saml.js'
+import { createDevAdRouter } from './dev-ad-auth.js'
+import { createKeycloakEmployeeSamlStrategy } from './keycloak-employee-saml.js'
 import mobileDeviceSession, {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -27,12 +35,6 @@ import mobileDeviceSession, {
   refreshMobileSession
 } from './mobile-device-session.js'
 import authStatus from './routes/auth-status.js'
-import expressBasicAuth from 'express-basic-auth'
-import { cacheControl } from '../shared/middleware/cache-control.js'
-import { createSamlConfig } from '../shared/saml/index.js'
-import redisCacheProvider from '../shared/saml/passport-saml-cache-redis.js'
-import { createDevAdRouter } from './dev-ad-auth.js'
-import { RedisClient } from '../shared/redis-client.js'
 
 export function internalGwRouter(
   config: Config,

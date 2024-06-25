@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorRequestHandler } from 'express'
-import { logError } from '../logging.js'
-import { InvalidRequest } from '../express.js'
+
 import { debug } from '../config.js'
+import { InvalidRequest } from '../express.js'
+import { logError } from '../logging.js'
+
 import { InvalidAntiCsrfToken } from './csrf.js'
 
 interface LogResponse {
@@ -33,14 +35,19 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
       }
       return
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (error.response) {
       const response: LogResponse = {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         message: includeErrorMessage
-          ? error.response.data?.message || 'Invalid downstream error response'
+          ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            error.response.data?.message || 'Invalid downstream error response'
           : null,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
         errorCode: error.response.data?.errorCode
       }
       if (!res.headersSent) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
         res.status(error.response.status).json(response)
       }
       return
@@ -55,9 +62,11 @@ export const fallbackErrorHandler: ErrorRequestHandler = (
   _next
 ) => {
   logError(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     `Internal server error: ${error.message || error || 'No error object'}`,
     req,
     undefined,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     error
   )
   if (!res.headersSent) {

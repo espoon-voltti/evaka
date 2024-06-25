@@ -2,14 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import passport, { Strategy } from 'passport'
+import { AxiosError } from 'axios'
 import express from 'express'
 import type { Request } from 'express'
-import { authenticate, EvakaSessionUser, login, logout } from './index.js'
+import passport, { Strategy } from 'passport'
+
 import { AsyncRequestHandler, toRequestHandler } from '../express.js'
-import { Sessions } from '../session.js'
 import { parseRelayState } from '../saml/index.js'
-import { AxiosError } from 'axios'
+import { Sessions } from '../session.js'
+
+import { authenticate, EvakaSessionUser, login, logout } from './index.js'
 
 export interface DevAuthRouterOptions {
   sessions: Sessions
@@ -58,8 +60,10 @@ export function createDevAuthRouter({
         }
       } catch (err) {
         if (!res.headersSent) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           if (err instanceof AxiosError && err.response?.data?.errorCode) {
             res.redirect(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
               `${root}?loginError=true&errorCode=${err.response.data.errorCode}`
             )
           } else {

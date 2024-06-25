@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
+
 import { logWarn } from '../logging.js'
 
 const router = express.Router()
@@ -13,6 +14,7 @@ router.post(
   (req, res) => {
     logWarn('CSP report received', req, {
       user: req.user,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       report: req.body
     })
     res.sendStatus(200)

@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { z } from 'zod'
-import _ from 'lodash'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
 import {
   CacheProvider,
   Profile,
@@ -11,15 +12,16 @@ import {
   Strategy as SamlStrategy,
   VerifyWithRequest
 } from '@node-saml/passport-saml'
-import { logError } from '../logging.js'
-import { createLogoutToken, EvakaSessionUser } from '../auth/index.js'
-import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
-import { readFileSync } from 'node:fs'
-import certificates, { TrustedCertificates } from '../certificates.js'
 import express from 'express'
-import path from 'node:path'
-import { Sessions } from '../session.js'
+import _ from 'lodash'
+import { z } from 'zod'
+
+import { createLogoutToken, EvakaSessionUser } from '../auth/index.js'
+import certificates, { TrustedCertificates } from '../certificates.js'
+import { evakaBaseUrl, EvakaSamlConfig } from '../config.js'
+import { logError } from '../logging.js'
 import { fromCallback } from '../promise-utils.js'
+import { Sessions } from '../session.js'
 
 export function createSamlConfig(
   config: EvakaSamlConfig,
@@ -105,8 +107,8 @@ export function createSamlStrategy<T>(
       })
       .catch(done)
   }
-  const logoutVerify: VerifyWithRequest = (req, profile, done) =>
-    (async () => {
+  const logoutVerify: VerifyWithRequest = (req, profile, done) => {
+    ;(async () => {
       if (!profile) return undefined
       const profileId = SamlProfileId.safeParse(profile)
       if (!profileId.success) return undefined
@@ -133,11 +135,14 @@ export function createSamlStrategy<T>(
       }
     })()
       .then((user) => done(null, user))
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       .catch((err) => done(err))
+  }
   return new SamlStrategy(config, loginVerify, logoutVerify)
 }
 
 export function parseRelayState(req: express.Request): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
   const relayState = req.body?.RelayState || req.query.RelayState
 
   if (typeof relayState === 'string' && path.isAbsolute(relayState)) {

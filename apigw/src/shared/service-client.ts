@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
 import axios from 'axios'
-import { evakaServiceUrl } from './config.js'
+import express from 'express'
+
 import {
   EvakaSessionUser,
   integrationUserHeader,
   createUserHeader
 } from './auth/index.js'
 import { getJwt } from './auth/jwt.js'
+import { evakaServiceUrl } from './config.js'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl
@@ -106,6 +107,11 @@ export interface CitizenUser {
   id: UUID
 }
 
+export interface CitizenUserResponse {
+  details: unknown
+  accessibleFeatures: unknown
+}
+
 export async function employeeLogin(
   employee: EmployeeLoginRequest
 ): Promise<EmployeeUser> {
@@ -149,7 +155,7 @@ export async function getCitizenDetails(
   req: express.Request,
   personId: string
 ) {
-  const { data } = await client.get(
+  const { data } = await client.get<CitizenUserResponse>(
     `/system/citizen/${encodeURIComponent(personId)}`,
     {
       headers: createServiceRequestHeaders(req, machineUser)
@@ -173,7 +179,7 @@ export async function validatePairing(
   id: UUID,
   request: ValidatePairingRequest
 ): Promise<MobileDeviceIdentity> {
-  const { data } = await client.post(
+  const { data } = await client.post<MobileDeviceIdentity>(
     `/system/pairings/${encodeURIComponent(id)}/validation`,
     request,
     {
@@ -197,7 +203,7 @@ export async function identifyMobileDevice(
   token: UUID
 ): Promise<MobileDeviceIdentity | undefined> {
   try {
-    const { data } = await client.get(
+    const { data } = await client.get<MobileDeviceIdentity | undefined>(
       `/system/mobile-identity/${encodeURIComponent(token)}`,
       {
         headers: createServiceRequestHeaders(req, machineUser)
@@ -218,7 +224,7 @@ export async function authenticateMobileDevice(
   id: UUID
 ): Promise<MobileDevice | undefined> {
   try {
-    const { data } = await client.post(
+    const { data } = await client.post<MobileDevice | undefined>(
       `/system/mobile-devices/${encodeURIComponent(id)}`,
       {
         userAgent: req.headers['user-agent'] ?? ''

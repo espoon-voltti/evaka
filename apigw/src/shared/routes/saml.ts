@@ -2,21 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
-import passport from 'passport'
 import passportSaml from '@node-saml/passport-saml'
-import { createLogoutToken, login, logout } from '../auth/index.js'
-import { toMiddleware, toRequestHandler } from '../express.js'
-import { logAuditEvent, logDebug } from '../logging.js'
-import { fromCallback } from '../promise-utils.js'
-import { Sessions } from '../session.js'
-import { parseDescriptionFromSamlError } from '../saml/error-utils.js'
 import type {
   AuthenticateOptions,
   RequestWithUser
 } from '@node-saml/passport-saml/lib/types.js'
-import { parseRelayState } from '../saml/index.js'
 import { AxiosError } from 'axios'
+import express from 'express'
+import passport from 'passport'
+
+import { createLogoutToken, login, logout } from '../auth/index.js'
+import { toRequestHandler } from '../express.js'
+import { logAuditEvent, logDebug } from '../logging.js'
+import { fromCallback } from '../promise-utils.js'
+import { parseDescriptionFromSamlError } from '../saml/error-utils.js'
+import { parseRelayState } from '../saml/index.js'
+import { Sessions } from '../session.js'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 
@@ -42,6 +43,7 @@ function createLoginHandler({
     const options: AuthenticateOptions = {
       additionalParams: typeof locale === 'string' ? { locale } : {}
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     passport.authenticate(
       strategyName,
       options,
@@ -52,9 +54,11 @@ function createLoginHandler({
       ) => {
         if (err || !user) {
           const description =
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             parseDescriptionFromSamlError(err, req) ||
             'Could not parse SAML message'
 
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           if (err.message === 'InResponseTo is not valid' && req.user) {
             // When user uses browse back functionality after login we get invalid InResponseTo
             // This will ignore the error
@@ -69,8 +73,10 @@ function createLoginHandler({
             `Failed to authenticate user. Description: ${description}. Details: ${err}`
           )
 
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           if (err instanceof AxiosError && err.response?.data?.errorCode) {
             return res.redirect(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
               `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
             )
           }
@@ -106,8 +112,10 @@ function createLoginHandler({
             `Error logging user in. Error: ${err}`
           )
           if (!res.headersSent) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (err instanceof AxiosError && err.response?.data?.errorCode) {
               res.redirect(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 `${defaultPageUrl}?loginError=true&errorCode=${err.response.data.errorCode}`
               )
             } else {
@@ -145,7 +153,7 @@ function createLogoutHandler({
       logAuditEvent(
         `evaka.saml.${strategyName}.sign_out_failed`,
         req,
-        `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err}.`
+        `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err?.toString()}.`
       )
       throw err
     }
@@ -167,13 +175,14 @@ export default function createSamlRouter(
 
   const loginHandler = createLoginHandler(endpointConfig)
   const logoutHandler = createLogoutHandler(endpointConfig)
-  const logoutCallback = toMiddleware(async (req) => {
+  const logoutCallback: express.RequestHandler = (req, _, next) => {
     logAuditEvent(
       `evaka.saml.${strategyName}.sign_out`,
       req,
       'Logout callback called'
     )
-  })
+    next()
+  }
 
   const router = express.Router()
 
@@ -198,6 +207,7 @@ export default function createSamlRouter(
   router.get(
     `/logout/callback`,
     logoutCallback,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     passport.authenticate(strategyName),
     (req, res) =>
       res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)
@@ -206,6 +216,7 @@ export default function createSamlRouter(
     `/logout/callback`,
     urlencodedParser,
     logoutCallback,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     passport.authenticate(strategyName),
     (req, res) =>
       res.redirect(parseRelayState(req) ?? endpointConfig.defaultPageUrl)

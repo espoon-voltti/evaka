@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, beforeEach, expect, it, test } from '@jest/globals'
 import type { CacheProvider } from '@node-saml/passport-saml'
-import redisCacheProvider from '../saml/passport-saml-cache-redis'
+
+import redisCacheProvider from '../saml/passport-saml-cache-redis.js'
 import { MockRedisClient } from '../test/mock-redis-client.js'
 
 const ttlSeconds = 1
@@ -21,18 +23,18 @@ beforeEach(() => {
 describe('passport-saml-cache-redis', () => {
   describe('constructor', () => {
     test('throws an error if ttlSeconds is not a positive integer', () => {
-      expect(() =>
+      expect((): unknown =>
         redisCacheProvider(redisClient, {
           ttlSeconds: -1,
           keyPrefix: 'test-prefix:'
         })
-      ).toThrowError('ttlSeconds must be a positive integer')
-      expect(() =>
+      ).toThrow('ttlSeconds must be a positive integer')
+      expect((): unknown =>
         redisCacheProvider(redisClient, {
           ttlSeconds: 1.5,
           keyPrefix: 'test-prefix:'
         })
-      ).toThrowError('ttlSeconds must be a positive integer')
+      ).toThrow('ttlSeconds must be a positive integer')
     })
 
     test('using different keyPrefixes creates separate caches', async () => {

@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { v4 as uuidv4 } from 'uuid'
-import _ from 'lodash'
-import { z } from 'zod'
 import { Router } from 'express'
-import { assertStringProp } from '../shared/express.js'
-import { getEmployees } from '../shared/dev-api.js'
+import _ from 'lodash'
+import { v4 as uuidv4 } from 'uuid'
+import { z } from 'zod'
+
 import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
+import { getEmployees } from '../shared/dev-api.js'
+import { assertStringProp } from '../shared/express.js'
 import { employeeLogin } from '../shared/service-client.js'
 import { Sessions } from '../shared/session.js'
 

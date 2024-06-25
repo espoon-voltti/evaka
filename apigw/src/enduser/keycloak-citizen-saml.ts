@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { z } from 'zod'
 import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
-import { citizenLogin } from '../shared/service-client.js'
+import { z } from 'zod'
+
 import { createSamlStrategy } from '../shared/saml/index.js'
+import { citizenLogin } from '../shared/service-client.js'
 import { Sessions } from '../shared/session.js'
 
 const Profile = z.object({

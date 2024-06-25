@@ -2,22 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import http from 'http'
+
 import axios, {
   AxiosInstance,
   AxiosResponse,
   InternalAxiosRequestConfig
 } from 'axios'
-import http from 'http'
 import express from 'express'
-import { Cookie, CookieJar } from 'tough-cookie'
 import nock from 'nock'
-import { Config, evakaServiceUrl } from '../config.js'
-import { sessionCookie, SessionType } from '../session.js'
-import { CitizenUser, EmployeeUser } from '../service-client.js'
-import { MockRedisClient } from './mock-redis-client.js'
+import passport from 'passport'
+import { Cookie, CookieJar } from 'tough-cookie'
+
 import { enduserGwRouter } from '../../enduser/app.js'
 import { internalGwRouter } from '../../internal/app.js'
-import passport from 'passport'
+import { Config, evakaServiceUrl } from '../config.js'
+import { CitizenUser, EmployeeUser } from '../service-client.js'
+import { sessionCookie, SessionType } from '../session.js'
+
+import { MockRedisClient } from './mock-redis-client.js'
 
 export class GatewayTester {
   public readonly client: AxiosInstance
@@ -40,7 +43,7 @@ export class GatewayTester {
     this.client.interceptors.request.use(async (config) =>
       includeCookiesInRequest(this.baseUrl, this.cookies, config)
     )
-    this.client.interceptors.request.use(async (config) => {
+    this.client.interceptors.request.use((config) => {
       if (this.antiCsrfToken) {
         config.headers.set('x-evaka-csrf', this.antiCsrfToken)
       }
@@ -99,6 +102,7 @@ export class GatewayTester {
     postData?: any
   ): Promise<void> {
     if (this.sessionType === 'employee') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       postData =
         postData !== undefined
           ? postData
@@ -113,6 +117,7 @@ export class GatewayTester {
       this.nockScope.post('/system/employee-login').reply(200, user)
       await this.client.post(
         '/api/internal/auth/saml/login/callback',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         new URLSearchParams(postData),
         {
           maxRedirects: 0,
@@ -121,10 +126,12 @@ export class GatewayTester {
       )
       this.nockScope.done()
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       postData = postData !== undefined ? postData : { preset: 'dummy' }
       this.nockScope.post('/system/citizen-login').reply(200, user)
       await this.client.post(
         '/api/application/auth/saml/login/callback',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         new URLSearchParams(postData),
         {
           maxRedirects: 0,

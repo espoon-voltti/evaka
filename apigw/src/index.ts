@@ -4,27 +4,30 @@
 
 import './tracer.js'
 
-import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
-import { logError, loggingMiddleware, logInfo } from './shared/logging.js'
+import express from 'express'
+import helmet from 'helmet'
+import passport from 'passport'
+import * as redis from 'redis'
+
 import { enduserGwRouter } from './enduser/app.js'
 import { internalGwRouter } from './internal/app.js'
-import * as redis from 'redis'
-import csp from './shared/routes/csp.js'
+import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
+import { logError, loggingMiddleware, logInfo } from './shared/logging.js'
 import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
-import express from 'express'
-import { trustReverseProxy } from './shared/reverse-proxy.js'
-import helmet from 'helmet'
-import { assertRedisConnection } from './shared/redis-client.js'
 import tracing from './shared/middleware/tracing.js'
-import passport from 'passport'
+import { assertRedisConnection } from './shared/redis-client.js'
+import { trustReverseProxy } from './shared/reverse-proxy.js'
+import csp from './shared/routes/csp.js'
 
 const config = configFromEnv()
 
 const redisClient = redis.createClient(toRedisClientOpts(config))
 redisClient.on('error', (err) =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   logError('Redis error', undefined, undefined, err)
 )
 redisClient.connect().catch((err) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   logError('Unable to connect to redis', undefined, undefined, err)
 })
 // Don't prevent the app from exiting if a redis connection is alive.

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
+
 import { appCommit } from '../shared/config.js'
 import { createProxy } from '../shared/proxy-utils.js'
 

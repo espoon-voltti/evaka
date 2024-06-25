@@ -204,7 +204,9 @@ export const expected: Expected = {
     logLevel: validPinoMiscLogMessage.level,
     message: validPinoMiscLogMessage.message,
     meta: {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       customField1: validPinoMiscLogMessage.meta!.customField1,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       customField2: validPinoMiscLogMessage.meta!.customField2
     },
     type: validPinoMiscLogMessage.type,
@@ -225,7 +227,9 @@ export const expected: Expected = {
     logLevel: validPinoMiscLogMessage.level,
     message: validPinoMiscLogMessageWithError.message,
     meta: {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       customField1: validPinoMiscLogMessage.meta!.customField1,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       customField2: validPinoMiscLogMessage.meta!.customField2
     },
     stackTrace: validPinoMiscLogMessageWithError.stackTrace,

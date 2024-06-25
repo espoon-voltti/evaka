@@ -4,6 +4,7 @@
 
 import { Request } from 'express'
 import { XMLParser } from 'fast-xml-parser'
+
 import { logDebug, logError } from '../logging.js'
 
 export interface PassportSamlError extends Error {
@@ -69,6 +70,7 @@ export function parseDescriptionFromSamlError(
     ignoreAttributes: false,
     parseAttributeValue: true
   })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const statusObject: StatusObject = parser.parse(error.statusXml)
 
   if (!statusObject) {

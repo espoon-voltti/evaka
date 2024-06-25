@@ -2,25 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, expect, test } from '@jest/globals'
 import { differenceInMonths } from 'date-fns'
-import certificates, { TrustedCertificates } from '../certificates'
-import * as invalidlyTypedForge from 'node-forge'
+import nodeForge from 'node-forge'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const forge = (invalidlyTypedForge as any)
-  .default as typeof import('node-forge')
+import certificates, { TrustedCertificates } from '../certificates'
 
 describe('SAML certificates', () => {
   test('at least one certificate must exist', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     expect(Object.keys(certificates).length).toBeGreaterThan(0)
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   test.each(Object.keys(certificates) as TrustedCertificates[])(
     '%s must decode successfully',
-    async (certificateName) => {
+    (certificateName) => {
       const computeHash = false
       const strict = true
-      const certificate = forge.pki.certificateFromPem(
+      const certificate = nodeForge.pki.certificateFromPem(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
         certificates[certificateName],
         computeHash,
         strict

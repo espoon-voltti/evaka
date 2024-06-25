@@ -7,6 +7,7 @@ import _ from 'lodash'
 import { pino } from 'pino'
 import { pinoHttp } from 'pino-http'
 import queryString from 'query-string'
+
 import { appBuild, appCommit, hostIp, prettyLogs, volttiEnv } from './config.js'
 import { createSha256Hash } from './crypto.js'
 import {
@@ -147,7 +148,9 @@ const middlewareLogger = pino(_.merge({}, BASE_LOGGER_OPTS, ACCESS_LOGGER_OPTS))
 
 function tracingReqSerializer(req: UserPinoRequest): UserPinoRequest {
   return {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
     spanId: req.raw.spanId,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
     traceId: req.raw.traceId,
     ...req
   }
@@ -157,7 +160,9 @@ function tracingReqSerializer(req: UserPinoRequest): UserPinoRequest {
  * A request serializer for pino-http which enriches the req object with the user id hash
  */
 export function userIdHashReqSerializer(req: UserPinoRequest): UserPinoRequest {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
   const userId = req.raw.user?.id || null
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   req.userIdHash = userId != null ? createSha256Hash(userId) : ''
   return req
 }

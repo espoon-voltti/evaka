@@ -9,10 +9,11 @@ import { differenceInSeconds } from 'date-fns/differenceInSeconds'
 import { isDate } from 'date-fns/isDate'
 import express from 'express'
 import session from 'express-session'
+
+import { SessionConfig } from './config.js'
 import { LogoutToken, toMiddleware } from './express.js'
 import { fromCallback } from './promise-utils.js'
 import { RedisClient } from './redis-client.js'
-import { SessionConfig } from './config.js'
 
 export type SessionType = 'enduser' | 'employee'
 
@@ -42,7 +43,7 @@ export interface Sessions {
     req: express.Request,
     logoutToken?: LogoutToken['value']
   ): Promise<void>
-  logoutWithToken(token: LogoutToken['value']): Promise<unknown | undefined>
+  logoutWithToken(token: LogoutToken['value']): Promise<unknown>
   consumeLogoutToken(token: LogoutToken['value']): Promise<void>
 }
 
@@ -135,7 +136,7 @@ export function sessionSupport(
     if (!req.session) return
     if (!req.session.logoutToken) return
     if (!isDate(req.session.cookie.expires)) return
-    const sessionExpires = req.session.cookie.expires as Date
+    const sessionExpires = req.session.cookie.expires
     const logoutExpires = new Date(req.session.logoutToken.expiresAt)
     // Logout token should always expire at least 30 minutes later than the session
     if (differenceInMinutes(logoutExpires, sessionExpires) < 30) {
@@ -145,15 +146,17 @@ export function sessionSupport(
 
   async function logoutWithToken(
     logoutToken: LogoutToken['value']
-  ): Promise<unknown | undefined> {
+  ): Promise<unknown> {
     if (!logoutToken) return
     const sid = await redisClient.get(logoutKey(logoutToken))
     if (!sid) return
     const session = await redisClient.get(sessionKey(sid))
     await redisClient.del([sessionKey(sid), logoutKey(logoutToken)])
     if (!session) return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
     const user = JSON.parse(session)?.passport?.user
     if (!user) return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return user
   }
 
