@@ -100,26 +100,28 @@ export default React.memo(function PersonFeeDecisions({
             </Tr>
           </Thead>
           <Tbody>
-            {orderBy(feeDecisions, ['sentAt', 'validFrom'], ['desc']).map(
-              (feeDecision: FeeDecision) => (
-                <Tr key={feeDecision.id} data-qa="table-fee-decision-row">
-                  <Td>
-                    <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
-                      Maksupäätös {feeDecision.validDuring.format()}
-                    </Link>
-                  </Td>
-                  <Td>{formatCents(feeDecision.totalFee)}</Td>
-                  <Td>{feeDecision.decisionNumber}</Td>
-                  <DateTd>{feeDecision.created.toLocalDate().format()}</DateTd>
-                  <DateTd data-qa="fee-decision-sent-at">
-                    {feeDecision.sentAt?.toLocalDate().format() ?? ''}
-                  </DateTd>
-                  <StatusTd>
-                    {i18n.feeDecision.status[feeDecision.status]}
-                  </StatusTd>
-                </Tr>
-              )
-            )}
+            {orderBy(
+              feeDecisions,
+              ['validFrom', 'sentAt'],
+              ['desc', 'desc']
+            ).map((feeDecision: FeeDecision) => (
+              <Tr key={feeDecision.id} data-qa="table-fee-decision-row">
+                <Td>
+                  <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
+                    Maksupäätös {feeDecision.validDuring.format()}
+                  </Link>
+                </Td>
+                <Td>{formatCents(feeDecision.totalFee)}</Td>
+                <Td>{feeDecision.decisionNumber}</Td>
+                <DateTd>{feeDecision.created.toLocalDate().format()}</DateTd>
+                <DateTd data-qa="fee-decision-sent-at">
+                  {feeDecision.sentAt?.toLocalDate().format() ?? ''}
+                </DateTd>
+                <StatusTd>
+                  {i18n.feeDecision.status[feeDecision.status]}
+                </StatusTd>
+              </Tr>
+            ))}
           </Tbody>
         </Table>
       ))}
