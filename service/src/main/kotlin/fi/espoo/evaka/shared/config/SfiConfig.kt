@@ -9,6 +9,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessagesSoapClient
+import fi.espoo.evaka.sficlient.rest.SfiMessagesRestClient
 import mu.KotlinLogging
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.annotation.Bean
@@ -24,8 +25,13 @@ class SfiConfig {
         documentClient: DocumentService
     ): SfiMessagesClient =
         env.ifAvailable?.let {
-            logger.info { "Using real SOAP Suomi.fi Messages API client. Configuration: $it" }
-            SfiMessagesSoapClient(it, documentClient::get)
+            if (it.restEnabled) {
+                logger.info { "Using real REST Suomi.fi Messages API client. Configuration: $it" }
+                SfiMessagesRestClient(it, documentClient::get)
+            } else {
+                logger.info { "Using real SOAP Suomi.fi Messages API client. Configuration: $it" }
+                SfiMessagesSoapClient(it, documentClient::get)
+            }
         }
             ?: MockSfiMessagesClient().also {
                 logger.info { "Using mock Suomi.fi Messages API client" }

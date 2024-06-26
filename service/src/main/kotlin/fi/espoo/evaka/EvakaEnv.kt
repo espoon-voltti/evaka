@@ -610,7 +610,15 @@ data class SfiEnv(
      *
      * Mandatory for paper posting testing
      */
-    val contactOrganization: SfiContactOrganizationEnv
+    val contactOrganization: SfiContactOrganizationEnv,
+    /** Whether to use the REST API pilot instead of the old SOAP API. */
+    val restEnabled: Boolean,
+    /** URI of the messages REST API endpoint */
+    val restAddress: URI?,
+    /** Username for the messages REST API, also known as "systemId" */
+    val restUsername: String?,
+    /** Password for the messages REST API */
+    val restPassword: Sensitive<String>?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -685,7 +693,12 @@ data class SfiEnv(
                     ),
                 printing = SfiPrintingEnv.fromEnvironment(env),
                 contactPerson = SfiContactPersonEnv.fromEnvironment(env),
-                contactOrganization = SfiContactOrganizationEnv.fromEnvironment(env)
+                contactOrganization = SfiContactOrganizationEnv.fromEnvironment(env),
+                restEnabled = env.lookup("evaka.integration.sfi.rest_enabled") ?: false,
+                restAddress = env.lookup("evaka.integration.sfi.rest_address"),
+                restUsername = env.lookup("evaka.integration.sfi.rest_username"),
+                restPassword =
+                    env.lookup<String?>("evaka.integration.sfi.rest_password")?.let(::Sensitive)
             )
     }
 }
