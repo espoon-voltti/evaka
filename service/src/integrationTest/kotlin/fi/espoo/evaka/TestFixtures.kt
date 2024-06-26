@@ -581,7 +581,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertServiceNeedOptions()
     insertServiceNeedOptionFees()
     insertServiceNeedOptionVoucherValues()
-    insertAssistanceActionOptions()
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {
