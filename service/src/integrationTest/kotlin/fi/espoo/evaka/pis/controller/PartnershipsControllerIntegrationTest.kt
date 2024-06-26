@@ -55,6 +55,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun init() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(DevEmployee(unitSupervisorId))

@@ -36,6 +36,7 @@ import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_6
+import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -84,6 +85,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testSvebiDaycare)
+            tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(testChild_1, testChild_6).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insert(clubTerm2021)
@@ -220,6 +223,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     fun `email is sent after sending club application`() {
         val applicationId =
             db.transaction { tx ->
+                tx.insert(testClub)
                 tx.insertTestApplication(
                     childId = testChild_1.id,
                     guardianId = guardian.id,

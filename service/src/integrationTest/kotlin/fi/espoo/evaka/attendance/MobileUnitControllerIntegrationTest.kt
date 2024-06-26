@@ -63,6 +63,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             listOf(
                     testChild_1,
                     testChild_2,

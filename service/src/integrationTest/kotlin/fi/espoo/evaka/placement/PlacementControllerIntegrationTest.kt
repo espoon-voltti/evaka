@@ -80,6 +80,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(

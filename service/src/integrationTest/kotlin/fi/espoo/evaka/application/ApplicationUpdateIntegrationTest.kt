@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.getValidDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -43,6 +44,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)
         }

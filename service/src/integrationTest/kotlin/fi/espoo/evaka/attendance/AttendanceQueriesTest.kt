@@ -27,6 +27,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
     }

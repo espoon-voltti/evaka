@@ -35,6 +35,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         super.beforeAll()
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
         }
     }

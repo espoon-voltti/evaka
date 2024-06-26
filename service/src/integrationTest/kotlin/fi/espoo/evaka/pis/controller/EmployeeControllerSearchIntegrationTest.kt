@@ -32,6 +32,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             tx.insert(
                 unitSupervisorOfTestDaycare,
                 mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)

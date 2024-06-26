@@ -33,6 +33,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
             groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
         }

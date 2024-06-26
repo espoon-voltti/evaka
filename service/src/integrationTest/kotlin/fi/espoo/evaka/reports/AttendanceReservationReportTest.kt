@@ -66,6 +66,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun setup() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             tx.insert(
                 unitSupervisorOfTestDaycare,
                 mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)

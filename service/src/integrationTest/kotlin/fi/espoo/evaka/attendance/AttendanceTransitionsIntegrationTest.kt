@@ -59,6 +59,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(preschoolTerm2023)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))

@@ -43,6 +43,8 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testRoundTheClockDaycare)
             tx.insert(group1)
             tx.insert(group2)
             tx.insert(group3)

@@ -104,6 +104,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun prepare() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testRoundTheClockDaycare)
             listOf(testChild_1, testChild_2, testChild_3).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }

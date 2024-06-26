@@ -58,6 +58,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.execute {

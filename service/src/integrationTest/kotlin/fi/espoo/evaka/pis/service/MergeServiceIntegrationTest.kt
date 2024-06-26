@@ -74,6 +74,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         mergeService = MergeService(mergeServiceAsyncJobRunnerMock, documentClient, bucketEnv)
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
         }
     }

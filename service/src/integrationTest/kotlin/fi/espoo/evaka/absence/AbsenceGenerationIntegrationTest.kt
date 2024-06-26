@@ -56,6 +56,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             tx.insert(
                 unitSupervisorOfTestDaycare,
                 mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)

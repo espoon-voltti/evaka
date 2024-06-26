@@ -34,6 +34,7 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testClub
+import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
@@ -59,6 +60,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testClub)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(
                     testChild_1,

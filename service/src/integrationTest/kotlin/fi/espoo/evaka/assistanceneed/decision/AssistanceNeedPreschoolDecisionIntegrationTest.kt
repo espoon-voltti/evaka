@@ -139,6 +139,8 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             tx.insert(
                 unitSupervisorOfTestDaycare,
                 mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)

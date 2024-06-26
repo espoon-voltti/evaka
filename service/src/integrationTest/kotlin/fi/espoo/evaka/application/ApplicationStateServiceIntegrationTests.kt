@@ -110,6 +110,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         MockSfiMessagesClient.clearMessages()
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6)
                 .forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2, testChild_6, testChild_7).forEach {

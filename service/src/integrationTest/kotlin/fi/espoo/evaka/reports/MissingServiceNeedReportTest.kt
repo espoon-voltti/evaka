@@ -34,6 +34,8 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testVoucherDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertServiceNeedOptions()
         }

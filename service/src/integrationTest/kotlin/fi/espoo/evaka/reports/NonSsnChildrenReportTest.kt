@@ -59,11 +59,13 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(jimmyNoSsn, DevPersonType.CHILD)
-            it.insert(jackieNoSsn, DevPersonType.CHILD)
-            it.insert(
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(jimmyNoSsn, DevPersonType.CHILD)
+            tx.insert(jackieNoSsn, DevPersonType.CHILD)
+            tx.insert(
                 DevPlacement(
                     childId = jimmyNoSsn.id,
                     unitId = testDaycare.id,
@@ -71,7 +73,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = testDay.plusYears(1)
                 )
             )
-            it.insert(
+            tx.insert(
                 DevPlacement(
                     childId = jackieNoSsn.id,
                     unitId = testDaycare2.id,

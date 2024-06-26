@@ -59,6 +59,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertServiceNeedOptions()
             groupId1 =

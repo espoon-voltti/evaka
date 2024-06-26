@@ -109,6 +109,8 @@ class AttendanceReservationsControllerIntegrationTest :
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             listOf(testChild_1, testChild_2, testChild_4, testChild_5, testChild_6).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }

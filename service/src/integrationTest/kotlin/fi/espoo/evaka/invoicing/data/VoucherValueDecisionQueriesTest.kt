@@ -61,6 +61,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
             listOf(
                     testAdult_1,
                     testAdult_2,

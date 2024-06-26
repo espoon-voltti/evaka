@@ -508,19 +508,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     testDecisionMaker_3.let {
         insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
     }
-
-    insert(testSvebiDaycare)
-    insert(testDaycare)
-    insert(testDaycare2)
-    insert(testDaycareNotInvoiced)
-    insert(testPurchasedDaycare)
-    insert(testExternalPurchasedDaycare)
-    insert(testVoucherDaycare)
-    insert(testVoucherDaycare2)
-
-    insert(testClub)
-    insert(testGhostUnitDaycare)
-    insert(testRoundTheClockDaycare)
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {

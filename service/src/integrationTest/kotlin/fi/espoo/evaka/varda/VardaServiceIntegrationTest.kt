@@ -70,6 +70,11 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycareNotInvoiced)
+            tx.insert(testPurchasedDaycare)
+            tx.insert(testExternalPurchasedDaycare)
+            tx.insert(testGhostUnitDaycare)
             listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertServiceNeedOptions()

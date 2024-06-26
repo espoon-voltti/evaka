@@ -47,6 +47,8 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     fun setup() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             tx.insert(
                 DevDaycareGroup(id = groupId1, daycareId = testDaycare.id, name = "Testiläiset 1")
             )

@@ -85,6 +85,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testVoucherDaycare)
+            tx.insert(testVoucherDaycare2)
             listOf(
                     testAdult_1,
                     testAdult_2,

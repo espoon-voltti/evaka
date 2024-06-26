@@ -33,6 +33,9 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testRoundTheClockDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
         }
     }
