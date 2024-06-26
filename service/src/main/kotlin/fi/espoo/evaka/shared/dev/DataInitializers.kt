@@ -25,6 +25,7 @@ import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
@@ -1801,4 +1802,15 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
+}
+
+fun Database.Transaction.insert(fee: ServiceNeedOptionFee) {
+    execute {
+        sql(
+            """
+INSERT INTO service_need_option_fee (service_need_option_id, validity, base_fee, sibling_discount_2, sibling_fee_2, sibling_discount_2_plus, sibling_fee_2_plus)
+VALUES (${bind(fee.serviceNeedOptionId)}, ${bind(fee.validity)}, ${bind(fee.baseFee)}, ${bind(fee.siblingDiscount2)}, ${bind(fee.siblingFee2)}, ${bind(fee.siblingDiscount2Plus)}, ${bind(fee.siblingFee2Plus)})
+"""
+        )
+    }
 }

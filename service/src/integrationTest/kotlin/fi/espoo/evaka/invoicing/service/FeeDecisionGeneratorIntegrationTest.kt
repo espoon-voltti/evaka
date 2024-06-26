@@ -38,6 +38,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -272,6 +273,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is generated for child with a preschool club`() {
+        db.transaction { tx ->
+            tx.insert(
+                ServiceNeedOptionFee(
+                    serviceNeedOptionId = snPreschoolClub45.id,
+                    validity = DateRange(LocalDate.of(2000, 1, 1), null),
+                    baseFee = 14000,
+                    siblingDiscount2 = BigDecimal("0.4"),
+                    siblingFee2 = 8000,
+                    siblingDiscount2Plus = BigDecimal("0.4"),
+                    siblingFee2Plus = 8000
+                )
+            )
+        }
+
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertServiceNeed(
             insertPlacement(
@@ -296,6 +311,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preschool club`() {
+        db.transaction { tx ->
+            tx.insert(
+                ServiceNeedOptionFee(
+                    serviceNeedOptionId = snPreschoolClub45.id,
+                    validity = DateRange(LocalDate.of(2000, 1, 1), null),
+                    baseFee = 14000,
+                    siblingDiscount2 = BigDecimal("0.4"),
+                    siblingFee2 = 8000,
+                    siblingDiscount2Plus = BigDecimal("0.4"),
+                    siblingFee2Plus = 8000
+                )
+            )
+        }
+
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolClub45
         insertServiceNeed(
