@@ -9,7 +9,11 @@ import { mutation, query } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import { getCitizenCalendarEvents } from '../generated/api-clients/calendarevent'
+import {
+  addCalendarEventTimeReservation,
+  deleteCalendarEventTimeReservation,
+  getCitizenCalendarEvents
+} from '../generated/api-clients/calendarevent'
 import { getDailyServiceTimeNotifications } from '../generated/api-clients/dailyservicetimes'
 import {
   answerFixedPeriodQuestionnaire,
@@ -24,13 +28,14 @@ import {
 } from '../generated/api-clients/reservations'
 import { createQueryKeys } from '../query'
 
-const queryKeys = createQueryKeys('calendar', {
+export const queryKeys = createQueryKeys('calendar', {
   allReservations: () => ['reservations'],
   reservations: (from: LocalDate, to: LocalDate) => [
     'reservations',
     from.formatIso(),
     to.formatIso()
   ],
+  allEvents: () => ['calendarEvents'],
   calendarEvents: (from: LocalDate, to: LocalDate) => [
     'calendarEvents',
     from.formatIso(),
@@ -70,6 +75,16 @@ export const postReservationsMutation = mutation({
 export const postAbsencesMutation = mutation({
   api: postAbsences,
   invalidateQueryKeys: () => [queryKeys.allReservations()]
+})
+
+export const addCalendarEventTimeReservationMutation = mutation({
+  api: addCalendarEventTimeReservation,
+  invalidateQueryKeys: () => [queryKeys.allEvents()]
+})
+
+export const deleteCalendarEventTimeReservationMutation = mutation({
+  api: deleteCalendarEventTimeReservation,
+  invalidateQueryKeys: () => [queryKeys.allEvents()]
 })
 
 export const holidayPeriodsQuery = query({

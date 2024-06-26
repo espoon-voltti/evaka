@@ -108,7 +108,10 @@ export interface CalendarEventUpdateForm {
 export interface CitizenCalendarEvent {
   attendingChildren: Record<UUID, AttendingChild[]>
   description: string
+  eventType: CalendarEventType
   id: UUID
+  period: FiniteDateRange
+  timesByChild: Record<UUID, CalendarEventTime[]>
   title: string
 }
 
@@ -192,6 +195,10 @@ export function deserializeJsonCitizenCalendarEvent(json: JsonOf<CitizenCalendar
     ...json,
     attendingChildren: Object.fromEntries(Object.entries(json.attendingChildren).map(
       ([k, v]) => [k, v.map(e => deserializeJsonAttendingChild(e))]
+    )),
+    period: FiniteDateRange.parseJson(json.period),
+    timesByChild: Object.fromEntries(Object.entries(json.timesByChild).map(
+      ([k, v]) => [k, v.map(e => deserializeJsonCalendarEventTime(e))]
     ))
   }
 }

@@ -317,6 +317,21 @@ const sv: Translations = {
       SICKLEAVE: 'Sjukfrånvaro',
       PLANNED_ABSENCE: 'Skiftarbete frånvaro'
     },
+    discussionTimeReservation: {
+      surveyModalButtonText: 'Siirry ajanvaraukseen',
+      reservationModalButtonText: 'Siirry varaamaan',
+      surveyModalTitle: 'Ajanvaraus',
+      surveyModalSubTitle: 'Keskusteluajat',
+      surveyModalInstruction:
+        'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
+      surveyListTitle: 'Varattavat keskustelut',
+      timePreDescriptor: 'klo',
+      reservationLabelText: 'Valittu keskusteluaika:',
+      reservationInfoButtonText: 'Entä jos haluan varata lisää aikoja?',
+      reservationInfoText:
+        'Ota suoraan yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
+      reservationChildTitle: 'Lapsi, jota keskustelu koskee:'
+    },
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',
     intermittentShiftCareNotification: 'Kvälls-/skiftvård',

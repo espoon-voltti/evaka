@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faX } from '@fortawesome/free-solid-svg-icons'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -20,6 +21,8 @@ import {
 import { StateOf } from 'lib-common/form/types'
 import {
   AttendingChild,
+  CalendarEventTime,
+  CalendarEventType,
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
 import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
@@ -76,13 +79,17 @@ import { Translations, useLang, useTranslation } from '../localization'
 import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
+import { getStartOfDiscussionReservationWindow } from './CalendarPage'
 import {
   ChildImageData,
   getChildImages,
   RoundChildImage
 } from './RoundChildImages'
 import { formatReservation } from './calendar-elements'
-import { postReservationsMutation } from './queries'
+import {
+  deleteCalendarEventTimeReservationMutation,
+  postReservationsMutation
+} from './queries'
 import { Day } from './reservation-modal/TimeInputs'
 import {
   day,
@@ -421,25 +428,86 @@ const DayModal = React.memo(function DayModal({
                           <ColoredH3 noMargin>{i18n.calendar.events}</ColoredH3>
                           <Gap size="s" />
                           <FixedSpaceColumn spacing="s">
-                            {row.events.map((event) => (
-                              <FixedSpaceColumn
-                                spacing="xxs"
-                                key={event.id}
-                                data-qa={`event-${event.id}`}
-                              >
-                                <LabelLike data-qa="event-title">
-                                  {event.title} /{' '}
-                                  {event.currentAttending.type === 'unit'
-                                    ? event.currentAttending.unitName
-                                    : event.currentAttending.type === 'group'
-                                      ? event.currentAttending.groupName
-                                      : row.firstName}
-                                </LabelLike>
-                                <P noMargin data-qa="event-description">
-                                  {event.description}
-                                </P>
-                              </FixedSpaceColumn>
-                            ))}
+                            {row.events.map((event) => {
+                              if (event.eventType === 'DAYCARE_EVENT') {
+                                return (
+                                  <FixedSpaceColumn
+                                    spacing="xxs"
+                                    key={event.id}
+                                    data-qa={`event-${event.id}`}
+                                  >
+                                    <LabelLike data-qa="event-title">
+                                      {event.title} /{' '}
+                                      {event.currentAttending.type === 'unit'
+                                        ? event.currentAttending.unitName
+                                        : event.currentAttending.type ===
+                                            'group'
+                                          ? event.currentAttending.groupName
+                                          : row.firstName}
+                                    </LabelLike>
+                                    <P noMargin data-qa="event-description">
+                                      {event.description}
+                                    </P>
+                                  </FixedSpaceColumn>
+                                )
+                              } else if (
+                                event.eventType === 'DISCUSSION_SURVEY'
+                              ) {
+                                return (
+                                  <FixedSpaceColumn
+                                    spacing="xxs"
+                                    key={event.id}
+                                    data-qa={`event-${event.id}`}
+                                  >
+                                    <LabelLike data-qa="event-title">
+                                      <P data-qa="title-text">{event.title}</P>
+                                      {event.reservedTimes.map((rt, i) => (
+                                        <FixedSpaceColumn
+                                          alignItems="flex-start"
+                                          spacing="xs"
+                                          key={`reservation-${i}`}
+                                        >
+                                          <div>
+                                            <P
+                                              noMargin
+                                              data-qa={`reservation-times-${i}`}
+                                            >{`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}</P>
+                                          </div>
+                                          <MutateButton
+                                            appearance="inline"
+                                            icon={faX}
+                                            text={
+                                              i18n.calendar
+                                                .discussionTimeReservation
+                                                .cancelTimeButtonText
+                                            }
+                                            disabled={getStartOfDiscussionReservationWindow().isAfter(
+                                              rt.date
+                                            )}
+                                            mutation={
+                                              deleteCalendarEventTimeReservationMutation
+                                            }
+                                            onClick={() => {
+                                              if (rt.childId !== null) {
+                                                return {
+                                                  childId: rt.childId,
+                                                  calendarEventTimeId: rt.id
+                                                }
+                                              } else {
+                                                return cancelMutation
+                                              }
+                                            }}
+                                          />
+                                        </FixedSpaceColumn>
+                                      ))}
+                                    </LabelLike>
+                                    <P noMargin data-qa="event-description">
+                                      {event.description}
+                                    </P>
+                                  </FixedSpaceColumn>
+                                )
+                              } else return null
+                            })}
                           </FixedSpaceColumn>
                         </>
                       )}
@@ -485,6 +553,8 @@ interface ModalRow {
 
 interface ModalRowEvent extends CitizenCalendarEvent {
   currentAttending: AttendingChild
+  reservedTimes: CalendarEventTime[]
+  eventType: CalendarEventType
 }
 
 function computeModalData(
@@ -532,9 +602,20 @@ function computeModalData(
         const currentAttending = event.attendingChildren?.[child.childId]?.find(
           ({ periods }) => periods.some((period) => period.includes(date))
         )
-        return currentAttending === undefined
-          ? []
-          : [{ ...event, currentAttending }]
+        const reservedTimes = (event.timesByChild[child.childId] ?? []).filter(
+          (t) => t.childId === child.childId && t.date.isEqual(date)
+        )
+        if (event.eventType === 'DAYCARE_EVENT') {
+          return currentAttending === undefined
+            ? []
+            : [{ ...event, currentAttending, reservedTimes }]
+        } else if (event.eventType === 'DISCUSSION_SURVEY') {
+          return reservedTimes.length > 0
+            ? currentAttending
+              ? [{ ...event, currentAttending, reservedTimes }]
+              : []
+            : []
+        } else return []
       })
     }
   })

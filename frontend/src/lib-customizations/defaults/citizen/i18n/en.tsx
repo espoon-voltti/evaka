@@ -319,6 +319,21 @@ const en: Translations = {
       SICKLEAVE: 'Absence due to illness',
       PLANNED_ABSENCE: 'Shift work absence'
     },
+    discussionTimeReservation: {
+      surveyModalButtonText: 'Siirry ajanvaraukseen',
+      reservationModalButtonText: 'Siirry varaamaan',
+      surveyModalTitle: 'Ajanvaraus',
+      surveyModalSubTitle: 'Keskusteluajat',
+      surveyModalInstruction:
+        'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
+      surveyListTitle: 'Varattavat keskustelut',
+      timePreDescriptor: 'klo',
+      reservationLabelText: 'Valittu keskusteluaika:',
+      reservationInfoButtonText: 'Entä jos haluan varata lisää aikoja?',
+      reservationInfoText:
+        'Ota suoraan yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
+      reservationChildTitle: 'Lapsi, jota keskustelu koskee:'
+    },
     absenceMarkedByEmployee: 'Absence marked by staff',
     contactStaffToEditAbsence:
       'Contact staff if you want to change the absence',
