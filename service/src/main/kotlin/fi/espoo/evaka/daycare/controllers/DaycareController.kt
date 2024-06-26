@@ -111,7 +111,7 @@ class DaycareController(
                         clock,
                         Action.Global.READ_UNIT_FEATURES
                     )
-                    it.getUnitFeatures()
+                    it.getUnitFeatures(clock.today())
                 }
             }
             .also { Audit.UnitFeaturesRead.log(meta = mapOf("count" to it.size)) }
