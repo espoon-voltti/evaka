@@ -13,6 +13,7 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.identity.ExternalId
@@ -1566,6 +1567,15 @@ VALUES (${bind(row.id)}, ${bind(row.finnishPreschool)}, ${bind(row.swedishPresch
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
+
+fun Database.Transaction.insert(row: ClubTerm) = execute {
+    sql(
+        """
+INSERT INTO club_term (id, term, application_period, term_breaks)
+VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
+"""
+    )
+}
 
 fun Database.Transaction.insert(row: DevClubTerm): ClubTermId =
     createUpdate {

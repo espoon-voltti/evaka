@@ -10,6 +10,7 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.assistance.AssistanceFactorUpdate
 import fi.espoo.evaka.assistance.insertAssistanceFactor
+import fi.espoo.evaka.clubTerms
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
@@ -106,17 +107,18 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insertServiceNeedOptions()
-            it.insert(testGroup1)
-            it.insert(testGroup2)
-            it.insert(testGroupInDaycare2)
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            clubTerms.forEach { tx.insert(it) }
+            tx.insertServiceNeedOptions()
+            tx.insert(testGroup1)
+            tx.insert(testGroup2)
+            tx.insert(testGroupInDaycare2)
 
-            it.insert(DevEmployee(employeeId))
-            it.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
-            it.insert(DevEmployee(employeeId2))
-            it.insertDaycareAclRow(testDaycare.id, employeeId2, UserRole.STAFF)
+            tx.insert(DevEmployee(employeeId))
+            tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
+            tx.insert(DevEmployee(employeeId2))
+            tx.insertDaycareAclRow(testDaycare.id, employeeId2, UserRole.STAFF)
         }
     }
 

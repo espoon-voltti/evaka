@@ -20,7 +20,6 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.insertClubTerm
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.*
 import fi.espoo.evaka.placement.PlacementType
@@ -575,7 +574,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     )
 
     preschoolTerms.forEach { insert(it) }
-    insertClubTerms()
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {
@@ -654,57 +652,55 @@ val preschoolTerms =
         preschoolTerm2024
     )
 
-val clubTerms =
-    listOf(
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
-            FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
-            DateSet.empty()
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
-            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
-            DateSet.empty()
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
-            FiniteDateRange(LocalDate.of(2022, 1, 8), LocalDate.of(2022, 1, 20)),
-            DateSet.empty()
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2023, 8, 10), LocalDate.of(2024, 5, 31)),
-            FiniteDateRange(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 1)),
-            DateSet.of(
-                FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
-                FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
-                FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
-            )
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
-            FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
-            DateSet.of(
-                FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
-                FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
-                FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
-            )
+val clubTerm2020 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
+        DateSet.empty()
+    )
+
+val clubTerm2021 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+        DateSet.empty()
+    )
+
+val clubTerm2022 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 1, 8), LocalDate.of(2022, 1, 20)),
+        DateSet.empty()
+    )
+
+val clubTerm2023 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2023, 8, 10), LocalDate.of(2024, 5, 31)),
+        FiniteDateRange(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 1)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+            FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+            FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
         )
     )
 
-fun Database.Transaction.insertClubTerms() {
-    clubTerms.forEach {
-        insertClubTerm(
-            term = it.term,
-            applicationPeriod = it.applicationPeriod,
-            termBreaks = it.termBreaks
+val clubTerm2024 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
+        FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
+            FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
+            FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
         )
-    }
-}
+    )
+
+val clubTerms = listOf(clubTerm2020, clubTerm2021, clubTerm2022, clubTerm2023, clubTerm2024)
 
 fun Database.Transaction.insertServiceNeedOptions() {
     executeBatch(serviceNeedTestFixtures) {

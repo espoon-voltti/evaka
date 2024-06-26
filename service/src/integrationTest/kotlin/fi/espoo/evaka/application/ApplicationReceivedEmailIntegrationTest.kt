@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.Address
 import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.clubTerm2021
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -77,7 +79,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(clubTerm2021)
+        }
         MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 
